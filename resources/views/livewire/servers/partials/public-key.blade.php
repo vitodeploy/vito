@@ -1,0 +1,24 @@
+<div>
+    <div>
+        <div class="rounded-sm border-l-4 border-yellow-500 bg-yellow-100 py-3 px-4 text-yellow-700 dark:bg-yellow-500 dark:bg-opacity-10 dark:text-yellow-500">
+            Your server needs to have a new unused installation of supported operation systems and must have a root
+            user. To get started, add our public key to /root/.ssh/authorized_keys file by running the bellow command on
+            your server as root.
+        </div>
+    </div>
+</div>
+<div>
+    <div class="flex items-center justify-between">
+        <x-input-label for="pk">
+            {{ __("Run this command on your server as root user") }}
+        </x-input-label>
+        <x-input-label class="cursor-pointer" x-data="{ copied: false }" x-clipboard.raw="{{ config('core.ssh_public_key') }}">
+            <div x-show="copied" class="flex items-center">
+                {{ __("Copied") }}
+                <x-heroicon-m-check class="ml-1 w-4 text-green-700" />
+            </div>
+            <div x-show="!copied" x-on:click="copied = true; setTimeout(() => {copied = false}, 2000)">{{ __("Copy") }}</div>
+        </x-input-label>
+    </div>
+    <x-textarea id="pk" name="pk" class="mt-1" disabled>{{ config('core.ssh_public_key') }}</x-textarea>
+</div>

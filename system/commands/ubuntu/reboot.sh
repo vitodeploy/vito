@@ -1,0 +1,3 @@
+echo "Rebooting..."
+
+sudo reboot
