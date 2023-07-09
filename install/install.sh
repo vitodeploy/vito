@@ -24,12 +24,13 @@ apt remove needrestart -y
 
 useradd -p $(openssl passwd -1 ${V_PASSWORD}) ${V_USERNAME}
 usermod -aG ${V_USERNAME}
-"${V_USERNAME} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+echo "${V_USERNAME} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 mkdir /home/${V_USERNAME}
 mkdir /home/${V_USERNAME}/.ssh
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
-chsh -s /bin/bash ${V_USERNAME}
-su - ${V_USERNAME} -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
+chsh -s /bin/bash "${V_USERNAME}"
+su - "${V_USERNAME}" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
 # upgrade
 apt clean
