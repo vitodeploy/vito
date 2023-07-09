@@ -153,7 +153,8 @@ server {
 "
 rm -rf /home/${V_USERNAME}/${V_DOMAIN}
 mkdir /home/${V_USERNAME}/${V_DOMAIN}
-chown -R 755 ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}
+chmod -R 755 /home/${V_USERNAME}/${V_DOMAIN}
 echo "${V_VHOST_CONFIG}" | tee /etc/nginx/sites-available/${V_DOMAIN}
 ln -s /etc/nginx/sites-available/${V_DOMAIN} /etc/nginx/sites-enabled/
 service nginx restart
