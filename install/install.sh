@@ -30,7 +30,6 @@ mkdir /home/${V_USERNAME}/.ssh
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 chsh -s /bin/bash "${V_USERNAME}"
 su - "${V_USERNAME}" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
-sudo chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
 # upgrade
 apt clean
@@ -204,6 +203,9 @@ echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
 supervisorctl reread
 supervisorctl update
 supervisorctl start worker:*
+
+# cleanup
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
 echo "🎉 Congratulations!"
 echo "✅ SSH User: ${V_USERNAME}"
