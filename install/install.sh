@@ -23,13 +23,13 @@ fi
 apt remove needrestart -y
 
 useradd -p $(openssl passwd -1 ${V_PASSWORD}) ${V_USERNAME}
-usermod -aG "${V_USERNAME}"
+usermod -aG ${V_USERNAME}
 "${V_USERNAME} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
-mkdir /home/"${V_USERNAME}"
-mkdir /home/"${V_USERNAME}"/.ssh
-chown -R "${V_USERNAME}":"${V_USERNAME}" /home/"${V_USERNAME}"
-chsh -s /bin/bash "${V_USERNAME}"
-su - "${V_USERNAME}" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
+mkdir /home/${V_USERNAME}
+mkdir /home/${V_USERNAME}/.ssh
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
+chsh -s /bin/bash ${V_USERNAME}
+su - ${V_USERNAME} -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
 
 # upgrade
 apt clean
@@ -114,7 +114,7 @@ mysql -e "FLUSH PRIVILEGES"
 mysql -e "GRANT ALL PRIVILEGES ON ${V_DB_NAME}.* TO '${V_DB_USER}'@'localhost'"
 mysql -e "FLUSH PRIVILEGES"
 
-# create vhost
+# setup website
 export COMPOSER_ALLOW_SUPERUSER=1
 export V_REPO="https://github.com/vitodeployer/vito.git"
 export V_VHOST_CONFIG="
@@ -153,7 +153,7 @@ server {
 "
 rm -rf /home/${V_USERNAME}/${V_DOMAIN}
 mkdir /home/${V_USERNAME}/${V_DOMAIN}
-chown -R 755 /home/${V_USERNAME}/${V_DOMAIN}
+chown -R 755 ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}
 echo "${V_VHOST_CONFIG}" | tee /etc/nginx/sites-available/${V_DOMAIN}
 ln -s /etc/nginx/sites-available/${V_DOMAIN} /etc/nginx/sites-enabled/
 service nginx restart
