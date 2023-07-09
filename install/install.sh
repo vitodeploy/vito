@@ -115,6 +115,7 @@ mysql -e "GRANT ALL PRIVILEGES ON ${V_DB_NAME}.* TO '${V_DB_USER}'@'localhost'"
 mysql -e "FLUSH PRIVILEGES"
 
 # create vhost
+export COMPOSER_ALLOW_SUPERUSER=1
 export V_REPO="https://github.com/vitodeployer/vito.git"
 export V_VHOST_CONFIG="
 server {
@@ -165,9 +166,9 @@ cd /home/${V_USERNAME}/${V_DOMAIN} && git config core.fileMode false
 cd /home/${V_USERNAME}/${V_DOMAIN} && composer install --no-dev
 cp .env.prod .env
 sed -i "s|APP_URL=.*|APP_URL=http://${V_DOMAIN}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i "s|APP_URL=.*|DB_NAME=${V_DB_NAME}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i "s|APP_URL=.*|DB_USER=${V_DB_USER}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i "s|APP_URL=.*|DB_PASS=${V_DB_PASS}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+sed -i "s|DB_DATABASE=.*|DB_DATABASE=${V_DB_NAME}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+sed -i "s|DB_USERNAME=.*|DB_USERNAME=${V_DB_USER}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${V_DB_PASS}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
 php artisan key:generate
 php artisan storage:link
 php artisan migrate --force
