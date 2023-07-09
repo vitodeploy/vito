@@ -10,6 +10,16 @@ if [[ -z "${V_DOMAIN}" ]]; then
   exit 1
 fi
 
+if [[ -z "${V_ADMIN_EMAIL}" ]]; then
+  echo "Error: V_ADMIN_EMAIL environment variable is not set."
+  exit 1
+fi
+
+if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
+  echo "Error: V_ADMIN_PASSWORD environment variable is not set."
+  exit 1
+fi
+
 apt remove needrestart -y
 
 useradd -p $(openssl passwd -1 ${V_PASSWORD}) ${V_USERNAME}
@@ -154,12 +164,19 @@ find /home/${V_USERNAME}/${V_DOMAIN} -type f -exec chmod 644 {} \;
 cd /home/${V_USERNAME}/${V_DOMAIN} && git config core.fileMode false
 cd /home/${V_USERNAME}/${V_DOMAIN} && composer install --no-dev
 cp .env.prod .env
-sed -i '' "s/{AP_URL}/http://${V_DOMAIN}/g" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i '' "s/{DB_NAME}/${V_DB_NAME}/g" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i '' "s/{DB_USER}/${V_DB_USER}/g" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i '' "s/{DB_PASS}/${V_DB_PASS}/g" /home/${V_USERNAME}/${V_DOMAIN}/.env
+sed -i "s|APP_URL=.*|APP_URL=http://${V_DOMAIN}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+sed -i "s|APP_URL=.*|DB_NAME=${V_DB_NAME}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+sed -i "s|APP_URL=.*|DB_USER=${V_DB_USER}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+sed -i "s|APP_URL=.*|DB_PASS=${V_DB_PASS}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
 php artisan key:generate
 php artisan storage:link
+php artisan migrate --force
+php artisan user:create Vito ${V_ADMIN_EMAIL} ${V_ADMIN_PASSWORD}
+openssl genpkey -algorithm RSA -out /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem
+chmod 600 /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem
+ssh-keygen -y -f /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem > /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-public.key
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-public.key
 
 # setup supervisor
 export V_WORKER_CONFIG="
@@ -191,3 +208,6 @@ echo "✅ SSH Password: ${V_PASSWORD}"
 echo "✅ DB Name: ${V_DB_NAME}"
 echo "✅ DB Username: ${V_DB_USER}"
 echo "✅ DB Password: ${V_DB_PASS}"
+echo "✅ Admin Email: ${V_ADMIN_EMAIL}"
+echo "✅ Admin Password: ${V_ADMIN_PASSWORD}"
+echo "✅ URL: http://${V_DOMAIN}"
