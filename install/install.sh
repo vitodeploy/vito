@@ -30,7 +30,7 @@ mkdir /home/${V_USERNAME}/.ssh
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 chsh -s /bin/bash "${V_USERNAME}"
 su - "${V_USERNAME}" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
+sudo chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
 # upgrade
 apt clean
