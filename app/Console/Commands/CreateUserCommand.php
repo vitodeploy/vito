@@ -8,19 +8,18 @@ use Illuminate\Support\Str;
 
 class CreateUserCommand extends Command
 {
-    protected $signature = 'user:create {name} {email}';
+    protected $signature = 'user:create {name} {email} {password}';
 
     protected $description = 'Create a new user';
 
     public function handle(): void
     {
-        $password = Str::random(20);
         User::create([
             'name' => $this->argument('name'),
             'email' => $this->argument('email'),
-            'password' => bcrypt($password),
+            'password' => bcrypt($this->argument('password')),
         ]);
 
-        $this->info("User created with password: {$password}");
+        $this->info("User created with password");
     }
 }
