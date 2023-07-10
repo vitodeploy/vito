@@ -18,7 +18,6 @@ use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
-use App\ServerTypes\Regular;
 use App\ServiceHandlers\Database\Mysql;
 use App\ServiceHandlers\Firewall\Ufw;
 use App\ServiceHandlers\PHP;
@@ -48,7 +47,7 @@ return [
      * General
      */
     'operating_systems' => ['ubuntu_18', 'ubuntu_20', 'ubuntu_22'],
-    'webservers' => ['nginx'],
+    'webservers' => ['none', 'nginx'],
     'php_versions' => [
         'none',
         // '5.6',
@@ -76,18 +75,19 @@ return [
     /*
      * Server
      */
-    'server_types' => ['regular'],
+    'server_types' => \App\Enums\ServerType::getValues(),
     'server_types_class' => [
-        'regular' => Regular::class,
+        \App\Enums\ServerType::REGULAR => \App\ServerTypes\Regular::class,
+        \App\Enums\ServerType::DATABASE => \App\ServerTypes\Database::class,
     ],
-    'server_providers' => ['custom', 'aws', 'linode', 'digitalocean', 'vultr', 'hetzner'],
+    'server_providers' => \App\Enums\ServerProvider::getValues(),
     'server_providers_class' => [
-        'custom' => \App\ServerProviders\Custom::class,
-        'aws' => AWS::class,
-        'linode' => Linode::class,
-        'digitalocean' => DigitalOcean::class,
-        'vultr' => Vultr::class,
-        'hetzner' => Hetzner::class,
+        \App\Enums\ServerProvider::CUSTOM => \App\ServerProviders\Custom::class,
+        \App\Enums\ServerProvider::AWS => AWS::class,
+        \App\Enums\ServerProvider::LINODE => Linode::class,
+        \App\Enums\ServerProvider::DIGITALOCEAN => DigitalOcean::class,
+        \App\Enums\ServerProvider::VULTR => Vultr::class,
+        \App\Enums\ServerProvider::HETZNER => Hetzner::class,
     ],
     'server_providers_default_user' => [
         'custom' => [

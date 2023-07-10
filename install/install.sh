@@ -115,6 +115,7 @@ mysql -e "GRANT ALL PRIVILEGES ON ${V_DB_NAME}.* TO '${V_DB_USER}'@'localhost'"
 mysql -e "FLUSH PRIVILEGES"
 
 # setup website
+export V_SSL=1
 export COMPOSER_ALLOW_SUPERUSER=1
 export V_REPO="https://github.com/vitodeployer/vito.git"
 export V_VHOST_CONFIG="
@@ -166,7 +167,12 @@ find /home/${V_USERNAME}/${V_DOMAIN} -type f -exec chmod 644 {} \;
 cd /home/${V_USERNAME}/${V_DOMAIN} && git config core.fileMode false
 cd /home/${V_USERNAME}/${V_DOMAIN} && composer install --no-dev
 cp .env.prod .env
-sed -i "s|APP_URL=.*|APP_URL=http://${V_DOMAIN}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+if [[ ${V_SSL} == 1 ]]; then
+  export V_URL="https://${V_DOMAIN}"
+else
+  export V_URL="http://${V_DOMAIN}"
+fi
+sed -i "s|APP_URL=.*|APP_URL=${V_URL}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
 sed -i "s|DB_DATABASE=.*|DB_DATABASE=${V_DB_NAME}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
 sed -i "s|DB_USERNAME=.*|DB_USERNAME=${V_DB_USER}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
 sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${V_DB_PASS}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
