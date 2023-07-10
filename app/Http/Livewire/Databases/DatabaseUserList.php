@@ -68,7 +68,7 @@ class DatabaseUserList extends Component
         $databaseUser = DatabaseUser::query()->findOrFail($id);
 
         $this->linkId = $id;
-        $this->link = $databaseUser->databases;
+        $this->link = $databaseUser->databases ?? [];
 
         $this->dispatchBrowserEvent('open-modal', 'link-database-user');
     }
