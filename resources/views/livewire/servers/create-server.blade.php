@@ -115,6 +115,20 @@
                 @enderror
             </div>
 
+            <div>
+                <x-input-label for="type" value="Server Type" />
+                <x-select-input wire:model.defer="type" id="type" name="type" class="mt-1 w-full">
+                    @foreach(config('core.server_types') as $serverType)
+                        <option value="{{ $serverType }}" @if($type === $serverType) selected @endif>
+                            {{ $serverType }}
+                        </option>
+                    @endforeach
+                </x-select-input>
+                @error('type')
+                <x-input-error class="mt-2" :messages="$message" />
+                @enderror
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <div>
                     <x-input-label for="webserver" value="Webserver" />
