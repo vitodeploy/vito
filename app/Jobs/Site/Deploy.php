@@ -7,7 +7,7 @@ use App\Events\Broadcast;
 use App\Helpers\SSH;
 use App\Jobs\Job;
 use App\Models\Deployment;
-use App\SSHCommands\RunScript;
+use App\SSHCommands\System\RunScript;
 use Throwable;
 
 class Deploy extends Job

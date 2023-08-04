@@ -3,7 +3,7 @@
 namespace App\Jobs\Installation;
 
 use App\Models\Server;
-use App\SSHCommands\UpgradeCommand;
+use App\SSHCommands\System\UpgradeCommand;
 use Throwable;
 
 class Upgrade extends InstallationJob

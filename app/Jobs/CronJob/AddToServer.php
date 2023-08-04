@@ -6,7 +6,7 @@ use App\Enums\CronjobStatus;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\CronJob;
-use App\SSHCommands\UpdateCronJobsCommand;
+use App\SSHCommands\CronJob\UpdateCronJobsCommand;
 use Throwable;
 
 class AddToServer extends Job

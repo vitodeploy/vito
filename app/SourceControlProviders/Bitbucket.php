@@ -33,9 +33,9 @@ class Bitbucket extends AbstractSourceControlProvider
         return $res->json();
     }
 
-    public function fullRepoUrl(string $repo): string
+    public function fullRepoUrl(string $repo, string $key): string
     {
-        return "https://x-token-auth:{$this->sourceControl->access_token}@bitbucket.org/$repo.git";
+        return sprintf("git@bitbucket.org-%s:%s.git", $key, $repo);
     }
 
     /**
@@ -100,6 +100,11 @@ class Bitbucket extends AbstractSourceControlProvider
         }
 
         return null;
+    }
+
+    public function deployKey(string $title, string $repo, string $key): void
+    {
+        // TODO: Implement deployKey() method.
     }
 
     protected function getCommitter(string $raw): array

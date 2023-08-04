@@ -7,6 +7,7 @@ use App\Events\Broadcast;
 use App\Jobs\Site\CloneRepository;
 use App\Jobs\Site\ComposerInstall;
 use App\Jobs\Site\CreateVHost;
+use App\Jobs\Site\DeployKey;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -28,7 +29,7 @@ class PHPSite extends AbstractSiteType
             ],
             'source_control' => [
                 'required',
-                Rule::exists('source_controls', 'provider'),
+                Rule::exists('source_controls', 'id'),
             ],
             'repository' => [
                 'required',
@@ -43,7 +44,7 @@ class PHPSite extends AbstractSiteType
     {
         return [
             'web_directory' => $input['web_directory'] ?? '',
-            'source_control' => $input['source_control'] ?? '',
+            'source_control_id' => $input['source_control'] ?? '',
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',
         ];
@@ -60,6 +61,8 @@ class PHPSite extends AbstractSiteType
     {
         $chain = [
             new CreateVHost($this->site),
+            $this->progress(15),
+            new DeployKey($this->site),
             $this->progress(30),
             new CloneRepository($this->site),
             $this->progress(65),

@@ -4,11 +4,15 @@ namespace App\Helpers;
 
 use App\Contracts\SSHCommand;
 use App\Exceptions\SSHAuthenticationError;
-use App\Exceptions\SSHConnectionError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use phpseclib3\Crypt\Common\PrivateKey;
+use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Net\SFTP;
+use phpseclib3\Net\SSH2;
 use Throwable;
 
 class SSH
@@ -17,7 +21,7 @@ class SSH
 
     public ?ServerLog $log;
 
-    protected mixed $connection;
+    protected SSH2|SFTP|null $connection;
 
     protected ?string $user;
 
@@ -25,9 +29,9 @@ class SSH
 
     protected string $publicKey;
 
-    protected string $privateKey;
+    protected PrivateKey $privateKey;
 
-    public function init(Server $server, string $asUser = null, bool $defaultKeys = false): self
+    public function init(Server $server, string $asUser = null): self
     {
         $this->connection = null;
         $this->log = null;
@@ -38,8 +42,9 @@ class SSH
             $this->user = $asUser;
             $this->asUser = $asUser;
         }
-        $this->publicKey = $this->server->sshKey($defaultKeys)['public_key_path'];
-        $this->privateKey = $this->server->sshKey($defaultKeys)['private_key_path'];
+        $this->privateKey = PublicKeyLoader::loadPrivateKey(
+            file_get_contents($this->server->sshKey()['private_key_path'])
+        );
 
         return $this;
     }
@@ -57,29 +62,30 @@ class SSH
     /**
      * @throws Throwable
      */
-    public function connect(): void
+    public function connect(bool $sftp = false): void
     {
-        $defaultTimeout = ini_get('default_socket_timeout');
-        ini_set('default_socket_timeout', 7);
-
         try {
-            if (! ($this->connection = ssh2_connect($this->server->ip, $this->server->port))) {
-                throw new SSHConnectionError('Cannot connect to the server');
+            if ($sftp) {
+                $this->connection = new SFTP($this->server->ip, $this->server->port);
+            } else {
+                $this->connection = new SSH2($this->server->ip, $this->server->port);
             }
 
-            if (! ssh2_auth_pubkey_file($this->connection, $this->user, $this->publicKey, $this->privateKey)) {
-                throw new SSHAuthenticationError('Authentication failed');
+            $login = $this->connection->login($this->user, $this->privateKey);
+
+            if (! $login) {
+                throw new SSHAuthenticationError("Error authenticating");
             }
+
+            Log::info("Login status", [
+                'status' => $login
+            ]);
         } catch (Throwable $e) {
-            ini_set('default_socket_timeout', $defaultTimeout);
-            if ($this->server->status == 'ready') {
-                $this->server->status = 'disconnected';
-                $this->server->save();
-            }
+            Log::error("Error connecting", [
+                "msg" => $e->getMessage()
+            ]);
             throw $e;
         }
-
-        ini_set('default_socket_timeout', $defaultTimeout);
     }
 
     /**
@@ -114,31 +120,17 @@ class SSH
      */
     public function upload(string $local, string $remote): void
     {
+        $this->log = null;
+
+        Log::info("Starting to upload");
         if (! $this->connection) {
-            $this->connect();
+            $this->connect(true);
         }
-
-        $sftp = @ssh2_sftp($this->connection);
-        if (! $sftp) {
-            throw new Exception('Could not initialize SFTP');
-        }
-
-        $stream = @fopen("ssh2.sftp://$sftp$remote", 'w');
-
-        if (! $stream) {
-            throw new Exception("Could not open file: $remote");
-        }
-
-        $data_to_send = @file_get_contents($local);
-        if ($data_to_send === false) {
-            throw new Exception("Could not open local file: $local.");
-        }
-
-        if (@fwrite($stream, $data_to_send) === false) {
-            throw new Exception("Could not send data from file: $local.");
-        }
-
-        @fclose($stream);
+        Log::info("Uploading");
+        $uploaded = $this->connection->put($remote, $local, SFTP::SOURCE_LOCAL_FILE);
+        Log::info("Upload finished", [
+            'status' => $uploaded
+        ]);
     }
 
     /**
@@ -152,31 +144,30 @@ class SSH
             $commandContent = $command;
         }
 
+        Log::info("command", [
+            "asUser" => $this->asUser,
+            "content" => $commandContent
+        ]);
+
         if ($this->asUser) {
             $commandContent = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($commandContent).'"';
         }
 
-        if (! ($stream = ssh2_exec($this->connection, $commandContent, 'vt102', [], 100, 30))) {
-            throw new Exception('SSH command failed');
-        }
+        Log::info("Running command", [
+            "cmd" => $commandContent
+        ]);
 
-        $data = '';
-        try {
-            stream_set_blocking($stream, true);
-            while ($buf = fread($stream, 1024)) {
-                $data .= $buf;
-                $this->log?->write($buf);
-            }
-            fclose($stream);
-        } catch (Throwable) {
-            $data = 'Error reading data';
-        }
+        $output = $this->connection->exec($commandContent);
 
-        if (Str::contains($data, 'VITO_SSH_ERROR')) {
+        Log::info("Command executed");
+
+        $this->log?->write($output);
+
+        if (Str::contains($output, 'VITO_SSH_ERROR')) {
             throw new Exception('SSH command failed with an error');
         }
 
-        return $data;
+        return $output;
     }
 
     /**
@@ -185,11 +176,7 @@ class SSH
     public function disconnect(): void
     {
         if ($this->connection) {
-            try {
-                ssh2_disconnect($this->connection);
-            } catch (Exception) {
-                //
-            }
+            $this->connection->disconnect();
             $this->connection = null;
         }
     }

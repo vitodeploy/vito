@@ -5,7 +5,6 @@ namespace App\ServiceHandlers;
 use App\Enums\ServiceStatus;
 use App\Jobs\PHP\InstallPHPExtension;
 use App\Jobs\PHP\SetDefaultCli;
-use App\Jobs\PHP\UpdatePHPSettings;
 use App\Models\Service;
 
 class PHP
@@ -27,10 +26,5 @@ class PHP
     public function installExtension($name): void
     {
         dispatch(new InstallPHPExtension($this->service, $name))->onConnection('ssh-long');
-    }
-
-    public function updateSettings(array $settings): void
-    {
-        dispatch(new UpdatePHPSettings($this->service, $settings))->onConnection('ssh-long');
     }
 }

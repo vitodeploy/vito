@@ -36,8 +36,8 @@ class CreateServer
             'provider' => $input['provider'],
             'authentication' => [
                 'user' => config('core.ssh_user'),
-                'pass' => Str::random(10),
-                'root_pass' => Str::random(10),
+                'pass' => Str::random(15),
+                'root_pass' => Str::random(15),
             ],
             'progress' => 0,
             'progress_step' => 'Initializing',
@@ -77,8 +77,7 @@ class CreateServer
                 $server->progress_step = __('Installation will begin in 3 minutes!');
                 $server->save();
                 dispatch(new ContinueInstallation($server))
-                    ->delay(now()->addMinutes(3))
-                    ->onQueue('default');
+                    ->delay(now()->addMinutes(2));
             }
             DB::commit();
 

@@ -21,7 +21,7 @@ class CreateRule
             'protocol' => $input['protocol'],
             'port' => $input['port'],
             'source' => $input['source'],
-            'mask' => $input['mask'],
+            'mask' => $input['mask'] ?? null,
             'status' => FirewallRuleStatus::CREATING,
         ]);
         $rule->save();
@@ -49,14 +49,12 @@ class CreateRule
                 'numeric',
                 'min:1',
                 'max:65535',
-                Rule::unique('firewall_rules', 'port')->where('server_id', $server->id),
             ],
             'source' => [
                 'required',
                 'ip',
             ],
             'mask' => [
-                'required',
                 'numeric',
             ],
         ])->validateWithBag('createRule');

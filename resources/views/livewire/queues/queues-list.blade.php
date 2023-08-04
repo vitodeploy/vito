@@ -22,16 +22,16 @@
                         @include('livewire.queues.partials.status', ['status' => $queue->status])
                         <div class="inline-flex">
                             <x-icon-button wire:click="start({{ $queue }})" wire:loading.attr="disabled">
-                                <x-heroicon-o-play class="w-4 h-4" />
+                                Resume
                             </x-icon-button>
                             <x-icon-button wire:click="stop({{ $queue }})" wire:loading.attr="disabled">
-                                <x-heroicon-o-stop class="w-4 h-4" />
+                                Stop
                             </x-icon-button>
                             <x-icon-button wire:click="restart({{ $queue }})" wire:loading.attr="disabled">
-                                <x-heroicon-o-arrow-path class="w-4 h-4" />
+                                Restart
                             </x-icon-button>
                             <x-icon-button x-on:click="$wire.deleteId = '{{ $queue->id }}'; $dispatch('open-modal', 'delete-queue')">
-                                <x-heroicon-o-trash class="w-4 h-4" />
+                                Delete
                             </x-icon-button>
                         </div>
                     </div>

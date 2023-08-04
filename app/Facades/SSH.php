@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
 /**
  * Class SSH
  *
- * @method static \App\Helpers\SSH init(Server $server, string $asUser = null, bool $defaultKeys = false)
+ * @method static \App\Helpers\SSH init(Server $server, string $asUser = null)
  * @method static setLog(string $logType, int $siteId = null)
  * @method static connect()
  * @method static exec($commands, string $log = '', int $siteId = null)

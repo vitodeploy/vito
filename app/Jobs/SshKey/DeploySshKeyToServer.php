@@ -7,7 +7,7 @@ use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Server;
 use App\Models\SshKey;
-use App\SSHCommands\DeploySshKeyCommand;
+use App\SSHCommands\System\DeploySshKeyCommand;
 use Throwable;
 
 class DeploySshKeyToServer extends Job

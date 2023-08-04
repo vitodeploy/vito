@@ -4,7 +4,7 @@ namespace App\Jobs\Installation;
 
 use App\Exceptions\InstallationFailed;
 use App\Models\Service;
-use App\SSHCommands\UninstallPHPCommand;
+use App\SSHCommands\PHP\UninstallPHPCommand;
 use Throwable;
 
 class UninstallPHP extends InstallationJob

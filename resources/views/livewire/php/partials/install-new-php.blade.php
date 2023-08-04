@@ -2,7 +2,6 @@
     <x-slot name="trigger">
         <x-primary-button>
             {{ __("Install") }}
-            <x-heroicon-m-chevron-down class="w-4 ml-1" />
         </x-primary-button>
     </x-slot>
 

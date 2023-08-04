@@ -5,9 +5,9 @@ namespace App\Jobs\Service;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Service;
-use App\SSHCommands\RestartServiceCommand;
-use App\SSHCommands\StartServiceCommand;
-use App\SSHCommands\StopServiceCommand;
+use App\SSHCommands\Service\RestartServiceCommand;
+use App\SSHCommands\Service\StartServiceCommand;
+use App\SSHCommands\Service\StopServiceCommand;
 use Exception;
 use Throwable;
 

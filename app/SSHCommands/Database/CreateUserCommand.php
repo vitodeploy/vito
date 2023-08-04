@@ -4,48 +4,28 @@ namespace App\SSHCommands\Database;
 
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class CreateUserCommand extends Command
 {
-    /**
-     * @var string
-     */
-    protected $provider;
-
-    /**
-     * @var string
-     */
-    protected $username;
-
-    /**
-     * @var string
-     */
-    protected $password;
-
-    /**
-     * @var string
-     */
-    protected $host;
-
-    public function __construct($provider, $username, $password, $host)
-    {
-        $this->provider = $provider;
-        $this->username = $username;
-        $this->password = $password;
-        $this->host = $host;
+    public function __construct(
+        protected string $provider,
+        protected string $username,
+        protected string $password,
+        protected string $host
+    ) {
     }
 
-    public function file(string $os): string
+    public function file(): string
     {
-        return File::get(base_path('system/commands/database/'.$this->provider.'/create-user.sh'));
+        return File::get(resource_path(sprintf("commands/database/%s/create-user.sh", $this->provider)));
     }
 
-    public function content(string $os): string
+    public function content(): string
     {
-        $command = Str::replace('__username__', $this->username, $this->file($os));
-        $command = Str::replace('__password__', $this->password, $command);
-
-        return Str::replace('__host__', $this->host, $command);
+        return str($this->file())
+            ->replace('__username__', $this->username)
+            ->replace('__password__', $this->password)
+            ->replace('__host__', $this->host)
+            ->toString();
     }
 }

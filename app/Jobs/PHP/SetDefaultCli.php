@@ -6,7 +6,7 @@ use App\Enums\ServiceStatus;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Service;
-use App\SSHCommands\ChangeDefaultPHPCommand;
+use App\SSHCommands\PHP\ChangeDefaultPHPCommand;
 use Throwable;
 
 class SetDefaultCli extends Job
