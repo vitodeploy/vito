@@ -3,7 +3,7 @@
 namespace App\Jobs\Installation;
 
 use App\Models\Server;
-use App\SSHCommands\InstallRequirementsCommand;
+use App\SSHCommands\Installation\InstallRequirementsCommand;
 use Throwable;
 
 class InstallRequirements extends InstallationJob

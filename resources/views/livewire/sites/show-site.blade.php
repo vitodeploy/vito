@@ -6,8 +6,6 @@
         @include('livewire.sites.partials.installation-failed', ['site' => $site])
     @endif
     @if($site->status === \App\Enums\SiteStatus::READY)
-        <div class="space-y-10">
-            @include('livewire.sites.partials.site-overview', ['site' => $site])
-        </div>
+        @include('livewire.sites.partials.site-overview', ['site' => $site])
     @endif
 </div>

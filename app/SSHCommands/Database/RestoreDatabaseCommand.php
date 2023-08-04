@@ -4,33 +4,23 @@ namespace App\SSHCommands\Database;
 
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class RestoreDatabaseCommand extends Command
 {
-    protected $provider;
-
-    protected $database;
-
-    protected $fileName;
-
-    public function __construct($provider, $database, $fileName)
+    public function __construct(protected string $provider, protected string $database, protected string $fileName)
     {
-        $this->provider = $provider;
-        $this->database = $database;
-        $this->fileName = $fileName;
     }
 
-    public function file(string $os): string
+    public function file(): string
     {
-        return File::get(base_path('system/commands/database/'.$this->provider.'/restore.sh'));
+        return File::get(resource_path(sprintf("commands/database/%s/restore.sh", $this->provider)));
     }
 
-    public function content(string $os): string
+    public function content(): string
     {
-        $command = $this->file($os);
-        $command = Str::replace('__database__', $this->database, $command);
-
-        return Str::replace('__file__', $this->fileName, $command);
+        return str($this->file())
+            ->replace('__database__', $this->database)
+            ->replace('__file__', $this->fileName)
+            ->toString();
     }
 }

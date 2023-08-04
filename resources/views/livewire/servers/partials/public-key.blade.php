@@ -1,3 +1,6 @@
+@php
+    $key = str(file_get_contents(storage_path(config('core.ssh_public_key_name'))))->replace("\n", "");
+@endphp
 <div>
     <div>
         <div class="rounded-sm border-l-4 border-yellow-500 bg-yellow-100 py-3 px-4 text-yellow-700 dark:bg-yellow-500 dark:bg-opacity-10 dark:text-yellow-500">
@@ -12,13 +15,12 @@
         <x-input-label for="pk">
             {{ __("Run this command on your server as root user") }}
         </x-input-label>
-        <x-input-label class="cursor-pointer" x-data="{ copied: false }" x-clipboard.raw="{{ config('core.ssh_public_key') }}">
+        <x-input-label class="cursor-pointer" x-data="{ copied: false }" x-clipboard.raw="mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys && echo '{{ $key }}' >> /root/.ssh/authorized_keys">
             <div x-show="copied" class="flex items-center">
                 {{ __("Copied") }}
-                <x-heroicon-m-check class="ml-1 w-4 text-green-700" />
             </div>
             <div x-show="!copied" x-on:click="copied = true; setTimeout(() => {copied = false}, 2000)">{{ __("Copy") }}</div>
         </x-input-label>
     </div>
-    <x-textarea id="pk" name="pk" class="mt-1" disabled>{{ config('core.ssh_public_key') }}</x-textarea>
+    <x-textarea id="pk" name="pk" class="mt-1" rows="5" disabled>mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys && echo '{{ $key }}' >> /root/.ssh/authorized_keys</x-textarea>
 </div>

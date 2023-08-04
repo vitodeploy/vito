@@ -14,6 +14,7 @@ use App\Jobs\Site\DeployEnv;
 use App\Jobs\Site\UpdateBranch;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -32,7 +33,9 @@ use Throwable;
  * @property string $path
  * @property string $php_version
  * @property string $source_control
+ * @property int $source_control_id
  * @property string $repository
+ * @property string $ssh_key
  * @property string $branch
  * @property string $status
  * @property int $port
@@ -52,6 +55,7 @@ use Throwable;
  * @property string $aliases_string
  * @property string $deployment_script_text
  * @property string $env
+ * @property string $ssh_key_name
  */
 class Site extends AbstractModel
 {
@@ -67,7 +71,9 @@ class Site extends AbstractModel
         'path',
         'php_version',
         'source_control',
+        'source_control_id',
         'repository',
+        'ssh_key',
         'branch',
         'status',
         'port',
@@ -81,6 +87,7 @@ class Site extends AbstractModel
         'progress' => 'integer',
         'auto_deployment' => 'boolean',
         'aliases' => 'array',
+        'source_control_id' => 'integer',
     ];
 
     protected $appends = [
@@ -151,22 +158,21 @@ class Site extends AbstractModel
     /**
      * @throws SourceControlIsNotConnected
      */
-    public function sourceControl(): SourceControl|HasOne|null
+    public function sourceControl(): SourceControl|HasOne|null|Model
     {
-        if (! $this->source_control) {
+        $sourceControl = null;
+
+        if (! $this->source_control && ! $this->source_control_id) {
             return null;
         }
 
-        if ($this->source_control == 'custom') {
-            return new SourceControl([
-                'user_id' => $this->id,
-                'provider' => 'custom',
-                'token' => '',
-                'connected' => true,
-            ]);
+        if ($this->source_control) {
+            $sourceControl = SourceControl::query()->where('provider', $this->source_control)->first();
         }
 
-        $sourceControl = SourceControl::query()->where('provider', $this->source_control)->first();
+        if ($this->source_control_id) {
+            $sourceControl = SourceControl::query()->find($this->source_control_id);
+        }
 
         if (! $sourceControl) {
             throw new SourceControlIsNotConnected($this->source_control);
@@ -180,7 +186,7 @@ class Site extends AbstractModel
      */
     public function getFullRepositoryUrlAttribute()
     {
-        return $this->sourceControl()->provider()->fullRepoUrl($this->repository);
+        return $this->sourceControl()->provider()->fullRepoUrl($this->repository, $this->ssh_key_name);
     }
 
     public function getAliasesStringAttribute(): string
@@ -393,5 +399,10 @@ class Site extends AbstractModel
     public function updateBranch(string $branch): void
     {
         dispatch(new UpdateBranch($this, $branch))->onConnection('ssh');
+    }
+
+    public function getSshKeyNameAttribute(): string
+    {
+        return str('site_'.$this->id)->toString();
     }
 }

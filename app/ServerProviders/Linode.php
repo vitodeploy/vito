@@ -6,6 +6,7 @@ use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Linode extends AbstractProvider
 {
@@ -103,6 +104,7 @@ class Linode extends AbstractProvider
             if (count($errors) > 0) {
                 $msg = $errors[0]['reason'];
             }
+            Log::error("Linode error", $errors);
             throw new ServerProviderError($msg);
         }
         $this->server->ip = $create->json()['ipv4'][0];

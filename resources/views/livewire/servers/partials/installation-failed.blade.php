@@ -8,7 +8,6 @@
         <span class="font-bold">{{ $server->progress_step }} ({{ $server->progress }}%)</span>
     </div>
     <div class="mt-5 flex items-center justify-center">
-        <x-secondary-button :href="route('servers.logs', ['server' => $server])" class="mr-2">{{ __("View Logs") }}</x-secondary-button>
         <livewire:servers.delete-server :server="$server" />
     </div>
 </x-card>

@@ -29,7 +29,7 @@
                                 @include('livewire.ssl.partials.status', ['status' => $ssl->status])
                                 <div class="inline">
                                     <x-icon-button x-on:click="$wire.deleteId = '{{ $ssl->id }}'; $dispatch('open-modal', 'delete-ssl')">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                        Delete
                                     </x-icon-button>
                                 </div>
                             </div>

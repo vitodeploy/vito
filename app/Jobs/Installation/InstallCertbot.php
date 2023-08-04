@@ -3,7 +3,7 @@
 namespace App\Jobs\Installation;
 
 use App\Models\Server;
-use App\SSHCommands\InstallCertbotCommand;
+use App\SSHCommands\SSL\InstallCertbotCommand;
 use Throwable;
 
 class InstallCertbot extends InstallationJob

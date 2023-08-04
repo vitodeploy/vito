@@ -37,7 +37,6 @@ return [
      * SSH
      */
     'ssh_user' => env('SSH_USER', 'vito'),
-    'ssh_public_key' => env('SSH_PUBLIC_KEY'),
     'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME'),
     'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME'),
     'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs-local'),
@@ -46,7 +45,11 @@ return [
     /*
      * General
      */
-    'operating_systems' => ['ubuntu_18', 'ubuntu_20', 'ubuntu_22'],
+    'operating_systems' => [
+        // 'ubuntu_18',
+        'ubuntu_20',
+        'ubuntu_22'
+    ],
     'webservers' => ['none', 'nginx'],
     'php_versions' => [
         'none',
@@ -258,13 +261,13 @@ return [
      * Site
      */
     'site_types' => [
-        \App\Enums\SiteType::LARAVEL,
         \App\Enums\SiteType::PHP,
+        \App\Enums\SiteType::LARAVEL,
         \App\Enums\SiteType::WORDPRESS,
     ],
     'site_types_class' => [
-        \App\Enums\SiteType::LARAVEL => Laravel::class,
         \App\Enums\SiteType::PHP => PHPSite::class,
+        \App\Enums\SiteType::LARAVEL => Laravel::class,
         \App\Enums\SiteType::WORDPRESS => Wordpress::class,
     ],
 
@@ -289,10 +292,9 @@ return [
      */
     'php_extensions' => [
         'imagick',
-        // 'geoip',
+        'geoip',
         'exif',
         'gmagick',
-        'ssh2',
         'gmp',
         'intl',
     ],

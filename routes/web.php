@@ -30,23 +30,25 @@ Route::middleware('auth')->group(function () {
         Route::get('/{server}', [ServerController::class, 'show'])->name('servers.show');
         Route::get('/{server}/logs', [ServerController::class, 'logs'])->name('servers.logs');
         Route::get('/{server}/settings', [ServerSettingController::class, 'index'])->name('servers.settings');
-        Route::get('/{server}/databases', [DatabaseController::class, 'index'])->name('servers.databases');
-        Route::prefix('/{server}/sites')->group(function () {
-            Route::get('/', [SiteController::class, 'index'])->name('servers.sites');
-            Route::get('/create', [SiteController::class, 'create'])->name('servers.sites.create');
-            Route::get('/{site}', [SiteController::class, 'show'])->name('servers.sites.show');
-            Route::get('/{site}/application', [SiteController::class, 'application'])->name('servers.sites.application');
-            Route::get('/{site}/ssl', [SiteController::class, 'ssl'])->name('servers.sites.ssl');
-            Route::get('/{site}/queues', [SiteController::class, 'queues'])->name('servers.sites.queues');
-            Route::get('/{site}/settings', [SiteController::class, 'settings'])->name('servers.sites.settings');
-            Route::get('/{site}/logs', [SiteController::class, 'logs'])->name('servers.sites.logs');
+        Route::middleware('server-is-ready')->group(function () {
+            Route::get('/{server}/databases', [DatabaseController::class, 'index'])->name('servers.databases');
+            Route::prefix('/{server}/sites')->group(function () {
+                Route::get('/', [SiteController::class, 'index'])->name('servers.sites');
+                Route::get('/create', [SiteController::class, 'create'])->name('servers.sites.create');
+                Route::get('/{site}', [SiteController::class, 'application'])->name('servers.sites.show');
+                Route::get('/{site}/application', [SiteController::class, 'application'])->name('servers.sites.application');
+                Route::get('/{site}/ssl', [SiteController::class, 'ssl'])->name('servers.sites.ssl');
+                Route::get('/{site}/queues', [SiteController::class, 'queues'])->name('servers.sites.queues');
+                Route::get('/{site}/settings', [SiteController::class, 'settings'])->name('servers.sites.settings');
+                Route::get('/{site}/logs', [SiteController::class, 'logs'])->name('servers.sites.logs');
+            });
+            Route::get('/{server}/php', [PHPController::class, 'index'])->name('servers.php');
+            Route::get('/{server}/firewall', [FirewallController::class, 'index'])->name('servers.firewall');
+            Route::get('/{server}/cronjobs', [CronjobController::class, 'index'])->name('servers.cronjobs');
+            Route::get('/{server}/daemons', [DaemonController::class, 'index'])->name('servers.daemons');
+            Route::get('/{server}/services', [ServiceController::class, 'index'])->name('servers.services');
+            Route::get('/{server}/ssh-keys', [SSHKeyController::class, 'index'])->name('servers.ssh-keys');
         });
-        Route::get('/{server}/php', [PHPController::class, 'index'])->name('servers.php');
-        Route::get('/{server}/firewall', [FirewallController::class, 'index'])->name('servers.firewall');
-        Route::get('/{server}/cronjobs', [CronjobController::class, 'index'])->name('servers.cronjobs');
-        Route::get('/{server}/daemons', [DaemonController::class, 'index'])->name('servers.daemons');
-        Route::get('/{server}/services', [ServiceController::class, 'index'])->name('servers.services');
-        Route::get('/{server}/ssh-keys', [SSHKeyController::class, 'index'])->name('servers.ssh-keys');
     });
 });
 

@@ -4,7 +4,7 @@ namespace App\Contracts;
 
 interface Firewall
 {
-    public function addRule(string $type, string $protocol, int $port, string $source, string $mask): void;
+    public function addRule(string $type, string $protocol, int $port, string $source, ?string $mask): void;
 
-    public function removeRule(string $type, string $protocol, int $port, string $source, string $mask): void;
+    public function removeRule(string $type, string $protocol, int $port, string $source, ?string $mask): void;
 }

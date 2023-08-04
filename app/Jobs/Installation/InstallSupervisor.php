@@ -5,8 +5,8 @@ namespace App\Jobs\Installation;
 use App\Enums\ServiceStatus;
 use App\Exceptions\InstallationFailed;
 use App\Models\Service;
-use App\SSHCommands\InstallSupervisorCommand;
-use App\SSHCommands\ServiceStatusCommand;
+use App\SSHCommands\Service\ServiceStatusCommand;
+use App\SSHCommands\Supervisor\InstallSupervisorCommand;
 use Throwable;
 
 class InstallSupervisor extends InstallationJob

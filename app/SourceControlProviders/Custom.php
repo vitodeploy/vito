@@ -14,7 +14,7 @@ class Custom extends AbstractSourceControlProvider
         return '';
     }
 
-    public function fullRepoUrl(string $repo): string
+    public function fullRepoUrl(string $repo, string $key): string
     {
         return $repo;
     }
@@ -32,5 +32,10 @@ class Custom extends AbstractSourceControlProvider
     public function getLastCommit(string $repo, string $branch): ?array
     {
         return null;
+    }
+
+    public function deployKey(string $title, string $repo, string $key): void
+    {
+        // TODO: Implement deployKey() method.
     }
 }

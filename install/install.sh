@@ -194,7 +194,6 @@ command=php /home/${V_USERNAME}/${V_DOMAIN}/artisan queue:work --sleep=3 --backo
 autostart=1
 autorestart=1
 user=vito
-numprocs=1
 redirect_stderr=true
 stdout_logfile=/home/${V_USERNAME}/.logs/workers/worker.log
 stopwaitsecs=3600
@@ -209,6 +208,9 @@ echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
 supervisorctl reread
 supervisorctl update
 supervisorctl start worker:*
+
+# make the update file executable
+chmod +x /home/${V_USERNAME}/${V_DOMAIN}/update.sh
 
 # cleanup
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}

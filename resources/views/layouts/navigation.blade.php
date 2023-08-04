@@ -11,7 +11,6 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('servers')" :active="request()->routeIs('servers') || request()->is('servers/*')">
-                        <x-heroicon-o-server-stack class="w-6 h-6 mr-1" />
                         {{ __('Servers') }}
                     </x-nav-link>
                 </div>

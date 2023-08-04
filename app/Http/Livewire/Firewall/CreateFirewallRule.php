@@ -22,7 +22,7 @@ class CreateFirewallRule extends Component
 
     public string $source = '0.0.0.0';
 
-    public string $mask = '0';
+    public string $mask = '';
 
     public function create(): void
     {

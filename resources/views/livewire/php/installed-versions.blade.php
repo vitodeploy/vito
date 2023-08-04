@@ -22,10 +22,8 @@
                                     <x-slot name="trigger">
                                         <x-secondary-button>
                                             {{ __("Actions") }}
-                                            <x-heroicon-m-chevron-down class="w-4 ml-1" />
                                         </x-secondary-button>
                                     </x-slot>
-
                                     <x-slot name="content">
                                         {{--<x-dropdown-link class="cursor-pointer">--}}
                                         {{--    {{ __("Install Extension") }}--}}

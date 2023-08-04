@@ -4,41 +4,23 @@ namespace App\SSHCommands\Database;
 
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class DeleteUserCommand extends Command
 {
-    /**
-     * @var string
-     */
-    protected $provider;
-
-    /**
-     * @var string
-     */
-    protected $username;
-
-    /**
-     * @var string
-     */
-    protected $host;
-
-    public function __construct($provider, $username, $host)
+    public function __construct(protected string $provider, protected string $username, protected string $host)
     {
-        $this->provider = $provider;
-        $this->username = $username;
-        $this->host = $host;
     }
 
-    public function file(string $os): string
+    public function file(): string
     {
-        return File::get(base_path('system/commands/database/'.$this->provider.'/delete-user.sh'));
+        return File::get(resource_path(sprintf("commands/database/%s/delete-user.sh", $this->provider)));
     }
 
-    public function content(string $os): string
+    public function content(): string
     {
-        $command = Str::replace('__username__', $this->username, $this->file($os));
-
-        return Str::replace('__host__', $this->host, $command);
+        return str($this->file())
+            ->replace('__username__', $this->username)
+            ->replace('__host__', $this->host)
+            ->toString();
     }
 }

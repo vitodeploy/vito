@@ -6,7 +6,7 @@ use App\Actions\PHP\InstallNewPHP;
 use App\Actions\PHP\UpdatePHPIni;
 use App\Models\Server;
 use App\Models\Service;
-use App\SSHCommands\GetPHPIniCommand;
+use App\SSHCommands\PHP\GetPHPIniCommand;
 use App\Traits\RefreshComponentOnBroadcast;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;

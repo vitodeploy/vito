@@ -13,7 +13,7 @@ class CreateDatabaseUser
     /**
      * @throws ValidationException
      */
-    public function create(Server $server, array $input): DatabaseUser
+    public function create(Server $server, array $input, array $links = []): DatabaseUser
     {
         $this->validate($server, $input);
 
@@ -22,6 +22,7 @@ class CreateDatabaseUser
             'username' => $input['username'],
             'password' => $input['password'],
             'host' => isset($input['remote']) && $input['remote'] ? $input['host'] : 'localhost',
+            'databases' => $links,
         ]);
         $databaseUser->save();
         $databaseUser->createOnServer();

@@ -5,7 +5,7 @@ namespace App\Jobs\Installation;
 use App\Jobs\Job;
 use App\Models\FirewallRule;
 use App\Models\Service;
-use App\SSHCommands\DeleteNginxPHPMyAdminVHost;
+use App\SSHCommands\PHPMyAdmin\DeleteNginxPHPMyAdminVHost;
 use Exception;
 use Throwable;
 
