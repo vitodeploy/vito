@@ -133,8 +133,6 @@ class Github extends AbstractSourceControlProvider
             ]
         );
 
-        info('github response', $response->json());
-
         if ($response->status() != 201) {
             throw new FailedToDeployGitKey(json_decode($response->body())->message);
         }

@@ -76,10 +76,6 @@ class SSH
             if (! $login) {
                 throw new SSHAuthenticationError("Error authenticating");
             }
-
-            Log::info("Login status", [
-                'status' => $login
-            ]);
         } catch (Throwable $e) {
             Log::error("Error connecting", [
                 "msg" => $e->getMessage()
@@ -122,15 +118,10 @@ class SSH
     {
         $this->log = null;
 
-        Log::info("Starting to upload");
         if (! $this->connection) {
             $this->connect(true);
         }
-        Log::info("Uploading");
-        $uploaded = $this->connection->put($remote, $local, SFTP::SOURCE_LOCAL_FILE);
-        Log::info("Upload finished", [
-            'status' => $uploaded
-        ]);
+        $this->connection->put($remote, $local, SFTP::SOURCE_LOCAL_FILE);
     }
 
     /**
@@ -139,27 +130,16 @@ class SSH
     protected function executeCommand(string|SSHCommand $command): string
     {
         if ($command instanceof SSHCommand) {
-            $commandContent = $command->content($this->server->os);
+            $commandContent = $command->content();
         } else {
             $commandContent = $command;
         }
-
-        Log::info("command", [
-            "asUser" => $this->asUser,
-            "content" => $commandContent
-        ]);
 
         if ($this->asUser) {
             $commandContent = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($commandContent).'"';
         }
 
-        Log::info("Running command", [
-            "cmd" => $commandContent
-        ]);
-
         $output = $this->connection->exec($commandContent);
-
-        Log::info("Command executed");
 
         $this->log?->write($output);
 

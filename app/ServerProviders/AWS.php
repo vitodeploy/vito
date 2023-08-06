@@ -8,7 +8,6 @@ use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;
 use Aws\EC2InstanceConnect\EC2InstanceConnectClient;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AWS extends AbstractProvider
@@ -34,8 +33,6 @@ class AWS extends AbstractProvider
             $regions[] = $region['value'];
         }
         $rules['region'] = 'required|in:'.implode(',', $regions);
-
-        Log::info("AWS Creation Rules", $rules);
 
         return $rules;
     }
@@ -116,8 +113,6 @@ class AWS extends AbstractProvider
                     return true;
                 }
             }
-
-            Log::info($result);
         }
 
         return false;

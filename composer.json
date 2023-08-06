@@ -1,7 +1,7 @@
 {
-    "name": "laravel/laravel",
+    "name": "vitodeploy/vito",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "The ultimate server management tool",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "require": {
@@ -14,7 +14,6 @@
         "laravel/socialite": "^5.2",
         "laravel/tinker": "^2.8",
         "livewire/livewire": "^2.12",
-        "opcodesio/log-viewer": "^2.5",
         "phpseclib/phpseclib": "~3.0",
         "pusher/pusher-php-server": "^7.2"
     },
@@ -24,6 +23,7 @@
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
+        "opcodesio/log-viewer": "^2.5",
         "phpunit/phpunit": "^10.0",
         "spatie/laravel-ignition": "^2.0"
     },
