@@ -22,6 +22,11 @@ abstract class AbstractSiteType implements SiteType
         dispatch(new DeleteSite($this->site))->onConnection('ssh');
     }
 
+    public function install(): void
+    {
+        // TODO: Implement install() method.
+    }
+
     protected function progress(int $percentage): Closure
     {
         return function () use ($percentage) {

@@ -43,7 +43,7 @@ class Slack extends AbstractProvider
             Http::post($data['webhook_url'], [
                 'text' => '*'.$subject.'*'."\n".$text,
             ]);
-        })->onQueue('default');
+        });
     }
 
     private function checkConnection(string $subject, string $text): bool

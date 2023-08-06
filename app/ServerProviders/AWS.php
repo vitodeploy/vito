@@ -20,7 +20,6 @@ class AWS extends AbstractProvider
     public function createValidationRules(array $input): array
     {
         $rules = [
-            'size' => 'required|numeric|min:15|max:16000',
             'os' => 'required|in:'.implode(',', OperatingSystem::getValues()),
         ];
         // plans
@@ -35,6 +34,8 @@ class AWS extends AbstractProvider
             $regions[] = $region['value'];
         }
         $rules['region'] = 'required|in:'.implode(',', $regions);
+
+        Log::info("AWS Creation Rules", $rules);
 
         return $rules;
     }
@@ -60,7 +61,6 @@ class AWS extends AbstractProvider
         return [
             'plan' => $input['plan'],
             'region' => $input['region'],
-            'size' => $input['size'],
         ];
     }
 

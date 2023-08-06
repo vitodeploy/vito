@@ -25,6 +25,11 @@ class CreateOnServer extends Job
         );
         $this->databaseUser->status = DatabaseUserStatus::READY;
         $this->databaseUser->save();
+
+        if (count($this->databaseUser->databases) > 0) {
+            (new LinkUser($this->databaseUser))->handle();
+        }
+
         event(
             new Broadcast('create-database-user-finished', [
                 'id' => $this->databaseUser->id,

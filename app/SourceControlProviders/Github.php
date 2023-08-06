@@ -2,6 +2,7 @@
 
 namespace App\SourceControlProviders;
 
+use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDestroyGitHook;
 use Exception;
@@ -41,9 +42,9 @@ class Github extends AbstractSourceControlProvider
         return $res->json();
     }
 
-    public function fullRepoUrl(string $repo): string
+    public function fullRepoUrl(string $repo, string $key): string
     {
-        return "https://{$this->sourceControl->access_token}@github.com/$repo.git";
+        return sprintf("git@github.com-%s:%s.git", $key, $repo);
     }
 
     /**
@@ -116,5 +117,26 @@ class Github extends AbstractSourceControlProvider
         }
 
         return null;
+    }
+
+    /**
+     * @throws FailedToDeployGitKey
+     */
+    public function deployKey(string $title, string $repo, string $key): void
+    {
+        $response = Http::withToken($this->sourceControl->access_token)->post(
+            $this->apiUrl.'/repos/'.$repo.'/keys',
+            [
+                'title' => $title,
+                'key' => $key,
+                'read_only' => false,
+            ]
+        );
+
+        info('github response', $response->json());
+
+        if ($response->status() != 201) {
+            throw new FailedToDeployGitKey(json_decode($response->body())->message);
+        }
     }
 }

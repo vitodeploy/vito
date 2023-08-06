@@ -5,6 +5,18 @@ export NEEDRESTART_MODE=a
 export V_USERNAME=vito
 export V_PASSWORD=$(openssl rand -base64 12)
 
+echo "Enter the domain you want to install Vito? (your-domain.com)"
+
+read V_DOMAIN
+
+echo "Enter your email address:"
+
+read V_ADMIN_EMAIL
+
+echo "Enter your password:"
+
+read V_ADMIN_PASSWORD
+
 if [[ -z "${V_DOMAIN}" ]]; then
   echo "Error: V_DOMAIN environment variable is not set."
   exit 1
@@ -194,7 +206,6 @@ command=php /home/${V_USERNAME}/${V_DOMAIN}/artisan queue:work --sleep=3 --backo
 autostart=1
 autorestart=1
 user=vito
-numprocs=1
 redirect_stderr=true
 stdout_logfile=/home/${V_USERNAME}/.logs/workers/worker.log
 stopwaitsecs=3600
@@ -209,6 +220,9 @@ echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
 supervisorctl reread
 supervisorctl update
 supervisorctl start worker:*
+
+# make the update file executable
+chmod +x /home/${V_USERNAME}/${V_DOMAIN}/update.sh
 
 # cleanup
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}

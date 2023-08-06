@@ -27,7 +27,7 @@
                         @include('livewire.server-ssh-keys.partials.status', ['status' => $key->pivot->status])
                         <div class="inline">
                             <x-icon-button x-on:click="$wire.deleteId = '{{ $key->id }}'; $dispatch('open-modal', 'delete-key')">
-                                <x-heroicon-o-trash class="w-4 h-4" />
+                                Delete
                             </x-icon-button>
                         </div>
                     </div>

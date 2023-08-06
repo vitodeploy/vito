@@ -5,7 +5,7 @@ namespace App\Jobs\Site;
 use App\Exceptions\ComposerInstallFailed;
 use App\Jobs\Job;
 use App\Models\Site;
-use App\SSHCommands\ComposerInstallCommand;
+use App\SSHCommands\Website\ComposerInstallCommand;
 use Throwable;
 
 class ComposerInstall extends Job

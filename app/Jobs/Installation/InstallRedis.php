@@ -5,8 +5,8 @@ namespace App\Jobs\Installation;
 use App\Enums\ServiceStatus;
 use App\Exceptions\InstallationFailed;
 use App\Models\Service;
-use App\SSHCommands\InstallRedisCommand;
-use App\SSHCommands\ServiceStatusCommand;
+use App\SSHCommands\Installation\InstallRedisCommand;
+use App\SSHCommands\Service\ServiceStatusCommand;
 use Throwable;
 
 class InstallRedis extends InstallationJob

@@ -5,16 +5,14 @@
         <form id="create-site" wire:submit.prevent="create" class="space-y-6">
             <div>
                 <x-input-label>{{ __("Select site type") }}</x-input-label>
-                <div class="grid grid-cols-6 gap-2 mt-1">
+                <x-select-input wire:model="type" id="type" name="type" class="mt-1 w-full">
+                    <option value="" selected disabled>{{ __("Select") }}</option>
                     @foreach(config('core.site_types') as $t)
-                        <x-site-type-item x-on:click="$wire.type = '{{ $t }}'" :active="$type === $t">
-                            <div class="flex w-full flex-col items-center justify-center text-center">
-                                <img src="{{ asset('static/images/' . $t . '.svg') }}" class="h-7" alt="Server">
-                                <span class="md:text-normal mt-2 hidden text-sm md:block">{{ $t }}</span>
-                            </div>
-                        </x-site-type-item>
+                        <option value="{{ $t }}" @if($t === $type) selected @endif>
+                            {{ $t }}
+                        </option>
                     @endforeach
-                </div>
+                </x-select-input>
                 @error('type')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -61,14 +59,17 @@
 
             <div>
                 <x-input-label for="source_control" :value="__('Source Control')" />
-                <x-select-input wire:model="source_control" id="source_control" name="source_control" class="mt-1 w-full">
-                    <option value="" selected disabled>{{ __("Select") }}</option>
-                    @foreach($sourceControls as $sourceControl)
-                        <option value="{{ $sourceControl->provider }}" @if($sourceControl->provider === $source_control) selected @endif>
-                            {{ ucfirst($sourceControl->provider) }}
-                        </option>
-                    @endforeach
-                </x-select-input>
+                <div class="flex items-center mt-1">
+                    <x-select-input wire:model="source_control" id="source_control" name="source_control" class="mt-1 w-full">
+                        <option value="" selected disabled>{{ __("Select") }}</option>
+                        @foreach($sourceControls as $sourceControl)
+                            <option value="{{ $sourceControl->id }}" @if($sourceControl->id === $source_control) selected @endif>
+                                {{ $sourceControl->profile }} ({{ $sourceControl->provider }})
+                            </option>
+                        @endforeach
+                    </x-select-input>
+                    <x-secondary-button :href="route('source-controls', ['redirect' => request()->url()])" class="flex-none ml-2">{{ __('Connect') }}</x-secondary-button>
+                </div>
                 @error('source_control')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
