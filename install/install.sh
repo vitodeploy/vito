@@ -117,7 +117,7 @@ mysql -e "FLUSH PRIVILEGES"
 # setup website
 export V_SSL=1
 export COMPOSER_ALLOW_SUPERUSER=1
-export V_REPO="https://github.com/vitodeployer/vito.git"
+export V_REPO="https://github.com/vitodeploy/vito.git"
 export V_VHOST_CONFIG="
 server {
     listen 80;
