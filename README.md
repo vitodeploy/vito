@@ -1,15 +1,11 @@
 # Vito
 
-## Installation
+Better Readme will come soon... :)
 
-```shell
-curl -o- https://raw.githubusercontent.com/vitodeploy/vito/main/install/install.sh | V_DOMAIN= V_ADMIN_EMAIL= V_ADMIN_PASSWORD= bash
-```
+## Documentation
 
-Replace the variables and then run the command
+https://vitodeploy.com
 
-```dotenv
-V_DOMAIN=domain
-V_ADMIN_EMAIL=your-email
-V_ADMIN_PASSWORD=your-password
-```
+## Contribution
+
+Feel free to open a PR
