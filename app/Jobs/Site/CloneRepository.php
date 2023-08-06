@@ -4,7 +4,7 @@ namespace App\Jobs\Site;
 
 use App\Jobs\Job;
 use App\Models\Site;
-use App\SSHCommands\CloneRepositoryCommand;
+use App\SSHCommands\Website\CloneRepositoryCommand;
 use Throwable;
 
 class CloneRepository extends Job
@@ -25,7 +25,8 @@ class CloneRepository extends Job
             new CloneRepositoryCommand(
                 $this->site->full_repository_url,
                 $this->site->path,
-                $this->site->branch
+                $this->site->branch,
+                $this->site->ssh_key_name
             ),
             'clone-repository',
             $this->site->id

@@ -3,6 +3,8 @@
 namespace App\ServerProviders;
 
 use App\ValidationRules\RestrictedIPAddressesRule;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class Custom extends AbstractProvider
@@ -57,7 +59,14 @@ class Custom extends AbstractProvider
 
     public function create(): void
     {
-        $this->generateKeyPair();
+        File::copy(
+            storage_path(config('core.ssh_private_key_name')),
+            Storage::disk(config('core.key_pairs_disk'))->path($this->server->id)
+        );
+        File::copy(
+            storage_path(config('core.ssh_public_key_name')),
+            Storage::disk(config('core.key_pairs_disk'))->path($this->server->id.'.pub')
+        );
     }
 
     public function isRunning(): bool

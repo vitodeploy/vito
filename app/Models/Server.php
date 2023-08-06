@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\ServerType;
+use App\Enums\ServerStatus;
 use App\Facades\SSH;
 use App\Jobs\Installation\Upgrade;
 use App\Jobs\Server\CheckConnection;
@@ -232,9 +233,9 @@ class Server extends AbstractModel
         // $this->team->notify(new ServerInstallationStarted($this));
     }
 
-    public function ssh(string $user = null, bool $defaultKeys = false): \App\Helpers\SSH|SSHFake
+    public function ssh(string $user = null): \App\Helpers\SSH|SSHFake
     {
-        return SSH::init($this, $user, $defaultKeys);
+        return SSH::init($this, $user);
     }
 
     public function installedPHPVersions(): array
@@ -323,21 +324,13 @@ class Server extends AbstractModel
         return config('core.ssh_user');
     }
 
-    public function sshKey(bool $default = false): array
+    public function sshKey(): array
     {
         if (app()->environment() == 'testing') {
             return [
                 'public_key' => 'public',
                 'public_key_path' => '/path',
                 'private_key_path' => '/path',
-            ];
-        }
-
-        if ($default) {
-            return [
-                'public_key' => Str::replace("\n", '', File::get(storage_path(config('core.ssh_public_key_name')))),
-                'public_key_path' => storage_path(config('core.ssh_public_key_name')),
-                'private_key_path' => storage_path(config('core.ssh_private_key_name')),
             ];
         }
 
@@ -384,5 +377,10 @@ class Server extends AbstractModel
     public function getHostnameAttribute(): string
     {
         return Str::of($this->name)->slug();
+    }
+
+    public function isReady(): bool
+    {
+        return $this->status == ServerStatus::READY;
     }
 }

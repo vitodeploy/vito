@@ -43,6 +43,7 @@ class DatabaseUserList extends Component
 
     public function delete(): void
     {
+        /** @var DatabaseUser $databaseUser */
         $databaseUser = DatabaseUser::query()->findOrFail($this->deleteId);
 
         $databaseUser->deleteFromServer();
@@ -56,6 +57,7 @@ class DatabaseUserList extends Component
 
     public function viewPassword(int $id): void
     {
+        /** @var DatabaseUser $databaseUser */
         $databaseUser = DatabaseUser::query()->findOrFail($id);
 
         $this->viewPassword = $databaseUser->password;
@@ -65,6 +67,7 @@ class DatabaseUserList extends Component
 
     public function showLink(int $id): void
     {
+        /** @var DatabaseUser $databaseUser */
         $databaseUser = DatabaseUser::query()->findOrFail($id);
 
         $this->linkId = $id;
@@ -75,6 +78,7 @@ class DatabaseUserList extends Component
 
     public function link(): void
     {
+        /** @var DatabaseUser $databaseUser */
         $databaseUser = DatabaseUser::query()->findOrFail($this->linkId);
 
         app(LinkUser::class)->link($databaseUser, $this->link);

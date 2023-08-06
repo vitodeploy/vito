@@ -6,7 +6,7 @@ use App\Enums\SiteStatus;
 use App\Events\Broadcast;
 use App\Jobs\Site\CreateVHost;
 use App\Jobs\Site\InstallWordpress;
-use App\SSHCommands\UpdateWordpressCommand;
+use App\SSHCommands\Wordpress\UpdateWordpressCommand;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Throwable;

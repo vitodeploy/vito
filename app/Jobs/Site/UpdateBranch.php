@@ -5,7 +5,7 @@ namespace App\Jobs\Site;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Site;
-use App\SSHCommands\UpdateBranchCommand;
+use App\SSHCommands\Website\UpdateBranchCommand;
 use Throwable;
 
 class UpdateBranch extends Job

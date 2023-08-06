@@ -35,13 +35,13 @@
                     </x-td>
                     <x-td class="flex w-full justify-end">
                         <x-icon-button x-on:click="$wire.deleteId = '{{ $databaseUser->id }}'; $dispatch('open-modal', 'delete-database-user')">
-                            <x-heroicon-o-trash class="w-4 h-4" />
+                            Delete
                         </x-icon-button>
                         <x-icon-button wire:click="viewPassword({{ $databaseUser->id }})">
-                            <x-heroicon-o-eye class="w-4 h-4" />
+                            View
                         </x-icon-button>
                         <x-icon-button wire:click="showLink({{ $databaseUser->id }})">
-                            <x-heroicon-o-link class="w-4 h-4" />
+                            Link
                         </x-icon-button>
                     </x-td>
                 </tr>

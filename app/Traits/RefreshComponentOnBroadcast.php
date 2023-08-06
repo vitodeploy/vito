@@ -7,7 +7,7 @@ trait RefreshComponentOnBroadcast
     public function getListeners(): array
     {
         return [
-            'echo-private:app,Broadcast' => 'refreshComponent',
+            'broadcast' => 'refreshComponent',
             'refreshComponent' => '$refresh',
             '$refresh',
         ];

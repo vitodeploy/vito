@@ -25,7 +25,7 @@
                         </div>
                         <div class="flex items-center">
                             <div class="inline">
-                                @include('livewire.servers.partials.status', ['status' => $server->status])
+                                <livewire:servers.server-status :server="$server" />
                             </div>
                         </div>
                     </x-item-card>

@@ -29,6 +29,8 @@ class UpdatePHPIni
                 'ini' => __("Couldn't update php.ini file!"),
             ]);
         }
+
+        $service->restart();
     }
 
     private function deleteTempFile(string $name): void
