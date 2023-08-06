@@ -125,7 +125,7 @@ class Gitlab extends AbstractSourceControlProvider
         $response = Http::withToken($this->sourceControl->access_token)->post(
             $this->apiUrl.'/projects/'.$repository.'/deploy_keys',
             [
-                'title' => 'deploy-key',
+                'title' => $title,
                 'key' => $key,
                 'can_push' => true,
             ]

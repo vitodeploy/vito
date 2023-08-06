@@ -30,11 +30,11 @@
 <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900 dark:text-gray-300 min-h-screen min-w-max" x-data="" x-cloak>
     <div class="flex min-h-screen">
         <div class="left-0 top-0 min-h-screen w-64 flex-none bg-gray-800 dark:bg-gray-800/50 p-3 dark:border-r-2 dark:border-gray-800">
-            <a href="/" class="h-16 block">
+            <div class="h-16 block">
                 <div class="flex items-center justify-start text-3xl font-extrabold text-white">
                     Vito
                 </div>
-            </a>
+            </div>
 
             <div class="mb-5 space-y-2">
                 @include('layouts.partials.server-select', ['server' => isset($server) ? $server : null ])

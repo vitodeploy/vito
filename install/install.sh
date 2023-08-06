@@ -5,6 +5,18 @@ export NEEDRESTART_MODE=a
 export V_USERNAME=vito
 export V_PASSWORD=$(openssl rand -base64 12)
 
+echo "Enter the domain you want to install Vito? (your-domain.com)"
+
+read V_DOMAIN
+
+echo "Enter your email address:"
+
+read V_ADMIN_EMAIL
+
+echo "Enter your password:"
+
+read V_ADMIN_PASSWORD
+
 if [[ -z "${V_DOMAIN}" ]]; then
   echo "Error: V_DOMAIN environment variable is not set."
   exit 1
