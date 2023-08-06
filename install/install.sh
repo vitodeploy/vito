@@ -127,7 +127,7 @@ mysql -e "GRANT ALL PRIVILEGES ON ${V_DB_NAME}.* TO '${V_DB_USER}'@'localhost'"
 mysql -e "FLUSH PRIVILEGES"
 
 # setup website
-export V_SSL=1
+export V_SSL=${V_SSL:-1}
 export COMPOSER_ALLOW_SUPERUSER=1
 export V_REPO="https://github.com/vitodeploy/vito.git"
 export V_VHOST_CONFIG="
