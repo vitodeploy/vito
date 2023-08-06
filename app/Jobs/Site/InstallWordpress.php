@@ -7,7 +7,7 @@ use App\Jobs\Job;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Site;
-use App\SSHCommands\InstallWordpressCommand;
+use App\SSHCommands\Wordpress\InstallWordpressCommand;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;

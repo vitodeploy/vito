@@ -3,7 +3,9 @@
         <x-slot name="title">{{ __("Installed PHPs") }}</x-slot>
         <x-slot name="description">{{ __("You can see and manage your PHP installations") }}</x-slot>
         <x-slot name="aside">
-            @include('livewire.php.partials.install-new-php')
+            <div class="flex items-center">
+                @include('livewire.php.partials.install-new-php')
+            </div>
         </x-slot>
     </x-card-header>
 
@@ -22,10 +24,9 @@
                                     <x-slot name="trigger">
                                         <x-secondary-button>
                                             {{ __("Actions") }}
-                                            <x-heroicon-m-chevron-down class="w-4 ml-1" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="ml-1 h-5 w-5"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path></svg>
                                         </x-secondary-button>
                                     </x-slot>
-
                                     <x-slot name="content">
                                         {{--<x-dropdown-link class="cursor-pointer">--}}
                                         {{--    {{ __("Install Extension") }}--}}

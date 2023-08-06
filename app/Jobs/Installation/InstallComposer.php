@@ -3,7 +3,7 @@
 namespace App\Jobs\Installation;
 
 use App\Models\Server;
-use App\SSHCommands\InstallComposerCommand;
+use App\SSHCommands\PHP\InstallComposerCommand;
 use Throwable;
 
 class InstallComposer extends InstallationJob

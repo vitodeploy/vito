@@ -5,8 +5,8 @@ namespace App\Jobs\Installation;
 use App\Enums\ServiceStatus;
 use App\Exceptions\InstallationFailed;
 use App\Models\Service;
-use App\SSHCommands\InstallMariadbCommand;
-use App\SSHCommands\ServiceStatusCommand;
+use App\SSHCommands\Database\InstallMariadbCommand;
+use App\SSHCommands\Service\ServiceStatusCommand;
 use Throwable;
 
 class InstallMariadb extends InstallationJob

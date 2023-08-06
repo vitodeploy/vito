@@ -21,7 +21,6 @@
                         <x-slot name="trigger">
                             <x-secondary-button>
                                 {{ __("Actions") }}
-                                <x-heroicon-m-chevron-down class="w-4 ml-1" />
                             </x-secondary-button>
                         </x-slot>
 

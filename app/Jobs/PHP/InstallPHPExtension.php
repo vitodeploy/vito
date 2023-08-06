@@ -6,7 +6,7 @@ use App\Events\Broadcast;
 use App\Exceptions\ProcessFailed;
 use App\Jobs\Job;
 use App\Models\Service;
-use App\SSHCommands\InstallPHPExtensionCommand;
+use App\SSHCommands\PHP\InstallPHPExtensionCommand;
 use Illuminate\Support\Str;
 use Throwable;
 

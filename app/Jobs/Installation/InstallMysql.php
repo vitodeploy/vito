@@ -5,8 +5,8 @@ namespace App\Jobs\Installation;
 use App\Enums\ServiceStatus;
 use App\Exceptions\InstallationFailed;
 use App\Models\Service;
-use App\SSHCommands\InstallMysqlCommand;
-use App\SSHCommands\ServiceStatusCommand;
+use App\SSHCommands\Database\InstallMysqlCommand;
+use App\SSHCommands\Service\ServiceStatusCommand;
 use Throwable;
 
 class InstallMysql extends InstallationJob

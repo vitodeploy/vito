@@ -22,7 +22,7 @@
                     @include('livewire.firewall.partials.status', ['status' => $rule->status])
                     <div class="inline">
                         <x-icon-button x-on:click="$wire.deleteId = '{{ $rule->id }}'; $dispatch('open-modal', 'delete-rule')">
-                            <x-heroicon-o-trash class="w-4 h-4" />
+                            Delete
                         </x-icon-button>
                     </div>
                 </div>

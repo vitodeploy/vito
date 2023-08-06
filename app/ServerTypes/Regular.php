@@ -53,7 +53,7 @@ class Regular extends AbstractType
     public function install(): void
     {
         $jobs = [
-            new Initialize($this->server, $this->server->ssh_user, $this->server->provider === 'custom'),
+            new Initialize($this->server, $this->server->ssh_user),
             $this->progress(15, 'Installing Updates'),
             new Upgrade($this->server),
             $this->progress(25, 'Installing Requirements'),

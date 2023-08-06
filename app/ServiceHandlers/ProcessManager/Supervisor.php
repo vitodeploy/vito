@@ -2,11 +2,11 @@
 
 namespace App\ServiceHandlers\ProcessManager;
 
-use App\SSHCommands\ProcessManager\Supervisor\CreateWorkerCommand;
-use App\SSHCommands\ProcessManager\Supervisor\DeleteWorkerCommand;
-use App\SSHCommands\ProcessManager\Supervisor\RestartWorkerCommand;
-use App\SSHCommands\ProcessManager\Supervisor\StartWorkerCommand;
-use App\SSHCommands\ProcessManager\Supervisor\StopWorkerCommand;
+use App\SSHCommands\Supervisor\CreateWorkerCommand;
+use App\SSHCommands\Supervisor\DeleteWorkerCommand;
+use App\SSHCommands\Supervisor\RestartWorkerCommand;
+use App\SSHCommands\Supervisor\StartWorkerCommand;
+use App\SSHCommands\Supervisor\StopWorkerCommand;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Throwable;
@@ -111,7 +111,7 @@ class Supervisor extends AbstractProcessManager
         int $numprocs,
         string $logFile
     ): string {
-        $config = File::get(base_path('system/command-templates/supervisor/worker.conf'));
+        $config = File::get(resource_path('commands/supervisor/worker.conf'));
         $config = Str::replace('__name__', (string) $id, $config);
         $config = Str::replace('__command__', $command, $config);
         $config = Str::replace('__user__', $user, $config);

@@ -385,6 +385,7 @@ return [
         'images' => [
             'ubuntu_18' => 'linode/ubuntu18.04',
             'ubuntu_20' => 'linode/ubuntu20.04',
+            'ubuntu_22' => 'linode/ubuntu22.04',
         ],
     ],
     'digitalocean' => [
@@ -513,8 +514,9 @@ return [
             ],
         ],
         'images' => [
-            'ubuntu_18' => '93524084',
-            'ubuntu_20' => '93525508',
+            'ubuntu_18' => '112929540',
+            'ubuntu_20' => '112929454',
+            'ubuntu_22' => '129211873',
         ],
     ],
     'vultr' => [
@@ -685,6 +687,7 @@ return [
         'images' => [
             'ubuntu_18' => '270',
             'ubuntu_20' => '387',
+            'ubuntu_22' => '1743',
         ],
     ],
     'hetzner' => [

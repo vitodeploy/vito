@@ -4,33 +4,22 @@ namespace App\SSHCommands\Database;
 
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class CreateCommand extends Command
 {
-    /**
-     * @var string
-     */
-    protected $provider;
-
-    /**
-     * @var string
-     */
-    protected $name;
-
-    public function __construct($provider, $name)
+    public function __construct(protected string $provider, protected string $name)
     {
-        $this->provider = $provider;
-        $this->name = $name;
     }
 
-    public function file(string $os): string
+    public function file(): string
     {
-        return File::get(base_path('system/commands/database/'.$this->provider.'/create.sh'));
+        return File::get(resource_path(sprintf("commands/database/%s/create.sh", $this->provider)));
     }
 
-    public function content(string $os): string
+    public function content(): string
     {
-        return Str::replace('__name__', $this->name, $this->file($os));
+        return str($this->file())
+            ->replace('__name__', $this->name)
+            ->toString();
     }
 }

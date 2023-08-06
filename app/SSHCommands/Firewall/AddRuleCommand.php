@@ -9,48 +9,18 @@ class AddRuleCommand extends Command
 {
     use CommandContent;
 
-    /**
-     * @var string
-     */
-    protected $provider;
-
-    /**
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * @var string
-     */
-    protected $protocol;
-
-    /**
-     * @var string
-     */
-    protected $port;
-
-    /**
-     * @var string
-     */
-    protected $source;
-
-    /**
-     * @var string
-     */
-    protected $mask;
-
-    public function __construct($provider, $type, $protocol, $port, $source, $mask)
-    {
-        $this->provider = $provider;
-        $this->type = $type;
-        $this->protocol = $protocol;
-        $this->port = $port;
-        $this->source = $source;
-        $this->mask = $mask;
+    public function __construct(
+        protected string $provider,
+        protected string $type,
+        protected string $protocol,
+        protected string $port,
+        protected string $source,
+        protected ?string $mask = null
+    ) {
     }
 
-    public function file(string $os): string
+    public function file(): string
     {
-        return File::get(base_path('system/commands/firewall/'.$this->provider.'/add-rule.sh'));
+        return File::get(resource_path(sprintf("commands/firewall/%s/add-rule.sh", $this->provider)));
     }
 }

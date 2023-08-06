@@ -6,14 +6,14 @@ use App\Exceptions\ErrorUpdatingRedirects;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
-use App\SSHCommands\ChangeNginxPHPVersionCommand;
-use App\SSHCommands\CreateCustomSSLCommand;
-use App\SSHCommands\CreateLetsencryptSSLCommand;
-use App\SSHCommands\CreateNginxVHostCommand;
-use App\SSHCommands\DeleteNginxSiteCommand;
-use App\SSHCommands\RemoveSSLCommand;
-use App\SSHCommands\UpdateNginxRedirectsCommand;
-use App\SSHCommands\UpdateNginxVHostCommand;
+use App\SSHCommands\Nginx\ChangeNginxPHPVersionCommand;
+use App\SSHCommands\Nginx\CreateNginxVHostCommand;
+use App\SSHCommands\Nginx\DeleteNginxSiteCommand;
+use App\SSHCommands\Nginx\UpdateNginxRedirectsCommand;
+use App\SSHCommands\Nginx\UpdateNginxVHostCommand;
+use App\SSHCommands\SSL\CreateCustomSSLCommand;
+use App\SSHCommands\SSL\CreateLetsencryptSSLCommand;
+use App\SSHCommands\SSL\RemoveSSLCommand;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Throwable;
@@ -132,7 +132,7 @@ class Nginx extends AbstractWebserver
     {
         $redirectsPlain = '';
         foreach ($redirects as $redirect) {
-            $rd = File::get(base_path('system/command-templates/nginx/redirect.conf'));
+            $rd = File::get(resource_path('commands/webserver/nginx/redirect.conf'));
             $rd = Str::replace('__from__', $redirect->from, $rd);
             $rd = Str::replace('__mode__', $redirect->mode, $rd);
             $rd = Str::replace('__to__', $redirect->to, $rd);
@@ -157,20 +157,20 @@ class Nginx extends AbstractWebserver
         if ($noSSL) {
             $ssl = null;
         }
-        $vhost = File::get(base_path('system/command-templates/nginx/vhost.conf'));
+        $vhost = File::get(resource_path('commands/webserver/nginx/vhost.conf'));
         if ($ssl) {
-            $vhost = File::get(base_path('system/command-templates/nginx/vhost-ssl.conf'));
+            $vhost = File::get(resource_path('commands/webserver/nginx/vhost-ssl.conf'));
         }
         if ($site->type()->language() === 'php') {
-            $vhost = File::get(base_path('system/command-templates/nginx/php-vhost.conf'));
+            $vhost = File::get(resource_path('commands/webserver/nginx/php-vhost.conf'));
             if ($ssl) {
-                $vhost = File::get(base_path('system/command-templates/nginx/php-vhost-ssl.conf'));
+                $vhost = File::get(resource_path('commands/webserver/nginx/php-vhost-ssl.conf'));
             }
         }
         if ($site->port) {
-            $vhost = File::get(base_path('system/command-templates/nginx/reverse-vhost.conf'));
+            $vhost = File::get(resource_path('commands/webserver/nginx/reverse-vhost.conf'));
             if ($ssl) {
-                $vhost = File::get(base_path('system/command-templates/nginx/reverse-vhost-ssl.conf'));
+                $vhost = File::get(resource_path('commands/webserver/nginx/reverse-vhost-ssl.conf'));
             }
             $vhost = Str::replace('__port__', (string) $site->port, $vhost);
         }
