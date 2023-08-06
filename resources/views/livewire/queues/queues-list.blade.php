@@ -1,7 +1,7 @@
 <div>
     <x-card-header>
         <x-slot name="title">{{ __("Queues") }}</x-slot>
-        <x-slot name="description">{{ __("You can manage and create queues for your site") }}</x-slot>
+        <x-slot name="description">{{ __("You can manage and create queues for your site via supervisor") }}</x-slot>
         <x-slot name="aside">
             <livewire:queues.create-queue :site="$site" />
         </x-slot>

@@ -3,7 +3,11 @@
 namespace App\SourceControlProviders;
 
 use App\Exceptions\FailedToDeployGitHook;
+use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
+use App\Exceptions\RepositoryNotFound;
+use App\Exceptions\RepositoryPermissionDenied;
+use App\Exceptions\SourceControlIsNotConnected;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -102,9 +106,22 @@ class Bitbucket extends AbstractSourceControlProvider
         return null;
     }
 
+    /**
+     * @throws FailedToDeployGitKey
+     */
     public function deployKey(string $title, string $repo, string $key): void
     {
-        // TODO: Implement deployKey() method.
+        $res = Http::withToken($this->sourceControl->access_token)->post(
+            $this->apiUrl."/repositories/$repo/deploy-keys",
+            [
+                'label' => $title,
+                'key' => $key,
+            ]
+        );
+
+        if ($res->status() != 201) {
+            throw new FailedToDeployGitKey($res->json()['error']['message']);
+        }
     }
 
     protected function getCommitter(string $raw): array

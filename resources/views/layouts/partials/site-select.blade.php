@@ -68,7 +68,7 @@
             selectSite(site) {
                 if (this.selected.id !== site.id) {
                     this.selected = site;
-                    window.location.href = '{{ url('/servers') }}/' + '{{ $server->id }}/sites' + site.id
+                    window.location.href = '{{ url('/servers') }}/' + '{{ $server->id }}/sites/' + site.id
                 }
             },
             filterSitesAndOpen() {

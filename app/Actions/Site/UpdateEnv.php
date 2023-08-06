@@ -6,7 +6,7 @@ use App\Models\Site;
 
 class UpdateEnv
 {
-    public function handle(Site $site, array $input): void
+    public function update(Site $site, array $input): void
     {
         $typeData = $site->type_data;
         $typeData['env'] = $input['env'];
