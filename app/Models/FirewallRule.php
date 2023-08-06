@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $real_protocol
  * @property int $port
  * @property string $source
- * @property string $mask
+ * @property ?string $mask
  * @property string $note
  * @property string $status
  * @property Server $server

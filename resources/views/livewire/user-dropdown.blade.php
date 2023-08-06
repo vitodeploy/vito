@@ -13,7 +13,6 @@
         </x-slot>
         <x-slot name="content">
             <x-dropdown-link :href="route('profile')">
-                <x-heroicon-o-user class="w-6 h-6 mr-1" />
                 {{ __('Profile') }}
             </x-dropdown-link>
             <!-- Authentication -->

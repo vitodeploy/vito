@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property string $provider
+ * @property ?string $profile
+ * @property ?string $url
  * @property string $access_token
  */
 class SourceControl extends AbstractModel
@@ -15,6 +17,8 @@ class SourceControl extends AbstractModel
 
     protected $fillable = [
         'provider',
+        'profile',
+        'url',
         'access_token',
     ];
 

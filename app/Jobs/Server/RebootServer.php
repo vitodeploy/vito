@@ -5,7 +5,7 @@ namespace App\Jobs\Server;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Server;
-use App\SSHCommands\RebootCommand;
+use App\SSHCommands\System\RebootCommand;
 use Throwable;
 
 class RebootServer extends Job

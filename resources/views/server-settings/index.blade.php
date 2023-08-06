@@ -15,7 +15,6 @@
                     <x-input-label class="cursor-pointer" x-data="{ copied: false }" x-clipboard.raw="{{ $server->public_key }}">
                         <div x-show="copied" class="flex items-center">
                             {{ __("Copied") }}
-                            <x-heroicon-m-check class="ml-1 w-4 text-green-700" />
                         </div>
                         <div x-show="!copied" x-on:click="copied = true; setTimeout(() => {copied = false}, 2000)">{{ __("Copy") }}</div>
                     </x-input-label>

@@ -3,8 +3,8 @@
 namespace App\Jobs\Installation;
 
 use App\Models\Server;
-use App\SSHCommands\CreateUserCommand;
-use App\SSHCommands\GetPublicKeyCommand;
+use App\SSHCommands\System\CreateUserCommand;
+use App\SSHCommands\System\GetPublicKeyCommand;
 use Throwable;
 
 class Initialize extends InstallationJob
@@ -13,13 +13,10 @@ class Initialize extends InstallationJob
 
     protected ?string $asUser;
 
-    protected bool $defaultKeys;
-
-    public function __construct(Server $server, string $asUser = null, bool $defaultKeys = false)
+    public function __construct(Server $server, string $asUser = null)
     {
         $this->server = $server->refresh();
         $this->asUser = $asUser;
-        $this->defaultKeys = $defaultKeys;
     }
 
     /**
@@ -38,7 +35,7 @@ class Initialize extends InstallationJob
     protected function authentication(): void
     {
         $this->server
-            ->ssh($this->asUser ?? $this->server->ssh_user, $this->defaultKeys)
+            ->ssh($this->asUser ?? $this->server->ssh_user)
             ->exec(
                 new CreateUserCommand(
                     $this->server->authentication['user'],

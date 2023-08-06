@@ -43,7 +43,7 @@ class Discord extends AbstractProvider
             Http::post($data['webhook_url'], [
                 'content' => '*'.$subject.'*'."\n".$text,
             ]);
-        })->onQueue('default');
+        });
     }
 
     private function checkConnection(string $subject, string $text): bool

@@ -10,6 +10,9 @@
                 <div class="mr-2">
                     <livewire:application.deployment-script :site="$site" />
                 </div>
+                <div class="mr-2">
+                    <livewire:application.env :site="$site" />
+                </div>
                 <div>
                     <livewire:application.deploy :site="$site" />
                 </div>

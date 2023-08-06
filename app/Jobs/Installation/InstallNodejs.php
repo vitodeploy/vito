@@ -3,7 +3,7 @@
 namespace App\Jobs\Installation;
 
 use App\Models\Server;
-use App\SSHCommands\InstallNodejsCommand;
+use App\SSHCommands\Installation\InstallNodejsCommand;
 use Throwable;
 
 class InstallNodejs extends InstallationJob

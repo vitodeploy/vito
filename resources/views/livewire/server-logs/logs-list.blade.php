@@ -16,7 +16,7 @@
                 </x-td>
                 <x-td>
                     <x-icon-button wire:click="showLog({{ $log->id }})" wire:loading.attr="disabled">
-                        <x-heroicon-o-eye class="w-6 h-6" />
+                        View
                     </x-icon-button>
                 </x-td>
             </tr>

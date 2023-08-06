@@ -6,7 +6,7 @@ use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Server;
 use App\Models\SshKey;
-use App\SSHCommands\DeleteSshKeyCommand;
+use App\SSHCommands\System\DeleteSshKeyCommand;
 use Throwable;
 
 class DeleteSshKeyFromServer extends Job

@@ -3,6 +3,7 @@
 namespace App\Actions\PHP;
 
 use App\Models\Server;
+use App\Models\Service;
 use Illuminate\Validation\ValidationException;
 
 class UninstallPHP
@@ -11,6 +12,7 @@ class UninstallPHP
     {
         $this->validate($server, $version);
 
+        /** @var Service $php */
         $php = $server->services()->where('type', 'php')->where('version', $version)->first();
 
         $php->uninstall();

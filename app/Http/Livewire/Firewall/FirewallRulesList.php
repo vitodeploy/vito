@@ -18,6 +18,7 @@ class FirewallRulesList extends Component
 
     public function delete(): void
     {
+        /** @var FirewallRule $rule */
         $rule = FirewallRule::query()->findOrFail($this->deleteId);
 
         $rule->removeFromServer();

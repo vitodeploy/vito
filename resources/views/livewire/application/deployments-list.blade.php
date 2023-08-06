@@ -25,7 +25,7 @@
                 <x-td>
                     @if($deployment->status != \App\Enums\DeploymentStatus::DEPLOYING)
                         <x-icon-button wire:click="showLog({{ $deployment->id }})" wire:loading.attr="disabled">
-                            <x-heroicon-o-eye class="w-6 h-6" />
+                            Logs
                         </x-icon-button>
                     @endif
                 </x-td>

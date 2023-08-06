@@ -5,7 +5,7 @@ namespace App\Jobs\Site;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Site;
-use App\SSHCommands\EditFileCommand;
+use App\SSHCommands\System\EditFileCommand;
 use Throwable;
 
 class DeployEnv extends Job
@@ -26,7 +26,9 @@ class DeployEnv extends Job
             new EditFileCommand(
                 $this->site->path.'/.env',
                 $this->site->env
-            )
+            ),
+            'update-env',
+            $this->site->id
         );
         event(
             new Broadcast('deploy-site-env-finished', [

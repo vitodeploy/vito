@@ -6,8 +6,8 @@ use App\Actions\FirewallRule\CreateRule;
 use App\Jobs\Job;
 use App\Models\FirewallRule;
 use App\Models\Service;
-use App\SSHCommands\CreateNginxPHPMyAdminVHostCommand;
-use App\SSHCommands\DownloadPHPMyAdminCommand;
+use App\SSHCommands\PHPMyAdmin\CreateNginxPHPMyAdminVHostCommand;
+use App\SSHCommands\PHPMyAdmin\DownloadPHPMyAdminCommand;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Throwable;
@@ -76,7 +76,7 @@ class InstallPHPMyAdmin extends Job
      */
     private function setUpVHost(): void
     {
-        $vhost = File::get(base_path('system/command-templates/nginx/phpmyadmin-vhost.conf'));
+        $vhost = File::get(resource_path('commands/webserver/nginx/phpmyadmin-vhost.conf'));
         $vhost = Str::replace('__php_version__', $this->service->server->defaultService('php')->version, $vhost);
         $this->service->server->ssh()->exec(
             new CreateNginxPHPMyAdminVHostCommand($vhost),

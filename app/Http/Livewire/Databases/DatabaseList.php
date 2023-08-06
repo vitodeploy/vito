@@ -32,10 +32,10 @@ class DatabaseList extends Component
 
     public function create(): void
     {
-        app(CreateDatabase::class)->create($this->server, $this->all());
+        $database = app(CreateDatabase::class)->create($this->server, $this->all());
 
         if ($this->all()['user']) {
-            app(CreateDatabaseUser::class)->create($this->server, $this->all());
+            app(CreateDatabaseUser::class)->create($this->server, $this->all(), [$database->name]);
         }
 
         $this->refreshComponent([]);
@@ -45,6 +45,7 @@ class DatabaseList extends Component
 
     public function delete(): void
     {
+        /** @var Database $database */
         $database = Database::query()->findOrFail($this->deleteId);
 
         $database->deleteFromServer();
