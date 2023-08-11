@@ -29,7 +29,8 @@ class SitesTest extends TestCase
 
         $this->actingAs($this->user);
 
-        \App\Models\SourceControl::factory()->create([
+        /** @var \App\Models\SourceControl $sourceControl */
+        $sourceControl = \App\Models\SourceControl::factory()->create([
             'provider' => SourceControl::GITHUB,
         ]);
 
@@ -39,7 +40,7 @@ class SitesTest extends TestCase
             ->set('alias', 'www.example.com')
             ->set('php_version', '8.2')
             ->set('web_directory', 'public')
-            ->set('source_control', SourceControl::GITHUB)
+            ->set('source_control', $sourceControl->id)
             ->set('repository', 'test/test')
             ->set('branch', 'main')
             ->set('composer', true)
