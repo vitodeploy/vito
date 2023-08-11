@@ -2,7 +2,8 @@
     "private": true,
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "queue:listen": "php artisan queue:listen --timeout=600 --queue=default,ssh,ssh-long"
     },
     "devDependencies": {
         "@ryangjchandler/alpine-clipboard": "^2.2.0",

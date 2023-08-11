@@ -92,6 +92,9 @@ if ! echo "${V_NGINX_CONFIG}" | tee /etc/nginx/nginx.conf; then
 fi
 service nginx start
 
+# redis
+apt install redis-server -y
+
 # php
 export V_PHP_VERSION="8.1"
 add-apt-repository ppa:ondrej/php -y
