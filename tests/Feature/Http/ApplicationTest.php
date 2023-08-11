@@ -21,7 +21,7 @@ class ApplicationTest extends TestCase
         $this->actingAs($this->user);
 
         $this->get(
-            route('servers.sites.application', [
+            route('servers.sites.show', [
                 'server' => $this->server,
                 'site' => $this->site
             ])
