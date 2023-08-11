@@ -11,24 +11,31 @@ class ContinueInstallation extends InstallationJob
 
     protected int $attempts;
 
-    public function __construct(Server $server)
+    public function __construct(Server $server, int $attempts = 0)
     {
         $this->server = $server;
-        $this->attempts = 2;
+        $this->attempts = $attempts;
     }
 
     public function handle(): void
     {
         if ($this->server->provider()->isRunning()) {
             $this->server->install();
-        } else {
-            $this->attempts--;
-            if ($this->attempts > 0) {
-                sleep(120);
-                $this->handle();
-            } else {
-                event(new Broadcast('install-server-failed', $this->server->toArray()));
-            }
+            return;
         }
+
+        if ($this->attempts >= 2) {
+            $this->server->update([
+                'status' => 'installation_failed',
+            ]);
+            event(
+                new Broadcast('install-server-failed', [
+                    'server' => $this->server,
+                ])
+            );
+            return;
+        }
+
+        dispatch(new self($this->server, $this->attempts++))->delay(now()->addMinute());
     }
 }
