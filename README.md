@@ -2,7 +2,7 @@
 
 ![](https://github.com/vitodeploy/vito/workflows/tests/badge.svg)
 
-![image](https://github.com/vitodeploy/vito/assets/61919774/1ab02e47-e5fa-4b4a-ab43-b9a46573c649)
+![image](https://github.com/vitodeploy/vito/assets/61919774/687d50e5-8a61-41b5-b708-752567e30aed)
 
 Better Readme will come soon... :)
 
