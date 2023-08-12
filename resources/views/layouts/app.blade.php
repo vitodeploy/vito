@@ -26,6 +26,8 @@
     <script src="{{ asset('static/libs/ace/theme-github.js') }}"></script>
     <script src="{{ asset('static/libs/ace/theme-one-dark.js') }}"></script>
     <script src="{{ asset('static/libs/ace/mode-sh.js') }}"></script>
+
+    @include('layouts.partials.favicon')
 </head>
 <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900 dark:text-gray-300 min-h-screen min-w-max" x-data="" x-cloak>
     <div class="flex min-h-screen">
