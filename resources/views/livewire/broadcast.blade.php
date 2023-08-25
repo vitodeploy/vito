@@ -1,1 +1,1 @@
-<div wire:poll.7s></div>
+<div wire:poll.5s></div>

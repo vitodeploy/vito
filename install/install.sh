@@ -224,6 +224,9 @@ supervisorctl reread
 supervisorctl update
 supervisorctl start worker:*
 
+# setup cronjobs
+echo "* * * * * cd /home/${V_USERNAME}/${V_DOMAIN} && php artisan schedule:run >> /dev/null 2>&1" | sudo -u ${V_USERNAME} crontab -
+
 # make the update file executable
 chmod +x /home/${V_USERNAME}/${V_DOMAIN}/update.sh
 

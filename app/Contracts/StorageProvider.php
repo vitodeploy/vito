@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 interface StorageProvider
 {
-    public function connect(): RedirectResponse;
+    public function connect(): bool;
 
     public function upload(Server $server, string $src, string $dest): array;
 

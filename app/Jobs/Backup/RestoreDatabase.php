@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use App\Enums\BackupFileStatus;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\BackupFile;
@@ -23,7 +24,7 @@ class RestoreDatabase extends Job
     {
         $this->database->server->database()->handler()->restoreBackup($this->backupFile, $this->database->name);
 
-        $this->backupFile->status = 'restored';
+        $this->backupFile->status = BackupFileStatus::RESTORED;
         $this->backupFile->restored_at = now();
         $this->backupFile->save();
 
@@ -36,7 +37,7 @@ class RestoreDatabase extends Job
 
     public function failed(): void
     {
-        $this->backupFile->status = 'restore_failed';
+        $this->backupFile->status = BackupFileStatus::RESTORE_FAILED;
         $this->backupFile->save();
         event(
             new Broadcast('backup-restore-failed', [
