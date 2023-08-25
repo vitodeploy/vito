@@ -21,6 +21,7 @@ Route::middleware('auth')->group(function () {
         Route::view('/profile', 'profile.index')->name('profile');
         Route::view('/server-providers', 'server-providers.index')->name('server-providers');
         Route::view('/source-controls', 'source-controls.index')->name('source-controls');
+        Route::view('/storage-providers', 'storage-providers.index')->name('storage-providers');
         Route::view('/notification-channels', 'notification-channels.index')->name('notification-channels');
         Route::view('/ssh-keys', 'ssh-keys.index')->name('ssh-keys');
     });
@@ -32,6 +33,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{server}/settings', [ServerSettingController::class, 'index'])->name('servers.settings');
         Route::middleware('server-is-ready')->group(function () {
             Route::get('/{server}/databases', [DatabaseController::class, 'index'])->name('servers.databases');
+            Route::get('/{server}/databases/backups/{backup}', [DatabaseController::class, 'backups'])->name(
+                'servers.databases.backups'
+            );
             Route::prefix('/{server}/sites')->group(function () {
                 Route::get('/', [SiteController::class, 'index'])->name('servers.sites');
                 Route::get('/create', [SiteController::class, 'create'])->name('servers.sites.create');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BackupFileStatus;
 use App\Jobs\Backup\RestoreDatabase;
 use App\Jobs\StorageProvider\DeleteFile;
 use Carbon\Carbon;
@@ -75,12 +76,12 @@ class BackupFile extends AbstractModel
 
     public function getStoragePathAttribute(): string
     {
-        return '/'.$this->backup->name.'/'.$this->name.'.zip';
+        return '/'.$this->backup->database->name.'/'.$this->name.'.zip';
     }
 
     public function restore(Database $database): void
     {
-        $this->status = 'restoring';
+        $this->status = BackupFileStatus::RESTORING;
         $this->restored_to = $database->name;
         $this->save();
         dispatch(new RestoreDatabase($this, $database))->onConnection('ssh');

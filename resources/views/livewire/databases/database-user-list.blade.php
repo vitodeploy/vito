@@ -15,11 +15,11 @@
     @if(count($databaseUsers) > 0)
         <x-table>
             <tr>
-                <x-td>{{ __("Username") }}</x-td>
-                <x-td>{{ __("Created") }}</x-td>
-                <x-td>{{ __("Linked Databases") }}</x-td>
-                <x-td>{{ __("Status") }}</x-td>
-                <x-td></x-td>
+                <x-th>{{ __("Username") }}</x-th>
+                <x-th>{{ __("Created") }}</x-th>
+                <x-th>{{ __("Linked Databases") }}</x-th>
+                <x-th>{{ __("Status") }}</x-th>
+                <x-th></x-th>
             </tr>
             @foreach($databaseUsers as $databaseUser)
                 <tr>

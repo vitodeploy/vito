@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Actions\Backup;
+namespace App\Actions\Database;
 
+use App\Enums\BackupStatus;
 use App\Enums\DatabaseStatus;
 use App\Models\Backup;
-use App\Models\Database;
 use App\Models\Server;
-use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -19,23 +17,18 @@ class CreateBackup
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function create($type, Server $server, User $user, array $input): Backup
+    public function create($type, Server $server, array $input): Backup
     {
-        $this->validate($type, $server, $user, $input);
-
-        if ($type == 'database') {
-            Gate::forUser($user)->authorize('viewAny', [Database::class, $server]);
-        }
+        $this->validate($type, $server, $input);
 
         $backup = new Backup([
-            'name' => $input['name'],
             'type' => $type,
             'server_id' => $server->id,
             'database_id' => $input['database'] ?? null,
             'storage_id' => $input['storage'],
-            'interval' => $input['interval'],
-            'keep_backups' => $input['keep_backups'],
-            'status' => 'running',
+            'interval' => $input['interval'] == 'custom' ? $input['custom'] : $input['interval'],
+            'keep_backups' => $input['keep'],
+            'status' => BackupStatus::RUNNING,
         ]);
         $backup->save();
 
@@ -47,17 +40,14 @@ class CreateBackup
     /**
      * @throws ValidationException
      */
-    private function validate($type, Server $server, User $user, array $input): void
+    private function validate($type, Server $server, array $input): void
     {
         $rules = [
-            'name' => 'required',
             'storage' => [
                 'required',
-                Rule::exists('storage_providers', 'id')
-                    ->where('user_id', $user->id)
-                    ->where('connected', 1),
+                Rule::exists('storage_providers', 'id'),
             ],
-            'keep_backups' => [
+            'keep' => [
                 'required',
                 'numeric',
                 'min:1',
@@ -69,9 +59,15 @@ class CreateBackup
                     '0 0 * * *',
                     '0 0 * * 0',
                     '0 0 1 * *',
+                    'custom'
                 ]),
             ],
         ];
+        if ($input['interval'] == 'custom') {
+            $rules['custom'] = [
+                'required',
+            ];
+        }
         if ($type === 'database') {
             $rules['database'] = [
                 'required',
@@ -80,6 +76,6 @@ class CreateBackup
                     ->where('status', DatabaseStatus::READY),
             ];
         }
-        Validator::make($input, $rules)->validateWithBag('createBackup');
+        Validator::make($input, $rules)->validate();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Backup;
 
+use App\Enums\BackupFileStatus;
 use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\BackupFile;
@@ -21,7 +22,7 @@ class RunBackup extends Job
             $this->backupFile->backup->server->database()->handler()->runBackup($this->backupFile);
         }
 
-        $this->backupFile->status = 'finished';
+        $this->backupFile->status = BackupFileStatus::CREATED;
         $this->backupFile->save();
 
         event(
@@ -33,7 +34,7 @@ class RunBackup extends Job
 
     public function failed(): void
     {
-        $this->backupFile->status = 'failed';
+        $this->backupFile->status = BackupFileStatus::FAILED;
         $this->backupFile->save();
         event(
             new Broadcast('run-backup-failed', [

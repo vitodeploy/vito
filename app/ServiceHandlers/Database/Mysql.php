@@ -99,7 +99,7 @@ class Mysql extends AbstractDatabase
             'backup-database'
         );
 
-        // upload to cloud
+        // upload to storage
         $upload = $backupFile->backup->storage->provider()->upload(
             $backupFile->backup->server,
             $backupFile->path,

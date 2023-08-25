@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BackupFileStatus;
 use App\Jobs\Backup\RunBackup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,6 @@ use Illuminate\Support\Str;
 
 /**
  * @property string $type
- * @property string $name
  * @property int $server_id
  * @property int $storage_id
  * @property int $database_id
@@ -28,7 +28,6 @@ class Backup extends AbstractModel
 
     protected $fillable = [
         'type',
-        'name',
         'server_id',
         'storage_id',
         'database_id',
@@ -77,8 +76,8 @@ class Backup extends AbstractModel
     {
         $file = new BackupFile([
             'backup_id' => $this->id,
-            'name' => Str::of($this->name)->slug().'-'.now()->format('YmdHis'),
-            'status' => 'creating',
+            'name' => Str::of($this->database->name)->slug().'-'.now()->format('YmdHis'),
+            'status' => BackupFileStatus::CREATING,
         ]);
         $file->save();
 

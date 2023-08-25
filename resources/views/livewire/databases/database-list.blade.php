@@ -15,10 +15,10 @@
     @if(count($databases) > 0)
         <x-table>
             <tr>
-                <x-td>{{ __("Name") }}</x-td>
-                <x-td>{{ __("Created") }}</x-td>
-                <x-td>{{ __("Status") }}</x-td>
-                <x-td></x-td>
+                <x-th>{{ __("Name") }}</x-th>
+                <x-th>{{ __("Created") }}</x-th>
+                <x-th>{{ __("Status") }}</x-th>
+                <x-th></x-th>
             </tr>
             @foreach($databases as $database)
                 <tr>

@@ -2,18 +2,14 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $user_id
+ * @property string $profile
  * @property string $provider
- * @property string $label
- * @property string $token
- * @property string $refresh_token
- * @property bool $connected
- * @property Carbon $token_expires_at
+ * @property array $credentials
  * @property User $user
  */
 class StorageProvider extends AbstractModel
@@ -22,18 +18,14 @@ class StorageProvider extends AbstractModel
 
     protected $fillable = [
         'user_id',
+        'profile',
         'provider',
-        'label',
-        'token',
-        'refresh_token',
-        'connected',
-        'token_expires_at',
+        'credentials',
     ];
 
     protected $casts = [
         'user_id' => 'integer',
-        'connected' => 'boolean',
-        'token_expires_at' => 'datetime',
+        'credentials' => 'encrypted:array',
     ];
 
     public function user(): BelongsTo

@@ -5,5 +5,7 @@
         <livewire:databases.database-list :server="$server" />
 
         <livewire:databases.database-user-list :server="$server" />
+
+        <livewire:databases.database-backups :server="$server" />
     </div>
 </x-server-layout>
