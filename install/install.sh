@@ -117,11 +117,11 @@ export V_MARIADB_VERSION="10.3"
 export V_DB_USER="vito"
 export V_DB_NAME="vito"
 export V_DB_PASS=$(openssl rand -base64 12)
-wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
-chmod +x mariadb_repo_setup
-./mariadb_repo_setup --mariadb-server-version="mariadb-${V_MARIADB_VERSION}"
+wget -c https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
+dpkg -i mysql-apt-config_0.8.22-1_all.deb
 apt update
-apt install mariadb-server mariadb-backup -y
+apt install mysql-server -y
+service mysql enable
 service mysql start
 mysql -e "CREATE DATABASE IF NOT EXISTS ${V_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci"
 mysql -e "CREATE USER IF NOT EXISTS '${V_DB_USER}'@'localhost' IDENTIFIED BY '${V_DB_PASS}'"
