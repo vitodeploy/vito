@@ -22,7 +22,7 @@ class AddChannel extends Component
             $this->all()
         );
 
-        $this->emitTo(KeysList::class, '$refresh');
+        $this->emitTo(ChannelsList::class, '$refresh');
 
         $this->dispatchBrowserEvent('added', true);
     }
