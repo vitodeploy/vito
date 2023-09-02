@@ -1,4 +1,4 @@
-# Vito
+# VitoDeploy
 
 ![](https://github.com/vitodeploy/vito/workflows/tests/badge.svg)
 
