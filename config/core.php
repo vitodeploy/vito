@@ -25,7 +25,6 @@ use App\ServiceHandlers\ProcessManager\Supervisor;
 use App\ServiceHandlers\Webserver\Nginx;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPSite;
-use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Custom;
 use App\SourceControlProviders\Github;
@@ -48,7 +47,7 @@ return [
     'operating_systems' => [
         // 'ubuntu_18',
         'ubuntu_20',
-        'ubuntu_22'
+        'ubuntu_22',
     ],
     'webservers' => ['none', 'nginx'],
     'php_versions' => [

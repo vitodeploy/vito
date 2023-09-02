@@ -34,7 +34,7 @@ class DeployKey extends Job
         );
         $this->site->save();
         $this->site->sourceControl()->provider()->deployKey(
-            $this->site->domain.'-key-' . $this->site->id,
+            $this->site->domain.'-key-'.$this->site->id,
             $this->site->repository,
             $this->site->ssh_key
         );

@@ -13,7 +13,7 @@ class DeleteCommand extends Command
 
     public function file(): string
     {
-        return File::get(resource_path(sprintf("commands/database/%s/delete.sh", $this->provider)));
+        return File::get(resource_path(sprintf('commands/database/%s/delete.sh', $this->provider)));
     }
 
     public function content(): string

@@ -3,7 +3,6 @@
 namespace App\Contracts;
 
 use App\Models\Server;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 interface StorageProvider
 {

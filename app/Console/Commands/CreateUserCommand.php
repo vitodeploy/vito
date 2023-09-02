@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
 class CreateUserCommand extends Command
 {
@@ -20,6 +19,6 @@ class CreateUserCommand extends Command
             'password' => bcrypt($this->argument('password')),
         ]);
 
-        $this->info("User created with password");
+        $this->info('User created with password');
     }
 }

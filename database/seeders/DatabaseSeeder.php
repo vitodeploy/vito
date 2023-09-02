@@ -21,13 +21,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'user@example.com',
         ]);
         $server = Server::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
         $server->services()->create([
             'type' => 'database',
             'name' => config('core.databases_name.mysql80'),
             'version' => config('core.databases_version.mysql80'),
-            'status' => ServiceStatus::READY
+            'status' => ServiceStatus::READY,
         ]);
         $server->services()->create([
             'type' => 'php',
@@ -36,17 +36,17 @@ class DatabaseSeeder extends Seeder
             ],
             'name' => 'php',
             'version' => '8.1',
-            'status' => ServiceStatus::READY
+            'status' => ServiceStatus::READY,
         ]);
         $server->services()->create([
             'type' => 'webserver',
             'name' => 'nginx',
             'version' => 'latest',
-            'status' => ServiceStatus::READY
+            'status' => ServiceStatus::READY,
         ]);
         Site::factory()->create([
             'server_id' => $server->id,
-            'type' => SiteType::LARAVEL
+            'type' => SiteType::LARAVEL,
         ]);
     }
 }

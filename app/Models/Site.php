@@ -110,7 +110,7 @@ class Site extends AbstractModel
         static::created(function (Site $site) {
             $site->deploymentScript()->create([
                 'name' => 'default',
-                'content' => ''
+                'content' => '',
             ]);
         });
     }

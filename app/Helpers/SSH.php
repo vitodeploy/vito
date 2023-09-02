@@ -74,11 +74,11 @@ class SSH
             $login = $this->connection->login($this->user, $this->privateKey);
 
             if (! $login) {
-                throw new SSHAuthenticationError("Error authenticating");
+                throw new SSHAuthenticationError('Error authenticating');
             }
         } catch (Throwable $e) {
-            Log::error("Error connecting", [
-                "msg" => $e->getMessage()
+            Log::error('Error connecting', [
+                'msg' => $e->getMessage(),
             ]);
             throw $e;
         }

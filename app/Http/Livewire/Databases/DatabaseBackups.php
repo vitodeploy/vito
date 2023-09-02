@@ -75,7 +75,7 @@ class DatabaseBackups extends Component
         return view('livewire.databases.database-backups', [
             'backups' => $this->server->backups,
             'databases' => $this->server->databases,
-            'files' => $this->files
+            'files' => $this->files,
         ]);
     }
 }

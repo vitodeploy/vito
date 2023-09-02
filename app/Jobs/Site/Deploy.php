@@ -7,7 +7,7 @@ use App\Events\Broadcast;
 use App\Helpers\SSH;
 use App\Jobs\Job;
 use App\Models\Deployment;
-use App\SSHCommands\System\RunScript;
+use App\SSHCommands\System\RunScriptCommand;
 use Throwable;
 
 class Deploy extends Job
@@ -34,7 +34,7 @@ class Deploy extends Job
     {
         $this->ssh = $this->deployment->site->server->ssh();
         $this->ssh->exec(
-            new RunScript($this->path, $this->script),
+            new RunScriptCommand($this->path, $this->script),
             'deploy',
             $this->deployment->site_id
         );

@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\LogType;
 use App\Models\ServerLog;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

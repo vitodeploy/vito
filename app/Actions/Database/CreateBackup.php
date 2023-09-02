@@ -59,7 +59,7 @@ class CreateBackup
                     '0 0 * * *',
                     '0 0 * * 0',
                     '0 0 1 * *',
-                    'custom'
+                    'custom',
                 ]),
             ],
         ];

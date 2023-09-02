@@ -58,7 +58,7 @@ class CronjobTest extends TestCase
             'command' => 'ls -la',
             'user' => 'vito',
             'frequency' => '* * * * *',
-            'status' => CronjobStatus::CREATING
+            'status' => CronjobStatus::CREATING,
         ]);
     }
 }

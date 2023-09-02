@@ -4,7 +4,6 @@ namespace App\ServerProviders;
 
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
-use App\Notifications\FailedToDeleteServerFromProvider;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

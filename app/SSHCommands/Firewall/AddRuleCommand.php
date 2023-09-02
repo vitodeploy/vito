@@ -21,6 +21,6 @@ class AddRuleCommand extends Command
 
     public function file(): string
     {
-        return File::get(resource_path(sprintf("commands/firewall/%s/add-rule.sh", $this->provider)));
+        return File::get(resource_path(sprintf('commands/firewall/%s/add-rule.sh', $this->provider)));
     }
 }

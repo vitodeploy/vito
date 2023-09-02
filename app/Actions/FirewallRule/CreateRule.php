@@ -6,7 +6,6 @@ use App\Enums\FirewallRuleStatus;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class CreateRule

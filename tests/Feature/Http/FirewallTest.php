@@ -35,7 +35,7 @@ class FirewallTest extends TestCase
         Bus::assertDispatched(AddToServer::class);
 
         $this->assertDatabaseHas('firewall_rules', [
-            'port' => '1234'
+            'port' => '1234',
         ]);
     }
 
@@ -44,7 +44,7 @@ class FirewallTest extends TestCase
         $this->actingAs($this->user);
 
         $rule = FirewallRule::factory()->create([
-            'server_id' => $this->server->id
+            'server_id' => $this->server->id,
         ]);
 
         Livewire::test(FirewallRulesList::class, ['server' => $this->server])
@@ -61,7 +61,7 @@ class FirewallTest extends TestCase
         $this->actingAs($this->user);
 
         $rule = FirewallRule::factory()->create([
-            'server_id' => $this->server->id
+            'server_id' => $this->server->id,
         ]);
 
         Livewire::test(FirewallRulesList::class, ['server' => $this->server])
@@ -73,7 +73,7 @@ class FirewallTest extends TestCase
 
         $this->assertDatabaseHas('firewall_rules', [
             'id' => $rule->id,
-            'status' => FirewallRuleStatus::DELETING
+            'status' => FirewallRuleStatus::DELETING,
         ]);
     }
 }

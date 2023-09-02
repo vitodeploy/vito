@@ -4,7 +4,6 @@ namespace App\SSHCommands\Nginx;
 
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class InstallNginxCommand extends Command
 {

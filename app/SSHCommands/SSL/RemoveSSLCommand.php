@@ -17,6 +17,6 @@ class RemoveSSLCommand extends Command
 
     public function content(): string
     {
-        return 'sudo rm -rf '.$this->path.'*'."\n";
+        return 'sudo rm -rf '.$this->path.'*';
     }
 }

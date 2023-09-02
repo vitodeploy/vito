@@ -4,7 +4,6 @@ namespace App\SSHCommands\PHP;
 
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class UninstallPHPCommand extends Command
 {

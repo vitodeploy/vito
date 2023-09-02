@@ -2,10 +2,7 @@
 
 namespace Tests\Feature\Http;
 
-use App\Http\Livewire\SourceControls\Bitbucket;
 use App\Http\Livewire\SourceControls\Connect;
-use App\Http\Livewire\SourceControls\Github;
-use App\Http\Livewire\SourceControls\Gitlab;
 use App\Http\Livewire\SourceControls\SourceControlsList;
 use App\Models\SourceControl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,7 +45,7 @@ class SourceControlsTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => $provider,
-            'profile' => 'test'
+            'profile' => 'test',
         ]);
 
         Livewire::test(SourceControlsList::class)

@@ -17,7 +17,7 @@ class CreateUserCommand extends Command
 
     public function file(): string
     {
-        return File::get(resource_path(sprintf("commands/database/%s/create-user.sh", $this->provider)));
+        return File::get(resource_path(sprintf('commands/database/%s/create-user.sh', $this->provider)));
     }
 
     public function content(): string

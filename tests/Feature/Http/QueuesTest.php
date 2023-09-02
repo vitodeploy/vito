@@ -63,7 +63,7 @@ class QueuesTest extends TestCase
             'auto_start' => 1,
             'auto_restart' => 1,
             'numprocs' => 1,
-            'status' => QueueStatus::CREATING
+            'status' => QueueStatus::CREATING,
         ]);
     }
 }

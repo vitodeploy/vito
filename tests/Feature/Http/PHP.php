@@ -59,7 +59,7 @@ class PHP extends TestCase
             ],
             'name' => 'php',
             'version' => '8.1',
-            'status' => ServiceStatus::READY
+            'status' => ServiceStatus::READY,
         ]);
 
         Livewire::test(DefaultCli::class, ['server' => $this->server])
