@@ -21,4 +21,4 @@ Feel free to open a PR
 - Livewire
 - Alpinejs
 - Vite
-- Laravel Enum by BenShampo
+- Laravel Enum by BenSampo
