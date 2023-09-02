@@ -3,6 +3,8 @@ name: checks
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   tests:
@@ -52,6 +54,7 @@ jobs:
           DB_DATABASE: test_db
           DB_USERNAME: user
           DB_PASSWORD: password
+
   code-style:
     runs-on: ubuntu-20.04
 
