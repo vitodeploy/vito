@@ -5,7 +5,7 @@ namespace App\SSHCommands\PHPMyAdmin;
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
 
-class DeleteNginxPHPMyAdminVHost extends Command
+class DeleteNginxPHPMyAdminVHostCommand extends Command
 {
     public function __construct(protected string $path)
     {

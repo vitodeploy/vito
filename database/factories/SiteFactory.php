@@ -20,7 +20,7 @@ class SiteFactory extends Factory
             'status' => 'ready',
             'progress' => '100',
             'php_version' => '8.2',
-            'branch' => 'main'
+            'branch' => 'main',
         ];
     }
 }

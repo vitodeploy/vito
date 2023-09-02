@@ -5,9 +5,6 @@ namespace App\SourceControlProviders;
 use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
-use App\Exceptions\RepositoryNotFound;
-use App\Exceptions\RepositoryPermissionDenied;
-use App\Exceptions\SourceControlIsNotConnected;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -39,7 +36,7 @@ class Bitbucket extends AbstractSourceControlProvider
 
     public function fullRepoUrl(string $repo, string $key): string
     {
-        return sprintf("git@bitbucket.org-%s:%s.git", $key, $repo);
+        return sprintf('git@bitbucket.org-%s:%s.git', $key, $repo);
     }
 
     /**

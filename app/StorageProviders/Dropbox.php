@@ -17,7 +17,7 @@ class Dropbox extends AbstractStorageProvider
     {
         $res = Http::withToken($this->storageProvider->credentials['token'])
             ->post($this->apiUrl.'/check/user', [
-                'query' => ''
+                'query' => '',
             ]);
 
         return $res->successful();
@@ -40,7 +40,7 @@ class Dropbox extends AbstractStorageProvider
         $data = json_decode($upload, true);
 
         if (isset($data['error'])) {
-            throw new BackupFileException("Failed to upload to Dropbox ".$data['error_summary'] ?? '');
+            throw new BackupFileException('Failed to upload to Dropbox '.$data['error_summary'] ?? '');
         }
 
         return [

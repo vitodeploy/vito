@@ -15,7 +15,7 @@ class BroadcastListener
     {
         Cache::set('broadcast', [
             'type' => $event->type,
-            'data' => $event->data
+            'data' => $event->data,
         ], now()->addMinutes(5));
     }
 }

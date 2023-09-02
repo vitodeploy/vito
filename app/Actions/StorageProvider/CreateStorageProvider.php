@@ -22,15 +22,15 @@ class CreateStorageProvider
             'provider' => $input['provider'],
             'profile' => $input['name'],
             'credentials' => [
-                'token' => $input['token']
-            ]
+                'token' => $input['token'],
+            ],
         ]);
         if (! $storageProvider->provider()->connect()) {
             throw ValidationException::withMessages([
-                'token' => __("Couldn't connect to the provider")
+                'token' => __("Couldn't connect to the provider"),
             ]);
         }
-        $storageProvider->save();;
+        $storageProvider->save();
     }
 
     private function validate(User $user, array $input): void
@@ -45,8 +45,8 @@ class CreateStorageProvider
                 Rule::unique('storage_providers', 'profile')->where('user_id', $user->id),
             ],
             'token' => [
-                'required'
-            ]
+                'required',
+            ],
         ])->validate();
     }
 }

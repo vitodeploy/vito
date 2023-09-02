@@ -13,7 +13,7 @@ class BackupFactory extends Factory
             'type' => 'database',
             'interval' => '0 * * * *',
             'keep_backups' => 10,
-            'status' => BackupStatus::RUNNING
+            'status' => BackupStatus::RUNNING,
         ];
     }
 }

@@ -56,7 +56,7 @@ class ServerKeysTest extends TestCase
         $this->assertDatabaseHas('server_ssh_keys', [
             'server_id' => $this->server->id,
             'ssh_key_id' => $sshKey->id,
-            'status' => SshKeyStatus::DELETING
+            'status' => SshKeyStatus::DELETING,
         ]);
 
         Bus::assertDispatched(DeleteSshKeyFromServer::class);
@@ -77,7 +77,7 @@ class ServerKeysTest extends TestCase
 
         $this->assertDatabaseHas('server_ssh_keys', [
             'server_id' => $this->server->id,
-            'status' => SshKeyStatus::ADDING
+            'status' => SshKeyStatus::ADDING,
         ]);
 
         Bus::assertDispatched(DeploySshKeyToServer::class);
@@ -103,7 +103,7 @@ class ServerKeysTest extends TestCase
 
         $this->assertDatabaseHas('server_ssh_keys', [
             'server_id' => $this->server->id,
-            'status' => SshKeyStatus::ADDING
+            'status' => SshKeyStatus::ADDING,
         ]);
 
         Bus::assertDispatched(DeploySshKeyToServer::class);

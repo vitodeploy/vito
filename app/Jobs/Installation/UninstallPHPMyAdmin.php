@@ -5,7 +5,7 @@ namespace App\Jobs\Installation;
 use App\Jobs\Job;
 use App\Models\FirewallRule;
 use App\Models\Service;
-use App\SSHCommands\PHPMyAdmin\DeleteNginxPHPMyAdminVHost;
+use App\SSHCommands\PHPMyAdmin\DeleteNginxPHPMyAdminVHostCommand;
 use Exception;
 use Throwable;
 
@@ -48,7 +48,7 @@ class UninstallPHPMyAdmin extends Job
     private function deleteVHost(): void
     {
         $this->service->server->ssh()->exec(
-            new DeleteNginxPHPMyAdminVHost('/home/vito/phpmyadmin'),
+            new DeleteNginxPHPMyAdminVHostCommand('/home/vito/phpmyadmin'),
             'delete-phpmyadmin-vhost'
         );
     }

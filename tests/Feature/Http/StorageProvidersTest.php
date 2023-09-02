@@ -3,8 +3,8 @@
 namespace Tests\Feature\Http;
 
 use App\Enums\StorageProvider;
-use App\Http\Livewire\StorageProviders\ProvidersList;
 use App\Http\Livewire\StorageProviders\ConnectProvider;
+use App\Http\Livewire\StorageProviders\ProvidersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
@@ -39,7 +39,7 @@ class StorageProvidersTest extends TestCase
 
         $provider = \App\Models\StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => StorageProvider::DROPBOX
+            'provider' => StorageProvider::DROPBOX,
         ]);
 
         Livewire::test(ProvidersList::class)

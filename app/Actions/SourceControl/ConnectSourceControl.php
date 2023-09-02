@@ -15,7 +15,7 @@ class ConnectSourceControl
         $sourceControl = new SourceControl([
             'provider' => $input['provider'],
             'profile' => $input['name'],
-            'access_token' => $input['token']
+            'access_token' => $input['token'],
         ]);
 
         if (! $sourceControl->provider()->connect()) {
@@ -24,7 +24,7 @@ class ConnectSourceControl
                 ),
             ]);
         }
-        
+
         $sourceControl->save();
     }
 
@@ -36,14 +36,14 @@ class ConnectSourceControl
         $rules = [
             'provider' => [
                 'required',
-                Rule::in(\App\Enums\SourceControl::getValues())
+                Rule::in(\App\Enums\SourceControl::getValues()),
             ],
             'name' => [
                 'required',
             ],
             'token' => [
-                'required'
-            ]
+                'required',
+            ],
         ];
         Validator::make($input, $rules)->validate();
     }

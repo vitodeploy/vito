@@ -13,7 +13,7 @@ class CreateCommand extends Command
 
     public function file(): string
     {
-        return File::get(resource_path(sprintf("commands/database/%s/create.sh", $this->provider)));
+        return File::get(resource_path(sprintf('commands/database/%s/create.sh', $this->provider)));
     }
 
     public function content(): string

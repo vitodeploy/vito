@@ -13,7 +13,7 @@ class BackupDatabaseCommand extends Command
 
     public function file(): string
     {
-        return File::get(resource_path(sprintf("commands/database/%s/backup.sh", $this->provider)));
+        return File::get(resource_path(sprintf('commands/database/%s/backup.sh', $this->provider)));
     }
 
     public function content(): string

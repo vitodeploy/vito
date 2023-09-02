@@ -23,7 +23,7 @@ class ApplicationTest extends TestCase
         $this->get(
             route('servers.sites.show', [
                 'server' => $this->server,
-                'site' => $this->site
+                'site' => $this->site,
             ])
         )
             ->assertOk()
@@ -44,7 +44,7 @@ class ApplicationTest extends TestCase
 
         $this->assertDatabaseHas('deployment_scripts', [
             'site_id' => $this->site->id,
-            'content' => 'some script'
+            'content' => 'some script',
         ]);
 
         $this->site->refresh();

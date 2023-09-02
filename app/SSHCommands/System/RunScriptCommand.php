@@ -5,7 +5,7 @@ namespace App\SSHCommands\System;
 use App\SSHCommands\Command;
 use Illuminate\Support\Facades\File;
 
-class RunScript extends Command
+class RunScriptCommand extends Command
 {
     public function __construct(protected string $path, protected string $script)
     {
@@ -20,7 +20,7 @@ class RunScript extends Command
     {
         return str($this->file())
             ->replace('__path__', $this->path)
-            ->replace('__script__', make_bash_script($this->script))
+            ->replace('__script__', $this->script)
             ->toString();
     }
 }

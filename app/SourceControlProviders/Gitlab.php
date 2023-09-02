@@ -2,8 +2,8 @@
 
 namespace App\SourceControlProviders;
 
-use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDeployGitHook;
+use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
 use Exception;
 use Illuminate\Support\Facades\Http;
@@ -36,7 +36,7 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function fullRepoUrl(string $repo, string $key): string
     {
-        return sprintf("git@gitlab.com-%s:%s.git", $key, $repo);
+        return sprintf('git@gitlab.com-%s:%s.git', $key, $repo);
     }
 
     /**

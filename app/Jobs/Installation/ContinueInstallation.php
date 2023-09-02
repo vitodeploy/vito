@@ -21,6 +21,7 @@ class ContinueInstallation extends InstallationJob
     {
         if ($this->server->provider()->isRunning()) {
             $this->server->install();
+
             return;
         }
 
@@ -33,6 +34,7 @@ class ContinueInstallation extends InstallationJob
                     'server' => $this->server,
                 ])
             );
+
             return;
         }
 

@@ -25,7 +25,7 @@ class ServicesTest extends TestCase
                 'supervisor',
                 'redis',
                 'ufw',
-                'php'
+                'php',
             ]);
     }
 

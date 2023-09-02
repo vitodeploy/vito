@@ -21,6 +21,6 @@ class RemoveRuleCommand extends Command
 
     public function file(): string
     {
-        return File::get(resource_path(sprintf("commands/firewall/%s/remove-rule.sh", $this->provider)));
+        return File::get(resource_path(sprintf('commands/firewall/%s/remove-rule.sh', $this->provider)));
     }
 }

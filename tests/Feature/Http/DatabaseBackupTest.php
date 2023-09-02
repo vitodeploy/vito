@@ -32,7 +32,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX
+            'provider' => \App\Enums\StorageProvider::DROPBOX,
         ]);
 
         Livewire::test(DatabaseBackups::class, ['server' => $this->server])
@@ -60,7 +60,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX
+            'provider' => \App\Enums\StorageProvider::DROPBOX,
         ]);
 
         $backup = Backup::factory()->create([
@@ -85,7 +85,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX
+            'provider' => \App\Enums\StorageProvider::DROPBOX,
         ]);
 
         $backup = Backup::factory()->create([

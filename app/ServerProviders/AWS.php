@@ -4,7 +4,6 @@ namespace App\ServerProviders;
 
 use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
-use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;
 use Aws\EC2InstanceConnect\EC2InstanceConnectClient;
 use Exception;

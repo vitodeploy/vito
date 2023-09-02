@@ -20,9 +20,9 @@ class DatabaseBackupFiles extends Component
 
     public Backup $backup;
 
-    public string $restoreId = "";
+    public string $restoreId = '';
 
-    public string $restoreDatabaseId = "";
+    public string $restoreDatabaseId = '';
 
     public int $deleteId;
 
@@ -61,7 +61,7 @@ class DatabaseBackupFiles extends Component
     public function render(): View
     {
         return view('livewire.databases.database-backup-files', [
-            'files' => $this->backup->files()->orderByDesc('id')->simplePaginate(10)
+            'files' => $this->backup->files()->orderByDesc('id')->simplePaginate(10),
         ]);
     }
 }
