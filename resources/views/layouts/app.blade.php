@@ -148,9 +148,10 @@
                                     <x-slot name="content">
                                         <x-dropdown-link :href="route('profile')">Profile</x-dropdown-link>
                                         <div class="border-t border-gray-100 dark:border-gray-700"></div>
-                                        <form>
-                                            <x-dropdown-link as="button">
-                                                Log Out
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">
+                                                {{ __('Log Out') }}
                                             </x-dropdown-link>
                                         </form>
                                     </x-slot>
