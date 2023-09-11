@@ -14,7 +14,7 @@ class PasswordConfirmationTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $response = $this->get('/confirm-password');
+        $response = $this->get(route('password.confirm'));
 
         $response->assertStatus(200);
     }
@@ -26,7 +26,7 @@ class PasswordConfirmationTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $response = $this->post('/confirm-password', [
+        $response = $this->post(route('password.confirm'), [
             'password' => 'password',
         ]);
 
@@ -38,7 +38,7 @@ class PasswordConfirmationTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $response = $this->post('/confirm-password', [
+        $response = $this->post(route('password.confirm'), [
             'password' => 'wrong-password',
         ]);
 
