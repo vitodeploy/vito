@@ -4,4 +4,6 @@
     <livewire:profile.update-profile-information />
 
     <livewire:profile.update-password />
+
+    <livewire:profile.two-factor-authentication />
 </x-profile-layout>

@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Profile;
 
 use App\Actions\User\UpdateUserProfileInformation;
 use App\Http\Livewire\UserDropdown;
+use App\Models\User;
 use Exception;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -34,8 +35,10 @@ class UpdateProfileInformation extends Component
 
     public function sendVerificationEmail(): void
     {
-        if (! auth()->user()->hasVerifiedEmail()) {
-            auth()->user()->sendEmailVerificationNotification();
+        /** @var User $user */
+        $user = auth()->user();
+        if (! $user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
 
             session()->flash('status', 'verification-link-sent');
         }

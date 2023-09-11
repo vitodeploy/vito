@@ -13,7 +13,7 @@ class LogoutTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('logout'))->assertRedirect(route('login'));
+        $this->post(route('logout'))->assertRedirect("/");
 
         $this->assertFalse(auth()->check());
     }
