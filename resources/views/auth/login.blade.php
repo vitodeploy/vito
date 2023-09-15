@@ -4,7 +4,7 @@
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
-        <div x-data="{ isPasswordVisible: true }">
+        <div x-data="{ isPasswordVisible: false }">
             <!-- Email Address -->
             <div>
                 <x-input-label for="email" :value="__('Email')" />
@@ -16,8 +16,6 @@
             <!-- Password -->
             <div class="mt-4">
                 <x-input-label for="password" :value="__('Password')" />
-
-
                 <x-text-input id="password" class="block mt-1 w-full"
                     x-bind:type="isPasswordVisible ? 'text' : 'password'" name="password" required
                     autocomplete="current-password" />
