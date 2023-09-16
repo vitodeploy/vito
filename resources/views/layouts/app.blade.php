@@ -1,6 +1,6 @@
 @props(['server'])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -156,11 +156,42 @@
             <nav class="h-16 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
                 <!-- Primary Navigation Menu -->
                 <div class="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
+                    <div class="flex h-16 justify-end">
                         <div class="flex items-center justify-center">
                             {{-- Search --}}
                         </div>
-
+                        {{-- Dark Mode Toggle Button section  --}}
+                        <div class="flex items-center" x-data="{
+                            isDarkMode: localStorage.theme,
+                            toggleTheme() {
+                                localStorage.theme = this.isDarkMode == 'dark' ? 'light' : 'dark';
+                                window.location.reload()
+                            }
+                        }" x-on:click="toggleTheme()">
+                            <div class="flex items-center">
+                                <div class="flex items-center justify-end">
+                                    <button id="theme-toggle" type="button" class="text-sm p-2"
+                                        :class="isDarkMode == 'dark' ? 'text-gray-300 border-gray-300' :
+                                            'text-gray-800 border-gray-800'">
+                                        <svg x-show="isDarkMode!='dark'" id="theme-toggle-dark-icon" class="w-5 h-5"
+                                            fill="currentColor" viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z">
+                                            </path>
+                                        </svg>
+                                        <svg x-show="isDarkMode=='dark'" id="theme-toggle-light-icon" class="w-5 h-5"
+                                            fill="currentColor" viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                                                fillRule="evenodd" clipRule="evenodd"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- End of Dark Mode Toggle Button section  --}}
                         <div class="ml-6 flex items-center">
                             <div class="relative ml-5">
                                 <x-dropdown align="right" width="48">
@@ -179,41 +210,7 @@
                                     <x-slot name="content">
                                         <x-dropdown-link :href="route('profile')">Profile</x-dropdown-link>
                                         <div class="border-t border-gray-100 dark:border-gray-700"></div>
-                                        {{-- Dark Mode Toggle Button section  --}}
-                                        <x-dropdown-link x-data="{
-                                            isDarkMode: localStorage.theme,
-                                            toggleTheme() {
-                                                localStorage.theme = this.isDarkMode == 'dark' ? 'light' : 'dark';
-                                                window.location.reload()
-                                            }
-                                        }" x-on:click="toggleTheme()">
-                                            <div class="flex items-center">
-                                                <div class="flex items-center justify-center">
-                                                    <span class="text-sm "
-                                                        x-text="isDarkMode=='dark' ? 'Light Mode' : 'Dark Mode'">
-                                                    </span>
-                                                    <button id="theme-toggle" type="button" class="text-sm p-2"
-                                                        :class="isDarkMode == 'dark' ? 'text-gray-300 border-gray-300' :
-                                                            'text-gray-800 border-gray-800'">
-                                                        <svg x-show="isDarkMode!='dark'" id="theme-toggle-dark-icon"
-                                                            class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                                            xmlns="http://www.w3.org/2000/svg">
-                                                            <path
-                                                                d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z">
-                                                            </path>
-                                                        </svg>
-                                                        <svg x-show="isDarkMode=='dark'" id="theme-toggle-light-icon"
-                                                            class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                                            xmlns="http://www.w3.org/2000/svg">
-                                                            <path
-                                                                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                                                                fillRule="evenodd" clipRule="evenodd"></path>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </x-dropdown-link>
-                                        {{--End of Dark Mode Toggle Button section  --}}
+
                                         <div class="border-t border-gray-100 dark:border-gray-700"></div>
                                         <form method="POST" action="{{ route('logout') }}">
                                             @csrf
@@ -266,7 +263,8 @@
         })
 
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-        if (localStorage.theme === 'dark') {
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark')
         } else {
             document.documentElement.classList.remove('dark')

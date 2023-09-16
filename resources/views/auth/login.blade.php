@@ -27,7 +27,7 @@
                 <label for="show_password" class="inline-flex items-center">
                     <input id="show_password" type="checkbox" x-model="isPasswordVisible"
                         class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800">
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('auth.Show Password') }}</span>
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Show password') }}</span>
                 </label>
             </div>
 
