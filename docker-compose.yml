@@ -1,6 +1,6 @@
 version: '3'
 services:
-    app:
+    vito:
         build:
             context: ./docker/8.1
             dockerfile: Dockerfile
