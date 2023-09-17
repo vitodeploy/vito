@@ -15,8 +15,7 @@
         "laravel/socialite": "^5.2",
         "laravel/tinker": "^2.8",
         "livewire/livewire": "^2.12",
-        "phpseclib/phpseclib": "~3.0",
-        "pusher/pusher-php-server": "^7.2"
+        "phpseclib/phpseclib": "~3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
