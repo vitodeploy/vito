@@ -13,7 +13,7 @@ class BroadcastListener
 
     public function handle(Broadcast $event): void
     {
-        Cache::set('broadcast', [
+        Cache::put('broadcast', [
             'type' => $event->type,
             'data' => $event->data,
         ], now()->addMinutes(5));

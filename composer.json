@@ -9,6 +9,7 @@
         "aws/aws-sdk-php": "^3.158",
         "bensampo/laravel-enum": "^6.3",
         "guzzlehttp/guzzle": "^7.2",
+        "laravel/fortify": "^1.17",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.2",
         "laravel/socialite": "^5.2",

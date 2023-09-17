@@ -2,6 +2,7 @@
 
 namespace App\ServerTypes;
 
+use App\Enums\ServerStatus;
 use App\Events\Broadcast;
 use App\Jobs\Installation\Initialize;
 use App\Jobs\Installation\InstallCertbot;
@@ -79,7 +80,7 @@ class Regular extends AbstractType
 
         $jobs[] = function () {
             $this->server->update([
-                'status' => 'ready',
+                'status' => ServerStatus::READY,
                 'progress' => 100,
             ]);
             event(
