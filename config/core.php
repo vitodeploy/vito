@@ -36,8 +36,8 @@ return [
      * SSH
      */
     'ssh_user' => env('SSH_USER', 'vito'),
-    'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME'),
-    'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME'),
+    'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME', 'ssh-public.key'),
+    'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME', 'ssh-private.pem'),
     'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs-local'),
     'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs-local'),
 
