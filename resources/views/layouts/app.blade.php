@@ -165,7 +165,14 @@
                             isDarkMode: localStorage.theme,
                             toggleTheme() {
                                 localStorage.theme = this.isDarkMode == 'dark' ? 'light' : 'dark';
-                                window.location.reload()
+
+                                if (localStorage.theme === 'dark') {
+                                    document.documentElement.classList.add('dark')
+                                } else {
+                                    document.documentElement.classList.remove('dark')
+                                }
+
+                                this.isDarkMode = localStorage.theme
                             }
                         }" x-on:click="toggleTheme()">
                             <div class="flex items-center">
