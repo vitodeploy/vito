@@ -17,21 +17,28 @@ class SourceControlsTest extends TestCase
     /**
      * @dataProvider data
      */
-    public function test_connect_provider(string $provider): void
+    public function test_connect_provider(string $provider, ?string $customUrl): void
     {
         $this->actingAs($this->user);
 
         Http::fake();
 
-        Livewire::test(Connect::class)
+        $livewire = Livewire::test(Connect::class)
             ->set('token', 'token')
             ->set('name', 'profile')
-            ->set('provider', $provider)
+            ->set('provider', $provider);
+
+        if($customUrl !== null){
+            $livewire->set('url', $customUrl);
+        }
+
+        $livewire
             ->call('connect')
             ->assertSuccessful();
 
         $this->assertDatabaseHas('source_controls', [
             'provider' => $provider,
+            'url' => $customUrl,
         ]);
     }
 
@@ -61,9 +68,10 @@ class SourceControlsTest extends TestCase
     public static function data(): array
     {
         return [
-            ['github'],
-            ['gitlab'],
-            ['bitbucket'],
+            ['github', null],
+            ['gitlab', null],
+            ['gitlab', 'https://git.example.com/'],
+            ['bitbucket', null],
         ];
     }
 }
