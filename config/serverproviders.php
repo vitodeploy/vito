@@ -141,123 +141,123 @@ return [
         'images' => [
             'af-south-1' => [
                 'ubuntu_20' => 'ami-03684d4c2541e5333',
-                'ubuntu_22' => 'ami-05759acc7d8973892'
+                'ubuntu_22' => 'ami-05759acc7d8973892',
             ],
             'ap-east-1' => [
                 'ubuntu_20' => 'ami-0b19a97bf326b4931',
-                'ubuntu_22' => 'ami-03490b1b7425e5fe3'
+                'ubuntu_22' => 'ami-03490b1b7425e5fe3',
             ],
             'ap-northeast-1' => [
                 'ubuntu_20' => 'ami-0e25df74d27e028e6',
-                'ubuntu_22' => 'ami-09a81b370b76de6a2'
+                'ubuntu_22' => 'ami-09a81b370b76de6a2',
             ],
             'ap-northeast-2' => [
                 'ubuntu_20' => 'ami-003a709e1e4ce3729',
-                'ubuntu_22' => 'ami-086cae3329a3f7d75'
+                'ubuntu_22' => 'ami-086cae3329a3f7d75',
             ],
             'ap-northeast-3' => [
                 'ubuntu_20' => 'ami-06c1367bd83de7d47',
-                'ubuntu_22' => 'ami-0690c54203f5f67da'
+                'ubuntu_22' => 'ami-0690c54203f5f67da',
             ],
             'ap-south-1' => [
                 'ubuntu_20' => 'ami-0b88997c830e88c76',
-                'ubuntu_22' => 'ami-0287a05f0ef0e9d9a'
+                'ubuntu_22' => 'ami-0287a05f0ef0e9d9a',
             ],
             'ap-south-2' => [
                 'ubuntu_20' => 'ami-049e2ae605332dba6',
-                'ubuntu_22' => 'ami-06fe902e167e67d33'
+                'ubuntu_22' => 'ami-06fe902e167e67d33',
             ],
             'ap-southeast-1' => [
                 'ubuntu_20' => 'ami-0a6461ddb52e9db63',
-                'ubuntu_22' => 'ami-078c1149d8ad719a7'
+                'ubuntu_22' => 'ami-078c1149d8ad719a7',
             ],
             'ap-southeast-2' => [
                 'ubuntu_20' => 'ami-0a9fb81cc3289919c',
-                'ubuntu_22' => 'ami-0df4b2961410d4cff'
+                'ubuntu_22' => 'ami-0df4b2961410d4cff',
             ],
             'ap-southeast-3' => [
                 'ubuntu_20' => 'ami-05ee5bed682a3fff0',
-                'ubuntu_22' => 'ami-0fb6d1fdeeea10488'
+                'ubuntu_22' => 'ami-0fb6d1fdeeea10488',
             ],
             'ap-southeast-4' => [
                 'ubuntu_20' => 'ami-02f9759882b112414',
-                'ubuntu_22' => 'ami-043a030d3eeabec75'
+                'ubuntu_22' => 'ami-043a030d3eeabec75',
             ],
             'ca-central-1' => [
                 'ubuntu_20' => 'ami-0daaea212e620de87',
-                'ubuntu_22' => 'ami-06873c81b882339ac'
+                'ubuntu_22' => 'ami-06873c81b882339ac',
             ],
             'cn-north-1' => [
                 'ubuntu_20' => 'ami-0c8bcac1fe3389a72',
-                'ubuntu_22' => 'ami-0728a1a4cc9e07753'
+                'ubuntu_22' => 'ami-0728a1a4cc9e07753',
             ],
             'cn-northwest-1' => [
                 'ubuntu_20' => 'ami-0415bfb3ea62e17c0',
-                'ubuntu_22' => 'ami-05529cf859783e600'
+                'ubuntu_22' => 'ami-05529cf859783e600',
             ],
             'eu-central-1' => [
                 'ubuntu_20' => 'ami-0b369586722023326',
-                'ubuntu_22' => 'ami-06dd92ecc74fdfb36'
+                'ubuntu_22' => 'ami-06dd92ecc74fdfb36',
             ],
             'eu-central-2' => [
                 'ubuntu_20' => 'ami-070c78d5ed65f11c8',
-                'ubuntu_22' => 'ami-07cf963e6321c9e6a'
+                'ubuntu_22' => 'ami-07cf963e6321c9e6a',
             ],
             'eu-north-1' => [
                 'ubuntu_20' => 'ami-0c5863072fc83557e',
-                'ubuntu_22' => 'ami-0fe8bec493a81c7da'
+                'ubuntu_22' => 'ami-0fe8bec493a81c7da',
             ],
             'eu-south-1' => [
                 'ubuntu_20' => 'ami-0966ff128f1497260',
-                'ubuntu_22' => 'ami-0b03947fd0ce0eed2'
+                'ubuntu_22' => 'ami-0b03947fd0ce0eed2',
             ],
             'eu-south-2' => [
                 'ubuntu_20' => 'ami-087296a5b46cb95ce',
-                'ubuntu_22' => 'ami-03486abd2962c176f'
+                'ubuntu_22' => 'ami-03486abd2962c176f',
             ],
             'eu-west-1' => [
                 'ubuntu_20' => 'ami-0e3e7f215a53e2a86',
-                'ubuntu_22' => 'ami-0694d931cee176e7d'
+                'ubuntu_22' => 'ami-0694d931cee176e7d',
             ],
             'eu-west-2' => [
                 'ubuntu_20' => 'ami-0b22eee5ba6bb6772',
-                'ubuntu_22' => 'ami-0505148b3591e4c07'
+                'ubuntu_22' => 'ami-0505148b3591e4c07',
             ],
             'eu-west-3' => [
                 'ubuntu_20' => 'ami-0f14fa1f9c69f4111',
-                'ubuntu_22' => 'ami-00983e8a26e4c9bd9'
+                'ubuntu_22' => 'ami-00983e8a26e4c9bd9',
             ],
             'il-central-1' => [
                 'ubuntu_20' => 'ami-0703881563bf5fab7',
-                'ubuntu_22' => 'ami-03869c813f5a2e20c'
+                'ubuntu_22' => 'ami-03869c813f5a2e20c',
             ],
             'me-central-1' => [
                 'ubuntu_20' => 'ami-04a5bde3b044c7c21',
-                'ubuntu_22' => 'ami-02168d82d5c12118f'
+                'ubuntu_22' => 'ami-02168d82d5c12118f',
             ],
             'me-south-1' => [
                 'ubuntu_20' => 'ami-0165b692f5714e330',
-                'ubuntu_22' => 'ami-0f8d2a6080634ee69'
+                'ubuntu_22' => 'ami-0f8d2a6080634ee69',
             ],
             'sa-east-1' => [
                 'ubuntu_20' => 'ami-095ca107fb46b81e6',
-                'ubuntu_22' => 'ami-0b6c2d49148000cd5'
+                'ubuntu_22' => 'ami-0b6c2d49148000cd5',
             ],
             'us-east-1' => [
                 'ubuntu_20' => 'ami-0fe0238291c8e3f07',
-                'ubuntu_22' => 'ami-0fc5d935ebf8bc3bc'
+                'ubuntu_22' => 'ami-0fc5d935ebf8bc3bc',
             ],
             'us-east-2' => [
                 'ubuntu_20' => 'ami-0b6968e5c7117349a',
-                'ubuntu_22' => 'ami-0e83be366243f524a'
+                'ubuntu_22' => 'ami-0e83be366243f524a',
             ],
             'us-west-1' => [
                 'ubuntu_20' => 'ami-092efbcc9a2d2be8a',
-                'ubuntu_22' => 'ami-0cbd40f694b804622'
+                'ubuntu_22' => 'ami-0cbd40f694b804622',
             ],
             'us-west-2' => [
                 'ubuntu_20' => 'ami-0a55cdf919d10eac9',
-                'ubuntu_22' => 'ami-0efcece6bed30fd98'
+                'ubuntu_22' => 'ami-0efcece6bed30fd98',
             ],
         ],
     ],
