@@ -14,6 +14,20 @@ class ConnectProvider extends Component
 
     public string $token;
 
+    public string $host;
+
+    public string $port;
+
+    public string $path = '/';
+
+    public string $username;
+
+    public string $password;
+
+    public int $ssl = 1;
+
+    public int $passive = 0;
+
     public function connect(): void
     {
         app(CreateStorageProvider::class)->create(auth()->user(), $this->all());
