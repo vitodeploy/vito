@@ -356,10 +356,10 @@ return [
      */
     'storage_providers' => [
         'dropbox',
-        'ftp'
+        'ftp',
     ],
     'storage_providers_class' => [
         'dropbox' => Dropbox::class,
-        'ftp' => FTP::class
+        'ftp' => FTP::class,
     ],
 ];

@@ -20,7 +20,7 @@ class UploadToFTPCommandTest extends TestCase
             true
         );
 
-        $expected = <<<EOD
+        $expected = <<<'EOD'
         curl --ftp-pasv -T "src" -u "username:password" ftps://1.1.1.1:21/dest
         EOD;
 

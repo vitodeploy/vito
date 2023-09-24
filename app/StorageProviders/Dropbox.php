@@ -16,14 +16,14 @@ class Dropbox extends AbstractStorageProvider
     public function validationRules(): array
     {
         return [
-            'token' => 'required'
+            'token' => 'required',
         ];
     }
 
     public function credentialData(array $input): array
     {
         return [
-            'token' => $input['token']
+            'token' => $input['token'],
         ];
     }
 

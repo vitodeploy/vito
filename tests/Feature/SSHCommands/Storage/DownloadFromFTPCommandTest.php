@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\SSHCommands\Storage;
 
-use App\SSHCommands\Storage\DownloadFromDropboxCommand;
 use App\SSHCommands\Storage\DownloadFromFTPCommand;
 use Tests\TestCase;
 
@@ -21,7 +20,7 @@ class DownloadFromFTPCommandTest extends TestCase
             true,
         );
 
-        $expected = <<<EOD
+        $expected = <<<'EOD'
         curl --ftp-pasv -u "username:password" ftp://1.1.1.1:21/src -o "dest"
         EOD;
 
