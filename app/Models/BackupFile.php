@@ -76,7 +76,7 @@ class BackupFile extends AbstractModel
 
     public function getStoragePathAttribute(): string
     {
-        return '/'.$this->backup->database->name.'/'.$this->name.'.zip';
+        return '/'.$this->name.'.zip';
     }
 
     public function restore(Database $database): void
