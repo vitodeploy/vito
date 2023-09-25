@@ -3,6 +3,7 @@
 namespace App\Actions\SourceControl;
 
 use App\Models\SourceControl;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +17,7 @@ class ConnectSourceControl
             'provider' => $input['provider'],
             'profile' => $input['name'],
             'access_token' => $input['token'],
+            'url' => Arr::has($input, 'url') ? $input['url'] : null,
         ]);
 
         if (! $sourceControl->provider()->connect()) {
@@ -43,6 +45,11 @@ class ConnectSourceControl
             ],
             'token' => [
                 'required',
+            ],
+            'url' => [
+                'nullable',
+                'url:http,https',
+                'ends_with:/',
             ],
         ];
         Validator::make($input, $rules)->validate();

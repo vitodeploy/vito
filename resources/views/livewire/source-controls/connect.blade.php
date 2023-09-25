@@ -32,6 +32,17 @@
                 @enderror
             </div>
 
+            @if($provider === App\Enums\SourceControl::GITLAB)
+                <div class="mt-6">
+                    <x-input-label for="url" value="Url (optional)" />
+                    <x-text-input wire:model.defer="url" id="url" name="url" type="text" class="mt-1 w-full" placeholder="e.g. https://gitlab.example.com/" />
+                    <x-input-help>If you run a self-managed gitlab enter the url here, leave empty to use gitlab.com</x-input-help>
+                    @error('url')
+                    <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
+            @endif
+
             <div class="mt-6">
                 <x-input-label for="token" value="API Key" />
                 <x-text-input wire:model.defer="token" id="token" name="token" type="text" class="mt-1 w-full" />

@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Http;
 
 class Gitlab extends AbstractSourceControlProvider
 {
-    protected string $apiUrl = 'https://gitlab.com/api/v4';
+    protected string $defaultApiHost = 'https://gitlab.com/';
+
+    protected string $apiVersion = 'api/v4';
 
     public function connect(): bool
     {
         $res = Http::withToken($this->sourceControl->access_token)
-            ->get($this->apiUrl.'/projects');
+            ->get($this->getApiUrl().'/projects');
 
         return $res->successful();
     }
@@ -27,7 +29,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = $repo ? urlencode($repo) : null;
         $res = Http::withToken($this->sourceControl->access_token)
-            ->get($this->apiUrl.'/projects/'.$repository.'/repository/commits');
+            ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits');
 
         $this->handleResponseErrors($res, $repo);
 
@@ -36,7 +38,9 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function fullRepoUrl(string $repo, string $key): string
     {
-        return sprintf('git@gitlab.com-%s:%s.git', $key, $repo);
+        $host = parse_url($this->getApiUrl())['host'];
+
+        return sprintf('git@%s-%s:%s.git', $host, $key, $repo);
     }
 
     /**
@@ -46,7 +50,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = urlencode($repo);
         $response = Http::withToken($this->sourceControl->access_token)->post(
-            $this->apiUrl.'/projects/'.$repository.'/hooks',
+            $this->getApiUrl().'/projects/'.$repository.'/hooks',
             [
                 'description' => 'deploy',
                 'url' => url('/git-hooks?secret='.$secret),
@@ -81,7 +85,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = urlencode($repo);
         $response = Http::withToken($this->sourceControl->access_token)->delete(
-            $this->apiUrl.'/projects/'.$repository.'/hooks/'.$hookId
+            $this->getApiUrl().'/projects/'.$repository.'/hooks/'.$hookId
         );
 
         if ($response->status() != 204) {
@@ -96,7 +100,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = urlencode($repo);
         $res = Http::withToken($this->sourceControl->access_token)
-            ->get($this->apiUrl.'/projects/'.$repository.'/repository/commits?ref_name='.$branch);
+            ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits?ref_name='.$branch);
 
         $this->handleResponseErrors($res, $repo);
 
@@ -123,7 +127,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = urlencode($repo);
         $response = Http::withToken($this->sourceControl->access_token)->post(
-            $this->apiUrl.'/projects/'.$repository.'/deploy_keys',
+            $this->getApiUrl().'/projects/'.$repository.'/deploy_keys',
             [
                 'title' => $title,
                 'key' => $key,
@@ -134,5 +138,14 @@ class Gitlab extends AbstractSourceControlProvider
         if ($response->status() != 201) {
             throw new FailedToDeployGitKey(json_decode($response->body())->message);
         }
+    }
+
+    public function getApiUrl(): string
+    {
+        $host = $this->sourceControl->url === null
+            ? $this->defaultApiHost
+            : $this->sourceControl->url;
+
+        return $host.$this->apiVersion;
     }
 }

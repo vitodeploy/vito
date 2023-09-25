@@ -17,4 +17,40 @@ class SourceControlFactory extends Factory
             'access_token' => Str::random(10),
         ];
     }
+
+    public function gitlab(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'provider' => \App\Enums\SourceControl::GITLAB,
+            ];
+        });
+    }
+
+    public function github(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'provider' => \App\Enums\SourceControl::GITHUB,
+            ];
+        });
+    }
+
+    public function bitbucket(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'provider' => \App\Enums\SourceControl::BITBUCKET,
+            ];
+        });
+    }
+
+    public function custom(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'provider' => \App\Enums\SourceControl::CUSTOM,
+            ];
+        });
+    }
 }
