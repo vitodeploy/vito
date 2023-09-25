@@ -17,7 +17,7 @@ class ConnectSourceControl
             'provider' => $input['provider'],
             'profile' => $input['name'],
             'access_token' => $input['token'],
-            'url' => Arr::has($input,'url') ? $input['url'] : null,
+            'url' => Arr::has($input, 'url') ? $input['url'] : null,
         ]);
 
         if (! $sourceControl->provider()->connect()) {
@@ -50,7 +50,7 @@ class ConnectSourceControl
                 'nullable',
                 'url:http,https',
                 'ends_with:/',
-            ]
+            ],
         ];
         Validator::make($input, $rules)->validate();
     }

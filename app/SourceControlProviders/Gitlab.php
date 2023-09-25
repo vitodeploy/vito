@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 class Gitlab extends AbstractSourceControlProvider
 {
     protected string $defaultApiHost = 'https://gitlab.com/';
+
     protected string $apiVersion = 'api/v4';
 
     public function connect(): bool
@@ -38,6 +39,7 @@ class Gitlab extends AbstractSourceControlProvider
     public function fullRepoUrl(string $repo, string $key): string
     {
         $host = parse_url($this->getApiUrl())['host'];
+
         return sprintf('git@%s-%s:%s.git', $host, $key, $repo);
     }
 
@@ -144,6 +146,6 @@ class Gitlab extends AbstractSourceControlProvider
             ? $this->defaultApiHost
             : $this->sourceControl->url;
 
-        return $host . $this->apiVersion;
+        return $host.$this->apiVersion;
     }
 }

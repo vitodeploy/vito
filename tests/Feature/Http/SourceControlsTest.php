@@ -28,7 +28,7 @@ class SourceControlsTest extends TestCase
             ->set('name', 'profile')
             ->set('provider', $provider);
 
-        if($customUrl !== null){
+        if ($customUrl !== null) {
             $livewire->set('url', $customUrl);
         }
 
