@@ -18,7 +18,7 @@
             <tr>
                 <x-th>{{ __("Name") }}</x-th>
                 <x-th>{{ __("Created") }}</x-th>
-                <x-th>{{ __("Size") }}</x-th>
+                {{--<x-th>{{ __("Size") }}</x-th>--}}
                 <x-th>{{ __("Status") }}</x-th>
                 <x-th>{{ __("Restored") }}</x-th>
                 <x-th>{{ __("Restored To") }}</x-th>
@@ -30,7 +30,7 @@
                     <x-td>
                         <x-datetime :value="$file->created_at" />
                     </x-td>
-                    <x-td>{{ $file->size }}</x-td>
+                    {{--<x-td>{{ $file->size }}</x-td>--}}
                     <x-td>
                         <div class="inline-flex">
                             @include('livewire.databases.partials.backup-file-status', ['status' => $file->status])

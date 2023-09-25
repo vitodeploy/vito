@@ -30,6 +30,7 @@ use App\SourceControlProviders\Custom;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use App\StorageProviders\Dropbox;
+use App\StorageProviders\FTP;
 
 return [
     /*
@@ -355,8 +356,10 @@ return [
      */
     'storage_providers' => [
         'dropbox',
+        'ftp',
     ],
     'storage_providers_class' => [
         'dropbox' => Dropbox::class,
+        'ftp' => FTP::class,
     ],
 ];
