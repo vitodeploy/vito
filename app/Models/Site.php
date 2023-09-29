@@ -266,13 +266,7 @@ class Site extends AbstractModel
         }
         $deployment->save();
 
-        dispatch(
-            new Deploy(
-                $deployment,
-                $this->path,
-                $this->deployment_script_text
-            )
-        )->onConnection('ssh');
+        dispatch(new Deploy($deployment, $this->path))->onConnection('ssh');
 
         return $deployment;
     }

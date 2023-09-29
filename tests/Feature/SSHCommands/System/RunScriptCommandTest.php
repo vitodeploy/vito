@@ -16,9 +16,7 @@ class RunScriptCommandTest extends TestCase
             echo 'VITO_SSH_ERROR' && exit 1
         fi
 
-        if ! script; then
-            echo 'VITO_SSH_ERROR' && exit 1
-        fi
+        script
         EOD;
 
         $this->assertStringContainsString($expected, $command->content());
