@@ -15,10 +15,13 @@ class UpdateProfileInformation extends Component
 
     public string $email;
 
+    public string $timezone;
+
     public function mount(): void
     {
         $this->name = auth()->user()->name;
         $this->email = auth()->user()->email;
+        $this->timezone = auth()->user()->timezone;
     }
 
     /**
