@@ -19,6 +19,10 @@ class UpdateUserProfileInformation
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'timezone' => [
+                'required',
+                Rule::in(timezone_identifiers_list()),
+            ],
         ])->validateWithBag('updateProfileInformation');
 
         if ($input['email'] !== $user->email) {
@@ -27,6 +31,7 @@ class UpdateUserProfileInformation
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'timezone' => $input['timezone'],
             ])->save();
         }
     }
@@ -39,6 +44,7 @@ class UpdateUserProfileInformation
         $user->forceFill([
             'name' => $input['name'],
             'email' => $input['email'],
+            'timezone' => $input['timezone'],
         ])->save();
     }
 }

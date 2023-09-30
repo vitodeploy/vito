@@ -45,6 +45,18 @@
                 </div>
             @endif
         </div>
+
+        <div>
+            <x-input-label for="timezone" :value="__('Timezone')" />
+            <x-select-input wire:model.defer="timezone" id="timezone" name="timezone" class="mt-1 block w-full" required>
+                @foreach(timezone_identifiers_list() as $timezone)
+                    <option value="{{ $timezone }}">{{ $timezone }}</option>
+                @endforeach
+            </x-select-input>
+            @error('timezone')
+            <x-input-error class="mt-2" :messages="$message" />
+            @enderror
+        </div>
     </form>
 
     <x-slot name="actions">

@@ -29,6 +29,7 @@ class ProfileTest extends TestCase
         Livewire::test(UpdateProfileInformation::class)
             ->set('name', 'Test')
             ->set('email', 'test@example.com')
+            ->set('timezone', 'Europe/Berlin')
             ->call('submit')
             ->assertSuccessful();
 
@@ -36,5 +37,6 @@ class ProfileTest extends TestCase
 
         $this->assertSame('Test', $this->user->name);
         $this->assertSame('test@example.com', $this->user->email);
+        $this->assertSame('Europe/Berlin', $this->user->timezone);
     }
 }
