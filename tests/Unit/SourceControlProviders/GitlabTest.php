@@ -1,15 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Tests\Unit\SourceControlProviders;
 
 use App\Models\SourceControl;
 use App\SourceControlProviders\Gitlab;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class GitlabTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_default_gitlab_url(): void
     {
         $sourceControlModel = SourceControl::factory()
