@@ -37,7 +37,7 @@ class UninstallPHPMyAdmin extends Job
         /** @var ?FirewallRule $rule */
         $rule = FirewallRule::query()
             ->where('server_id', $this->service->server_id)
-            ->where('port', '54331')
+            ->where('port', $this->service->type_data['port'])
             ->first();
         $rule?->removeFromServer();
     }

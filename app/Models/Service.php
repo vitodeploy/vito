@@ -76,7 +76,7 @@ class Service extends AbstractModel
         return new $uninstaller($this);
     }
 
-    public function getUnitAttribute($value): string
+    public function getUnitAttribute($value): ?string
     {
         if ($value) {
             return $value;

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Actions\Database;
+namespace App\Actions\Service;
 
+use App\Enums\ServiceStatus;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
@@ -18,23 +19,21 @@ class InstallPHPMyAdmin
 
         $phpMyAdmin = $server->defaultService('phpmyadmin');
         if ($phpMyAdmin) {
-            if ($phpMyAdmin->status === 'ready') {
-                throw ValidationException::withMessages([
-                    'install' => __('Already installed'),
-                ])->errorBag('installPHPMyAdmin');
-            }
-            $phpMyAdmin->delete();
+            throw ValidationException::withMessages([
+                'allowed_ip' => __('Already installed'),
+            ]);
         }
         $phpMyAdmin = new Service([
             'server_id' => $server->id,
             'type' => 'phpmyadmin',
             'type_data' => [
                 'allowed_ip' => $input['allowed_ip'],
+                'port' => $input['port'],
                 'php' => $server->defaultService('php')->version,
             ],
             'name' => 'phpmyadmin',
             'version' => '5.1.2',
-            'status' => 'installing',
+            'status' => ServiceStatus::INSTALLING,
             'is_default' => 1,
         ]);
         $phpMyAdmin->save();
@@ -50,6 +49,12 @@ class InstallPHPMyAdmin
     {
         Validator::make($input, [
             'allowed_ip' => 'required',
-        ])->validateWithBag('installPHPMyAdmin');
+            'port' => [
+                'required',
+                'numeric',
+                'min:1',
+                'max:65535',
+            ],
+        ])->validate();
     }
 }

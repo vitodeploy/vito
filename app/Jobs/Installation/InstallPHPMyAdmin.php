@@ -3,6 +3,7 @@
 namespace App\Jobs\Installation;
 
 use App\Actions\FirewallRule\CreateRule;
+use App\Enums\ServiceStatus;
 use App\Jobs\Job;
 use App\Models\FirewallRule;
 use App\Models\Service;
@@ -32,6 +33,9 @@ class InstallPHPMyAdmin extends Job
         $this->downloadSource();
         $this->setUpVHost();
         $this->restartPHP();
+        $this->service->update([
+            'status' => ServiceStatus::READY,
+        ]);
     }
 
     /**
@@ -41,7 +45,7 @@ class InstallPHPMyAdmin extends Job
     {
         $this->firewallRule = FirewallRule::query()
             ->where('server_id', $this->service->server_id)
-            ->where('port', '54331')
+            ->where('port', $this->service->type_data['port'])
             ->first();
         if ($this->firewallRule) {
             $this->firewallRule->source = $this->service->type_data['allowed_ip'];
@@ -52,7 +56,7 @@ class InstallPHPMyAdmin extends Job
                 [
                     'type' => 'allow',
                     'protocol' => 'tcp',
-                    'port' => '54331',
+                    'port' => $this->service->type_data['port'],
                     'source' => $this->service->type_data['allowed_ip'],
                     'mask' => '0',
                 ]
@@ -78,6 +82,7 @@ class InstallPHPMyAdmin extends Job
     {
         $vhost = File::get(resource_path('commands/webserver/nginx/phpmyadmin-vhost.conf'));
         $vhost = Str::replace('__php_version__', $this->service->server->defaultService('php')->version, $vhost);
+        $vhost = Str::replace('__port__', $this->service->type_data['port'], $vhost);
         $this->service->server->ssh()->exec(
             new CreateNginxPHPMyAdminVHostCommand($vhost),
             'create-phpmyadmin-vhost'
@@ -98,6 +103,9 @@ class InstallPHPMyAdmin extends Job
     public function failed(Throwable $throwable): Throwable
     {
         $this->firewallRule?->removeFromServer();
+        $this->service->update([
+            'status' => ServiceStatus::INSTALLATION_FAILED,
+        ]);
         throw $throwable;
     }
 }
