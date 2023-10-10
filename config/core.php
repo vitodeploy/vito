@@ -324,7 +324,6 @@ return [
         'https' => 443,
         'mysql' => 3306,
         'ftp' => 21,
-        'phpmyadmin' => 54331,
         'tcp' => '',
         'udp' => '',
     ],
