@@ -13,7 +13,7 @@ class InstallPHPMyAdmin extends Component
 
     public string $allowed_ip;
 
-    public int $port = 5433;
+    public string $port = '5433';
 
     public function install(): void
     {
