@@ -292,11 +292,12 @@ return [
      */
     'php_extensions' => [
         'imagick',
-        'geoip',
         'exif',
         'gmagick',
         'gmp',
         'intl',
+        'sqlite3',
+        'opcache',
     ],
 
     /*

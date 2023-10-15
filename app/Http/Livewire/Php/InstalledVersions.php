@@ -3,11 +3,13 @@
 namespace App\Http\Livewire\Php;
 
 use App\Actions\PHP\InstallNewPHP;
+use App\Actions\PHP\InstallPHPExtension;
 use App\Actions\PHP\UpdatePHPIni;
 use App\Models\Server;
 use App\Models\Service;
 use App\SSHCommands\PHP\GetPHPIniCommand;
 use App\Traits\RefreshComponentOnBroadcast;
+use Exception;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Throwable;
@@ -24,6 +26,10 @@ class InstalledVersions extends Component
 
     public string $ini = 'Loading php.ini';
 
+    public ?int $extensionId = null;
+
+    public string $extension = '';
+
     public function install(string $version): void
     {
         app(InstallNewPHP::class)->install($this->server, [
@@ -35,6 +41,7 @@ class InstalledVersions extends Component
 
     public function restart(int $id): void
     {
+        /** @var Service $service */
         $service = Service::query()->findOrFail($id);
         $service->restart();
 
@@ -43,6 +50,7 @@ class InstalledVersions extends Component
 
     public function uninstall(): void
     {
+        /** @var Service $service */
         $service = Service::query()->findOrFail($this->uninstallId);
         $service->uninstall();
 
@@ -56,6 +64,7 @@ class InstalledVersions extends Component
         $this->iniId = $id;
         $this->ini = 'Loading php.ini';
 
+        /** @var Service $service */
         $service = Service::query()->findOrFail($this->iniId);
 
         try {
@@ -67,6 +76,7 @@ class InstalledVersions extends Component
 
     public function saveIni(): void
     {
+        /** @var Service $service */
         $service = Service::query()->findOrFail($this->iniId);
 
         app(UpdatePHPIni::class)->update($service, $this->all()['ini']);
@@ -76,10 +86,32 @@ class InstalledVersions extends Component
         session()->flash('status', 'ini-updated');
     }
 
+    /**
+     * @throws Exception
+     */
+    public function installExtension(): void
+    {
+        /** @var Service $service */
+        $service = Service::query()->findOrFail($this->extensionId);
+
+        app(InstallPHPExtension::class)->handle($service, [
+            'name' => $this->extension,
+        ]);
+
+        session()->flash('status', 'started-installation');
+    }
+
     public function render(): View
     {
+        if ($this->extensionId) {
+            /** @var Service $php */
+            $php = Service::query()->findOrFail($this->extensionId);
+            $installedExtensions = $php->type_data['extensions'] ?? [];
+        }
+
         return view('livewire.php.installed-versions', [
             'phps' => $this->server->services()->where('type', 'php')->get(),
+            'installedExtensions' => $installedExtensions ?? [],
         ]);
     }
 }

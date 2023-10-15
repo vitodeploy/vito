@@ -38,7 +38,8 @@
             class="left-0 top-0 min-h-screen w-64 flex-none bg-gray-800 dark:bg-gray-800/50 p-3 dark:border-r-2 dark:border-gray-800">
             <div class="h-16 block">
                 <div class="flex items-center justify-start text-3xl font-extrabold text-white">
-                    Vito
+                    <x-application-logo class="w-10 h-10 rounded-md"/>
+                    <span class="ml-1">Deploy</span>
                 </div>
             </div>
 
