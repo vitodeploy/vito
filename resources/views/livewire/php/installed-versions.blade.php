@@ -28,9 +28,9 @@
                                         </x-secondary-button>
                                     </x-slot>
                                     <x-slot name="content">
-                                        {{--<x-dropdown-link class="cursor-pointer">--}}
-                                        {{--    {{ __("Install Extension") }}--}}
-                                        {{--</x-dropdown-link>--}}
+                                        <x-dropdown-link class="cursor-pointer" x-on:click="$wire.extensionId = {{ $php->id }}; $dispatch('open-modal', 'install-extension')">
+                                            {{ __("Install Extension") }}
+                                        </x-dropdown-link>
                                         <x-dropdown-link class="cursor-pointer" x-on:click="$dispatch('open-modal', 'update-php-ini')" wire:click="loadIni({{ $php->id }})">
                                             {{ __("Edit php.ini") }}
                                         </x-dropdown-link>
@@ -52,6 +52,7 @@
         </div>
         @include('livewire.php.partials.uninstall-php')
         @include('livewire.php.partials.update-php-ini')
+        @include('livewire.php.partials.install-extension')
     @else
         <x-simple-card>
             <div class="text-center">

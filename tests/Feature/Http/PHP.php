@@ -7,6 +7,7 @@ use App\Http\Livewire\Php\DefaultCli;
 use App\Http\Livewire\Php\InstalledVersions;
 use App\Jobs\Installation\InstallPHP;
 use App\Jobs\Installation\UninstallPHP;
+use App\Jobs\PHP\InstallPHPExtension;
 use App\Jobs\PHP\SetDefaultCli;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,5 +68,43 @@ class PHP extends TestCase
             ->assertSuccessful();
 
         Bus::assertDispatched(SetDefaultCli::class);
+    }
+
+    public function test_install_extension(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        Livewire::test(InstalledVersions::class, ['server' => $this->server])
+            ->set('extensionId', $this->server->php('8.2')?->id)
+            ->set('extension', 'gmp')
+            ->call('installExtension')
+            ->assertSuccessful();
+
+        Bus::assertDispatched(InstallPHPExtension::class);
+    }
+
+    public function test_extension_already_installed(): void
+    {
+        Bus::fake();
+
+        $this->actingAs($this->user);
+
+        $this->server->php('8.2')->update([
+            'type_data' => [
+                'extensions' => [
+                    'gmp',
+                ],
+            ],
+        ]);
+
+        Livewire::test(InstalledVersions::class, ['server' => $this->server])
+            ->set('extensionId', $this->server->php('8.2')?->id)
+            ->set('extension', 'gmp')
+            ->call('installExtension')
+            ->assertSuccessful();
+
+        Bus::assertNotDispatched(InstallPHPExtension::class);
     }
 }
