@@ -46,7 +46,7 @@ class Bitbucket extends AbstractSourceControlProvider
     {
         $response = Http::withToken($this->sourceControl->access_token)->post($this->apiUrl."/repositories/$repo/hooks", [
             'description' => 'deploy',
-            'url' => url('/git-hooks?secret='.$secret),
+            'url' => url('/api/git-hooks?secret='.$secret),
             'events' => [
                 'repo:'.implode(',', $events),
             ],

@@ -1,5 +1,4 @@
 <div x-data="">
-    <x-secondary-button x-on:click="$dispatch('open-modal', 'change-branch')">{{ __("Branch") }}</x-secondary-button>
     <x-modal name="change-branch">
         <form wire:submit.prevent="change" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">

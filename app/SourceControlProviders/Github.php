@@ -59,7 +59,7 @@ class Github extends AbstractSourceControlProvider
             'name' => 'web',
             'events' => $events,
             'config' => [
-                'url' => url('/git-hooks?secret='.$secret),
+                'url' => url('/api/git-hooks?secret='.$secret),
                 'content_type' => 'json',
             ],
             'active' => true,

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Exceptions\FailedToDeployGitHook;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -22,6 +22,8 @@ use Throwable;
  */
 class GitHook extends AbstractModel
 {
+    use HasFactory;
+
     protected $fillable = [
         'site_id',
         'source_control_id',
@@ -55,9 +57,6 @@ class GitHook extends AbstractModel
         return $query->where('events', 'like', "%\"{$event}\"%");
     }
 
-    /**
-     * @throws FailedToDeployGitHook
-     */
     public function deployHook(): void
     {
         $this->update(

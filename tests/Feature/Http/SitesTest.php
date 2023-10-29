@@ -9,6 +9,7 @@ use App\Http\Livewire\Sites\ChangePhpVersion;
 use App\Http\Livewire\Sites\CreateSite;
 use App\Http\Livewire\Sites\DeleteSite;
 use App\Http\Livewire\Sites\SitesList;
+use App\Http\Livewire\Sites\UpdateSourceControlProvider;
 use App\Jobs\Site\CreateVHost;
 use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -108,5 +109,22 @@ class SitesTest extends TestCase
             ->assertSuccessful();
 
         Bus::assertDispatched(\App\Jobs\Site\ChangePHPVersion::class);
+    }
+
+    public function test_update_source_control(): void
+    {
+        $this->actingAs($this->user);
+
+        /** @var \App\Models\SourceControl $gitlab */
+        $gitlab = \App\Models\SourceControl::factory()->gitlab()->create();
+
+        Livewire::test(UpdateSourceControlProvider::class, ['site' => $this->site])
+            ->set('source_control', $gitlab->id)
+            ->call('update')
+            ->assertSuccessful();
+
+        $this->site->refresh();
+
+        $this->assertEquals($gitlab->id, $this->site->source_control_id);
     }
 }

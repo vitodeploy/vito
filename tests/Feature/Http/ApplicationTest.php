@@ -2,13 +2,16 @@
 
 namespace Tests\Feature\Http;
 
+use App\Http\Livewire\Application\AutoDeployment;
 use App\Http\Livewire\Application\ChangeBranch;
 use App\Http\Livewire\Application\Deploy;
 use App\Http\Livewire\Application\DeploymentScript;
 use App\Http\Livewire\Application\LaravelApp;
 use App\Jobs\Site\UpdateBranch;
+use App\Models\GitHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -65,5 +68,46 @@ class ApplicationTest extends TestCase
             ->assertSuccessful();
 
         Bus::assertDispatched(UpdateBranch::class);
+    }
+
+    public function test_enable_auto_deployment()
+    {
+        Http::fake([
+            'github.com/*' => Http::response([
+                'id' => '123',
+            ], 201),
+        ]);
+
+        $this->actingAs($this->user);
+
+        Livewire::test(AutoDeployment::class, ['site' => $this->site])
+            ->call('enable')
+            ->assertSuccessful();
+
+        $this->site->refresh();
+
+        $this->assertTrue($this->site->auto_deployment);
+    }
+
+    public function test_disable_auto_deployment()
+    {
+        Http::fake([
+            'github.com/*' => Http::response([], 204),
+        ]);
+
+        $this->actingAs($this->user);
+
+        GitHook::factory()->create([
+            'site_id' => $this->site->id,
+            'source_control_id' => $this->site->source_control_id,
+        ]);
+
+        Livewire::test(AutoDeployment::class, ['site' => $this->site])
+            ->call('disable')
+            ->assertSuccessful();
+
+        $this->site->refresh();
+
+        $this->assertFalse($this->site->auto_deployment);
     }
 }

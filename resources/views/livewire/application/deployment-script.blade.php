@@ -1,5 +1,4 @@
 <div x-data="">
-    <x-secondary-button x-on:click="$dispatch('open-modal', 'deployment-script')">{{ __("Deployment Script") }}</x-secondary-button>
     <x-modal name="deployment-script">
         <form wire:submit.prevent="save" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">

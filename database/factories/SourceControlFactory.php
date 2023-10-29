@@ -13,7 +13,6 @@ class SourceControlFactory extends Factory
     public function definition(): array
     {
         return [
-            'provider' => $this->faker->randomElement(\App\Enums\SourceControl::getValues()),
             'access_token' => Str::random(10),
         ];
     }
@@ -41,15 +40,6 @@ class SourceControlFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'provider' => \App\Enums\SourceControl::BITBUCKET,
-            ];
-        });
-    }
-
-    public function custom(): Factory
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'provider' => \App\Enums\SourceControl::CUSTOM,
             ];
         });
     }

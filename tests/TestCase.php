@@ -7,6 +7,7 @@ use App\Enums\ServiceStatus;
 use App\Enums\Webserver;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\SourceControl;
 use App\Models\User;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\File;
@@ -53,8 +54,12 @@ abstract class TestCase extends BaseTestCase
 
     private function setupSite(): void
     {
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->github()->create();
         $this->site = Site::factory()->create([
             'server_id' => $this->server->id,
+            'source_control_id' => $sourceControl->id,
+            'repository' => 'organization/repository',
         ]);
     }
 
