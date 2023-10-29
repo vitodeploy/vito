@@ -26,7 +26,6 @@ use App\ServiceHandlers\Webserver\Nginx;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPSite;
 use App\SourceControlProviders\Bitbucket;
-use App\SourceControlProviders\Custom;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use App\StorageProviders\Dropbox;
@@ -284,7 +283,6 @@ return [
         'github' => Github::class,
         'gitlab' => Gitlab::class,
         'bitbucket' => Bitbucket::class,
-        'custom' => Custom::class,
     ],
 
     /*

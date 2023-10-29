@@ -61,7 +61,7 @@ class SourceControlsTest extends TestCase
             ->assertSuccessful();
 
         $this->assertDatabaseMissing('source_controls', [
-            'provider' => $provider,
+            'id' => $sourceControl->id,
         ]);
     }
 

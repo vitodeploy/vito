@@ -6,7 +6,6 @@ use App\Contracts\SiteType;
 use App\Enums\DeploymentStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
-use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Jobs\Site\ChangePHPVersion;
 use App\Jobs\Site\Deploy;
@@ -19,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -341,22 +340,16 @@ class Site extends AbstractModel
 
     /**
      * @throws SourceControlIsNotConnected
-     * @throws ValidationException
-     * @throws FailedToDeployGitHook
      * @throws Throwable
      */
     public function enableAutoDeployment(): void
     {
         if ($this->gitHook) {
-            throw ValidationException::withMessages([
-                'auto_deployment' => __('Auto deployment already enabled'),
-            ])->errorBag('auto_deployment');
+            return;
         }
 
         if (! $this->sourceControl()) {
-            throw ValidationException::withMessages([
-                'auto_deployment' => __('Your application does not use any source controls'),
-            ])->errorBag('auto_deployment');
+            throw new SourceControlIsNotConnected($this->source_control);
         }
 
         try {
@@ -364,7 +357,7 @@ class Site extends AbstractModel
             $gitHook = new GitHook([
                 'site_id' => $this->id,
                 'source_control_id' => $this->sourceControl()->id,
-                'secret' => generate_uid(),
+                'secret' => Str::uuid()->toString(),
                 'actions' => ['deploy'],
                 'events' => ['push'],
             ]);

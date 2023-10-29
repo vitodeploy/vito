@@ -53,7 +53,7 @@ class Gitlab extends AbstractSourceControlProvider
             $this->getApiUrl().'/projects/'.$repository.'/hooks',
             [
                 'description' => 'deploy',
-                'url' => url('/git-hooks?secret='.$secret),
+                'url' => url('/api/git-hooks?secret='.$secret),
                 'push_events' => in_array('push', $events),
                 'issues_events' => false,
                 'job_events' => false,
