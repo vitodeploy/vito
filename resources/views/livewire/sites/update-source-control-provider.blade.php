@@ -7,7 +7,7 @@
         <div>
             <x-input-label for="provider" :value="__('Source Control')" />
             <x-select-input wire:model.defer="source_control" id="source_control" name="source_control" class="mt-1 w-full">
-                <option value="" disabled selected>{{ __("Select") }}</option>
+                <option value="" selected>{{ __("Select") }}</option>
                 @foreach(\App\Models\SourceControl::all() as $sourceControl)
                     <option value="{{ $sourceControl->id }}" @if($sourceControl->id === $source_control) selected @endif>{{ $sourceControl->profile }} ({{ $sourceControl->provider }})</option>
                 @endforeach

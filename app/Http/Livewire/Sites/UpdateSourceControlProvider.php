@@ -11,11 +11,13 @@ class UpdateSourceControlProvider extends Component
 {
     public Site $site;
 
-    public ?int $source_control = null;
+    public $source_control = null;
 
     public function update(): void
     {
         app(UpdateSourceControl::class)->update($this->site, $this->all());
+
+        $this->resetErrorBag();
 
         session()->flash('status', 'source-control-updated');
     }
