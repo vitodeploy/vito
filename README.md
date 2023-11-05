@@ -14,6 +14,10 @@ https://vitodeploy.com
 
 Please read the contribution guide [Here](/CONTRIBUTING.md)
 
+## Security
+
+Please read the security policy [Here](/SECURITY.md)
+
 ## Credits
 
 - Laravel
