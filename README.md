@@ -12,7 +12,7 @@ https://vitodeploy.com
 
 ## Contribution
 
-Feel free to open a PR
+Please read the contribution guide [Here](/CONTRIBUTING.md)
 
 ## Credits
 
