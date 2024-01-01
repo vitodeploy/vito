@@ -61,8 +61,8 @@ class PHPSite extends AbstractSiteType
     public function data(array $input): array
     {
         return [
-            'composer' => (bool) $input['composer'],
-            'php_version' => $input['php_version'],
+            'composer' => isset($input['composer']) && $input['composer'],
+            'php_version' => $input['php_version'] ?? '',
         ];
     }
 
