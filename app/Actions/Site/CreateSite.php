@@ -49,11 +49,6 @@ class CreateSite
                 ]);
             }
 
-            // detect php version
-            if ($site->type()->language() === 'php') {
-                $site->php_version = $input['php_version'];
-            }
-
             // validate type
             $this->validateType($site, $input);
 

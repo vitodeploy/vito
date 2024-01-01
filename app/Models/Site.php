@@ -6,6 +6,7 @@ use App\Contracts\SiteType;
 use App\Enums\DeploymentStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
+use App\Events\Broadcast;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Jobs\Site\ChangePHPVersion;
 use App\Jobs\Site\Deploy;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -391,5 +393,50 @@ class Site extends AbstractModel
     public function getSshKeyNameAttribute(): string
     {
         return str('site_'.$this->id)->toString();
+    }
+
+    public function installationFinished(): void
+    {
+        $this->update([
+            'status' => SiteStatus::READY,
+            'progress' => 100,
+        ]);
+        event(
+            new Broadcast('install-site-finished', [
+                'site' => $this,
+            ])
+        );
+        /** @todo notify */
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function installationFailed(Throwable $e): void
+    {
+        $this->update([
+            'status' => SiteStatus::INSTALLATION_FAILED,
+        ]);
+        event(
+            new Broadcast('install-site-failed', [
+                'site' => $this,
+            ])
+        );
+        /** @todo notify */
+        Log::error('install-site-error', [
+            'error' => (string) $e,
+        ]);
+
+        throw $e;
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        return in_array($feature, $this->type()->supportedFeatures());
+    }
+
+    public function isReady(): bool
+    {
+        return $this->status === SiteStatus::READY;
     }
 }
