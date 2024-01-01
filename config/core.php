@@ -25,6 +25,7 @@ use App\ServiceHandlers\ProcessManager\Supervisor;
 use App\ServiceHandlers\Webserver\Nginx;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPSite;
+use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
@@ -262,12 +263,12 @@ return [
     'site_types' => [
         \App\Enums\SiteType::PHP,
         \App\Enums\SiteType::LARAVEL,
-        // \App\Enums\SiteType::WORDPRESS,
+        \App\Enums\SiteType::WORDPRESS,
     ],
     'site_types_class' => [
         \App\Enums\SiteType::PHP => PHPSite::class,
         \App\Enums\SiteType::LARAVEL => Laravel::class,
-        // \App\Enums\SiteType::WORDPRESS => Wordpress::class,
+        \App\Enums\SiteType::WORDPRESS => Wordpress::class,
     ],
 
     /*
