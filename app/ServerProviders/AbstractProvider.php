@@ -10,7 +10,7 @@ abstract class AbstractProvider implements ServerProvider
 {
     protected ?Server $server;
 
-    public function __construct(Server $server = null)
+    public function __construct(?Server $server = null)
     {
         $this->server = $server;
     }

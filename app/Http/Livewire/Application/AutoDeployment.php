@@ -12,8 +12,8 @@ use Throwable;
 
 class AutoDeployment extends Component
 {
-    use RefreshComponentOnBroadcast;
     use HasToast;
+    use RefreshComponentOnBroadcast;
 
     public Site $site;
 

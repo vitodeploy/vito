@@ -12,7 +12,7 @@ interface ServerProvider
 
     public function data(array $input): array;
 
-    public function connect(array $credentials = null): bool;
+    public function connect(?array $credentials = null): bool;
 
     public function plans(): array;
 

@@ -25,7 +25,7 @@ class Github extends AbstractSourceControlProvider
     /**
      * @throws Exception
      */
-    public function getRepo(string $repo = null): mixed
+    public function getRepo(?string $repo = null): mixed
     {
         if ($repo) {
             $url = $this->apiUrl.'/repos/'.$repo;

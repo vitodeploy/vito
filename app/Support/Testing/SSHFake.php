@@ -15,7 +15,7 @@ class SSHFake
 
     protected string $output = '';
 
-    public function init(Server $server, string $asUser = null): self
+    public function init(Server $server, ?string $asUser = null): self
     {
         return $this;
     }
@@ -47,7 +47,7 @@ class SSHFake
         PHPUnit::assertTrue(true, $allExecuted);
     }
 
-    public function exec(string|array|SSHCommand $commands, string $log = '', int $siteId = null): string
+    public function exec(string|array|SSHCommand $commands, string $log = '', ?int $siteId = null): string
     {
         if (! is_array($commands)) {
             $commands = [$commands];

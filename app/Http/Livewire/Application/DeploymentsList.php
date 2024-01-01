@@ -10,8 +10,8 @@ use Livewire\Component;
 
 class DeploymentsList extends Component
 {
-    use RefreshComponentOnBroadcast;
     use HasCustomPaginationView;
+    use RefreshComponentOnBroadcast;
 
     public Site $site;
 

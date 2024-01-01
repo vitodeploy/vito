@@ -11,8 +11,8 @@ use Livewire\Component;
 
 class LogsList extends Component
 {
-    use RefreshComponentOnBroadcast;
     use HasCustomPaginationView;
+    use RefreshComponentOnBroadcast;
 
     public ?int $count = null;
 
