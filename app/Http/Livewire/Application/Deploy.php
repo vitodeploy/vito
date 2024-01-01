@@ -11,8 +11,8 @@ use Livewire\Component;
 
 class Deploy extends Component
 {
-    use RefreshComponentOnBroadcast;
     use HasToast;
+    use RefreshComponentOnBroadcast;
 
     public Site $site;
 

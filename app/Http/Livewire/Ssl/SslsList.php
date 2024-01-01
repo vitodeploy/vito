@@ -10,8 +10,8 @@ use Livewire\Component;
 
 class SslsList extends Component
 {
-    use RefreshComponentOnBroadcast;
     use HasToast;
+    use RefreshComponentOnBroadcast;
 
     public Site $site;
 

@@ -233,7 +233,7 @@ class Server extends AbstractModel
         // $this->team->notify(new ServerInstallationStarted($this));
     }
 
-    public function ssh(string $user = null): \App\Helpers\SSH|SSHFake
+    public function ssh(?string $user = null): \App\Helpers\SSH|SSHFake
     {
         return SSH::init($this, $user);
     }
@@ -263,7 +263,7 @@ class Server extends AbstractModel
         return new $providerClass($this);
     }
 
-    public function webserver(string $version = null): ?Service
+    public function webserver(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('webserver');
@@ -272,7 +272,7 @@ class Server extends AbstractModel
         return $this->service('webserver', $version);
     }
 
-    public function database(string $version = null): ?Service
+    public function database(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('database');
@@ -281,7 +281,7 @@ class Server extends AbstractModel
         return $this->service('database', $version);
     }
 
-    public function firewall(string $version = null): ?Service
+    public function firewall(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('firewall');
@@ -290,7 +290,7 @@ class Server extends AbstractModel
         return $this->service('firewall', $version);
     }
 
-    public function processManager(string $version = null): ?Service
+    public function processManager(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('process_manager');
@@ -299,7 +299,7 @@ class Server extends AbstractModel
         return $this->service('process_manager', $version);
     }
 
-    public function php(string $version = null): ?Service
+    public function php(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('php');

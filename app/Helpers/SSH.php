@@ -31,7 +31,7 @@ class SSH
 
     protected PrivateKey $privateKey;
 
-    public function init(Server $server, string $asUser = null): self
+    public function init(Server $server, ?string $asUser = null): self
     {
         $this->connection = null;
         $this->log = null;
@@ -87,7 +87,7 @@ class SSH
     /**
      * @throws Throwable
      */
-    public function exec(string|array|SSHCommand $commands, string $log = '', int $siteId = null): string
+    public function exec(string|array|SSHCommand $commands, string $log = '', ?int $siteId = null): string
     {
         if ($log) {
             $this->setLog($log, $siteId);

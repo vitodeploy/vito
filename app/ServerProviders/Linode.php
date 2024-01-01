@@ -57,7 +57,7 @@ class Linode extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(array $credentials = null): bool
+    public function connect(?array $credentials = null): bool
     {
         $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
         if (! $connect->ok()) {

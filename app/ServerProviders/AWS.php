@@ -63,7 +63,7 @@ class AWS extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(array $credentials = null): bool
+    public function connect(?array $credentials = null): bool
     {
         try {
             $this->connectToEc2ClientTest($credentials);

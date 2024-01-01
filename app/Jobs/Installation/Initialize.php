@@ -13,7 +13,7 @@ class Initialize extends InstallationJob
 
     protected ?string $asUser;
 
-    public function __construct(Server $server, string $asUser = null)
+    public function __construct(Server $server, ?string $asUser = null)
     {
         $this->server = $server->refresh();
         $this->asUser = $asUser;
