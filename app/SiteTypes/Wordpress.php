@@ -2,13 +2,15 @@
 
 namespace App\SiteTypes;
 
-use App\Enums\SiteStatus;
-use App\Events\Broadcast;
+use App\Enums\SiteFeature;
 use App\Jobs\Site\CreateVHost;
 use App\Jobs\Site\InstallWordpress;
+use App\Models\Database;
+use App\Models\DatabaseUser;
 use App\SSHCommands\Wordpress\UpdateWordpressCommand;
+use Closure;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class Wordpress extends AbstractSiteType
@@ -18,94 +20,100 @@ class Wordpress extends AbstractSiteType
         return 'php';
     }
 
+    public function supportedFeatures(): array
+    {
+        return [
+            SiteFeature::SSL,
+        ];
+    }
+
     public function createValidationRules(array $input): array
     {
         return [
+            'php_version' => [
+                'required',
+                Rule::in($this->site->server->installedPHPVersions()),
+            ],
             'title' => 'required',
             'username' => 'required',
             'password' => 'required',
             'email' => 'required|email',
-            'database' => 'required',
-            'database_user' => 'required',
+            'database' => [
+                'required',
+                Rule::unique('databases', 'name')->where(function ($query) {
+                    return $query->where('server_id', $this->site->server_id);
+                }),
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (! $this->site->server->database()) {
+                        $fail(__('Database is not installed'));
+                    }
+                },
+            ],
+            'database_user' => [
+                'required',
+                Rule::unique('database_users', 'username')->where(function ($query) {
+                    return $query->where('server_id', $this->site->server_id);
+                }),
+            ],
+            'database_password' => 'required',
         ];
     }
 
     public function createFields(array $input): array
     {
         return [
-            'web_directory' => $input['web_directory'] ?? '',
+            'web_directory' => '',
+            'php_version' => $input['php_version'],
         ];
     }
 
     public function data(array $input): array
     {
-        $data = $this->site->type_data;
-        $data['url'] = $this->site->url;
-        if (isset($input['title']) && $input['title']) {
-            $data['title'] = $input['title'];
-        }
-        if (isset($input['username']) && $input['username']) {
-            $data['username'] = $input['username'];
-        }
-        if (isset($input['email']) && $input['email']) {
-            $data['email'] = $input['email'];
-        }
-        if (isset($input['password']) && $input['password']) {
-            $data['password'] = $input['password'];
-        }
-        if (isset($input['database']) && $input['database']) {
-            $data['database'] = $input['database'];
-        }
-        if (isset($input['database_user']) && $input['database_user']) {
-            $data['database_user'] = $input['database_user'];
-        }
-        if (isset($input['url']) && $input['url']) {
-            $data['url'] = $input['url'];
-        }
-
-        return $data;
+        return [
+            'url' => $this->site->url,
+            'title' => $input['title'],
+            'username' => $input['username'],
+            'email' => $input['email'],
+            'password' => $input['password'],
+            'database' => $input['database'],
+            'database_user' => $input['database_user'],
+            'database_password' => $input['database_password'],
+        ];
     }
 
     public function install(): void
     {
         $chain = [
             new CreateVHost($this->site),
-            $this->progress(30),
+            $this->progress(15),
+            function () {
+                /** @var Database $database */
+                $database = $this->site->server->databases()->create([
+                    'name' => $this->site->type_data['database'],
+                ]);
+                $database->createOnServer('sync');
+                /** @var DatabaseUser $databaseUser */
+                $databaseUser = $this->site->server->databaseUsers()->create([
+                    'username' => $this->site->type_data['database_user'],
+                    'password' => $this->site->type_data['database_password'],
+                    'databases' => [$this->site->type_data['database']],
+                ]);
+                $databaseUser->createOnServer('sync');
+                $databaseUser->unlinkUser('sync');
+                $databaseUser->linkUser('sync');
+            },
+            $this->progress(50),
             new InstallWordpress($this->site),
-            $this->progress(65),
+            $this->progress(75),
             function () {
                 $this->site->php()?->restart();
+                $this->site->installationFinished();
             },
         ];
 
-        $chain[] = function () {
-            $this->site->update([
-                'status' => SiteStatus::READY,
-                'progress' => 100,
-            ]);
-            event(
-                new Broadcast('install-site-finished', [
-                    'site' => $this->site,
-                ])
-            );
-            /** @todo notify */
-        };
-
         Bus::chain($chain)
             ->catch(function (Throwable $e) {
-                $this->site->update([
-                    'status' => SiteStatus::INSTALLATION_FAILED,
-                ]);
-                event(
-                    new Broadcast('install-site-failed', [
-                        'site' => $this->site,
-                    ])
-                );
-                /** @todo notify */
-                Log::error('install-site-error', [
-                    'error' => (string) $e,
-                ]);
-                throw $e;
+                $this->site->installationFailed($e);
             })
             ->onConnection('ssh-long')
             ->dispatch();
@@ -139,32 +147,13 @@ class Wordpress extends AbstractSiteType
                     'update-wordpress',
                     $this->site->id
                 );
-                $this->site->update([
-                    'status' => SiteStatus::READY,
-                ]);
-                event(
-                    new Broadcast('install-site-finished', [
-                        'site' => $this->site,
-                    ])
-                );
+                $this->site->installationFinished();
             },
         ];
 
         Bus::chain($chain)
             ->catch(function (Throwable $e) {
-                $this->site->update([
-                    'status' => SiteStatus::INSTALLATION_FAILED,
-                ]);
-                event(
-                    new Broadcast('install-site-failed', [
-                        'site' => $this->site,
-                    ])
-                );
-                /** @todo notify */
-                Log::error('install-site-error', [
-                    'error' => (string) $e,
-                ]);
-                throw $e;
+                $this->site->installationFailed($e);
             })
             ->onConnection('ssh')
             ->dispatch();

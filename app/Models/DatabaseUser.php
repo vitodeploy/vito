@@ -54,17 +54,17 @@ class DatabaseUser extends AbstractModel
         return $query->where('databases', 'like', "%\"$databaseName\"%");
     }
 
-    public function createOnServer(): void
+    public function createOnServer(string $queue = 'ssh'): void
     {
-        dispatch(new CreateOnServer($this))->onConnection('ssh');
+        dispatch(new CreateOnServer($this))->onConnection($queue);
     }
 
-    public function deleteFromServer(): void
+    public function deleteFromServer(string $queue = 'ssh'): void
     {
         $this->status = DatabaseStatus::DELETING;
         $this->save();
 
-        dispatch(new DeleteFromServer($this))->onConnection('ssh');
+        dispatch(new DeleteFromServer($this))->onConnection($queue);
     }
 
     public function linkNewDatabase(string $name): void
@@ -79,14 +79,14 @@ class DatabaseUser extends AbstractModel
         }
     }
 
-    public function linkUser(): void
+    public function linkUser(string $queue = 'ssh'): void
     {
-        dispatch(new LinkUser($this))->onConnection('ssh');
+        dispatch(new LinkUser($this))->onConnection($queue);
     }
 
-    public function unlinkUser(): void
+    public function unlinkUser(string $queue = 'ssh'): void
     {
-        dispatch(new UnlinkUser($this))->onConnection('ssh');
+        dispatch(new UnlinkUser($this))->onConnection($queue);
     }
 
     public function getFullUserAttribute(): string

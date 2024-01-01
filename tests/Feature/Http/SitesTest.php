@@ -22,7 +22,10 @@ class SitesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_site(): void
+    /**
+     * @dataProvider create_data
+     */
+    public function test_create_site(array $inputs): void
     {
         Bus::fake();
 
@@ -36,15 +39,8 @@ class SitesTest extends TestCase
         ]);
 
         Livewire::test(CreateSite::class, ['server' => $this->server])
-            ->set('type', SiteType::LARAVEL)
-            ->set('domain', 'example.com')
-            ->set('alias', 'www.example.com')
-            ->set('php_version', '8.2')
-            ->set('web_directory', 'public')
-            ->set('source_control', $sourceControl->id)
-            ->set('repository', 'test/test')
-            ->set('branch', 'main')
-            ->set('composer', true)
+            ->fill($inputs)
+            ->set('inputs.source_control', $sourceControl->id)
             ->call('create')
             ->assertSuccessful()
             ->assertHasNoErrors();
@@ -126,5 +122,38 @@ class SitesTest extends TestCase
         $this->site->refresh();
 
         $this->assertEquals($gitlab->id, $this->site->source_control_id);
+    }
+
+    public static function create_data(): array
+    {
+        return [
+            [
+                [
+                    'inputs.type' => SiteType::LARAVEL,
+                    'inputs.domain' => 'example.com',
+                    'inputs.alias' => 'www.example.com',
+                    'inputs.php_version' => '8.2',
+                    'inputs.web_directory' => 'public',
+                    'inputs.repository' => 'test/test',
+                    'inputs.branch' => 'main',
+                    'inputs.composer' => true,
+                ],
+            ],
+            [
+                [
+                    'inputs.type' => SiteType::WORDPRESS,
+                    'inputs.domain' => 'example.com',
+                    'inputs.alias' => 'www.example.com',
+                    'inputs.php_version' => '8.2',
+                    'inputs.title' => 'Example',
+                    'inputs.username' => 'example',
+                    'inputs.email' => 'email@example.com',
+                    'inputs.password' => 'password',
+                    'inputs.database' => 'example',
+                    'inputs.database_user' => 'example',
+                    'inputs.database_password' => 'password',
+                ],
+            ],
+        ];
     }
 }

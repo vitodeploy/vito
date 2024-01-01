@@ -1,3 +1,4 @@
+@php use App\Enums\SiteFeature; @endphp
 <x-app-layout :server="$site->server">
     @if(isset($pageTitle))
         <x-slot name="pageTitle">{{ $site->domain }} - {{ $pageTitle }}</x-slot>
@@ -58,10 +59,12 @@
             <x-secondary-sidebar-link :href="route('servers.sites.show', ['server' => $site->server, 'site' => $site])" :active="request()->routeIs('servers.sites.show')">
                 {{ __('Application') }}
             </x-secondary-sidebar-link>
-            @if($site->status == \App\Enums\SiteStatus::READY)
+            @if($site->isReady() && $site->hasFeature(SiteFeature::SSL))
                 <x-secondary-sidebar-link :href="route('servers.sites.ssl', ['server' => $site->server, 'site' => $site])" :active="request()->routeIs('servers.sites.ssl')">
                     {{ __('SSL') }}
                 </x-secondary-sidebar-link>
+            @endif
+            @if($site->isReady() && $site->hasFeature(SiteFeature::QUEUES))
                 <x-secondary-sidebar-link :href="route('servers.sites.queues', ['server' => $site->server, 'site' => $site])" :active="request()->routeIs('servers.sites.queues')">
                     {{ __('Queues') }}
                 </x-secondary-sidebar-link>
