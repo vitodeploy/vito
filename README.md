@@ -10,6 +10,14 @@ Better Readme will come soon... :)
 
 https://vitodeploy.com
 
+## Feedbacks
+
+https://features.vitodeploy.com
+
+## Roadmap
+
+https://https://features.vitodeploy.com/roadmap
+
 ## Contribution
 
 Please read the contribution guide [Here](/CONTRIBUTING.md)
