@@ -26,6 +26,7 @@ class CreateServer
         $this->validateInputs($input);
 
         $server = new Server([
+            'project_id' => $creator->currentProject->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
             'ssh_user' => config('core.server_providers_default_user')[$input['provider']][$input['os']],

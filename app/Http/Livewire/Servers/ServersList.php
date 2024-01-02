@@ -2,7 +2,7 @@
 
 namespace App\Http\Livewire\Servers;
 
-use App\Models\Server;
+use App\Models\User;
 use App\Traits\RefreshComponentOnBroadcast;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -13,8 +13,12 @@ class ServersList extends Component
 
     public function render(): View
     {
+        /** @var User $user */
+        $user = auth()->user();
+        $servers = $user->currentProject->servers()->orderByDesc('created_at')->get();
+
         return view('livewire.servers.servers-list', [
-            'servers' => Server::all(),
+            'servers' => $servers,
         ]);
     }
 }
