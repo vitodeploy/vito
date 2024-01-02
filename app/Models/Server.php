@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
+ * @property int $project_id
  * @property int $user_id
  * @property string $name
  * @property string $ssh_user
@@ -38,6 +39,7 @@ use Illuminate\Support\Str;
  * @property int $security_updates
  * @property int $progress
  * @property string $progress_step
+ * @property Project $project
  * @property User $creator
  * @property ServerProvider $serverProvider
  * @property ServerLog[] $logs
@@ -59,6 +61,7 @@ class Server extends AbstractModel
     use HasFactory;
 
     protected $fillable = [
+        'project_id',
         'user_id',
         'name',
         'ssh_user',
@@ -82,6 +85,7 @@ class Server extends AbstractModel
     ];
 
     protected $casts = [
+        'project_id' => 'integer',
         'user_id' => 'integer',
         'type_data' => 'json',
         'port' => 'integer',
@@ -123,6 +127,11 @@ class Server extends AbstractModel
                 File::delete($server->sshKey()['private_key_path']);
             }
         });
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
     public function creator(): BelongsTo

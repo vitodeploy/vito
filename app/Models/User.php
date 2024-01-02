@@ -28,6 +28,9 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Collection $tokens
  * @property string $profile_photo_url
  * @property string $timezone
+ * @property int $current_project_id
+ * @property Project $currentProject
+ * @property Collection<Project> $projects
  */
 class User extends Authenticatable
 {
@@ -41,6 +44,7 @@ class User extends Authenticatable
         'email',
         'password',
         'timezone',
+        'current_project_id',
     ];
 
     protected $hidden = [
@@ -52,6 +56,20 @@ class User extends Authenticatable
 
     protected $appends = [
     ];
+
+    public static function boot(): void
+    {
+        parent::boot();
+
+        static::created(function (User $user) {
+            $user->createDefaultProject();
+        });
+    }
+
+    public function servers(): HasMany
+    {
+        return $this->hasMany(Server::class);
+    }
 
     public function sshKeys(): HasMany
     {
@@ -104,5 +122,37 @@ class User extends Authenticatable
         }
 
         return $connectedSourceControls;
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    public function currentProject(): HasOne
+    {
+        return $this->HasOne(Project::class, 'id', 'current_project_id');
+    }
+
+    public function isMemberOfProject(Project $project): bool
+    {
+        return $project->user_id === $this->id;
+    }
+
+    public function createDefaultProject(): Project
+    {
+        $project = $this->projects()->first();
+
+        if (! $project) {
+            $project = new Project();
+            $project->user_id = $this->id;
+            $project->name = 'Default';
+            $project->save();
+        }
+
+        $this->current_project_id = $project->id;
+        $this->save();
+
+        return $project;
     }
 }
