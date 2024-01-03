@@ -1,6 +1,6 @@
 <div>
     <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-project')">
-        {{ __('Create') }}
+        {{ __('Connect') }}
     </x-primary-button>
 
     <x-modal name="create-project" :show="$open">

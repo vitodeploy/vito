@@ -164,10 +164,12 @@ class AWS extends AbstractProvider
         $result = $this->ec2Client->createKeyPair([
             'KeyName' => $keyName,
         ]);
-        Storage::disk(config('core.key_pairs_disk'))->put((string) $this->server->id, $result['KeyMaterial']);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk(config('core.key_pairs_disk'));
+        $storageDisk->put((string) $this->server->id, $result['KeyMaterial']);
         generate_public_key(
-            Storage::disk(config('core.key_pairs_disk'))->path((string) $this->server->id),
-            Storage::disk(config('core.key_pairs_disk'))->path($this->server->id.'.pub'),
+            $storageDisk->path((string) $this->server->id),
+            $storageDisk->path($this->server->id.'.pub'),
         );
     }
 

@@ -343,10 +343,13 @@ class Server extends AbstractModel
             ];
         }
 
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk(config('core.key_pairs_disk'));
+
         return [
             'public_key' => Str::replace("\n", '', Storage::disk(config('core.key_pairs_disk'))->get($this->id.'.pub')),
-            'public_key_path' => Storage::disk(config('core.key_pairs_disk'))->path($this->id.'.pub'),
-            'private_key_path' => Storage::disk(config('core.key_pairs_disk'))->path((string) $this->id),
+            'public_key_path' => $storageDisk->path($this->id.'.pub'),
+            'private_key_path' => $storageDisk->path((string) $this->id),
         ];
     }
 

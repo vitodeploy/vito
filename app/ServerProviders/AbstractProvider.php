@@ -17,6 +17,8 @@ abstract class AbstractProvider implements ServerProvider
 
     protected function generateKeyPair(): void
     {
-        generate_key_pair(Storage::disk(config('core.key_pairs_disk'))->path((string) $this->server->id));
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk(config('core.key_pairs_disk'));
+        generate_key_pair($storageDisk->path((string) $this->server->id));
     }
 }

@@ -17,9 +17,12 @@ class UpdatePHPIni
     {
         $tmpName = Str::random(10).strtotime('now');
         try {
-            Storage::disk('local')->put($tmpName, $ini);
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+            $storageDisk = Storage::disk('local');
+
+            $storageDisk->put($tmpName, $ini);
             $service->server->ssh('root')->upload(
-                Storage::disk('local')->path($tmpName),
+                $storageDisk->path($tmpName),
                 "/etc/php/$service->version/cli/php.ini"
             );
             $this->deleteTempFile($tmpName);

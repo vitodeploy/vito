@@ -59,13 +59,15 @@ class Custom extends AbstractProvider
 
     public function create(): void
     {
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk(config('core.key_pairs_disk'));
         File::copy(
             storage_path(config('core.ssh_private_key_name')),
-            Storage::disk(config('core.key_pairs_disk'))->path($this->server->id)
+            $storageDisk->path($this->server->id)
         );
         File::copy(
             storage_path(config('core.ssh_public_key_name')),
-            Storage::disk(config('core.key_pairs_disk'))->path($this->server->id.'.pub')
+            $storageDisk->path($this->server->id.'.pub')
         );
     }
 

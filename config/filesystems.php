@@ -30,6 +30,7 @@ return [
 
     'disks' => [
 
+        // should be FilesystemAdapter
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
