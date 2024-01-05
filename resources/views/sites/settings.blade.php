@@ -5,6 +5,8 @@
 
     <livewire:sites.update-source-control-provider :site="$site"/>
 
+    <livewire:sites.update-v-host :site="$site"/>
+
     <x-card>
         <x-slot name="title">{{ __("Delete Site") }}</x-slot>
         <x-slot name="description">{{ __("Permanently delete the site from server") }}</x-slot>
