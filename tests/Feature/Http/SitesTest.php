@@ -5,11 +5,13 @@ namespace Tests\Feature\Http;
 use App\Enums\SiteStatus;
 use App\Enums\SiteType;
 use App\Enums\SourceControl;
+use App\Facades\SSH;
 use App\Http\Livewire\Sites\ChangePhpVersion;
 use App\Http\Livewire\Sites\CreateSite;
 use App\Http\Livewire\Sites\DeleteSite;
 use App\Http\Livewire\Sites\SitesList;
 use App\Http\Livewire\Sites\UpdateSourceControlProvider;
+use App\Http\Livewire\Sites\UpdateVHost;
 use App\Jobs\Site\CreateVHost;
 use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -105,6 +107,22 @@ class SitesTest extends TestCase
             ->assertSuccessful();
 
         Bus::assertDispatched(\App\Jobs\Site\ChangePHPVersion::class);
+    }
+
+    public function test_update_v_host(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        Livewire::test(UpdateVHost::class, ['site' => $site])
+            ->set('vHost', 'test-vhost')
+            ->call('update')
+            ->assertSuccessful();
     }
 
     public function test_update_source_control(): void

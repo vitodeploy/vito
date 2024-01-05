@@ -55,6 +55,7 @@ class PHPSite extends AbstractSiteType
             'source_control_id' => $input['source_control'] ?? '',
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',
+            'php_version' => $input['php_version'] ?? '',
         ];
     }
 
@@ -62,7 +63,6 @@ class PHPSite extends AbstractSiteType
     {
         return [
             'composer' => isset($input['composer']) && $input['composer'],
-            'php_version' => $input['php_version'] ?? '',
         ];
     }
 
