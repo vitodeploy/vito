@@ -13,6 +13,7 @@ use App\Jobs\Installation\UninstallPHPMyAdmin;
 use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
+use App\NotificationChannels\Telegram;
 use App\ServerProviders\AWS;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
@@ -343,11 +344,13 @@ return [
         \App\Enums\NotificationChannel::SLACK,
         \App\Enums\NotificationChannel::DISCORD,
         \App\Enums\NotificationChannel::EMAIL,
+        \App\Enums\NotificationChannel::TELEGRAM,
     ],
     'notification_channels_providers_class' => [
         \App\Enums\NotificationChannel::SLACK => Slack::class,
         \App\Enums\NotificationChannel::DISCORD => Discord::class,
         \App\Enums\NotificationChannel::EMAIL => Email::class,
+        \App\Enums\NotificationChannel::TELEGRAM => Telegram::class,
     ],
 
     /*

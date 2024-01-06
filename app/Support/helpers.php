@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Str;
 
 function random_color(): string
@@ -62,4 +63,11 @@ function date_with_timezone($date, $timezone): string
     $dt->setTimestamp(strtotime($date));
 
     return $dt->format('Y-m-d H:i:s');
+}
+
+function cast_to_json(array $json): \Illuminate\Database\Query\Expression|Expression
+{
+    $json = addslashes(json_encode($json));
+
+    return DB::raw("CAST('{$json}' AS JSON)");
 }

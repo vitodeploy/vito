@@ -52,6 +52,24 @@
                 </div>
             @endif
 
+            @if($provider == \App\Enums\NotificationChannel::TELEGRAM)
+                <div class="mt-6">
+                    <x-input-label for="bot_token" :value="__('Bot Token')" />
+                    <x-text-input wire:model.defer="bot_token" id="bot_token" name="bot_token" type="text" class="mt-1 w-full" />
+                    @error('bot_token')
+                    <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
+
+                <div class="mt-6">
+                    <x-input-label for="chat_id" :value="__('Chat ID')" />
+                    <x-text-input wire:model.defer="chat_id" id="chat_id" name="chat_id" type="text" class="mt-1 w-full" />
+                    @error('chat_id')
+                    <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
+            @endif
+
             <div class="mt-6 flex justify-end">
                 <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __('Cancel') }}

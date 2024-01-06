@@ -15,6 +15,10 @@ class AddChannel extends Component
 
     public string $email;
 
+    public string $bot_token;
+
+    public string $chat_id;
+
     public function add(): void
     {
         app(\App\Actions\NotificationChannels\AddChannel::class)->add(

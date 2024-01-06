@@ -2,36 +2,56 @@
 
 namespace App\NotificationChannels;
 
-use App\Mail\NotificationChannelMessage;
+use App\Mail\NotificationMail;
+use App\Models\NotificationChannel;
+use App\Contracts\Notification;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
-class Email extends AbstractProvider
+class Email extends AbstractNotificationChannel
 {
-    public function validationRules(): array
+    public function createRules(array $input): array
     {
         return [
             'email' => 'required|email',
         ];
     }
 
-    public function data(array $input): array
+    public function createData(array $input): array
     {
         return [
             'email' => $input['email'],
         ];
     }
 
+    public function data(): array
+    {
+        return [
+            'email' => $this->notificationChannel->data['email'] ?? '',
+        ];
+    }
+
     public function connect(): bool
     {
-        $this->notificationChannel->connected = true;
-        $this->notificationChannel->save();
+        try {
+            Mail::to($this->data()['email'])->send(
+                new NotificationMail('Test VitoDeploy', 'This is a test email!')
+            );
+        } catch (Throwable) {
+            return false;
+        }
 
         return true;
     }
 
-    public function sendMessage(string $subject, mixed $text): void
+    public function send(object $notifiable, Notification $notification): void
     {
-        $data = $this->notificationChannel->data;
-        Mail::to($data['email'])->send(new NotificationChannelMessage($subject, $text));
+        /** @var NotificationChannel $notifiable */
+        $this->notificationChannel = $notifiable;
+        $message = $notification->toMail($notifiable);
+
+        Mail::to($this->data()['email'])->send(
+            new NotificationMail($message->subject, $message->render())
+        );
     }
 }

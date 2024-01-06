@@ -233,6 +233,11 @@ chmod +x /home/${V_USERNAME}/${V_DOMAIN}/update.sh
 # cleanup
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
+# cache
+php artisan config:cache
+php artisan icons:cache
+
+# print info
 echo "🎉 Congratulations!"
 echo "✅ SSH User: ${V_USERNAME}"
 echo "✅ SSH Password: ${V_PASSWORD}"

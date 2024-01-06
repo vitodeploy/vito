@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\SourceControlIsNotConnected;
+use App\Facades\Notifier;
 use App\Models\GitHook;
+use App\Notifications\SourceControlDisconnected;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class GitHookController extends Controller
@@ -25,7 +28,7 @@ class GitHookController extends Controller
                 try {
                     $gitHook->site->deploy();
                 } catch (SourceControlIsNotConnected) {
-                    // TODO: send notification
+                    Notifier::send($gitHook->sourceControl, new SourceControlDisconnected($gitHook->sourceControl));
                 } catch (Throwable $e) {
                     Log::error('git-hook-exception', (array) $e);
                 }

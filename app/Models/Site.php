@@ -8,10 +8,13 @@ use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
 use App\Events\Broadcast;
 use App\Exceptions\SourceControlIsNotConnected;
+use App\Facades\Notifier;
 use App\Jobs\Site\ChangePHPVersion;
 use App\Jobs\Site\Deploy;
 use App\Jobs\Site\DeployEnv;
 use App\Jobs\Site\UpdateBranch;
+use App\Notifications\SiteInstallationFailed;
+use App\Notifications\SiteInstallationSucceed;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -406,7 +409,7 @@ class Site extends AbstractModel
                 'site' => $this,
             ])
         );
-        /** @todo notify */
+        Notifier::send($this, new SiteInstallationSucceed($this));
     }
 
     /**
@@ -422,7 +425,7 @@ class Site extends AbstractModel
                 'site' => $this,
             ])
         );
-        /** @todo notify */
+        Notifier::send($this, new SiteInstallationFailed($this));
         Log::error('install-site-error', [
             'error' => (string) $e,
         ]);
