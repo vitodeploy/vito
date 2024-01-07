@@ -3,9 +3,12 @@
 namespace App\ServerTypes;
 
 use App\Events\Broadcast;
+use App\Facades\Notifier;
 use App\Jobs\Installation\Initialize;
 use App\Jobs\Installation\InstallRequirements;
 use App\Jobs\Installation\Upgrade;
+use App\Notifications\ServerInstallationFailed;
+use App\Notifications\ServerInstallationSucceed;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -66,7 +69,7 @@ class Database extends AbstractType
                     'server' => $this->server,
                 ])
             );
-            /** @todo notify */
+            Notifier::send($this->server, new ServerInstallationSucceed($this->server));
         };
 
         Bus::chain($jobs)
@@ -79,7 +82,7 @@ class Database extends AbstractType
                         'server' => $this->server,
                     ])
                 );
-                /** @todo notify */
+                Notifier::send($this->server, new ServerInstallationFailed($this->server));
                 Log::error('server-installation-error', [
                     'error' => (string) $e,
                 ]);

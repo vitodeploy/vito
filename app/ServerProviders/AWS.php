@@ -4,10 +4,14 @@ namespace App\ServerProviders;
 
 use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
+use App\Facades\Notifier;
+use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;
 use Aws\EC2InstanceConnect\EC2InstanceConnectClient;
 use Exception;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class AWS extends AbstractProvider
 {
@@ -125,9 +129,8 @@ class AWS extends AbstractProvider
                 $this->ec2Client->terminateInstances([
                     'InstanceIds' => [$this->server->provider_data['instance_id']],
                 ]);
-            } catch (Exception) {
-                /** @todo notify */
-                // $this->server->team->notify(new FailedToDeleteServerFromProvider($this->server));
+            } catch (Throwable) {
+                Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
             }
         }
     }
@@ -164,7 +167,7 @@ class AWS extends AbstractProvider
         $result = $this->ec2Client->createKeyPair([
             'KeyName' => $keyName,
         ]);
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
         $storageDisk->put((string) $this->server->id, $result['KeyMaterial']);
         generate_public_key(

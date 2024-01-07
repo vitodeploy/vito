@@ -10,8 +10,8 @@
         @if(count($channels) > 0)
             @foreach($channels as $channel)
                 <x-item-card>
-                    <div class="flex-none">
-                        <img src="{{ asset('static/images/' . $channel->provider . '.svg') }}" class="h-10 w-10" alt="">
+                    <div class="flex-none text-gray-600 dark:text-gray-300">
+                        @include('livewire.notification-channels.icons.' . $channel->provider)
                     </div>
                     <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                         <span class="mb-1">{{ $channel->label }}</span>

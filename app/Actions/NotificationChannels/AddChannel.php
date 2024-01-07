@@ -21,16 +21,25 @@ class AddChannel
             'label' => $input['label'],
         ]);
         $this->validateType($channel, $input);
-        $channel->data = $channel->provider()->data($input);
+        $channel->data = $channel->provider()->createData($input);
         $channel->save();
 
         if (! $channel->provider()->connect()) {
             $channel->delete();
 
+            if ($channel->provider === \App\Enums\NotificationChannel::EMAIL) {
+                throw ValidationException::withMessages([
+                    'email' => __('Could not connect! Make sure you configured `.env` file correctly.'),
+                ]);
+            }
+
             throw ValidationException::withMessages([
                 'provider' => __('Could not connect'),
             ]);
         }
+
+        $channel->connected = true;
+        $channel->save();
     }
 
     /**
@@ -49,7 +58,7 @@ class AddChannel
      */
     protected function validateType(NotificationChannel $channel, array $input): void
     {
-        Validator::make($input, $channel->provider()->validationRules())
+        Validator::make($input, $channel->provider()->createRules($input))
             ->validate();
     }
 }

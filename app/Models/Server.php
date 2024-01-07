@@ -4,15 +4,18 @@ namespace App\Models;
 
 use App\Contracts\ServerType;
 use App\Enums\ServerStatus;
+use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Installation\Upgrade;
 use App\Jobs\Server\CheckConnection;
 use App\Jobs\Server\RebootServer;
+use App\Notifications\ServerInstallationStarted;
 use App\Support\Testing\SSHFake;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -110,7 +113,9 @@ class Server extends AbstractModel
                 $site->delete();
             });
             $server->provider()->delete();
-            $server->logs()->delete();
+            $server->logs()->each(function (ServerLog $log) {
+                $log->delete();
+            });
             $server->services()->delete();
             $server->databases()->delete();
             $server->databaseUsers()->delete();
@@ -239,7 +244,7 @@ class Server extends AbstractModel
     public function install(): void
     {
         $this->type()->install();
-        // $this->team->notify(new ServerInstallationStarted($this));
+        Notifier::send($this, new ServerInstallationStarted($this));
     }
 
     public function ssh(?string $user = null): \App\Helpers\SSH|SSHFake
@@ -343,7 +348,7 @@ class Server extends AbstractModel
             ];
         }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
 
         return [
