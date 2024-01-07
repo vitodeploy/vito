@@ -65,7 +65,7 @@ function date_with_timezone($date, $timezone): string
     return $dt->format('Y-m-d H:i:s');
 }
 
-function cast_to_json(array $json): \Illuminate\Database\Query\Expression|Expression
+function cast_to_json(array $json): Illuminate\Database\Query\Expression|Expression
 {
     $json = addslashes(json_encode($json));
 

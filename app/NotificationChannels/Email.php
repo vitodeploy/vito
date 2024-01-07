@@ -2,9 +2,9 @@
 
 namespace App\NotificationChannels;
 
+use App\Contracts\Notification;
 use App\Mail\NotificationMail;
 use App\Models\NotificationChannel;
-use App\Contracts\Notification;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 

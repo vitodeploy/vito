@@ -42,7 +42,7 @@ class Telegram extends AbstractNotificationChannel
     public function connect(): bool
     {
         try {
-            $this->sendToTelegram(__("Connected!"));
+            $this->sendToTelegram(__('Connected!'));
         } catch (Throwable) {
             return false;
         }

@@ -29,7 +29,7 @@ class FailedToDeleteServerFromProvider extends AbstractNotification
     {
         return (new MailMessage)
             ->subject(__('Failed to delete the server from the provider!'))
-            ->line("We couldn't delete [" . $this->server->name . '] from ' . $this->server->provider)
+            ->line("We couldn't delete [".$this->server->name.'] from '.$this->server->provider)
             ->line('Please check your provider and delete it manually');
     }
 }

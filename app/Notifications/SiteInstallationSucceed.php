@@ -13,7 +13,7 @@ class SiteInstallationSucceed extends AbstractNotification
 
     public function rawText(): string
     {
-        return __("Installation succeed for site [:site]", [
+        return __('Installation succeed for site [:site]', [
             'site' => $this->site->domain,
         ]);
     }

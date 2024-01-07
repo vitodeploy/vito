@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Contracts\Notification;
 use App\Contracts\ServerType;
 use App\Enums\ServerStatus;
 use App\Facades\Notifier;
