@@ -6,7 +6,7 @@
             </div>
 
             <div class="flex items-center">
-                <div class="mr-2">
+                <div class="mr-3">
                     @include('layouts.partials.color-scheme')
                 </div>
 
