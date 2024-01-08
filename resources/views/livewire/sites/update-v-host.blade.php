@@ -1,7 +1,7 @@
 <x-card>
     <x-slot name="title">{{ __('Update VHost') }}</x-slot>
 
-    <x-slot name="description">{{ __("You can change your site's PHP version here") }}</x-slot>
+    <x-slot name="description">{{ __("You can change your site's VHost configuration") }}</x-slot>
 
     <form
         id="update-vhost"
