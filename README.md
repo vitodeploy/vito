@@ -12,11 +12,11 @@ https://vitodeploy.com
 
 ## Feedbacks
 
-https://features.vitodeploy.com
+https://vitodeploy.featurebase.app
 
 ## Roadmap
 
-https://features.vitodeploy.com/roadmap
+https://vitodeploy.featurebase.app/roadmap
 
 ## Contribution
 
