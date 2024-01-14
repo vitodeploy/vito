@@ -23,9 +23,8 @@ class CreateSite
     {
         $this->validateInputs($server, $input);
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
             $site = new Site([
                 'server_id' => $server->id,
                 'type' => $input['type'],

@@ -44,9 +44,8 @@ class CreateServer
             'progress_step' => 'Initializing',
         ]);
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
             if ($server->provider != 'custom') {
                 $server->provider_id = $input['server_provider'];
             }

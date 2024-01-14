@@ -69,8 +69,8 @@ class GitHook extends AbstractModel
      */
     public function destroyHook(): void
     {
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
             $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
             $this->delete();
             DB::commit();

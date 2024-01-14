@@ -357,8 +357,8 @@ class Site extends AbstractModel
             throw new SourceControlIsNotConnected($this->source_control);
         }
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
             $gitHook = new GitHook([
                 'site_id' => $this->id,
                 'source_control_id' => $this->sourceControl()->id,
