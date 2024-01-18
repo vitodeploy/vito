@@ -7,7 +7,7 @@
                 <div class="mr-2">
                     <livewire:application.deploy :site="$site" />
                 </div>
-                @if ($site->source_control)
+                @if ($site->source_control_id)
                     <div class="mr-2">
                         <livewire:application.auto-deployment :site="$site" />
                     </div>
@@ -33,7 +33,7 @@
                         </x-secondary-button>
                     </x-slot>
                     <x-slot name="content">
-                        @if ($site->source_control)
+                        @if ($site->source_control_id)
                             <x-dropdown-link
                                 class="cursor-pointer"
                                 x-on:click="$dispatch('open-modal', 'change-branch')"
@@ -49,7 +49,7 @@
                         >{{ __('.env') }}</x-dropdown-link>
                     </x-slot>
                 </x-dropdown>
-                @if ($site->source_control)
+                @if ($site->source_control_id)
                     <livewire:application.change-branch :site="$site" />
                 @endif
                 <livewire:application.deployment-script :site="$site" />

@@ -3,7 +3,7 @@
 
     <livewire:sites.change-php-version :site="$site" />
 
-    @if ($site->source_control)
+    @if ($site->source_control_id)
         <livewire:sites.update-source-control-provider :site="$site" />
     @endif
 
