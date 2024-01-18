@@ -10,16 +10,6 @@
         <livewire:server-logs.logs-list :server="$site->server" :site="$site" :count="10" />
     @endif
     @if($site->status === \App\Enums\SiteStatus::READY)
-        @if($site->type == \App\Enums\SiteType::LARAVEL)
-            <livewire:application.laravel-app :site="$site" />
-        @endif
-
-        @if($site->type == \App\Enums\SiteType::PHP)
-            <livewire:application.php-app :site="$site" />
-        @endif
-
-        @if($site->type == \App\Enums\SiteType::WORDPRESS)
-            <livewire:application.wordpress-app :site="$site" />
-        @endif
+        @livewire('application.' . $site->type . '-app', ['site' => $site])
     @endif
 </div>
