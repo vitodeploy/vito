@@ -172,6 +172,15 @@ class SitesTest extends TestCase
                     'inputs.database_password' => 'password',
                 ],
             ],
+            [
+                [
+                    'inputs.type' => SiteType::PHP_BLANK,
+                    'inputs.domain' => 'example.com',
+                    'inputs.alias' => 'www.example.com',
+                    'inputs.php_version' => '8.2',
+                    'inputs.web_directory' => 'public',
+                ],
+            ],
         ];
     }
 }
