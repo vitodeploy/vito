@@ -4,10 +4,16 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 export V_USERNAME=vito
 export V_PASSWORD=$(openssl rand -base64 12)
+export V_IP_ADDRESS=$(curl https://freeipapi.com)
 
 echo "Enter the domain you want to install Vito? (your-domain.com)"
+echo "Hit enter to use your IP address (${V_IP_ADDRESS}):"
 
 read V_DOMAIN
+
+if [[ -z "${V_DOMAIN}" ]]; then
+    export V_DOMAIN=${V_IP_ADDRESS}
+fi
 
 echo "Enter your email address:"
 
