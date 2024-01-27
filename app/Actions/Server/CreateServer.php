@@ -118,7 +118,6 @@ class CreateServer
         if ($input['provider'] == 'custom') {
             $rules['ip'] = [
                 'required',
-                'ip',
                 new RestrictedIPAddressesRule(),
             ];
             $rules['port'] = [
