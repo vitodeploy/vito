@@ -14,7 +14,6 @@ class Custom extends AbstractProvider
         return [
             'ip' => [
                 'required',
-                'ip',
                 Rule::unique('servers', 'ip'),
                 new RestrictedIPAddressesRule(),
             ],
