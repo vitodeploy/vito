@@ -4,6 +4,8 @@
 
 ![image](https://github.com/vitodeploy/vito/assets/61919774/687d50e5-8a61-41b5-b708-752567e30aed)
 
+[[Discord](https://discord.gg/dcUWA5DV)]
+
 Better Readme will come soon... :)
 
 ## Documentation
