@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Contracts\ServerType;
 use App\Enums\ServerStatus;
+use App\Enums\ServiceStatus;
 use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Installation\Upgrade;
@@ -226,6 +227,18 @@ class Server extends AbstractModel
             ->where('type', $type)
             ->where('is_default', 1)
             ->first();
+
+        // If no default service found, get the first service with status ready or stopped
+        if (! $service) {
+            $service = $this->services()
+                ->where('type', $type)
+                ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])
+                ->first();
+            if ($service) {
+                $service->is_default = 1;
+                $service->save();
+            }
+        }
 
         return $service;
     }
