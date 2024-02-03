@@ -1,12 +1,12 @@
 <x-modal name="install-extension">
-    <form wire:submit.prevent="installExtension" class="p-6">
+    <form wire:submit="installExtension" class="p-6">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Install Extension') }}
         </h2>
 
         <div class="mt-6">
             <x-input-label for="extension" value="Name" />
-            <x-select-input wire:model.defer="extension" name="extension" class="mt-1 w-full">
+            <x-select-input wire:model="extension" name="extension" class="mt-1 w-full">
                 <option value="" selected>{{ __("Select") }}</option>
                 @foreach(config('core.php_extensions') as $extension)
                     <option value="{{ $extension }}" @if(in_array($extension, $installedExtensions)) disabled @endif>

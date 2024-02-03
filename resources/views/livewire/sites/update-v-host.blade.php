@@ -5,14 +5,14 @@
 
     <form
         id="update-vhost"
-        wire:submit.prevent="update"
+        wire:submit="update"
         class="space-y-6"
     >
         <div>
             <x-textarea
                 id="vHost"
                 wire:init="loadVHost"
-                wire:model.defer="vHost"
+                wire:model="vHost"
                 rows="10"
                 class="mt-1 block w-full"
             ></x-textarea>

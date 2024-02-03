@@ -21,9 +21,9 @@ class CreateProject extends Component
         app(\App\Actions\Projects\CreateProject::class)
             ->create(auth()->user(), $this->inputs);
 
-        $this->emitTo(ProjectsList::class, '$refresh');
+        $this->dispatch('$refresh')->to(ProjectsList::class);
 
-        $this->dispatchBrowserEvent('created', true);
+        $this->dispatch('created');
     }
 
     public function render(): View

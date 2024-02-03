@@ -23,9 +23,9 @@ class Deploy extends Component
 
             $this->toast()->success(__('Deployment started!'));
 
-            $this->emitTo(DeploymentsList::class, '$refresh');
+            $this->dispatch('$refresh')->to(DeploymentsList::class);
 
-            $this->emitTo(DeploymentScript::class, '$refresh');
+            $this->dispatch('$refresh')->to(DeploymentScript::class);
         } catch (SourceControlIsNotConnected $e) {
             session()->flash('toast.type', 'error');
             session()->flash('toast.message', $e->getMessage());

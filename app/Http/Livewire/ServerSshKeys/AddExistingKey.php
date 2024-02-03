@@ -19,9 +19,9 @@ class AddExistingKey extends Component
 
         $key->deployTo($this->server);
 
-        $this->emitTo(ServerKeysList::class, '$refresh');
+        $this->dispatch('$refresh')->to(ServerKeysList::class);
 
-        $this->dispatchBrowserEvent('added', true);
+        $this->dispatch('added');
     }
 
     public function render(): View

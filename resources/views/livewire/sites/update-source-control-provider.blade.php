@@ -3,10 +3,10 @@
 
     <x-slot name="description">{{ __("You can change the source control provider for this site") }}</x-slot>
 
-    <form id="update-source-control" wire:submit.prevent="update" class="space-y-6">
+    <form id="update-source-control" wire:submit="update" class="space-y-6">
         <div>
             <x-input-label for="provider" :value="__('Source Control')" />
-            <x-select-input wire:model.defer="source_control" id="source_control" name="source_control" class="mt-1 w-full">
+            <x-select-input wire:model="source_control" id="source_control" name="source_control" class="mt-1 w-full">
                 <option value="" selected>{{ __("Select") }}</option>
                 @foreach(\App\Models\SourceControl::all() as $sourceControl)
                     <option value="{{ $sourceControl->id }}" @if($sourceControl->id === $source_control) selected @endif>{{ $sourceControl->profile }} ({{ $sourceControl->provider }})</option>

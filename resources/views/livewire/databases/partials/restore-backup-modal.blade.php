@@ -1,12 +1,12 @@
 <x-modal name="restore-backup">
-    <form wire:submit.prevent="restore" class="p-6" x-data="{}">
+    <form wire:submit="restore" class="p-6" x-data="{}">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Restore Backup') }}
         </h2>
 
         <div class="mt-6">
             <x-input-label for="database" :value="__('Database')" />
-            <x-select-input wire:model="restoreDatabaseId" id="restoreDatabaseId" name="restoreDatabaseId" class="mt-1 w-full">
+            <x-select-input wire:model.live="restoreDatabaseId" id="restoreDatabaseId" name="restoreDatabaseId" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
                 @foreach($databases as $db)
                     <option value="{{ $db->id }}" @if($restoreDatabaseId == $db->id) selected @endif>{{ $db->name }}</option>

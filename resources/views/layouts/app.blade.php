@@ -189,15 +189,15 @@
     </div>
     <x-toast />
     <livewire:broadcast />
-    @livewireScripts
+    @livewireScriptConfig
     <script>
-        document.addEventListener('livewire:load', () => {
-            Livewire.onPageExpired((response, message) => {
-                ({
-                    href: window.location.href
-                } = window.location);
-            })
-        })
+        // document.addEventListener('livewire:init', () => {
+        //     Livewire.onPageExpired((response, message) => {
+        //         ({
+        //             href: window.location.href
+        //         } = window.location);
+        //     })
+        // })
 
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia(

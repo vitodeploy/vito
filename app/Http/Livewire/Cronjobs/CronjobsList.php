@@ -23,7 +23,7 @@ class CronjobsList extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('confirmed', true);
+        $this->dispatch('confirmed');
     }
 
     public function render(): View

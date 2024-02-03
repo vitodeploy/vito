@@ -33,7 +33,7 @@ class UpdateProfileInformation extends Component
 
         session()->flash('status', 'profile-updated');
 
-        $this->emitTo(UserDropdown::class, '$refresh');
+        $this->dispatch('$refresh')->to(UserDropdown::class);
     }
 
     public function sendVerificationEmail(): void

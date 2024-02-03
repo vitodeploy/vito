@@ -25,7 +25,7 @@ class SslsList extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('confirmed', true);
+        $this->dispatch('confirmed');
     }
 
     public function refreshComponent(array $data): void
@@ -34,7 +34,7 @@ class SslsList extends Component
             $this->toast()->error(__('SSL creation failed!'));
         }
 
-        $this->emit('refreshComponent');
+        $this->dispatch('refreshComponent');
     }
 
     public function render(): View

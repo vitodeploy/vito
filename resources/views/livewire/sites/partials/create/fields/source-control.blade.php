@@ -1,7 +1,7 @@
 <div>
     <x-input-label for="source_control" :value="__('Source Control')" />
     <div class="flex items-center mt-1">
-        <x-select-input wire:model="inputs.source_control" id="source_control" name="source_control" class="mt-1 w-full">
+        <x-select-input wire:model.live="inputs.source_control" id="source_control" name="source_control" class="mt-1 w-full">
             <option value="" selected>{{ __("Select") }}</option>
             @foreach($sourceControls as $sourceControl)
                 <option value="{{ $sourceControl->id }}" @if($sourceControl->id === $inputs['source_control']) selected @endif>

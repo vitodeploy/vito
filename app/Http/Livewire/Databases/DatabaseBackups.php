@@ -40,7 +40,7 @@ class DatabaseBackups extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('backup-created', true);
+        $this->dispatch('backup-created');
     }
 
     public function files(int $id): void
@@ -48,7 +48,7 @@ class DatabaseBackups extends Component
         $backup = Backup::query()->findOrFail($id);
         $this->backup = $backup;
         $this->files = $backup->files()->orderByDesc('id')->simplePaginate(1);
-        $this->dispatchBrowserEvent('show-files', true);
+        $this->dispatch('show-files');
     }
 
     public function backup(): void
@@ -57,7 +57,7 @@ class DatabaseBackups extends Component
 
         $this->files = $this->backup?->files()->orderByDesc('id')->simplePaginate();
 
-        $this->dispatchBrowserEvent('backup-running', true);
+        $this->dispatch('backup-running');
     }
 
     public function delete(): void
@@ -67,7 +67,7 @@ class DatabaseBackups extends Component
 
         $backup->delete();
 
-        $this->dispatchBrowserEvent('confirmed', true);
+        $this->dispatch('confirmed');
     }
 
     public function render(): View

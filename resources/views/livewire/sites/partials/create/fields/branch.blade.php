@@ -1,6 +1,6 @@
 <div>
     <x-input-label for="branch" :value="__('Branch')" />
-    <x-text-input wire:model.defer="inputs.branch" id="branch" name="branch" type="text" class="mt-1 block w-full" autocomplete="branch" placeholder="main" />
+    <x-text-input wire:model="inputs.branch" id="branch" name="branch" type="text" class="mt-1 block w-full" autocomplete="branch" placeholder="main" />
     @error('branch')
     <x-input-error class="mt-2" :messages="$message" />
     @enderror
