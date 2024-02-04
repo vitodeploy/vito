@@ -1,24 +1,11 @@
-import './bootstrap';
-// import Echo from "laravel-echo"
-// import Pusher from "pusher-js"
-import Alpine from 'alpinejs';
-import Clipboard from "@ryangjchandler/alpine-clipboard";
+import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
 
-Alpine.plugin(Clipboard)
+Alpine.directive('clipboard', (el) => {
+    let text = el.textContent
 
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: 'app-key',
-//     wsHost: 'localhost',
-//     wsPort: 6001,
-//     cluster: '',
-//     forceTLS: false,
-//     disableStats: true,
-// });
-//
-// window.Pusher = Pusher;
+    el.addEventListener('click', () => {
+        navigator.clipboard.writeText(text)
+    })
+})
 
-window.Alpine = Alpine;
-
-Alpine.start();
-
+Livewire.start()

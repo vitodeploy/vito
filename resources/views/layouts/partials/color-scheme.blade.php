@@ -4,7 +4,6 @@
         if (this.theme === 'dark') {
             return true
         }
-        console.log(window.matchMedia('(prefers-color-scheme: dark)'))
         return this.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches;
     },
     changeTheme(theme) {

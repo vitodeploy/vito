@@ -1,7 +1,7 @@
 @props(['name', 'input', 'title', 'description', 'method'])
 
 <x-modal :name="$name">
-    <form wire:submit.prevent="{{ $method }}" class="p-6">
+    <form wire:submit="{{ $method }}" class="p-6">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Confirm') }}
         </h2>

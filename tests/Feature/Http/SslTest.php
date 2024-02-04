@@ -47,7 +47,7 @@ class SslTest extends TestCase
         Livewire::test(CreateSsl::class, ['site' => $this->site])
             ->set('type', SslType::LETSENCRYPT)
             ->call('create')
-            ->assertDispatchedBrowserEvent('created');
+            ->assertDispatched('created');
 
         $this->assertDatabaseHas('ssls', [
             'site_id' => $this->site->id,
@@ -71,7 +71,7 @@ class SslTest extends TestCase
         Livewire::test(SslsList::class, ['site' => $this->site])
             ->set('deleteId', $ssl->id)
             ->call('delete')
-            ->assertDispatchedBrowserEvent('confirmed');
+            ->assertDispatched('confirmed');
 
         $this->assertDatabaseHas('ssls', [
             'id' => $ssl->id,

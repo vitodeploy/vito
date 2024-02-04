@@ -1,12 +1,12 @@
 <x-modal name="create-backup">
-    <form wire:submit.prevent="create" class="p-6" x-data="{user: false, remote: false}">
+    <form wire:submit="create" class="p-6" x-data="{user: false, remote: false}">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Create Backup') }}
         </h2>
 
         <div class="mt-6">
             <x-input-label for="database" :value="__('Database')" />
-            <x-select-input wire:model="database" id="database" name="database" class="mt-1 w-full">
+            <x-select-input wire:model.live="database" id="database" name="database" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
                 @foreach($databases as $db)
                     <option value="{{ $db->id }}" @if($database == $db->id) selected @endif>{{ $db->name }}</option>
@@ -19,7 +19,7 @@
 
         <div class="mt-6">
             <x-input-label for="storage" :value="__('Storage')" />
-            <x-select-input wire:model="storage" id="storage" name="storage" class="mt-1 w-full">
+            <x-select-input wire:model.live="storage" id="storage" name="storage" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
                 @foreach(auth()->user()->storageProviders as $st)
                     <option value="{{ $st->id }}" @if($storage == $st->id) selected @endif>{{ $st->profile }} - {{ $st->provider }}</option>
@@ -33,7 +33,7 @@
 
         <div class="mt-6">
             <x-input-label for="interval" :value="__('Interval')" />
-            <x-select-input wire:model="interval" id="interval" name="interval" class="mt-1 w-full">
+            <x-select-input wire:model.live="interval" id="interval" name="interval" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
                 <option value="0 * * * *" @if($interval === '0 * * * *') selected @endif>{{ __("Hourly") }}</option>
                 <option value="0 0 * * *" @if($interval === '0 0 * * *') selected @endif>{{ __("Daily") }}</option>
@@ -50,7 +50,7 @@
         @if($interval === 'custom')
             <div class="mt-6">
                 <x-input-label for="custom" :value="__('Custom interval (Cron)')" />
-                <x-text-input wire:model.defer="custom" id="custom" name="custom" type="text" class="mt-1 w-full" placeholder="* * * * *" />
+                <x-text-input wire:model="custom" id="custom" name="custom" type="text" class="mt-1 w-full" placeholder="* * * * *" />
                 @error('custom')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -59,7 +59,7 @@
 
         <div class="mt-6">
             <x-input-label for="keep" :value="__('Backups to Keep')" />
-            <x-text-input wire:model.defer="keep" id="keep" name="keep" type="text" class="mt-1 w-full" />
+            <x-text-input wire:model="keep" id="keep" name="keep" type="text" class="mt-1 w-full" />
             @error('keep')
             <x-input-error class="mt-2" :messages="$message" />
             @enderror

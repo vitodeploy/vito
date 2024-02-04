@@ -23,9 +23,9 @@ class CreateSsl extends Component
     {
         app(\App\Actions\SSL\CreateSSL::class)->create($this->site, $this->all());
 
-        $this->emitTo(SslsList::class, '$refresh');
+        $this->dispatch('$refresh')->to(SslsList::class);
 
-        $this->dispatchBrowserEvent('created', true);
+        $this->dispatch('created');
     }
 
     public function render(): View

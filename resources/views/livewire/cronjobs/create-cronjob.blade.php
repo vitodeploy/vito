@@ -4,14 +4,14 @@
     </x-primary-button>
 
     <x-modal name="create-cronjob">
-        <form wire:submit.prevent="create" class="p-6">
+        <form wire:submit="create" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Create Cronjob') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="command" :value="__('Command')" />
-                <x-text-input wire:model.defer="command" id="command" name="command" type="text" class="mt-1 w-full" />
+                <x-text-input wire:model="command" id="command" name="command" type="text" class="mt-1 w-full" />
                 @error('command')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -19,7 +19,7 @@
 
             <div class="mt-6">
                 <x-input-label for="user" :value="__('User')" />
-                <x-select-input wire:model.defer="user" id="user" name="user" class="mt-1 w-full">
+                <x-select-input wire:model="user" id="user" name="user" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     <option value="root" @if($user === 'root') selected @endif>root</option>
                     <option value="{{ $server->ssh_user }}" @if($user === $server->ssh_user) selected @endif>{{ $server->ssh_user }}</option>
@@ -31,7 +31,7 @@
 
             <div class="mt-6">
                 <x-input-label for="frequency" :value="__('Frequency')" />
-                <x-select-input wire:model="frequency" id="frequency" name="frequency" class="mt-1 w-full">
+                <x-select-input wire:model.live="frequency" id="frequency" name="frequency" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     <option value="* * * * *" @if($frequency === '* * * * *') selected @endif>{{ __("Every minute") }}</option>
                     <option value="0 * * * *" @if($frequency === '0 * * * *') selected @endif>{{ __("Hourly") }}</option>
@@ -48,7 +48,7 @@
             @if($frequency === 'custom')
                 <div class="mt-6">
                     <x-input-label for="custom" :value="__('Custom Frequency')" />
-                    <x-text-input wire:model.defer="custom" id="custom" name="custom" type="text" class="mt-1 w-full" placeholder="* * * * *" />
+                    <x-text-input wire:model="custom" id="custom" name="custom" type="text" class="mt-1 w-full" placeholder="* * * * *" />
                     @error('custom')
                     <x-input-error class="mt-2" :messages="$message" />
                     @enderror

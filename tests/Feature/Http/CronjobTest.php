@@ -39,7 +39,7 @@ class CronjobTest extends TestCase
         Livewire::test(CronjobsList::class, ['server' => $this->server])
             ->set('deleteId', $cronjob->id)
             ->call('delete')
-            ->assertDispatchedBrowserEvent('confirmed', true);
+            ->assertDispatched('confirmed');
     }
 
     public function test_create_cronjob()
@@ -51,7 +51,7 @@ class CronjobTest extends TestCase
             ->set('user', 'vito')
             ->set('frequency', '* * * * *')
             ->call('create')
-            ->assertDispatchedBrowserEvent('created', true);
+            ->assertDispatched('created');
 
         $this->assertDatabaseHas('cron_jobs', [
             'server_id' => $this->server->id,

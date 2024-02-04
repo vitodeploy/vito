@@ -24,9 +24,9 @@ class CreateQueue extends Component
     {
         app(\App\Actions\Queue\CreateQueue::class)->create($this->site, $this->all());
 
-        $this->emitTo(QueuesList::class, '$refresh');
+        $this->dispatch('$refresh')->to(QueuesList::class);
 
-        $this->dispatchBrowserEvent('created', true);
+        $this->dispatch('created');
     }
 
     public function render(): View

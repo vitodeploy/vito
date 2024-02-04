@@ -26,9 +26,9 @@ class AddChannel extends Component
             $this->all()
         );
 
-        $this->emitTo(ChannelsList::class, '$refresh');
+        $this->dispatch('$refresh')->to(ChannelsList::class);
 
-        $this->dispatchBrowserEvent('added', true);
+        $this->dispatch('added');
     }
 
     public function render(): View

@@ -39,7 +39,7 @@ class QueuesTest extends TestCase
         Livewire::test(QueuesList::class, ['site' => $this->site])
             ->set('deleteId', $queue->id)
             ->call('delete')
-            ->assertDispatchedBrowserEvent('confirmed', true);
+            ->assertDispatched('confirmed');
     }
 
     public function test_create_queue()
@@ -53,7 +53,7 @@ class QueuesTest extends TestCase
             ->set('auto_restart', 1)
             ->set('numprocs', 1)
             ->call('create')
-            ->assertDispatchedBrowserEvent('created', true);
+            ->assertDispatched('created');
 
         $this->assertDatabaseHas('queues', [
             'server_id' => $this->server->id,

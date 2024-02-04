@@ -56,7 +56,7 @@ class InstalledVersions extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('confirmed', true);
+        $this->dispatch('confirmed');
     }
 
     public function loadIni(int $id): void

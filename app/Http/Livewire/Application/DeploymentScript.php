@@ -27,8 +27,8 @@ class DeploymentScript extends Component
 
         session()->flash('status', 'script-updated');
 
-        $this->emitTo(Deploy::class, '$refresh');
-        $this->emitTo(AutoDeployment::class, '$refresh');
+        $this->dispatch('$refresh')->to(Deploy::class);
+        $this->dispatch('$refresh')->to(AutoDeployment::class);
     }
 
     public function render(): View

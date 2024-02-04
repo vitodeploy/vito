@@ -19,9 +19,9 @@ class InstallPHPMyAdmin extends Component
     {
         app(InstallPHPMyAdminAction::class)->install($this->server, $this->all());
 
-        $this->dispatchBrowserEvent('started', true);
+        $this->dispatch('started');
 
-        $this->emitTo(ServicesList::class, '$refresh');
+        $this->dispatch('$refresh')->to(ServicesList::class);
     }
 
     public function render(): View
