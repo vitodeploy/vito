@@ -7,7 +7,7 @@
                 <x-input-label>{{ __("Select a server provider") }}</x-input-label>
                 <div class="grid grid-cols-6 gap-2 mt-1">
                     @foreach(config('core.server_providers') as $p)
-                        <x-server-provider-item x-on:click="$wire.provider = '{{ $p }}'" :active="$provider === $p">
+                        <x-server-provider-item x-on:click="$wire.provider = '{{ $p }}'; $wire.$refresh()" :active="$provider === $p">
                             <div class="flex w-full flex-col items-center justify-center text-center">
                                 <img src="{{ asset('static/images/' . $p . '.svg') }}" class="h-7" alt="Server">
                                 <span class="md:text-normal mt-2 hidden text-sm md:block">{{ $p }}</span>
