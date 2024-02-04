@@ -62,7 +62,7 @@ class DatabaseUserList extends Component
 
         $this->viewPassword = $databaseUser->password;
 
-        $this->dispatch('open-modal', detail: 'database-user-password');
+        $this->dispatch('open-modal', modal: 'database-user-password');
     }
 
     public function showLink(int $id): void
@@ -73,7 +73,7 @@ class DatabaseUserList extends Component
         $this->linkId = $id;
         $this->link = $databaseUser->databases ?? [];
 
-        $this->dispatch('open-modal', detail: 'link-database-user');
+        $this->dispatch('open-modal', modal: 'link-database-user');
     }
 
     public function link(): void
