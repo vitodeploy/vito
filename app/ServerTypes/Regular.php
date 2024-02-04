@@ -163,7 +163,7 @@ class Regular extends AbstractType
     }
 
     /**
-     * add supervisor
+     * add redis
      */
     protected function addRedis(): void
     {
@@ -175,7 +175,7 @@ class Regular extends AbstractType
     }
 
     /**
-     * add supervisor
+     * add ufw
      */
     protected function addUfw(): void
     {
