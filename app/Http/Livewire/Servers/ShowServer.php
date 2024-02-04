@@ -21,7 +21,7 @@ class ShowServer extends Component
             return;
         }
 
-        $this->emit('refreshComponent');
+        $this->dispatch('refreshComponent');
     }
 
     public function render(): View

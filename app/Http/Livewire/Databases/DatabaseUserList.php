@@ -38,7 +38,7 @@ class DatabaseUserList extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('database-user-created', true);
+        $this->dispatch('database-user-created');
     }
 
     public function delete(): void
@@ -50,9 +50,9 @@ class DatabaseUserList extends Component
 
         $this->refreshComponent([]);
 
-        $this->emitTo(DatabaseList::class, '$refresh');
+        $this->dispatch('$refresh')->to(DatabaseList::class);
 
-        $this->dispatchBrowserEvent('confirmed', true);
+        $this->dispatch('confirmed');
     }
 
     public function viewPassword(int $id): void
@@ -62,7 +62,7 @@ class DatabaseUserList extends Component
 
         $this->viewPassword = $databaseUser->password;
 
-        $this->dispatchBrowserEvent('open-modal', 'database-user-password');
+        $this->dispatch('open-modal', 'database-user-password');
     }
 
     public function showLink(int $id): void
@@ -73,7 +73,7 @@ class DatabaseUserList extends Component
         $this->linkId = $id;
         $this->link = $databaseUser->databases ?? [];
 
-        $this->dispatchBrowserEvent('open-modal', 'link-database-user');
+        $this->dispatch('open-modal', 'link-database-user');
     }
 
     public function link(): void
@@ -85,7 +85,7 @@ class DatabaseUserList extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('linked', true);
+        $this->dispatch('linked');
     }
 
     public function render(): View

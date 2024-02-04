@@ -40,7 +40,7 @@ class DatabaseList extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('database-created', true);
+        $this->dispatch('database-created');
     }
 
     public function delete(): void
@@ -52,9 +52,9 @@ class DatabaseList extends Component
 
         $this->refreshComponent([]);
 
-        $this->emitTo(DatabaseUserList::class, '$refresh');
+        $this->dispatch('$refresh')->to(DatabaseUserList::class);
 
-        $this->dispatchBrowserEvent('confirmed', true);
+        $this->dispatch('confirmed');
     }
 
     public function render(): View

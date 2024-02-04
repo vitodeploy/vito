@@ -11,6 +11,4 @@ final class SourceControl extends Enum
     const GITLAB = 'gitlab';
 
     const BITBUCKET = 'bitbucket';
-
-    const CUSTOM = 'custom';
 }

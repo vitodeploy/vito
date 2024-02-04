@@ -4,10 +4,18 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 export V_USERNAME=vito
 export V_PASSWORD=$(openssl rand -base64 12)
+export V_IP_ADDRESS=$(curl https://freeipapi.com --silent)
+export V_IS_DOMAIN=1
 
 echo "Enter the domain you want to install Vito? (your-domain.com)"
+echo "Hit enter to use your IP address (${V_IP_ADDRESS}):"
 
 read V_DOMAIN
+
+if [[ -z "${V_DOMAIN}" ]]; then
+    export V_DOMAIN=${V_IP_ADDRESS}
+    export V_IS_DOMAIN=0
+fi
 
 echo "Enter your email address:"
 
@@ -233,6 +241,11 @@ chmod +x /home/${V_USERNAME}/${V_DOMAIN}/update.sh
 # cleanup
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
+# cache
+php artisan config:cache
+php artisan icons:cache
+
+# print info
 echo "🎉 Congratulations!"
 echo "✅ SSH User: ${V_USERNAME}"
 echo "✅ SSH Password: ${V_PASSWORD}"

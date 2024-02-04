@@ -9,6 +9,7 @@ use App\Models\Ssl;
 use App\SSHCommands\Nginx\ChangeNginxPHPVersionCommand;
 use App\SSHCommands\Nginx\CreateNginxVHostCommand;
 use App\SSHCommands\Nginx\DeleteNginxSiteCommand;
+use App\SSHCommands\Nginx\GetNginxVHostCommand;
 use App\SSHCommands\Nginx\UpdateNginxRedirectsCommand;
 use App\SSHCommands\Nginx\UpdateNginxVHostCommand;
 use App\SSHCommands\SSL\CreateCustomSSLCommand;
@@ -39,15 +40,26 @@ class Nginx extends AbstractWebserver
     /**
      * @throws Throwable
      */
-    public function updateVHost(Site $site, bool $noSSL = false): void
+    public function updateVHost(Site $site, bool $noSSL = false, ?string $vhost = null): void
     {
         $this->service->server->ssh()->exec(
             new UpdateNginxVHostCommand(
                 $site->domain,
                 $site->path,
-                $this->generateVhost($site, $noSSL)
+                $vhost ?? $this->generateVhost($site, $noSSL)
             ),
             'update-vhost',
+            $site->id
+        );
+    }
+
+    public function getVHost(Site $site): string
+    {
+        return $this->service->server->ssh()->exec(
+            new GetNginxVHostCommand(
+                $site->domain
+            ),
+            'get-vhost',
             $site->id
         );
     }

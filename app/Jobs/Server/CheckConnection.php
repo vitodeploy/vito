@@ -3,8 +3,10 @@
 namespace App\Jobs\Server;
 
 use App\Events\Broadcast;
+use App\Facades\Notifier;
 use App\Jobs\Job;
 use App\Models\Server;
+use App\Notifications\ServerDisconnected;
 use Throwable;
 
 class CheckConnection extends Job
@@ -39,7 +41,7 @@ class CheckConnection extends Job
     {
         $this->server->status = 'disconnected';
         $this->server->save();
-        /** @todo notify */
+        Notifier::send($this->server, new ServerDisconnected($this->server));
         event(
             new Broadcast('server-status-failed', [
                 'server' => $this->server,

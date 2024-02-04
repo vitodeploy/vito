@@ -10,8 +10,8 @@ use Livewire\Component;
 
 class DeploymentsList extends Component
 {
-    use RefreshComponentOnBroadcast;
     use HasCustomPaginationView;
+    use RefreshComponentOnBroadcast;
 
     public Site $site;
 
@@ -22,7 +22,7 @@ class DeploymentsList extends Component
         $deployment = $this->site->deployments()->findOrFail($id);
         $this->logContent = $deployment->log->content;
 
-        $this->dispatchBrowserEvent('open-modal', 'show-log');
+        $this->dispatch('open-modal', 'show-log');
     }
 
     public function render(): View

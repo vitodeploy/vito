@@ -27,7 +27,7 @@ class Env extends Component
 
         session()->flash('status', 'updating-env');
 
-        $this->emit(Deploy::class, '$refresh');
+        $this->dispatch('$refresh')->to(Deploy::class);
     }
 
     public function render(): View

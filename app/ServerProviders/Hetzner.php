@@ -4,6 +4,8 @@ namespace App\ServerProviders;
 
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
+use App\Facades\Notifier;
+use App\Notifications\FailedToDeleteServerFromProvider;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
@@ -45,7 +47,7 @@ class Hetzner extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(array $credentials = null): bool
+    public function connect(?array $credentials = null): bool
     {
         $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/servers');
         if (! $connect->ok()) {
@@ -122,10 +124,9 @@ class Hetzner extends AbstractProvider
             $delete = Http::withToken($this->server->serverProvider->credentials['token'])
                 ->delete($this->apiUrl.'/servers/'.$this->server->provider_data['hetzner_id']);
 
-            /** @todo notify */
-            // if (! $delete->ok()) {
-            //     $this->server->team->notify(new FailedToDeleteServerFromProvider($this->server));
-            // }
+            if (! $delete->ok()) {
+                Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
+            }
         }
 
         // delete key

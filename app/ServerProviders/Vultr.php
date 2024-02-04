@@ -4,6 +4,8 @@ namespace App\ServerProviders;
 
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
+use App\Facades\Notifier;
+use App\Notifications\FailedToDeleteServerFromProvider;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -59,7 +61,7 @@ class Vultr extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(array $credentials = null): bool
+    public function connect(?array $credentials = null): bool
     {
         $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
         if (! $connect->ok()) {
@@ -85,7 +87,9 @@ class Vultr extends AbstractProvider
     public function create(): void
     {
         // generate key pair
-        generate_key_pair(Storage::disk(config('core.key_pairs_disk'))->path((string) $this->server->id));
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk(config('core.key_pairs_disk'));
+        generate_key_pair($storageDisk->path((string) $this->server->id));
 
         $createSshKey = Http::withToken($this->server->serverProvider->credentials['token'])
             ->post($this->apiUrl.'/ssh-keys', [
@@ -142,10 +146,9 @@ class Vultr extends AbstractProvider
             $delete = Http::withToken($this->server->serverProvider->credentials['token'])
                 ->delete($this->apiUrl.'/instances/'.$this->server->provider_data['instance_id']);
 
-            /** @todo notify */
-            // if (! $delete->ok()) {
-            //     $this->server->team->notify(new FailedToDeleteServerFromProvider($this->server));
-            // }
+            if (! $delete->ok()) {
+                Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
+            }
         }
     }
 }

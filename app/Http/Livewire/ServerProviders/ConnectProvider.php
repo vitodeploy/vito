@@ -22,9 +22,9 @@ class ConnectProvider extends Component
     {
         app(CreateServerProvider::class)->create(auth()->user(), $this->all());
 
-        $this->emitTo(ProvidersList::class, '$refresh');
+        $this->dispatch('$refresh')->to(ProvidersList::class);
 
-        $this->dispatchBrowserEvent('connected', true);
+        $this->dispatch('connected');
     }
 
     public function render(): View

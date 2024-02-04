@@ -3,10 +3,10 @@
 
     <x-slot name="description">{{ __("You can change your site's PHP version here") }}</x-slot>
 
-    <form id="change-php-version" wire:submit.prevent="change" class="space-y-6">
+    <form id="change-php-version" wire:submit="change" class="space-y-6">
         <div>
             <x-input-label for="version" :value="__('PHP Version')" />
-            <x-select-input wire:model.defer="version" id="version" name="version" class="mt-1 w-full">
+            <x-select-input wire:model="version" id="version" name="version" class="mt-1 w-full">
                 <option value="" disabled selected>{{ __("Select") }}</option>
                 @foreach($site->server->installedPHPVersions() as $php)
                     <option value="{{ $php }}" @if($php === $version) selected @endif>{{ $php }}</option>

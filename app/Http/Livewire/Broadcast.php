@@ -13,7 +13,7 @@ class Broadcast extends Component
         $event = Cache::get('broadcast');
         if ($event) {
             Cache::forget('broadcast');
-            $this->emit('broadcast', $event);
+            $this->dispatch('broadcast', $event);
         }
 
         return view('livewire.broadcast');

@@ -26,6 +26,7 @@ class CreateServer
         $this->validateInputs($input);
 
         $server = new Server([
+            'project_id' => $creator->currentProject->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
             'ssh_user' => config('core.server_providers_default_user')[$input['provider']][$input['os']],
@@ -43,9 +44,8 @@ class CreateServer
             'progress_step' => 'Initializing',
         ]);
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
             if ($server->provider != 'custom') {
                 $server->provider_id = $input['server_provider'];
             }
@@ -118,7 +118,6 @@ class CreateServer
         if ($input['provider'] == 'custom') {
             $rules['ip'] = [
                 'required',
-                'ip',
                 new RestrictedIPAddressesRule(),
             ];
             $rules['port'] = [

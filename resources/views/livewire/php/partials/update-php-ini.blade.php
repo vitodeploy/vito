@@ -1,12 +1,12 @@
 <x-modal name="update-php-ini">
-    <form wire:submit.prevent="saveIni" class="p-6">
+    <form wire:submit="saveIni" class="p-6">
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Update php.ini') }}
         </h2>
 
         <div class="mt-6">
             <x-input-label for="ini" value="php.ini" />
-            <x-textarea wire:model.defer="ini" id="ini" name="ini" class="mt-1 w-full" rows="15" />
+            <x-textarea wire:model="ini" id="ini" name="ini" class="mt-1 w-full" rows="15" />
             @error('ini')
             <x-input-error class="mt-2" :messages="$message" />
             @enderror

@@ -4,14 +4,14 @@
     </x-primary-button>
 
     <x-modal name="create-queue">
-        <form wire:submit.prevent="create" class="p-6">
+        <form wire:submit="create" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Create Queue') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="command" :value="__('Command')" />
-                <x-text-input wire:model.defer="command" id="command" name="command" type="text" class="mt-1 w-full" />
+                <x-text-input wire:model="command" id="command" name="command" type="text" class="mt-1 w-full" />
                 @error('command')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -19,7 +19,7 @@
 
             <div class="mt-6">
                 <x-input-label for="user" :value="__('User')" />
-                <x-select-input wire:model.defer="user" id="user" name="user" class="mt-1 w-full">
+                <x-select-input wire:model="user" id="user" name="user" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     <option value="root" @if($user === 'root') selected @endif>root</option>
                     <option value="{{ $site->server->ssh_user }}" @if($user === $site->server->ssh_user) selected @endif>{{ $site->server->ssh_user }}</option>
@@ -31,7 +31,7 @@
 
             <div class="mt-6">
                 <x-input-label for="auto_start" :value="__('Auto Start')" />
-                <x-select-input wire:model="auto_start" id="auto_start" name="auto_start" class="mt-1 w-full">
+                <x-select-input wire:model.live="auto_start" id="auto_start" name="auto_start" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     <option value="1" @if($auto_start) selected @endif>{{ __("Yes") }}</option>
                     <option value="0" @if(!$auto_start) selected @endif>{{ __("No") }}</option>
@@ -43,7 +43,7 @@
 
             <div class="mt-6">
                 <x-input-label for="auto_restart" :value="__('Auto Restart')" />
-                <x-select-input wire:model="auto_restart" id="auto_restart" name="auto_restart" class="mt-1 w-full">
+                <x-select-input wire:model.live="auto_restart" id="auto_restart" name="auto_restart" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     <option value="1" @if($auto_restart) selected @endif>{{ __("Yes") }}</option>
                     <option value="0" @if(!$auto_restart) selected @endif>{{ __("No") }}</option>
@@ -55,7 +55,7 @@
 
             <div class="mt-6">
                 <x-input-label for="numprocs" :value="__('Numprocs')" />
-                <x-text-input wire:model.defer="numprocs" id="numprocs" name="numprocs" type="text" class="mt-1 w-full" placeholder="2" />
+                <x-text-input wire:model="numprocs" id="numprocs" name="numprocs" type="text" class="mt-1 w-full" placeholder="2" />
                 @error('numprocs')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror

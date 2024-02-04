@@ -10,8 +10,8 @@
         @if(count($sourceControls) > 0)
             @foreach($sourceControls as $sourceControl)
                 <x-item-card>
-                    <div class="flex-none">
-                        <img src="{{ asset('static/images/' . $sourceControl->provider . '.svg') }}" class="h-10 w-10" alt="">
+                    <div class="flex-none text-gray-600 dark:text-gray-300">
+                        @include('livewire.source-controls.icons.' . $sourceControl->provider . '-icon')
                     </div>
                     <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                         <span class="mb-1">{{ $sourceControl->profile }}</span>

@@ -20,9 +20,9 @@ class Connect extends Component
     {
         app(ConnectSourceControl::class)->connect($this->all());
 
-        $this->emitTo(SourceControlsList::class, '$refresh');
+        $this->dispatch('$refresh')->to(SourceControlsList::class);
 
-        $this->dispatchBrowserEvent('connected', true);
+        $this->dispatch('connected');
     }
 
     public function render(): View

@@ -28,9 +28,9 @@ class CreateFirewallRule extends Component
     {
         app(CreateRule::class)->create($this->server, $this->all());
 
-        $this->emitTo(FirewallRulesList::class, '$refresh');
+        $this->dispatch('$refresh')->to(FirewallRulesList::class);
 
-        $this->dispatchBrowserEvent('created', true);
+        $this->dispatch('created');
     }
 
     public function render(): View

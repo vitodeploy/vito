@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Helpers\Notifier;
 use App\Helpers\SSH;
 use App\Support\SocialiteProviders\DropboxProvider;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -28,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
         // facades
         $this->app->bind('ssh', function () {
             return new SSH;
+        });
+        $this->app->bind('notifier', function () {
+            return new Notifier;
         });
 
         $this->extendSocialite();
