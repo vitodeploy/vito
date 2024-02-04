@@ -27,7 +27,7 @@ class InstallUfw extends InstallationJob
         $ssh = $this->service->server->ssh();
         $ssh->exec(new InstallUfwCommand(), 'install-ufw');
         $status = $ssh->exec(new ServiceStatusCommand($this->service->unit), 'ufw-status');
-        // $this->service->validateInstall($status);
+        $this->service->validateInstall($status);
         $this->service->update([
             'status' => ServiceStatus::READY,
         ]);

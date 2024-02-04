@@ -91,7 +91,7 @@ class Regular extends AbstractType
                     'server' => $this->server,
                 ])
             );
-            Notifier::send($this->server, new ServerInstallationSucceed($this->server));
+            // Notifier::send($this->server, new ServerInstallationSucceed($this->server));
         };
 
         Bus::chain($jobs)
