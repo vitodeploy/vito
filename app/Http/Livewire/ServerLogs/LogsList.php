@@ -27,7 +27,7 @@ class LogsList extends Component
         $log = $this->server->logs()->findOrFail($id);
         $this->logContent = $log->content;
 
-        $this->dispatch('open-modal', modal: 'show-log');
+        $this->dispatch('open-modal', 'show-log');
     }
 
     public function render(): View

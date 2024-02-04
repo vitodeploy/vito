@@ -22,7 +22,7 @@ class DeploymentsList extends Component
         $deployment = $this->site->deployments()->findOrFail($id);
         $this->logContent = $deployment->log->content;
 
-        $this->dispatch('open-modal', modal: 'show-log');
+        $this->dispatch('open-modal', 'show-log');
     }
 
     public function render(): View
