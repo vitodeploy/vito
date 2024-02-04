@@ -14,6 +14,6 @@ class Notifier
      */
     public function send(object $notifiable, Notification $notification): void
     {
-        NotificationChannel::notifyAll($notification);
+        // NotificationChannel::notifyAll($notification);
     }
 }
