@@ -25,7 +25,7 @@ class FailedToDeleteServerFromProvider extends AbstractNotification
         ]);
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
             ->subject(__('Failed to delete the server from the provider!'))

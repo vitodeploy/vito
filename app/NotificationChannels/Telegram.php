@@ -3,6 +3,7 @@
 namespace App\NotificationChannels;
 
 use App\Contracts\Notification;
+use App\Models\NotificationChannel;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -47,6 +48,8 @@ class Telegram extends AbstractNotificationChannel
 
     public function send(object $notifiable, Notification $notification): void
     {
+        /** @var NotificationChannel $notifiable */
+        $this->notificationChannel = $notifiable;
         $this->sendToTelegram($notification->toTelegram($notifiable));
     }
 
