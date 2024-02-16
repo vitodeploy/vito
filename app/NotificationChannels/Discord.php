@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\Http;
 
 class Discord extends AbstractNotificationChannel
 {
-    public function channel(): string
-    {
-        return 'discord';
-    }
-
     public function createRules(array $input): array
     {
         return [

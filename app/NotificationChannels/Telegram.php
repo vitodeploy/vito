@@ -10,11 +10,6 @@ class Telegram extends AbstractNotificationChannel
 {
     protected string $apiUrl = 'https://api.telegram.org/bot';
 
-    public function channel(): string
-    {
-        return 'telegram';
-    }
-
     public function createRules(array $input): array
     {
         return [
