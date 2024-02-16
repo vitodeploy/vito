@@ -4,8 +4,8 @@ namespace Tests\Unit\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Discord;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class DiscordTest extends TestCase
@@ -17,7 +17,7 @@ class DiscordTest extends TestCase
         ]));
 
         $this->assertSame([
-            'webhook_url' => 'required|url'
+            'webhook_url' => 'required|url',
         ], $provider->createRules([]));
     }
 
@@ -28,9 +28,9 @@ class DiscordTest extends TestCase
         ]));
 
         $this->assertSame([
-            'webhook_url' => 'https://discord.com/xxxxx'
+            'webhook_url' => 'https://discord.com/xxxxx',
         ], $provider->createData([
-            'webhook_url' => 'https://discord.com/xxxxx'
+            'webhook_url' => 'https://discord.com/xxxxx',
         ]));
     }
 
@@ -39,12 +39,12 @@ class DiscordTest extends TestCase
         $provider = new Discord(NotificationChannel::factory()->create([
             'provider' => 'discord',
             'data' => [
-                'webhook_url' => 'https://discord.com/xxxxx'
-            ]
+                'webhook_url' => 'https://discord.com/xxxxx',
+            ],
         ]));
 
         $this->assertSame([
-            'webhook_url' => 'https://discord.com/xxxxx'
+            'webhook_url' => 'https://discord.com/xxxxx',
         ], $provider->data());
     }
 
@@ -53,8 +53,8 @@ class DiscordTest extends TestCase
         $provider = new Discord(NotificationChannel::factory()->create([
             'provider' => 'discord',
             'data' => [
-                'webhook_url' => 'https://discord.com/xxxxx'
-            ]
+                'webhook_url' => 'https://discord.com/xxxxx',
+            ],
         ]));
 
         Http::fake();
@@ -71,8 +71,8 @@ class DiscordTest extends TestCase
         $channel = NotificationChannel::factory()->create([
             'provider' => 'discord',
             'data' => [
-                'webhook_url' => 'https://discord.com/xxxxx'
-            ]
+                'webhook_url' => 'https://discord.com/xxxxx',
+            ],
         ]);
         $provider = new Discord($channel);
 

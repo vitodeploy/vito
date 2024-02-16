@@ -17,7 +17,7 @@ class EmailTest extends TestCase
         ]));
 
         $this->assertSame([
-            'email' => 'required|email'
+            'email' => 'required|email',
         ], $provider->createRules([]));
     }
 
@@ -28,9 +28,9 @@ class EmailTest extends TestCase
         ]));
 
         $this->assertSame([
-            'email' => 'user@example.com'
+            'email' => 'user@example.com',
         ], $provider->createData([
-            'email' => 'user@example.com'
+            'email' => 'user@example.com',
         ]));
     }
 
@@ -39,12 +39,12 @@ class EmailTest extends TestCase
         $provider = new Email(NotificationChannel::factory()->create([
             'provider' => 'email',
             'data' => [
-                'email' => 'user@example.com'
-            ]
+                'email' => 'user@example.com',
+            ],
         ]));
 
         $this->assertSame([
-            'email' => 'user@example.com'
+            'email' => 'user@example.com',
         ], $provider->data());
     }
 
@@ -53,8 +53,8 @@ class EmailTest extends TestCase
         $provider = new Email(NotificationChannel::factory()->create([
             'provider' => 'email',
             'data' => [
-                'email' => 'user@example.com'
-            ]
+                'email' => 'user@example.com',
+            ],
         ]));
 
         Mail::fake();
@@ -69,8 +69,8 @@ class EmailTest extends TestCase
         $channel = NotificationChannel::factory()->create([
             'provider' => 'email',
             'data' => [
-                'email' => 'user@example.com'
-            ]
+                'email' => 'user@example.com',
+            ],
         ]);
         $provider = new Email($channel);
 

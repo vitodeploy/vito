@@ -4,8 +4,8 @@ namespace Tests\Unit\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Slack;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class SlackTest extends TestCase
@@ -17,7 +17,7 @@ class SlackTest extends TestCase
         ]));
 
         $this->assertSame([
-            'webhook_url' => 'required|url'
+            'webhook_url' => 'required|url',
         ], $provider->createRules([]));
     }
 
@@ -28,9 +28,9 @@ class SlackTest extends TestCase
         ]));
 
         $this->assertSame([
-            'webhook_url' => 'https://slack.com/xxxxx'
+            'webhook_url' => 'https://slack.com/xxxxx',
         ], $provider->createData([
-            'webhook_url' => 'https://slack.com/xxxxx'
+            'webhook_url' => 'https://slack.com/xxxxx',
         ]));
     }
 
@@ -39,12 +39,12 @@ class SlackTest extends TestCase
         $provider = new Slack(NotificationChannel::factory()->create([
             'provider' => 'slack',
             'data' => [
-                'webhook_url' => 'https://slack.com/xxxxx'
-            ]
+                'webhook_url' => 'https://slack.com/xxxxx',
+            ],
         ]));
 
         $this->assertSame([
-            'webhook_url' => 'https://slack.com/xxxxx'
+            'webhook_url' => 'https://slack.com/xxxxx',
         ], $provider->data());
     }
 
@@ -53,8 +53,8 @@ class SlackTest extends TestCase
         $provider = new Slack(NotificationChannel::factory()->create([
             'provider' => 'slack',
             'data' => [
-                'webhook_url' => 'https://slack.com/xxxxx'
-            ]
+                'webhook_url' => 'https://slack.com/xxxxx',
+            ],
         ]));
 
         Http::fake();
@@ -71,8 +71,8 @@ class SlackTest extends TestCase
         $channel = NotificationChannel::factory()->create([
             'provider' => 'slack',
             'data' => [
-                'webhook_url' => 'https://slack.com/xxxxx'
-            ]
+                'webhook_url' => 'https://slack.com/xxxxx',
+            ],
         ]);
         $provider = new Slack($channel);
 

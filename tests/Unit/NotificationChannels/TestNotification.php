@@ -8,6 +8,6 @@ class TestNotification extends AbstractNotification
 {
     public function rawText(): string
     {
-        return "Hello";
+        return 'Hello';
     }
 }

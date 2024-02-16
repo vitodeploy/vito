@@ -4,8 +4,8 @@ namespace Tests\Unit\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Telegram;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class TelegramTest extends TestCase
@@ -33,7 +33,7 @@ class TelegramTest extends TestCase
             'chat_id' => '12345',
         ], $provider->createData([
             'bot_token' => 'xxxxx',
-            'chat_id' => '12345'
+            'chat_id' => '12345',
         ]));
     }
 
@@ -43,13 +43,13 @@ class TelegramTest extends TestCase
             'provider' => 'telegram',
             'data' => [
                 'bot_token' => 'xxxxx',
-                'chat_id' => '12345'
-            ]
+                'chat_id' => '12345',
+            ],
         ]));
 
         $this->assertSame([
             'bot_token' => 'xxxxx',
-            'chat_id' => '12345'
+            'chat_id' => '12345',
         ], $provider->data());
     }
 
@@ -59,8 +59,8 @@ class TelegramTest extends TestCase
             'provider' => 'telegram',
             'data' => [
                 'bot_token' => 'xxxxx',
-                'chat_id' => '12345'
-            ]
+                'chat_id' => '12345',
+            ],
         ]));
 
         Http::fake();
@@ -85,8 +85,8 @@ class TelegramTest extends TestCase
             'provider' => 'telegram',
             'data' => [
                 'bot_token' => 'xxxxx',
-                'chat_id' => '12345'
-            ]
+                'chat_id' => '12345',
+            ],
         ]);
         $provider = new Telegram($channel);
 
