@@ -51,8 +51,7 @@ class Email extends AbstractNotificationChannel
     {
         /** @var NotificationChannel $notifiable */
         $this->notificationChannel = $notifiable;
-        $message = $notification->toMail($notifiable);
-
+        $message = $notification->toEmail($notifiable);
         Mail::to($this->data()['email'])->send(
             new NotificationMail($message->subject, $message->render())
         );
