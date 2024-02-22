@@ -7,7 +7,7 @@
 
             <div class="mt-6">
                 <x-input-label for="env" :value="__('.env')" />
-                <x-textarea wire:model="env" rows="10" id="env" name="env" class="mt-1 w-full" />
+                <x-textarea id="env" wire:init="loadEnv" wire:model="env" rows="10" class="mt-1 block w-full"></x-textarea>
                 @error('env')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror

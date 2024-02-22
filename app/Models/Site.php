@@ -15,6 +15,7 @@ use App\Jobs\Site\DeployEnv;
 use App\Jobs\Site\UpdateBranch;
 use App\Notifications\SiteInstallationFailed;
 use App\Notifications\SiteInstallationSucceed;
+use App\SSHCommands\Website\GetEnvCommand;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -441,5 +442,14 @@ class Site extends AbstractModel
     public function isReady(): bool
     {
         return $this->status === SiteStatus::READY;
+    }
+
+    public function getEnv(): string
+    {
+        return $this->server->ssh()->exec(
+            new GetEnvCommand(
+                $this->domain
+            )
+        );
     }
 }

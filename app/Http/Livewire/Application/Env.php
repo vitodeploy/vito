@@ -14,11 +14,11 @@ class Env extends Component
 
     public Site $site;
 
-    public string $env;
+    public string $env = 'Loading...';
 
-    public function mount(): void
+    public function loadEnv(): void
     {
-        $this->env = $this->site->env;
+        $this->env = $this->site->getEnv();
     }
 
     public function save(): void
