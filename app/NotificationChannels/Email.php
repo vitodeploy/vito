@@ -35,7 +35,10 @@ class Email extends AbstractNotificationChannel
     {
         try {
             Mail::to($this->data()['email'])->send(
-                new NotificationMail('Test VitoDeploy', 'This is a test email!')
+                new NotificationMail(
+                    'Connected to VitoDeploy',
+                    'This email confirms that you have connected your email to VitoDeploy.'
+                )
             );
         } catch (Throwable) {
             return false;
@@ -48,8 +51,7 @@ class Email extends AbstractNotificationChannel
     {
         /** @var NotificationChannel $notifiable */
         $this->notificationChannel = $notifiable;
-        $message = $notification->toMail($notifiable);
-
+        $message = $notification->toEmail($notifiable);
         Mail::to($this->data()['email'])->send(
             new NotificationMail($message->subject, $message->render())
         );

@@ -26,9 +26,7 @@ class DeployEnv extends Job
             new EditFileCommand(
                 $this->site->path.'/.env',
                 $this->site->env
-            ),
-            'update-env',
-            $this->site->id
+            )
         );
         event(
             new Broadcast('deploy-site-env-finished', [

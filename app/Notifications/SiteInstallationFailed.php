@@ -19,7 +19,7 @@ class SiteInstallationFailed extends AbstractNotification
         ]);
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
             ->subject(__('Site installation failed!'))
