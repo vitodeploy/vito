@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2c898cb3ae37c6267db77c5c95d0f926",
+    "content-hash": "f2e6a21fc0abada9bc40b4e80df42b26",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -3570,20 +3570,21 @@
         },
         {
             "name": "opcodesio/log-viewer",
-            "version": "v2.5.6",
+            "version": "v3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/opcodesio/log-viewer.git",
-                "reference": "34619b89ec0501222a661863e80dc2c92618d8f3"
+                "reference": "f1d89dc2e54e186f6852533a165fc49a6a83fff8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opcodesio/log-viewer/zipball/34619b89ec0501222a661863e80dc2c92618d8f3",
-                "reference": "34619b89ec0501222a661863e80dc2c92618d8f3",
+                "url": "https://api.github.com/repos/opcodesio/log-viewer/zipball/f1d89dc2e54e186f6852533a165fc49a6a83fff8",
+                "reference": "f1d89dc2e54e186f6852533a165fc49a6a83fff8",
                 "shasum": ""
             },
             "require": {
-                "illuminate/contracts": "^8.0|^9.0|^10.0",
+                "illuminate/contracts": "^8.0|^9.0|^10.0|^11.0",
+                "opcodesio/mail-parser": "^0.1.6",
                 "php": "^8.0"
             },
             "conflict": {
@@ -3593,11 +3594,10 @@
                 "guzzlehttp/guzzle": "^7.2",
                 "itsgoingd/clockwork": "^5.1",
                 "laravel/pint": "^1.0",
-                "nunomaduro/collision": "^6.0",
-                "orchestra/testbench": "^7.6|^8.0",
-                "pestphp/pest": "^1.21",
-                "pestphp/pest-plugin-laravel": "^1.1",
-                "phpunit/phpunit": "^9.5",
+                "nunomaduro/collision": "^7.0|^8.0",
+                "orchestra/testbench": "^7.6|^8.0|^9.0",
+                "pestphp/pest": "^2.0",
+                "pestphp/pest-plugin-laravel": "^2.0",
                 "spatie/test-time": "^1.3"
             },
             "suggest": {
@@ -3642,7 +3642,7 @@
             ],
             "support": {
                 "issues": "https://github.com/opcodesio/log-viewer/issues",
-                "source": "https://github.com/opcodesio/log-viewer/tree/v2.5.6"
+                "source": "https://github.com/opcodesio/log-viewer/tree/v3.4.0"
             },
             "funding": [
                 {
@@ -3654,7 +3654,60 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-09-03T08:22:57+00:00"
+            "time": "2024-02-14T15:14:59+00:00"
+        },
+        {
+            "name": "opcodesio/mail-parser",
+            "version": "v0.1.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opcodesio/mail-parser.git",
+                "reference": "639ef31cbd146a63416283e75afce152e13233ea"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opcodesio/mail-parser/zipball/639ef31cbd146a63416283e75afce152e13233ea",
+                "reference": "639ef31cbd146a63416283e75afce152e13233ea",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "pestphp/pest": "^2.16",
+                "symfony/var-dumper": "^6.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Opcodes\\MailParser\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Arunas Skirius",
+                    "email": "arukomp@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Parse emails without the mailparse extension",
+            "keywords": [
+                "arukompas",
+                "email",
+                "email parser",
+                "mail",
+                "opcodesio",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/opcodesio/mail-parser/issues",
+                "source": "https://github.com/opcodesio/mail-parser/tree/v0.1.6"
+            },
+            "time": "2023-11-19T08:47:43+00:00"
         },
         {
             "name": "owenvoke/blade-fontawesome",
@@ -9903,5 +9956,5 @@
         "ext-ftp": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
