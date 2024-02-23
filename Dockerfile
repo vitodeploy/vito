@@ -62,6 +62,4 @@ RUN chmod +x /start.sh
 
 EXPOSE 80 3306
 
-VOLUME ["/var/www/html", "/var/lib/mysql"]
-
-CMD ["/usr/bin/supervisord"]
+CMD ["/start.sh"]

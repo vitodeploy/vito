@@ -38,7 +38,7 @@ if [ ! -f "$INIT_FLAG" ]; then
     ssh-keygen -y -f /var/www/html/storage/ssh-private.pem > /var/www/html/storage/ssh-public.key
 
     # Create the flag file to indicate completion of initialization tasks
-    touch /var/www/html/storage/"$INIT_FLAG"
+    touch "$INIT_FLAG"
 fi
 
 service mysql start
@@ -58,4 +58,4 @@ php /var/www/html/artisan icons:cache
 
 echo "Vito is running! 🚀"
 
-tail -f /dev/null
+/usr/bin/supervisord
