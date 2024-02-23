@@ -1,5 +1,3 @@
-VOLUME ["/var/www/html", "/var/lib/mysql"]
-
 FROM ubuntu:22.04
 
 WORKDIR /var/www/html
@@ -63,5 +61,7 @@ COPY docker/standalone/start.sh /start.sh
 RUN chmod +x /start.sh
 
 EXPOSE 80 3306
+
+VOLUME ["/var/www/html", "/var/lib/mysql"]
 
 CMD ["/usr/bin/supervisord"]
