@@ -2,12 +2,11 @@
 
 namespace App\Notifications;
 
-use App\Contracts\Notification;
 use App\Models\Server;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class FailedToDeleteServerFromProvider implements Notification
+class FailedToDeleteServerFromProvider extends AbstractNotification
 {
     use Queueable;
 
@@ -18,26 +17,18 @@ class FailedToDeleteServerFromProvider implements Notification
         $this->server = $server;
     }
 
-    public function subject(): string
+    public function rawText(): string
     {
-        return __('Failed to delete the server from the provider!');
-    }
-
-    public function message(bool $mail = false): mixed
-    {
-        if ($mail) {
-            return $this->mail();
-        }
-
         return __("We couldn't delete [:server] \nfrom :provider \nPlease check your provider and delete it manually", [
             'server' => $this->server->name,
             'provider' => $this->server->provider,
         ]);
     }
 
-    public function mail(): MailMessage
+    public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->subject(__('Failed to delete the server from the provider!'))
             ->line("We couldn't delete [".$this->server->name.'] from '.$this->server->provider)
             ->line('Please check your provider and delete it manually');
     }

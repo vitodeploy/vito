@@ -6,6 +6,8 @@ interface SiteType
 {
     public function language(): string;
 
+    public function supportedFeatures(): array;
+
     public function createValidationRules(array $input): array;
 
     public function createFields(array $input): array;

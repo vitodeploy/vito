@@ -34,6 +34,17 @@ class ServerLog extends AbstractModel
         'site_id' => 'integer',
     ];
 
+    public static function boot(): void
+    {
+        parent::boot();
+
+        static::deleting(function (ServerLog $log) {
+            if (Storage::disk($log->disk)->exists($log->name)) {
+                Storage::disk($log->disk)->delete($log->name);
+            }
+        });
+    }
+
     public function getRouteKey(): string
     {
         return 'log';

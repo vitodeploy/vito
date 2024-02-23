@@ -4,6 +4,8 @@ namespace App\ServerProviders;
 
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
+use App\Facades\Notifier;
+use App\Notifications\FailedToDeleteServerFromProvider;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -57,7 +59,7 @@ class Linode extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(array $credentials = null): bool
+    public function connect(?array $credentials = null): bool
     {
         $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
         if (! $connect->ok()) {
@@ -131,10 +133,9 @@ class Linode extends AbstractProvider
             $delete = Http::withToken($this->server->serverProvider->credentials['token'])
                 ->delete($this->apiUrl.'/linode/instances/'.$this->server->provider_data['linode_id']);
 
-            /** @todo notify */
-            // if (! $delete->ok()) {
-            //     $this->server->team->notify(new FailedToDeleteServerFromProvider($this->server));
-            // }
+            if (! $delete->ok()) {
+                Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
+            }
         }
     }
 }

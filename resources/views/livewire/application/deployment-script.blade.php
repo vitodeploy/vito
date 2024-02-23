@@ -1,14 +1,13 @@
 <div x-data="">
-    <x-secondary-button x-on:click="$dispatch('open-modal', 'deployment-script')">{{ __("Deployment Script") }}</x-secondary-button>
     <x-modal name="deployment-script">
-        <form wire:submit.prevent="save" class="p-6">
+        <form wire:submit="save" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Deployment Script') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
-                <x-textarea wire:model.defer="script" rows="10" id="script" name="script" class="mt-1 w-full" />
+                <x-textarea wire:model="script" rows="10" id="script" name="script" class="mt-1 w-full" />
                 @error('script')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror

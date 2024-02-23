@@ -31,7 +31,7 @@ class SSH
 
     protected PrivateKey $privateKey;
 
-    public function init(Server $server, string $asUser = null): self
+    public function init(Server $server, ?string $asUser = null): self
     {
         $this->connection = null;
         $this->log = null;
@@ -64,11 +64,15 @@ class SSH
      */
     public function connect(bool $sftp = false): void
     {
+        $ip = $this->server->ip;
+        if (str($ip)->contains(':')) {
+            $ip = '['.$ip.']';
+        }
         try {
             if ($sftp) {
-                $this->connection = new SFTP($this->server->ip, $this->server->port);
+                $this->connection = new SFTP($ip, $this->server->port);
             } else {
-                $this->connection = new SSH2($this->server->ip, $this->server->port);
+                $this->connection = new SSH2($ip, $this->server->port);
             }
 
             $login = $this->connection->login($this->user, $this->privateKey);
@@ -87,7 +91,7 @@ class SSH
     /**
      * @throws Throwable
      */
-    public function exec(string|array|SSHCommand $commands, string $log = '', int $siteId = null): string
+    public function exec(string|array|SSHCommand $commands, string $log = '', ?int $siteId = null): string
     {
         if ($log) {
             $this->setLog($log, $siteId);

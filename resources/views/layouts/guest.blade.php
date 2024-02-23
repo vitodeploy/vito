@@ -20,11 +20,14 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
             <div>
                 <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500 rounded-lg" />
+                    <div class="flex items-center justify-start text-3xl font-extrabold">
+                        <x-application-logo class="w-9 h-9 rounded-md" />
+                        <span class="ml-1">Deploy</span>
+                    </div>
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden rounded-lg">
+            <div class="w-full sm:max-w-md mt-10 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden rounded-lg">
                 {{ $slot }}
             </div>
         </div>

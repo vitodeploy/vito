@@ -6,12 +6,16 @@ use App\Contracts\SiteType;
 use App\Enums\DeploymentStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
-use App\Exceptions\FailedToDeployGitHook;
+use App\Events\Broadcast;
 use App\Exceptions\SourceControlIsNotConnected;
+use App\Facades\Notifier;
 use App\Jobs\Site\ChangePHPVersion;
 use App\Jobs\Site\Deploy;
 use App\Jobs\Site\DeployEnv;
 use App\Jobs\Site\UpdateBranch;
+use App\Notifications\SiteInstallationFailed;
+use App\Notifications\SiteInstallationSucceed;
+use App\SSHCommands\Website\GetEnvCommand;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +23,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -341,30 +346,24 @@ class Site extends AbstractModel
 
     /**
      * @throws SourceControlIsNotConnected
-     * @throws ValidationException
-     * @throws FailedToDeployGitHook
      * @throws Throwable
      */
     public function enableAutoDeployment(): void
     {
         if ($this->gitHook) {
-            throw ValidationException::withMessages([
-                'auto_deployment' => __('Auto deployment already enabled'),
-            ])->errorBag('auto_deployment');
+            return;
         }
 
         if (! $this->sourceControl()) {
-            throw ValidationException::withMessages([
-                'auto_deployment' => __('Your application does not use any source controls'),
-            ])->errorBag('auto_deployment');
+            throw new SourceControlIsNotConnected($this->source_control);
         }
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
             $gitHook = new GitHook([
                 'site_id' => $this->id,
                 'source_control_id' => $this->sourceControl()->id,
-                'secret' => generate_uid(),
+                'secret' => Str::uuid()->toString(),
                 'actions' => ['deploy'],
                 'events' => ['push'],
             ]);
@@ -398,5 +397,59 @@ class Site extends AbstractModel
     public function getSshKeyNameAttribute(): string
     {
         return str('site_'.$this->id)->toString();
+    }
+
+    public function installationFinished(): void
+    {
+        $this->update([
+            'status' => SiteStatus::READY,
+            'progress' => 100,
+        ]);
+        event(
+            new Broadcast('install-site-finished', [
+                'site' => $this,
+            ])
+        );
+        Notifier::send($this, new SiteInstallationSucceed($this));
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function installationFailed(Throwable $e): void
+    {
+        $this->update([
+            'status' => SiteStatus::INSTALLATION_FAILED,
+        ]);
+        event(
+            new Broadcast('install-site-failed', [
+                'site' => $this,
+            ])
+        );
+        Notifier::send($this, new SiteInstallationFailed($this));
+        Log::error('install-site-error', [
+            'error' => (string) $e,
+        ]);
+
+        throw $e;
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        return in_array($feature, $this->type()->supportedFeatures());
+    }
+
+    public function isReady(): bool
+    {
+        return $this->status === SiteStatus::READY;
+    }
+
+    public function getEnv(): string
+    {
+        return $this->server->ssh()->exec(
+            new GetEnvCommand(
+                $this->domain
+            )
+        );
     }
 }

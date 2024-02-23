@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         ]);
         $server = Server::factory()->create([
             'user_id' => $user->id,
+            'project_id' => $user->currentProject->id,
         ]);
         $server->services()->create([
             'type' => 'database',

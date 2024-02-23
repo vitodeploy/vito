@@ -2,11 +2,10 @@
 
 namespace App\Notifications;
 
-use App\Contracts\Notification;
 use App\Models\Server;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class ServerDisconnected implements Notification
+class ServerDisconnected extends AbstractNotification
 {
     protected Server $server;
 
@@ -15,25 +14,17 @@ class ServerDisconnected implements Notification
         $this->server = $server;
     }
 
-    public function subject(): string
+    public function rawText(): string
     {
-        return __('Server disconnected!');
-    }
-
-    public function message(bool $mail = false): mixed
-    {
-        if ($mail) {
-            return $this->mail();
-        }
-
         return __("We've disconnected from your server [:server]", [
             'server' => $this->server->name,
         ]);
     }
 
-    public function mail(): MailMessage
+    public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->subject(__('Server disconnected!'))
             ->line("We've disconnected from your server [".$this->server->name.'].')
             ->line('Please check your sever is online and make sure that has our public keys in it');
     }

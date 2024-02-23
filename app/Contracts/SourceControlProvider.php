@@ -6,7 +6,7 @@ interface SourceControlProvider
 {
     public function connect(): bool;
 
-    public function getRepo(string $repo = null): mixed;
+    public function getRepo(?string $repo = null): mixed;
 
     public function fullRepoUrl(string $repo, string $key): string;
 

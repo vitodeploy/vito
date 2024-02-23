@@ -13,6 +13,7 @@ use App\Jobs\Installation\UninstallPHPMyAdmin;
 use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
+use App\NotificationChannels\Telegram;
 use App\ServerProviders\AWS;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
@@ -24,9 +25,10 @@ use App\ServiceHandlers\PHP;
 use App\ServiceHandlers\ProcessManager\Supervisor;
 use App\ServiceHandlers\Webserver\Nginx;
 use App\SiteTypes\Laravel;
+use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPSite;
+use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Bitbucket;
-use App\SourceControlProviders\Custom;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use App\StorageProviders\Dropbox;
@@ -39,8 +41,8 @@ return [
     'ssh_user' => env('SSH_USER', 'vito'),
     'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME', 'ssh-public.key'),
     'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME', 'ssh-private.pem'),
-    'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs-local'),
-    'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs-local'),
+    'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs-local'), // should to be FilesystemAdapter storage
+    'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs-local'), // should to be FilesystemAdapter storage
 
     /*
      * General
@@ -262,13 +264,15 @@ return [
      */
     'site_types' => [
         \App\Enums\SiteType::PHP,
+        \App\Enums\SiteType::PHP_BLANK,
         \App\Enums\SiteType::LARAVEL,
-        // \App\Enums\SiteType::WORDPRESS,
+        \App\Enums\SiteType::WORDPRESS,
     ],
     'site_types_class' => [
         \App\Enums\SiteType::PHP => PHPSite::class,
+        \App\Enums\SiteType::PHP_BLANK => PHPBlank::class,
         \App\Enums\SiteType::LARAVEL => Laravel::class,
-        // \App\Enums\SiteType::WORDPRESS => Wordpress::class,
+        \App\Enums\SiteType::WORDPRESS => Wordpress::class,
     ],
 
     /*
@@ -284,7 +288,6 @@ return [
         'github' => Github::class,
         'gitlab' => Gitlab::class,
         'bitbucket' => Bitbucket::class,
-        'custom' => Custom::class,
     ],
 
     /*
@@ -292,11 +295,12 @@ return [
      */
     'php_extensions' => [
         'imagick',
-        'geoip',
         'exif',
         'gmagick',
         'gmp',
         'intl',
+        'sqlite3',
+        'opcache',
     ],
 
     /*
@@ -324,7 +328,6 @@ return [
         'https' => 443,
         'mysql' => 3306,
         'ftp' => 21,
-        'phpmyadmin' => 54331,
         'tcp' => '',
         'udp' => '',
     ],
@@ -344,11 +347,13 @@ return [
         \App\Enums\NotificationChannel::SLACK,
         \App\Enums\NotificationChannel::DISCORD,
         \App\Enums\NotificationChannel::EMAIL,
+        \App\Enums\NotificationChannel::TELEGRAM,
     ],
     'notification_channels_providers_class' => [
         \App\Enums\NotificationChannel::SLACK => Slack::class,
         \App\Enums\NotificationChannel::DISCORD => Discord::class,
         \App\Enums\NotificationChannel::EMAIL => Email::class,
+        \App\Enums\NotificationChannel::TELEGRAM => Telegram::class,
     ],
 
     /*

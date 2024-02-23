@@ -4,20 +4,25 @@ namespace App\Models;
 
 use App\Contracts\ServerType;
 use App\Enums\ServerStatus;
+use App\Enums\ServiceStatus;
+use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Installation\Upgrade;
 use App\Jobs\Server\CheckConnection;
 use App\Jobs\Server\RebootServer;
+use App\Notifications\ServerInstallationStarted;
 use App\Support\Testing\SSHFake;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
+ * @property int $project_id
  * @property int $user_id
  * @property string $name
  * @property string $ssh_user
@@ -38,6 +43,7 @@ use Illuminate\Support\Str;
  * @property int $security_updates
  * @property int $progress
  * @property string $progress_step
+ * @property Project $project
  * @property User $creator
  * @property ServerProvider $serverProvider
  * @property ServerLog[] $logs
@@ -59,6 +65,7 @@ class Server extends AbstractModel
     use HasFactory;
 
     protected $fillable = [
+        'project_id',
         'user_id',
         'name',
         'ssh_user',
@@ -82,6 +89,7 @@ class Server extends AbstractModel
     ];
 
     protected $casts = [
+        'project_id' => 'integer',
         'user_id' => 'integer',
         'type_data' => 'json',
         'port' => 'integer',
@@ -106,7 +114,9 @@ class Server extends AbstractModel
                 $site->delete();
             });
             $server->provider()->delete();
-            $server->logs()->delete();
+            $server->logs()->each(function (ServerLog $log) {
+                $log->delete();
+            });
             $server->services()->delete();
             $server->databases()->delete();
             $server->databaseUsers()->delete();
@@ -123,6 +133,11 @@ class Server extends AbstractModel
                 File::delete($server->sshKey()['private_key_path']);
             }
         });
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
     public function creator(): BelongsTo
@@ -213,6 +228,18 @@ class Server extends AbstractModel
             ->where('is_default', 1)
             ->first();
 
+        // If no default service found, get the first service with status ready or stopped
+        if (! $service) {
+            $service = $this->services()
+                ->where('type', $type)
+                ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])
+                ->first();
+            if ($service) {
+                $service->is_default = 1;
+                $service->save();
+            }
+        }
+
         return $service;
     }
 
@@ -230,10 +257,10 @@ class Server extends AbstractModel
     public function install(): void
     {
         $this->type()->install();
-        // $this->team->notify(new ServerInstallationStarted($this));
+        Notifier::send($this, new ServerInstallationStarted($this));
     }
 
-    public function ssh(string $user = null): \App\Helpers\SSH|SSHFake
+    public function ssh(?string $user = null): \App\Helpers\SSH|SSHFake
     {
         return SSH::init($this, $user);
     }
@@ -263,7 +290,7 @@ class Server extends AbstractModel
         return new $providerClass($this);
     }
 
-    public function webserver(string $version = null): ?Service
+    public function webserver(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('webserver');
@@ -272,7 +299,7 @@ class Server extends AbstractModel
         return $this->service('webserver', $version);
     }
 
-    public function database(string $version = null): ?Service
+    public function database(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('database');
@@ -281,7 +308,7 @@ class Server extends AbstractModel
         return $this->service('database', $version);
     }
 
-    public function firewall(string $version = null): ?Service
+    public function firewall(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('firewall');
@@ -290,7 +317,7 @@ class Server extends AbstractModel
         return $this->service('firewall', $version);
     }
 
-    public function processManager(string $version = null): ?Service
+    public function processManager(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('process_manager');
@@ -299,7 +326,7 @@ class Server extends AbstractModel
         return $this->service('process_manager', $version);
     }
 
-    public function php(string $version = null): ?Service
+    public function php(?string $version = null): ?Service
     {
         if (! $version) {
             return $this->defaultService('php');
@@ -334,10 +361,13 @@ class Server extends AbstractModel
             ];
         }
 
+        /** @var FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk(config('core.key_pairs_disk'));
+
         return [
             'public_key' => Str::replace("\n", '', Storage::disk(config('core.key_pairs_disk'))->get($this->id.'.pub')),
-            'public_key_path' => Storage::disk(config('core.key_pairs_disk'))->path($this->id.'.pub'),
-            'private_key_path' => Storage::disk(config('core.key_pairs_disk'))->path((string) $this->id),
+            'public_key_path' => $storageDisk->path($this->id.'.pub'),
+            'private_key_path' => $storageDisk->path((string) $this->id),
         ];
     }
 

@@ -10,13 +10,13 @@
         {{ __("Update your account's profile information and email address.") }}
     </x-slot>
 
-    <form id="send-verification" wire:submit.prevent="sendVerificationEmail">
+    <form id="send-verification" wire:submit="sendVerificationEmail">
     </form>
 
-    <form id="update-profile-information" wire:submit.prevent="submit" class="mt-6 space-y-6">
+    <form id="update-profile-information" wire:submit="submit" class="mt-6 space-y-6">
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model.defer="name" id="name" name="name" type="text" class="mt-1 block w-full" required autocomplete="name" />
+            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autocomplete="name" />
             @error('name')
             <x-input-error class="mt-2" :messages="$message" />
             @enderror
@@ -24,7 +24,7 @@
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model.defer="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
+            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
             @error('email')
             <x-input-error class="mt-2" :messages="$message" />
             @enderror
@@ -48,7 +48,7 @@
 
         <div>
             <x-input-label for="timezone" :value="__('Timezone')" />
-            <x-select-input wire:model.defer="timezone" id="timezone" name="timezone" class="mt-1 block w-full" required>
+            <x-select-input wire:model="timezone" id="timezone" name="timezone" class="mt-1 block w-full" required>
                 @foreach(timezone_identifiers_list() as $timezone)
                     <option value="{{ $timezone }}">{{ $timezone }}</option>
                 @endforeach

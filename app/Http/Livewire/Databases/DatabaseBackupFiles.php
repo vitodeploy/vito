@@ -45,7 +45,7 @@ class DatabaseBackupFiles extends Component
 
         $this->refreshComponent([]);
 
-        $this->dispatchBrowserEvent('restored', true);
+        $this->dispatch('restored');
     }
 
     public function delete(): void
@@ -55,7 +55,7 @@ class DatabaseBackupFiles extends Component
 
         $file->delete();
 
-        $this->dispatchBrowserEvent('confirmed', true);
+        $this->dispatch('confirmed');
     }
 
     public function render(): View

@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Sites;
 
-use App\Enums\SiteType;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Server;
 use App\Models\SourceControl;
@@ -16,23 +15,12 @@ class CreateSite extends Component
 
     public Server $server;
 
-    public string $type = SiteType::LARAVEL;
-
-    public string $domain;
-
-    public string $alias;
-
-    public string $php_version = '';
-
-    public string $web_directory = 'public';
-
-    public string $source_control = '';
-
-    public string $repository;
-
-    public string $branch;
-
-    public bool $composer;
+    public array $inputs = [
+        'type' => '',
+        'web_directory' => 'public',
+        'source_control' => '',
+        'php_version' => '',
+    ];
 
     /**
      * @throws SourceControlIsNotConnected
@@ -41,7 +29,7 @@ class CreateSite extends Component
     {
         $site = app(\App\Actions\Site\CreateSite::class)->create(
             $this->server,
-            $this->all()
+            $this->inputs
         );
 
         $this->redirect(route('servers.sites.show', [

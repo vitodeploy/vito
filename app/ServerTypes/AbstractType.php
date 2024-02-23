@@ -16,7 +16,7 @@ abstract class AbstractType implements ServerType
         $this->server = $server;
     }
 
-    protected function progress(int $percentage, string $step = null): Closure
+    protected function progress(int $percentage, ?string $step = null): Closure
     {
         return function () use ($percentage, $step) {
             $this->server->progress = $percentage;

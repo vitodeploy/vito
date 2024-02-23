@@ -2,14 +2,12 @@
 
 namespace App\SiteTypes;
 
-use App\Enums\SiteStatus;
-use App\Events\Broadcast;
+use App\Enums\SiteFeature;
 use App\Jobs\Site\CloneRepository;
 use App\Jobs\Site\ComposerInstall;
 use App\Jobs\Site\CreateVHost;
 use App\Jobs\Site\DeployKey;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Throwable;
 
@@ -20,12 +18,22 @@ class PHPSite extends AbstractSiteType
         return 'php';
     }
 
+    public function supportedFeatures(): array
+    {
+        return [
+            SiteFeature::DEPLOYMENT,
+            SiteFeature::ENV,
+            SiteFeature::SSL,
+            SiteFeature::QUEUES,
+        ];
+    }
+
     public function createValidationRules(array $input): array
     {
         return [
             'php_version' => [
                 'required',
-                'in:'.implode(',', $this->site->server->installedPHPVersions()),
+                Rule::in($this->site->server->installedPHPVersions()),
             ],
             'source_control' => [
                 'required',
@@ -47,13 +55,14 @@ class PHPSite extends AbstractSiteType
             'source_control_id' => $input['source_control'] ?? '',
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',
+            'php_version' => $input['php_version'] ?? '',
         ];
     }
 
     public function data(array $input): array
     {
         return [
-            'composer' => (bool) $input['composer'],
+            'composer' => isset($input['composer']) && $input['composer'],
         ];
     }
 
@@ -76,33 +85,12 @@ class PHPSite extends AbstractSiteType
         }
 
         $chain[] = function () {
-            $this->site->update([
-                'status' => SiteStatus::READY,
-                'progress' => 100,
-            ]);
-            event(
-                new Broadcast('install-site-finished', [
-                    'site' => $this->site,
-                ])
-            );
-            /** @todo notify */
+            $this->site->installationFinished();
         };
 
         Bus::chain($chain)
             ->catch(function (Throwable $e) {
-                $this->site->update([
-                    'status' => SiteStatus::INSTALLATION_FAILED,
-                ]);
-                event(
-                    new Broadcast('install-site-failed', [
-                        'site' => $this->site,
-                    ])
-                );
-                /** @todo notify */
-                Log::error('install-site-error', [
-                    'error' => (string) $e,
-                ]);
-                throw $e;
+                $this->site->installationFailed($e);
             })
             ->onConnection('ssh-long')
             ->dispatch();

@@ -23,9 +23,8 @@ class CreateSite
     {
         $this->validateInputs($server, $input);
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
             $site = new Site([
                 'server_id' => $server->id,
                 'type' => $input['type'],
@@ -47,11 +46,6 @@ class CreateSite
                 throw ValidationException::withMessages([
                     'source_control' => __('Source control is not connected'),
                 ]);
-            }
-
-            // detect php version
-            if ($site->type()->language() === 'php') {
-                $site->php_version = $input['php_version'];
             }
 
             // validate type

@@ -15,6 +15,6 @@ trait RefreshComponentOnBroadcast
 
     public function refreshComponent(array $data): void
     {
-        $this->emit('refreshComponent');
+        $this->dispatch('refreshComponent');
     }
 }

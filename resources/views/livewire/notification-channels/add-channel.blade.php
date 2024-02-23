@@ -4,14 +4,14 @@
     </x-primary-button>
 
     <x-modal name="add-channel">
-        <form wire:submit.prevent="add" class="p-6">
+        <form wire:submit="add" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Add new Channel') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="provider" value="Provider" />
-                <x-select-input wire:model="provider" id="provider" name="provider" class="mt-1 w-full">
+                <x-select-input wire:model.live="provider" id="provider" name="provider" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     @foreach(config('core.notification_channels_providers') as $p)
                         @if($p !== 'custom')
@@ -26,7 +26,7 @@
 
             <div class="mt-6">
                 <x-input-label for="label" :value="__('Label')" />
-                <x-text-input wire:model.defer="label" id="label" name="label" type="text" class="mt-1 w-full" />
+                <x-text-input wire:model="label" id="label" name="label" type="text" class="mt-1 w-full" />
                 @error('label')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -35,7 +35,7 @@
             @if($provider == \App\Enums\NotificationChannel::EMAIL)
                 <div class="mt-6">
                     <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input wire:model.defer="email" id="email" name="email" type="text" class="mt-1 w-full" />
+                    <x-text-input wire:model="email" id="email" name="email" type="text" class="mt-1 w-full" />
                     @error('email')
                     <x-input-error class="mt-2" :messages="$message" />
                     @enderror
@@ -45,8 +45,26 @@
             @if(in_array($provider, [\App\Enums\NotificationChannel::SLACK, \App\Enums\NotificationChannel::DISCORD]))
                 <div class="mt-6">
                     <x-input-label for="webhook_url" :value="__('Webhook URL')" />
-                    <x-text-input wire:model.defer="webhook_url" id="webhook_url" name="webhook_url" type="text" class="mt-1 w-full" />
+                    <x-text-input wire:model="webhook_url" id="webhook_url" name="webhook_url" type="text" class="mt-1 w-full" />
                     @error('webhook_url')
+                    <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
+            @endif
+
+            @if($provider == \App\Enums\NotificationChannel::TELEGRAM)
+                <div class="mt-6">
+                    <x-input-label for="bot_token" :value="__('Bot Token')" />
+                    <x-text-input wire:model="bot_token" id="bot_token" name="bot_token" type="text" class="mt-1 w-full" />
+                    @error('bot_token')
+                    <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
+
+                <div class="mt-6">
+                    <x-input-label for="chat_id" :value="__('Chat ID')" />
+                    <x-text-input wire:model="chat_id" id="chat_id" name="chat_id" type="text" class="mt-1 w-full" />
+                    @error('chat_id')
                     <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>

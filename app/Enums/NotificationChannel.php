@@ -11,4 +11,6 @@ final class NotificationChannel extends Enum
     const SLACK = 'slack';
 
     const DISCORD = 'discord';
+
+    const TELEGRAM = 'telegram';
 }

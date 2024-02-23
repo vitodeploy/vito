@@ -25,7 +25,7 @@ class Github extends AbstractSourceControlProvider
     /**
      * @throws Exception
      */
-    public function getRepo(string $repo = null): mixed
+    public function getRepo(?string $repo = null): mixed
     {
         if ($repo) {
             $url = $this->apiUrl.'/repos/'.$repo;
@@ -59,7 +59,7 @@ class Github extends AbstractSourceControlProvider
             'name' => 'web',
             'events' => $events,
             'config' => [
-                'url' => url('/git-hooks?secret='.$secret),
+                'url' => url('/api/git-hooks?secret='.$secret),
                 'content_type' => 'json',
             ],
             'active' => true,

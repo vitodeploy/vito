@@ -1,14 +1,13 @@
 <div x-data="">
-    <x-secondary-button x-on:click="$dispatch('open-modal', 'update-env')">{{ __(".env") }}</x-secondary-button>
     <x-modal name="update-env">
-        <form wire:submit.prevent="save" class="p-6">
+        <form wire:submit="save" class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Update .env File') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="env" :value="__('.env')" />
-                <x-textarea wire:model.defer="env" rows="10" id="env" name="env" class="mt-1 w-full" />
+                <x-textarea id="env" wire:init="loadEnv" wire:model="env" rows="10" class="mt-1 block w-full"></x-textarea>
                 @error('env')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror

@@ -19,9 +19,9 @@ class AddKey extends Component
             $this->all()
         );
 
-        $this->emitTo(KeysList::class, '$refresh');
+        $this->dispatch('$refresh')->to(KeysList::class);
 
-        $this->dispatchBrowserEvent('added', true);
+        $this->dispatch('added');
     }
 
     public function render(): View

@@ -2,41 +2,26 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Models\SourceControl;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class SourceControlDisconnected extends Notification implements ShouldQueue
+class SourceControlDisconnected extends AbstractNotification
 {
-    use Queueable;
-
-    protected string $sourceControl;
-
-    public function __construct(string $sourceControl)
+    public function __construct(protected SourceControl $sourceControl)
     {
-        $this->sourceControl = $sourceControl;
     }
 
-    public function via(): array
+    public function rawText(): string
     {
-        return ['mail'];
+        return __('Source control [:sourceControl] has been disconnected from Vito', [
+            'sourceControl' => $this->sourceControl->profile,
+        ]);
     }
 
-    public function toMail(): MailMessage
+    public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Lost connection to your '.$this->sourceControl)
-            ->line("We've lost connection to your $this->sourceControl account.")
-            ->line("We'll not able to do any deployments until you reconnect.")
-            ->line("To reconnect your $this->sourceControl account please click on the bellow button.")
-            ->action('Reconnect', url('/source-controls'));
-    }
-
-    public function toArray(): array
-    {
-        return [
-            //
-        ];
+            ->subject(__('Source control disconnected!'))
+            ->line($this->rawText());
     }
 }

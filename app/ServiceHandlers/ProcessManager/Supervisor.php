@@ -47,7 +47,7 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws Throwable
      */
-    public function delete(int $id, int $siteId = null): void
+    public function delete(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
             new DeleteWorkerCommand($id),
@@ -59,7 +59,7 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws Throwable
      */
-    public function restart(int $id, int $siteId = null): void
+    public function restart(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
             new RestartWorkerCommand($id),
@@ -71,7 +71,7 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws Throwable
      */
-    public function stop(int $id, int $siteId = null): void
+    public function stop(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
             new StopWorkerCommand($id),
@@ -83,7 +83,7 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws Throwable
      */
-    public function start(int $id, int $siteId = null): void
+    public function start(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
             new StartWorkerCommand($id),

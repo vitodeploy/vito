@@ -2,11 +2,10 @@
 
 namespace App\Notifications;
 
-use App\Contracts\Notification;
 use App\Models\Server;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class ServerInstallationSucceed implements Notification
+class ServerInstallationSucceed extends AbstractNotification
 {
     protected Server $server;
 
@@ -20,13 +19,9 @@ class ServerInstallationSucceed implements Notification
         return __('Server installation succeed!');
     }
 
-    public function message(bool $mail = false): mixed
+    public function rawText(): string
     {
         $this->server->refresh();
-
-        if ($mail) {
-            return $this->mail();
-        }
 
         return __("Installation succeed for server [:server] \nServer IP: :ip \nUser: :user\nPassword: :password\n:link", [
             'server' => $this->server->name,
@@ -37,11 +32,12 @@ class ServerInstallationSucceed implements Notification
         ]);
     }
 
-    public function mail(): MailMessage
+    public function toEmail(object $notifiable): MailMessage
     {
         $this->server->refresh();
 
         return (new MailMessage)
+            ->subject(__('Server installation succeed!'))
             ->line('Your server ['.$this->server->name.'] has been installed successfully.')
             ->line('Server IP: '.$this->server->ip)
             ->line('User: '.$this->server->authentication['user'])

@@ -57,19 +57,19 @@ class Database extends AbstractModel
     /**
      * create database on server
      */
-    public function createOnServer(): void
+    public function createOnServer(string $queue = 'ssh'): void
     {
-        dispatch(new CreateOnServer($this))->onConnection('ssh');
+        dispatch(new CreateOnServer($this))->onConnection($queue);
     }
 
     /**
      * delete database from server
      */
-    public function deleteFromServer(): void
+    public function deleteFromServer(string $queue = 'ssh'): void
     {
         $this->status = DatabaseStatus::DELETING;
         $this->save();
-        dispatch(new DeleteFromServer($this))->onConnection('ssh');
+        dispatch(new DeleteFromServer($this))->onConnection($queue);
     }
 
     public function backups(): HasMany

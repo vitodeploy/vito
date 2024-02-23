@@ -32,9 +32,6 @@ class Toast
 
     private function toast(string $type, string $message): void
     {
-        $this->component->dispatchBrowserEvent('toast', [
-            'type' => $type,
-            'message' => $message,
-        ]);
+        $this->component->dispatch('toast', type: $type, message: $message);
     }
 }

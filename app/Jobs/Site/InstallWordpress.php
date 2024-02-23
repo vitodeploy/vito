@@ -52,7 +52,7 @@ class InstallWordpress extends Job
             $this->site->id
         );
 
-        if (! Str::contains($result, 'Wordpress installed!')) {
+        if (! Str::contains($result, 'Success')) {
             throw new FailedToInstallWordpress($result);
         }
     }

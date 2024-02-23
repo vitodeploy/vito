@@ -3,10 +3,10 @@
 
     <x-slot name="description">{{ __("You can edit your server's some of fields") }}</x-slot>
 
-    <form id="update-server" wire:submit.prevent="update" class="mt-6 space-y-6">
+    <form id="update-server" wire:submit="update" class="mt-6 space-y-6">
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model.defer="name" id="name" name="name" type="text" class="mt-1 block w-full" required autocomplete="name" />
+            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autocomplete="name" />
             @error('name')
             <x-input-error class="mt-2" :messages="$message" />
             @enderror
@@ -14,7 +14,7 @@
 
         <div>
             <x-input-label for="ip" :value="__('IP Address')" />
-            <x-text-input wire:model.defer="ip" id="ip" name="ip" type="text" class="mt-1 block w-full" required autocomplete="ip" />
+            <x-text-input wire:model="ip" id="ip" name="ip" type="text" class="mt-1 block w-full" required autocomplete="ip" />
             @error('ip')
             <x-input-error class="mt-2" :messages="$message" />
             @enderror
@@ -22,7 +22,7 @@
 
         <div>
             <x-input-label for="port" :value="__('SSH Port')" />
-            <x-text-input wire:model.defer="port" id="port" name="port" type="text" class="mt-1 block w-full" required autocomplete="port" />
+            <x-text-input wire:model="port" id="port" name="port" type="text" class="mt-1 block w-full" required autocomplete="port" />
             @error('port')
             <x-input-error class="mt-2" :messages="$message" />
             @enderror

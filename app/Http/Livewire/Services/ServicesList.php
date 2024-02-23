@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Services;
 
 use App\Models\Server;
+use App\Models\Service;
 use App\Traits\RefreshComponentOnBroadcast;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -15,6 +16,7 @@ class ServicesList extends Component
 
     public function stop(int $id): void
     {
+        /** @var Service $service */
         $service = $this->server->services()->where('id', $id)->firstOrFail();
 
         $service->stop();
@@ -24,6 +26,7 @@ class ServicesList extends Component
 
     public function start(int $id): void
     {
+        /** @var Service $service */
         $service = $this->server->services()->where('id', $id)->firstOrFail();
 
         $service->start();
@@ -33,9 +36,20 @@ class ServicesList extends Component
 
     public function restart(int $id): void
     {
+        /** @var Service $service */
         $service = $this->server->services()->where('id', $id)->firstOrFail();
 
         $service->restart();
+
+        $this->refreshComponent([]);
+    }
+
+    public function uninstall(int $id): void
+    {
+        /** @var Service $service */
+        $service = $this->server->services()->where('id', $id)->firstOrFail();
+
+        $service->uninstall();
 
         $this->refreshComponent([]);
     }

@@ -2,11 +2,10 @@
 
 namespace App\Notifications;
 
-use App\Contracts\Notification;
 use App\Models\Server;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class ServerInstallationStarted implements Notification
+class ServerInstallationStarted extends AbstractNotification
 {
     protected Server $server;
 
@@ -15,26 +14,18 @@ class ServerInstallationStarted implements Notification
         $this->server = $server;
     }
 
-    public function subject(): string
+    public function rawText(): string
     {
-        return __('Server installation started!');
-    }
-
-    public function message(bool $mail = false): mixed
-    {
-        if ($mail) {
-            return $this->mail();
-        }
-
         return __("Installation started for server [:server]\nThis may take several minutes depending on many things like your server's internet speed.\nAs soon as it finishes, We will notify you through this channel.\nYou can check the progress live on your dashboard.\n:progress", [
             'server' => $this->server->name,
             'progress' => url('/servers/'.$this->server->id),
         ]);
     }
 
-    public function mail(): MailMessage
+    public function toEmail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->subject(__('Server installation started!'))
             ->line('Your server\'s ['.$this->server->name.'] installation has been started.')
             ->line("This may take several minutes depending on many things like your server's internet speed.")
             ->line('As soon as it finishes, We will notify you through this channel.')

@@ -33,7 +33,7 @@ class SourceControl extends AbstractModel
         return new $providerClass($this);
     }
 
-    public function getRepo(string $repo = null): ?array
+    public function getRepo(?string $repo = null): ?array
     {
         return $this->provider()->getRepo($repo);
     }

@@ -22,9 +22,9 @@ class CreateCronjob extends Component
     {
         app(\App\Actions\CronJob\CreateCronJob::class)->create($this->server, $this->all());
 
-        $this->emitTo(CronjobsList::class, '$refresh');
+        $this->dispatch('$refresh')->to(CronjobsList::class);
 
-        $this->dispatchBrowserEvent('created', true);
+        $this->dispatch('created');
     }
 
     public function render(): View
