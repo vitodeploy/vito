@@ -26,6 +26,8 @@ Vito is a self-hosted web application that helps you manage your servers and dep
 ## Useful Links
 
 - [Documentation](https://vitodeploy.com)
+- [Install on Server](https://vitodeploy.com/introduction/installation.html#install-on-vps-recommended)
+- [Install via Docker](https://vitodeploy.com/introduction/installation.html#install-via-docker)
 - [Feedbacks](https://vitodeploy.featurebase.app)
 - [Roadmap](https://vitodeploy.featurebase.app/roadmap)
 - [Discord](https://discord.gg/dcUWA5DV)
