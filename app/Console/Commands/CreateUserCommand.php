@@ -17,6 +17,7 @@ class CreateUserCommand extends Command
 
         if ($user) {
             $this->warn('User already exists. Skipping...');
+
             return;
         }
 
