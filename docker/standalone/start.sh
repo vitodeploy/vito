@@ -22,17 +22,7 @@ if [ ! -f "$INIT_FLAG" ]; then
     # Change Password
     mysql -u root -p`echo password` -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD'; FLUSH PRIVILEGES;"
 
-    cp /var/www/html/.env.docker /var/www/html/.env
-
-    # Modify /var/www/html/.env and set DB_PASSWORD=password to DB_PASSWORD=MYSQL_ROOT_PASSWORD
-    sed -i "s/DB_PASSWORD=password/DB_PASSWORD=$MYSQL_ROOT_PASSWORD/g" /var/www/html/.env
-
-    php /var/www/html/artisan key:generate
-
-    php /var/www/html/artisan migrate --force
-
-    php /var/www/html/artisan user:create "$NAME" "$EMAIL" "$PASSWORD"
-
+    # Generate SSH keys
     openssl genpkey -algorithm RSA -out /var/www/html/storage/ssh-private.pem
     chmod 600 /var/www/html/storage/ssh-private.pem
     ssh-keygen -y -f /var/www/html/storage/ssh-private.pem > /var/www/html/storage/ssh-public.key
@@ -55,6 +45,8 @@ php /var/www/html/artisan route:cache
 php /var/www/html/artisan view:clear
 php /var/www/html/artisan view:cache
 php /var/www/html/artisan icons:cache
+
+php /var/www/html/artisan user:create "$NAME" "$EMAIL" "$PASSWORD"
 
 echo "Vito is running! 🚀"
 
