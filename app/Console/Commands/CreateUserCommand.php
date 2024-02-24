@@ -13,12 +13,20 @@ class CreateUserCommand extends Command
 
     public function handle(): void
     {
-        User::create([
+        $user = User::query()->where('email', $this->argument('email'))->first();
+
+        if ($user) {
+            $this->warn('User already exists. Skipping...');
+
+            return;
+        }
+
+        User::query()->create([
             'name' => $this->argument('name'),
             'email' => $this->argument('email'),
             'password' => bcrypt($this->argument('password')),
         ]);
 
-        $this->info('User created with password');
+        $this->info('User created!');
     }
 }

@@ -7,6 +7,7 @@ use App\Helpers\SSH;
 use App\Support\SocialiteProviders\DropboxProvider;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->extendSocialite();
+
+        if (str(config('app.url'))->startsWith('https://')) {
+            URL::forceScheme('https');
+        }
     }
 
     /**
