@@ -1,7 +1,7 @@
 #!/bin/bash
 
 INIT_FLAG="/var/www/html/storage/.INIT_ENV"
-MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-"password"}
+DB_PASSWORD=${DB_PASSWORD:-"password"}
 NAME=${NAME:-"vito"}
 EMAIL=${EMAIL:-"vito@example.com"}
 PASSWORD=${PASSWORD:-"password"}
@@ -20,7 +20,7 @@ if [ ! -f "$INIT_FLAG" ]; then
     mysql -u root -p`echo password` -e "CREATE DATABASE IF NOT EXISTS vito CHARACTER SET utf8 COLLATE utf8_general_ci;"
 
     # Change Password
-    mysql -u root -p`echo password` -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD'; FLUSH PRIVILEGES;"
+    mysql -u root -p`echo password` -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; FLUSH PRIVILEGES;"
 
     # Generate SSH keys
     openssl genpkey -algorithm RSA -out /var/www/html/storage/ssh-private.pem
