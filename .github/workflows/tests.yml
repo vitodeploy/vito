@@ -35,5 +35,8 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Create sqlite database
+        run: touch storage/database-test.sqlite
+
       - name: Run test suite
         run: php artisan test
