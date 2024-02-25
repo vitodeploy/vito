@@ -3,10 +3,10 @@
         <x-slot name="title">Storage Providers</x-slot>
         <x-slot name="description">You can connect to your storage providers</x-slot>
         <x-slot name="aside">
-            <livewire:storage-providers.connect-provider />
+            @include('settings.storage-providers.partials.connect-provider')
         </x-slot>
     </x-card-header>
-    <div x-data="" class="space-y-3">
+    <div x-data="{deleteAction: ''}" class="space-y-3">
         @if(count($providers) > 0)
             @foreach($providers as $provider)
                 <x-item-card>
@@ -27,19 +27,14 @@
                     </div>
                     <div class="flex items-center">
                         <div class="inline">
-                            <x-icon-button x-on:click="$wire.deleteId = '{{ $provider->id }}'; $dispatch('open-modal', 'delete-provider')">
-                                Delete
+                            <x-icon-button x-on:click="deleteAction = '{{ route('storage-providers.delete', $provider->id) }}'; $dispatch('open-modal', 'delete-provider')">
+                                <x-heroicon-o-trash class="w-5 h-5" />
                             </x-icon-button>
                         </div>
                     </div>
                 </x-item-card>
             @endforeach
-            <x-confirm-modal
-                name="delete-provider"
-                :title="__('Confirm')"
-                :description="__('Are you sure that you want to delete this provider?')"
-                method="delete"
-            />
+            @include('settings.storage-providers.partials.delete-storage-provider')
         @else
             <x-simple-card>
                 <div class="text-center">

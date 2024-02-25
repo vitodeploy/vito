@@ -4,18 +4,31 @@
     </x-primary-button>
 
     <x-modal name="connect-provider">
-        <form wire:submit="connect" class="p-6">
+        @php
+            $oldProvider = old('provider', request()->input('provider') ?? '');
+        @endphp
+        <form
+            id="connect-storage-provider-form"
+            hx-post="{{ route('source-controls.connect') }}"
+            hx-swap="outerHTML"
+            hx-select="#connect-storage-provider-form"
+            hx-ext="disable-element"
+            hx-disable-element="#btn-connect-storage-provider"
+            class="p-6"
+            x-data="{ provider: '{{ $oldProvider }}' }"
+        >
+            @csrf
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Connect to a Storage Provider') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="provider" value="Provider" />
-                <x-select-input wire:model.live="provider" id="provider" name="provider" class="mt-1 w-full">
+                <x-select-input x-model="provider" id="provider" name="provider" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     @foreach(config('core.storage_providers') as $p)
                         @if($p !== 'custom')
-                            <option value="{{ $p }}" @if($provider === $p) selected @endif>{{ $p }}</option>
+                            <option value="{{ $p }}" @if($oldProvider === $p) selected @endif>{{ $p }}</option>
                         @endif
                     @endforeach
                 </x-select-input>
@@ -26,34 +39,32 @@
 
             <div class="mt-6">
                 <x-input-label for="name" value="Name" />
-                <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 w-full" />
+                <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
                 @error('name')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
-            @if($provider == \App\Enums\StorageProvider::DROPBOX)
-                <div class="mt-6">
-                    <x-input-label for="token" value="API Key" />
-                    <x-text-input wire:model="token" id="token" name="token" type="text" class="mt-1 w-full" />
-                    @error('token')
-                    <x-input-error class="mt-2" :messages="$message" />
-                    @enderror
-                </div>
-            @endif
+            <div x-show="provider === 'dropbox'" class="mt-6">
+                <x-input-label for="token" value="API Key" />
+                <x-text-input value="{{ old('token') }}" id="token" name="token" type="text" class="mt-1 w-full" />
+                @error('token')
+                <x-input-error class="mt-2" :messages="$message" />
+                @enderror
+            </div>
 
-            @if($provider == \App\Enums\StorageProvider::FTP)
+            <div x-show="provider === 'ftp'" class="mt-6">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="mt-6">
                         <x-input-label for="host" value="Host" />
-                        <x-text-input wire:model="host" id="host" name="host" type="text" class="mt-1 w-full" />
+                        <x-text-input value="{{ old('host') }}" id="host" name="host" type="text" class="mt-1 w-full" />
                         @error('host')
                         <x-input-error class="mt-2" :messages="$message" />
                         @enderror
                     </div>
                     <div class="mt-6">
                         <x-input-label for="port" value="Port" />
-                        <x-text-input wire:model="port" id="port" name="port" type="text" class="mt-1 w-full" />
+                        <x-text-input value="{{ old('port') }}" id="port" name="port" type="text" class="mt-1 w-full" />
                         @error('port')
                         <x-input-error class="mt-2" :messages="$message" />
                         @enderror
@@ -61,7 +72,7 @@
                 </div>
                 <div class="mt-6">
                     <x-input-label for="path" value="Path" />
-                    <x-text-input wire:model="path" id="path" name="path" type="text" class="mt-1 w-full" />
+                    <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
                     @error('path')
                     <x-input-error class="mt-2" :messages="$message" />
                     @enderror
@@ -69,14 +80,14 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="mt-6">
                         <x-input-label for="username" value="Username" />
-                        <x-text-input wire:model="username" id="username" name="username" type="text" class="mt-1 w-full" />
+                        <x-text-input value="{{ old('username') }}" id="username" name="username" type="text" class="mt-1 w-full" />
                         @error('username')
                         <x-input-error class="mt-2" :messages="$message" />
                         @enderror
                     </div>
                     <div class="mt-6">
                         <x-input-label for="password" value="Password" />
-                        <x-text-input wire:model="password" id="password" name="password" type="text" class="mt-1 w-full" />
+                        <x-text-input value="{{ old('password') }}" id="password" name="password" type="text" class="mt-1 w-full" />
                         @error('password')
                         <x-input-error class="mt-2" :messages="$message" />
                         @enderror
@@ -85,9 +96,9 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="mt-6">
                         <x-input-label for="ssl" :value="__('SSL')" />
-                        <x-select-input wire:model.live="ssl" id="ssl" name="ssl" class="mt-1 w-full">
-                            <option value="1" @if($ssl) selected @endif>{{ __("Yes") }}</option>
-                            <option value="0" @if(!$ssl) selected @endif>{{ __("No") }}</option>
+                        <x-select-input id="ssl" name="ssl" class="mt-1 w-full">
+                            <option value="1" @if(old('ssl')) selected @endif>{{ __("Yes") }}</option>
+                            <option value="0" @if(!old('ssl')) selected @endif>{{ __("No") }}</option>
                         </x-select-input>
                         @error('ssl')
                         <x-input-error class="mt-2" :messages="$message" />
@@ -95,23 +106,23 @@
                     </div>
                     <div class="mt-6">
                         <x-input-label for="passive" :value="__('Passive')" />
-                        <x-select-input wire:model.live="passive" id="passive" name="passive" class="mt-1 w-full">
-                            <option value="1" @if($passive) selected @endif>{{ __("Yes") }}</option>
-                            <option value="0" @if(!$passive) selected @endif>{{ __("No") }}</option>
+                        <x-select-input id="passive" name="passive" class="mt-1 w-full">
+                            <option value="1" @if(old('passive')) selected @endif>{{ __("Yes") }}</option>
+                            <option value="0" @if(!old('passive')) selected @endif>{{ __("No") }}</option>
                         </x-select-input>
                         @error('passive')
                         <x-input-error class="mt-2" :messages="$message" />
                         @enderror
                     </div>
                 </div>
-            @endif
+            </div>
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __('Cancel') }}
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3" @connected.window="$dispatch('close')">
+                <x-primary-button id="btn-connect-storage-provider" class="ml-3">
                     {{ __('Connect') }}
                 </x-primary-button>
             </div>

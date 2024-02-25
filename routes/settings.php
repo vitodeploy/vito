@@ -4,6 +4,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ProjectController;
 use App\Http\Controllers\Settings\ServerProviderController;
 use App\Http\Controllers\Settings\SourceControlController;
+use App\Http\Controllers\Settings\StorageProviderController;
 use Illuminate\Support\Facades\Route;
 
 // profile
@@ -36,4 +37,12 @@ Route::middleware('auth')->prefix('settings/source-controls')->group(function ()
     Route::post('connect', [SourceControlController::class, 'connect'])->name('source-controls.connect');
     Route::delete('delete/{id}', [SourceControlController::class, 'delete'])
         ->name('source-controls.delete');
+});
+
+// storage-providers
+Route::middleware('auth')->prefix('settings/storage-providers')->group(function () {
+    Route::get('/', [StorageProviderController::class, 'index'])->name('storage-providers');
+    Route::post('connect', [StorageProviderController::class, 'connect'])->name('storage-providers.connect');
+    Route::delete('delete/{id}', [StorageProviderController::class, 'delete'])
+        ->name('storage-providers.delete');
 });

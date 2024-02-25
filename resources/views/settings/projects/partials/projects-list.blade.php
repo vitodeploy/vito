@@ -23,7 +23,7 @@
                 <div class="flex items-center">
                     @include('settings.projects.partials.edit-project', ['project' => $project])
                     <x-icon-button x-on:click="deleteAction = '{{ route('projects.delete', $project) }}'; $dispatch('open-modal', 'delete-project')">
-                        <x-heroicon-o-trash class="w-4 h-4" />
+                        <x-heroicon-o-trash class="w-5 h-5" />
                     </x-icon-button>
                 </div>
             </x-item-card>

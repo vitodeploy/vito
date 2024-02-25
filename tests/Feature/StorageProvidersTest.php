@@ -3,29 +3,29 @@
 namespace Tests\Feature;
 
 use App\Enums\StorageProvider;
-use App\Http\Livewire\StorageProviders\ConnectProvider;
-use App\Http\Livewire\StorageProviders\ProvidersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
+use JsonException;
 use Tests\TestCase;
 
 class StorageProvidersTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @throws JsonException
+     */
     public function test_connect_dropbox(): void
     {
         $this->actingAs($this->user);
 
         Http::fake();
 
-        Livewire::test(ConnectProvider::class)
-            ->set('provider', StorageProvider::DROPBOX)
-            ->set('name', 'profile')
-            ->set('token', 'token')
-            ->call('connect')
-            ->assertSuccessful();
+        $this->post(route('storage-providers.connect'), [
+            'provider' => StorageProvider::DROPBOX,
+            'name' => 'profile',
+            'token' => 'token',
+        ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('storage_providers', [
             'provider' => StorageProvider::DROPBOX,
@@ -42,12 +42,13 @@ class StorageProvidersTest extends TestCase
             'provider' => StorageProvider::DROPBOX,
         ]);
 
-        Livewire::test(ProvidersList::class)
-            ->assertSee([
-                $provider->profile,
-            ]);
+        $this->get(route('storage-providers'))
+            ->assertSee($provider->profile);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function test_delete_provider(): void
     {
         $this->actingAs($this->user);
@@ -56,10 +57,8 @@ class StorageProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(ProvidersList::class)
-            ->set('deleteId', $provider->id)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('storage-providers.delete', $provider->id))
+            ->assertSessionHasNoErrors();
 
         $this->assertDatabaseMissing('storage_providers', [
             'id' => $provider->id,

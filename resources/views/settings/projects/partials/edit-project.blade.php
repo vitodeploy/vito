@@ -1,6 +1,6 @@
 <div>
     <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'edit-project-{{ $project->id }}')">
-        <x-heroicon-o-pencil class="w-4 h-4" />
+        <x-heroicon-o-pencil class="w-5 h-5" />
     </x-icon-button>
 
     <x-modal name="edit-project-{{ $project->id }}">
