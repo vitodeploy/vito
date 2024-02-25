@@ -1,10 +1,7 @@
 name: code-style
 
 on:
-  push:
   pull_request:
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   code-style:

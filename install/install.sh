@@ -100,14 +100,11 @@ if ! echo "${V_NGINX_CONFIG}" | tee /etc/nginx/nginx.conf; then
 fi
 service nginx start
 
-# redis
-apt install redis-server -y
-
 # php
 export V_PHP_VERSION="8.1"
 add-apt-repository ppa:ondrej/php -y
 apt update
-apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mysql php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis
+apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis
 if ! sed -i "s/www-data/${V_USERNAME}/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
     echo 'Error installing PHP' && exit 1
 fi
@@ -119,23 +116,6 @@ service php${V_PHP_VERSION}-fpm restart
 # composer
 curl -sS https://getcomposer.org/installer -o composer-setup.php
 php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-
-# database
-export V_MARIADB_VERSION="10.3"
-export V_DB_USER="vito"
-export V_DB_NAME="vito"
-export V_DB_PASS=$(openssl rand -base64 12)
-wget -c https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
-dpkg -i mysql-apt-config_0.8.22-1_all.deb
-apt update
-apt install mysql-server -y
-service mysql enable
-service mysql start
-mysql -e "CREATE DATABASE IF NOT EXISTS ${V_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci"
-mysql -e "CREATE USER IF NOT EXISTS '${V_DB_USER}'@'localhost' IDENTIFIED BY '${V_DB_PASS}'"
-mysql -e "FLUSH PRIVILEGES"
-mysql -e "GRANT ALL PRIVILEGES ON ${V_DB_NAME}.* TO '${V_DB_USER}'@'localhost'"
-mysql -e "FLUSH PRIVILEGES"
 
 # setup website
 export V_SSL=${V_SSL:-1}
@@ -196,9 +176,6 @@ else
   export V_URL="http://${V_DOMAIN}"
 fi
 sed -i "s|APP_URL=.*|APP_URL=${V_URL}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i "s|DB_DATABASE=.*|DB_DATABASE=${V_DB_NAME}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i "s|DB_USERNAME=.*|DB_USERNAME=${V_DB_USER}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
-sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${V_DB_PASS}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
 php artisan key:generate
 php artisan storage:link
 php artisan migrate --force
@@ -249,9 +226,6 @@ php artisan icons:cache
 echo "🎉 Congratulations!"
 echo "✅ SSH User: ${V_USERNAME}"
 echo "✅ SSH Password: ${V_PASSWORD}"
-echo "✅ DB Name: ${V_DB_NAME}"
-echo "✅ DB Username: ${V_DB_USER}"
-echo "✅ DB Password: ${V_DB_PASS}"
 echo "✅ Admin Email: ${V_ADMIN_EMAIL}"
 echo "✅ Admin Password: ${V_ADMIN_PASSWORD}"
 echo "✅ URL: http://${V_DOMAIN}"

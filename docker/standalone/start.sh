@@ -8,19 +8,7 @@ PASSWORD=${PASSWORD:-"password"}
 
 # Check if the flag file does not exist, indicating a first run
 if [ ! -f "$INIT_FLAG" ]; then
-    echo "First run of the container. Initializing MySQL..."
-
-    # Start MySQL temporarily
-    service mysql start
-
-    # Wait for MySQL to start up completely (may need to adjust the sleep duration)
-    sleep 3
-
-    # Create Database
-    mysql -u root -p`echo password` -e "CREATE DATABASE IF NOT EXISTS vito CHARACTER SET utf8 COLLATE utf8_general_ci;"
-
-    # Change Password
-    mysql -u root -p`echo password` -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; FLUSH PRIVILEGES;"
+    echo "Initializing..."
 
     # Generate SSH keys
     openssl genpkey -algorithm RSA -out /var/www/html/storage/ssh-private.pem
@@ -30,8 +18,6 @@ if [ ! -f "$INIT_FLAG" ]; then
     # Create the flag file to indicate completion of initialization tasks
     touch "$INIT_FLAG"
 fi
-
-service mysql start
 
 service php8.1-fpm start
 

@@ -27,13 +27,13 @@ class NotificationChannelsTest extends TestCase
             ->call('add')
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('notification_channels', [
-            'provider' => NotificationChannel::EMAIL,
-            'data' => cast_to_json([
-                'email' => 'email@example.com',
-            ]),
-            'connected' => 1,
-        ]);
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::EMAIL)
+            ->first();
+
+        $this->assertEquals('email@example.com', $channel->data['email']);
+        $this->assertTrue($channel->connected);
     }
 
     public function test_add_slack_channel(): void
@@ -49,13 +49,13 @@ class NotificationChannelsTest extends TestCase
             ->call('add')
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('notification_channels', [
-            'provider' => NotificationChannel::SLACK,
-            'data' => cast_to_json([
-                'webhook_url' => 'https://hooks.slack.com/services/123/token',
-            ]),
-            'connected' => 1,
-        ]);
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::SLACK)
+            ->first();
+
+        $this->assertEquals('https://hooks.slack.com/services/123/token', $channel->data['webhook_url']);
+        $this->assertTrue($channel->connected);
     }
 
     public function test_add_discord_channel(): void
@@ -71,15 +71,18 @@ class NotificationChannelsTest extends TestCase
             ->call('add')
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('notification_channels', [
-            'provider' => NotificationChannel::DISCORD,
-            'data' => cast_to_json([
-                'webhook_url' => 'https://discord.com/api/webhooks/123/token',
-            ]),
-            'connected' => 1,
-        ]);
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::DISCORD)
+            ->first();
+
+        $this->assertEquals('https://discord.com/api/webhooks/123/token', $channel->data['webhook_url']);
+        $this->assertTrue($channel->connected);
     }
 
+    /*
+     * @TODO fix json comparison
+     */
     public function test_add_telegram_channel(): void
     {
         $this->actingAs($this->user);
@@ -94,14 +97,14 @@ class NotificationChannelsTest extends TestCase
             ->call('add')
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('notification_channels', [
-            'provider' => NotificationChannel::TELEGRAM,
-            'data' => cast_to_json([
-                'chat_id' => '123',
-                'bot_token' => 'token',
-            ]),
-            'connected' => 1,
-        ]);
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::TELEGRAM)
+            ->first();
+
+        $this->assertEquals('123', $channel->data['chat_id']);
+        $this->assertEquals('token', $channel->data['bot_token']);
+        $this->assertTrue($channel->connected);
     }
 
     public function test_see_channels_list(): void

@@ -4,9 +4,6 @@ WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN echo "mysql-server mysql-server/root_password password password" | debconf-set-selections
-RUN echo "mysql-server mysql-server/root_password_again password password" | debconf-set-selections
-
 # upgrade
 RUN apt clean && apt update && apt update && apt upgrade -y && apt autoremove -y
 
@@ -22,22 +19,12 @@ RUN apt update \
     python2 dnsutils librsvg2-bin fswatch wget \
     && add-apt-repository ppa:ondrej/php -y \
     && apt update \
-    && apt install -y php8.1 php8.1-fpm php8.1-mbstring php8.1-mysql php8.1-mcrypt php8.1-gd php8.1-xml \
+    && apt install -y php8.1 php8.1-fpm php8.1-mbstring php8.1-mcrypt php8.1-gd php8.1-xml \
     php8.1-curl php8.1-gettext php8.1-zip php8.1-bcmath php8.1-soap php8.1-redis
 COPY docker/standalone/php.ini /etc/php/8.1/cli/conf.d/99-vito.ini
 
 # composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# mysql
-RUN wget -c https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb \
-    && mkdir -p /etc/apt/keyrings \
-    && apt clean \
-    && apt update \
-    && dpkg -i mysql-apt-config_0.8.22-1_all.deb \
-    && apt install mysql-server -y
-
-RUN service mysql stop
 
 # app
 COPY . /var/www/html
@@ -60,6 +47,6 @@ COPY docker/standalone/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/standalone/start.sh /start.sh
 RUN chmod +x /start.sh
 
-EXPOSE 80 3306
+EXPOSE 80
 
 CMD ["/start.sh"]

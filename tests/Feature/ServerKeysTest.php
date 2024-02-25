@@ -28,7 +28,9 @@ class ServerKeysTest extends TestCase
             'public_key' => 'public-key-content',
         ]);
 
-        $this->server->sshKeys()->attach($sshKey);
+        $this->server->sshKeys()->attach($sshKey, [
+            'status' => SshKeyStatus::ADDED,
+        ]);
 
         Livewire::test(ServerKeysList::class, ['server' => $this->server])
             ->assertSeeText('My first key');
@@ -46,7 +48,9 @@ class ServerKeysTest extends TestCase
             'public_key' => 'public-key-content',
         ]);
 
-        $this->server->sshKeys()->attach($sshKey);
+        $this->server->sshKeys()->attach($sshKey, [
+            'status' => SshKeyStatus::ADDED,
+        ]);
 
         Livewire::test(ServerKeysList::class, ['server' => $this->server])
             ->set('deleteId', $sshKey->id)
