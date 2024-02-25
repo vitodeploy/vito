@@ -6,7 +6,12 @@
     </script>
     @if(session()->has('toast.type') && session()->has('toast.message'))
         <script defer>
-            window.toastr['{{ session()->get('toast.type') }}']('{{ session()->get('toast.message') }}');
+            if (window.toastr) {
+                window.toastr['{{ session()->get('toast.type') }}']('{{ session()->get('toast.message') }}');
+            }
+            document.addEventListener("DOMContentLoaded", () => {
+                window.toastr['{{ session()->get('toast.type') }}']('{{ session()->get('toast.message') }}');
+            });
         </script>
     @endif
 </div>

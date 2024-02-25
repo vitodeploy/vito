@@ -5,7 +5,6 @@ use App\Http\Controllers\DaemonController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\PHPController;
-use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServerSettingController;
 use App\Http\Controllers\ServiceController;
@@ -19,8 +18,6 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::prefix('/settings')->group(function () {
-        Route::get('/projects', [ProjectController::class, 'index'])->name('projects');
-        Route::get('/projects/{projectId}', [ProjectController::class, 'switch'])->name('projects.switch');
         Route::view('/server-providers', 'server-providers.index')->name('server-providers');
         Route::view('/source-controls', 'source-controls.index')->name('source-controls');
         Route::view('/storage-providers', 'storage-providers.index')->name('storage-providers');

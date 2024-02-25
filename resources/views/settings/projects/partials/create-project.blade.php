@@ -1,17 +1,26 @@
 <div>
     <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-project')">
-        {{ __('Connect') }}
+        {{ __('Create') }}
     </x-primary-button>
 
-    <x-modal name="create-project" :show="$open">
-        <form wire:submit="create" class="p-6">
+    <x-modal name="create-project" :show="request()->has('create')">
+        <form
+            id="create-project-form"
+            hx-post="{{ route('projects.create') }}"
+            hx-swap="outerHTML"
+            hx-select="#create-project-form"
+            hx-ext="disable-element"
+            hx-disable-element="#btn-create-project"
+            class="p-6"
+        >
+            @csrf
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Create Project') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="name" value="Name" />
-                <x-text-input wire:model="inputs.name" id="name" name="name" type="text" class="mt-1 w-full" />
+                <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
                 @error('name')
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -22,7 +31,7 @@
                     {{ __('Cancel') }}
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3" @created.window="$dispatch('close')">
+                <x-primary-button id="btn-create-project" class="ml-3">
                     {{ __('Create') }}
                 </x-primary-button>
             </div>

@@ -26,7 +26,7 @@ class UpdateProject
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('projects')->ignore($project->id),
+                Rule::unique('projects')->where('user_id', $project->user_id)->ignore($project->id),
             ],
         ])->validate();
     }

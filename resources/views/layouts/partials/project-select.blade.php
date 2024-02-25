@@ -68,7 +68,7 @@
             selectProject(project) {
                 if (this.selected.id !== project.id) {
                     this.selected = project;
-                    window.location.href = '{{ url('/settings/projects/') }}/' + project.id
+                    window.location.href = '{{ url('/settings/projects/switch') }}/' + project.id
                 }
             },
             filterProjectsAndOpen() {

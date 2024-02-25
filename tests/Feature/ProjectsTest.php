@@ -2,26 +2,25 @@
 
 namespace Tests\Feature;
 
-use App\Http\Livewire\Projects\CreateProject;
-use App\Http\Livewire\Projects\EditProject;
-use App\Http\Livewire\Projects\ProjectsList;
 use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
+use JsonException;
 use Tests\TestCase;
 
 class ProjectsTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @throws JsonException
+     */
     public function test_create_project(): void
     {
         $this->actingAs($this->user);
 
-        Livewire::test(CreateProject::class)
-            ->set('inputs.name', 'test')
-            ->call('create')
-            ->assertSuccessful();
+        $this->post(route('projects.create'), [
+            'name' => 'test',
+        ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('projects', [
             'name' => 'test',
@@ -36,12 +35,13 @@ class ProjectsTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(ProjectsList::class)
-            ->assertSee([
-                $project->name,
-            ]);
+        $this->get(route('projects'))
+            ->assertSee($project->name);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function test_delete_project(): void
     {
         $this->actingAs($this->user);
@@ -50,16 +50,17 @@ class ProjectsTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(ProjectsList::class)
-            ->set('deleteId', $project->id)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('projects.delete', $project))
+            ->assertSessionHasNoErrors();
 
         $this->assertDatabaseMissing('projects', [
             'id' => $project->id,
         ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function test_edit_project(): void
     {
         $this->actingAs($this->user);
@@ -68,16 +69,13 @@ class ProjectsTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(EditProject::class, [
-            'project' => $project,
-        ])
-            ->set('inputs.name', 'test')
-            ->call('save')
-            ->assertSuccessful();
+        $this->post(route('projects.update', $project), [
+            'name' => 'new-name',
+        ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
-            'name' => 'test',
+            'name' => 'new-name',
         ]);
     }
 }
