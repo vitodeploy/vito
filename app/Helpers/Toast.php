@@ -2,14 +2,8 @@
 
 namespace App\Helpers;
 
-use Livewire\Component;
-
 class Toast
 {
-    public function __construct(public Component $component)
-    {
-    }
-
     public function success(string $message): void
     {
         $this->toast('success', $message);
@@ -32,6 +26,7 @@ class Toast
 
     private function toast(string $type, string $message): void
     {
-        $this->component->dispatch('toast', type: $type, message: $message);
+        session()->flash('toast.type', $type);
+        session()->flash('toast.message', $message);
     }
 }

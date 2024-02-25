@@ -8,6 +8,6 @@ trait HasToast
 {
     public function toast(): Toast
     {
-        return new Toast($this);
+        return new Toast();
     }
 }

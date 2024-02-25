@@ -11,6 +11,7 @@
         "alpinejs": "^3.4.2",
         "autoprefixer": "^10.4.2",
         "axios": "^1.6.0",
+        "htmx.org": "^1.9.10",
         "laravel-echo": "^1.15.0",
         "laravel-vite-plugin": "^0.7.2",
         "postcss": "^8.4.31",

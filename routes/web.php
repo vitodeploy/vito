@@ -19,7 +19,6 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::prefix('/settings')->group(function () {
-        Route::view('/profile', 'profile.index')->name('profile');
         Route::get('/projects', [ProjectController::class, 'index'])->name('projects');
         Route::get('/projects/{projectId}', [ProjectController::class, 'switch'])->name('projects.switch');
         Route::view('/server-providers', 'server-providers.index')->name('server-providers');
@@ -57,3 +56,5 @@ Route::middleware('auth')->group(function () {
         });
     });
 });
+
+require __DIR__ . '/settings.php';

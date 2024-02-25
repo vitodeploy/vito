@@ -18,9 +18,6 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     @livewireStyles
 
     <script src="{{ asset('static/libs/ace/ace.js') }}"></script>
@@ -29,10 +26,17 @@
     <script src="{{ asset('static/libs/ace/mode-sh.js') }}"></script>
 
     @include('layouts.partials.favicon')
+
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased bg-gray-100 dark:bg-gray-900 dark:text-gray-300 min-h-screen min-w-max"
-      x-data="" x-cloak>
+<body
+    class="font-sans antialiased bg-gray-100 dark:bg-gray-900 dark:text-gray-300 min-h-screen min-w-max"
+    x-data=""
+    x-cloak
+    hx-ext="source"
+>
     <div class="flex min-h-screen">
         <div
             class="left-0 top-0 min-h-screen w-64 flex-none bg-gray-800 dark:bg-gray-800/50 p-3 dark:border-r-2 dark:border-gray-800">
@@ -187,7 +191,6 @@
             </main>
         </div>
     </div>
-    <x-toast />
     <livewire:broadcast />
     @livewireScriptConfig
     <script>
@@ -207,6 +210,6 @@
             document.documentElement.classList.remove('dark')
         }
     </script>
+    <x-toast />
 </body>
-
 </html>
