@@ -18,7 +18,6 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::prefix('/settings')->group(function () {
-        Route::view('/server-providers', 'server-providers.index')->name('server-providers');
         Route::view('/source-controls', 'source-controls.index')->name('source-controls');
         Route::view('/storage-providers', 'storage-providers.index')->name('storage-providers');
         Route::view('/notification-channels', 'notification-channels.index')->name('notification-channels');

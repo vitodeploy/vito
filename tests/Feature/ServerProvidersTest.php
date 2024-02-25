@@ -3,29 +3,29 @@
 namespace Tests\Feature;
 
 use App\Enums\ServerProvider;
-use App\Http\Livewire\ServerProviders\ConnectProvider;
-use App\Http\Livewire\ServerProviders\ProvidersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
+use JsonException;
 use Tests\TestCase;
 
 class ServerProvidersTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @throws JsonException
+     */
     public function test_connect_hetzner(): void
     {
         $this->actingAs($this->user);
 
         Http::fake();
 
-        Livewire::test(ConnectProvider::class)
-            ->set('provider', ServerProvider::HETZNER)
-            ->set('name', 'profile')
-            ->set('token', 'token')
-            ->call('connect')
-            ->assertSuccessful();
+        $this->post(route('server-providers.connect'), [
+            'provider' => ServerProvider::HETZNER,
+            'name' => 'profile',
+            'token' => 'token',
+        ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('server_providers', [
             'provider' => ServerProvider::HETZNER,
@@ -41,12 +41,13 @@ class ServerProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(ProvidersList::class)
-            ->assertSee([
-                $provider->profile,
-            ]);
+        $this->get(route('server-providers'))
+            ->assertSee($provider->profile);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function test_delete_provider(): void
     {
         $this->actingAs($this->user);
@@ -55,10 +56,8 @@ class ServerProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(ProvidersList::class)
-            ->set('deleteId', $provider->id)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('server-providers.delete', $provider->id))
+            ->assertSessionHasNoErrors();
 
         $this->assertDatabaseMissing('server_providers', [
             'id' => $provider->id,

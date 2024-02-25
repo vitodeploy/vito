@@ -3,19 +3,33 @@
         {{ __('Connect') }}
     </x-primary-button>
 
-    <x-modal name="connect-provider" :show="$open">
-        <form wire:submit="connect" class="p-6">
+    <x-modal name="connect-provider" :show="request()->has('provider')">
+        @php
+            $oldProvider = old('provider', request()->input('provider') ?? '');
+        @endphp
+        <form
+            id="connect-provider-form"
+            hx-post="{{ route('server-providers.connect') }}"
+            hx-swap="outerHTML"
+            hx-select="#connect-provider-form"
+            hx-ext="disable-element"
+            hx-disable-element="#btn-connect-provider"
+            class="p-6"
+            x-data="{ provider: '{{ $oldProvider }}' }"
+        >
+            @csrf
+
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __('Connect to a Server Provider') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="provider" value="Provider" />
-                <x-select-input wire:model.live="provider" id="provider" name="provider" class="mt-1 w-full">
+                <x-select-input x-model="provider" id="provider" name="provider" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
                     @foreach(config('core.server_providers') as $p)
                         @if($p !== 'custom')
-                            <option value="{{ $p }}" @if($provider === $p) selected @endif>{{ $p }}</option>
+                            <option value="{{ $p }}" @if($oldProvider === $p) selected @endif>{{ $p }}</option>
                         @endif
                     @endforeach
                 </x-select-input>
@@ -32,7 +46,7 @@
                 @enderror
             </div>
 
-            @if($provider === 'aws')
+            <div x-show="provider === 'aws'">
                 <div class="mt-6">
                     <x-input-label for="key" value="Access Key" />
                     <x-text-input wire:model="key" id="key" name="key" type="text" class="mt-1 w-full" />
@@ -48,24 +62,22 @@
                     <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-            @endif
+            </div>
 
-            @if(in_array($provider, ['hetzner', 'digitalocean', 'vultr', 'linode']))
-                <div class="mt-6">
-                    <x-input-label for="token" value="API Key" />
-                    <x-text-input wire:model="token" id="token" name="token" type="text" class="mt-1 w-full" />
-                    @error('token')
-                    <x-input-error class="mt-2" :messages="$message" />
-                    @enderror
-                </div>
-            @endif
+            <div x-show="['hetzner', 'digitalocean', 'vultr', 'linode'].includes(provider)" class="mt-6">
+                <x-input-label for="token" value="API Key" />
+                <x-text-input wire:model="token" id="token" name="token" type="text" class="mt-1 w-full" />
+                @error('token')
+                <x-input-error class="mt-2" :messages="$message" />
+                @enderror
+            </div>
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __('Cancel') }}
                 </x-secondary-button>
 
-                <x-primary-button class="ml-3" @connected.window="$dispatch('close')">
+                <x-primary-button id="btn-connect-provider" class="ml-3">
                     {{ __('Connect') }}
                 </x-primary-button>
             </div>
