@@ -1,33 +1,33 @@
 <div>
-    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'connect-provider')">
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'connect-source-control')">
         {{ __('Connect') }}
     </x-primary-button>
 
-    <x-modal name="connect-provider" :show="request()->has('provider')">
+    <x-modal name="connect-source-control" :show="request()->has('provider')">
         @php
             $oldProvider = old('provider', request()->input('provider') ?? '');
         @endphp
         <form
-            id="connect-provider-form"
-            hx-post="{{ route('server-providers.connect') }}"
+            id="connect-source-control-form"
+            hx-post="{{ route('source-controls.connect') }}"
             hx-swap="outerHTML"
-            hx-select="#connect-provider-form"
+            hx-select="#connect-source-control-form"
             hx-ext="disable-element"
-            hx-disable-element="#btn-connect-provider"
+            hx-disable-element="#btn-connect-source-control"
             class="p-6"
             x-data="{ provider: '{{ $oldProvider }}' }"
         >
             @csrf
 
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {{ __('Connect to a Server Provider') }}
+                {{ __('Connect to a Source Control') }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="provider" value="Provider" />
-                <x-select-input x-model="provider" id="provider" name="provider" class="mt-1 w-full">
+                <x-select-input x-model="provider"  id="provider" name="provider" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
-                    @foreach(config('core.server_providers') as $p)
+                    @foreach(config('core.source_control_providers') as $p)
                         @if($p !== 'custom')
                             <option value="{{ $p }}" @if($oldProvider === $p) selected @endif>{{ $p }}</option>
                         @endif
@@ -46,25 +46,16 @@
                 @enderror
             </div>
 
-            <div x-show="provider === 'aws'">
-                <div class="mt-6">
-                    <x-input-label for="key" value="Access Key" />
-                    <x-text-input value="{{ old('key') }}" id="key" name="key" type="text" class="mt-1 w-full" />
-                    @error('key')
-                    <x-input-error class="mt-2" :messages="$message" />
-                    @enderror
-                </div>
-
-                <div class="mt-6">
-                    <x-input-label for="secret" value="Secret" />
-                    <x-text-input value="{{ old('secret') }}" id="secret" name="secret" type="text" class="mt-1 w-full" />
-                    @error('secret')
-                    <x-input-error class="mt-2" :messages="$message" />
-                    @enderror
-                </div>
+            <div x-show="provider === 'gitlab'" class="mt-6">
+                <x-input-label for="url" value="Url (optional)" />
+                <x-text-input value="{{ old('url') }}" id="url" name="url" type="text" class="mt-1 w-full" placeholder="e.g. https://gitlab.example.com/" />
+                <x-input-help>If you run a self-managed gitlab enter the url here, leave empty to use gitlab.com</x-input-help>
+                @error('url')
+                <x-input-error class="mt-2" :messages="$message" />
+                @enderror
             </div>
 
-            <div x-show="['hetzner', 'digitalocean', 'vultr', 'linode'].includes(provider)" class="mt-6">
+            <div class="mt-6">
                 <x-input-label for="token" value="API Key" />
                 <x-text-input value="{{ old('token') }}" id="token" name="token" type="text" class="mt-1 w-full" />
                 @error('token')
@@ -77,7 +68,7 @@
                     {{ __('Cancel') }}
                 </x-secondary-button>
 
-                <x-primary-button id="btn-connect-provider" class="ml-3">
+                <x-primary-button id="btn-connect-source-control" class="ml-3">
                     {{ __('Connect') }}
                 </x-primary-button>
             </div>

@@ -2,12 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Http\Livewire\SourceControls\Connect;
-use App\Http\Livewire\SourceControls\SourceControlsList;
 use App\Models\SourceControl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
+use JsonException;
 use Tests\TestCase;
 
 class SourceControlsTest extends TestCase
@@ -16,6 +14,7 @@ class SourceControlsTest extends TestCase
 
     /**
      * @dataProvider data
+     * @throws JsonException
      */
     public function test_connect_provider(string $provider, ?string $customUrl): void
     {
@@ -23,18 +22,17 @@ class SourceControlsTest extends TestCase
 
         Http::fake();
 
-        $livewire = Livewire::test(Connect::class)
-            ->set('token', 'token')
-            ->set('name', 'profile')
-            ->set('provider', $provider);
+        $input = [
+            'name' => 'test',
+            'provider' => $provider,
+            'token' => 'token'
+        ];
 
         if ($customUrl !== null) {
-            $livewire->set('url', $customUrl);
+            $input['url'] = $customUrl;
         }
-
-        $livewire
-            ->call('connect')
-            ->assertSuccessful();
+        $this->post(route('source-controls.connect'), $input)
+            ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('source_controls', [
             'provider' => $provider,
@@ -44,6 +42,7 @@ class SourceControlsTest extends TestCase
 
     /**
      * @dataProvider data
+     * @throws JsonException
      */
     public function test_delete_provider(string $provider): void
     {
@@ -55,10 +54,8 @@ class SourceControlsTest extends TestCase
             'profile' => 'test',
         ]);
 
-        Livewire::test(SourceControlsList::class)
-            ->set('deleteId', $sourceControl->id)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('source-controls.delete', $sourceControl->id))
+            ->assertSessionHasNoErrors();
 
         $this->assertDatabaseMissing('source_controls', [
             'id' => $sourceControl->id,

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ProjectController;
 use App\Http\Controllers\Settings\ServerProviderController;
+use App\Http\Controllers\Settings\SourceControlController;
 use Illuminate\Support\Facades\Route;
 
 // profile
@@ -27,4 +28,12 @@ Route::middleware('auth')->prefix('settings/server-providers')->group(function (
     Route::post('connect', [ServerProviderController::class, 'connect'])->name('server-providers.connect');
     Route::delete('delete/{id}', [ServerProviderController::class, 'delete'])
         ->name('server-providers.delete');
+});
+
+// source-controls
+Route::middleware('auth')->prefix('settings/source-controls')->group(function () {
+    Route::get('/', [SourceControlController::class, 'index'])->name('source-controls');
+    Route::post('connect', [SourceControlController::class, 'connect'])->name('source-controls.connect');
+    Route::delete('delete/{id}', [SourceControlController::class, 'delete'])
+        ->name('source-controls.delete');
 });
