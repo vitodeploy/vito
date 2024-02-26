@@ -211,5 +211,6 @@
         }
     </script>
     <x-toast />
+    <x-htmx-error-handler />
 </body>
 </html>
