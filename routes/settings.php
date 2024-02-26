@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\NotificationChannelController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ProjectController;
 use App\Http\Controllers\Settings\ServerProviderController;
@@ -45,4 +46,13 @@ Route::middleware('auth')->prefix('settings/storage-providers')->group(function 
     Route::post('connect', [StorageProviderController::class, 'connect'])->name('storage-providers.connect');
     Route::delete('delete/{id}', [StorageProviderController::class, 'delete'])
         ->name('storage-providers.delete');
+});
+
+// notification-channels
+Route::middleware('auth')->prefix('settings/notification-channels')->group(function () {
+    Route::get('/', [NotificationChannelController::class, 'index'])->name('notification-channels');
+    Route::post('add', [NotificationChannelController::class, 'add'])
+        ->name('notification-channels.add');
+    Route::delete('delete/{id}', [NotificationChannelController::class, 'delete'])
+        ->name('notification-channels.delete');
 });

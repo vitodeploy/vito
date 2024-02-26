@@ -18,7 +18,6 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::prefix('/settings')->group(function () {
-        Route::view('/notification-channels', 'notification-channels.index')->name('notification-channels');
         Route::view('/ssh-keys', 'ssh-keys.index')->name('ssh-keys');
     });
     Route::prefix('/servers')->group(function () {
