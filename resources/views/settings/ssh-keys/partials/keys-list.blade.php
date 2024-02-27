@@ -3,10 +3,10 @@
         <x-slot name="title">{{ __("SSH Keys") }}</x-slot>
         <x-slot name="description">{{ __("Add or modify your ssh keys") }}</x-slot>
         <x-slot name="aside">
-            <livewire:ssh-keys.add-key />
+            @include('settings.ssh-keys.partials.add-key')
         </x-slot>
     </x-card-header>
-    <div x-data="" class="space-y-3">
+    <div x-data="{ deleteAction: '' }" class="space-y-3">
         @if(count($keys) > 0)
             @foreach($keys as $key)
                 <x-item-card>
@@ -18,19 +18,14 @@
                     </div>
                     <div class="flex items-center">
                         <div class="inline">
-                            <x-icon-button x-on:click="$wire.deleteId = '{{ $key->id }}'; $dispatch('open-modal', 'delete-key')">
-                                Delete
+                            <x-icon-button x-on:click="deleteAction = '{{ route('ssh-keys.delete', $key->id) }}'; $dispatch('open-modal', 'delete-ssh-key')">
+                                <x-heroicon-o-trash class="w-5 h-5" />
                             </x-icon-button>
                         </div>
                     </div>
                 </x-item-card>
             @endforeach
-            <x-confirm-modal
-                name="delete-key"
-                :title="__('Confirm')"
-                :description="__('Are you sure that you want to delete this key?')"
-                method="delete"
-            />
+            @include('settings.ssh-keys.partials.delete-ssh-key')
         @else
             <x-simple-card>
                 <div class="text-center">

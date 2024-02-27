@@ -6,6 +6,7 @@ use App\Http\Controllers\Settings\ProjectController;
 use App\Http\Controllers\Settings\ServerProviderController;
 use App\Http\Controllers\Settings\SourceControlController;
 use App\Http\Controllers\Settings\StorageProviderController;
+use App\Http\Controllers\Settings\SSHKeyController;
 use Illuminate\Support\Facades\Route;
 
 // profile
@@ -55,4 +56,11 @@ Route::middleware('auth')->prefix('settings/notification-channels')->group(funct
         ->name('notification-channels.add');
     Route::delete('delete/{id}', [NotificationChannelController::class, 'delete'])
         ->name('notification-channels.delete');
+});
+
+// ssh-keys
+Route::middleware('auth')->prefix('settings/ssh-keys')->group(function () {
+    Route::get('/', [SSHKeyController::class, 'index'])->name('ssh-keys');
+    Route::post('add', [SshKeyController::class, 'add'])->name('ssh-keys.add');
+    Route::delete('delete/{id}', [SshKeyController::class, 'delete'])->name('ssh-keys.delete');
 });

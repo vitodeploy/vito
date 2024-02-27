@@ -17,9 +17,6 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::prefix('/settings')->group(function () {
-        Route::view('/ssh-keys', 'ssh-keys.index')->name('ssh-keys');
-    });
     Route::prefix('/servers')->group(function () {
         Route::get('/', [ServerController::class, 'index'])->name('servers');
         Route::get('/create', [ServerController::class, 'create'])->name('servers.create');
