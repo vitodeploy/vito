@@ -6,7 +6,7 @@
     <x-slot name="header">
         <h2 class="text-lg font-semibold">{{ $server->name }}</h2>
         <div class="flex flex-col items-end">
-            <livewire:servers.server-status :server="$server" />
+            @include('servers.partials.server-status')
             <x-input-label class="cursor-pointer mt-1" x-data="{ copied: false }" x-clipboard.raw="{{ $server->ip }}">
                 <div class="text-sm flex items-center" x-on:click="copied = true; setTimeout(() => {copied = false}, 2000)">
                     <div x-show="copied" class="flex items-center mr-1">

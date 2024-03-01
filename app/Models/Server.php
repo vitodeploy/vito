@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Actions\Server\CheckConnection;
+use App\Actions\Server\RebootServer;
 use App\Contracts\ServerType;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Facades\Notifier;
 use App\Facades\SSH;
 use App\Jobs\Installation\Upgrade;
-use App\Jobs\Server\CheckConnection;
-use App\Jobs\Server\RebootServer;
 use App\Notifications\ServerInstallationStarted;
 use App\Support\Testing\SSHFake;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -384,9 +384,9 @@ class Server extends AbstractModel
         return $units;
     }
 
-    public function checkConnection(): void
+    public function checkConnection(): self
     {
-        dispatch(new CheckConnection($this))->onConnection('ssh');
+        return app(CheckConnection::class)->check($this);
     }
 
     public function installUpdates(): void
@@ -397,11 +397,9 @@ class Server extends AbstractModel
         dispatch(new Upgrade($this))->onConnection('ssh');
     }
 
-    public function reboot(): void
+    public function reboot(): self
     {
-        $this->status = 'disconnected';
-        $this->save();
-        dispatch(new RebootServer($this))->onConnection('ssh');
+        return app(RebootServer::class)->reboot($this);
     }
 
     public function getHostnameAttribute(): string

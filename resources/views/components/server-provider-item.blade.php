@@ -7,6 +7,6 @@
                     : $class . ' border-primary-200 dark:border-primary-600 dark:border-opacity-20'
 @endphp
 
-<div {{ $attributes->merge(['class' => $classes]) }}>
+<a {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
-</div>
+</a>

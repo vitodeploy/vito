@@ -8,6 +8,6 @@
         <span class="font-bold">{{ $server->progress_step }} ({{ $server->progress }}%)</span>
     </div>
     <div class="mt-5 flex items-center justify-center">
-        <livewire:servers.delete-server :server="$server" />
+        @include('servers.partials.delete-server')
     </div>
 </x-card>

@@ -21,24 +21,24 @@
             <div class="border-t border-gray-200 dark:border-gray-700"></div>
         </div>
     </div>
-    {{--<div class="flex items-center justify-between">--}}
-    {{--    <div>{{ __("Server ID") }}</div>--}}
-    {{--    <div class="flex items-center">--}}
-    {{--        <span class="rounded-md bg-gray-100 p-1 dark:bg-gray-700">{{ $server->id }}</span>--}}
-    {{--        <span class="ml-2">{{ __("You will need this when you use the API") }}</span>--}}
-    {{--    </div>--}}
-    {{--</div>--}}
-    {{--<div>--}}
-    {{--    <div class="py-5">--}}
-    {{--        <div class="border-t border-gray-200 dark:border-gray-700"></div>--}}
-    {{--    </div>--}}
-    {{--</div>--}}
+    <div class="flex items-center justify-between">
+        <div>{{ __("Server ID") }}</div>
+        <div class="flex items-center">
+            <span class="rounded-md bg-gray-100 p-1 dark:bg-gray-700">{{ $server->id }}</span>
+            {{--<span class="ml-2">{{ __("You will need this when you use the API") }}</span>--}}
+        </div>
+    </div>
+    <div>
+        <div class="py-5">
+            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+        </div>
+    </div>
     <div class="flex items-center justify-between">
         <div>{{ __("Status") }}</div>
         <div class="flex items-center">
-            <livewire:servers.server-status :server="$server" />
+            @include('servers.partials.server-status')
             <div class="inline-flex ml-2">
-                <livewire:server-settings.check-connection :server="$server" />
+                @include('server-settings.partials.check-connection')
             </div>
         </div>
     </div>
@@ -51,7 +51,7 @@
         <div>{{ __("Reboot Server") }}</div>
         <div class="flex items-center">
             <div class="inline-flex">
-                <livewire:server-settings.reboot-server :server="$server" />
+                @include('server-settings.partials.reboot-server')
             </div>
         </div>
     </div>

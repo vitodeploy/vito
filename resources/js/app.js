@@ -27,6 +27,9 @@ window.htmx.defineExtension('disable-element', {
         }
     }
 });
+document.body.addEventListener('htmx:configRequest', (event) => {
+    event.detail.headers['X-CSRF-TOKEN'] = document.head.querySelector('meta[name="csrf-token"]').content;
+});
 
 import toastr from 'toastr';
 window.toastr = toastr;

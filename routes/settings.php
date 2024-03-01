@@ -10,14 +10,14 @@ use App\Http\Controllers\Settings\SSHKeyController;
 use Illuminate\Support\Facades\Route;
 
 // profile
-Route::middleware('auth')->prefix('settings/profile')->group(function () {
+Route::prefix('settings/profile')->group(function () {
     Route::get('/', [ProfileController::class, 'index'])->name('profile');
     Route::post('info', [ProfileController::class, 'info'])->name('profile.info');
     Route::post('password', [ProfileController::class, 'password'])->name('profile.password');
 });
 
 // profile
-Route::middleware('auth')->prefix('settings/projects')->group(function () {
+Route::prefix('settings/projects')->group(function () {
     Route::get('/', [ProjectController::class, 'index'])->name('projects');
     Route::post('create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('update/{project}', [ProjectController::class, 'update'])->name('projects.update');
@@ -26,7 +26,7 @@ Route::middleware('auth')->prefix('settings/projects')->group(function () {
 });
 
 // server-providers
-Route::middleware('auth')->prefix('settings/server-providers')->group(function () {
+Route::prefix('settings/server-providers')->group(function () {
     Route::get('/', [ServerProviderController::class, 'index'])->name('server-providers');
     Route::post('connect', [ServerProviderController::class, 'connect'])->name('server-providers.connect');
     Route::delete('delete/{id}', [ServerProviderController::class, 'delete'])
@@ -34,7 +34,7 @@ Route::middleware('auth')->prefix('settings/server-providers')->group(function (
 });
 
 // source-controls
-Route::middleware('auth')->prefix('settings/source-controls')->group(function () {
+Route::prefix('settings/source-controls')->group(function () {
     Route::get('/', [SourceControlController::class, 'index'])->name('source-controls');
     Route::post('connect', [SourceControlController::class, 'connect'])->name('source-controls.connect');
     Route::delete('delete/{id}', [SourceControlController::class, 'delete'])
@@ -42,7 +42,7 @@ Route::middleware('auth')->prefix('settings/source-controls')->group(function ()
 });
 
 // storage-providers
-Route::middleware('auth')->prefix('settings/storage-providers')->group(function () {
+Route::prefix('settings/storage-providers')->group(function () {
     Route::get('/', [StorageProviderController::class, 'index'])->name('storage-providers');
     Route::post('connect', [StorageProviderController::class, 'connect'])->name('storage-providers.connect');
     Route::delete('delete/{id}', [StorageProviderController::class, 'delete'])
@@ -50,7 +50,7 @@ Route::middleware('auth')->prefix('settings/storage-providers')->group(function 
 });
 
 // notification-channels
-Route::middleware('auth')->prefix('settings/notification-channels')->group(function () {
+Route::prefix('settings/notification-channels')->group(function () {
     Route::get('/', [NotificationChannelController::class, 'index'])->name('notification-channels');
     Route::post('add', [NotificationChannelController::class, 'add'])
         ->name('notification-channels.add');
@@ -59,7 +59,7 @@ Route::middleware('auth')->prefix('settings/notification-channels')->group(funct
 });
 
 // ssh-keys
-Route::middleware('auth')->prefix('settings/ssh-keys')->group(function () {
+Route::prefix('settings/ssh-keys')->group(function () {
     Route::get('/', [SSHKeyController::class, 'index'])->name('ssh-keys');
     Route::post('add', [SshKeyController::class, 'add'])->name('ssh-keys.add');
     Route::delete('delete/{id}', [SshKeyController::class, 'delete'])->name('ssh-keys.delete');

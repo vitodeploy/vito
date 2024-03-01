@@ -1,7 +1,7 @@
 <x-server-layout :server="$server">
     <x-slot name="pageTitle">{{ __("Settings") }}</x-slot>
 
-    <livewire:server-settings.server-details :server="$server" />
+    @include('server-settings.partials.server-details')
 
     <x-card>
         <x-slot name="title">{{ __("Public Key") }}</x-slot>
@@ -24,14 +24,14 @@
         </div>
     </x-card>
 
-    <livewire:server-settings.edit-server :server="$server" />
+    @include('server-settings.partials.edit-server')
 
     <x-card>
         <x-slot name="title">{{ __("Delete Server") }}</x-slot>
         <x-slot name="description">{{ __("Permanently delete the server.") }}</x-slot>
         <p>{{ __("Once your server is deleted, all of its resources and data will be permanently deleted and can't be restored") }}</p>
         <div class="mt-5">
-            <livewire:servers.delete-server :server="$server"/>
+            @include('servers.partials.delete-server')
         </div>
     </x-card>
 </x-server-layout>

@@ -5,8 +5,6 @@ use App\Http\Controllers\DaemonController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\PHPController;
-use App\Http\Controllers\ServerController;
-use App\Http\Controllers\ServerSettingController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\SSHKeyController;
@@ -17,12 +15,11 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
+    require __DIR__ . '/settings.php';
+
     Route::prefix('/servers')->group(function () {
-        Route::get('/', [ServerController::class, 'index'])->name('servers');
-        Route::get('/create', [ServerController::class, 'create'])->name('servers.create');
-        Route::get('/{server}', [ServerController::class, 'show'])->name('servers.show');
-        Route::get('/{server}/logs', [ServerController::class, 'logs'])->name('servers.logs');
-        Route::get('/{server}/settings', [ServerSettingController::class, 'index'])->name('servers.settings');
+        require __DIR__ . '/server.php';
+
         Route::middleware('server-is-ready')->group(function () {
             Route::get('/{server}/databases', [DatabaseController::class, 'index'])->name('servers.databases');
             Route::get('/{server}/databases/backups/{backup}', [DatabaseController::class, 'backups'])->name(
@@ -46,5 +43,3 @@ Route::middleware('auth')->group(function () {
         });
     });
 });
-
-require __DIR__ . '/settings.php';
