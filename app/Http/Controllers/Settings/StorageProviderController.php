@@ -16,7 +16,7 @@ class StorageProviderController extends Controller
     public function index(): View
     {
         return view('settings.storage-providers.index', [
-            'providers' => auth()->user()->storageProviders
+            'providers' => auth()->user()->storageProviders,
         ]);
     }
 
@@ -27,7 +27,7 @@ class StorageProviderController extends Controller
             $request->input()
         );
 
-        Toast::success("Storage provider connected.");
+        Toast::success('Storage provider connected.');
 
         return htmx()->redirect(route('storage-providers'));
     }
@@ -41,9 +41,8 @@ class StorageProviderController extends Controller
 
         $storageProvider->delete();
 
-        Toast::success("Storage provider deleted.");
+        Toast::success('Storage provider deleted.');
 
         return back();
     }
-
 }

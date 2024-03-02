@@ -16,7 +16,7 @@ window.htmx.defineExtension('disable-element', {
     onEvent: function (name, evt) {
         let elt = evt.detail.elt;
         let target = elt.getAttribute("hx-disable-element");
-        let targetElements = (target === "self") ? [ elt ] : document.querySelectorAll(target);
+        let targetElements = (target === "self") ? [elt] : document.querySelectorAll(target);
 
         for (let i = 0; i < targetElements.length; i++) {
             if (name === "htmx:beforeRequest" && targetElements[i]) {
@@ -29,6 +29,8 @@ window.htmx.defineExtension('disable-element', {
 });
 document.body.addEventListener('htmx:configRequest', (event) => {
     event.detail.headers['X-CSRF-TOKEN'] = document.head.querySelector('meta[name="csrf-token"]').content;
+    if (window.getSelection) { window.getSelection().removeAllRanges(); }
+    else if (document.selection) { document.selection.empty(); }
 });
 
 import toastr from 'toastr';

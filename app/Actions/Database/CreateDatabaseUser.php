@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Enums\DatabaseUserStatus;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use Illuminate\Support\Facades\Validator;
@@ -25,7 +26,18 @@ class CreateDatabaseUser
             'databases' => $links,
         ]);
         $databaseUser->save();
-        $databaseUser->createOnServer();
+
+        $server->database()->handler()->createUser(
+            $databaseUser->username,
+            $databaseUser->password,
+            $databaseUser->host
+        );
+        $databaseUser->status = DatabaseUserStatus::READY;
+        $databaseUser->save();
+
+        if (count($databaseUser->databases) > 0) {
+            app(LinkUser::class)->link($databaseUser, $databaseUser->databases);
+        }
 
         return $databaseUser;
     }

@@ -2,10 +2,10 @@
     <x-slot name="pageTitle">{{ __("Databases") }}</x-slot>
 
     <div class="space-y-10">
-        <livewire:databases.database-list :server="$server" />
+        @include("databases.partials.database-list")
 
-        <livewire:databases.database-user-list :server="$server" />
+        @include("databases.partials.database-user-list")
 
-        <livewire:databases.database-backups :server="$server" />
+        @include("databases.partials.database-backups")
     </div>
 </x-server-layout>

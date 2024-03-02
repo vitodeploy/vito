@@ -3,13 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\DatabaseUserStatus;
-use App\Http\Livewire\Databases\DatabaseUserList;
-use App\Jobs\DatabaseUser\CreateOnServer;
-use App\Jobs\DatabaseUser\DeleteFromServer;
+use App\Facades\SSH;
 use App\Models\DatabaseUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class DatabaseUserTest extends TestCase
@@ -20,19 +16,16 @@ class DatabaseUserTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Bus::fake();
+        SSH::fake();
 
-        Livewire::test(DatabaseUserList::class, ['server' => $this->server])
-            ->set('username', 'user')
-            ->set('password', 'password')
-            ->call('create')
-            ->assertSuccessful();
-
-        Bus::assertDispatched(CreateOnServer::class);
+        $this->post(route('servers.databases.users.store', $this->server), [
+            'username' => 'user',
+            'password' => 'password',
+        ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('database_users', [
             'username' => 'user',
-            'status' => DatabaseUserStatus::CREATING,
+            'status' => DatabaseUserStatus::READY,
         ]);
     }
 
@@ -44,31 +37,25 @@ class DatabaseUserTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        Livewire::test(DatabaseUserList::class, ['server' => $this->server])
-            ->assertSee([
-                $databaseUser->username,
-            ]);
+        $this->get(route('servers.databases', $this->server))
+            ->assertSee($databaseUser->username);
     }
 
     public function test_delete_database_user(): void
     {
         $this->actingAs($this->user);
 
-        Bus::fake();
+        SSH::fake();
 
         $databaseUser = DatabaseUser::factory()->create([
             'server_id' => $this->server,
         ]);
 
-        Livewire::test(DatabaseUserList::class, ['server' => $this->server])
-            ->set('deleteId', $databaseUser->id)
-            ->call('delete');
+        $this->delete(route('servers.databases.users.destroy', [$this->server, $databaseUser]))
+            ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('database_users', [
+        $this->assertDatabaseMissing('database_users', [
             'id' => $databaseUser->id,
-            'status' => DatabaseUserStatus::DELETING,
         ]);
-
-        Bus::assertDispatched(DeleteFromServer::class);
     }
 }

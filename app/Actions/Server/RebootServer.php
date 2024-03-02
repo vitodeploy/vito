@@ -18,6 +18,7 @@ class RebootServer
         } catch (Throwable) {
             $server = $server->checkConnection();
         }
+
         return $server;
     }
 }

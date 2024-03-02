@@ -20,7 +20,7 @@ class ProjectController extends Controller
     public function index(): View
     {
         return view('settings.projects.index', [
-            'projects' => auth()->user()->projects
+            'projects' => auth()->user()->projects,
         ]);
     }
 
@@ -28,7 +28,7 @@ class ProjectController extends Controller
     {
         app(CreateProject::class)->create($request->user(), $request->input());
 
-        Toast::success("Project created.");
+        Toast::success('Project created.');
 
         return htmx()->redirect(route('projects'));
     }
@@ -40,7 +40,7 @@ class ProjectController extends Controller
 
         app(UpdateProject::class)->update($project, $request->input());
 
-        Toast::success("Project updated.");
+        Toast::success('Project updated.');
 
         return htmx()->redirect(route('projects'));
     }
@@ -54,10 +54,11 @@ class ProjectController extends Controller
             app(DeleteProject::class)->delete(auth()->user(), $project);
         } catch (ValidationException $e) {
             Toast::error($e->getMessage());
+
             return back();
         }
 
-        Toast::success("Project deleted.");
+        Toast::success('Project deleted.');
 
         return back();
     }

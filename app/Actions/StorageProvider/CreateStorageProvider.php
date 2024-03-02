@@ -27,11 +27,18 @@ class CreateStorageProvider
 
         $storageProvider->credentials = $storageProvider->provider()->credentialData($input);
 
-        if (! $storageProvider->provider()->connect()) {
+        try {
+            if (! $storageProvider->provider()->connect()) {
+                throw ValidationException::withMessages([
+                    'provider' => __("Couldn't connect to the provider"),
+                ]);
+            }
+        } catch (\Throwable $e) {
             throw ValidationException::withMessages([
-                'provider' => __("Couldn't connect to the provider"),
+                'provider' => $e->getMessage(),
             ]);
         }
+
         $storageProvider->save();
     }
 

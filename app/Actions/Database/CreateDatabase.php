@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Enums\DatabaseStatus;
 use App\Models\Database;
 use App\Models\Server;
 use Illuminate\Support\Facades\Validator;
@@ -22,7 +23,10 @@ class CreateDatabase
             'name' => $input['name'],
         ]);
         $database->save();
-        $database->createOnServer();
+
+        $server->database()->handler()->create($database->name);
+        $database->status = DatabaseStatus::READY;
+        $database->save();
 
         return $database;
     }

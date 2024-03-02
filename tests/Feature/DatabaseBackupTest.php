@@ -4,14 +4,12 @@ namespace Tests\Feature;
 
 use App\Enums\BackupStatus;
 use App\Facades\SSH;
-use App\Http\Livewire\Databases\DatabaseBackups;
 use App\Jobs\Backup\RunBackup;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class DatabaseBackupTest extends TestCase
@@ -35,13 +33,12 @@ class DatabaseBackupTest extends TestCase
             'provider' => \App\Enums\StorageProvider::DROPBOX,
         ]);
 
-        Livewire::test(DatabaseBackups::class, ['server' => $this->server])
-            ->set('database', $database->id)
-            ->set('storage', $storage->id)
-            ->set('interval', '0 * * * *')
-            ->set('keep', '10')
-            ->call('create')
-            ->assertSuccessful();
+        $this->post(route('servers.databases.backups.store', $this->server), [
+            'backup_database' => $database->id,
+            'backup_storage' => $storage->id,
+            'backup_interval' => '0 * * * *',
+            'backup_keep' => '10',
+        ])->assertSessionHasNoErrors();
 
         Bus::assertDispatched(RunBackup::class);
 
@@ -69,10 +66,8 @@ class DatabaseBackupTest extends TestCase
             'storage_id' => $storage->id,
         ]);
 
-        Livewire::test(DatabaseBackups::class, ['server' => $this->server])
-            ->assertSee([
-                $backup->database->name,
-            ]);
+        $this->get(route('servers.databases.backups', [$this->server, $backup]))
+            ->assertSee($backup->database->name);
     }
 
     public function test_delete_database(): void
@@ -94,9 +89,8 @@ class DatabaseBackupTest extends TestCase
             'storage_id' => $storage->id,
         ]);
 
-        Livewire::test(DatabaseBackups::class, ['server' => $this->server])
-            ->set('deleteId', $backup->id)
-            ->call('delete');
+        $this->delete(route('servers.databases.backups.destroy', [$this->server, $backup]))
+            ->assertSessionHasNoErrors();
 
         $this->assertDatabaseMissing('backups', [
             'id' => $backup->id,

@@ -16,7 +16,7 @@ class ServerProviderController extends Controller
     public function index(): View
     {
         return view('settings.server-providers.index', [
-            'providers' => auth()->user()->serverProviders
+            'providers' => auth()->user()->serverProviders,
         ]);
     }
 
@@ -27,7 +27,7 @@ class ServerProviderController extends Controller
             $request->input()
         );
 
-        Toast::success("Server provider connected.");
+        Toast::success('Server provider connected.');
 
         return htmx()->redirect(route('server-providers'));
     }
@@ -41,7 +41,7 @@ class ServerProviderController extends Controller
 
         $serverProvider->delete();
 
-        Toast::success("Server provider deleted.");
+        Toast::success('Server provider deleted.');
 
         return back();
     }

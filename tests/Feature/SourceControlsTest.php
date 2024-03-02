@@ -14,6 +14,7 @@ class SourceControlsTest extends TestCase
 
     /**
      * @dataProvider data
+     *
      * @throws JsonException
      */
     public function test_connect_provider(string $provider, ?string $customUrl): void
@@ -25,7 +26,7 @@ class SourceControlsTest extends TestCase
         $input = [
             'name' => 'test',
             'provider' => $provider,
-            'token' => 'token'
+            'token' => 'token',
         ];
 
         if ($customUrl !== null) {
@@ -42,6 +43,7 @@ class SourceControlsTest extends TestCase
 
     /**
      * @dataProvider data
+     *
      * @throws JsonException
      */
     public function test_delete_provider(string $provider): void

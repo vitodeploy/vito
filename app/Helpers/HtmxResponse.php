@@ -13,6 +13,11 @@ class HtmxResponse extends Response
         return $this;
     }
 
+    public function back(): self
+    {
+        return $this->redirect(back()->getTargetUrl());
+    }
+
     public function refresh(): self
     {
         $this->header('HX-Refresh', true);

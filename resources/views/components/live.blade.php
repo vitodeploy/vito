@@ -1,4 +1,7 @@
-@props(['interval' => '10s', 'id'])
+@props([
+    "interval" => "30s",
+    "id",
+])
 
 <div
     id="{{ $id }}"

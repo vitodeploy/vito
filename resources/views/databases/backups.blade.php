@@ -2,6 +2,6 @@
     <x-slot name="pageTitle">{{ __("Backup Files") }}</x-slot>
 
     <div class="space-y-10">
-        <livewire:databases.database-backup-files :server="$server" :backup="$backup" />
+        @include("databases.partials.database-backup-files")
     </div>
 </x-server-layout>

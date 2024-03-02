@@ -5,8 +5,8 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ProjectController;
 use App\Http\Controllers\Settings\ServerProviderController;
 use App\Http\Controllers\Settings\SourceControlController;
-use App\Http\Controllers\Settings\StorageProviderController;
 use App\Http\Controllers\Settings\SSHKeyController;
+use App\Http\Controllers\Settings\StorageProviderController;
 use Illuminate\Support\Facades\Route;
 
 // profile

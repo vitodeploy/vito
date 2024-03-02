@@ -1,7 +1,7 @@
-@props(['name', 'title', 'description', 'method', 'action'])
+@props(['name', 'title', 'description', 'method', 'action' => ''])
 
 <x-modal :name="$name">
-    <form id="{{ $name }}-form" method="post" action="{{ $action }}" class="p-6">
+    <form id="{{ $name }}-form" method="post" action="{{ $action }}" {{ $attributes }} class="p-6">
         @csrf
         @method($method)
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\DaemonController;
-use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\PHPController;
 use App\Http\Controllers\ServiceController;
@@ -15,16 +14,12 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    require __DIR__ . '/settings.php';
+    require __DIR__.'/settings.php';
 
     Route::prefix('/servers')->group(function () {
-        require __DIR__ . '/server.php';
+        require __DIR__.'/server.php';
 
         Route::middleware('server-is-ready')->group(function () {
-            Route::get('/{server}/databases', [DatabaseController::class, 'index'])->name('servers.databases');
-            Route::get('/{server}/databases/backups/{backup}', [DatabaseController::class, 'backups'])->name(
-                'servers.databases.backups'
-            );
             Route::prefix('/{server}/sites')->group(function () {
                 Route::get('/', [SiteController::class, 'index'])->name('servers.sites');
                 Route::get('/create', [SiteController::class, 'create'])->name('servers.sites.create');

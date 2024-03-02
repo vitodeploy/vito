@@ -24,7 +24,7 @@ class ProfileController extends Controller
             $request->input()
         );
 
-        Toast::success("Profile information updated.");
+        Toast::success('Profile information updated.');
 
         return back();
     }
@@ -36,7 +36,7 @@ class ProfileController extends Controller
             $request->input()
         );
 
-        Toast::success("Password updated.");
+        Toast::success('Password updated.');
 
         return back();
     }
