@@ -44,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
         if (str(config('app.url'))->startsWith('https://')) {
             URL::forceScheme('https');
         }
+
+        if ($this->app->environment('local')) {
+            \App\Facades\SSH::fake();
+        }
     }
 
     /**

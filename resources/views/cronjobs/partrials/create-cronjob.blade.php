@@ -7,7 +7,19 @@
     </x-primary-button>
 
     <x-modal name="create-cronjob">
-        <form wire:submit="create" class="p-6">
+        <form
+            id="create-cronjob-form"
+            hx-post="{{ route("servers.cronjobs.store", ["server" => $server]) }}"
+            hx-swap="outerHTML"
+            hx-select="#create-cronjob-form"
+            class="p-6"
+            x-data="{
+                frequency: '{{ old("frequency", "* * * * *") }}',
+                custom: '{{ old("custom", "") }}',
+            }"
+        >
+            @csrf
+
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __("Create Cronjob") }}
             </h2>
@@ -15,7 +27,7 @@
             <div class="mt-6">
                 <x-input-label for="command" :value="__('Command')" />
                 <x-text-input
-                    wire:model="command"
+                    value="{{ old('command') }}"
                     id="command"
                     name="command"
                     type="text"
@@ -27,13 +39,12 @@
             </div>
 
             <div class="mt-6">
+                @php
+                    $user = old("user", "vito");
+                @endphp
+
                 <x-input-label for="user" :value="__('User')" />
-                <x-select-input
-                    wire:model="user"
-                    id="user"
-                    name="user"
-                    class="mt-1 w-full"
-                >
+                <x-select-input id="user" name="user" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
@@ -53,12 +64,16 @@
             </div>
 
             <div class="mt-6">
+                @php
+                    $frequency = old("frequency", "* * * * *");
+                @endphp
+
                 <x-input-label for="frequency" :value="__('Frequency')" />
                 <x-select-input
-                    wire:model.live="frequency"
                     id="frequency"
                     name="frequency"
                     class="mt-1 w-full"
+                    x-model="frequency"
                 >
                     <option value="" selected disabled>
                         {{ __("Select") }}
@@ -100,25 +115,20 @@
                 @enderror
             </div>
 
-            @if ($frequency === "custom")
-                <div class="mt-6">
-                    <x-input-label
-                        for="custom"
-                        :value="__('Custom Frequency')"
-                    />
-                    <x-text-input
-                        wire:model="custom"
-                        id="custom"
-                        name="custom"
-                        type="text"
-                        class="mt-1 w-full"
-                        placeholder="* * * * *"
-                    />
-                    @error("custom")
-                        <x-input-error class="mt-2" :messages="$message" />
-                    @enderror
-                </div>
-            @endif
+            <div x-show="frequency === 'custom'" class="mt-6">
+                <x-input-label for="custom" :value="__('Custom Frequency')" />
+                <x-text-input
+                    value="{{ old('custom') }}"
+                    id="custom"
+                    name="custom"
+                    type="text"
+                    class="mt-1 w-full"
+                    placeholder="* * * * *"
+                />
+                @error("custom")
+                    <x-input-error class="mt-2" :messages="$message" />
+                @enderror
+            </div>
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button
@@ -128,10 +138,7 @@
                     {{ __("Cancel") }}
                 </x-secondary-button>
 
-                <x-primary-button
-                    class="ml-3"
-                    @created.window="$dispatch('close')"
-                >
+                <x-primary-button class="ml-3" hx-disable>
                     {{ __("Create") }}
                 </x-primary-button>
             </div>

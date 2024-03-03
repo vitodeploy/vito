@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\CronjobStatus;
-use App\Jobs\CronJob\AddToServer;
-use App\Jobs\CronJob\RemoveFromServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -46,10 +43,10 @@ class CronJob extends AbstractModel
         return $this->belongsTo(Server::class);
     }
 
-    public function getCrontabAttribute(): string
+    public static function crontab(Server $server, string $user): string
     {
         $data = '';
-        $cronJobs = $this->server->cronJobs()->where('user', $this->user)->get();
+        $cronJobs = $server->cronJobs()->where('user', $user)->get();
         foreach ($cronJobs as $key => $cronJob) {
             $data .= $cronJob->frequency.' '.$cronJob->command;
             if ($key != count($cronJobs) - 1) {
@@ -58,18 +55,6 @@ class CronJob extends AbstractModel
         }
 
         return $data;
-    }
-
-    public function addToServer(): void
-    {
-        dispatch(new AddToServer($this))->onConnection('ssh');
-    }
-
-    public function removeFromServer(): void
-    {
-        $this->status = CronjobStatus::DELETING;
-        $this->save();
-        dispatch(new RemoveFromServer($this))->onConnection('ssh');
     }
 
     public function getFrequencyLabelAttribute(): string

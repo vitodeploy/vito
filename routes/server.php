@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
@@ -68,6 +69,11 @@ Route::middleware('server-is-ready')->middleware('handle-ssh-errors')->group(fun
     Route::get('/{server}/firewall', [FirewallController::class, 'index'])->name('servers.firewall');
     Route::post('/{server}/firewall', [FirewallController::class, 'store'])->name('servers.firewall.store');
     Route::delete('/{server}/firewall/{firewallRule}', [FirewallController::class, 'destroy'])->name('servers.firewall.destroy');
+
+    // cronjobs
+    Route::get('/{server}/cronjobs', [CronjobController::class, 'index'])->name('servers.cronjobs');
+    Route::post('/{server}/cronjobs', [CronjobController::class, 'store'])->name('servers.cronjobs.store');
+    Route::delete('/{server}/cronjobs/{cronJob}', [CronjobController::class, 'destroy'])->name('servers.cronjobs.destroy');
 
     // services
     Route::get('/{server}/services', [ServiceController::class, 'index'])->name('servers.services');

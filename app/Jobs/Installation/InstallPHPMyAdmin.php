@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Throwable;
 
+/**
+ * @deprecated
+ */
 class InstallPHPMyAdmin extends Job
 {
     protected Service $service;
