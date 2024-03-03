@@ -3,6 +3,7 @@
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
+use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\PHPController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServerLogController;
@@ -30,7 +31,7 @@ Route::prefix('/{server}/settings')->group(function () {
     Route::post('/edit', [ServerSettingController::class, 'edit'])->name('servers.settings.edit');
 });
 
-Route::middleware('server-is-ready')->group(function () {
+Route::middleware('server-is-ready')->middleware('handle-ssh-errors')->group(function () {
     Route::prefix('/{server}/databases')->group(function () {
         // databases
         Route::get('/', [DatabaseController::class, 'index'])->name('servers.databases');
@@ -62,6 +63,11 @@ Route::middleware('server-is-ready')->group(function () {
     Route::get('/{server}/php/get-ini', [PHPController::class, 'getIni'])->name('servers.php.get-ini');
     Route::post('/{server}/php/update-ini', [PHPController::class, 'updateIni'])->name('servers.php.update-ini');
     Route::delete('/{server}/php/uninstall', [PHPController::class, 'uninstall'])->name('servers.php.uninstall');
+
+    // firewall
+    Route::get('/{server}/firewall', [FirewallController::class, 'index'])->name('servers.firewall');
+    Route::post('/{server}/firewall', [FirewallController::class, 'store'])->name('servers.firewall.store');
+    Route::delete('/{server}/firewall/{firewallRule}', [FirewallController::class, 'destroy'])->name('servers.firewall.destroy');
 
     // services
     Route::get('/{server}/services', [ServiceController::class, 'index'])->name('servers.services');

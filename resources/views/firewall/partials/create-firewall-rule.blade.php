@@ -7,26 +7,32 @@
     </x-primary-button>
 
     <x-modal name="create-rule">
-        <form wire:submit="create" class="p-6">
+        <form
+            id="create-rule-form"
+            hx-post="{{ route("servers.firewall.store", ["server" => $server]) }}"
+            hx-swap="outerHTML"
+            hx-select="#create-rule-form"
+            class="p-6"
+        >
+            @csrf
+
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __("Create new Rule") }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="type" :value="__('Rule Type')" />
-                <x-select-input
-                    wire:model="type"
-                    id="type"
-                    name="type"
-                    class="mt-1 w-full"
-                >
+                <x-select-input id="type" name="type" class="mt-1 w-full">
                     <option
                         value="allow"
-                        @if($type === 'allow') selected @endif
+                        @if(old('type', 'allow') === 'allow') selected @endif
                     >
                         {{ __("Allow") }}
                     </option>
-                    <option value="deny" @if($type === 'deny') selected @endif>
+                    <option
+                        value="deny"
+                        @if(old('type', 'allow') === 'deny') selected @endif
+                    >
                         {{ __("Deny") }}
                     </option>
                 </x-select-input>
@@ -39,7 +45,6 @@
                 <div>
                     <x-input-label for="protocol" :value="__('Protocol')" />
                     <x-select-input
-                        wire:model.live="protocol"
                         id="protocol"
                         name="protocol"
                         class="mt-1 w-full"
@@ -47,7 +52,7 @@
                         @foreach (config("core.firewall_protocols_port") as $key => $value)
                             <option
                                 value="{{ $key }}"
-                                @if($key === $protocol) selected @endif
+                                @if($key === old('protocol')) selected @endif
                             >
                                 {{ $key }}
                             </option>
@@ -61,7 +66,7 @@
                 <div>
                     <x-input-label for="port" :value="__('Port')" />
                     <x-text-input
-                        wire:model="port"
+                        value="{{ old('port') }}"
                         id="port"
                         name="port"
                         type="text"
@@ -75,7 +80,7 @@
                 <div>
                     <x-input-label for="source" :value="__('Source')" />
                     <x-text-input
-                        wire:model="source"
+                        value="{{ old('source') }}"
                         id="source"
                         name="source"
                         type="text"
@@ -89,7 +94,7 @@
                 <div>
                     <x-input-label for="mask" :value="__('Mask')" />
                     <x-text-input
-                        wire:model="mask"
+                        value="{{ old('mask') }}"
                         id="mask"
                         name="mask"
                         type="text"
@@ -109,10 +114,7 @@
                     {{ __("Cancel") }}
                 </x-secondary-button>
 
-                <x-primary-button
-                    class="ml-3"
-                    @created.window="$dispatch('close')"
-                >
+                <x-primary-button class="ml-3" hx-disable>
                     {{ __("Create") }}
                 </x-primary-button>
             </div>

@@ -24,7 +24,19 @@ class CreateRule
             'status' => FirewallRuleStatus::CREATING,
         ]);
         $rule->save();
-        $rule->addToServer();
+
+        $server->firewall()
+            ->handler()
+            ->addRule(
+                $rule->type,
+                $rule->real_protocol,
+                $rule->port,
+                $rule->source,
+                $rule->mask
+            );
+
+        $rule->status = FirewallRuleStatus::READY;
+        $rule->save();
 
         return $rule;
     }
@@ -56,6 +68,6 @@ class CreateRule
             'mask' => [
                 'numeric',
             ],
-        ])->validateWithBag('createRule');
+        ])->validate();
     }
 }
