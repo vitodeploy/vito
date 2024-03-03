@@ -1,7 +1,9 @@
 <div>
     <x-card-header>
-        <x-slot name="title">{{ __('Application') }}</x-slot>
-        <x-slot name="description">{{ __('Here you can manage your application') }}</x-slot>
+        <x-slot name="title">{{ __("Application") }}</x-slot>
+        <x-slot name="description">
+            {{ __("Here you can manage your application") }}
+        </x-slot>
         <x-slot name="aside">
             <div class="flex items-center">
                 <div class="mr-2">
@@ -12,10 +14,11 @@
                         <livewire:application.auto-deployment :site="$site" />
                     </div>
                 @endif
+
                 <x-dropdown>
                     <x-slot name="trigger">
                         <x-secondary-button>
-                            {{ __('Manage') }}
+                            {{ __("Manage") }}
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
@@ -37,21 +40,29 @@
                             <x-dropdown-link
                                 class="cursor-pointer"
                                 x-on:click="$dispatch('open-modal', 'change-branch')"
-                            >{{ __('Branch') }}</x-dropdown-link>
+                            >
+                                {{ __("Branch") }}
+                            </x-dropdown-link>
                         @endif
+
                         <x-dropdown-link
                             class="cursor-pointer"
                             x-on:click="$dispatch('open-modal', 'deployment-script')"
-                        >{{ __('Deployment Script') }}</x-dropdown-link>
+                        >
+                            {{ __("Deployment Script") }}
+                        </x-dropdown-link>
                         <x-dropdown-link
                             class="cursor-pointer"
                             x-on:click="$dispatch('open-modal', 'update-env')"
-                        >{{ __('.env') }}</x-dropdown-link>
+                        >
+                            {{ __(".env") }}
+                        </x-dropdown-link>
                     </x-slot>
                 </x-dropdown>
                 @if ($site->source_control_id)
                     <livewire:application.change-branch :site="$site" />
                 @endif
+
                 <livewire:application.deployment-script :site="$site" />
                 <livewire:application.env :site="$site" />
             </div>

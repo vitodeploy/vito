@@ -1,1 +1,1 @@
-<x-fab-gitlab class="w-10 h-10" />
+<x-fab-gitlab class="h-10 w-10" />

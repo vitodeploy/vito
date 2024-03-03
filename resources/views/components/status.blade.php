@@ -1,4 +1,6 @@
-@props(['status'])
+@props([
+    "status",
+])
 
 @php
     $class = [
@@ -10,6 +12,6 @@
     ];
 @endphp
 
-<div {{ $attributes->merge(['class' => $class[$status]]) }}>
+<div {{ $attributes->merge(["class" => $class[$status]]) }}>
     {{ $slot }}
 </div>

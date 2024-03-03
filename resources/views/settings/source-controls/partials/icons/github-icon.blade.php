@@ -1,1 +1,1 @@
-<x-fab-github class="w-10 h-10" />
+<x-fab-github class="h-10 w-10" />

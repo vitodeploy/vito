@@ -3,7 +3,7 @@
 
     <livewire:php.installed-versions :server="$server" />
 
-    @if($server->defaultService('php'))
-        <livewire:php.default-cli :server="$server"/>
+    @if ($server->defaultService("php"))
+        <livewire:php.default-cli :server="$server" />
     @endif
 </x-server-layout>

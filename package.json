@@ -3,7 +3,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "lint": "prettier --check ./resources/views"
+        "lint": "prettier --check ./resources/views",
+        "lint:fix": "prettier --write ./resources/views"
     },
     "devDependencies": {
         "@ryangjchandler/alpine-clipboard": "^2.2.0",

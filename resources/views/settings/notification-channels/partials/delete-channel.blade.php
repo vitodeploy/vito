@@ -1,7 +1,12 @@
 <x-modal name="delete-channel" :show="$errors->isNotEmpty()">
-    <form id="delete-channel-form" method="post" x-bind:action="deleteAction" class="p-6">
+    <form
+        id="delete-channel-form"
+        method="post"
+        x-bind:action="deleteAction"
+        class="p-6"
+    >
         @csrf
-        @method('delete')
+        @method("delete")
 
         <h2 class="text-lg font-medium">
             Are you sure that you want to delete this channel?
@@ -9,11 +14,11 @@
 
         <div class="mt-6 flex justify-end">
             <x-secondary-button type="button" x-on:click="$dispatch('close')">
-                {{ __('Cancel') }}
+                {{ __("Cancel") }}
             </x-secondary-button>
 
             <x-danger-button class="ml-3">
-                {{ __('Delete') }}
+                {{ __("Delete") }}
             </x-danger-button>
         </div>
     </form>

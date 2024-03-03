@@ -9,7 +9,7 @@
                 <x-th>{{ __("Date") }}</x-th>
                 <x-th></x-th>
             </tr>
-            @foreach($logs as $log)
+            @foreach ($logs as $log)
                 <tr>
                     <x-td>{{ $log->type }}</x-td>
                     <x-td>
@@ -22,13 +22,13 @@
                             hx-target="#log-content"
                             hx-select="#log-content"
                         >
-                            <x-heroicon-o-eye class="w-5 h-5" />
+                            <x-heroicon-o-eye class="h-5 w-5" />
                         </x-icon-button>
                     </x-td>
                 </tr>
             @endforeach
         </x-table>
-        @if($logs instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        @if ($logs instanceof \Illuminate\Pagination\LengthAwarePaginator)
             <div class="mt-5">
                 {{ $logs->withQueryString()->links() }}
             </div>
@@ -36,19 +36,24 @@
     </x-live>
     <x-modal name="show-log" max-width="4xl">
         <div class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-5">
-                {{ __('View Log') }}
+            <h2
+                class="mb-5 text-lg font-medium text-gray-900 dark:text-gray-100"
+            >
+                {{ __("View Log") }}
             </h2>
             <div id="log-content">
                 <x-console-view>
-                    @if (session()->has('content'))
-                        {{ session('content') }}
+                    @if (session()->has("content"))
+                        {{ session("content") }}
                     @endif
                 </x-console-view>
             </div>
             <div class="mt-6 flex justify-end">
-                <x-secondary-button type="button" x-on:click="$dispatch('close')">
-                    {{ __('Close') }}
+                <x-secondary-button
+                    type="button"
+                    x-on:click="$dispatch('close')"
+                >
+                    {{ __("Close") }}
                 </x-secondary-button>
             </div>
         </div>

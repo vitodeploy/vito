@@ -1,1 +1,1 @@
-@include('livewire.application.php-app')
+@include("livewire.application.php-app")

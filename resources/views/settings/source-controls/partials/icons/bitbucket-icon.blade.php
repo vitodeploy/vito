@@ -1,1 +1,1 @@
-<x-fab-bitbucket class="w-10 h-10" />
+<x-fab-bitbucket class="h-10 w-10" />

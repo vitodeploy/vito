@@ -1,5 +1,7 @@
 <div x-data="">
-    <x-danger-button x-on:click="$dispatch('open-modal', 'delete-site')">{{ __("Delete Site") }}</x-danger-button>
+    <x-danger-button x-on:click="$dispatch('open-modal', 'delete-site')">
+        {{ __("Delete Site") }}
+    </x-danger-button>
     <x-confirm-modal
         name="delete-site"
         :title="__('Confirm')"

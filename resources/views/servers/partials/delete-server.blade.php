@@ -1,5 +1,7 @@
 <div x-data="">
-    <x-danger-button x-on:click="$dispatch('open-modal', 'delete-server')">{{ __("Delete Server") }}</x-danger-button>
+    <x-danger-button x-on:click="$dispatch('open-modal', 'delete-server')">
+        {{ __("Delete Server") }}
+    </x-danger-button>
     <x-confirmation-modal
         name="delete-server"
         action="{{ route('servers.delete', $server) }}"
