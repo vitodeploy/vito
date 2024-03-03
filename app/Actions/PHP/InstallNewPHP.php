@@ -41,12 +41,12 @@ class InstallNewPHP
                 'required',
                 Rule::in(config('core.php_versions')),
             ],
-        ])->validateWithBag('installPHP');
+        ])->validate();
 
         if (in_array($input['version'], $server->installedPHPVersions())) {
             throw ValidationException::withMessages(
                 ['version' => __('This version is already installed')]
-            )->errorBag('installPHP');
+            );
         }
     }
 }

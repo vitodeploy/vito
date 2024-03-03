@@ -3,9 +3,11 @@
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
+use App\Http\Controllers\PHPController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServerLogController;
 use App\Http\Controllers\ServerSettingController;
+use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ServerController::class, 'index'])->name('servers');
@@ -51,4 +53,19 @@ Route::middleware('server-is-ready')->group(function () {
         Route::post('/backups/{backup}/files/{backupFile}/restore', [DatabaseBackupController::class, 'restore'])->name('servers.databases.backups.files.restore');
         Route::delete('/backups/{backup}/files/{backupFile}', [DatabaseBackupController::class, 'destroyFile'])->name('servers.databases.backups.files.destroy');
     });
+
+    // php
+    Route::get('/{server}/php', [PHPController::class, 'index'])->name('servers.php');
+    Route::post('/{server}/php/install', [PHPController::class, 'install'])->name('servers.php.install');
+    Route::post('/{server}/php/install-extension', [PHPController::class, 'installExtension'])->name('servers.php.install-extension');
+    Route::post('/{server}/php/default-cli', [PHPController::class, 'defaultCli'])->name('servers.php.default-cli');
+    Route::get('/{server}/php/get-ini', [PHPController::class, 'getIni'])->name('servers.php.get-ini');
+    Route::post('/{server}/php/update-ini', [PHPController::class, 'updateIni'])->name('servers.php.update-ini');
+    Route::delete('/{server}/php/uninstall', [PHPController::class, 'uninstall'])->name('servers.php.uninstall');
+
+    // services
+    Route::get('/{server}/services', [ServiceController::class, 'index'])->name('servers.services');
+    Route::get('/{server}/services/{service}/start', [ServiceController::class, 'start'])->name('servers.services.start');
+    Route::get('/{server}/services/{service}/stop', [ServiceController::class, 'stop'])->name('servers.services.stop');
+    Route::get('/{server}/services/{service}/restart', [ServiceController::class, 'restart'])->name('servers.services.restart');
 });

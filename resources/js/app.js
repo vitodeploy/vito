@@ -32,6 +32,18 @@ document.body.addEventListener('htmx:configRequest', (event) => {
     if (window.getSelection) { window.getSelection().removeAllRanges(); }
     else if (document.selection) { document.selection.empty(); }
 });
+document.body.addEventListener('htmx:beforeRequest', (event) => {
+    let targetElements = document.querySelectorAll('[hx-disable]');
+    for (let i = 0; i < targetElements.length; i++) {
+        targetElements[i].disabled = true;
+    }
+});
+document.body.addEventListener('htmx:afterRequest', (event) => {
+    let targetElements = document.querySelectorAll('[hx-disable]');
+    for (let i = 0; i < targetElements.length; i++) {
+        targetElements[i].disabled = false;
+    }
+});
 
 import toastr from 'toastr';
 window.toastr = toastr;

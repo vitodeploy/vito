@@ -2,8 +2,10 @@
 
 namespace App\Actions\PHP;
 
+use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class InstallPHPExtension
@@ -11,16 +13,18 @@ class InstallPHPExtension
     /**
      * @throws ValidationException
      */
-    public function handle(Service $service, array $input): Service
+    public function install(Server $server, array $input): Service
     {
+        $this->validate($server, $input);
+
+        /** @var Service $service */
+        $service = $server->php($input['version']);
         $typeData = $service->type_data;
         $typeData['extensions'] = $typeData['extensions'] ?? [];
         $service->type_data = $typeData;
         $service->save();
 
-        $this->validate($service, $input);
-
-        $service->handler()->installExtension($input['name']);
+        $service->handler()->installExtension($input['extension']);
 
         return $service;
     }
@@ -28,18 +32,25 @@ class InstallPHPExtension
     /**
      * @throws ValidationException
      */
-    private function validate(Service $service, array $input): void
+    private function validate(Server $server, array $input): void
     {
         Validator::make($input, [
-            'name' => [
+            'extension' => [
                 'required',
                 'in:'.implode(',', config('core.php_extensions')),
             ],
-        ])->validateWithBag('installPHPExtension');
+            'version' => [
+                'required',
+                Rule::in($server->installedPHPVersions()),
+            ],
+        ])->validate();
 
-        if (in_array($input['name'], $service->type_data['extensions'])) {
+        /** @var Service $service */
+        $service = $server->php($input['version']);
+
+        if (in_array($input['extension'], $service->type_data['extensions'])) {
             throw ValidationException::withMessages(
-                ['name' => __('This extension already installed')]
+                ['extension' => __('This extension already installed')]
             )->errorBag('installPHPExtension');
         }
     }

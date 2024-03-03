@@ -3,15 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\ServiceStatus;
-use App\Http\Livewire\Services\InstallPHPMyAdmin;
-use App\Http\Livewire\Services\ServicesList;
 use App\Jobs\Installation\InstallPHPMyAdmin as InstallationInstallPHPMyAdmin;
 use App\Jobs\Installation\UninstallPHPMyAdmin;
 use App\Jobs\Service\Manage;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ServicesTest extends TestCase
@@ -22,15 +19,12 @@ class ServicesTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->assertSee([
-                'nginx',
-                'php',
-                'supervisor',
-                'redis',
-                'ufw',
-                'php',
-            ]);
+        $this->get(route('servers.services', $this->server))
+            ->assertSee('nginx')
+            ->assertSee('php')
+            ->assertSee('supervisor')
+            ->assertSee('redis')
+            ->assertSee('ufw');
     }
 
     /**
@@ -38,13 +32,16 @@ class ServicesTest extends TestCase
      */
     public function test_restart_service(string $name): void
     {
-        $service = $this->server->services()->where('name', $name)->first();
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
         Bus::fake();
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('restart', $service->id)
-            ->assertSuccessful();
+        $this->get(route('servers.services.restart', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionHasNoErrors();
 
         Bus::assertDispatched(Manage::class);
     }
@@ -54,13 +51,16 @@ class ServicesTest extends TestCase
      */
     public function test_stop_service(string $name): void
     {
+        $this->actingAs($this->user);
+
         $service = $this->server->services()->where('name', $name)->first();
 
         Bus::fake();
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('stop', $service->id)
-            ->assertSuccessful();
+        $this->get(route('servers.services.stop', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionHasNoErrors();
 
         Bus::assertDispatched(Manage::class);
     }
@@ -70,6 +70,8 @@ class ServicesTest extends TestCase
      */
     public function test_start_service(string $name): void
     {
+        $this->actingAs($this->user);
+
         $service = $this->server->services()->where('name', $name)->first();
 
         $service->status = ServiceStatus::STOPPED;
@@ -77,28 +79,27 @@ class ServicesTest extends TestCase
 
         Bus::fake();
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('start', $service->id)
-            ->assertSuccessful();
+        $this->get(route('servers.services.start', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionHasNoErrors();
 
         Bus::assertDispatched(Manage::class);
     }
 
     public function test_install_phpmyadmin(): void
     {
-        Bus::fake();
+        $this->markTestSkipped('PHPMyAdmin is depricated');
 
-        Livewire::test(InstallPHPMyAdmin::class, ['server' => $this->server])
-            ->set('allowed_ip', '0.0.0.0')
-            ->set('port', 5433)
-            ->call('install')
-            ->assertSuccessful();
+        Bus::fake();
 
         Bus::assertDispatched(InstallationInstallPHPMyAdmin::class);
     }
 
     public function test_uninstall_phpmyadmin(): void
     {
+        $this->markTestSkipped('PHPMyAdmin is depricated');
+
         $service = Service::factory()->create([
             'server_id' => $this->server->id,
             'type' => 'phpmyadmin',
@@ -115,10 +116,6 @@ class ServicesTest extends TestCase
         ]);
 
         Bus::fake();
-
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('uninstall', $service->id)
-            ->assertSuccessful();
 
         Bus::assertDispatched(UninstallPHPMyAdmin::class);
     }

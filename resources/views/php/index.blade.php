@@ -1,9 +1,9 @@
 <x-server-layout :server="$server">
     <x-slot name="pageTitle">{{ __("PHP") }}</x-slot>
 
-    <livewire:php.installed-versions :server="$server" />
+    @include("php.partials.installed-versions")
 
     @if ($server->defaultService("php"))
-        <livewire:php.default-cli :server="$server" />
+        @include("php.partials.default-cli")
     @endif
 </x-server-layout>
