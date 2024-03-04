@@ -7,10 +7,9 @@
         <div
             class="rounded-sm border-l-4 border-yellow-500 bg-yellow-100 px-4 py-3 text-yellow-700 dark:bg-yellow-500 dark:bg-opacity-10 dark:text-yellow-500"
         >
-            Your server needs to have a new unused installation of supported
-            operating systems and must have a root user. To get started, add our
-            public key to /root/.ssh/authorized_keys file by running the bellow
-            command on your server as root.
+            Your server needs to have a new unused installation of supported operating systems and must have a root
+            user. To get started, add our public key to /root/.ssh/authorized_keys file by running the bellow command on
+            your server as root.
         </div>
     </div>
 </div>
@@ -41,7 +40,6 @@
         </x-input-label>
     </div>
     <x-textarea id="pk" name="pk" class="mt-1" rows="5" disabled>
-        mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys && echo
-        '{{ $key }}' >> /root/.ssh/authorized_keys
+        mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys && echo '{{ $key }}' >> /root/.ssh/authorized_keys
     </x-textarea>
 </div>

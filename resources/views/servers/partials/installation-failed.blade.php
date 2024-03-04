@@ -7,9 +7,7 @@
     </x-slot>
     <div class="text-center">
         {{ __("The installation has been failed on step:") }}
-        <span class="font-bold">
-            {{ $server->progress_step }} ({{ $server->progress }}%)
-        </span>
+        <span class="font-bold">{{ $server->progress_step }} ({{ $server->progress }}%)</span>
     </div>
     <div class="mt-5 flex items-center justify-center">
         @include("servers.partials.delete-server")

@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'create-cronjob')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-cronjob')">
         {{ __("Create Cronjob") }}
     </x-primary-button>
 
@@ -48,13 +45,8 @@
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
-                    <option value="root" @if($user === 'root') selected @endif>
-                        root
-                    </option>
-                    <option
-                        value="{{ $server->ssh_user }}"
-                        @if($user === $server->ssh_user) selected @endif
-                    >
+                    <option value="root" @if($user === 'root') selected @endif>root</option>
+                    <option value="{{ $server->ssh_user }}" @if($user === $server->ssh_user) selected @endif>
                         {{ $server->ssh_user }}
                     </option>
                 </x-select-input>
@@ -69,43 +61,23 @@
                 @endphp
 
                 <x-input-label for="frequency" :value="__('Frequency')" />
-                <x-select-input
-                    id="frequency"
-                    name="frequency"
-                    class="mt-1 w-full"
-                    x-model="frequency"
-                >
+                <x-select-input id="frequency" name="frequency" class="mt-1 w-full" x-model="frequency">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
-                    <option
-                        value="* * * * *"
-                        @if($frequency === '* * * * *') selected @endif
-                    >
+                    <option value="* * * * *" @if($frequency === '* * * * *') selected @endif>
                         {{ __("Every minute") }}
                     </option>
-                    <option
-                        value="0 * * * *"
-                        @if($frequency === '0 * * * *') selected @endif
-                    >
+                    <option value="0 * * * *" @if($frequency === '0 * * * *') selected @endif>
                         {{ __("Hourly") }}
                     </option>
-                    <option
-                        value="0 0 * * *"
-                        @if($frequency === '0 0 * * *') selected @endif
-                    >
+                    <option value="0 0 * * *" @if($frequency === '0 0 * * *') selected @endif>
                         {{ __("Daily") }}
                     </option>
-                    <option
-                        value="0 0 * * 0"
-                        @if($frequency === '0 0 * * 0') selected @endif
-                    >
+                    <option value="0 0 * * 0" @if($frequency === '0 0 * * 0') selected @endif>
                         {{ __("Weekly") }}
                     </option>
-                    <option
-                        value="0 0 1 * *"
-                        @if($frequency === '0 0 1 * *') selected @endif
-                    >
+                    <option value="0 0 1 * *" @if($frequency === '0 0 1 * *') selected @endif>
                         {{ __("Monthly") }}
                     </option>
                     <option value="custom">{{ __("Custom") }}</option>
@@ -131,10 +103,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

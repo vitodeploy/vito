@@ -15,9 +15,7 @@
                     <div class="flex-none text-gray-600 dark:text-gray-300">
                         @include("settings.notification-channels.partials.icons." . $channel->provider)
                     </div>
-                    <div
-                        class="ml-3 flex flex-grow flex-col items-start justify-center"
-                    >
+                    <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                         <span class="mb-1">{{ $channel->label }}</span>
                         <span class="text-sm text-gray-400">
                             <x-datetime :value="$channel->created_at" />

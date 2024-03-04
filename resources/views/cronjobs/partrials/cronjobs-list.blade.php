@@ -13,12 +13,8 @@
             @if (count($cronjobs) > 0)
                 @foreach ($cronjobs as $cronjob)
                     <x-item-card>
-                        <div
-                            class="flex flex-grow flex-col items-start justify-center"
-                        >
-                            <span
-                                class="mb-1 flex items-center lowercase text-red-600"
-                            >
+                        <div class="flex flex-grow flex-col items-start justify-center">
+                            <span class="mb-1 flex items-center lowercase text-red-600">
                                 {{ $cronjob->command }}
                             </span>
                             <span class="text-sm text-gray-400">

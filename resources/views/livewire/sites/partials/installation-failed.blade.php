@@ -6,10 +6,7 @@
         {{ __("Your site's installation failed") }}
     </x-slot>
     <div class="mt-5 flex items-center justify-center">
-        <x-secondary-button
-            :href="route('servers.logs', ['server' => $site->server])"
-            class="mr-2"
-        >
+        <x-secondary-button :href="route('servers.logs', ['server' => $site->server])" class="mr-2">
             {{ __("View Logs") }}
         </x-secondary-button>
         <livewire:sites.delete-site :site="$site" />

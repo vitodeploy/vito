@@ -1,19 +1,13 @@
 <x-app-layout :server="$server">
     @if (isset($pageTitle))
-        <x-slot name="pageTitle">
-            {{ $pageTitle }} - {{ $server->name }}
-        </x-slot>
+        <x-slot name="pageTitle">{{ $pageTitle }} - {{ $server->name }}</x-slot>
     @endif
 
     <x-slot name="header">
         <h2 class="text-lg font-semibold">{{ $server->name }}</h2>
         <div class="flex flex-col items-end">
             @include("servers.partials.server-status")
-            <x-input-label
-                class="mt-1 cursor-pointer"
-                x-data="{ copied: false }"
-                x-clipboard.raw="{{ $server->ip }}"
-            >
+            <x-input-label class="mt-1 cursor-pointer" x-data="{ copied: false }" x-clipboard.raw="{{ $server->ip }}">
                 <div
                     class="flex items-center text-sm"
                     x-on:click="

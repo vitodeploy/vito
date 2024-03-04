@@ -59,13 +59,7 @@
         <div x-show="remote">
             <div class="mt-6">
                 <x-input-label for="user-host" :value="__('Host')" />
-                <x-text-input
-                    value="{{ old('host') }}"
-                    id="user-host"
-                    name="host"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('host') }}" id="user-host" name="host" type="text" class="mt-1 w-full" />
                 <x-input-label
                     for="user-host"
                     :value="__('You might also need to open the database port in Firewall')"

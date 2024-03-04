@@ -1,9 +1,7 @@
 <x-container>
     <x-card-header>
         <x-slot name="title">Servers</x-slot>
-        <x-slot name="description">
-            Here you can see your servers list and manage them
-        </x-slot>
+        <x-slot name="description">Here you can see your servers list and manage them</x-slot>
         <x-slot name="aside">
             <x-primary-button :href="route('servers.create')">
                 {{ __("Create a Server") }}
@@ -15,10 +13,7 @@
         @if (count($servers) > 0)
             <div class="space-y-3">
                 @foreach ($servers as $server)
-                    <a
-                        href="{{ route("servers.show", ["server" => $server]) }}"
-                        class="block"
-                    >
+                    <a href="{{ route("servers.show", ["server" => $server]) }}" class="block">
                         <x-item-card>
                             <div class="flex-none">
                                 <img
@@ -27,9 +22,7 @@
                                     alt=""
                                 />
                             </div>
-                            <div
-                                class="ml-3 flex flex-grow flex-col items-start justify-center"
-                            >
+                            <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                                 <span class="mb-1">{{ $server->name }}</span>
                                 <span class="text-sm text-gray-400">
                                     {{ $server->ip }}

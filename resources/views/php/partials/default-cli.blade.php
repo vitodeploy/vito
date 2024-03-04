@@ -18,18 +18,13 @@
                         <x-slot name="trigger">
                             <x-secondary-button>
                                 {{ __("Change") }}
-                                <x-heroicon-o-chevron-up-down
-                                    class="ml-1 h-5 w-5"
-                                />
+                                <x-heroicon-o-chevron-up-down class="ml-1 h-5 w-5" />
                             </x-secondary-button>
                         </x-slot>
                         <x-slot name="content">
                             @foreach ($phps as $php)
                                 @if ($php->version != $defaultPHP->version)
-                                    <x-dropdown-link
-                                        class="cursor-pointer"
-                                        wire:click="change('{{ $php->version }}')"
-                                    >
+                                    <x-dropdown-link class="cursor-pointer" wire:click="change('{{ $php->version }}')">
                                         PHP {{ $php->version }}
                                     </x-dropdown-link>
                                 @endif

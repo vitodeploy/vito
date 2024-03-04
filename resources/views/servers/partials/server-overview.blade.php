@@ -29,9 +29,7 @@
                     </svg>
                     <div class="ml-2 hidden md:block">{{ __("Sites") }}</div>
                 </div>
-                <div
-                    class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left"
-                >
+                <div class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left">
                     {{ $server->sites()->count() }}
                 </div>
             </div>
@@ -58,9 +56,7 @@
                         {{ __("Databases") }}
                     </div>
                 </div>
-                <div
-                    class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left"
-                >
+                <div class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left">
                     {{ $server->databases()->count() }}
                 </div>
             </div>
@@ -84,9 +80,7 @@
                 </svg>
                 <div class="ml-2 hidden md:block">{{ __("Cron Jobs") }}</div>
             </div>
-            <div
-                class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left"
-            >
+            <div class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left">
                 {{ $server->cronJobs()->count() }}
             </div>
         </div>

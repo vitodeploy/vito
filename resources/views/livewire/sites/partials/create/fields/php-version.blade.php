@@ -4,18 +4,10 @@
 
 <div>
     <x-input-label for="php_version" :value="__('PHP Version')" />
-    <x-select-input
-        wire:model="inputs.php_version"
-        id="php_version"
-        name="php_version"
-        class="mt-1 w-full"
-    >
+    <x-select-input wire:model="inputs.php_version" id="php_version" name="php_version" class="mt-1 w-full">
         <option value="" selected>{{ __("Select") }}</option>
         @foreach ($server->installedPHPVersions() as $version)
-            <option
-                value="{{ $version }}"
-                @if($version === $inputs['php_version']) selected @endif
-            >
+            <option value="{{ $version }}" @if($version === $inputs['php_version']) selected @endif>
                 PHP {{ $version }}
             </option>
         @endforeach

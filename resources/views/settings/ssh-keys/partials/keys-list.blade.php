@@ -12,9 +12,7 @@
         @if (count($keys) > 0)
             @foreach ($keys as $key)
                 <x-item-card>
-                    <div
-                        class="flex flex-grow flex-col items-start justify-center"
-                    >
+                    <div class="flex flex-grow flex-col items-start justify-center">
                         <span class="mb-1">{{ $key->name }}</span>
                         <span class="text-sm text-gray-400">
                             <x-datetime :value="$key->created_at" />

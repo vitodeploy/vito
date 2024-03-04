@@ -12,19 +12,11 @@
             @foreach ($services as $service)
                 <x-item-card>
                     <div class="flex-none">
-                        <img
-                            src="{{ asset("static/images/" . $service->name . ".svg") }}"
-                            class="h-10 w-10"
-                            alt=""
-                        />
+                        <img src="{{ asset("static/images/" . $service->name . ".svg") }}" class="h-10 w-10" alt="" />
                     </div>
-                    <div
-                        class="ml-3 flex flex-grow flex-col items-start justify-center"
-                    >
+                    <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                         <div class="flex items-center">
-                            <div class="mr-2">
-                                {{ $service->name }}:{{ $service->version }}
-                            </div>
+                            <div class="mr-2">{{ $service->name }}:{{ $service->version }}</div>
                             @include("services.partials.status", ["status" => $service->status])
                         </div>
                     </div>

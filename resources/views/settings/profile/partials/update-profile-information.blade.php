@@ -58,12 +58,7 @@
 
         <div>
             <x-input-label for="timezone" :value="__('Timezone')" />
-            <x-select-input
-                id="timezone"
-                name="timezone"
-                class="mt-1 block w-full"
-                required
-            >
+            <x-select-input id="timezone" name="timezone" class="mt-1 block w-full" required>
                 @foreach (timezone_identifiers_list() as $timezone)
                     <option
                         value="{{ $timezone }}"

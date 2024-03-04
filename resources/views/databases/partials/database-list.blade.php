@@ -6,10 +6,7 @@
         </x-slot>
         <x-slot name="aside">
             <div>
-                <x-primary-button
-                    x-data=""
-                    x-on:click.prevent="$dispatch('open-modal', 'create-database')"
-                >
+                <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-database')">
                     {{ __("Create Database") }}
                 </x-primary-button>
                 @include("databases.partials.create-database-modal")

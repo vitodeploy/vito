@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'create-rule')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-rule')">
         {{ __("Create new Rule") }}
     </x-primary-button>
 
@@ -23,16 +20,10 @@
             <div class="mt-6">
                 <x-input-label for="type" :value="__('Rule Type')" />
                 <x-select-input id="type" name="type" class="mt-1 w-full">
-                    <option
-                        value="allow"
-                        @if(old('type', 'allow') === 'allow') selected @endif
-                    >
+                    <option value="allow" @if(old('type', 'allow') === 'allow') selected @endif>
                         {{ __("Allow") }}
                     </option>
-                    <option
-                        value="deny"
-                        @if(old('type', 'allow') === 'deny') selected @endif
-                    >
+                    <option value="deny" @if(old('type', 'allow') === 'deny') selected @endif>
                         {{ __("Deny") }}
                     </option>
                 </x-select-input>
@@ -44,16 +35,9 @@
             <div class="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2">
                 <div>
                     <x-input-label for="protocol" :value="__('Protocol')" />
-                    <x-select-input
-                        id="protocol"
-                        name="protocol"
-                        class="mt-1 w-full"
-                    >
+                    <x-select-input id="protocol" name="protocol" class="mt-1 w-full">
                         @foreach (config("core.firewall_protocols_port") as $key => $value)
-                            <option
-                                value="{{ $key }}"
-                                @if($key === old('protocol')) selected @endif
-                            >
+                            <option value="{{ $key }}" @if($key === old('protocol')) selected @endif>
                                 {{ $key }}
                             </option>
                         @endforeach
@@ -65,13 +49,7 @@
 
                 <div>
                     <x-input-label for="port" :value="__('Port')" />
-                    <x-text-input
-                        value="{{ old('port') }}"
-                        id="port"
-                        name="port"
-                        type="text"
-                        class="mt-1 w-full"
-                    />
+                    <x-text-input value="{{ old('port') }}" id="port" name="port" type="text" class="mt-1 w-full" />
                     @error("port")
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
@@ -93,13 +71,7 @@
 
                 <div>
                     <x-input-label for="mask" :value="__('Mask')" />
-                    <x-text-input
-                        value="{{ old('mask') }}"
-                        id="mask"
-                        name="mask"
-                        type="text"
-                        class="mt-1 w-full"
-                    />
+                    <x-text-input value="{{ old('mask') }}" id="mask" name="mask" type="text" class="mt-1 w-full" />
                     @error("mask")
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
@@ -107,10 +79,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

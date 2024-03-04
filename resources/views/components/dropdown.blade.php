@@ -24,12 +24,7 @@
     }
 @endphp
 
-<div
-    class="relative"
-    x-data="{ open: false }"
-    @click.outside="open = false"
-    @close.stop="open = false"
->
+<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
     <div @click="open = ! open">
         {{ $trigger }}
     </div>
@@ -46,9 +41,7 @@
         style="display: none"
         @click="open = false"
     >
-        <div
-            class="{{ $contentClasses }} rounded-md ring-1 ring-black ring-opacity-5"
-        >
+        <div class="{{ $contentClasses }} rounded-md ring-1 ring-black ring-opacity-5">
             {{ $content }}
         </div>
     </div>

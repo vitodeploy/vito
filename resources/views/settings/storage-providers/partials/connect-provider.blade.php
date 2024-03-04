@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'connect-provider')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'connect-provider')">
         {{ __("Connect") }}
     </x-primary-button>
 
@@ -28,21 +25,13 @@
 
             <div class="mt-6">
                 <x-input-label for="provider" value="Provider" />
-                <x-select-input
-                    x-model="provider"
-                    id="provider"
-                    name="provider"
-                    class="mt-1 w-full"
-                >
+                <x-select-input x-model="provider" id="provider" name="provider" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
                     @foreach (config("core.storage_providers") as $p)
                         @if ($p !== "custom")
-                            <option
-                                value="{{ $p }}"
-                                @if($oldProvider === $p) selected @endif
-                            >
+                            <option value="{{ $p }}" @if($oldProvider === $p) selected @endif>
                                 {{ $p }}
                             </option>
                         @endif
@@ -55,13 +44,7 @@
 
             <div class="mt-6">
                 <x-input-label for="name" value="Name" />
-                <x-text-input
-                    value="{{ old('name') }}"
-                    id="name"
-                    name="name"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
                 @error("name")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -69,13 +52,7 @@
 
             <div x-show="provider === 'dropbox'" class="mt-6">
                 <x-input-label for="token" value="API Key" />
-                <x-text-input
-                    value="{{ old('token') }}"
-                    id="token"
-                    name="token"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('token') }}" id="token" name="token" type="text" class="mt-1 w-full" />
                 @error("token")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -85,26 +62,14 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="mt-6">
                         <x-input-label for="host" value="Host" />
-                        <x-text-input
-                            value="{{ old('host') }}"
-                            id="host"
-                            name="host"
-                            type="text"
-                            class="mt-1 w-full"
-                        />
+                        <x-text-input value="{{ old('host') }}" id="host" name="host" type="text" class="mt-1 w-full" />
                         @error("host")
                             <x-input-error class="mt-2" :messages="$message" />
                         @enderror
                     </div>
                     <div class="mt-6">
                         <x-input-label for="port" value="Port" />
-                        <x-text-input
-                            value="{{ old('port') }}"
-                            id="port"
-                            name="port"
-                            type="text"
-                            class="mt-1 w-full"
-                        />
+                        <x-text-input value="{{ old('port') }}" id="port" name="port" type="text" class="mt-1 w-full" />
                         @error("port")
                             <x-input-error class="mt-2" :messages="$message" />
                         @enderror
@@ -112,13 +77,7 @@
                 </div>
                 <div class="mt-6">
                     <x-input-label for="path" value="Path" />
-                    <x-text-input
-                        value="{{ old('path') }}"
-                        id="path"
-                        name="path"
-                        type="text"
-                        class="mt-1 w-full"
-                    />
+                    <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
                     @error("path")
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
@@ -168,21 +127,11 @@
                     </div>
                     <div class="mt-6">
                         <x-input-label for="passive" :value="__('Passive')" />
-                        <x-select-input
-                            id="passive"
-                            name="passive"
-                            class="mt-1 w-full"
-                        >
-                            <option
-                                value="1"
-                                @if(old('passive')) selected @endif
-                            >
+                        <x-select-input id="passive" name="passive" class="mt-1 w-full">
+                            <option value="1" @if(old('passive')) selected @endif>
                                 {{ __("Yes") }}
                             </option>
-                            <option
-                                value="0"
-                                @if(!old('passive')) selected @endif
-                            >
+                            <option value="0" @if(!old('passive')) selected @endif>
                                 {{ __("No") }}
                             </option>
                         </x-select-input>
@@ -194,17 +143,11 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 
-                <x-primary-button
-                    id="btn-connect-storage-provider"
-                    class="ml-3"
-                >
+                <x-primary-button id="btn-connect-storage-provider" class="ml-3">
                     {{ __("Connect") }}
                 </x-primary-button>
             </div>

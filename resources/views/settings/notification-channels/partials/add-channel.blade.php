@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'add-channel')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-channel')">
         {{ __("Add new Channel") }}
     </x-primary-button>
 
@@ -28,21 +25,13 @@
 
             <div class="mt-6">
                 <x-input-label for="provider" value="Provider" />
-                <x-select-input
-                    x-model="provider"
-                    id="provider"
-                    name="provider"
-                    class="mt-1 w-full"
-                >
+                <x-select-input x-model="provider" id="provider" name="provider" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
                     @foreach (config("core.notification_channels_providers") as $p)
                         @if ($p !== "custom")
-                            <option
-                                value="{{ $p }}"
-                                @if ($oldProvider === $p) selected @endif
-                            >
+                            <option value="{{ $p }}" @if ($oldProvider === $p) selected @endif>
                                 {{ $p }}
                             </option>
                         @endif
@@ -55,13 +44,7 @@
 
             <div class="mt-6">
                 <x-input-label for="label" :value="__('Label')" />
-                <x-text-input
-                    value="{{ old('label') }}"
-                    id="label"
-                    name="label"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('label') }}" id="label" name="label" type="text" class="mt-1 w-full" />
                 @error("label")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -69,22 +52,13 @@
 
             <div x-show="provider === 'email'" class="mt-6">
                 <x-input-label for="email" :value="__('Email')" />
-                <x-text-input
-                    value="{{ old('email') }}"
-                    id="email"
-                    name="email"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('email') }}" id="email" name="email" type="text" class="mt-1 w-full" />
                 @error("email")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
-            <div
-                x-show="['slack', 'discord'].includes(provider)"
-                class="mt-6"
-            >
+            <div x-show="['slack', 'discord'].includes(provider)" class="mt-6">
                 <x-input-label for="webhook_url" :value="__('Webhook URL')" />
                 <x-text-input
                     value="{{ old('webhook_url') }}"
@@ -127,10 +101,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

@@ -11,9 +11,7 @@
     <div id="projects-list" x-data="{ deleteAction: '' }" class="space-y-3">
         @foreach ($projects as $project)
             <x-item-card>
-                <div
-                    class="ml-3 flex flex-grow flex-col items-start justify-center"
-                >
+                <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                     <div class="mb-1 flex items-center">
                         {{ $project->name }}
                         @if ($project->id == auth()->user()->current_project_id)

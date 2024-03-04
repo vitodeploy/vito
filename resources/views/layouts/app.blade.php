@@ -6,24 +6,16 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-            name="csrf-token"
-            content="{{ csrf_token() }}"
-            hx-swap-oob="true"
-        />
+        <meta name="csrf-token" content="{{ csrf_token() }}" hx-swap-oob="true" />
 
         <title>
             @if (isset($pageTitle))  {{ $pageTitle }} -
-            @endif
-            {{ config("app.name", "Laravel") }}
+            @endif {{ config("app.name", "Laravel") }}
         </title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net" />
-        <link
-            href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap"
-            rel="stylesheet"
-        />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         @livewireStyles
 
@@ -49,9 +41,7 @@
                 class="left-0 top-0 min-h-screen w-64 flex-none bg-gray-800 p-3 dark:border-r-2 dark:border-gray-800 dark:bg-gray-800/50"
             >
                 <div class="block h-16">
-                    <div
-                        class="flex items-center justify-start text-2xl font-extrabold text-white"
-                    >
+                    <div class="flex items-center justify-start text-2xl font-extrabold text-white">
                         <x-application-logo class="h-7 w-7 rounded-md" />
                         <span class="ml-1">Deploy</span>
                     </div>
@@ -65,9 +55,7 @@
                         @include("layouts.partials.project-select", ["project" => auth()->user()->currentProject])
                     </div>
 
-                    <div
-                        class="mt-5 text-sm font-semibold uppercase text-gray-300"
-                    >
+                    <div class="mt-5 text-sm font-semibold uppercase text-gray-300">
                         {{ __("Servers") }}
                     </div>
                     <div class="mt-2">
@@ -340,21 +328,15 @@
 
                 <!-- Page Heading -->
                 @if (isset($header))
-                    <header
-                        class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
-                    >
-                        <div
-                            class="mx-auto flex h-20 w-full max-w-full items-center justify-between px-8"
-                        >
+                    <header class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                        <div class="mx-auto flex h-20 w-full max-w-full items-center justify-between px-8">
                             {{ $header }}
                         </div>
                     </header>
                 @endif
 
                 @if (isset($header2))
-                    <header
-                        class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
-                    >
+                    <header class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
                         <div class="mx-auto max-w-full px-8 py-6">
                             {{ $header2 }}
                         </div>
@@ -372,8 +354,7 @@
             // On page load or when changing themes, best to add inline in `head` to avoid FOUC
             if (
                 localStorage.theme === 'dark' ||
-                (!('theme' in localStorage) &&
-                    window.matchMedia('(prefers-color-scheme: dark)').matches)
+                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
             ) {
                 document.documentElement.classList.add('dark');
             } else {

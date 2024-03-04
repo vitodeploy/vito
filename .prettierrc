@@ -4,7 +4,11 @@
         {
             "files": ["*.blade.php"],
             "options": {
-                "parser": "blade"
+                "parser": "blade",
+                "printWidth": 120,
+                "htmlWhitespaceSensitivity": "ignore",
+                "tabWidth": 4,
+                "quoteProps": "consistent"
             }
         }
     ]

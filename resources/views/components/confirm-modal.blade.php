@@ -16,11 +16,7 @@
             <x-secondary-button type="button" x-on:click="$dispatch('close')">
                 {{ __("Cancel") }}
             </x-secondary-button>
-            <x-danger-button
-                class="ml-3"
-                @confirmed.window="$dispatch('close')"
-                wire:loading.attr="disabled"
-            >
+            <x-danger-button class="ml-3" @confirmed.window="$dispatch('close')" wire:loading.attr="disabled">
                 {{ __("Confirm") }}
             </x-danger-button>
         </div>

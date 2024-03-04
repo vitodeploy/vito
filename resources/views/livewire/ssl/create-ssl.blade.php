@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'create-ssl')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-ssl')">
         {{ __("Create SSL") }}
     </x-primary-button>
 
@@ -14,20 +11,12 @@
 
             <div class="mt-6">
                 <x-input-label for="type" :value="__('SSL Type')" />
-                <x-select-input
-                    wire:model.live="type"
-                    id="type"
-                    name="type"
-                    class="mt-1 w-full"
-                >
+                <x-select-input wire:model.live="type" id="type" name="type" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
                     @foreach (\App\Enums\SslType::getValues() as $t)
-                        <option
-                            value="{{ $t }}"
-                            @if($t === $type) selected @endif
-                        >
+                        <option value="{{ $t }}" @if($t === $type) selected @endif>
                             {{ $t }}
                         </option>
                     @endforeach
@@ -39,10 +28,7 @@
 
             @if ($type === \App\Enums\SslType::CUSTOM)
                 <div class="mt-6">
-                    <x-input-label
-                        for="certificate"
-                        :value="__('Certificate')"
-                    />
+                    <x-input-label for="certificate" :value="__('Certificate')" />
                     <x-textarea
                         wire:model="certificate"
                         id="certificate"
@@ -73,17 +59,11 @@
             @endif
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 
-                <x-primary-button
-                    class="ml-3"
-                    @created.window="$dispatch('close')"
-                >
+                <x-primary-button class="ml-3" @created.window="$dispatch('close')">
                     {{ __("Create") }}
                 </x-primary-button>
             </div>

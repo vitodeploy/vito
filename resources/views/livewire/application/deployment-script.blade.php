@@ -7,13 +7,7 @@
 
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
-                <x-textarea
-                    wire:model="script"
-                    rows="10"
-                    id="script"
-                    name="script"
-                    class="mt-1 w-full"
-                />
+                <x-textarea wire:model="script" rows="10" id="script" name="script" class="mt-1 w-full" />
                 @error("script")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -24,10 +18,7 @@
                     <p class="mr-2">{{ __("Saved") }}</p>
                 @endif
 
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

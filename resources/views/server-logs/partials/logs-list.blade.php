@@ -36,9 +36,7 @@
     </x-live>
     <x-modal name="show-log" max-width="4xl">
         <div class="p-6">
-            <h2
-                class="mb-5 text-lg font-medium text-gray-900 dark:text-gray-100"
-            >
+            <h2 class="mb-5 text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __("View Log") }}
             </h2>
             <div id="log-content">
@@ -49,10 +47,7 @@
                 </x-console-view>
             </div>
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Close") }}
                 </x-secondary-button>
             </div>

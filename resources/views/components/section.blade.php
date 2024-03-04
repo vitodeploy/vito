@@ -4,9 +4,7 @@
     @if (isset($title) || isset($description))
         <div>
             @if (isset($title))
-                <h3
-                    class="text-lg font-medium text-gray-900 dark:text-gray-300"
-                >
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-300">
                     {{ $title }}
                 </h3>
             @endif

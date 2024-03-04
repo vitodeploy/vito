@@ -7,20 +7,12 @@
         <form id="create-site" wire:submit="create" class="space-y-6">
             <div>
                 <x-input-label>{{ __("Select site type") }}</x-input-label>
-                <x-select-input
-                    wire:model.live="inputs.type"
-                    id="type"
-                    name="type"
-                    class="mt-1 w-full"
-                >
+                <x-select-input wire:model.live="inputs.type" id="type" name="type" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
                     @foreach (config("core.site_types") as $t)
-                        <option
-                            value="{{ $t }}"
-                            @if($t === $inputs['type']) selected @endif
-                        >
+                        <option value="{{ $t }}" @if($t === $inputs['type']) selected @endif>
                             {{ $t }}
                         </option>
                     @endforeach

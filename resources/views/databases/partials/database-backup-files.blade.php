@@ -6,9 +6,7 @@
         </x-slot>
         <x-slot name="aside">
             <div>
-                <x-secondary-button
-                    :href="route('servers.databases', ['server' => $server])"
-                >
+                <x-secondary-button :href="route('servers.databases', ['server' => $server])">
                     {{ __("Back to Databases") }}
                 </x-secondary-button>
                 <x-primary-button
@@ -48,14 +46,14 @@
                             @if ($file->restored_at)
                                 <x-datetime :value="$file->restored_at" />
                             @else
-                                    -
+                                -
                             @endif
                         </x-td>
                         <x-td>
                             @if ($file->restored_to)
                                 {{ $file->restored_to }}
                             @else
-                                    -
+                                -
                             @endif
                         </x-td>
                         <x-td class="flex w-full justify-end">

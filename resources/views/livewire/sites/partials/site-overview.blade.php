@@ -11,9 +11,7 @@
             <div class="flex items-center justify-center md:justify-start">
                 <div class="ml-2 hidden md:block">{{ __("SSL") }}</div>
             </div>
-            <div
-                class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left"
-            >
+            <div class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left">
                 {{ $site->activeSsl ? __("Yes") : __("No") }}
             </div>
         </div>
@@ -21,9 +19,7 @@
             <div class="flex items-center justify-center md:justify-start">
                 <div class="ml-2 hidden md:block">{{ __("Queues") }}</div>
             </div>
-            <div
-                class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left"
-            >
+            <div class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left">
                 {{ $site->queues()->count() }}
             </div>
         </div>
@@ -31,9 +27,7 @@
             <div class="flex items-center justify-center md:justify-start">
                 <div class="ml-2 hidden md:block">{{ __("PHP") }}</div>
             </div>
-            <div
-                class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left"
-            >
+            <div class="mt-3 text-center text-3xl font-bold text-gray-600 dark:text-gray-400 md:text-left">
                 {{ $site->php_version }}
             </div>
         </div>

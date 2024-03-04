@@ -20,10 +20,7 @@
         @csrf
 
         <div>
-            <x-input-label
-                for="current_password"
-                :value="__('Current Password')"
-            />
+            <x-input-label for="current_password" :value="__('Current Password')" />
             <x-text-input
                 id="current_password"
                 name="current_password"
@@ -51,10 +48,7 @@
         </div>
 
         <div>
-            <x-input-label
-                for="password_confirmation"
-                :value="__('Confirm Password')"
-            />
+            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
             <x-text-input
                 id="password_confirmation"
                 name="password_confirmation"

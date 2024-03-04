@@ -1,9 +1,7 @@
 <div>
     <x-card-header>
         <x-slot name="title">Source Controls</x-slot>
-        <x-slot name="description">
-            You can connect your source controls via API Tokens
-        </x-slot>
+        <x-slot name="description">You can connect your source controls via API Tokens</x-slot>
         <x-slot name="aside">
             @include("settings.source-controls.partials.connect")
         </x-slot>
@@ -15,9 +13,7 @@
                     <div class="flex-none text-gray-600 dark:text-gray-300">
                         @include("settings.source-controls.partials.icons." . $sourceControl->provider . "-icon")
                     </div>
-                    <div
-                        class="ml-3 flex flex-grow flex-col items-start justify-center"
-                    >
+                    <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                         <span class="mb-1">{{ $sourceControl->profile }}</span>
                         <span class="text-sm text-gray-400">
                             <x-datetime :value="$sourceControl->created_at" />

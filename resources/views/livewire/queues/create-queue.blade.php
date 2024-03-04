@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'create-queue')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-queue')">
         {{ __("Create Queue") }}
     </x-primary-button>
 
@@ -14,13 +11,7 @@
 
             <div class="mt-6">
                 <x-input-label for="command" :value="__('Command')" />
-                <x-text-input
-                    wire:model="command"
-                    id="command"
-                    name="command"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input wire:model="command" id="command" name="command" type="text" class="mt-1 w-full" />
                 @error("command")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -28,18 +19,11 @@
 
             <div class="mt-6">
                 <x-input-label for="user" :value="__('User')" />
-                <x-select-input
-                    wire:model="user"
-                    id="user"
-                    name="user"
-                    class="mt-1 w-full"
-                >
+                <x-select-input wire:model="user" id="user" name="user" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
-                    <option value="root" @if($user === 'root') selected @endif>
-                        root
-                    </option>
+                    <option value="root" @if($user === 'root') selected @endif>root</option>
                     <option
                         value="{{ $site->server->ssh_user }}"
                         @if($user === $site->server->ssh_user) selected @endif
@@ -54,12 +38,7 @@
 
             <div class="mt-6">
                 <x-input-label for="auto_start" :value="__('Auto Start')" />
-                <x-select-input
-                    wire:model.live="auto_start"
-                    id="auto_start"
-                    name="auto_start"
-                    class="mt-1 w-full"
-                >
+                <x-select-input wire:model.live="auto_start" id="auto_start" name="auto_start" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
@@ -76,10 +55,7 @@
             </div>
 
             <div class="mt-6">
-                <x-input-label
-                    for="auto_restart"
-                    :value="__('Auto Restart')"
-                />
+                <x-input-label for="auto_restart" :value="__('Auto Restart')" />
                 <x-select-input
                     wire:model.live="auto_restart"
                     id="auto_restart"
@@ -117,17 +93,11 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 
-                <x-primary-button
-                    class="ml-3"
-                    @created.window="$dispatch('close')"
-                >
+                <x-primary-button class="ml-3" @created.window="$dispatch('close')">
                     {{ __("Create") }}
                 </x-primary-button>
             </div>

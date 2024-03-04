@@ -31,28 +31,16 @@
                             hx-target="#create-server-form"
                             :active="old('provider', $provider) == $p"
                         >
-                            <div
-                                class="flex w-full flex-col items-center justify-center text-center"
-                            >
-                                <img
-                                    src="{{ asset("static/images/" . $p . ".svg") }}"
-                                    class="h-7"
-                                    alt="Server"
-                                />
-                                <span
-                                    class="md:text-normal mt-2 hidden text-sm md:block"
-                                >
+                            <div class="flex w-full flex-col items-center justify-center text-center">
+                                <img src="{{ asset("static/images/" . $p . ".svg") }}" class="h-7" alt="Server" />
+                                <span class="md:text-normal mt-2 hidden text-sm md:block">
                                     {{ $p }}
                                 </span>
                             </div>
                         </x-server-provider-item>
                     @endforeach
 
-                    <input
-                        type="hidden"
-                        name="provider"
-                        value="{{ old("provider", $provider) }}"
-                    />
+                    <input type="hidden" name="provider" value="{{ old("provider", $provider) }}" />
                 </div>
                 @error("provider")
                     <x-input-error class="mt-2" :messages="$message" />
@@ -63,24 +51,14 @@
                 @include("servers.partials.public-key")
             @else
                 <div>
-                    <x-input-label
-                        for="server_provider"
-                        value="Provider Profile"
-                    />
+                    <x-input-label for="server_provider" value="Provider Profile" />
                     <div class="mt-1 flex items-center">
-                        <x-select-input
-                            id="server_provider"
-                            name="server_provider"
-                            class="w-full"
-                        >
+                        <x-select-input id="server_provider" name="server_provider" class="w-full">
                             <option value="" disabled selected>
                                 {{ __("Select") }}
                             </option>
                             @foreach ($serverProviders as $sp)
-                                <option
-                                    value="{{ $sp->id }}"
-                                    @if($sp->id == old('server_provider')) selected @endif
-                                >
+                                <option value="{{ $sp->id }}" @if($sp->id == old('server_provider')) selected @endif>
                                     {{ $sp->profile }}
                                 </option>
                             @endforeach
@@ -97,10 +75,7 @@
                     @enderror
 
                     @if (count($serverProviders) == 0)
-                        <x-input-error
-                            class="mt-2"
-                            :messages="__('You have not connected to any providers!')"
-                        />
+                        <x-input-error class="mt-2" :messages="__('You have not connected to any providers!')" />
                     @endif
                 </div>
             @endif
@@ -124,11 +99,7 @@
                 <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
                     <div>
                         <x-input-label for="plan" value="Plan" />
-                        <x-select-input
-                            id="plan"
-                            name="plan"
-                            class="mt-1 w-full"
-                        >
+                        <x-select-input id="plan" name="plan" class="mt-1 w-full">
                             <option value="" disabled selected>
                                 {{ __("Select") }}
                             </option>
@@ -147,11 +118,7 @@
                     </div>
                     <div>
                         <x-input-label for="region" value="Region" />
-                        <x-select-input
-                            id="region"
-                            name="region"
-                            class="mt-1 w-full"
-                        >
+                        <x-select-input id="region" name="region" class="mt-1 w-full">
                             <option value="" disabled selected>
                                 {{ __("Select") }}
                             </option>
@@ -174,10 +141,7 @@
             @if ($provider == "custom")
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <x-input-label
-                            for="ip"
-                            :value="__('SSH IP Address')"
-                        />
+                        <x-input-label for="ip" :value="__('SSH IP Address')" />
                         <x-text-input
                             value="{{ old('ip') }}"
                             id="ip"
@@ -211,10 +175,7 @@
                 <x-input-label for="os" value="Operating System" />
                 <x-select-input id="os" name="os" class="mt-1 w-full">
                     @foreach (config("core.operating_systems") as $operatingSystem)
-                        <option
-                            value="{{ $operatingSystem }}"
-                            @if($operatingSystem == old('os')) selected @endif
-                        >
+                        <option value="{{ $operatingSystem }}" @if($operatingSystem == old('os')) selected @endif>
                             {{ str($operatingSystem)->replace("_", " ")->ucfirst() }}
                             LTS
                         </option>
@@ -229,10 +190,7 @@
                 <x-input-label for="type" value="Server Type" />
                 <x-select-input id="type" name="type" class="mt-1 w-full">
                     @foreach (config("core.server_types") as $serverType)
-                        <option
-                            value="{{ $serverType }}"
-                            @if($serverType == old('type')) selected @endif
-                        >
+                        <option value="{{ $serverType }}" @if($serverType == old('type')) selected @endif>
                             {{ $serverType }}
                         </option>
                     @endforeach
@@ -245,16 +203,9 @@
             <div class="grid grid-cols-1 gap-3 lg:grid-cols-3">
                 <div>
                     <x-input-label for="webserver" value="Webserver" />
-                    <x-select-input
-                        id="webserver"
-                        name="webserver"
-                        class="mt-1 w-full"
-                    >
+                    <x-select-input id="webserver" name="webserver" class="mt-1 w-full">
                         @foreach (config("core.webservers") as $ws)
-                            <option
-                                value="{{ $ws }}"
-                                @if($ws == old('webserver')) selected @endif
-                            >
+                            <option value="{{ $ws }}" @if($ws == old('webserver')) selected @endif>
                                 {{ $ws }}
                             </option>
                         @endforeach
@@ -265,16 +216,9 @@
                 </div>
                 <div>
                     <x-input-label for="database" value="Database" />
-                    <x-select-input
-                        id="database"
-                        name="database"
-                        class="mt-1 w-full"
-                    >
+                    <x-select-input id="database" name="database" class="mt-1 w-full">
                         @foreach (config("core.databases") as $db)
-                            <option
-                                value="{{ $db }}"
-                                @if($db == old('database')) selected @endif
-                            >
+                            <option value="{{ $db }}" @if($db == old('database')) selected @endif>
                                 {{ $db }}
                             </option>
                         @endforeach
@@ -287,10 +231,7 @@
                     <x-input-label for="php" value="PHP" />
                     <x-select-input id="php" name="php" class="mt-1 w-full">
                         @foreach (config("core.php_versions") as $p)
-                            <option
-                                value="{{ $p }}"
-                                @if($p == old('php')) selected @endif
-                            >
+                            <option value="{{ $p }}" @if($p == old('php')) selected @endif>
                                 {{ $p }}
                             </option>
                         @endforeach

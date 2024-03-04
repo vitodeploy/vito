@@ -17,17 +17,10 @@
 
         <div class="mt-6">
             <x-input-label for="backup_database" :value="__('Database')" />
-            <x-select-input
-                id="backup_database"
-                name="backup_database"
-                class="mt-1 w-full"
-            >
+            <x-select-input id="backup_database" name="backup_database" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
                 @foreach ($databases as $db)
-                    <option
-                        value="{{ $db->id }}"
-                        @if($db->id == old('backup_database')) selected @endif
-                    >
+                    <option value="{{ $db->id }}" @if($db->id == old('backup_database')) selected @endif>
                         {{ $db->name }}
                     </option>
                 @endforeach
@@ -39,17 +32,10 @@
 
         <div class="mt-6">
             <x-input-label for="backup_storage" :value="__('Storage')" />
-            <x-select-input
-                id="backup_storage"
-                name="backup_storage"
-                class="mt-1 w-full"
-            >
+            <x-select-input id="backup_storage" name="backup_storage" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
                 @foreach (auth()->user()->storageProviders as $st)
-                    <option
-                        value="{{ $st->id }}"
-                        @if(old('backup_storage') == $st->id) selected @endif
-                    >
+                    <option value="{{ $st->id }}" @if(old('backup_storage') == $st->id) selected @endif>
                         {{ $st->profile }} - {{ $st->provider }}
                     </option>
                 @endforeach
@@ -61,34 +47,18 @@
 
         <div class="mt-6">
             <x-input-label for="backup_interval" :value="__('Interval')" />
-            <x-select-input
-                id="backup_interval"
-                name="backup_interval"
-                class="mt-1 w-full"
-            >
+            <x-select-input id="backup_interval" name="backup_interval" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
-                <option
-                    value="0 * * * *"
-                    @if(old('backup_interval') === '0 * * * *') selected @endif
-                >
+                <option value="0 * * * *" @if(old('backup_interval') === '0 * * * *') selected @endif>
                     {{ __("Hourly") }}
                 </option>
-                <option
-                    value="0 0 * * *"
-                    @if(old('backup_interval') === '0 0 * * *') selected @endif
-                >
+                <option value="0 0 * * *" @if(old('backup_interval') === '0 0 * * *') selected @endif>
                     {{ __("Daily") }}
                 </option>
-                <option
-                    value="0 0 * * 0"
-                    @if(old('backup_interval') === '0 0 * * 0') selected @endif
-                >
+                <option value="0 0 * * 0" @if(old('backup_interval') === '0 0 * * 0') selected @endif>
                     {{ __("Weekly") }}
                 </option>
-                <option
-                    value="0 0 1 * *"
-                    @if(old('backup_interval') === '0 0 1 * *') selected @endif
-                >
+                <option value="0 0 1 * *" @if(old('backup_interval') === '0 0 1 * *') selected @endif>
                     {{ __("Monthly") }}
                 </option>
                 <option value="custom">{{ __("Custom") }}</option>
@@ -100,10 +70,7 @@
 
         @if (old("backup_interval") === "custom")
             <div class="mt-6">
-                <x-input-label
-                    for="backup_custom"
-                    :value="__('Custom interval (Cron)')"
-                />
+                <x-input-label for="backup_custom" :value="__('Custom interval (Cron)')" />
                 <x-text-input
                     id="backup_custom"
                     name="backup_custom"
@@ -119,12 +86,7 @@
 
         <div class="mt-6">
             <x-input-label for="backup_keep" :value="__('Backups to Keep')" />
-            <x-text-input
-                id="backup_keep"
-                name="backup_keep"
-                type="text"
-                class="mt-1 w-full"
-            />
+            <x-text-input id="backup_keep" name="backup_keep" type="text" class="mt-1 w-full" />
             @error("backup_keep")
                 <x-input-error class="mt-2" :messages="$message" />
             @enderror

@@ -5,11 +5,7 @@
             class="text-md z-0 flex h-10 w-full cursor-pointer items-center rounded-md bg-gray-900 px-4 py-3 pr-10 leading-5 text-gray-100 focus:ring-1 focus:ring-gray-700"
             x-text="selected.name ?? 'Select Project'"
         ></div>
-        <button
-            type="button"
-            @click="open = !open"
-            class="absolute inset-y-0 right-0 z-0 flex items-center pr-2"
-        >
+        <button type="button" @click="open = !open" class="absolute inset-y-0 right-0 z-0 flex items-center pr-2">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
@@ -38,23 +34,15 @@
                 />
             </div>
             <div class="relative max-h-[350px] overflow-y-auto">
-                <template
-                    x-for="(project, index) in filteredProjects"
-                    :key="index"
-                >
+                <template x-for="(project, index) in filteredProjects" :key="index">
                     <div
                         @click="selectProject(project); open = false"
                         :class="project.id === selected.id ? 'cursor-default bg-primary-600 text-white' : 'cursor-pointer'"
                         class="relative select-none px-4 py-2 text-gray-700 hover:bg-primary-600 hover:text-white dark:text-white"
                     >
-                        <span
-                            class="block truncate"
-                            x-text="project.name"
-                        ></span>
+                        <span class="block truncate" x-text="project.name"></span>
                         <template x-if="project.id === selected.id">
-                            <span
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-white"
-                            >
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-white">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 20 20"

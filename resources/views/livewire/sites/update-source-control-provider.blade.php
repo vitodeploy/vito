@@ -8,12 +8,7 @@
     <form id="update-source-control" wire:submit="update" class="space-y-6">
         <div>
             <x-input-label for="provider" :value="__('Source Control')" />
-            <x-select-input
-                wire:model="source_control"
-                id="source_control"
-                name="source_control"
-                class="mt-1 w-full"
-            >
+            <x-select-input wire:model="source_control" id="source_control" name="source_control" class="mt-1 w-full">
                 <option value="" selected>{{ __("Select") }}</option>
                 @foreach (\App\Models\SourceControl::all() as $sourceControl)
                     <option
@@ -36,10 +31,7 @@
             <p class="mr-2">{{ __("Saved") }}</p>
         @endif
 
-        <x-primary-button
-            form="update-source-control"
-            wire:loading.attr="disabled"
-        >
+        <x-primary-button form="update-source-control" wire:loading.attr="disabled">
             {{ __("Save") }}
         </x-primary-button>
     </x-slot>

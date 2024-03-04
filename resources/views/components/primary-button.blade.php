@@ -8,10 +8,7 @@
 @endphp
 
 @if (isset($href))
-    <button
-        onclick="location.href = '{{ $href }}'"
-        {{ $attributes->merge(["class" => $class]) }}
-    >
+    <button onclick="location.href = '{{ $href }}'" {{ $attributes->merge(["class" => $class]) }}>
         {{ $slot }}
     </button>
 @else

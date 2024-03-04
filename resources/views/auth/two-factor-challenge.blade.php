@@ -1,7 +1,5 @@
 <x-guest-layout>
-    <div
-        x-data="{recover: @if($errors->has('recovery_code')) true @else false @endif}"
-    >
+    <div x-data="{recover: @if($errors->has('recovery_code')) true @else false @endif}">
         <div x-show="recover">
             <form method="POST">
                 @csrf
@@ -10,10 +8,7 @@
                 </div>
 
                 <div>
-                    <x-input-label
-                        for="recovery_code"
-                        :value="__('Recovery Code')"
-                    />
+                    <x-input-label for="recovery_code" :value="__('Recovery Code')" />
                     <x-text-input
                         id="recovery_code"
                         class="mt-1 block w-full"
@@ -23,17 +18,11 @@
                         autofocus
                         autocomplete="recovery_code"
                     />
-                    <x-input-error
-                        :messages="$errors->get('recovery_code')"
-                        class="mt-2"
-                    />
+                    <x-input-error :messages="$errors->get('recovery_code')" class="mt-2" />
                 </div>
 
                 <div class="mt-4 flex items-center justify-end">
-                    <x-secondary-button
-                        class="mr-2"
-                        x-on:click="recover = false"
-                    >
+                    <x-secondary-button class="mr-2" x-on:click="recover = false">
                         {{ __("Login") }}
                     </x-secondary-button>
                     <x-primary-button type="submit">
@@ -60,17 +49,11 @@
                         autofocus
                         autocomplete="code"
                     />
-                    <x-input-error
-                        :messages="$errors->get('code')"
-                        class="mt-2"
-                    />
+                    <x-input-error :messages="$errors->get('code')" class="mt-2" />
                 </div>
 
                 <div class="mt-4 flex items-center justify-end">
-                    <x-secondary-button
-                        class="mr-2"
-                        x-on:click="recover = true"
-                    >
+                    <x-secondary-button class="mr-2" x-on:click="recover = true">
                         {{ __("Recover") }}
                     </x-secondary-button>
                     <x-primary-button type="submit">

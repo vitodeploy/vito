@@ -1,16 +1,10 @@
 <x-modal name="delete-project" :show="$errors->isNotEmpty()">
-    <form
-        id="delete-project-form"
-        method="post"
-        x-bind:action="deleteAction"
-        class="p-6"
-    >
+    <form id="delete-project-form" method="post" x-bind:action="deleteAction" class="p-6">
         @csrf
         @method("delete")
 
         <h2 class="text-lg font-medium">
-            Deleting a project will delete all of its servers, sites, etc. Are
-            you sure you want to delete this project?
+            Deleting a project will delete all of its servers, sites, etc. Are you sure you want to delete this project?
         </h2>
 
         <div class="mt-6 flex justify-end">

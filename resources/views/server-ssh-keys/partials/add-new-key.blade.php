@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'add-key')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-key')">
         {{ __("Add new Key") }}
     </x-primary-button>
 
@@ -22,13 +19,7 @@
 
             <div class="mt-6">
                 <x-input-label for="name" :value="__('Name')" />
-                <x-text-input
-                    value="{{ old('name') }}"
-                    id="name"
-                    name="name"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
                 @error("name")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -49,10 +40,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

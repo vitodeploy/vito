@@ -18,9 +18,7 @@
                     <a class="block">
                         <x-item-card>
                             <div class="flex items-start justify-center">
-                                <span class="mr-2">
-                                    PHP {{ $php->version }}
-                                </span>
+                                <span class="mr-2">PHP {{ $php->version }}</span>
                                 @include("services.partials.status", ["status" => $php->status])
                             </div>
                             <div class="flex items-center">
@@ -29,9 +27,7 @@
                                         <x-slot name="trigger">
                                             <x-secondary-button>
                                                 {{ __("Actions") }}
-                                                <x-heroicon-o-chevron-up-down
-                                                    class="ml-1 h-5 w-5"
-                                                />
+                                                <x-heroicon-o-chevron-up-down class="ml-1 h-5 w-5" />
                                             </x-secondary-button>
                                         </x-slot>
                                         <x-slot name="content">

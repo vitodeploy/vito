@@ -18,10 +18,7 @@
             <x-select-input id="database" name="database" class="mt-1 w-full">
                 <option value="" selected disabled>{{ __("Select") }}</option>
                 @foreach ($databases as $db)
-                    <option
-                        value="{{ $db->id }}"
-                        @if(old('database') == $db->id) selected @endif
-                    >
+                    <option value="{{ $db->id }}" @if(old('database') == $db->id) selected @endif>
                         {{ $db->name }}
                     </option>
                 @endforeach

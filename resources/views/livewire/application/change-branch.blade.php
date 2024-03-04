@@ -7,13 +7,7 @@
 
             <div class="mt-6">
                 <x-input-label for="branch" :value="__('Branch')" />
-                <x-text-input
-                    wire:model="branch"
-                    id="branch"
-                    name="branch"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input wire:model="branch" id="branch" name="branch" type="text" class="mt-1 w-full" />
                 @error("branch")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -24,10 +18,7 @@
                     <p class="mr-2">{{ __("Updating branch...") }}</p>
                 @endif
 
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

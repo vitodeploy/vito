@@ -9,10 +9,7 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net" />
-        <link
-            href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap"
-            rel="stylesheet"
-        />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(["resources/css/app.css", "resources/js/app.js"])
@@ -25,9 +22,7 @@
         >
             <div>
                 <a href="/">
-                    <div
-                        class="flex items-center justify-start text-3xl font-extrabold"
-                    >
+                    <div class="flex items-center justify-start text-3xl font-extrabold">
                         <x-application-logo class="h-9 w-9 rounded-md" />
                         <span class="ml-1">Deploy</span>
                     </div>

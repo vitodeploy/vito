@@ -1,10 +1,7 @@
 <div>
     <x-card-header>
         <x-slot name="title">Server Providers</x-slot>
-        <x-slot name="description">
-            You can connect to your server providers to create servers using
-            their APIs
-        </x-slot>
+        <x-slot name="description">You can connect to your server providers to create servers using their APIs</x-slot>
         <x-slot name="aside">
             @include("settings.server-providers.partials.connect-provider")
         </x-slot>
@@ -20,9 +17,7 @@
                             alt=""
                         />
                     </div>
-                    <div
-                        class="ml-3 flex flex-grow flex-col items-start justify-center"
-                    >
+                    <div class="ml-3 flex flex-grow flex-col items-start justify-center">
                         <span class="mb-1">{{ $provider->profile }}</span>
                         <span class="text-sm text-gray-400">
                             <x-datetime :value="$provider->created_at" />

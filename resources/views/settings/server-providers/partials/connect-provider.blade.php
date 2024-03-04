@@ -1,8 +1,5 @@
 <div>
-    <x-primary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'connect-provider')"
-    >
+    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'connect-provider')">
         {{ __("Connect") }}
     </x-primary-button>
 
@@ -29,21 +26,13 @@
 
             <div class="mt-6">
                 <x-input-label for="provider" value="Provider" />
-                <x-select-input
-                    x-model="provider"
-                    id="provider"
-                    name="provider"
-                    class="mt-1 w-full"
-                >
+                <x-select-input x-model="provider" id="provider" name="provider" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
                     @foreach (config("core.server_providers") as $p)
                         @if ($p !== "custom")
-                            <option
-                                value="{{ $p }}"
-                                @if($oldProvider === $p) selected @endif
-                            >
+                            <option value="{{ $p }}" @if($oldProvider === $p) selected @endif>
                                 {{ $p }}
                             </option>
                         @endif
@@ -56,13 +45,7 @@
 
             <div class="mt-6">
                 <x-input-label for="name" value="Name" />
-                <x-text-input
-                    value="{{ old('name') }}"
-                    id="name"
-                    name="name"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
                 @error("name")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
@@ -71,13 +54,7 @@
             <div x-show="provider === 'aws'">
                 <div class="mt-6">
                     <x-input-label for="key" value="Access Key" />
-                    <x-text-input
-                        value="{{ old('key') }}"
-                        id="key"
-                        name="key"
-                        type="text"
-                        class="mt-1 w-full"
-                    />
+                    <x-text-input value="{{ old('key') }}" id="key" name="key" type="text" class="mt-1 w-full" />
                     @error("key")
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
@@ -98,28 +75,16 @@
                 </div>
             </div>
 
-            <div
-                x-show="['hetzner', 'digitalocean', 'vultr', 'linode'].includes(provider)"
-                class="mt-6"
-            >
+            <div x-show="['hetzner', 'digitalocean', 'vultr', 'linode'].includes(provider)" class="mt-6">
                 <x-input-label for="token" value="API Key" />
-                <x-text-input
-                    value="{{ old('token') }}"
-                    id="token"
-                    name="token"
-                    type="text"
-                    class="mt-1 w-full"
-                />
+                <x-text-input value="{{ old('token') }}" id="token" name="token" type="text" class="mt-1 w-full" />
                 @error("token")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

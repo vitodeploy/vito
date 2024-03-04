@@ -1,8 +1,5 @@
 <div>
-    <x-secondary-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'add-existing-key')"
-    >
+    <x-secondary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'add-existing-key')">
         {{ __("Add existing Key") }}
     </x-secondary-button>
 
@@ -25,10 +22,7 @@
                         {{ __("Select") }}
                     </option>
                     @foreach ($keys as $key)
-                        <option
-                            value="{{ $key->id }}"
-                            @if($key->id === old('key_id')) selected @endif
-                        >
+                        <option value="{{ $key->id }}" @if($key->id === old('key_id')) selected @endif>
                             {{ $key->name }}
                         </option>
                     @endforeach
@@ -39,10 +33,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

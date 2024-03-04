@@ -28,10 +28,7 @@
                     <p class="mr-2">{{ __("Saved") }}</p>
                 @endif
 
-                <x-secondary-button
-                    type="button"
-                    x-on:click="$dispatch('close')"
-                >
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
                 </x-secondary-button>
 

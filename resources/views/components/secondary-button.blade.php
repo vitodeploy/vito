@@ -25,9 +25,7 @@
         </a>
     @endif
 @else
-    <button
-        {{ $attributes->merge(["type" => $type ?? "submit", "class" => $class]) }}
-    >
+    <button {{ $attributes->merge(["type" => $type ?? "submit", "class" => $class]) }}>
         {{ $slot }}
     </button>
 @endif

@@ -13,22 +13,16 @@
         <div x-data="" class="space-y-3">
             @foreach ($rules as $rule)
                 <x-item-card>
-                    <div
-                        class="flex flex-grow flex-col items-start justify-center"
-                    >
+                    <div class="flex flex-grow flex-col items-start justify-center">
                         <span class="mb-1 flex items-center uppercase">
                             {{ $rule->protocol }}
-                            <x-status
-                                :status="$rule->type == 'allow' ? 'success' : 'danger'"
-                                class="ml-1"
-                            >
+                            <x-status :status="$rule->type == 'allow' ? 'success' : 'danger'" class="ml-1">
                                 {{ $rule->type }}
                             </x-status>
                         </span>
                         <span class="text-sm text-gray-400">
                             {{ __("From") }}
-                            {{ $rule->source }}/{{ $rule->mask }}
-                            {{ __("Port") }} {{ $rule->port }}
+                            {{ $rule->source }}/{{ $rule->mask }} {{ __("Port") }} {{ $rule->port }}
                         </span>
                     </div>
                     <div class="flex items-center">
@@ -52,9 +46,7 @@
                             {{ __("Deny") }}
                         </x-status>
                     </span>
-                    <span class="text-sm text-gray-400">
-                        {{ __("From") }} 0.0.0.0/0
-                    </span>
+                    <span class="text-sm text-gray-400">{{ __("From") }} 0.0.0.0/0</span>
                 </div>
                 <div class="flex items-center">
                     {{ __("Default") }}

@@ -15,13 +15,7 @@
 
         <div class="mt-6">
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input
-                value="{{ old('name') }}"
-                id="name"
-                name="name"
-                type="text"
-                class="mt-1 w-full"
-            />
+            <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
             @error("name")
                 <x-input-error class="mt-2" :messages="$message" />
             @enderror
@@ -89,13 +83,7 @@
             <div x-show="remote">
                 <div class="mt-6">
                     <x-input-label for="db-host" :value="__('Host')" />
-                    <x-text-input
-                        value="{{ old('host') }}"
-                        id="db-host"
-                        name="host"
-                        type="text"
-                        class="mt-1 w-full"
-                    />
+                    <x-text-input value="{{ old('host') }}" id="db-host" name="host" type="text" class="mt-1 w-full" />
                     <x-input-label
                         for="db-host"
                         :value="__('You might also need to open the database port in Firewall')"

@@ -4,17 +4,12 @@
 
 <x-app-layout :server="$site->server">
     @if (isset($pageTitle))
-        <x-slot name="pageTitle">
-            {{ $site->domain }} - {{ $pageTitle }}
-        </x-slot>
+        <x-slot name="pageTitle">{{ $site->domain }} - {{ $pageTitle }}</x-slot>
     @endif
 
     <x-slot name="header">
         <h2 class="text-lg font-semibold">
-            <a
-                href="{{ $site->activeSsl ? "https://" : "http://" . $site->domain }}"
-                target="_blank"
-            >
+            <a href="{{ $site->activeSsl ? "https://" : "http://" . $site->domain }}" target="_blank">
                 {{ $site->domain }}
             </a>
         </h2>
@@ -71,9 +66,7 @@
                     </div>
                 </x-input-label>
             </div>
-            <div
-                class="mx-5 h-20 border-r border-gray-200 dark:border-gray-800"
-            ></div>
+            <div class="mx-5 h-20 border-r border-gray-200 dark:border-gray-800"></div>
             <div class="flex h-20 flex-col items-end justify-center">
                 <div class="flex items-center">
                     <svg
@@ -130,9 +123,7 @@
     </x-slot>
 
     <x-slot name="sidebar">
-        <div
-            class="flex h-16 items-center justify-center border-b border-gray-200 px-3 py-2 dark:border-gray-800"
-        >
+        <div class="flex h-16 items-center justify-center border-b border-gray-200 px-3 py-2 dark:border-gray-800">
             <div class="w-full">
                 @include("layouts.partials.site-select", ["server" => $site->server, "site" => $site])
             </div>

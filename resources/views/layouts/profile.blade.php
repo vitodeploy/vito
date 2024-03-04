@@ -4,18 +4,13 @@
     @endif
 
     <x-slot name="sidebar">
-        <div
-            class="flex h-16 items-center justify-center border-b border-gray-200 px-3 py-2 dark:border-gray-800"
-        >
+        <div class="flex h-16 items-center justify-center border-b border-gray-200 px-3 py-2 dark:border-gray-800">
             <div class="w-full">
                 <span>Account Settings</span>
             </div>
         </div>
         <div class="space-y-2 p-3">
-            <x-secondary-sidebar-link
-                :href="route('profile')"
-                :active="request()->routeIs('profile')"
-            >
+            <x-secondary-sidebar-link :href="route('profile')" :active="request()->routeIs('profile')">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -32,10 +27,7 @@
                 </svg>
                 {{ __("Profile") }}
             </x-secondary-sidebar-link>
-            <x-secondary-sidebar-link
-                :href="route('projects')"
-                :active="request()->routeIs('projects')"
-            >
+            <x-secondary-sidebar-link :href="route('projects')" :active="request()->routeIs('projects')">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -132,10 +124,7 @@
                 </svg>
                 {{ __("Notification Channels") }}
             </x-secondary-sidebar-link>
-            <x-secondary-sidebar-link
-                :href="route('ssh-keys')"
-                :active="request()->routeIs('ssh-keys')"
-            >
+            <x-secondary-sidebar-link :href="route('ssh-keys')" :active="request()->routeIs('ssh-keys')">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

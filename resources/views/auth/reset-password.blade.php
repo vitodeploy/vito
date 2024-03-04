@@ -37,10 +37,7 @@
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label
-                for="password_confirmation"
-                :value="__('Confirm Password')"
-            />
+            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
 
             <x-text-input
                 id="password_confirmation"
@@ -51,10 +48,7 @@
                 autocomplete="new-password"
             />
 
-            <x-input-error
-                :messages="$errors->get('password_confirmation')"
-                class="mt-2"
-            />
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
         <div class="mt-4 flex items-center justify-end">

@@ -1,10 +1,8 @@
-<div
-    x-data="{
-        deleteAction: '',
-        linkAction: '',
-        linkedDatabases: [],
-    }"
->
+<div x-data="{
+    deleteAction: '',
+    linkAction: '',
+    linkedDatabases: [],
+}">
     <x-card-header>
         <x-slot name="title">{{ __("Database Users") }}</x-slot>
         <x-slot name="description">
@@ -12,10 +10,7 @@
         </x-slot>
         <x-slot name="aside">
             <div>
-                <x-primary-button
-                    x-data=""
-                    x-on:click.prevent="$dispatch('open-modal', 'create-database-user')"
-                >
+                <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'create-database-user')">
                     {{ __("Create Database User") }}
                 </x-primary-button>
                 @include("databases.partials.create-database-user-modal")
@@ -41,9 +36,7 @@
                         <x-td>
                             <x-datetime :value="$databaseUser->created_at" />
                         </x-td>
-                        <x-td>
-                            [{{ $databaseUser->databases ? implode(", ", $databaseUser->databases) : "-" }}]
-                        </x-td>
+                        <x-td>[{{ $databaseUser->databases ? implode(", ", $databaseUser->databases) : "-" }}]</x-td>
                         <x-td>
                             <div class="inline-flex">
                                 @include("databases.partials.database-user-status", ["status" => $databaseUser->status])
