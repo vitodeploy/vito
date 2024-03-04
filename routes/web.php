@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\SiteController;
-use App\Http\Controllers\SSHKeyController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,7 +23,6 @@ Route::middleware('auth')->group(function () {
                 Route::get('/{site}/settings', [SiteController::class, 'settings'])->name('servers.sites.settings');
                 Route::get('/{site}/logs', [SiteController::class, 'logs'])->name('servers.sites.logs');
             });
-            Route::get('/{server}/ssh-keys', [SSHKeyController::class, 'index'])->name('servers.ssh-keys');
         });
     });
 });

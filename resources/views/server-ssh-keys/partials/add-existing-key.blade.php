@@ -7,26 +7,27 @@
     </x-secondary-button>
 
     <x-modal name="add-existing-key">
-        <form wire:submit="add" class="p-6">
+        <form
+            id="add-existing-key-form"
+            hx-post="{{ route("servers.ssh-keys.deploy", ["server" => $server]) }}"
+            hx-swap="outerHTML"
+            hx-select="#add-existing-key-form"
+            class="p-6"
+        >
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {{ __("Add existing Key") }}
             </h2>
 
             <div class="mt-6">
                 <x-input-label for="key_id" :value="__('SSH Key')" />
-                <x-select-input
-                    wire:model="key_id"
-                    id="key_id"
-                    name="key_id"
-                    class="mt-1 w-full"
-                >
+                <x-select-input id="key_id" name="key_id" class="mt-1 w-full">
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
                     @foreach ($keys as $key)
                         <option
                             value="{{ $key->id }}"
-                            @if($key->id === $key_id) selected @endif
+                            @if($key->id === old('key_id')) selected @endif
                         >
                             {{ $key->name }}
                         </option>
@@ -45,10 +46,7 @@
                     {{ __("Cancel") }}
                 </x-secondary-button>
 
-                <x-primary-button
-                    class="ml-3"
-                    @added.window="$dispatch('close')"
-                >
+                <x-primary-button class="ml-3" hx-disable>
                     {{ __("Add") }}
                 </x-primary-button>
             </div>
