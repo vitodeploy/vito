@@ -8,7 +8,7 @@
                     @include("layouts.partials.color-scheme")
                 </div>
 
-                <livewire:user-dropdown />
+                <x-user-dropdown />
             </div>
         </div>
     </div>

@@ -13,7 +13,6 @@ class ServerLogController extends Controller
     {
         return view('server-logs.index', [
             'server' => $server,
-            'logs' => $server->logs()->latest()->paginate(10),
         ]);
     }
 

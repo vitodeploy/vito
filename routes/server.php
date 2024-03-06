@@ -1,16 +1,22 @@
 <?php
 
+use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
 use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\PHPController;
+use App\Http\Controllers\QueueController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ServerLogController;
 use App\Http\Controllers\ServerSettingController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SiteController;
+use App\Http\Controllers\SiteLogController;
+use App\Http\Controllers\SiteSettingController;
 use App\Http\Controllers\SSHKeyController;
+use App\Http\Controllers\SSLController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ServerController::class, 'index'])->name('servers');
@@ -20,6 +26,45 @@ Route::get('/{server}', [ServerController::class, 'show'])->name('servers.show')
 Route::delete('/{server}', [ServerController::class, 'delete'])->name('servers.delete');
 
 Route::middleware(['server-is-ready', 'handle-ssh-errors'])->group(function () {
+    Route::prefix('/{server}/sites')->group(function () {
+        // sites
+        Route::get('/', [SiteController::class, 'index'])->name('servers.sites');
+        Route::get('/create', [SiteController::class, 'create'])->name('servers.sites.create');
+        Route::post('/create', [SiteController::class, 'store'])->name('servers.sites.create');
+        Route::get('/{site}', [SiteController::class, 'show'])->name('servers.sites.show');
+        Route::delete('/{site}', [SiteController::class, 'destroy'])->name('servers.sites.destroy');
+
+        // site application
+        Route::post('/{site}/application/deploy', [ApplicationController::class, 'deploy'])->name('servers.sites.application.deploy');
+        Route::get('/{site}/application/{deployment}/log', [ApplicationController::class, 'showDeploymentLog'])->name('servers.sites.application.deployment.log');
+        Route::post('/{site}/application/deployment-script', [ApplicationController::class, 'updateDeploymentScript'])->name('servers.sites.application.deployment-script');
+        Route::post('/{site}/application/branch', [ApplicationController::class, 'updateBranch'])->name('servers.sites.application.branch');
+        Route::get('/{site}/application/env', [ApplicationController::class, 'getEnv'])->name('servers.sites.application.env');
+        Route::post('/{site}/application/env', [ApplicationController::class, 'updateEnv'])->name('servers.sites.application.env');
+        Route::post('/{site}/application/auto-deployment', [ApplicationController::class, 'enableAutoDeployment'])->name('servers.sites.application.auto-deployment');
+        Route::delete('/{site}/application/auto-deployment', [ApplicationController::class, 'disableAutoDeployment'])->name('servers.sites.application.auto-deployment');
+
+        // site ssl
+        Route::get('/{site}/ssl', [SSLController::class, 'index'])->name('servers.sites.ssl');
+        Route::post('/{site}/ssl', [SSLController::class, 'store'])->name('servers.sites.ssl.store');
+        Route::delete('/{site}/ssl/{ssl}', [SSLController::class, 'destroy'])->name('servers.sites.ssl.destroy');
+
+        // site queues
+        Route::get('/{site}/queues', [QueueController::class, 'index'])->name('servers.sites.queues');
+        Route::post('/{site}/queues', [QueueController::class, 'store'])->name('servers.sites.queues.store');
+        Route::post('/{site}/queues/{queue}/action/{action}', [QueueController::class, 'action'])->name('servers.sites.queues.action');
+        Route::delete('/{site}/queues/{queue}', [QueueController::class, 'destroy'])->name('servers.sites.queues.destroy');
+
+        // site settings
+        Route::get('/{site}/settings', [SiteSettingController::class, 'index'])->name('servers.sites.settings');
+        Route::get('/{site}/settings/vhost', [SiteSettingController::class, 'getVhost'])->name('servers.sites.settings.vhost');
+        Route::post('/{site}/settings/vhost', [SiteSettingController::class, 'updateVhost'])->name('servers.sites.settings.vhost');
+        Route::post('/{site}/settings/php', [SiteSettingController::class, 'updatePHPVersion'])->name('servers.sites.settings.php');
+
+        // site logs
+        Route::get('/{site}/logs', [SiteLogController::class, 'index'])->name('servers.sites.logs');
+    });
+
     Route::prefix('/{server}/databases')->group(function () {
         // databases
         Route::get('/', [DatabaseController::class, 'index'])->name('servers.databases');

@@ -1,3 +1,17 @@
+@php
+    if (isset($site)) {
+        $logs = $site
+            ->logs()
+            ->latest()
+            ->paginate(10);
+    } else {
+        $logs = $server
+            ->logs()
+            ->latest()
+            ->paginate(10);
+    }
+@endphp
+
 <div x-data="">
     <x-card-header>
         <x-slot name="title">{{ __("Logs") }}</x-slot>

@@ -3,6 +3,7 @@
 namespace App\Actions\Site;
 
 use App\Models\Site;
+use App\SSHCommands\System\EditFileCommand;
 
 class UpdateEnv
 {
@@ -13,6 +14,11 @@ class UpdateEnv
         $site->type_data = $typeData;
         $site->save();
 
-        $site->deployEnv();
+        $site->server->ssh()->exec(
+            new EditFileCommand(
+                $site->path.'/.env',
+                $site->env
+            )
+        );
     }
 }

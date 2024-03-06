@@ -6,18 +6,11 @@ use App\Enums\SiteStatus;
 use App\Enums\SiteType;
 use App\Enums\SourceControl;
 use App\Facades\SSH;
-use App\Http\Livewire\Sites\ChangePhpVersion;
-use App\Http\Livewire\Sites\CreateSite;
-use App\Http\Livewire\Sites\DeleteSite;
-use App\Http\Livewire\Sites\SitesList;
-use App\Http\Livewire\Sites\UpdateSourceControlProvider;
-use App\Http\Livewire\Sites\UpdateVHost;
 use App\Jobs\Site\CreateVHost;
 use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class SitesTest extends TestCase
@@ -40,12 +33,11 @@ class SitesTest extends TestCase
             'provider' => SourceControl::GITHUB,
         ]);
 
-        Livewire::test(CreateSite::class, ['server' => $this->server])
-            ->fill($inputs)
-            ->set('inputs.source_control', $sourceControl->id)
-            ->call('create')
-            ->assertSuccessful()
-            ->assertHasNoErrors();
+        $inputs['source_control'] = $sourceControl->id;
+
+        $this->post(route('servers.sites.create', [
+            'server' => $this->server,
+        ]), $inputs)->assertSessionDoesntHaveErrors();
 
         Bus::assertDispatched(CreateVHost::class);
 
@@ -63,10 +55,11 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        Livewire::test(SitesList::class, ['server' => $this->server])
-            ->assertSee([
-                $site->domain,
-            ]);
+        $this->get(route('servers.sites', [
+            'server' => $this->server,
+        ]))
+            ->assertOk()
+            ->assertSee($site->domain);
     }
 
     public function test_delete_site(): void
@@ -79,10 +72,10 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        Livewire::test(DeleteSite::class, ['server' => $this->server])
-            ->set('site', $site)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('servers.sites.destroy', [
+            'server' => $this->server,
+            'site' => $site,
+        ]))->assertRedirect();
 
         Bus::assertDispatched(\App\Jobs\Site\DeleteSite::class);
 
@@ -93,20 +86,22 @@ class SitesTest extends TestCase
 
     public function test_change_php_version(): void
     {
-        Bus::fake();
-
         $this->actingAs($this->user);
 
         $site = Site::factory()->create([
             'server_id' => $this->server->id,
         ]);
 
-        Livewire::test(ChangePhpVersion::class, ['site' => $site])
-            ->set('version', '8.1')
-            ->call('change')
-            ->assertSuccessful();
+        $this->post(route('servers.sites.settings.php', [
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'version' => '8.2',
+        ])->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(\App\Jobs\Site\ChangePHPVersion::class);
+        $site->refresh();
+
+        $this->assertEquals('8.2', $site->php_version);
     }
 
     public function test_update_v_host(): void
@@ -119,27 +114,10 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        Livewire::test(UpdateVHost::class, ['site' => $site])
-            ->set('vHost', 'test-vhost')
-            ->call('update')
-            ->assertSuccessful();
-    }
-
-    public function test_update_source_control(): void
-    {
-        $this->actingAs($this->user);
-
-        /** @var \App\Models\SourceControl $gitlab */
-        $gitlab = \App\Models\SourceControl::factory()->gitlab()->create();
-
-        Livewire::test(UpdateSourceControlProvider::class, ['site' => $this->site])
-            ->set('source_control', $gitlab->id)
-            ->call('update')
-            ->assertSuccessful();
-
-        $this->site->refresh();
-
-        $this->assertEquals($gitlab->id, $this->site->source_control_id);
+        $this->get(route('servers.sites.settings.vhost', [
+            'server' => $this->server,
+            'site' => $site,
+        ]))->assertSessionHasNoErrors();
     }
 
     public static function create_data(): array
@@ -147,38 +125,38 @@ class SitesTest extends TestCase
         return [
             [
                 [
-                    'inputs.type' => SiteType::LARAVEL,
-                    'inputs.domain' => 'example.com',
-                    'inputs.alias' => 'www.example.com',
-                    'inputs.php_version' => '8.2',
-                    'inputs.web_directory' => 'public',
-                    'inputs.repository' => 'test/test',
-                    'inputs.branch' => 'main',
-                    'inputs.composer' => true,
+                    'type' => SiteType::LARAVEL,
+                    'domain' => 'example.com',
+                    'alias' => 'www.example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'repository' => 'test/test',
+                    'branch' => 'main',
+                    'composer' => true,
                 ],
             ],
             [
                 [
-                    'inputs.type' => SiteType::WORDPRESS,
-                    'inputs.domain' => 'example.com',
-                    'inputs.alias' => 'www.example.com',
-                    'inputs.php_version' => '8.2',
-                    'inputs.title' => 'Example',
-                    'inputs.username' => 'example',
-                    'inputs.email' => 'email@example.com',
-                    'inputs.password' => 'password',
-                    'inputs.database' => 'example',
-                    'inputs.database_user' => 'example',
-                    'inputs.database_password' => 'password',
+                    'type' => SiteType::WORDPRESS,
+                    'domain' => 'example.com',
+                    'alias' => 'www.example.com',
+                    'php_version' => '8.2',
+                    'title' => 'Example',
+                    'username' => 'example',
+                    'email' => 'email@example.com',
+                    'password' => 'password',
+                    'database' => 'example',
+                    'database_user' => 'example',
+                    'database_password' => 'password',
                 ],
             ],
             [
                 [
-                    'inputs.type' => SiteType::PHP_BLANK,
-                    'inputs.domain' => 'example.com',
-                    'inputs.alias' => 'www.example.com',
-                    'inputs.php_version' => '8.2',
-                    'inputs.web_directory' => 'public',
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'example.com',
+                    'alias' => 'www.example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
                 ],
             ],
         ];

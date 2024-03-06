@@ -33,13 +33,13 @@ document.body.addEventListener('htmx:configRequest', (event) => {
     else if (document.selection) { document.selection.empty(); }
 });
 document.body.addEventListener('htmx:beforeRequest', (event) => {
-    let targetElements = document.querySelectorAll('[hx-disable]');
+    let targetElements = event.target.querySelectorAll('[hx-disable]');
     for (let i = 0; i < targetElements.length; i++) {
         targetElements[i].disabled = true;
     }
 });
 document.body.addEventListener('htmx:afterRequest', (event) => {
-    let targetElements = document.querySelectorAll('[hx-disable]');
+    let targetElements = event.target.querySelectorAll('[hx-disable]');
     for (let i = 0; i < targetElements.length; i++) {
         targetElements[i].disabled = false;
     }

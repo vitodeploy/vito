@@ -42,6 +42,6 @@ class CreateSSL
             $rules['private'] = 'required';
         }
 
-        Validator::make($input, $rules)->validateWithBag('createSSL');
+        Validator::make($input, $rules)->validate();
     }
 }
