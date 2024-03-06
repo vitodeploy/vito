@@ -1,4 +1,4 @@
-import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
+import Alpine from 'alpinejs';
 
 Alpine.directive('clipboard', (el) => {
     let text = el.textContent
@@ -8,7 +8,9 @@ Alpine.directive('clipboard', (el) => {
     })
 })
 
-Livewire.start()
+window.Alpine = Alpine;
+
+Alpine.start();
 
 import htmx from "htmx.org";
 window.htmx = htmx;

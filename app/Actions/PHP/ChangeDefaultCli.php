@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire\Php;
+namespace App\Actions\PHP;
 
 use App\Enums\ServiceStatus;
 use App\Models\Server;

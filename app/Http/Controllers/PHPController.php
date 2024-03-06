@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\PHP\ChangeDefaultCli;
 use App\Actions\PHP\GetPHPIni;
 use App\Actions\PHP\InstallNewPHP;
 use App\Actions\PHP\InstallPHPExtension;
@@ -9,7 +10,6 @@ use App\Actions\PHP\UninstallPHP;
 use App\Actions\PHP\UpdatePHPIni;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
-use App\Http\Livewire\Php\ChangeDefaultCli;
 use App\Models\Server;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
