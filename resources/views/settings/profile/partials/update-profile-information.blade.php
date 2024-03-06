@@ -11,8 +11,6 @@
         {{ __("Update your account's profile information and email address.") }}
     </x-slot>
 
-    <form id="send-verification" wire:submit="sendVerificationEmail"></form>
-
     <form
         id="update-profile-information"
         hx-post="{{ route("profile.info") }}"

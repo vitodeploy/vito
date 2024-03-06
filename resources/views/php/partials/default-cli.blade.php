@@ -24,7 +24,13 @@
                         <x-slot name="content">
                             @foreach ($phps as $php)
                                 @if ($php->version != $defaultPHP->version)
-                                    <x-dropdown-link class="cursor-pointer" wire:click="change('{{ $php->version }}')">
+                                    <x-dropdown-link
+                                        id="php-{{ $php->id }}-default-cli"
+                                        class="cursor-pointer"
+                                        hx-post="{{ route('servers.php.default-cli', ['server' => $server, 'version' => $php->version]) }}"
+                                        hx-swap="outerHTML"
+                                        hx-select="#php-{{ $php->id }}-default-cli"
+                                    >
                                         PHP {{ $php->version }}
                                     </x-dropdown-link>
                                 @endif
