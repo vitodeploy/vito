@@ -11,6 +11,7 @@ jobs:
       fail-fast: true
       matrix:
         php: [8.2]
+        node-version: ["20.x"]
 
     steps:
       - uses: actions/checkout@v2
@@ -28,9 +29,21 @@ jobs:
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-
+
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Run pint
         run: ./vendor/bin/pint --test
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.x"
+
+      - name: Install NPM Dependencies
+        run: npm install
+
+      - name: Run lint
+        run: npm run lint
