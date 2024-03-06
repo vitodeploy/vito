@@ -2,24 +2,24 @@
     "name": "vitodeploy/vito",
     "type": "project",
     "description": "The ultimate server management tool",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "ext-ftp": "*",
         "aws/aws-sdk-php": "^3.158",
         "bensampo/laravel-enum": "^6.3",
         "blade-ui-kit/blade-heroicons": "^2.2",
-        "davidhsianturi/blade-bootstrap-icons": "^1.4",
         "guzzlehttp/guzzle": "^7.2",
-        "khatabwedaa/blade-css-icons": "^1.3",
         "laravel/fortify": "^1.17",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.2",
         "laravel/socialite": "^5.2",
         "laravel/tinker": "^2.8",
         "opcodesio/log-viewer": "^3.0",
-        "owenvoke/blade-fontawesome": "^2.5",
         "phpseclib/phpseclib": "~3.0"
     },
     "require-dev": {
