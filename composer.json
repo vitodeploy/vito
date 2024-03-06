@@ -18,7 +18,6 @@
         "laravel/sanctum": "^3.2",
         "laravel/socialite": "^5.2",
         "laravel/tinker": "^2.8",
-        "livewire/livewire": "^3.0",
         "opcodesio/log-viewer": "^3.0",
         "owenvoke/blade-fontawesome": "^2.5",
         "phpseclib/phpseclib": "~3.0"
