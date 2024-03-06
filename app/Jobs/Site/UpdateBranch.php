@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Site;
 
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Site;
 use App\SSHCommands\Website\UpdateBranchCommand;
@@ -35,19 +34,9 @@ class UpdateBranch extends Job
         );
         $this->site->branch = $this->branch;
         $this->site->save();
-        event(
-            new Broadcast('update-branch-finished', [
-                'site' => $this->site,
-            ])
-        );
     }
 
     public function failed(): void
     {
-        event(
-            new Broadcast('update-branch-failed', [
-                'site' => $this->site,
-            ])
-        );
     }
 }

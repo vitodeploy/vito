@@ -3,7 +3,6 @@
 namespace App\ServerTypes;
 
 use App\Enums\ServerStatus;
-use App\Events\Broadcast;
 use App\Facades\Notifier;
 use App\Jobs\Installation\Initialize;
 use App\Jobs\Installation\InstallCertbot;
@@ -86,11 +85,6 @@ class Regular extends AbstractType
                 'status' => ServerStatus::READY,
                 'progress' => 100,
             ]);
-            event(
-                new Broadcast('install-server-finished', [
-                    'server' => $this->server,
-                ])
-            );
             Notifier::send($this->server, new ServerInstallationSucceed($this->server));
         };
 
@@ -99,11 +93,6 @@ class Regular extends AbstractType
                 $this->server->update([
                     'status' => 'installation_failed',
                 ]);
-                event(
-                    new Broadcast('install-server-failed', [
-                        'server' => $this->server,
-                    ])
-                );
                 Notifier::send($this->server, new ServerInstallationFailed($this->server));
                 Log::error('server-installation-error', [
                     'error' => (string) $e,

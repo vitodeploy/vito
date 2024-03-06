@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Redirect;
 
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Redirect;
 
@@ -24,21 +23,11 @@ class DeleteFromServer extends Job
             ->get();
         $this->redirect->site->server->webserver()->handler()->updateRedirects($this->redirect->site, $redirects);
         $this->redirect->delete();
-        event(
-            new Broadcast('delete-redirect-finished', [
-                'id' => $this->redirect->id,
-            ])
-        );
     }
 
     public function failed(): void
     {
         $this->redirect->status = 'failed';
         $this->redirect->save();
-        event(
-            new Broadcast('delete-redirect-failed', [
-                'redirect' => $this->redirect,
-            ])
-        );
     }
 }

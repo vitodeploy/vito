@@ -3,7 +3,6 @@
 namespace App\Jobs\Site;
 
 use App\Enums\DeploymentStatus;
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Deployment;
 use App\SSHCommands\System\RunScriptCommand;
@@ -39,11 +38,6 @@ class Deploy extends Job
             $this->deployment->status = DeploymentStatus::FINISHED;
             $this->deployment->log_id = $ssh->log->id;
             $this->deployment->save();
-            event(
-                new Broadcast('deploy-site-finished', [
-                    'deployment' => $this->deployment,
-                ])
-            );
         } catch (Throwable) {
             $this->deployment->log_id = $ssh->log->id;
             $this->deployment->save();
@@ -55,10 +49,5 @@ class Deploy extends Job
     {
         $this->deployment->status = DeploymentStatus::FAILED;
         $this->deployment->save();
-        event(
-            new Broadcast('deploy-site-failed', [
-                'deployment' => $this->deployment,
-            ])
-        );
     }
 }

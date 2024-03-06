@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Redirect;
 
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Redirect;
 
@@ -22,21 +21,11 @@ class AddToServer extends Job
         $this->redirect->site->server->webserver()->handler()->updateRedirects($this->redirect->site, $redirects);
         $this->redirect->status = 'ready';
         $this->redirect->save();
-        event(
-            new Broadcast('create-redirect-finished', [
-                'redirect' => $this->redirect,
-            ])
-        );
     }
 
     public function failed(): void
     {
         $this->redirect->status = 'failed';
         $this->redirect->delete();
-        event(
-            new Broadcast('create-redirect-failed', [
-                'redirect' => $this->redirect,
-            ])
-        );
     }
 }

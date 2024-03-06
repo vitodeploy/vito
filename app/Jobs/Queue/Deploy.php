@@ -3,7 +3,6 @@
 namespace App\Jobs\Queue;
 
 use App\Enums\QueueStatus;
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Queue;
 
@@ -30,20 +29,10 @@ class Deploy extends Job
         );
         $this->worker->status = QueueStatus::RUNNING;
         $this->worker->save();
-        event(
-            new Broadcast('deploy-queue-finished', [
-                'queue' => $this->worker,
-            ])
-        );
     }
 
     public function failed(): void
     {
         $this->worker->delete();
-        event(
-            new Broadcast('deploy-queue-failed', [
-                'queue' => $this->worker,
-            ])
-        );
     }
 }

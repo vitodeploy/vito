@@ -2,7 +2,6 @@
 
 namespace App\Jobs\PHP;
 
-use App\Events\Broadcast;
 use App\Exceptions\ProcessFailed;
 use App\Jobs\Job;
 use App\Models\Service;
@@ -40,19 +39,9 @@ class InstallPHPExtension extends Job
         $typeData['extensions'][] = $this->name;
         $this->service->type_data = $typeData;
         $this->service->save();
-        event(
-            new Broadcast('install-php-extension-finished', [
-                'service' => $this->service,
-            ])
-        );
     }
 
     public function failed(): void
     {
-        event(
-            new Broadcast('install-php-extension-failed', [
-                'service' => $this->service,
-            ])
-        );
     }
 }

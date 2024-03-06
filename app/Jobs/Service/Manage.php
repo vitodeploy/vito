@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Service;
 
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Service;
 use App\SSHCommands\Service\RestartServiceCommand;
@@ -54,22 +53,11 @@ class Manage extends Job
         );
         $this->service->status = $this->successStatus;
         $this->service->save();
-        event(
-            new Broadcast('update-service-finished', [
-                'service' => $this->service,
-            ])
-        );
     }
 
     public function failed(): void
     {
         $this->service->status = $this->failStatus;
         $this->service->save();
-        event(
-            new Broadcast('update-service-failed', [
-                'message' => $this->service->name.' '.$this->failMessage,
-                'service' => $this->service,
-            ])
-        );
     }
 }

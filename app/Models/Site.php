@@ -6,7 +6,6 @@ use App\Contracts\SiteType;
 use App\Enums\DeploymentStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
-use App\Events\Broadcast;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Facades\Notifier;
 use App\Jobs\Site\Deploy;
@@ -399,11 +398,6 @@ class Site extends AbstractModel
             'status' => SiteStatus::READY,
             'progress' => 100,
         ]);
-        event(
-            new Broadcast('install-site-finished', [
-                'site' => $this,
-            ])
-        );
         Notifier::send($this, new SiteInstallationSucceed($this));
     }
 
@@ -415,11 +409,6 @@ class Site extends AbstractModel
         $this->update([
             'status' => SiteStatus::INSTALLATION_FAILED,
         ]);
-        event(
-            new Broadcast('install-site-failed', [
-                'site' => $this,
-            ])
-        );
         Notifier::send($this, new SiteInstallationFailed($this));
         Log::error('install-site-error', [
             'error' => (string) $e,

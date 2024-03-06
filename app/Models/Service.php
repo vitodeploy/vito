@@ -7,7 +7,6 @@ use App\Contracts\Firewall;
 use App\Contracts\ProcessManager;
 use App\Contracts\Webserver;
 use App\Enums\ServiceStatus;
-use App\Events\Broadcast;
 use App\Exceptions\InstallationFailed;
 use App\Jobs\Service\Manage;
 use App\ServiceHandlers\PHP;
@@ -96,20 +95,7 @@ class Service extends AbstractModel
     {
         Bus::chain([
             $this->installer(),
-            function () {
-                event(
-                    new Broadcast('install-service-finished', [
-                        'service' => $this,
-                    ])
-                );
-            },
-        ])->catch(function () {
-            event(
-                new Broadcast('install-service-failed', [
-                    'service' => $this,
-                ])
-            );
-        })->onConnection('ssh-long')->dispatch();
+        ])->onConnection('ssh-long')->dispatch();
     }
 
     /**
@@ -117,18 +103,7 @@ class Service extends AbstractModel
      */
     public function validateInstall($result): void
     {
-        if (Str::contains($result, 'Active: active')) {
-            event(
-                new Broadcast('install-service-finished', [
-                    'service' => $this,
-                ])
-            );
-        } else {
-            event(
-                new Broadcast('install-service-failed', [
-                    'service' => $this,
-                ])
-            );
+        if (! Str::contains($result, 'Active: active')) {
             throw new InstallationFailed();
         }
     }
@@ -140,21 +115,11 @@ class Service extends AbstractModel
         Bus::chain([
             $this->uninstaller(),
             function () {
-                event(
-                    new Broadcast('uninstall-service-finished', [
-                        'service' => $this,
-                    ])
-                );
                 $this->delete();
             },
         ])->catch(function () {
             $this->status = ServiceStatus::FAILED;
             $this->save();
-            event(
-                new Broadcast('uninstall-service-failed', [
-                    'service' => $this,
-                ])
-            );
         })->onConnection('ssh')->dispatch();
     }
 

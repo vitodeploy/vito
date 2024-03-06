@@ -3,7 +3,6 @@
 namespace App\Jobs\SshKey;
 
 use App\Enums\SshKeyStatus;
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Server;
 use App\Models\SshKey;
@@ -34,20 +33,10 @@ class DeploySshKeyToServer extends Job
         $this->sshKey->servers()->updateExistingPivot($this->server->id, [
             'status' => SshKeyStatus::ADDED,
         ]);
-        event(
-            new Broadcast('deploy-ssh-key-finished', [
-                'sshKey' => $this->sshKey,
-            ])
-        );
     }
 
     public function failed(): void
     {
         $this->server->sshKeys()->detach($this->sshKey);
-        event(
-            new Broadcast('deploy-ssh-key-failed', [
-                'sshKey' => $this->sshKey,
-            ])
-        );
     }
 }

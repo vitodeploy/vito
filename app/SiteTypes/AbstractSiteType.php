@@ -3,7 +3,6 @@
 namespace App\SiteTypes;
 
 use App\Contracts\SiteType;
-use App\Events\Broadcast;
 use App\Jobs\Site\DeleteSite;
 use App\Models\Site;
 use Closure;
@@ -27,12 +26,6 @@ abstract class AbstractSiteType implements SiteType
         return function () use ($percentage) {
             $this->site->progress = $percentage;
             $this->site->save();
-            event(
-                new Broadcast('site-installation-progress', [
-                    'site' => $this->site,
-                    'percentage' => $percentage,
-                ])
-            );
         };
     }
 }

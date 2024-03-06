@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Queue;
 
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Queue;
 
@@ -47,22 +46,11 @@ class Manage extends Job
         }
         $this->worker->status = $this->successStatus;
         $this->worker->save();
-        event(
-            new Broadcast('manage-queue-finished', [
-                'queue' => $this->worker,
-            ])
-        );
     }
 
     public function failed(): void
     {
         $this->worker->status = $this->failStatus;
         $this->worker->save();
-        event(
-            new Broadcast('manage-queue-failed', [
-                'message' => $this->failMessage,
-                'queue' => $this->worker,
-            ])
-        );
     }
 }

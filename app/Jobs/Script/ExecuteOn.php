@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Script;
 
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Script;
 use App\Models\ScriptExecution;
@@ -41,21 +40,11 @@ class ExecuteOn extends Job
         );
         $this->scriptExecution->finished_at = now();
         $this->scriptExecution->save();
-        event(
-            new Broadcast('execute-script-finished', [
-                'execution' => $this->scriptExecution,
-            ])
-        );
     }
 
     public function failed(): void
     {
         $this->scriptExecution->finished_at = now();
         $this->scriptExecution->save();
-        event(
-            new Broadcast('execute-script-failed', [
-                'execution' => $this->scriptExecution,
-            ])
-        );
     }
 }

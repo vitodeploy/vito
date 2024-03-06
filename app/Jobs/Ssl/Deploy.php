@@ -4,7 +4,6 @@ namespace App\Jobs\Ssl;
 
 use App\Enums\SiteType;
 use App\Enums\SslStatus;
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Ssl;
 
@@ -22,11 +21,6 @@ class Deploy extends Job
         $this->ssl->site->server->webserver()->handler()->setupSSL($this->ssl);
         $this->ssl->status = SslStatus::CREATED;
         $this->ssl->save();
-        event(
-            new Broadcast('deploy-ssl-finished', [
-                'ssl' => $this->ssl,
-            ])
-        );
         if ($this->ssl->site->type == SiteType::WORDPRESS) {
             $typeData = $this->ssl->site->type_data;
             $typeData['url'] = $this->ssl->site->url;
@@ -38,11 +32,6 @@ class Deploy extends Job
 
     public function failed(): void
     {
-        event(
-            new Broadcast('deploy-ssl-failed', [
-                'ssl' => $this->ssl,
-            ])
-        );
         $this->ssl->delete();
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Site;
 
-use App\Events\Broadcast;
 use App\Jobs\Job;
 use App\Models\Site;
 use App\SSHCommands\System\EditFileCommand;
@@ -28,19 +27,9 @@ class DeployEnv extends Job
                 $this->site->env
             )
         );
-        event(
-            new Broadcast('deploy-site-env-finished', [
-                'site' => $this->site,
-            ])
-        );
     }
 
     public function failed(): void
     {
-        event(
-            new Broadcast('deploy-site-env-failed', [
-                'site' => $this->site,
-            ])
-        );
     }
 }

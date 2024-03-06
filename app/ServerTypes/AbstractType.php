@@ -3,7 +3,6 @@
 namespace App\ServerTypes;
 
 use App\Contracts\ServerType;
-use App\Events\Broadcast;
 use App\Models\Server;
 use Closure;
 
@@ -22,11 +21,6 @@ abstract class AbstractType implements ServerType
             $this->server->progress = $percentage;
             $this->server->progress_step = $step;
             $this->server->save();
-            event(new Broadcast('server-installation-progress', [
-                'server' => $this->server,
-                'step' => $step,
-                'percentage' => $percentage,
-            ]));
         };
     }
 }

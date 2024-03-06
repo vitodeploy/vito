@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Installation;
 
-use App\Events\Broadcast;
 use App\Models\Server;
 
 class ContinueInstallation extends InstallationJob
@@ -29,11 +28,6 @@ class ContinueInstallation extends InstallationJob
             $this->server->update([
                 'status' => 'installation_failed',
             ]);
-            event(
-                new Broadcast('install-server-failed', [
-                    'server' => $this->server,
-                ])
-            );
 
             return;
         }
