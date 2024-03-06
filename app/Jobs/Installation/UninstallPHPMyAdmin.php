@@ -9,6 +9,9 @@ use App\SSHCommands\PHPMyAdmin\DeleteNginxPHPMyAdminVHostCommand;
 use Exception;
 use Throwable;
 
+/**
+ * @deprecated
+ */
 class UninstallPHPMyAdmin extends Job
 {
     protected Service $service;

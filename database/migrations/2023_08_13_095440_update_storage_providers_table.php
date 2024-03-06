@@ -23,10 +23,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('storage_providers', function (Blueprint $table) {
-            $table->string('token');
-            $table->string('refresh_token');
-            $table->string('token_expires_at');
-            $table->string('label');
+            $table->string('token')->nullable();
+            $table->string('refresh_token')->nullable();
+            $table->string('token_expires_at')->nullable();
+            $table->string('label')->nullable();
             $table->dropColumn('user_id');
             $table->dropColumn('profile');
             $table->dropColumn('credentials');

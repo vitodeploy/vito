@@ -60,6 +60,6 @@ class CreateQueue
             ],
         ];
 
-        Validator::make($input, $rules)->validateWithBag('createQueue');
+        Validator::make($input, $rules)->validate();
     }
 }

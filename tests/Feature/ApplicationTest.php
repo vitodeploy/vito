@@ -2,17 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Http\Livewire\Application\AutoDeployment;
-use App\Http\Livewire\Application\ChangeBranch;
-use App\Http\Livewire\Application\Deploy;
-use App\Http\Livewire\Application\DeploymentScript;
-use App\Http\Livewire\Application\LaravelApp;
 use App\Jobs\Site\UpdateBranch;
 use App\Models\GitHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ApplicationTest extends TestCase
@@ -30,30 +24,27 @@ class ApplicationTest extends TestCase
             ])
         )
             ->assertOk()
-            ->assertSeeLivewire(LaravelApp::class);
+            ->assertSee($this->site->domain);
     }
 
     public function test_update_deployment_script()
     {
         $this->actingAs($this->user);
 
-        Livewire::test(Deploy::class, ['site' => $this->site])
-            ->assertDontSeeText('Deploy');
-
-        Livewire::test(DeploymentScript::class, ['site' => $this->site])
-            ->set('script', 'some script')
-            ->call('save')
-            ->assertSuccessful();
+        $this->post(
+            route('servers.sites.application.deployment-script', [
+                'server' => $this->server,
+                'site' => $this->site,
+            ]),
+            [
+                'script' => 'some script',
+            ]
+        )->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('deployment_scripts', [
             'site_id' => $this->site->id,
             'content' => 'some script',
         ]);
-
-        $this->site->refresh();
-
-        Livewire::test(Deploy::class, ['site' => $this->site])
-            ->assertSeeText('Deploy');
     }
 
     public function test_change_branch()
@@ -62,10 +53,12 @@ class ApplicationTest extends TestCase
 
         $this->actingAs($this->user);
 
-        Livewire::test(ChangeBranch::class, ['site' => $this->site])
-            ->set('branch', 'master')
-            ->call('change')
-            ->assertSuccessful();
+        $this->post(route('servers.sites.application.branch', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'branch' => 'master',
+        ])->assertSessionDoesntHaveErrors();
 
         Bus::assertDispatched(UpdateBranch::class);
     }
@@ -80,9 +73,10 @@ class ApplicationTest extends TestCase
 
         $this->actingAs($this->user);
 
-        Livewire::test(AutoDeployment::class, ['site' => $this->site])
-            ->call('enable')
-            ->assertSuccessful();
+        $this->post(route('servers.sites.application.auto-deployment', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))->assertSessionDoesntHaveErrors();
 
         $this->site->refresh();
 
@@ -102,9 +96,10 @@ class ApplicationTest extends TestCase
             'source_control_id' => $this->site->source_control_id,
         ]);
 
-        Livewire::test(AutoDeployment::class, ['site' => $this->site])
-            ->call('disable')
-            ->assertSuccessful();
+        $this->delete(route('servers.sites.application.auto-deployment', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))->assertSessionDoesntHaveErrors();
 
         $this->site->refresh();
 

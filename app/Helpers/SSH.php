@@ -4,6 +4,8 @@ namespace App\Helpers;
 
 use App\Contracts\SSHCommand;
 use App\Exceptions\SSHAuthenticationError;
+use App\Exceptions\SSHCommandError;
+use App\Exceptions\SSHConnectionError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use Exception;
@@ -99,20 +101,28 @@ class SSH
             $this->log = null;
         }
 
-        if (! $this->connection) {
-            $this->connect();
+        try {
+            if (! $this->connection) {
+                $this->connect();
+            }
+        } catch (Throwable $e) {
+            throw new SSHConnectionError($e->getMessage());
         }
 
         if (! is_array($commands)) {
             $commands = [$commands];
         }
 
-        $result = '';
-        foreach ($commands as $command) {
-            $result .= $this->executeCommand($command);
-        }
+        try {
+            $result = '';
+            foreach ($commands as $command) {
+                $result .= $this->executeCommand($command);
+            }
 
-        return $result;
+            return $result;
+        } catch (Throwable $e) {
+            throw new SSHCommandError($e->getMessage());
+        }
     }
 
     /**

@@ -45,6 +45,12 @@ class DatabaseSeeder extends Seeder
             'version' => 'latest',
             'status' => ServiceStatus::READY,
         ]);
+        $server->services()->create([
+            'type' => 'firewall',
+            'name' => 'ufw',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
         Site::factory()->create([
             'server_id' => $server->id,
             'type' => SiteType::LARAVEL,

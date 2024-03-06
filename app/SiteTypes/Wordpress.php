@@ -2,6 +2,9 @@
 
 namespace App\SiteTypes;
 
+use App\Actions\Database\CreateDatabase;
+use App\Actions\Database\CreateDatabaseUser;
+use App\Actions\Database\LinkUser;
 use App\Enums\SiteFeature;
 use App\Jobs\Site\CreateVHost;
 use App\Jobs\Site\InstallWordpress;
@@ -88,19 +91,19 @@ class Wordpress extends AbstractSiteType
             $this->progress(15),
             function () {
                 /** @var Database $database */
-                $database = $this->site->server->databases()->create([
+                $database = app(CreateDatabase::class)->create($this->site->server, [
                     'name' => $this->site->type_data['database'],
                 ]);
-                $database->createOnServer('sync');
                 /** @var DatabaseUser $databaseUser */
-                $databaseUser = $this->site->server->databaseUsers()->create([
+                $databaseUser = app(CreateDatabaseUser::class)->create($this->site->server, [
                     'username' => $this->site->type_data['database_user'],
                     'password' => $this->site->type_data['database_password'],
-                    'databases' => [$this->site->type_data['database']],
+                    'remote' => false,
+                    'host' => 'localhost',
+                ], [$database->name]);
+                app(LinkUser::class)->link($databaseUser, [
+                    'databases' => [$database->name],
                 ]);
-                $databaseUser->createOnServer('sync');
-                $databaseUser->unlinkUser('sync');
-                $databaseUser->linkUser('sync');
             },
             $this->progress(50),
             new InstallWordpress($this->site),

@@ -2,10 +2,9 @@
 
 namespace App\ServiceHandlers;
 
-use App\Enums\ServiceStatus;
 use App\Jobs\PHP\InstallPHPExtension;
-use App\Jobs\PHP\SetDefaultCli;
 use App\Models\Service;
+use App\SSHCommands\PHP\ChangeDefaultPHPCommand;
 
 class PHP
 {
@@ -18,13 +17,14 @@ class PHP
 
     public function setDefaultCli(): void
     {
-        $this->service->update(['status' => ServiceStatus::RESTARTING]);
-
-        dispatch(new SetDefaultCli($this->service))->onConnection('ssh');
+        $this->service->server->ssh()->exec(
+            new ChangeDefaultPHPCommand($this->service->version),
+            'change-default-php'
+        );
     }
 
     public function installExtension($name): void
     {
-        dispatch(new InstallPHPExtension($this->service, $name))->onConnection('ssh-long');
+        dispatch(new InstallPHPExtension($this->service, $name))->onConnection('ssh');
     }
 }

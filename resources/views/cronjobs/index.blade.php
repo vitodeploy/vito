@@ -1,5 +1,5 @@
 <x-server-layout :server="$server">
     <x-slot name="pageTitle">{{ __("Cronjobs") }}</x-slot>
 
-    <livewire:cronjobs.cronjobs-list :server="$server"/>
+    @include("cronjobs.partrials.cronjobs-list")
 </x-server-layout>

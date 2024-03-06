@@ -6,35 +6,41 @@ use App\Enums\Database;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
+use App\Enums\ServerType;
 use App\Enums\Webserver;
-use App\Http\Livewire\Servers\CreateServer;
 use App\Jobs\Installation\Initialize;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
-use Livewire\Livewire;
+use JsonException;
 use Tests\TestCase;
 
+/**
+ * @TODO add more tests
+ */
 class ServerTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @throws JsonException
+     */
     public function test_create_custom_server(): void
     {
         $this->actingAs($this->user);
 
         Bus::fake();
 
-        Livewire::test(CreateServer::class)
-            ->set('provider', ServerProvider::CUSTOM)
-            ->set('name', 'test')
-            ->set('ip', '1.1.1.1')
-            ->set('port', '22')
-            ->set('os', OperatingSystem::UBUNTU22)
-            ->set('webserver', Webserver::NGINX)
-            ->set('database', Database::MYSQL80)
-            ->set('php', '8.2')
-            ->call('submit')
-            ->assertSuccessful();
+        $this->post(route('servers.create'), [
+            'type' => ServerType::REGULAR,
+            'provider' => ServerProvider::CUSTOM,
+            'name' => 'test',
+            'ip' => '1.1.1.1',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22,
+            'webserver' => Webserver::NGINX,
+            'database' => Database::MYSQL80,
+            'php' => '8.2',
+        ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('servers', [
             'name' => 'test',

@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\FirewallRuleStatus;
-use App\Jobs\Firewall\AddToServer;
-use App\Jobs\Firewall\RemoveFromServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -47,18 +44,6 @@ class FirewallRule extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
-    }
-
-    public function addToServer(): void
-    {
-        dispatch(new AddToServer($this))->onConnection('ssh');
-    }
-
-    public function removeFromServer(): void
-    {
-        $this->status = FirewallRuleStatus::DELETING;
-        $this->save();
-        dispatch(new RemoveFromServer($this))->onConnection('ssh');
     }
 
     public function getRealProtocolAttribute(): string

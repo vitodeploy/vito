@@ -30,7 +30,7 @@ class CreateServer
             'user_id' => $creator->id,
             'name' => $input['name'],
             'ssh_user' => config('core.server_providers_default_user')[$input['provider']][$input['os']],
-            'ip' => $input['ip'],
+            'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],
             'type' => $input['type'],

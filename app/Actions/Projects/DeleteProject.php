@@ -8,11 +8,8 @@ use Illuminate\Validation\ValidationException;
 
 class DeleteProject
 {
-    public function delete(User $user, int $projectId): void
+    public function delete(User $user, Project $project): void
     {
-        /** @var Project $project */
-        $project = $user->projects()->findOrFail($projectId);
-
         if ($user->projects()->count() === 1) {
             throw ValidationException::withMessages([
                 'project' => __('Cannot delete the last project.'),

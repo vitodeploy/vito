@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Helpers\Notifier;
 use App\Helpers\SSH;
+use App\Helpers\Toast;
 use App\Support\SocialiteProviders\DropboxProvider;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -34,11 +35,18 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('notifier', function () {
             return new Notifier;
         });
+        $this->app->bind('toast', function () {
+            return new Toast;
+        });
 
         $this->extendSocialite();
 
         if (str(config('app.url'))->startsWith('https://')) {
             URL::forceScheme('https');
+        }
+
+        if ($this->app->environment('local')) {
+            \App\Facades\SSH::fake();
         }
     }
 

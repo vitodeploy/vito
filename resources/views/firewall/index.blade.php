@@ -1,5 +1,5 @@
 <x-server-layout :server="$server">
     <x-slot name="pageTitle">{{ __("Firewall") }}</x-slot>
 
-    <livewire:firewall.firewall-rules-list :server="$server"/>
+    @include("firewall.partials.firewall-rules-list")
 </x-server-layout>

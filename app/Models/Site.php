@@ -9,9 +9,7 @@ use App\Enums\SslStatus;
 use App\Events\Broadcast;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Facades\Notifier;
-use App\Jobs\Site\ChangePHPVersion;
 use App\Jobs\Site\Deploy;
-use App\Jobs\Site\DeployEnv;
 use App\Jobs\Site\UpdateBranch;
 use App\Notifications\SiteInstallationFailed;
 use App\Notifications\SiteInstallationSucceed;
@@ -234,7 +232,8 @@ class Site extends AbstractModel
 
     public function changePHPVersion($version): void
     {
-        dispatch(new ChangePHPVersion($this, $version))->onConnection('ssh');
+        $this->php_version = $version;
+        $this->server->webserver()->handler()->changePHPVersion($this, $version);
     }
 
     public function getDeploymentScriptTextAttribute(): string
@@ -286,11 +285,6 @@ class Site extends AbstractModel
         }
 
         return $typeData['env'];
-    }
-
-    public function deployEnv(): void
-    {
-        dispatch(new DeployEnv($this))->onConnection('ssh');
     }
 
     public function activeSsl(): HasOne

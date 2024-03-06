@@ -35,7 +35,7 @@ class EditServer
         $server->save();
 
         if ($checkConnection) {
-            $server->checkConnection();
+            return $server->checkConnection();
         }
 
         return $server;
