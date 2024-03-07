@@ -60,12 +60,6 @@ apt autoremove -y
 # requirements
 apt install -y software-properties-common curl zip unzip git gcc
 
-
-# nodejs
-curl -fsSL https://deb.nodesource.com/setup_lts.x | -E bash -
-apt update
-apt install nodejs -y
-
 # certbot
 apt install certbot python3-certbot-nginx -y
 
