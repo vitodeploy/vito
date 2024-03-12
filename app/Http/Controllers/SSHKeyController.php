@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Actions\SshKey\CreateSshKey;
+use App\Actions\SshKey\DeleteKeyFromServer;
+use App\Actions\SshKey\DeployKeyToServer;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Server;
@@ -29,34 +31,29 @@ class SSHKeyController extends Controller
             $request->input()
         );
 
-        $key->deployTo($server);
+        $request->merge(['key_id' => $key->id]);
 
-        Toast::success('SSH Key added and being deployed to the server.');
-
-        return htmx()->back();
+        return $this->deploy($server, $request);
     }
 
     public function destroy(Server $server, SshKey $sshKey): RedirectResponse
     {
-        $sshKey->deleteFrom($server);
+        app(DeleteKeyFromServer::class)->delete($server, $sshKey);
 
-        Toast::success('SSH Key is being deleted.');
+        Toast::success('SSH Key has been deleted.');
 
         return back();
     }
 
     public function deploy(Server $server, Request $request): HtmxResponse
     {
-        $this->validate($request, [
-            'key_id' => 'required|exists:ssh_keys,id',
-        ]);
+        app(DeployKeyToServer::class)->deploy(
+            $request->user(),
+            $server,
+            $request->input()
+        );
 
-        /** @var SshKey $sshKey */
-        $sshKey = SshKey::query()->findOrFail($request->input('key_id'));
-
-        $sshKey->deployTo($server);
-
-        Toast::success('SSH Key is being deployed to the server.');
+        Toast::success('SSH Key has been deployed to the server.');
 
         return htmx()->back();
     }

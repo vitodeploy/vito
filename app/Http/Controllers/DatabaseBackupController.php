@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Database\CreateBackup;
+use App\Actions\Database\RestoreBackup;
+use App\Actions\Database\RunBackup;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Backup;
 use App\Models\BackupFile;
-use App\Models\Database;
 use App\Models\Server;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +28,7 @@ class DatabaseBackupController extends Controller
 
     public function run(Server $server, Backup $backup): RedirectResponse
     {
-        $backup->run();
+        app(RunBackup::class)->run($backup);
 
         Toast::success('Backup is running.');
 
@@ -54,14 +55,7 @@ class DatabaseBackupController extends Controller
 
     public function restore(Server $server, Backup $backup, BackupFile $backupFile, Request $request): HtmxResponse
     {
-        $this->validate($request, [
-            'database' => 'required|exists:databases,id',
-        ]);
-
-        /** @var Database $database */
-        $database = Database::query()->findOrFail($request->input('database'));
-
-        $backupFile->restore($database);
+        app(RestoreBackup::class)->restore($backupFile, $request->input());
 
         Toast::success('Backup restored successfully.');
 

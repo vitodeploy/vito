@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\SshKeyStatus;
-use App\Jobs\SshKey\DeleteSshKeyFromServer;
-use App\Jobs\SshKey\DeploySshKeyToServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -46,21 +43,5 @@ class SshKey extends AbstractModel
     public function existsOnServer(Server $server): bool
     {
         return (bool) $this->servers()->where('id', $server->id)->first();
-    }
-
-    public function deployTo(Server $server): void
-    {
-        $server->sshKeys()->attach($this, [
-            'status' => SshKeyStatus::ADDING,
-        ]);
-        dispatch(new DeploySshKeyToServer($server, $this))->onConnection('ssh');
-    }
-
-    public function deleteFrom(Server $server): void
-    {
-        $this->servers()->updateExistingPivot($server->id, [
-            'status' => SshKeyStatus::DELETING,
-        ]);
-        dispatch(new DeleteSshKeyFromServer($server, $this))->onConnection('ssh');
     }
 }

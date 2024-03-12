@@ -3,13 +3,10 @@
 namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
-use App\Jobs\Site\CloneRepository;
-use App\Jobs\Site\ComposerInstall;
-use App\Jobs\Site\CreateVHost;
-use App\Jobs\Site\DeployKey;
-use Illuminate\Support\Facades\Bus;
+use App\Exceptions\SourceControlIsNotConnected;
+use App\SSH\Composer\Composer;
+use App\SSH\Git\Git;
 use Illuminate\Validation\Rule;
-use Throwable;
 
 class PHPSite extends AbstractSiteType
 {
@@ -28,7 +25,7 @@ class PHPSite extends AbstractSiteType
         ];
     }
 
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         return [
             'php_version' => [
@@ -66,37 +63,24 @@ class PHPSite extends AbstractSiteType
         ];
     }
 
+    /**
+     * @throws SourceControlIsNotConnected
+     */
     public function install(): void
     {
-        $chain = [
-            new CreateVHost($this->site),
-            $this->progress(15),
-            new DeployKey($this->site),
-            $this->progress(30),
-            new CloneRepository($this->site),
-            $this->progress(65),
-            function () {
-                $this->site->php()?->restart();
-            },
-        ];
-
+        $this->site->server->webserver()->handler()->createVHost($this->site);
+        $this->progress(15);
+        $this->deployKey();
+        $this->progress(30);
+        app(Git::class)->clone($this->site);
+        $this->progress(65);
+        $this->site->php()?->restart();
         if ($this->site->type_data['composer']) {
-            $chain[] = new ComposerInstall($this->site);
+            app(Composer::class)->installDependencies($this->site);
         }
-
-        $chain[] = function () {
-            $this->site->installationFinished();
-        };
-
-        Bus::chain($chain)
-            ->catch(function (Throwable $e) {
-                $this->site->installationFailed($e);
-            })
-            ->onConnection('ssh-long')
-            ->dispatch();
     }
 
-    public function editValidationRules(array $input): array
+    public function editRules(array $input): array
     {
         return [];
     }

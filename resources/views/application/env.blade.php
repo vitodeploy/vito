@@ -1,5 +1,5 @@
 <div x-data="">
-    <x-modal name="update-env">
+    <x-modal name="update-env" max-width="3xl">
         <form
             id="update-env-form"
             hx-post="{{ route("servers.sites.application.env", [$server, $site]) }}"
@@ -13,17 +13,18 @@
 
             <div
                 class="mt-6"
-                id="env-content"
                 hx-get="{{ route("servers.sites.application.env", [$server, $site]) }}"
                 hx-trigger="load"
-                hx-target="#env"
-                hx-select="#env"
+                hx-target="#env-content"
+                hx-select="#env-content"
                 hx-swap="outerHTML"
             >
                 <x-input-label for="env" :value="__('.env')" />
-                <x-textarea id="env" name="env" rows="10" class="mt-1 block w-full">
-                    {{ old("env", session()->get("env") ?? "Loading...") }}
-                </x-textarea>
+                <div id="env-content">
+                    <x-code-editor id="env" name="env" rows="10" class="mt-1 block w-full">
+                        {{ old("env", session()->get("env") ?? "Loading...") }}
+                    </x-code-editor>
+                </div>
                 @error("env")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror

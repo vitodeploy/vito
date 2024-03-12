@@ -5,17 +5,12 @@ namespace App\Actions\CronJob;
 use App\Enums\CronjobStatus;
 use App\Models\CronJob;
 use App\Models\Server;
-use App\SSHCommands\CronJob\UpdateCronJobsCommand;
 use App\ValidationRules\CronRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 class CreateCronJob
 {
-    /**
-     * @throws Throwable
-     */
     public function create(Server $server, array $input): void
     {
         $this->validate($input);
@@ -29,10 +24,7 @@ class CreateCronJob
         ]);
         $cronJob->save();
 
-        $server->ssh()->exec(
-            new UpdateCronJobsCommand($cronJob->user, CronJob::crontab($server, $cronJob->user)),
-            'update-crontab'
-        );
+        $server->cron()->update($cronJob->user, CronJob::crontab($server, $cronJob->user));
         $cronJob->status = CronjobStatus::READY;
         $cronJob->save();
     }

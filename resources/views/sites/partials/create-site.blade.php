@@ -10,6 +10,8 @@
             hx-trigger="submit"
             hx-select="#create-site-form"
             hx-swap="outerHTML"
+            hx-ext="disable-element"
+            hx-disable-element="#btn-create-site"
             class="space-y-6"
         >
             <div>
@@ -72,7 +74,7 @@
             @include("sites.partials.create." . $type)
         </form>
         <x-slot name="actions">
-            <x-primary-button hx-disable form="create-site-form">
+            <x-primary-button id="btn-create-site" hx-disable form="create-site-form">
                 {{ __("Create") }}
             </x-primary-button>
         </x-slot>

@@ -15,6 +15,11 @@
             this.theme = theme
             localStorage.theme = theme
             this.updateDocument()
+            document.body.dispatchEvent(
+                new CustomEvent('color-scheme-changed', {
+                    detail: { theme: this.isDark() ? 'dark' : 'light' },
+                }),
+            )
         },
         updateDocument() {
             if (this.isDark()) {

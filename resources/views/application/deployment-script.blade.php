@@ -1,9 +1,10 @@
 <div x-data="">
-    <x-modal name="deployment-script">
+    <x-modal name="deployment-script" max-width="3xl">
         <form
             id="deployment-script-form"
             hx-post="{{ route("servers.sites.application.deployment-script", ["server" => $server, "site" => $site]) }}"
             hx-select="#deployment-script-form"
+            hx-target="#deployment-script-form"
             hx-swap="outerHTML"
             class="p-6"
         >
@@ -13,9 +14,9 @@
 
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
-                <x-textarea rows="10" id="script" name="script" class="mt-1 w-full">
+                <x-code-editor id="script" name="script" lang="sh" class="mt-1 w-full">
                     {{ old("script", $site->deployment_script_text) }}
-                </x-textarea>
+                </x-code-editor>
                 @error("script")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror

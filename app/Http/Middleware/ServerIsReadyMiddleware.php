@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\ServerStatus;
+use App\Facades\Toast;
 use App\Models\Server;
 use Closure;
 use Illuminate\Http\Request;
@@ -13,7 +15,9 @@ class ServerIsReadyMiddleware
         /** @var Server $server */
         $server = $request->route('server');
 
-        if (! $server->isReady()) {
+        if ($server->status !== ServerStatus::READY) {
+            Toast::error('Server is not ready yet');
+
             return redirect()->route('servers.show', ['server' => $server]);
         }
 

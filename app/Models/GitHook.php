@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
-use Throwable;
 
 /**
  * @property int $site_id
@@ -64,19 +62,11 @@ class GitHook extends AbstractModel
         );
     }
 
-    /**
-     * @throws Throwable
-     */
     public function destroyHook(): void
     {
         DB::beginTransaction();
-        try {
-            $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
-            $this->delete();
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
+        $this->delete();
+        DB::commit();
     }
 }

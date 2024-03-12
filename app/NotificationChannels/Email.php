@@ -2,9 +2,9 @@
 
 namespace App\NotificationChannels;
 
-use App\Contracts\Notification;
 use App\Mail\NotificationMail;
 use App\Models\NotificationChannel;
+use App\Notifications\NotificationInterface;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -47,7 +47,7 @@ class Email extends AbstractNotificationChannel
         return true;
     }
 
-    public function send(object $notifiable, Notification $notification): void
+    public function send(object $notifiable, NotificationInterface $notification): void
     {
         /** @var NotificationChannel $notifiable */
         $this->notificationChannel = $notifiable;

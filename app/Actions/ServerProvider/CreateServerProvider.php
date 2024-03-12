@@ -2,9 +2,9 @@
 
 namespace App\Actions\ServerProvider;
 
-use App\Contracts\ServerProvider as ServerProviderContract;
 use App\Models\ServerProvider;
 use App\Models\User;
+use App\ServerProviders\ServerProvider as ServerProviderContract;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;

@@ -4,7 +4,6 @@ namespace App\Actions\Server;
 
 use App\Enums\ServerStatus;
 use App\Models\Server;
-use App\SSHCommands\System\RebootCommand;
 use Throwable;
 
 class RebootServer
@@ -12,7 +11,7 @@ class RebootServer
     public function reboot(Server $server): Server
     {
         try {
-            $server->ssh()->exec(new RebootCommand(), 'reboot');
+            $server->os()->reboot();
             $server->status = ServerStatus::DISCONNECTED;
             $server->save();
         } catch (Throwable) {

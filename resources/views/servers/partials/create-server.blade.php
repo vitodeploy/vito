@@ -1,3 +1,8 @@
+@php
+    use App\Enums\Database;
+    use App\Enums\Webserver;
+@endphp
+
 <x-container x-data="">
     <x-card>
         <x-slot name="title">{{ __("Create new Server") }}</x-slot>
@@ -205,7 +210,7 @@
                     <x-input-label for="webserver" value="Webserver" />
                     <x-select-input id="webserver" name="webserver" class="mt-1 w-full">
                         @foreach (config("core.webservers") as $ws)
-                            <option value="{{ $ws }}" @if($ws == old('webserver')) selected @endif>
+                            <option value="{{ $ws }}" @if($ws == old('webserver', Webserver::NGINX)) selected @endif>
                                 {{ $ws }}
                             </option>
                         @endforeach
@@ -218,7 +223,7 @@
                     <x-input-label for="database" value="Database" />
                     <x-select-input id="database" name="database" class="mt-1 w-full">
                         @foreach (config("core.databases") as $db)
-                            <option value="{{ $db }}" @if($db == old('database')) selected @endif>
+                            <option value="{{ $db }}" @if($db == old('database', Database::MYSQL80)) selected @endif>
                                 {{ $db }}
                             </option>
                         @endforeach
@@ -231,7 +236,7 @@
                     <x-input-label for="php" value="PHP" />
                     <x-select-input id="php" name="php" class="mt-1 w-full">
                         @foreach (config("core.php_versions") as $p)
-                            <option value="{{ $p }}" @if($p == old('php')) selected @endif>
+                            <option value="{{ $p }}" @if($p == old('php', '8.2')) selected @endif>
                                 {{ $p }}
                             </option>
                         @endforeach

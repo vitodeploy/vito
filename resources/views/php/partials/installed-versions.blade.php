@@ -1,4 +1,4 @@
-<div x-data="{ version: '', uninstallAction: '' }">
+<div x-data="{ version: '', uninstallAction: '', installedExtensions: [] }">
     <x-card-header>
         <x-slot name="title">{{ __("Installed PHPs") }}</x-slot>
         <x-slot name="description">
@@ -33,7 +33,7 @@
                                         <x-slot name="content">
                                             <x-dropdown-link
                                                 class="cursor-pointer"
-                                                x-on:click="version = '{{ $php->version }}'; $dispatch('open-modal', 'install-extension')"
+                                                x-on:click="version = '{{ $php->version }}'; installedExtensions = {{ json_encode($php->type_data['extensions'] ?? []) }}; $dispatch('open-modal', 'install-extension')"
                                             >
                                                 {{ __("Install Extension") }}
                                             </x-dropdown-link>

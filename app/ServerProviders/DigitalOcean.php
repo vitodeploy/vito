@@ -14,7 +14,7 @@ class DigitalOcean extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.digitalocean.com/v2';
 
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         $rules = [
             'os' => 'required|in:'.implode(',', config('core.operating_systems')),

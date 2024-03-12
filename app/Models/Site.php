@@ -2,27 +2,19 @@
 
 namespace App\Models;
 
-use App\Contracts\SiteType;
 use App\Enums\DeploymentStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
 use App\Exceptions\SourceControlIsNotConnected;
-use App\Facades\Notifier;
 use App\Jobs\Site\Deploy;
-use App\Jobs\Site\UpdateBranch;
-use App\Notifications\SiteInstallationFailed;
-use App\Notifications\SiteInstallationSucceed;
-use App\SSHCommands\Website\GetEnvCommand;
-use Exception;
+use App\SiteTypes\SiteType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Throwable;
 
 /**
  * @property int $server_id
@@ -207,19 +199,6 @@ class Site extends AbstractModel
         return new $typeClass($this);
     }
 
-    public function install(): void
-    {
-        $this->type()->install();
-    }
-
-    public function remove(): void
-    {
-        $this->update([
-            'status' => SiteStatus::DELETING,
-        ]);
-        $this->type()->delete();
-    }
-
     public function php(): ?Service
     {
         if ($this->php_version) {
@@ -339,7 +318,6 @@ class Site extends AbstractModel
 
     /**
      * @throws SourceControlIsNotConnected
-     * @throws Throwable
      */
     public function enableAutoDeployment(): void
     {
@@ -352,26 +330,18 @@ class Site extends AbstractModel
         }
 
         DB::beginTransaction();
-        try {
-            $gitHook = new GitHook([
-                'site_id' => $this->id,
-                'source_control_id' => $this->sourceControl()->id,
-                'secret' => Str::uuid()->toString(),
-                'actions' => ['deploy'],
-                'events' => ['push'],
-            ]);
-            $gitHook->save();
-            $gitHook->deployHook();
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $gitHook = new GitHook([
+            'site_id' => $this->id,
+            'source_control_id' => $this->sourceControl()->id,
+            'secret' => Str::uuid()->toString(),
+            'actions' => ['deploy'],
+            'events' => ['push'],
+        ]);
+        $gitHook->save();
+        $gitHook->deployHook();
+        DB::commit();
     }
 
-    /**
-     * @throws Throwable
-     */
     public function disableAutoDeployment(): void
     {
         $this->gitHook?->destroyHook();
@@ -382,39 +352,9 @@ class Site extends AbstractModel
         return (bool) $this->gitHook;
     }
 
-    public function updateBranch(string $branch): void
-    {
-        dispatch(new UpdateBranch($this, $branch))->onConnection('ssh');
-    }
-
     public function getSshKeyNameAttribute(): string
     {
         return str('site_'.$this->id)->toString();
-    }
-
-    public function installationFinished(): void
-    {
-        $this->update([
-            'status' => SiteStatus::READY,
-            'progress' => 100,
-        ]);
-        Notifier::send($this, new SiteInstallationSucceed($this));
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function installationFailed(Throwable $e): void
-    {
-        $this->update([
-            'status' => SiteStatus::INSTALLATION_FAILED,
-        ]);
-        Notifier::send($this, new SiteInstallationFailed($this));
-        Log::error('install-site-error', [
-            'error' => (string) $e,
-        ]);
-
-        throw $e;
     }
 
     public function hasFeature(string $feature): bool
@@ -429,10 +369,6 @@ class Site extends AbstractModel
 
     public function getEnv(): string
     {
-        return $this->server->ssh()->exec(
-            new GetEnvCommand(
-                $this->domain
-            )
-        );
+        return $this->server->os()->readFile($this->path.'/.env');
     }
 }

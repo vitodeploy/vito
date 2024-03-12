@@ -13,7 +13,7 @@ class Linode extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.linode.com/v4';
 
-    public function createValidationRules($input): array
+    public function createRules($input): array
     {
         $rules = [
             'os' => 'required|in:'.implode(',', config('core.operating_systems')),

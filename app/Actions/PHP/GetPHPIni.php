@@ -12,8 +12,10 @@ class GetPHPIni
     {
         $this->validate($server, $input);
 
+        $php = $server->php($input['version']);
+
         try {
-            return $server->ssh()->exec(new GetPHPIniCommand($input['version']));
+            return $php->handler()->getPHPIni();
         } catch (\Throwable $e) {
             throw ValidationException::withMessages(
                 ['ini' => $e->getMessage()]

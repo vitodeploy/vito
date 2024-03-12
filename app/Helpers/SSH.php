@@ -2,12 +2,12 @@
 
 namespace App\Helpers;
 
-use App\Contracts\SSHCommand;
 use App\Exceptions\SSHAuthenticationError;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHConnectionError;
 use App\Models\Server;
 use App\Models\ServerLog;
+use App\SSHCommands\SSHCommand;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -66,6 +66,7 @@ class SSH
      */
     public function connect(bool $sftp = false): void
     {
+        // If the IP is an IPv6 address, we need to wrap it in square brackets
         $ip = $this->server->ip;
         if (str($ip)->contains(':')) {
             $ip = '['.$ip.']';
@@ -91,7 +92,8 @@ class SSH
     }
 
     /**
-     * @throws Throwable
+     * @throws SSHCommandError
+     * @throws SSHConnectionError
      */
     public function exec(string|array|SSHCommand $commands, string $log = '', ?int $siteId = null): string
     {
@@ -153,6 +155,8 @@ class SSH
             $commandContent = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($commandContent).'"';
         }
 
+        $this->connection->setTimeout(0);
+
         $output = $this->connection->exec($commandContent);
 
         $this->log?->write($output);
@@ -173,5 +177,13 @@ class SSH
             $this->connection->disconnect();
             $this->connection = null;
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function __destruct()
+    {
+        $this->disconnect();
     }
 }

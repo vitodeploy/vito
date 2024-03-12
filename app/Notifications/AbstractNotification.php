@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Contracts\Notification as NotificationInterface;
 use App\Models\NotificationChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

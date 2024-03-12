@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Server\EditServer;
+use App\Actions\Server\RebootServer;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Server;
@@ -40,7 +41,9 @@ class ServerSettingController extends Controller
 
     public function reboot(Server $server): HtmxResponse
     {
-        $server->reboot();
+        app(RebootServer::class)->reboot($server);
+
+        Toast::info('Server is rebooting.');
 
         return htmx()->redirect(back()->getTargetUrl());
     }

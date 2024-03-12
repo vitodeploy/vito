@@ -3,13 +3,19 @@
 namespace App\Actions\Server;
 
 use App\Enums\FirewallRuleStatus;
+use App\Enums\ServerProvider;
+use App\Enums\ServerStatus;
 use App\Exceptions\ServerProviderError;
-use App\Jobs\Installation\ContinueInstallation;
+use App\Facades\Notifier;
 use App\Models\Server;
 use App\Models\User;
+use App\Notifications\ServerInstallationFailed;
+use App\Notifications\ServerInstallationSucceed;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -71,14 +77,8 @@ class CreateServer
             $server->type()->createServices($input);
 
             // install server
-            if ($server->provider == 'custom') {
-                $server->install();
-            } else {
-                $server->progress_step = __('Installation will begin in 3 minutes!');
-                $server->save();
-                dispatch(new ContinueInstallation($server))
-                    ->delay(now()->addMinutes(2));
-            }
+            $this->install($server);
+
             DB::commit();
 
             return $server;
@@ -92,6 +92,38 @@ class CreateServer
             }
             throw $e;
         }
+    }
+
+    private function install(Server $server): void
+    {
+        $bus = Bus::chain([
+            function () use ($server) {
+                if (! $server->provider()->isRunning()) {
+                    sleep(2);
+                }
+                $server->type()->install();
+                $server->update([
+                    'status' => ServerStatus::READY,
+                ]);
+                Notifier::send($server, new ServerInstallationSucceed($server));
+            },
+        ])->catch(function (Throwable $e) use ($server) {
+            $server->update([
+                'status' => ServerStatus::INSTALLATION_FAILED,
+            ]);
+            Notifier::send($server, new ServerInstallationFailed($server));
+            Log::error('server-installation-error', [
+                'error' => (string) $e,
+            ]);
+        });
+
+        if ($server->provider != ServerProvider::CUSTOM) {
+            $server->progress_step = 'waiting-for-provider';
+            $server->save();
+            $bus->delay(now()->addMinutes(3));
+        }
+
+        $bus->onConnection('ssh')->dispatch();
     }
 
     /**
@@ -136,7 +168,7 @@ class CreateServer
      */
     private function validateType(Server $server, array $input): void
     {
-        Validator::make($input, $server->type()->createValidationRules($input))
+        Validator::make($input, $server->type()->createRules($input))
             ->validate();
     }
 
@@ -145,7 +177,7 @@ class CreateServer
      */
     private function validateProvider(Server $server, array $input): void
     {
-        Validator::make($input, $server->provider()->createValidationRules($input))
+        Validator::make($input, $server->provider()->createRules($input))
             ->validate();
     }
 

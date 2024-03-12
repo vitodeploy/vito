@@ -32,7 +32,7 @@ class CreateBackup
         ]);
         $backup->save();
 
-        $backup->run();
+        app(RunBackup::class)->run($backup);
 
         return $backup;
     }

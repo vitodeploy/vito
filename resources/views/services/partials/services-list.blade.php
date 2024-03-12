@@ -7,7 +7,7 @@
         <x-slot name="aside"></x-slot>
     </x-card-header>
 
-    <x-live id="live-services">
+    <x-live id="live-services" interval="5s">
         <div class="space-y-3">
             @foreach ($services as $service)
                 <x-item-card>

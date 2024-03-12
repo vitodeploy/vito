@@ -3,15 +3,12 @@
 namespace App\Models;
 
 use App\Actions\Server\CheckConnection;
-use App\Actions\Server\RebootServer;
-use App\Contracts\ServerType;
-use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
-use App\Facades\Notifier;
 use App\Facades\SSH;
-use App\Jobs\Installation\Upgrade;
-use App\Notifications\ServerInstallationStarted;
-use App\Support\Testing\SSHFake;
+use App\SSH\Cron\Cron;
+use App\SSH\OS\OS;
+use App\SSH\Systemd\Systemd;
+use App\ServerTypes\ServerType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -205,6 +202,22 @@ class Server extends AbstractModel
         return $this->queues()->whereNull('site_id');
     }
 
+    public function sshKeys(): BelongsToMany
+    {
+        return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
+
+    public function getSshUserAttribute(string $value): string
+    {
+        if ($value) {
+            return $value;
+        }
+
+        return config('core.ssh_user');
+    }
+
     public function service($type, $version = null): ?Service
     {
         /* @var Service $service */
@@ -230,6 +243,7 @@ class Server extends AbstractModel
 
         // If no default service found, get the first service with status ready or stopped
         if (! $service) {
+            /** @var Service $service */
             $service = $this->services()
                 ->where('type', $type)
                 ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])
@@ -243,24 +257,7 @@ class Server extends AbstractModel
         return $service;
     }
 
-    public function getServiceByUnit($unit): ?Service
-    {
-        /* @var Service $service */
-        $service = $this->services()
-            ->where('unit', $unit)
-            ->where('is_default', 1)
-            ->first();
-
-        return $service;
-    }
-
-    public function install(): void
-    {
-        $this->type()->install();
-        Notifier::send($this, new ServerInstallationStarted($this));
-    }
-
-    public function ssh(?string $user = null): \App\Helpers\SSH|SSHFake
+    public function ssh(?string $user = null): mixed
     {
         return SSH::init($this, $user);
     }
@@ -283,7 +280,7 @@ class Server extends AbstractModel
         return new $typeClass($this);
     }
 
-    public function provider(): \App\Contracts\ServerProvider
+    public function provider(): \App\ServerProviders\ServerProvider
     {
         $providerClass = config('core.server_providers_class')[$this->provider];
 
@@ -335,22 +332,6 @@ class Server extends AbstractModel
         return $this->service('php', $version);
     }
 
-    public function sshKeys(): BelongsToMany
-    {
-        return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
-            ->withPivot('status')
-            ->withTimestamps();
-    }
-
-    public function getSshUserAttribute(string $value): string
-    {
-        if ($value) {
-            return $value;
-        }
-
-        return config('core.ssh_user');
-    }
-
     public function sshKey(): array
     {
         if (app()->environment() == 'testing') {
@@ -371,44 +352,28 @@ class Server extends AbstractModel
         ];
     }
 
-    public function getServiceUnits(): array
-    {
-        $units = [];
-        $services = $this->services;
-        foreach ($services as $service) {
-            if ($service->unit) {
-                $units[] = $service->unit;
-            }
-        }
-
-        return $units;
-    }
-
     public function checkConnection(): self
     {
         return app(CheckConnection::class)->check($this);
     }
 
-    public function installUpdates(): void
-    {
-        $this->available_updates = 0;
-        $this->security_updates = 0;
-        $this->save();
-        dispatch(new Upgrade($this))->onConnection('ssh');
-    }
-
-    public function reboot(): self
-    {
-        return app(RebootServer::class)->reboot($this);
-    }
-
-    public function getHostnameAttribute(): string
+    public function hostname(): string
     {
         return Str::of($this->name)->slug();
     }
 
-    public function isReady(): bool
+    public function os(): OS
     {
-        return $this->status == ServerStatus::READY;
+        return new OS($this);
+    }
+
+    public function systemd(): Systemd
+    {
+        return new Systemd($this);
+    }
+
+    public function cron(): Cron
+    {
+        return new Cron($this);
     }
 }

@@ -25,8 +25,6 @@ class CreateDatabaseUser
             'host' => isset($input['remote']) && $input['remote'] ? $input['host'] : 'localhost',
             'databases' => $links,
         ]);
-        $databaseUser->save();
-
         $server->database()->handler()->createUser(
             $databaseUser->username,
             $databaseUser->password,
@@ -35,8 +33,8 @@ class CreateDatabaseUser
         $databaseUser->status = DatabaseUserStatus::READY;
         $databaseUser->save();
 
-        if (count($databaseUser->databases) > 0) {
-            app(LinkUser::class)->link($databaseUser, $databaseUser->databases);
+        if (count($links) > 0) {
+            app(LinkUser::class)->link($databaseUser, ['databases' => $links]);
         }
 
         return $databaseUser;

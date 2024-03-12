@@ -8,6 +8,9 @@ use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @deprecated
+ */
 class InstallPHPMyAdmin
 {
     /**

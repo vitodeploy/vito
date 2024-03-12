@@ -21,9 +21,7 @@ class CreateRule
             'port' => $input['port'],
             'source' => $input['source'],
             'mask' => $input['mask'] ?? null,
-            'status' => FirewallRuleStatus::CREATING,
         ]);
-        $rule->save();
 
         $server->firewall()
             ->handler()

@@ -2,8 +2,8 @@
 
 namespace App\Support\Testing;
 
-use App\Contracts\SSHCommand;
 use App\Models\Server;
+use App\SSHCommands\SSHCommand;
 use Illuminate\Support\Traits\ReflectsClosures;
 use PHPUnit\Framework\Assert as PHPUnit;
 

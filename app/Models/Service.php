@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-use App\Contracts\Database;
-use App\Contracts\Firewall;
-use App\Contracts\ProcessManager;
-use App\Contracts\Webserver;
-use App\Enums\ServiceStatus;
-use App\Exceptions\InstallationFailed;
-use App\Jobs\Service\Manage;
-use App\ServiceHandlers\PHP;
+use App\Actions\Service\Manage;
+use App\Exceptions\ServiceInstallationFailed;
+use App\SSH\Services\Firewall\Firewall;
+use App\SSH\Services\PHP\PHP;
+use App\SSH\Services\ProcessManager\ProcessManager;
+use App\SSH\Services\Redis\Redis;
+use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 
 /**
@@ -54,25 +52,19 @@ class Service extends AbstractModel
         return $this->belongsTo(Server::class);
     }
 
-    public function handler(): Database|Firewall|Webserver|PHP|ProcessManager
+    /**
+     * @return PHP
+     * @return Webserver
+     * @return \App\SSH\Services\Database\Database
+     * @return Firewall
+     * @return ProcessManager
+     * @return Redis
+     */
+    public function handler(): mixed
     {
         $handler = config('core.service_handlers')[$this->name];
 
         return new $handler($this);
-    }
-
-    public function installer(): mixed
-    {
-        $installer = config('core.service_installers')[$this->name];
-
-        return new $installer($this);
-    }
-
-    public function uninstaller(): mixed
-    {
-        $uninstaller = config('core.service_uninstallers')[$this->name];
-
-        return new $uninstaller($this);
     }
 
     public function getUnitAttribute($value): ?string
@@ -91,92 +83,28 @@ class Service extends AbstractModel
         return $value;
     }
 
-    public function install(): void
-    {
-        Bus::chain([
-            $this->installer(),
-        ])->onConnection('ssh-long')->dispatch();
-    }
-
     /**
-     * @throws InstallationFailed
+     * @throws ServiceInstallationFailed
      */
     public function validateInstall($result): void
     {
         if (! Str::contains($result, 'Active: active')) {
-            throw new InstallationFailed();
+            throw new ServiceInstallationFailed();
         }
-    }
-
-    public function uninstall(): void
-    {
-        $this->status = ServiceStatus::UNINSTALLING;
-        $this->save();
-        Bus::chain([
-            $this->uninstaller(),
-            function () {
-                $this->delete();
-            },
-        ])->catch(function () {
-            $this->status = ServiceStatus::FAILED;
-            $this->save();
-        })->onConnection('ssh')->dispatch();
     }
 
     public function start(): void
     {
-        $this->action(
-            'start',
-            ServiceStatus::STARTING,
-            ServiceStatus::READY,
-            ServiceStatus::STOPPED,
-            __('Failed to start')
-        );
+        app(Manage::class)->start($this);
     }
 
     public function stop(): void
     {
-        $this->action(
-            'stop',
-            ServiceStatus::STOPPING,
-            ServiceStatus::STOPPED,
-            ServiceStatus::FAILED,
-            __('Failed to stop')
-        );
+        app(Manage::class)->stop($this);
     }
 
     public function restart(): void
     {
-        $this->action(
-            'restart',
-            ServiceStatus::RESTARTING,
-            ServiceStatus::READY,
-            ServiceStatus::FAILED,
-            __('Failed to restart')
-        );
-    }
-
-    public function action(
-        string $type,
-        string $status,
-        string $successStatus,
-        string $failStatus,
-        string $failMessage
-    ): void {
-        $this->status = $status;
-        $this->save();
-        dispatch(new Manage($this, $type, $successStatus, $failStatus, $failMessage))
-            ->onConnection('ssh');
-    }
-
-    public function installedVersions(): array
-    {
-        $versions = [];
-        $services = $this->server->services()->where('type', $this->type)->get(['version']);
-        foreach ($services as $service) {
-            $versions[] = $service->version;
-        }
-
-        return $versions;
+        app(Manage::class)->restart($this);
     }
 }

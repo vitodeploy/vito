@@ -27,6 +27,6 @@ class UpdateDeploymentScript
     {
         Validator::make($input, [
             'script' => 'required',
-        ])->validateWithBag('updateDeploymentScript');
+        ]);
     }
 }

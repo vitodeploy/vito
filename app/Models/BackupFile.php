@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\BackupFileStatus;
-use App\Jobs\Backup\RestoreDatabase;
-use App\Jobs\StorageProvider\DeleteFile;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,11 +53,12 @@ class BackupFile extends AbstractModel
             }
         });
 
-        static::deleted(function (BackupFile $backupFile) {
-            dispatch(new DeleteFile(
-                $backupFile->backup->storage,
-                [$backupFile->storage_path]
-            ));
+        static::deleting(function (BackupFile $backupFile) {
+            $provider = $backupFile->backup->storage->provider();
+            $path = $backupFile->storage_path;
+            dispatch(function () use ($provider, $path) {
+                $provider->delete([$path]);
+            });
         });
     }
 
@@ -77,13 +75,5 @@ class BackupFile extends AbstractModel
     public function getStoragePathAttribute(): string
     {
         return '/'.$this->name.'.zip';
-    }
-
-    public function restore(Database $database): void
-    {
-        $this->status = BackupFileStatus::RESTORING;
-        $this->restored_to = $database->name;
-        $this->save();
-        dispatch(new RestoreDatabase($this, $database))->onConnection('ssh');
     }
 }

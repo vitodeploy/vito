@@ -17,13 +17,11 @@
             <x-select-input name="extension" class="mt-1 w-full">
                 <option value="" selected>{{ __("Select") }}</option>
                 @foreach (config("core.php_extensions") as $extension)
-                    <option value="{{ $extension }}" {{-- @if(in_array($extension, $installedExtensions)) disabled @endif --}}>
+                    <option
+                        value="{{ $extension }}"
+                        x-bind:disabled="installedExtensions.includes('{{ $extension }}')"
+                    >
                         {{ $extension }}
-                        {{--
-                            @if (in_array($extension, $installedExtensions))
-                            ({{ __("Installed") }})
-                            @endif
-                        --}}
                     </option>
                 @endforeach
             </x-select-input>

@@ -2,8 +2,8 @@
 
 namespace App\NotificationChannels;
 
-use App\Contracts\Notification;
 use App\Models\NotificationChannel;
+use App\Notifications\NotificationInterface;
 use Illuminate\Support\Facades\Http;
 
 class Discord extends AbstractNotificationChannel
@@ -59,7 +59,7 @@ class Discord extends AbstractNotificationChannel
         return $connect->ok();
     }
 
-    public function send(object $notifiable, Notification $notification): void
+    public function send(object $notifiable, NotificationInterface $notification): void
     {
         /** @var NotificationChannel $notifiable */
         $this->notificationChannel = $notifiable;
