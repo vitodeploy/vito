@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Site\Deploy;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Facades\Notifier;
 use App\Models\GitHook;
@@ -26,7 +27,7 @@ class GitHookController extends Controller
         foreach ($gitHook->actions as $action) {
             if ($action == 'deploy') {
                 try {
-                    $gitHook->site->deploy();
+                    app(Deploy::class)->run($gitHook->site);
                 } catch (SourceControlIsNotConnected) {
                     Notifier::send($gitHook->sourceControl, new SourceControlDisconnected($gitHook->sourceControl));
                 } catch (Throwable $e) {

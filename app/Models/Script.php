@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Jobs\Script\ExecuteOn;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,10 +34,5 @@ class Script extends AbstractModel
     public function executions(): HasMany
     {
         return $this->hasMany(ScriptExecution::class, 'script_id');
-    }
-
-    public function executeOn(Server $server, string $user): void
-    {
-        dispatch(new ExecuteOn($this, $server, $user))->onConnection('ssh');
     }
 }

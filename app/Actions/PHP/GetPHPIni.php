@@ -3,7 +3,6 @@
 namespace App\Actions\PHP;
 
 use App\Models\Server;
-use App\SSHCommands\PHP\GetPHPIniCommand;
 use Illuminate\Validation\ValidationException;
 
 class GetPHPIni

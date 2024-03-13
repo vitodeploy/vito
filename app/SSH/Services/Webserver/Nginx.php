@@ -44,7 +44,7 @@ class Nginx extends AbstractWebserver
             $this->getScript('nginx/update-vhost.sh', [
                 'domain' => $site->domain,
                 'path' => $site->path,
-                'vhost' => $this->generateVhost($site),
+                'vhost' => $this->generateVhost($site, $noSSL),
             ]),
             'update-vhost',
             $site->id
@@ -129,6 +129,8 @@ class Nginx extends AbstractWebserver
         );
 
         $this->updateVHost($ssl->site, true);
+
+        $this->service->server->systemd()->restart('nginx');
     }
 
     protected function generateVhost(Site $site, bool $noSSL = false): string

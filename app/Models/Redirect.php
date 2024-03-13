@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Jobs\Redirect\AddToServer;
-use App\Jobs\Redirect\DeleteFromServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -34,17 +32,5 @@ class Redirect extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
-    }
-
-    public function addToServer(): void
-    {
-        dispatch(new AddToServer($this))->onConnection('ssh');
-    }
-
-    public function deleteFromServer(): void
-    {
-        $this->status = 'deleting';
-        $this->save();
-        dispatch(new DeleteFromServer($this))->onConnection('ssh');
     }
 }

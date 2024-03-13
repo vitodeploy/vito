@@ -2,11 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\QueueStatus;
-use App\Jobs\Queue\Deploy;
-use App\Jobs\Queue\GetLogs;
-use App\Jobs\Queue\Manage;
-use App\Jobs\Queue\Remove;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -81,63 +76,5 @@ class Queue extends AbstractModel
     public function getLogFileAttribute(): string
     {
         return $this->log_directory.'/'.$this->id.'.log';
-    }
-
-    public function deploy(): void
-    {
-        dispatch(new Deploy($this))->onConnection('ssh');
-    }
-
-    private function action(string $type, string $status, string $successStatus, string $failStatus, string $failMessage): void
-    {
-        $this->status = $status;
-        $this->save();
-        dispatch(new Manage($this, $type, $successStatus, $failStatus, $failMessage))
-            ->onConnection('ssh');
-    }
-
-    public function start(): void
-    {
-        $this->action(
-            'start',
-            QueueStatus::STARTING,
-            QueueStatus::RUNNING,
-            QueueStatus::FAILED,
-            __('Failed to start')
-        );
-    }
-
-    public function stop(): void
-    {
-        $this->action(
-            'stop',
-            QueueStatus::STOPPING,
-            QueueStatus::STOPPED,
-            QueueStatus::FAILED,
-            __('Failed to stop')
-        );
-    }
-
-    public function restart(): void
-    {
-        $this->action(
-            'restart',
-            QueueStatus::RESTARTING,
-            QueueStatus::RUNNING,
-            QueueStatus::FAILED,
-            __('Failed to restart')
-        );
-    }
-
-    public function remove(): void
-    {
-        $this->status = QueueStatus::DELETING;
-        $this->save();
-        dispatch(new Remove($this))->onConnection('ssh');
-    }
-
-    public function getLogs(): void
-    {
-        dispatch(new GetLogs($this))->onConnection('ssh');
     }
 }

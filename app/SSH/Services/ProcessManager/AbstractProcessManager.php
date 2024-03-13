@@ -3,10 +3,9 @@
 namespace App\SSH\Services\ProcessManager;
 
 use App\Models\Service;
-use App\SSH\Services\ProcessManager\ProcessManager;
 use App\SSH\Services\ServiceInterface;
 
-abstract class AbstractProcessManager implements ServiceInterface, ProcessManager
+abstract class AbstractProcessManager implements ProcessManager, ServiceInterface
 {
     protected Service $service;
 

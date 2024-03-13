@@ -4,9 +4,8 @@ namespace App\SSH\Services\Firewall;
 
 use App\Models\Service;
 use App\SSH\Services\ServiceInterface;
-use App\SSH\Services\Firewall\Firewall;
 
-abstract class AbstractFirewall implements ServiceInterface, Firewall
+abstract class AbstractFirewall implements Firewall, ServiceInterface
 {
     protected Service $service;
 

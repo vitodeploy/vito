@@ -3,7 +3,6 @@
 namespace App\SSH\Services\Firewall;
 
 use App\SSH\HasScripts;
-use App\SSH\Services\Firewall\AbstractFirewall;
 
 class Ufw extends AbstractFirewall
 {

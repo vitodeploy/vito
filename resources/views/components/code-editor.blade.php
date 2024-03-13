@@ -40,6 +40,6 @@
         },
     }"
 >
-    <div id="{{ $id }}" class="min-h-[400px] w-full rounded-md border border-gray-300 dark:border-gray-800"></div>
+    <div id="{{ $id }}" class="min-h-[400px] w-full rounded-md border border-gray-200 dark:border-gray-700"></div>
     <textarea id="text-{{ $id }}" name="{{ $name }}" class="hidden">{{ $slot }}</textarea>
 </div>

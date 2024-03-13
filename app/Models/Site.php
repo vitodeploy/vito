@@ -2,11 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\DeploymentStatus;
 use App\Enums\SiteStatus;
-use App\Enums\SslStatus;
 use App\Exceptions\SourceControlIsNotConnected;
-use App\Jobs\Site\Deploy;
 use App\SiteTypes\SiteType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -227,32 +224,6 @@ class Site extends AbstractModel
         return $script->content;
     }
 
-    /**
-     * @throws SourceControlIsNotConnected
-     */
-    public function deploy(): Deployment
-    {
-        if ($this->sourceControl()) {
-            $this->sourceControl()->getRepo($this->repository);
-        }
-
-        $deployment = new Deployment([
-            'site_id' => $this->id,
-            'deployment_script_id' => $this->deploymentScript->id,
-            'status' => DeploymentStatus::DEPLOYING,
-        ]);
-        $lastCommit = $this->sourceControl()->provider()->getLastCommit($this->repository, $this->branch);
-        if ($lastCommit) {
-            $deployment->commit_id = $lastCommit['commit_id'];
-            $deployment->commit_data = $lastCommit['commit_data'];
-        }
-        $deployment->save();
-
-        dispatch(new Deploy($deployment, $this->path))->onConnection('ssh');
-
-        return $deployment;
-    }
-
     public function getEnvAttribute(): string
     {
         $typeData = $this->type_data;
@@ -270,32 +241,6 @@ class Site extends AbstractModel
         return $this->hasOne(Ssl::class)
             ->where('expires_at', '>=', now())
             ->orderByDesc('id');
-    }
-
-    public function createFreeSsl(): void
-    {
-        $ssl = new Ssl([
-            'site_id' => $this->id,
-            'type' => 'letsencrypt',
-            'expires_at' => now()->addMonths(3),
-            'status' => SslStatus::CREATING,
-        ]);
-        $ssl->save();
-        $ssl->deploy();
-    }
-
-    public function createCustomSsl(string $certificate, string $pk): void
-    {
-        $ssl = new Ssl([
-            'site_id' => $this->id,
-            'type' => 'custom',
-            'certificate' => $certificate,
-            'pk' => $pk,
-            'expires_at' => '',
-            'status' => SslStatus::CREATING,
-        ]);
-        $ssl->save();
-        $ssl->deploy();
     }
 
     public function getUrlAttribute(): string

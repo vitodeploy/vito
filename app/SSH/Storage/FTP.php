@@ -3,7 +3,6 @@
 namespace App\SSH\Storage;
 
 use App\SSH\HasScripts;
-use App\SSH\Storage\AbstractStorage;
 
 class FTP extends AbstractStorage
 {

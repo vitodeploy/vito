@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Site\Deploy;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
@@ -19,7 +20,7 @@ class ApplicationController extends Controller
     public function deploy(Server $server, Site $site): HtmxResponse
     {
         try {
-            $site->deploy();
+            app(Deploy::class)->run($site);
 
             Toast::success('Deployment started!');
         } catch (SourceControlIsNotConnected $e) {
@@ -33,7 +34,7 @@ class ApplicationController extends Controller
 
     public function showDeploymentLog(Server $server, Site $site, Deployment $deployment): RedirectResponse
     {
-        return back()->with('content', $deployment->log->content);
+        return back()->with('content', $deployment->log?->content);
     }
 
     public function updateDeploymentScript(Server $server, Site $site, Request $request): RedirectResponse

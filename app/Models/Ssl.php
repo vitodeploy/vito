@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Enums\SslStatus;
-use App\Jobs\Ssl\Deploy;
-use App\Jobs\Ssl\Remove;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -101,11 +99,6 @@ class Ssl extends AbstractModel
         }
 
         return '';
-    }
-
-    public function deploy(): void
-    {
-        dispatch(new Deploy($this))->onConnection('ssh');
     }
 
     public function remove(): void

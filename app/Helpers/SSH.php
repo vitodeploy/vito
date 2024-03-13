@@ -7,7 +7,6 @@ use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHConnectionError;
 use App\Models\Server;
 use App\Models\ServerLog;
-use App\SSHCommands\SSHCommand;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -51,7 +50,7 @@ class SSH
         return $this;
     }
 
-    public function setLog(string $logType, $siteId = null): void
+    public function setLog(string $logType, $siteId = null): self
     {
         $this->log = $this->server->logs()->create([
             'site_id' => $siteId,
@@ -59,6 +58,8 @@ class SSH
             'type' => $logType,
             'disk' => config('core.logs_disk'),
         ]);
+
+        return $this;
     }
 
     /**
@@ -95,7 +96,7 @@ class SSH
      * @throws SSHCommandError
      * @throws SSHConnectionError
      */
-    public function exec(string|array|SSHCommand $commands, string $log = '', ?int $siteId = null): string
+    public function exec(string|array $commands, string $log = '', ?int $siteId = null): string
     {
         if ($log) {
             $this->setLog($log, $siteId);
@@ -143,21 +144,15 @@ class SSH
     /**
      * @throws Exception
      */
-    protected function executeCommand(string|SSHCommand $command): string
+    protected function executeCommand(string $command): string
     {
-        if ($command instanceof SSHCommand) {
-            $commandContent = $command->content();
-        } else {
-            $commandContent = $command;
-        }
-
         if ($this->asUser) {
-            $commandContent = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($commandContent).'"';
+            $command = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($command).'"';
         }
 
         $this->connection->setTimeout(0);
 
-        $output = $this->connection->exec($commandContent);
+        $output = $this->connection->exec($command);
 
         $this->log?->write($output);
 

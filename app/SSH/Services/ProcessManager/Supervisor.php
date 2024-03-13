@@ -3,14 +3,6 @@
 namespace App\SSH\Services\ProcessManager;
 
 use App\SSH\HasScripts;
-use App\SSH\Services\ProcessManager\AbstractProcessManager;
-use App\SSHCommands\Supervisor\CreateWorkerCommand;
-use App\SSHCommands\Supervisor\DeleteWorkerCommand;
-use App\SSHCommands\Supervisor\RestartWorkerCommand;
-use App\SSHCommands\Supervisor\StartWorkerCommand;
-use App\SSHCommands\Supervisor\StopWorkerCommand;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use Throwable;
 
 class Supervisor extends AbstractProcessManager
@@ -39,9 +31,9 @@ class Supervisor extends AbstractProcessManager
         ?int $siteId = null
     ): void {
         $this->service->server->ssh($user)->exec(
-            new CreateWorkerCommand(
-                $id,
-                $this->generateConfigFile(
+            $this->getScript('supervisor/create-worker.sh', [
+                'id' => $id,
+                'config' => $this->generateConfigFile(
                     $id,
                     $command,
                     $user,
@@ -49,8 +41,8 @@ class Supervisor extends AbstractProcessManager
                     $autoRestart,
                     $numprocs,
                     $logFile
-                )
-            ),
+                ),
+            ]),
             'create-worker',
             $siteId
         );
@@ -62,7 +54,9 @@ class Supervisor extends AbstractProcessManager
     public function delete(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            new DeleteWorkerCommand($id),
+            $this->getScript('supervisor/delete-worker.sh', [
+                'id' => $id,
+            ]),
             'delete-worker',
             $siteId
         );
@@ -74,7 +68,9 @@ class Supervisor extends AbstractProcessManager
     public function restart(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            new RestartWorkerCommand($id),
+            $this->getScript('supervisor/restart-worker.sh', [
+                'id' => $id,
+            ]),
             'restart-worker',
             $siteId
         );
@@ -86,7 +82,9 @@ class Supervisor extends AbstractProcessManager
     public function stop(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            new StopWorkerCommand($id),
+            $this->getScript('supervisor/stop-worker.sh', [
+                'id' => $id,
+            ]),
             'stop-worker',
             $siteId
         );
@@ -98,7 +96,9 @@ class Supervisor extends AbstractProcessManager
     public function start(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            new StartWorkerCommand($id),
+            $this->getScript('supervisor/start-worker.sh', [
+                'id' => $id,
+            ]),
             'start-worker',
             $siteId
         );
@@ -123,14 +123,14 @@ class Supervisor extends AbstractProcessManager
         int $numprocs,
         string $logFile
     ): string {
-        $config = File::get(resource_path('commands/supervisor/worker.conf'));
-        $config = Str::replace('__name__', (string) $id, $config);
-        $config = Str::replace('__command__', $command, $config);
-        $config = Str::replace('__user__', $user, $config);
-        $config = Str::replace('__auto_start__', var_export($autoStart, true), $config);
-        $config = Str::replace('__auto_restart__', var_export($autoRestart, true), $config);
-        $config = Str::replace('__numprocs__', (string) $numprocs, $config);
-
-        return Str::replace('__log_file__', $logFile, $config);
+        return $this->getScript('supervisor/worker.conf', [
+            'name' => (string) $id,
+            'command' => $command,
+            'user' => $user,
+            'auto_start' => var_export($autoStart, true),
+            'auto_restart' => var_export($autoRestart, true),
+            'numprocs' => (string) $numprocs,
+            'log_file' => $logFile,
+        ]);
     }
 }

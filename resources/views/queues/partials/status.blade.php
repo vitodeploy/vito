@@ -26,10 +26,6 @@
     <x-status status="danger">{{ $status }}</x-status>
 @endif
 
-@if ($status == \App\Enums\QueueStatus::FAILED)
-    <x-status status="danger">{{ $status }}</x-status>
-@endif
-
 @if ($status == \App\Enums\QueueStatus::DELETING)
     <x-status status="danger">{{ $status }}</x-status>
 @endif

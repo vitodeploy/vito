@@ -3,6 +3,7 @@
 namespace App\SSH\OS;
 
 use App\Models\Server;
+use App\Models\ServerLog;
 use App\SSH\HasScripts;
 
 class OS
@@ -118,5 +119,20 @@ class OS
                 'path' => $path,
             ])
         );
+    }
+
+    public function runScript(string $path, string $script, ?int $siteId = null): ServerLog
+    {
+        $ssh = $this->server->ssh();
+        $ssh->exec(
+            $this->getScript('run-script.sh', [
+                'path' => $path,
+                'script' => $script,
+            ]),
+            'run-script',
+            $siteId
+        );
+
+        return $ssh->log;
     }
 }

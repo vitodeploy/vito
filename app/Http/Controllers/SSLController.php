@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\SSL\CreateSSL;
+use App\Actions\SSL\DeleteSSL;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Server;
@@ -34,9 +35,9 @@ class SSLController extends Controller
 
     public function destroy(Server $server, Site $site, Ssl $ssl): RedirectResponse
     {
-        $ssl->remove();
+        app(DeleteSSL::class)->delete($ssl);
 
-        Toast::success('SSL certificate is being deleted.');
+        Toast::success('SSL certificate has been deleted.');
 
         return back();
     }
