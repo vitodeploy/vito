@@ -27,7 +27,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         config()->set('queue.connections.ssh.driver', 'sync');
-        config()->set('filesystems.disks.key-pairs-local.root', storage_path('app/key-pairs-test'));
+        config()->set('filesystems.disks.key-pairs.root', storage_path('app/key-pairs-test'));
 
         $this->user = User::factory()->create();
 
@@ -78,13 +78,12 @@ abstract class TestCase extends BaseTestCase
 
     private function setupKeys(): void
     {
-        config()->set('core.ssh_public_key_name', 'ssh-public.key');
-        config()->set('core.ssh_private_key_name', 'ssh-private.pem');
-        if (! File::exists(storage_path(config('core.ssh_public_key_name')))) {
-            File::put(storage_path(config('core.ssh_public_key_name')), 'public_key');
-        }
-        if (! File::exists(storage_path(config('core.ssh_private_key_name')))) {
-            File::put(storage_path(config('core.ssh_private_key_name')), 'private_key');
+        config()->set('core.ssh_public_key_name', 'test-key.pub');
+        config()->set('core.ssh_private_key_name', 'test-key');
+        $publicKeypath = storage_path(config('core.ssh_public_key_name'));
+        $privateKeyPath = storage_path(config('core.ssh_private_key_name'));
+        if (! File::exists($publicKeypath) || ! File::exists($privateKeyPath)) {
+            generate_key_pair(storage_path('test-key'));
         }
     }
 }
