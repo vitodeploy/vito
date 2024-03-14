@@ -9,7 +9,7 @@
 
     <x-slot name="header">
         <h2 class="text-lg font-semibold">
-            <a href="{{ $site->activeSsl ? "https://" : "http://" . $site->domain }}" target="_blank">
+            <a href="{{ $site->getUrl() }}" target="_blank">
                 {{ $site->domain }}
             </a>
         </h2>

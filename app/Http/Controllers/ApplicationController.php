@@ -6,6 +6,7 @@ use App\Actions\Site\Deploy;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
+use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
@@ -27,6 +28,8 @@ class ApplicationController extends Controller
             Toast::error($e->getMessage());
 
             return htmx()->redirect(route('source-controls'));
+        } catch (DeploymentScriptIsEmptyException) {
+            Toast::error('Deployment script is empty!');
         }
 
         return htmx()->back();
@@ -34,7 +37,7 @@ class ApplicationController extends Controller
 
     public function showDeploymentLog(Server $server, Site $site, Deployment $deployment): RedirectResponse
     {
-        return back()->with('content', $deployment->log?->content);
+        return back()->with('content', $deployment->log?->getContent());
     }
 
     public function updateDeploymentScript(Server $server, Site $site, Request $request): RedirectResponse
@@ -69,9 +72,9 @@ class ApplicationController extends Controller
         return back();
     }
 
-    public function enableAutoDeployment(Server $server, Site $site): RedirectResponse
+    public function enableAutoDeployment(Server $server, Site $site): HtmxResponse
     {
-        if (! $site->auto_deployment) {
+        if (! $site->isAutoDeployment()) {
             try {
                 $site->enableAutoDeployment();
 
@@ -83,12 +86,12 @@ class ApplicationController extends Controller
             }
         }
 
-        return back();
+        return htmx()->back();
     }
 
-    public function disableAutoDeployment(Server $server, Site $site): RedirectResponse
+    public function disableAutoDeployment(Server $server, Site $site): HtmxResponse
     {
-        if ($site->auto_deployment) {
+        if ($site->isAutoDeployment()) {
             try {
                 $site->disableAutoDeployment();
 
@@ -100,6 +103,6 @@ class ApplicationController extends Controller
             }
         }
 
-        return back();
+        return htmx()->back();
     }
 }

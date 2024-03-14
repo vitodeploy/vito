@@ -18,6 +18,8 @@ interface ServerProvider
 
     public function regions(): array;
 
+    public function generateKeyPair(): void;
+
     public function create(): void;
 
     public function isRunning(): bool;

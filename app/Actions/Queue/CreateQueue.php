@@ -38,7 +38,7 @@ class CreateQueue
                 $queue->auto_start,
                 $queue->auto_restart,
                 $queue->numprocs,
-                $queue->log_file,
+                $queue->getLogFile(),
                 $queue->site_id
             );
             $queue->status = QueueStatus::RUNNING;

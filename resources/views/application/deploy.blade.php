@@ -1,5 +1,5 @@
 <div>
-    @if ($site->deploymentScript?->content)
+    @if ($site->deploymentScript)
         <form
             id="deploy"
             hx-post="{{ route("servers.sites.application.deploy", ["server" => $server, "site" => $site]) }}"

@@ -1,5 +1,5 @@
 <div>
-    @if ($site->deploymentScript?->content)
+    @if ($site->deploymentScript)
         <x-dropdown>
             <x-slot name="trigger">
                 <x-secondary-button>
@@ -13,9 +13,10 @@
                         hx-post="{{ route('servers.sites.application.auto-deployment', ['server' => $server, 'site' => $site]) }}"
                         hx-swap="outerHTML"
                         hx-target="#auto-deployment"
+                        hx-select="#auto-deployment"
                     >
                         {{ __("Enable") }}
-                        @if ($site->auto_deployment)
+                        @if ($site->isAutoDeployment())
                             <x-heroicon-o-check class="ml-1 h-5 w-5 text-green-600" />
                         @endif
                     </x-dropdown-link>
@@ -26,7 +27,7 @@
                         hx-target="#auto-deployment"
                     >
                         {{ __("Disable") }}
-                        @if (! $site->auto_deployment)
+                        @if (! $site->isAutoDeployment())
                             <x-heroicon-o-check class="ml-1 h-5 w-5 text-green-600" />
                         @endif
                     </x-dropdown-link>

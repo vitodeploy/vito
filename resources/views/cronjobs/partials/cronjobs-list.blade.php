@@ -18,7 +18,7 @@
                                 {{ $cronjob->command }}
                             </span>
                             <span class="text-sm text-gray-400">
-                                {{ $cronjob->frequency_label }}
+                                {{ $cronjob->frequencyLabel() }}
                             </span>
                         </div>
                         <div class="flex items-center">

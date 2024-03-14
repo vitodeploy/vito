@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\SiteStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\SiteTypes\SiteType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -20,7 +18,6 @@ use Illuminate\Support\Str;
  * @property string $domain
  * @property array $aliases
  * @property string $web_directory
- * @property string $web_directory_path
  * @property string $path
  * @property string $php_version
  * @property string $source_control
@@ -31,8 +28,6 @@ use Illuminate\Support\Str;
  * @property string $status
  * @property int $port
  * @property int $progress
- * @property bool $auto_deployment
- * @property string $url
  * @property Server $server
  * @property ServerLog[] $logs
  * @property Deployment[] $deployments
@@ -42,10 +37,6 @@ use Illuminate\Support\Str;
  * @property Queue[] $queues
  * @property Ssl[] $ssls
  * @property ?Ssl $activeSsl
- * @property string $full_repository_url
- * @property string $aliases_string
- * @property string $deployment_script_text
- * @property string $env
  * @property string $ssh_key_name
  */
 class Site extends AbstractModel
@@ -76,14 +67,8 @@ class Site extends AbstractModel
         'type_data' => 'json',
         'port' => 'integer',
         'progress' => 'integer',
-        'auto_deployment' => 'boolean',
         'aliases' => 'array',
         'source_control_id' => 'integer',
-    ];
-
-    protected $appends = [
-        'url',
-        'auto_deployment',
     ];
 
     public static function boot(): void
@@ -175,12 +160,12 @@ class Site extends AbstractModel
     /**
      * @throws SourceControlIsNotConnected
      */
-    public function getFullRepositoryUrlAttribute()
+    public function getFullRepositoryUrl()
     {
-        return $this->sourceControl()->provider()->fullRepoUrl($this->repository, $this->ssh_key_name);
+        return $this->sourceControl()->provider()->fullRepoUrl($this->repository, $this->getSshKeyName());
     }
 
-    public function getAliasesStringAttribute(): string
+    public function getAliasesString(): string
     {
         if (count($this->aliases) > 0) {
             return implode(' ', $this->aliases);
@@ -209,31 +194,7 @@ class Site extends AbstractModel
     {
         $this->php_version = $version;
         $this->server->webserver()->handler()->changePHPVersion($this, $version);
-    }
-
-    public function getDeploymentScriptTextAttribute(): string
-    {
-        /* @var DeploymentScript $script */
-        $script = $this->deploymentScript()->firstOrCreate([
-            'site_id' => $this->id,
-        ], [
-            'site_id' => $this->id,
-            'name' => 'default',
-        ]);
-
-        return $script->content;
-    }
-
-    public function getEnvAttribute(): string
-    {
-        $typeData = $this->type_data;
-        if (! isset($typeData['env'])) {
-            $typeData['env'] = '';
-            $this->type_data = $typeData;
-            $this->save();
-        }
-
-        return $typeData['env'];
+        $this->save();
     }
 
     public function activeSsl(): HasOne
@@ -243,7 +204,7 @@ class Site extends AbstractModel
             ->orderByDesc('id');
     }
 
-    public function getUrlAttribute(): string
+    public function getUrl(): string
     {
         if ($this->activeSsl) {
             return 'https://'.$this->domain;
@@ -252,7 +213,7 @@ class Site extends AbstractModel
         return 'http://'.$this->domain;
     }
 
-    public function getWebDirectoryPathAttribute(): string
+    public function getWebDirectoryPath(): string
     {
         if ($this->web_directory) {
             return $this->path.'/'.$this->web_directory;
@@ -270,11 +231,10 @@ class Site extends AbstractModel
             return;
         }
 
-        if (! $this->sourceControl()) {
+        if (! $this->sourceControl()?->getRepo($this->repository)) {
             throw new SourceControlIsNotConnected($this->source_control);
         }
 
-        DB::beginTransaction();
         $gitHook = new GitHook([
             'site_id' => $this->id,
             'source_control_id' => $this->sourceControl()->id,
@@ -284,20 +244,26 @@ class Site extends AbstractModel
         ]);
         $gitHook->save();
         $gitHook->deployHook();
-        DB::commit();
     }
 
+    /**
+     * @throws SourceControlIsNotConnected
+     */
     public function disableAutoDeployment(): void
     {
+        if (! $this->sourceControl()?->getRepo($this->repository)) {
+            throw new SourceControlIsNotConnected($this->source_control);
+        }
+
         $this->gitHook?->destroyHook();
     }
 
-    public function getAutoDeploymentAttribute(): bool
+    public function isAutoDeployment(): bool
     {
         return (bool) $this->gitHook;
     }
 
-    public function getSshKeyNameAttribute(): string
+    public function getSshKeyName(): string
     {
         return str('site_'.$this->id)->toString();
     }
@@ -305,11 +271,6 @@ class Site extends AbstractModel
     public function hasFeature(string $feature): bool
     {
         return in_array($feature, $this->type()->supportedFeatures());
-    }
-
-    public function isReady(): bool
-    {
-        return $this->status === SiteStatus::READY;
     }
 
     public function getEnv(): string

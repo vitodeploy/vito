@@ -6,7 +6,6 @@ use App\Enums\NotificationChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Http;
-use JsonException;
 use Tests\TestCase;
 
 class NotificationChannelsTest extends TestCase
@@ -14,9 +13,6 @@ class NotificationChannelsTest extends TestCase
     use RefreshDatabase;
     use WithFaker;
 
-    /**
-     * @throws JsonException
-     */
     public function test_add_email_channel(): void
     {
         $this->actingAs($this->user);
@@ -25,7 +21,7 @@ class NotificationChannelsTest extends TestCase
             'provider' => NotificationChannel::EMAIL,
             'email' => 'email@example.com',
             'label' => 'Email',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -36,9 +32,6 @@ class NotificationChannelsTest extends TestCase
         $this->assertTrue($channel->connected);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_add_slack_channel(): void
     {
         $this->actingAs($this->user);
@@ -49,7 +42,7 @@ class NotificationChannelsTest extends TestCase
             'provider' => NotificationChannel::SLACK,
             'webhook_url' => 'https://hooks.slack.com/services/123/token',
             'label' => 'Slack',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -60,9 +53,6 @@ class NotificationChannelsTest extends TestCase
         $this->assertTrue($channel->connected);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_add_discord_channel(): void
     {
         $this->actingAs($this->user);
@@ -73,7 +63,7 @@ class NotificationChannelsTest extends TestCase
             'provider' => NotificationChannel::DISCORD,
             'webhook_url' => 'https://discord.com/api/webhooks/123/token',
             'label' => 'Discord',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -87,9 +77,7 @@ class NotificationChannelsTest extends TestCase
     /*
      * @TODO fix json comparison
      */
-    /**
-     * @throws JsonException
-     */
+
     public function test_add_telegram_channel(): void
     {
         $this->actingAs($this->user);
@@ -101,7 +89,7 @@ class NotificationChannelsTest extends TestCase
             'bot_token' => 'token',
             'chat_id' => '123',
             'label' => 'Telegram',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -123,9 +111,6 @@ class NotificationChannelsTest extends TestCase
             ->assertSee($channel->provider);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_delete_channel(): void
     {
         $this->actingAs($this->user);
@@ -133,7 +118,7 @@ class NotificationChannelsTest extends TestCase
         $channel = \App\Models\NotificationChannel::factory()->create();
 
         $this->delete(route('notification-channels.delete', $channel->id))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('notification_channels', [
             'id' => $channel->id,

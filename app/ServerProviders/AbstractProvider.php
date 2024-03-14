@@ -3,6 +3,7 @@
 namespace App\ServerProviders;
 
 use App\Models\Server;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 
 abstract class AbstractProvider implements ServerProvider
@@ -14,9 +15,9 @@ abstract class AbstractProvider implements ServerProvider
         $this->server = $server;
     }
 
-    protected function generateKeyPair(): void
+    public function generateKeyPair(): void
     {
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
         generate_key_pair($storageDisk->path((string) $this->server->id));
     }

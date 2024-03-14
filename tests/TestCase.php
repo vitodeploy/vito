@@ -26,6 +26,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        config()->set('queue.connections.ssh.driver', 'sync');
+        config()->set('filesystems.disks.key-pairs-local.root', storage_path('app/key-pairs-test'));
+
         $this->user = User::factory()->create();
 
         $this->setupServer();
@@ -40,6 +43,11 @@ abstract class TestCase extends BaseTestCase
         $this->server = Server::factory()->create([
             'user_id' => $this->user->id,
         ]);
+
+        $keys = $this->server->sshKey();
+        if (! File::exists($keys['public_key_path']) || ! File::exists($keys['private_key_path'])) {
+            $this->server->provider()->generateKeyPair();
+        }
 
         $this->server->type()->createServices([
             'webserver' => Webserver::NGINX,
@@ -57,9 +65,14 @@ abstract class TestCase extends BaseTestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->github()->create();
         $this->site = Site::factory()->create([
+            'domain' => 'vito.test',
+            'aliases' => ['www.vito.test'],
             'server_id' => $this->server->id,
             'source_control_id' => $sourceControl->id,
             'repository' => 'organization/repository',
+            'path' => '/home/vito/vito.test',
+            'web_directory' => 'public',
+            'branch' => 'main',
         ]);
     }
 

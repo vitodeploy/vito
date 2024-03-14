@@ -13,13 +13,14 @@ class Git
     {
         $site->server->ssh()->exec(
             $this->getScript('clone.sh', [
-                'host' => str($site->full_repository_url)->after('@')->before('-'),
-                'repo' => $site->full_repository_url,
+                'host' => str($site->getFullRepositoryUrl())->after('@')->before('-'),
+                'repo' => $site->getFullRepositoryUrl(),
                 'path' => $site->path,
                 'branch' => $site->branch,
-                'key' => $site->ssh_key_name,
+                'key' => $site->getSshKeyName(),
             ]),
-            'clone-repository'
+            'clone-repository',
+            $site->id
         );
     }
 
@@ -30,7 +31,8 @@ class Git
                 'path' => $site->path,
                 'branch' => $site->branch,
             ]),
-            'checkout-branch'
+            'checkout-branch',
+            $site->id
         );
     }
 }

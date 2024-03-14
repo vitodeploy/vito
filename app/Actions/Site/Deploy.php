@@ -3,6 +3,7 @@
 namespace App\Actions\Site;
 
 use App\Enums\DeploymentStatus;
+use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Deployment;
 use App\Models\Site;
@@ -11,11 +12,16 @@ class Deploy
 {
     /**
      * @throws SourceControlIsNotConnected
+     * @throws DeploymentScriptIsEmptyException
      */
     public function run(Site $site): Deployment
     {
         if ($site->sourceControl()) {
             $site->sourceControl()->getRepo($site->repository);
+        }
+
+        if (! $site->deploymentScript?->content) {
+            throw new DeploymentScriptIsEmptyException();
         }
 
         $deployment = new Deployment([

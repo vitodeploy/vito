@@ -46,8 +46,8 @@
                         {{ __("Select") }}
                     </option>
                     <option value="root" @if($user === 'root') selected @endif>root</option>
-                    <option value="{{ $server->ssh_user }}" @if($user === $server->ssh_user) selected @endif>
-                        {{ $server->ssh_user }}
+                    <option value="{{ $server->getSshUser() }}" @if($user === $server->getSshUser()) selected @endif>
+                        {{ $server->getSshUser() }}
                     </option>
                 </x-select-input>
                 @error("user")

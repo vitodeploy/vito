@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $site_id
@@ -50,11 +48,6 @@ class GitHook extends AbstractModel
         return $this->belongsTo(SourceControl::class);
     }
 
-    public function scopeHasEvent(Builder $query, string $event): Builder
-    {
-        return $query->where('events', 'like', "%\"{$event}\"%");
-    }
-
     public function deployHook(): void
     {
         $this->update(
@@ -64,9 +57,7 @@ class GitHook extends AbstractModel
 
     public function destroyHook(): void
     {
-        DB::beginTransaction();
         $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
         $this->delete();
-        DB::commit();
     }
 }

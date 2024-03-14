@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Actions\Service\Manage;
 use App\Exceptions\ServiceInstallationFailed;
-use App\SSH\Services\Firewall\Firewall;
-use App\SSH\Services\PHP\PHP;
-use App\SSH\Services\ProcessManager\ProcessManager;
-use App\SSH\Services\Redis\Redis;
-use App\SSH\Services\Webserver\Webserver;
+use App\SSH\Services\Database\Database as DatabaseHandler;
+use App\SSH\Services\Firewall\Firewall as FirewallHandler;
+use App\SSH\Services\PHP\PHP as PHPHandler;
+use App\SSH\Services\ProcessManager\ProcessManager as ProcessManagerHandler;
+use App\SSH\Services\Redis\Redis as RedisHandler;
+use App\SSH\Services\Webserver\Webserver as WebserverHandler;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -47,40 +48,25 @@ class Service extends AbstractModel
         'is_default' => 'boolean',
     ];
 
+    public static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (Service $service) {
+            $service->unit = config('core.service_units')[$service->name][$service->server->os][$service->version];
+        });
+    }
+
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
-    /**
-     * @return PHP
-     * @return Webserver
-     * @return \App\SSH\Services\Database\Database
-     * @return Firewall
-     * @return ProcessManager
-     * @return Redis
-     */
-    public function handler(): mixed
-    {
+    public function handler(
+    ): PHPHandler|WebserverHandler|DatabaseHandler|FirewallHandler|ProcessManagerHandler|RedisHandler {
         $handler = config('core.service_handlers')[$this->name];
 
         return new $handler($this);
-    }
-
-    public function getUnitAttribute($value): ?string
-    {
-        if ($value) {
-            return $value;
-        }
-        if (isset(config('core.service_units')[$this->name])) {
-            $value = config('core.service_units')[$this->name][$this->server->os][$this->version];
-            if ($value) {
-                $this->fill(['unit' => $value]);
-                $this->save();
-            }
-        }
-
-        return $value;
     }
 
     /**

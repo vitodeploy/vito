@@ -37,10 +37,6 @@ class Deployment extends AbstractModel
         'commit_data' => 'json',
     ];
 
-    protected $appends = [
-        'commit_id_short',
-    ];
-
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
@@ -54,14 +50,5 @@ class Deployment extends AbstractModel
     public function log(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class, 'log_id');
-    }
-
-    public function getCommitIdShortAttribute(): string
-    {
-        if ($this->commit_id) {
-            return substr($this->commit_id, 0, 7);
-        }
-
-        return '';
     }
 }

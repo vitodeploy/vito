@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\SslStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,9 +16,6 @@ use Illuminate\Support\Str;
  * @property Carbon $expires_at
  * @property string $status
  * @property Site $site
- * @property string $certs_directory_path
- * @property string $certificate_path
- * @property string $pk_path
  * @property string $ca_path
  */
 class Ssl extends AbstractModel
@@ -49,7 +45,7 @@ class Ssl extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
-    public function getCertsDirectoryPathAttribute(): ?string
+    public function getCertsDirectoryPath(): ?string
     {
         if ($this->type == 'letsencrypt') {
             return '/etc/letsencrypt/live/'.$this->site->domain;
@@ -62,50 +58,43 @@ class Ssl extends AbstractModel
         return '';
     }
 
-    public function getCertificatePathAttribute(): ?string
+    public function getCertificatePath(): ?string
     {
         if ($this->type == 'letsencrypt') {
             return $this->certificate;
         }
 
         if ($this->type == 'custom') {
-            return $this->certs_directory_path.'/cert.pem';
+            return $this->getCertsDirectoryPath().'/cert.pem';
         }
 
         return '';
     }
 
-    public function getPkPathAttribute(): ?string
+    public function getPkPath(): ?string
     {
         if ($this->type == 'letsencrypt') {
             return $this->pk;
         }
 
         if ($this->type == 'custom') {
-            return $this->certs_directory_path.'/privkey.pem';
+            return $this->getCertsDirectoryPath().'/privkey.pem';
         }
 
         return '';
     }
 
-    public function getCaPathAttribute(): ?string
+    public function getCaPath(): ?string
     {
         if ($this->type == 'letsencrypt') {
             return $this->ca;
         }
 
         if ($this->type == 'custom') {
-            return $this->certs_directory_path.'/fullchain.pem';
+            return $this->getCertsDirectoryPath().'/fullchain.pem';
         }
 
         return '';
-    }
-
-    public function remove(): void
-    {
-        $this->status = SslStatus::DELETING;
-        $this->save();
-        dispatch(new Remove($this))->onConnection('ssh');
     }
 
     public function validateSetup(string $result): bool
@@ -115,8 +104,8 @@ class Ssl extends AbstractModel
         }
 
         if ($this->type == 'letsencrypt') {
-            $this->certificate = $this->certs_directory_path.'/fullchain.pem';
-            $this->pk = $this->certs_directory_path.'/privkey.pem';
+            $this->certificate = $this->getCertsDirectoryPath().'/fullchain.pem';
+            $this->pk = $this->getCertsDirectoryPath().'/privkey.pem';
             $this->save();
         }
 

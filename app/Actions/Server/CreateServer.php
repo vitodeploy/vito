@@ -88,7 +88,7 @@ class CreateServer
             if ($e instanceof ServerProviderError) {
                 throw ValidationException::withMessages([
                     'provider' => __('Provider Error: ').$e->getMessage(),
-                ])->errorBag('createServer');
+                ]);
             }
             throw $e;
         }

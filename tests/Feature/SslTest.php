@@ -4,11 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\SslStatus;
 use App\Enums\SslType;
-use App\Jobs\Ssl\Deploy;
-use App\Jobs\Ssl\Remove;
+use App\Facades\SSH;
 use App\Models\Ssl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class SslTest extends TestCase
@@ -45,7 +43,7 @@ class SslTest extends TestCase
 
     public function test_create_ssl()
     {
-        Bus::fake();
+        SSH::fake('Successfully received certificate');
 
         $this->actingAs($this->user);
 
@@ -59,15 +57,13 @@ class SslTest extends TestCase
         $this->assertDatabaseHas('ssls', [
             'site_id' => $this->site->id,
             'type' => SslType::LETSENCRYPT,
-            'status' => SslStatus::CREATING,
+            'status' => SslStatus::CREATED,
         ]);
-
-        Bus::assertDispatched(Deploy::class);
     }
 
     public function test_delete_ssl()
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -81,11 +77,8 @@ class SslTest extends TestCase
             'ssl' => $ssl,
         ]))->assertRedirect();
 
-        $this->assertDatabaseHas('ssls', [
+        $this->assertDatabaseMissing('ssls', [
             'id' => $ssl->id,
-            'status' => SslStatus::DELETING,
         ]);
-
-        Bus::assertDispatched(Remove::class);
     }
 }

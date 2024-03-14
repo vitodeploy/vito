@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Facades\SSH;
-use App\Jobs\Backup\RunBackup;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class DatabaseBackupTest extends TestCase
@@ -18,11 +18,10 @@ class DatabaseBackupTest extends TestCase
 
     public function test_create_backup(): void
     {
+        SSH::fake();
+        Http::fake();
+
         $this->actingAs($this->user);
-
-        Bus::fake();
-
-        SSH::fake()->outputShouldBe('test');
 
         $database = Database::factory()->create([
             'server_id' => $this->server,
@@ -38,12 +37,14 @@ class DatabaseBackupTest extends TestCase
             'backup_storage' => $storage->id,
             'backup_interval' => '0 * * * *',
             'backup_keep' => '10',
-        ])->assertSessionHasNoErrors();
-
-        Bus::assertDispatched(RunBackup::class);
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
             'status' => BackupStatus::RUNNING,
+        ]);
+
+        $this->assertDatabaseHas('backup_files', [
+            'status' => BackupFileStatus::CREATED,
         ]);
     }
 
@@ -70,7 +71,7 @@ class DatabaseBackupTest extends TestCase
             ->assertSee($backup->database->name);
     }
 
-    public function test_delete_database(): void
+    public function test_delete_backup(): void
     {
         $this->actingAs($this->user);
 
@@ -90,7 +91,7 @@ class DatabaseBackupTest extends TestCase
         ]);
 
         $this->delete(route('servers.databases.backups.destroy', [$this->server, $backup]))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('backups', [
             'id' => $backup->id,

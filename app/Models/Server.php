@@ -209,10 +209,10 @@ class Server extends AbstractModel
             ->withTimestamps();
     }
 
-    public function getSshUserAttribute(string $value): string
+    public function getSshUser(): string
     {
-        if ($value) {
-            return $value;
+        if ($this->ssh_user) {
+            return $this->ssh_user;
         }
 
         return config('core.ssh_user');
@@ -334,14 +334,6 @@ class Server extends AbstractModel
 
     public function sshKey(): array
     {
-        if (app()->environment() == 'testing') {
-            return [
-                'public_key' => 'public',
-                'public_key_path' => '/path',
-                'private_key_path' => '/path',
-            ];
-        }
-
         /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
 

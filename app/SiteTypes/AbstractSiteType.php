@@ -26,8 +26,8 @@ abstract class AbstractSiteType implements SiteType
     protected function deployKey(): void
     {
         $os = $this->site->server->os();
-        $os->generateSSHKey($this->site->ssh_key_name);
-        $this->site->ssh_key = $os->readSSHKey($this->site->ssh_key_name);
+        $os->generateSSHKey($this->site->getSshKeyName());
+        $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName());
         $this->site->save();
         $this->site->sourceControl()->provider()->deployKey(
             $this->site->domain.'-key-'.$this->site->id,

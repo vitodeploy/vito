@@ -16,8 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $redirect_stderr
  * @property string $stdout_logfile
  * @property string $status
- * @property string $log_directory
- * @property string $log_file
  * @property Server $server
  * @property Site $site
  */
@@ -68,13 +66,13 @@ class Queue extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
-    public function getLogDirectoryAttribute(): string
+    public function getLogDirectory(): string
     {
         return '/home/'.$this->user.'/.logs/workers';
     }
 
-    public function getLogFileAttribute(): string
+    public function getLogFile(): string
     {
-        return $this->log_directory.'/'.$this->id.'.log';
+        return $this->getLogDirectory().'/'.$this->id.'.log';
     }
 }

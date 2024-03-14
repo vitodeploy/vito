@@ -5,16 +5,12 @@ namespace Tests\Feature;
 use App\Enums\StorageProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use JsonException;
 use Tests\TestCase;
 
 class StorageProvidersTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * @throws JsonException
-     */
     public function test_connect_dropbox(): void
     {
         $this->actingAs($this->user);
@@ -25,7 +21,7 @@ class StorageProvidersTest extends TestCase
             'provider' => StorageProvider::DROPBOX,
             'name' => 'profile',
             'token' => 'token',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('storage_providers', [
             'provider' => StorageProvider::DROPBOX,
@@ -46,9 +42,6 @@ class StorageProvidersTest extends TestCase
             ->assertSee($provider->profile);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_delete_provider(): void
     {
         $this->actingAs($this->user);
@@ -58,7 +51,7 @@ class StorageProvidersTest extends TestCase
         ]);
 
         $this->delete(route('storage-providers.delete', $provider->id))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('storage_providers', [
             'id' => $provider->id,

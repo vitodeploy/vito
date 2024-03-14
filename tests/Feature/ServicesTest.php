@@ -3,12 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\ServiceStatus;
-use App\Jobs\Installation\InstallPHPMyAdmin as InstallationInstallPHPMyAdmin;
-use App\Jobs\Installation\UninstallPHPMyAdmin;
-use App\Jobs\Service\Manage;
-use App\Models\Service;
+use App\Facades\SSH;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class ServicesTest extends TestCase
@@ -36,14 +32,16 @@ class ServicesTest extends TestCase
 
         $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Bus::fake();
+        SSH::fake('Active: active');
 
         $this->get(route('servers.services.restart', [
             'server' => $this->server,
             'service' => $service,
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(Manage::class);
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::READY, $service->status);
     }
 
     /**
@@ -53,16 +51,18 @@ class ServicesTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $service = $this->server->services()->where('name', $name)->first();
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Bus::fake();
+        SSH::fake('Active: inactive');
 
         $this->get(route('servers.services.stop', [
             'server' => $this->server,
             'service' => $service,
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(Manage::class);
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::STOPPED, $service->status);
     }
 
     /**
@@ -72,52 +72,81 @@ class ServicesTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $service = $this->server->services()->where('name', $name)->first();
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        $service->status = ServiceStatus::STOPPED;
-        $service->save();
-
-        Bus::fake();
+        SSH::fake('Active: active');
 
         $this->get(route('servers.services.start', [
             'server' => $this->server,
             'service' => $service,
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(Manage::class);
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::READY, $service->status);
     }
 
-    public function test_install_phpmyadmin(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_start_service(string $name): void
     {
-        $this->markTestSkipped('PHPMyAdmin is depricated');
+        $this->actingAs($this->user);
 
-        Bus::fake();
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Bus::assertDispatched(InstallationInstallPHPMyAdmin::class);
+        SSH::fake('Active: inactive');
+
+        $this->get(route('servers.services.start', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
     }
 
-    public function test_uninstall_phpmyadmin(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_restart_service(string $name): void
     {
-        $this->markTestSkipped('PHPMyAdmin is depricated');
+        $this->actingAs($this->user);
 
-        $service = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'type' => 'phpmyadmin',
-            'type_data' => [
-                'allowed_ip' => '0.0.0.0',
-                'port' => '5433',
-                'php' => '8.1',
-            ],
-            'name' => 'phpmyadmin',
-            'version' => '5.1.2',
-            'status' => ServiceStatus::READY,
-            'is_default' => 1,
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        ]);
+        SSH::fake('Active: inactive');
 
-        Bus::fake();
+        $this->get(route('servers.services.restart', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(UninstallPHPMyAdmin::class);
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_stop_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+
+        SSH::fake('Active: active');
+
+        $this->get(route('servers.services.stop', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
     }
 
     public static function data(): array

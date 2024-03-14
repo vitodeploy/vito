@@ -33,7 +33,7 @@ class CreateSite
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'aliases' => isset($input['alias']) ? [$input['alias']] : [],
-                'path' => '/home/'.$server->ssh_user.'/'.$input['domain'],
+                'path' => '/home/'.$server->getSshUser().'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
             ]);
 

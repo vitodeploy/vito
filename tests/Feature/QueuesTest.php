@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\QueueStatus;
+use App\Facades\SSH;
 use App\Models\Queue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -32,6 +33,8 @@ class QueuesTest extends TestCase
 
     public function test_delete_queue()
     {
+        SSH::fake();
+
         $this->actingAs($this->user);
 
         $queue = Queue::factory()->create([
@@ -47,14 +50,15 @@ class QueuesTest extends TestCase
             ])
         )->assertRedirect();
 
-        $this->assertDatabaseHas('queues', [
+        $this->assertDatabaseMissing('queues', [
             'id' => $queue->id,
-            'status' => QueueStatus::DELETING,
         ]);
     }
 
     public function test_create_queue()
     {
+        SSH::fake();
+
         $this->actingAs($this->user);
 
         $this->post(
@@ -79,7 +83,7 @@ class QueuesTest extends TestCase
             'auto_start' => 1,
             'auto_restart' => 1,
             'numprocs' => 1,
-            'status' => QueueStatus::CREATING,
+            'status' => QueueStatus::RUNNING,
         ]);
     }
 }

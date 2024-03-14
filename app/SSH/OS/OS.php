@@ -65,12 +65,12 @@ class OS
     {
         info($this->getScript('delete-ssh-key.sh', [
             'key' => $key,
-            'user' => $this->server->ssh_user,
+            'user' => $this->server->getSshUser(),
         ]));
         $this->server->ssh()->exec(
             $this->getScript('delete-ssh-key.sh', [
                 'key' => $key,
-                'user' => $this->server->ssh_user,
+                'user' => $this->server->getSshUser(),
             ]),
             'delete-ssh-key'
         );

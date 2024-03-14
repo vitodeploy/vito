@@ -15,7 +15,7 @@
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
                 <x-code-editor id="script" name="script" lang="sh" class="mt-1 w-full">
-                    {{ old("script", $site->deployment_script_text) }}
+                    {{ old("script", $site->deploymentScript?->content) }}
                 </x-code-editor>
                 @error("script")
                     <x-input-error class="mt-2" :messages="$message" />

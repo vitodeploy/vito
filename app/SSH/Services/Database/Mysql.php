@@ -92,8 +92,8 @@ class Mysql extends AbstractDatabase
 
         // upload to storage
         $upload = $backupFile->backup->storage->provider()->ssh($this->server)->upload(
-            $backupFile->path,
-            $backupFile->storage_path,
+            $backupFile->path(),
+            $backupFile->storagePath(),
         );
 
         // cleanup
@@ -107,7 +107,7 @@ class Mysql extends AbstractDatabase
     {
         // download
         $backupFile->backup->storage->provider()->ssh($this->server)->download(
-            $backupFile->storage_path,
+            $backupFile->storagePath(),
             $backupFile->name.'.zip',
         );
 

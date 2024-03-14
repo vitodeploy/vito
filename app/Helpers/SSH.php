@@ -22,7 +22,7 @@ class SSH
 
     public ?ServerLog $log;
 
-    protected SSH2|SFTP|null $connection;
+    protected SSH2|SFTP|null $connection = null;
 
     protected ?string $user;
 
@@ -38,8 +38,8 @@ class SSH
         $this->log = null;
         $this->asUser = null;
         $this->server = $server->refresh();
-        $this->user = $server->ssh_user;
-        if ($asUser && $asUser != $server->ssh_user) {
+        $this->user = $server->getSshUser();
+        if ($asUser && $asUser != $server->getSshUser()) {
             $this->user = $asUser;
             $this->asUser = $asUser;
         }

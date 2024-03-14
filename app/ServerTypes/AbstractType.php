@@ -47,7 +47,7 @@ abstract class AbstractType implements ServerType
         $this->server->ssh_user = config('core.ssh_user');
         $this->server->save();
         $this->server->refresh();
-        $this->server->public_key = $this->server->os()->getPublicKey($this->server->ssh_user);
+        $this->server->public_key = $this->server->os()->getPublicKey($this->server->getSshUser());
         $this->server->save();
     }
 

@@ -14,8 +14,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $restored_to
  * @property Carbon $restored_at
  * @property Backup $backup
- * @property string $path
- * @property string $storage_path
  */
 class BackupFile extends AbstractModel
 {
@@ -55,7 +53,7 @@ class BackupFile extends AbstractModel
 
         static::deleting(function (BackupFile $backupFile) {
             $provider = $backupFile->backup->storage->provider();
-            $path = $backupFile->storage_path;
+            $path = $backupFile->storagePath();
             dispatch(function () use ($provider, $path) {
                 $provider->delete([$path]);
             });
@@ -67,12 +65,12 @@ class BackupFile extends AbstractModel
         return $this->belongsTo(Backup::class);
     }
 
-    public function getPathAttribute(): string
+    public function path(): string
     {
-        return '/home/'.$this->backup->server->ssh_user.'/'.$this->name.'.zip';
+        return '/home/'.$this->backup->server->getSshUser().'/'.$this->name.'.zip';
     }
 
-    public function getStoragePathAttribute(): string
+    public function storagePath(): string
     {
         return '/'.$this->name.'.zip';
     }

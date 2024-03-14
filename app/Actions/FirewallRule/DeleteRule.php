@@ -17,7 +17,7 @@ class DeleteRule
             ->handler()
             ->removeRule(
                 $rule->type,
-                $rule->real_protocol,
+                $rule->getRealProtocol(),
                 $rule->port,
                 $rule->source,
                 $rule->mask

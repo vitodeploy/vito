@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Jobs\Site\UpdateBranch;
+use App\Enums\DeploymentStatus;
+use App\Facades\SSH;
 use App\Models\GitHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -47,9 +47,64 @@ class ApplicationTest extends TestCase
         ]);
     }
 
+    public function test_deploy(): void
+    {
+        SSH::fake();
+        Http::fake([
+            'github.com/*' => Http::response([
+                'sha' => '123',
+                'commit' => [
+                    'message' => 'test commit message',
+                    'name' => 'test commit name',
+                    'email' => 'test@example.com',
+                    'url' => 'https://github.com/commit-url',
+                ],
+            ], 200),
+        ]);
+
+        $this->site->deploymentScript->update([
+            'content' => 'git pull',
+        ]);
+
+        $this->actingAs($this->user);
+
+        $response = $this->post(route('servers.sites.application.deploy', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $response->assertSessionHas('toast.type', 'success');
+        $response->assertSessionHas('toast.message', 'Deployment started!');
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $this->site->id,
+            'status' => DeploymentStatus::FINISHED,
+        ]);
+
+        SSH::assertExecutedContains('cd /home/vito/'.$this->site->domain);
+        SSH::assertExecutedContains('git pull');
+
+        $this->get(route('servers.sites.show', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertOk()
+            ->assertSee('test commit message');
+
+        $deployment = $this->site->deployments()->first();
+
+        $this->get(route('servers.sites.application.deployment.log', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'deployment' => $deployment,
+        ]))
+            ->assertRedirect()
+            ->assertSessionHas('content', 'fake output');
+    }
+
     public function test_change_branch()
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -58,9 +113,14 @@ class ApplicationTest extends TestCase
             'site' => $this->site,
         ]), [
             'branch' => 'master',
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('toast.type', 'success');
 
-        Bus::assertDispatched(UpdateBranch::class);
+        $this->site->refresh();
+        $this->assertEquals('master', $this->site->branch);
+
+        SSH::assertExecutedContains('git checkout -f master');
     }
 
     public function test_enable_auto_deployment()
@@ -68,7 +128,7 @@ class ApplicationTest extends TestCase
         Http::fake([
             'github.com/*' => Http::response([
                 'id' => '123',
-            ], 201),
+            ], 200),
         ]);
 
         $this->actingAs($this->user);
@@ -80,18 +140,21 @@ class ApplicationTest extends TestCase
 
         $this->site->refresh();
 
-        $this->assertTrue($this->site->auto_deployment);
+        $this->assertTrue($this->site->isAutoDeployment());
     }
 
     public function test_disable_auto_deployment()
     {
         Http::fake([
-            'github.com/*' => Http::response([], 204),
+            'api.github.com/repos/organization/repository' => Http::response([
+                'id' => '123',
+            ], 200),
+            'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 204),
         ]);
 
         $this->actingAs($this->user);
 
-        GitHook::factory()->create([
+        $hook = GitHook::factory()->create([
             'site_id' => $this->site->id,
             'source_control_id' => $this->site->source_control_id,
         ]);
@@ -103,6 +166,22 @@ class ApplicationTest extends TestCase
 
         $this->site->refresh();
 
-        $this->assertFalse($this->site->auto_deployment);
+        $this->assertFalse($this->site->isAutoDeployment());
+    }
+
+    public function test_update_env_file(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.sites.application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_ENV=production',
+        ])->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('echo "APP_ENV=production" | tee /home/vito/'.$this->site->domain.'/.env');
     }
 }

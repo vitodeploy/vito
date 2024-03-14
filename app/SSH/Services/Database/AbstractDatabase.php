@@ -2,7 +2,6 @@
 
 namespace App\SSH\Services\Database;
 
-use App\Exceptions\ServiceInstallationFailed;
 use App\Models\Server;
 use App\Models\Service;
 use App\SSH\HasScripts;
@@ -22,9 +21,6 @@ abstract class AbstractDatabase implements Database, ServiceInterface
         $this->server = $service->server;
     }
 
-    /**
-     * @throws ServiceInstallationFailed
-     */
     public function install(): void
     {
         $version = $this->service->version;

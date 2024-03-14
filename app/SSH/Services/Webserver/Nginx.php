@@ -18,7 +18,7 @@ class Nginx extends AbstractWebserver
         $this->service->server->ssh()->exec(
             $this->getScript('nginx/install-nginx.sh', [
                 'config' => $this->getScript('nginx/nginx.conf', [
-                    'user' => $this->service->server->ssh_user,
+                    'user' => $this->service->server->getSshUser(),
                 ]),
             ]),
             'install-nginx'
@@ -94,15 +94,15 @@ class Nginx extends AbstractWebserver
         $command = $this->getScript('nginx/create-letsencrypt-ssl.sh', [
             'email' => $ssl->site->server->creator->email,
             'domain' => $ssl->site->domain,
-            'web_directory' => $ssl->site->web_directory_path,
+            'web_directory' => $ssl->site->getWebDirectoryPath(),
         ]);
         if ($ssl->type == 'custom') {
             $command = $this->getScript('nginx/create-custom-ssl.sh', [
-                'path' => $ssl->certs_directory_path,
+                'path' => $ssl->getCertsDirectoryPath(),
                 'certificate' => $ssl->certificate,
                 'pk' => $ssl->pk,
-                'certificate_path' => $ssl->certificate_path,
-                'pk_path' => $ssl->pk_path,
+                'certificate_path' => $ssl->getCertificatePath(),
+                'pk_path' => $ssl->getPkPath(),
             ]);
         }
         $result = $this->service->server->ssh()->exec(
@@ -123,7 +123,7 @@ class Nginx extends AbstractWebserver
     public function removeSSL(Ssl $ssl): void
     {
         $this->service->server->ssh()->exec(
-            'sudo rm -rf '.$ssl->certs_directory_path.'*',
+            'sudo rm -rf '.$ssl->getCertsDirectoryPath().'*',
             'remove-ssl',
             $ssl->site_id
         );
@@ -158,13 +158,13 @@ class Nginx extends AbstractWebserver
         }
 
         $vhost = Str::replace('__domain__', $site->domain, $vhost);
-        $vhost = Str::replace('__aliases__', $site->aliases_string, $vhost);
+        $vhost = Str::replace('__aliases__', $site->getAliasesString(), $vhost);
         $vhost = Str::replace('__path__', $site->path, $vhost);
         $vhost = Str::replace('__web_directory__', $site->web_directory, $vhost);
 
         if ($ssl) {
-            $vhost = Str::replace('__certificate__', $ssl->certificate_path, $vhost);
-            $vhost = Str::replace('__private_key__', $ssl->pk_path, $vhost);
+            $vhost = Str::replace('__certificate__', $ssl->getCertificatePath(), $vhost);
+            $vhost = Str::replace('__private_key__', $ssl->getPkPath(), $vhost);
         }
 
         if ($site->php_version) {

@@ -68,7 +68,7 @@ class Wordpress extends AbstractSiteType
     public function data(array $input): array
     {
         return [
-            'url' => $this->site->url,
+            'url' => $this->site->getUrl(),
             'title' => $input['title'],
             'username' => $input['username'],
             'email' => $input['email'],

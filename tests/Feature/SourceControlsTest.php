@@ -33,7 +33,7 @@ class SourceControlsTest extends TestCase
             $input['url'] = $customUrl;
         }
         $this->post(route('source-controls.connect'), $input)
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('source_controls', [
             'provider' => $provider,
@@ -57,7 +57,7 @@ class SourceControlsTest extends TestCase
         ]);
 
         $this->delete(route('source-controls.delete', $sourceControl->id))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('source_controls', [
             'id' => $sourceControl->id,

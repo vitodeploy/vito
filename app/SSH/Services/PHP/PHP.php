@@ -25,9 +25,19 @@ class PHP implements ServiceInterface
         $server->ssh()->exec(
             $this->getScript('install-php.sh', [
                 'version' => $this->service->version,
-                'user' => $server->ssh_user,
+                'user' => $server->getSshUser(),
             ]),
             'install-php-'.$this->service->version
+        );
+    }
+
+    public function uninstall(): void
+    {
+        $this->service->server->ssh()->exec(
+            $this->getScript('uninstall-php.sh', [
+                'version' => $this->service->version,
+            ]),
+            'uninstall-php-'.$this->service->version
         );
     }
 

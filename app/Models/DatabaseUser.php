@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $host
  * @property string $status
  * @property Server $server
- * @property string $full_user
  */
 class DatabaseUser extends AbstractModel
 {
@@ -42,15 +40,5 @@ class DatabaseUser extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
-    }
-
-    public function scopeHasDatabase(Builder $query, string $databaseName): Builder
-    {
-        return $query->where('databases', 'like', "%\"$databaseName\"%");
-    }
-
-    public function getFullUserAttribute(): string
-    {
-        return $this->username.'@'.$this->host;
     }
 }

@@ -15,7 +15,8 @@ class Composer
             $this->getScript('composer-install.sh', [
                 'path' => $site->path,
             ]),
-            'composer-install'
+            'composer-install',
+            $site->id
         );
     }
 }

@@ -21,7 +21,7 @@ class DatabaseUserTest extends TestCase
         $this->post(route('servers.databases.users.store', $this->server), [
             'username' => 'user',
             'password' => 'password',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('database_users', [
             'username' => 'user',
@@ -52,7 +52,7 @@ class DatabaseUserTest extends TestCase
         ]);
 
         $this->delete(route('servers.databases.users.destroy', [$this->server, $databaseUser]))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('database_users', [
             'id' => $databaseUser->id,

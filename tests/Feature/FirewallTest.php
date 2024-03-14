@@ -24,7 +24,7 @@ class FirewallTest extends TestCase
             'port' => '1234',
             'source' => '0.0.0.0',
             'mask' => '0',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('firewall_rules', [
             'port' => '1234',
@@ -58,7 +58,7 @@ class FirewallTest extends TestCase
         $this->delete(route('servers.firewall.destroy', [
             'server' => $this->server,
             'firewallRule' => $rule,
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('firewall_rules', [
             'id' => $rule->id,
