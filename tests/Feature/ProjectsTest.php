@@ -4,23 +4,19 @@ namespace Tests\Feature;
 
 use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use JsonException;
 use Tests\TestCase;
 
 class ProjectsTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * @throws JsonException
-     */
     public function test_create_project(): void
     {
         $this->actingAs($this->user);
 
         $this->post(route('projects.create'), [
             'name' => 'test',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('projects', [
             'name' => 'test',
@@ -39,9 +35,6 @@ class ProjectsTest extends TestCase
             ->assertSee($project->name);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_delete_project(): void
     {
         $this->actingAs($this->user);
@@ -51,16 +44,13 @@ class ProjectsTest extends TestCase
         ]);
 
         $this->delete(route('projects.delete', $project))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('projects', [
             'id' => $project->id,
         ]);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_edit_project(): void
     {
         $this->actingAs($this->user);
@@ -71,7 +61,7 @@ class ProjectsTest extends TestCase
 
         $this->post(route('projects.update', $project), [
             'name' => 'new-name',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,

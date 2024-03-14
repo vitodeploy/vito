@@ -2,12 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\BackupFileStatus;
-use App\Jobs\Backup\RunBackup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 /**
  * @property string $type
@@ -70,17 +67,5 @@ class Backup extends AbstractModel
     public function files(): HasMany
     {
         return $this->hasMany(BackupFile::class, 'backup_id');
-    }
-
-    public function run(): void
-    {
-        $file = new BackupFile([
-            'backup_id' => $this->id,
-            'name' => Str::of($this->database->name)->slug().'-'.now()->format('YmdHis'),
-            'status' => BackupFileStatus::CREATING,
-        ]);
-        $file->save();
-
-        dispatch(new RunBackup($file))->onConnection('ssh');
     }
 }

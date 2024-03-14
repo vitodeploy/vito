@@ -22,8 +22,6 @@ class CreateDatabase
             'server_id' => $server->id,
             'name' => $input['name'],
         ]);
-        $database->save();
-
         $server->database()->handler()->create($database->name);
         $database->status = DatabaseStatus::READY;
         $database->save();

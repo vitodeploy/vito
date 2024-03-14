@@ -16,11 +16,11 @@ class DatabaseTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        SSH::fake()->outputShouldBe('test');
+        SSH::fake();
 
         $this->post(route('servers.databases.store', $this->server), [
             'name' => 'database',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('databases', [
             'name' => 'database',
@@ -44,14 +44,14 @@ class DatabaseTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        SSH::fake()->outputShouldBe('test');
+        SSH::fake();
 
         $database = Database::factory()->create([
             'server_id' => $this->server,
         ]);
 
         $this->delete(route('servers.databases.destroy', [$this->server, $database]))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('databases', [
             'id' => $database->id,

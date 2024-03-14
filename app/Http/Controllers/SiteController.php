@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\DeleteSite;
 use App\Enums\SiteType;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
@@ -51,7 +52,7 @@ class SiteController extends Controller
 
     public function destroy(Server $server, Site $site): RedirectResponse
     {
-        $site->remove();
+        app(DeleteSite::class)->delete($site);
 
         Toast::success('Site is being deleted');
 

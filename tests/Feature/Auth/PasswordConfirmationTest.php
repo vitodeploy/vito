@@ -3,7 +3,6 @@
 namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use JsonException;
 use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase
@@ -19,9 +18,6 @@ class PasswordConfirmationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_password_can_be_confirmed(): void
     {
         $this->actingAs($this->user);
@@ -31,7 +27,7 @@ class PasswordConfirmationTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHasNoErrors();
+        $response->assertSessionDoesntHaveErrors();
     }
 
     public function test_password_is_not_confirmed_with_invalid_password(): void

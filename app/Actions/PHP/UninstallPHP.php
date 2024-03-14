@@ -2,6 +2,7 @@
 
 namespace App\Actions\PHP;
 
+use App\Enums\ServiceStatus;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
@@ -15,8 +16,16 @@ class UninstallPHP
 
         /** @var Service $php */
         $php = $server->php($input['version']);
+        $php->status = ServiceStatus::UNINSTALLING;
+        $php->save();
 
-        $php->uninstall();
+        dispatch(function () use ($php) {
+            $php->handler()->uninstall();
+            $php->delete();
+        })->catch(function () use ($php) {
+            $php->status = ServiceStatus::FAILED;
+            $php->save();
+        })->onConnection('ssh');
     }
 
     /**

@@ -2,8 +2,8 @@
 
 namespace App\StorageProviders;
 
-use App\Contracts\StorageProvider as StorageProviderContract;
 use App\Models\StorageProvider;
+use App\StorageProviders\StorageProvider as StorageProviderContract;
 
 abstract class AbstractStorageProvider implements StorageProviderContract
 {

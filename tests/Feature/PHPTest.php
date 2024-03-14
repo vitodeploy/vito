@@ -3,12 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\ServiceStatus;
-use App\Jobs\Installation\InstallPHP;
-use App\Jobs\Installation\UninstallPHP;
-use App\Jobs\PHP\InstallPHPExtension;
+use App\Facades\SSH;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class PHPTest extends TestCase
@@ -17,21 +14,26 @@ class PHPTest extends TestCase
 
     public function test_install_new_php(): void
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
         $this->post(route('servers.php.install', [
             'server' => $this->server,
             'version' => '8.1',
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(InstallPHP::class);
+        $this->assertDatabaseHas('services', [
+            'server_id' => $this->server->id,
+            'type' => 'php',
+            'version' => '8.1',
+            'status' => ServiceStatus::READY,
+        ]);
     }
 
     public function test_uninstall_php(): void
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -52,9 +54,11 @@ class PHPTest extends TestCase
         $this->delete(route('servers.php.uninstall', [
             'server' => $this->server,
             'version' => '8.1',
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(UninstallPHP::class);
+        $this->assertDatabaseMissing('services', [
+            'id' => $php->id,
+        ]);
     }
 
     public function test_cannot_uninstall_php(): void
@@ -69,6 +73,8 @@ class PHPTest extends TestCase
 
     public function test_change_default_php_cli(): void
     {
+        SSH::fake();
+
         $this->actingAs($this->user);
 
         $php = Service::factory()->create([
@@ -85,7 +91,7 @@ class PHPTest extends TestCase
         $this->post(route('servers.php.default-cli', [
             'server' => $this->server,
             'version' => '8.1',
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
         $php->refresh();
 
@@ -94,7 +100,7 @@ class PHPTest extends TestCase
 
     public function test_install_extension(): void
     {
-        Bus::fake();
+        SSH::fake('output... [PHP Modules] gmp');
 
         $this->actingAs($this->user);
 
@@ -102,14 +108,16 @@ class PHPTest extends TestCase
             'server' => $this->server,
             'version' => '8.2',
             'extension' => 'gmp',
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(InstallPHPExtension::class);
+        $php = $this->server->php('8.2');
+
+        $this->assertContains('gmp', $php->type_data['extensions']);
     }
 
     public function test_extension_already_installed(): void
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -126,7 +134,5 @@ class PHPTest extends TestCase
             'version' => '8.2',
             'extension' => 'gmp',
         ]))->assertSessionHasErrors();
-
-        Bus::assertNotDispatched(InstallPHPExtension::class);
     }
 }

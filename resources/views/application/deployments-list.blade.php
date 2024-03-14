@@ -19,11 +19,11 @@
             </tr>
             @foreach ($deployments as $deployment)
                 <tr>
-                    <x-td>
+                    <x-td class="truncate">
                         <a
                             href="{{ $deployment->commit_data["url"] }}"
                             target="_blank"
-                            class="font-semibold text-primary-600"
+                            class="block max-w-[500px] truncate font-semibold text-primary-600"
                         >
                             {{ $deployment->commit_data["message"] }}
                         </a>
@@ -38,10 +38,12 @@
                     </x-td>
                     <x-td>
                         <x-icon-button
+                            x-on:click="$dispatch('open-modal', 'show-log')"
+                            id="show-log-{{ $deployment->id }}"
                             hx-get="{{ route('servers.sites.application.deployment.log', ['server' => $server, 'site' => $site, 'deployment' => $deployment]) }}"
                             hx-target="#show-log-content"
+                            hx-select="#show-log-content"
                             hx-swap="outerHTML"
-                            hx-disable
                         >
                             <x-heroicon-o-eye class="h-5 w-5" />
                         </x-icon-button>

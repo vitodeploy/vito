@@ -2,9 +2,7 @@
 
 namespace App\Exceptions;
 
-use Exception;
-
-class SSHConnectionError extends Exception
+class SSHConnectionError extends SSHError
 {
     //
 }

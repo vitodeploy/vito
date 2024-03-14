@@ -21,7 +21,7 @@
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
-                    @foreach ($keys as $key)
+                    @foreach (auth()->user()->sshKeys as $key)
                         <option value="{{ $key->id }}" @if($key->id === old('key_id')) selected @endif>
                             {{ $key->name }}
                         </option>

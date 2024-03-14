@@ -10,9 +10,6 @@ use Illuminate\Validation\ValidationException;
 
 class InstallPHPExtension
 {
-    /**
-     * @throws ValidationException
-     */
     public function install(Server $server, array $input): Service
     {
         $this->validate($server, $input);
@@ -21,10 +18,19 @@ class InstallPHPExtension
         $service = $server->php($input['version']);
         $typeData = $service->type_data;
         $typeData['extensions'] = $typeData['extensions'] ?? [];
+        $typeData['extensions'][] = $input['extension'];
         $service->type_data = $typeData;
         $service->save();
 
-        $service->handler()->installExtension($input['extension']);
+        dispatch(function () use ($service, $input) {
+            $service->handler()->installExtension($input['extension']);
+        })->catch(function () use ($service, $input) {
+            $service->refresh();
+            $typeData = $service->type_data;
+            $typeData['extensions'] = array_values(array_diff($typeData['extensions'], [$input['extension']]));
+            $service->type_data = $typeData;
+            $service->save();
+        })->onConnection('ssh');
 
         return $service;
     }

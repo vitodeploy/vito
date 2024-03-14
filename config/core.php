@@ -1,15 +1,5 @@
 <?php
 
-use App\Jobs\Installation\InstallMariadb;
-use App\Jobs\Installation\InstallMysql;
-use App\Jobs\Installation\InstallNginx;
-use App\Jobs\Installation\InstallPHP;
-use App\Jobs\Installation\InstallPHPMyAdmin;
-use App\Jobs\Installation\InstallRedis;
-use App\Jobs\Installation\InstallSupervisor;
-use App\Jobs\Installation\InstallUfw;
-use App\Jobs\Installation\UninstallPHP;
-use App\Jobs\Installation\UninstallPHPMyAdmin;
 use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
@@ -19,11 +9,6 @@ use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
-use App\ServiceHandlers\Database\Mysql;
-use App\ServiceHandlers\Firewall\Ufw;
-use App\ServiceHandlers\PHP;
-use App\ServiceHandlers\ProcessManager\Supervisor;
-use App\ServiceHandlers\Webserver\Nginx;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPSite;
@@ -31,6 +16,13 @@ use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
+use App\SSH\Services\Database\Mariadb;
+use App\SSH\Services\Database\Mysql;
+use App\SSH\Services\Firewall\Ufw;
+use App\SSH\Services\PHP\PHP;
+use App\SSH\Services\ProcessManager\Supervisor;
+use App\SSH\Services\Redis\Redis;
+use App\SSH\Services\Webserver\Nginx;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
 
@@ -41,8 +33,8 @@ return [
     'ssh_user' => env('SSH_USER', 'vito'),
     'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME', 'ssh-public.key'),
     'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME', 'ssh-private.pem'),
-    'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs-local'), // should to be FilesystemAdapter storage
-    'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs-local'), // should to be FilesystemAdapter storage
+    'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs'), // should be FilesystemAdapter storage
+    'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs'), // should be FilesystemAdapter storage
 
     /*
      * General
@@ -130,24 +122,11 @@ return [
     /*
      * Service
      */
-    'service_installers' => [
-        'nginx' => InstallNginx::class,
-        'mysql' => InstallMysql::class,
-        'mariadb' => InstallMariadb::class,
-        'php' => InstallPHP::class,
-        'redis' => InstallRedis::class,
-        'supervisor' => InstallSupervisor::class,
-        'ufw' => InstallUfw::class,
-        'phpmyadmin' => InstallPHPMyAdmin::class,
-    ],
-    'service_uninstallers' => [
-        'phpmyadmin' => UninstallPHPMyAdmin::class,
-        'php' => UninstallPHP::class,
-    ],
     'service_handlers' => [
         'nginx' => Nginx::class,
         'mysql' => Mysql::class,
-        'mariadb' => Mysql::class,
+        'mariadb' => Mariadb::class,
+        'redis' => Redis::class,
         'php' => PHP::class,
         'ufw' => Ufw::class,
         'supervisor' => Supervisor::class,

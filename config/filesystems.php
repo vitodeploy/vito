@@ -57,12 +57,12 @@ return [
             'throw' => false,
         ],
 
-        'key-pairs-local' => [
+        'key-pairs' => [
             'driver' => 'local',
             'root' => storage_path('app/key-pairs'),
         ],
 
-        'server-logs-local' => [
+        'server-logs' => [
             'driver' => 'local',
             'root' => storage_path('app/server-logs'),
         ],

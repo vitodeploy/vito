@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $command
  * @property string $user
  * @property string $frequency
- * @property string $frequency_label
  * @property bool $hidden
  * @property string $status
  * @property string $crontab
@@ -34,10 +33,6 @@ class CronJob extends AbstractModel
         'hidden' => 'boolean',
     ];
 
-    protected $appends = [
-        'frequency_label',
-    ];
-
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
@@ -57,7 +52,7 @@ class CronJob extends AbstractModel
         return $data;
     }
 
-    public function getFrequencyLabelAttribute(): string
+    public function frequencyLabel(): string
     {
         $labels = [
             '* * * * *' => 'Every minute',

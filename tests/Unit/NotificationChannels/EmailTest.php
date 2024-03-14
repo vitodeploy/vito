@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\NotificationChannels;
 
-use App\Mail\NotificationMail;
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Email;
+use App\NotificationChannels\Email\NotificationMail;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 

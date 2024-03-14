@@ -33,7 +33,7 @@ class StorageProvider extends AbstractModel
         return $this->belongsTo(User::class);
     }
 
-    public function provider(): \App\Contracts\StorageProvider
+    public function provider(): \App\StorageProviders\StorageProvider
     {
         $providerClass = config('core.storage_providers_class')[$this->provider];
 

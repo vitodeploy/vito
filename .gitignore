@@ -4,6 +4,8 @@
 /public/storage
 /storage/*.key
 /storage/*.pem
+/storage/test-key
+/storage/test-key.pub
 /vendor
 .env
 .env.backup

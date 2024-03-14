@@ -23,7 +23,7 @@ class ServerLogController extends Controller
         }
 
         return back()->with([
-            'content' => $serverLog->content,
+            'content' => $serverLog->getContent(),
         ]);
     }
 }

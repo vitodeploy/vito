@@ -3,10 +3,7 @@
 namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
-use App\Jobs\Site\CreateVHost;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\Rule;
-use Throwable;
 
 class PHPBlank extends PHPSite
 {
@@ -20,7 +17,7 @@ class PHPBlank extends PHPSite
         ];
     }
 
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         return [
             'php_version' => [
@@ -45,23 +42,8 @@ class PHPBlank extends PHPSite
 
     public function install(): void
     {
-        $chain = [
-            new CreateVHost($this->site),
-            $this->progress(65),
-            function () {
-                $this->site->php()?->restart();
-            },
-        ];
-
-        $chain[] = function () {
-            $this->site->installationFinished();
-        };
-
-        Bus::chain($chain)
-            ->catch(function (Throwable $e) {
-                $this->site->installationFailed($e);
-            })
-            ->onConnection('ssh-long')
-            ->dispatch();
+        $this->site->server->webserver()->handler()->createVHost($this->site);
+        $this->progress(65);
+        $this->site->php()?->restart();
     }
 }

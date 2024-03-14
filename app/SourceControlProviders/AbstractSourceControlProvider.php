@@ -2,7 +2,6 @@
 
 namespace App\SourceControlProviders;
 
-use App\Contracts\SourceControlProvider;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;

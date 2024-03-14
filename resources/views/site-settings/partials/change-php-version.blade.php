@@ -10,6 +10,8 @@
         hx-post="{{ route("servers.sites.settings.php", ["server" => $server, "site" => $site]) }}"
         hx-swap="outerHTML"
         hx-select="#change-php-version"
+        hx-ext="disable-element"
+        hx-disable-element="#btn-change-php-version"
         class="space-y-6"
     >
         <div>
@@ -29,7 +31,7 @@
     </form>
 
     <x-slot name="actions">
-        <x-primary-button form="change-php-version" hx-disable>
+        <x-primary-button id="btn-change-php-version" form="change-php-version" hx-disable>
             {{ __("Save") }}
         </x-primary-button>
     </x-slot>

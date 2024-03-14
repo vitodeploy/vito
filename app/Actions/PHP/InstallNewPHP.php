@@ -28,7 +28,14 @@ class InstallNewPHP
             'is_default' => false,
         ]);
         $php->save();
-        $php->install();
+
+        dispatch(function () use ($php) {
+            $php->handler()->install();
+            $php->status = ServiceStatus::READY;
+            $php->save();
+        })->catch(function () use ($php) {
+            $php->delete();
+        })->onConnection('ssh');
     }
 
     /**

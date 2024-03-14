@@ -1,3 +1,0 @@
-sudo DEBIAN_FRONTEND=noninteractive apt install -y software-properties-common curl zip unzip git gcc
-git config --global user.email "__email__"
-git config --global user.name "__name__"

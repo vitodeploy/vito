@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $server_id
  * @property string $type
  * @property string $protocol
- * @property string $real_protocol
  * @property int $port
  * @property string $source
  * @property ?string $mask
@@ -37,16 +36,12 @@ class FirewallRule extends AbstractModel
         'port' => 'integer',
     ];
 
-    protected $appends = [
-        'real_protocol',
-    ];
-
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
-    public function getRealProtocolAttribute(): string
+    public function getRealProtocol(): string
     {
         return $this->protocol === 'udp' ? 'udp' : 'tcp';
     }

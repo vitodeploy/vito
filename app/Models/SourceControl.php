@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Contracts\SourceControlProvider;
+use App\SourceControlProviders\SourceControlProvider;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**

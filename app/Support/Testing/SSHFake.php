@@ -2,53 +2,31 @@
 
 namespace App\Support\Testing;
 
-use App\Contracts\SSHCommand;
-use App\Models\Server;
+use App\Helpers\SSH;
 use Illuminate\Support\Traits\ReflectsClosures;
-use PHPUnit\Framework\Assert as PHPUnit;
+use PHPUnit\Framework\Assert;
 
-class SSHFake
+class SSHFake extends SSH
 {
     use ReflectsClosures;
 
-    protected array $commands;
+    protected array $commands = [];
 
-    protected string $output = '';
+    protected ?string $output;
 
-    public function init(Server $server, ?string $asUser = null): self
-    {
-        return $this;
-    }
-
-    public function outputShouldBe(string $output): self
+    public function __construct(?string $output = null)
     {
         $this->output = $output;
-
-        return $this;
     }
 
-    public function assertExecuted(array|string $commands): void
+    public function exec(string|array $commands, string $log = '', ?int $siteId = null): string
     {
-        if (! $this->commands) {
-            PHPUnit::fail('No commands are executed');
+        if ($log) {
+            $this->setLog($log, $siteId);
+        } else {
+            $this->log = null;
         }
-        if (! is_array($commands)) {
-            $commands = [$commands];
-        }
-        $allExecuted = true;
-        foreach ($commands as $command) {
-            if (! in_array($command, $commands)) {
-                $allExecuted = false;
-            }
-        }
-        if (! $allExecuted) {
-            PHPUnit::fail('The expected commands are not executed');
-        }
-        PHPUnit::assertTrue(true, $allExecuted);
-    }
 
-    public function exec(string|array|SSHCommand $commands, string $log = '', ?int $siteId = null): string
-    {
         if (! is_array($commands)) {
             $commands = [$commands];
         }
@@ -61,6 +39,49 @@ class SSHFake
             }
         }
 
-        return 'fake output';
+        $output = $this->output ?? 'fake output';
+        $this->log?->write($output);
+
+        return $output;
+    }
+
+    public function assertExecuted(array|string $commands): void
+    {
+        if (! $this->commands) {
+            Assert::fail('No commands are executed');
+        }
+        if (! is_array($commands)) {
+            $commands = [$commands];
+        }
+        $allExecuted = true;
+        foreach ($commands as $command) {
+            if (! in_array($command, $commands)) {
+                $allExecuted = false;
+            }
+        }
+        if (! $allExecuted) {
+            Assert::fail('The expected commands are not executed. executed commands: '.implode(', ', $this->commands));
+        }
+        Assert::assertTrue(true, $allExecuted);
+    }
+
+    public function assertExecutedContains(string $command): void
+    {
+        if (! $this->commands) {
+            Assert::fail('No commands are executed');
+        }
+        $executed = false;
+        foreach ($this->commands as $executedCommand) {
+            if (str($executedCommand)->contains($command)) {
+                $executed = true;
+                break;
+            }
+        }
+        if (! $executed) {
+            Assert::fail(
+                'The expected command is not executed in the executed commands: '.implode(', ', $this->commands)
+            );
+        }
+        Assert::assertTrue(true, $executed);
     }
 }

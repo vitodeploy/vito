@@ -3,11 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\SshKeyStatus;
-use App\Jobs\SshKey\DeleteSshKeyFromServer;
-use App\Jobs\SshKey\DeploySshKeyToServer;
+use App\Facades\SSH;
 use App\Models\SshKey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class ServerKeysTest extends TestCase
@@ -34,7 +32,7 @@ class ServerKeysTest extends TestCase
 
     public function test_delete_ssh_key()
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -50,18 +48,15 @@ class ServerKeysTest extends TestCase
 
         $this->delete(route('servers.ssh-keys.destroy', [$this->server, $sshKey]));
 
-        $this->assertDatabaseHas('server_ssh_keys', [
+        $this->assertDatabaseMissing('server_ssh_keys', [
             'server_id' => $this->server->id,
             'ssh_key_id' => $sshKey->id,
-            'status' => SshKeyStatus::DELETING,
         ]);
-
-        Bus::assertDispatched(DeleteSshKeyFromServer::class);
     }
 
     public function test_add_new_ssh_key()
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -72,15 +67,13 @@ class ServerKeysTest extends TestCase
 
         $this->assertDatabaseHas('server_ssh_keys', [
             'server_id' => $this->server->id,
-            'status' => SshKeyStatus::ADDING,
+            'status' => SshKeyStatus::ADDED,
         ]);
-
-        Bus::assertDispatched(DeploySshKeyToServer::class);
     }
 
     public function test_add_existing_key()
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -96,9 +89,7 @@ class ServerKeysTest extends TestCase
 
         $this->assertDatabaseHas('server_ssh_keys', [
             'server_id' => $this->server->id,
-            'status' => SshKeyStatus::ADDING,
+            'status' => SshKeyStatus::ADDED,
         ]);
-
-        Bus::assertDispatched(DeploySshKeyToServer::class);
     }
 }

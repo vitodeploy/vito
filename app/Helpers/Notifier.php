@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-use App\Contracts\Notification;
 use App\Models\NotificationChannel;
+use App\Notifications\NotificationInterface;
 
 class Notifier
 {
@@ -12,7 +12,7 @@ class Notifier
      * For example, If it was a server then we will send the channels specified by that server
      * For now, we will send all channels.
      */
-    public function send(object $notifiable, Notification $notification): void
+    public function send(object $notifiable, NotificationInterface $notification): void
     {
         NotificationChannel::notifyAll($notification);
     }

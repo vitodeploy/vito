@@ -6,10 +6,8 @@ use App\Enums\SiteStatus;
 use App\Enums\SiteType;
 use App\Enums\SourceControl;
 use App\Facades\SSH;
-use App\Jobs\Site\CreateVHost;
 use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -22,9 +20,12 @@ class SitesTest extends TestCase
      */
     public function test_create_site(array $inputs): void
     {
-        Bus::fake();
+        SSH::fake();
 
-        Http::fake();
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+            ], 201),
+        ]);
 
         $this->actingAs($this->user);
 
@@ -39,11 +40,9 @@ class SitesTest extends TestCase
             'server' => $this->server,
         ]), $inputs)->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(CreateVHost::class);
-
         $this->assertDatabaseHas('sites', [
             'domain' => 'example.com',
-            'status' => SiteStatus::INSTALLING,
+            'status' => SiteStatus::READY,
         ]);
     }
 
@@ -64,7 +63,7 @@ class SitesTest extends TestCase
 
     public function test_delete_site(): void
     {
-        Bus::fake();
+        SSH::fake();
 
         $this->actingAs($this->user);
 
@@ -77,15 +76,15 @@ class SitesTest extends TestCase
             'site' => $site,
         ]))->assertRedirect();
 
-        Bus::assertDispatched(\App\Jobs\Site\DeleteSite::class);
-
-        $site->refresh();
-
-        $this->assertEquals(SiteStatus::DELETING, $site->status);
+        $this->assertDatabaseMissing('sites', [
+            'id' => $site->id,
+        ]);
     }
 
     public function test_change_php_version(): void
     {
+        SSH::fake();
+
         $this->actingAs($this->user);
 
         $site = Site::factory()->create([
@@ -117,7 +116,7 @@ class SitesTest extends TestCase
         $this->get(route('servers.sites.settings.vhost', [
             'server' => $this->server,
             'site' => $site,
-        ]))->assertSessionHasNoErrors();
+        ]))->assertSessionDoesntHaveErrors();
     }
 
     public static function create_data(): array

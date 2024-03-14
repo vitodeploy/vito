@@ -29,7 +29,23 @@ class CreateQueue
             'status' => QueueStatus::CREATING,
         ]);
         $queue->save();
-        $queue->deploy();
+
+        dispatch(function () use ($queue) {
+            $queue->server->processManager()->handler()->create(
+                $queue->id,
+                $queue->command,
+                $queue->user,
+                $queue->auto_start,
+                $queue->auto_restart,
+                $queue->numprocs,
+                $queue->getLogFile(),
+                $queue->site_id
+            );
+            $queue->status = QueueStatus::RUNNING;
+            $queue->save();
+        })->catch(function () use ($queue) {
+            $queue->delete();
+        })->onConnection('ssh');
     }
 
     /**

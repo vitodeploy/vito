@@ -19,7 +19,7 @@ class AWS extends AbstractProvider
 
     protected EC2InstanceConnectClient $ec2InstanceConnectClient;
 
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         $rules = [
             'os' => 'required|in:'.implode(',', OperatingSystem::getValues()),

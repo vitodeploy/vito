@@ -42,7 +42,7 @@ class RunBackup extends Command
             ->chunk(100, function ($backups) {
                 /** @var Backup $backup */
                 foreach ($backups as $backup) {
-                    $backup->run();
+                    app(\App\Actions\Database\RunBackup::class)->run($backup);
                 }
             });
     }

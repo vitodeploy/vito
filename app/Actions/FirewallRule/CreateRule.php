@@ -21,15 +21,13 @@ class CreateRule
             'port' => $input['port'],
             'source' => $input['source'],
             'mask' => $input['mask'] ?? null,
-            'status' => FirewallRuleStatus::CREATING,
         ]);
-        $rule->save();
 
         $server->firewall()
             ->handler()
             ->addRule(
                 $rule->type,
-                $rule->real_protocol,
+                $rule->getRealProtocol(),
                 $rule->port,
                 $rule->source,
                 $rule->mask
