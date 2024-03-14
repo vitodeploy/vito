@@ -32,14 +32,19 @@
 
         <div class="mt-6">
             <x-input-label for="backup_storage" :value="__('Storage')" />
-            <x-select-input id="backup_storage" name="backup_storage" class="mt-1 w-full">
-                <option value="" selected disabled>{{ __("Select") }}</option>
-                @foreach (auth()->user()->storageProviders as $st)
-                    <option value="{{ $st->id }}" @if(old('backup_storage') == $st->id) selected @endif>
-                        {{ $st->profile }} - {{ $st->provider }}
-                    </option>
-                @endforeach
-            </x-select-input>
+            <div class="mt-1 flex items-center">
+                <x-select-input id="backup_storage" name="backup_storage" class="mt-1 w-full">
+                    <option value="" selected disabled>{{ __("Select") }}</option>
+                    @foreach (auth()->user()->storageProviders as $st)
+                        <option value="{{ $st->id }}" @if(old('backup_storage') == $st->id) selected @endif>
+                            {{ $st->profile }} - {{ $st->provider }}
+                        </option>
+                    @endforeach
+                </x-select-input>
+                <x-secondary-button :href="route('storage-providers')" class="ml-2 flex-none">
+                    Connect
+                </x-secondary-button>
+            </div>
             @error("backup_storage")
                 <x-input-error class="mt-2" :messages="$message" />
             @enderror

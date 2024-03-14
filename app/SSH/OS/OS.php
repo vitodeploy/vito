@@ -63,10 +63,6 @@ class OS
 
     public function deleteSSHKey(string $key): void
     {
-        info($this->getScript('delete-ssh-key.sh', [
-            'key' => $key,
-            'user' => $this->server->getSshUser(),
-        ]));
         $this->server->ssh()->exec(
             $this->getScript('delete-ssh-key.sh', [
                 'key' => $key,

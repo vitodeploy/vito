@@ -5,7 +5,7 @@
 
     <x-modal name="connect-provider">
         @php
-            $oldProvider = old("provider", request()->input("provider") ?? "");
+            $oldProvider = old("provider", request()->input("provider") ?? "dropbox");
         @endphp
 
         <form
@@ -33,6 +33,9 @@
                         @if ($p !== "custom")
                             <option value="{{ $p }}" @if($oldProvider === $p) selected @endif>
                                 {{ $p }}
+                                @if ($p === "ftp")
+                                    (Beta)
+                                @endif
                             </option>
                         @endif
                     @endforeach
@@ -56,6 +59,14 @@
                 @error("token")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
+
+                <a
+                    class="mt-1 text-primary-500"
+                    href="https://dropbox.tech/developers/generate-an-access-token-for-your-own-account"
+                    target="_blank"
+                >
+                    How to generate?
+                </a>
             </div>
 
             <div x-show="provider === 'ftp'" class="mt-6">
