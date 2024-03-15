@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\SourceControl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use JsonException;
 use Tests\TestCase;
 
 class SourceControlsTest extends TestCase
@@ -14,8 +13,6 @@ class SourceControlsTest extends TestCase
 
     /**
      * @dataProvider data
-     *
-     * @throws JsonException
      */
     public function test_connect_provider(string $provider, ?string $customUrl): void
     {
@@ -43,8 +40,6 @@ class SourceControlsTest extends TestCase
 
     /**
      * @dataProvider data
-     *
-     * @throws JsonException
      */
     public function test_delete_provider(string $provider): void
     {
@@ -60,6 +55,33 @@ class SourceControlsTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('source_controls', [
+            'id' => $sourceControl->id,
+        ]);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_cannot_delete_provider(string $provider): void
+    {
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => $provider,
+            'profile' => 'test',
+        ]);
+
+        $this->site->update([
+            'source_control_id' => $sourceControl->id,
+        ]);
+
+        $this->delete(route('source-controls.delete', $sourceControl->id))
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('toast.type', 'error')
+            ->assertSessionHas('toast.message', 'This source control is being used by a site.');
+
+        $this->assertDatabaseHas('source_controls', [
             'id' => $sourceControl->id,
         ]);
     }

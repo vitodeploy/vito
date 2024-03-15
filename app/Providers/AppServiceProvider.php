@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Helpers\Notifier;
 use App\Helpers\SSH;
 use App\Helpers\Toast;
-use App\Support\SocialiteProviders\DropboxProvider;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\URL;
@@ -39,26 +38,8 @@ class AppServiceProvider extends ServiceProvider
             return new Toast;
         });
 
-        $this->extendSocialite();
-
         if (str(config('app.url'))->startsWith('https://')) {
             URL::forceScheme('https');
         }
-    }
-
-    /**
-     * @throws BindingResolutionException
-     */
-    private function extendSocialite(): void
-    {
-        $socialite = $this->app->make('Laravel\Socialite\Contracts\Factory');
-        $socialite->extend(
-            'dropbox',
-            function ($app) use ($socialite) {
-                $config = $app['config']['services.dropbox'];
-
-                return $socialite->buildProvider(DropboxProvider::class, $config);
-            }
-        );
     }
 }

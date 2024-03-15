@@ -16,6 +16,7 @@
                 <tr>
                     <x-th>{{ __("Database") }}</x-th>
                     <x-th>{{ __("Created") }}</x-th>
+                    <x-th>{{ __("Storage") }}</x-th>
                     <x-th>{{ __("Status") }}</x-th>
                     <x-th></x-th>
                 </tr>
@@ -25,6 +26,7 @@
                         <x-td>
                             <x-datetime :value="$backup->created_at" />
                         </x-td>
+                        <x-td>{{ $backup->storage->profile }} ({{ $backup->storage->provider }})</x-td>
                         <x-td>
                             <div class="inline-flex">
                                 @include("databases.partials.backup-status", ["status" => $backup->status])

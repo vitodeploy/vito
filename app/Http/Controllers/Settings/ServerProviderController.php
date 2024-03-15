@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Actions\ServerProvider\CreateServerProvider;
+use App\Actions\ServerProvider\DeleteServerProvider;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Http\Controllers\Controller;
@@ -32,14 +33,15 @@ class ServerProviderController extends Controller
         return htmx()->redirect(route('server-providers'));
     }
 
-    /**
-     * @TODO Update servers using this provider
-     */
-    public function delete(int $id): RedirectResponse
+    public function delete(ServerProvider $serverProvider): RedirectResponse
     {
-        $serverProvider = ServerProvider::query()->findOrFail($id);
+        try {
+            app(DeleteServerProvider::class)->delete($serverProvider);
+        } catch (\Exception $e) {
+            Toast::error($e->getMessage());
 
-        $serverProvider->delete();
+            return back();
+        }
 
         Toast::success('Server provider deleted.');
 

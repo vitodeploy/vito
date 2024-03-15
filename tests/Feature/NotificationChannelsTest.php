@@ -26,6 +26,7 @@ class NotificationChannelsTest extends TestCase
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::EMAIL)
+            ->where('label', 'Email')
             ->first();
 
         $this->assertEquals('email@example.com', $channel->data['email']);
@@ -48,6 +49,7 @@ class NotificationChannelsTest extends TestCase
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::EMAIL)
+            ->where('label', 'Email')
             ->first();
 
         $this->assertNull($channel);

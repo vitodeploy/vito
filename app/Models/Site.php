@@ -185,8 +185,8 @@ class Site extends AbstractModel
 
     public function changePHPVersion($version): void
     {
-        $this->php_version = $version;
         $this->server->webserver()->handler()->changePHPVersion($this, $version);
+        $this->php_version = $version;
         $this->save();
     }
 

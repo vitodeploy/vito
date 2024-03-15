@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\SourceControlProviders\SourceControlProvider;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $provider
@@ -36,5 +37,10 @@ class SourceControl extends AbstractModel
     public function getRepo(?string $repo = null): ?array
     {
         return $this->provider()->getRepo($repo);
+    }
+
+    public function sites(): HasMany
+    {
+        return $this->hasMany(Site::class);
     }
 }

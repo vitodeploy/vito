@@ -17,7 +17,6 @@
         "laravel/fortify": "^1.17",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.2",
-        "laravel/socialite": "^5.2",
         "laravel/tinker": "^2.8",
         "opcodesio/log-viewer": "^3.0",
         "phpseclib/phpseclib": "~3.0"

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Facades\Toast;
+use App\Helpers\HtmxResponse;
 use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Contracts\View\View;
@@ -43,7 +44,7 @@ class SiteSettingController extends Controller
         return back();
     }
 
-    public function updatePHPVersion(Server $server, Site $site, Request $request): RedirectResponse
+    public function updatePHPVersion(Server $server, Site $site, Request $request): HtmxResponse
     {
         $this->validate($request, [
             'version' => [
@@ -60,6 +61,6 @@ class SiteSettingController extends Controller
             Toast::error($e->getMessage());
         }
 
-        return back();
+        return htmx()->back();
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $user_id
@@ -39,5 +40,10 @@ class ServerProvider extends AbstractModel
     public function getCredentials(): array
     {
         return $this->credentials;
+    }
+
+    public function servers(): HasMany
+    {
+        return $this->hasMany(Server::class, 'provider_id');
     }
 }
