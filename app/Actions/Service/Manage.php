@@ -19,9 +19,6 @@ class Manage
                 $service->status = ServiceStatus::FAILED;
             }
             $service->save();
-        })->catch(function () use ($service) {
-            $service->status = ServiceStatus::FAILED;
-            $service->save();
         })->onConnection('ssh');
     }
 
@@ -37,9 +34,6 @@ class Manage
                 $service->status = ServiceStatus::FAILED;
             }
             $service->save();
-        })->catch(function () use ($service) {
-            $service->status = ServiceStatus::FAILED;
-            $service->save();
         })->onConnection('ssh');
     }
 
@@ -54,9 +48,6 @@ class Manage
             } else {
                 $service->status = ServiceStatus::FAILED;
             }
-            $service->save();
-        })->catch(function () use ($service) {
-            $service->status = ServiceStatus::FAILED;
             $service->save();
         })->onConnection('ssh');
     }

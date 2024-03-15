@@ -47,11 +47,14 @@ class ProjectController extends Controller
 
     public function delete(Project $project): RedirectResponse
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         /** @var Project $project */
-        $project = auth()->user()->projects()->findOrFail($project->id);
+        $project = $user->projects()->findOrFail($project->id);
 
         try {
-            app(DeleteProject::class)->delete(auth()->user(), $project);
+            app(DeleteProject::class)->delete($user, $project);
         } catch (ValidationException $e) {
             Toast::error($e->getMessage());
 

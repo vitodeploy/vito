@@ -160,4 +160,16 @@ class SitesTest extends TestCase
             ],
         ];
     }
+
+    public function test_see_logs(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->get(route('servers.sites.logs', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertOk()
+            ->assertSee('Logs');
+    }
 }

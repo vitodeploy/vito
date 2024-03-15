@@ -60,6 +60,6 @@ class Telegram extends AbstractNotificationChannel
             'text' => $text,
             'parse_mode' => 'markdown',
             'disable_web_page_preview' => true,
-        ]);
+        ])->throw();
     }
 }

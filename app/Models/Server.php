@@ -51,7 +51,6 @@ use Illuminate\Support\Str;
  * @property FirewallRule[] $firewallRules
  * @property CronJob[] $cronJobs
  * @property Queue[] $queues
- * @property ScriptExecution[] $scriptExecutions
  * @property Backup[] $backups
  * @property Queue[] $daemons
  * @property SshKey[] $sshKeys
@@ -121,7 +120,6 @@ class Server extends AbstractModel
             $server->cronJobs()->delete();
             $server->queues()->delete();
             $server->daemons()->delete();
-            $server->scriptExecutions()->delete();
             $server->sshKeys()->detach();
             if (File::exists($server->sshKey()['public_key_path'])) {
                 File::delete($server->sshKey()['public_key_path']);
@@ -185,11 +183,6 @@ class Server extends AbstractModel
     public function queues(): HasMany
     {
         return $this->hasMany(Queue::class);
-    }
-
-    public function scriptExecutions(): HasMany
-    {
-        return $this->hasMany(ScriptExecution::class);
     }
 
     public function backups(): HasMany

@@ -38,6 +38,15 @@ abstract class TestCase extends BaseTestCase
         $this->setupKeys();
     }
 
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        if (File::exists(storage_path('app/key-pairs-test'))) {
+            File::deleteDirectory(storage_path('app/key-pairs-test'));
+        }
+    }
+
     private function setupServer(): void
     {
         $this->server = Server::factory()->create([

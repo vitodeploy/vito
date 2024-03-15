@@ -33,7 +33,6 @@ use Illuminate\Support\Str;
  * @property Deployment[] $deployments
  * @property ?GitHook $gitHook
  * @property DeploymentScript $deploymentScript
- * @property Redirect[] $redirects
  * @property Queue[] $queues
  * @property Ssl[] $ssls
  * @property ?Ssl $activeSsl
@@ -76,7 +75,6 @@ class Site extends AbstractModel
         parent::boot();
 
         static::deleting(function (Site $site) {
-            $site->redirects()->delete();
             $site->queues()->delete();
             $site->ssls()->delete();
             $site->deployments()->delete();
@@ -114,11 +112,6 @@ class Site extends AbstractModel
     public function deploymentScript(): HasOne
     {
         return $this->hasOne(DeploymentScript::class);
-    }
-
-    public function redirects(): HasMany
-    {
-        return $this->hasMany(Redirect::class);
     }
 
     public function queues(): HasMany

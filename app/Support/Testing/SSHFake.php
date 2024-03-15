@@ -2,6 +2,7 @@
 
 namespace App\Support\Testing;
 
+use App\Exceptions\SSHConnectionError;
 use App\Helpers\SSH;
 use Illuminate\Support\Traits\ReflectsClosures;
 use PHPUnit\Framework\Assert;
@@ -14,9 +15,23 @@ class SSHFake extends SSH
 
     protected ?string $output;
 
+    protected bool $connectionWillFail = false;
+
     public function __construct(?string $output = null)
     {
         $this->output = $output;
+    }
+
+    public function connectionWillFail(): void
+    {
+        $this->connectionWillFail = true;
+    }
+
+    public function connect(bool $sftp = false): void
+    {
+        if ($this->connectionWillFail) {
+            throw new SSHConnectionError('Connection failed');
+        }
     }
 
     public function exec(string|array $commands, string $log = '', ?int $siteId = null): string
@@ -43,6 +58,11 @@ class SSHFake extends SSH
         $this->log?->write($output);
 
         return $output;
+    }
+
+    public function upload(string $local, string $remote): void
+    {
+        $this->log = null;
     }
 
     public function assertExecuted(array|string $commands): void

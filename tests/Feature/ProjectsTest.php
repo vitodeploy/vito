@@ -68,4 +68,16 @@ class ProjectsTest extends TestCase
             'name' => 'new-name',
         ]);
     }
+
+    public function test_cannot_delete_last_project(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->delete(route('projects.delete', [
+            'project' => $this->user->currentProject,
+        ]))
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('toast.type', 'error')
+            ->assertSessionHas('toast.message', 'Cannot delete the last project.');
+    }
 }

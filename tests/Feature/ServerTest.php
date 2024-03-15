@@ -89,4 +89,103 @@ class ServerTest extends TestCase
             'id' => $this->server->id,
         ]);
     }
+
+    public function test_check_connection_is_ready(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->server->update(['status' => ServerStatus::DISCONNECTED]);
+
+        $this->post(route('servers.settings.check-connection', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'status' => ServerStatus::READY,
+        ]);
+    }
+
+    public function test_connection_failed(): void
+    {
+        SSH::fake()->connectionWillFail();
+
+        $this->actingAs($this->user);
+
+        $this->server->update(['status' => ServerStatus::READY]);
+
+        $this->post(route('servers.settings.check-connection', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'status' => ServerStatus::DISCONNECTED,
+        ]);
+    }
+
+    public function test_reboot_server(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.settings.reboot', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'status' => ServerStatus::DISCONNECTED,
+        ]);
+    }
+
+    public function test_edit_server(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.settings.edit', $this->server), [
+            'name' => 'new-name',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'name' => 'new-name',
+        ]);
+    }
+
+    public function test_edit_server_ip_address(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.settings.edit', $this->server), [
+            'ip' => '2.2.2.2',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'ip' => '2.2.2.2',
+            'status' => ServerStatus::READY,
+        ]);
+    }
+
+    public function test_edit_server_ip_address_and_disconnect(): void
+    {
+        SSH::fake()->connectionWillFail();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.settings.edit', $this->server), [
+            'ip' => '2.2.2.2',
+            'port' => 2222,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'ip' => '2.2.2.2',
+            'port' => 2222,
+            'status' => ServerStatus::DISCONNECTED,
+        ]);
+    }
 }
