@@ -135,4 +135,32 @@ class PHPTest extends TestCase
             'extension' => 'gmp',
         ]))->assertSessionHasErrors();
     }
+
+    public function test_get_php_ini(): void
+    {
+        SSH::fake('[PHP ini]');
+
+        $this->actingAs($this->user);
+
+        $this->get(route('servers.php.get-ini', [
+            'server' => $this->server,
+            'version' => '8.2',
+        ]))->assertSessionHas('ini');
+    }
+
+    public function test_update_php_ini(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.php.update-ini', [
+            'server' => $this->server,
+            'version' => '8.2',
+            'ini' => 'new ini',
+        ]))
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('toast.type', 'success')
+            ->assertSessionHas('toast.message', 'PHP ini updated!');
+    }
 }

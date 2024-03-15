@@ -3,7 +3,6 @@
 namespace App\Actions\Queue;
 
 use App\Enums\QueueStatus;
-use App\Enums\ServiceStatus;
 use App\Models\Queue;
 
 class ManageQueue
@@ -14,10 +13,7 @@ class ManageQueue
         $queue->save();
         dispatch(function () use ($queue) {
             $queue->server->processManager()->handler()->start($queue->id, $queue->site_id);
-            $queue->status = ServiceStatus::READY;
-            $queue->save();
-        })->catch(function () use ($queue) {
-            $queue->status = ServiceStatus::FAILED;
+            $queue->status = QueueStatus::RUNNING;
             $queue->save();
         })->onConnection('ssh');
     }
@@ -28,10 +24,7 @@ class ManageQueue
         $queue->save();
         dispatch(function () use ($queue) {
             $queue->server->processManager()->handler()->stop($queue->id, $queue->site_id);
-            $queue->status = ServiceStatus::STOPPED;
-            $queue->save();
-        })->catch(function () use ($queue) {
-            $queue->status = ServiceStatus::FAILED;
+            $queue->status = QueueStatus::STOPPED;
             $queue->save();
         })->onConnection('ssh');
     }
@@ -42,10 +35,7 @@ class ManageQueue
         $queue->save();
         dispatch(function () use ($queue) {
             $queue->server->processManager()->handler()->restart($queue->id, $queue->site_id);
-            $queue->status = ServiceStatus::READY;
-            $queue->save();
-        })->catch(function () use ($queue) {
-            $queue->status = ServiceStatus::FAILED;
+            $queue->status = QueueStatus::RUNNING;
             $queue->save();
         })->onConnection('ssh');
     }

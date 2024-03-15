@@ -86,4 +86,85 @@ class QueuesTest extends TestCase
             'status' => QueueStatus::RUNNING,
         ]);
     }
+
+    public function test_start_queue(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $queue = Queue::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => QueueStatus::STOPPED,
+        ]);
+
+        $this->post(
+            route('servers.sites.queues.action', [
+                'action' => 'start',
+                'server' => $this->server,
+                'site' => $this->site,
+                'queue' => $queue,
+            ])
+        )->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('queues', [
+            'id' => $queue->id,
+            'status' => QueueStatus::RUNNING,
+        ]);
+    }
+
+    public function test_stop_queue(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $queue = Queue::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => QueueStatus::RUNNING,
+        ]);
+
+        $this->post(
+            route('servers.sites.queues.action', [
+                'action' => 'stop',
+                'server' => $this->server,
+                'site' => $this->site,
+                'queue' => $queue,
+            ])
+        )->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('queues', [
+            'id' => $queue->id,
+            'status' => QueueStatus::STOPPED,
+        ]);
+    }
+
+    public function test_restart_queue(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $queue = Queue::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => QueueStatus::RUNNING,
+        ]);
+
+        $this->post(
+            route('servers.sites.queues.action', [
+                'action' => 'restart',
+                'server' => $this->server,
+                'site' => $this->site,
+                'queue' => $queue,
+            ])
+        )->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('queues', [
+            'id' => $queue->id,
+            'status' => QueueStatus::RUNNING,
+        ]);
+    }
 }

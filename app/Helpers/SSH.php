@@ -88,7 +88,7 @@ class SSH
             Log::error('Error connecting', [
                 'msg' => $e->getMessage(),
             ]);
-            throw $e;
+            throw new SSHConnectionError($e->getMessage());
         }
     }
 

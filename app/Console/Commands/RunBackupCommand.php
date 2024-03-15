@@ -15,14 +15,19 @@ class RunBackupCommand extends Command
 
     public function handle(): void
     {
+        $total = 0;
+
         Backup::query()
             ->where('interval', $this->argument('interval'))
             ->where('status', BackupStatus::RUNNING)
-            ->chunk(100, function ($backups) {
+            ->chunk(100, function ($backups) use (&$total) {
                 /** @var Backup $backup */
                 foreach ($backups as $backup) {
                     app(RunBackup::class)->run($backup);
+                    $total++;
                 }
             });
+
+        $this->info("{$total} backups started");
     }
 }

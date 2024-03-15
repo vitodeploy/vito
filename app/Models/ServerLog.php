@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -38,8 +39,12 @@ class ServerLog extends AbstractModel
         parent::boot();
 
         static::deleting(function (ServerLog $log) {
-            if (Storage::disk($log->disk)->exists($log->name)) {
-                Storage::disk($log->disk)->delete($log->name);
+            try {
+                if (Storage::disk($log->disk)->exists($log->name)) {
+                    Storage::disk($log->disk)->delete($log->name);
+                }
+            } catch (\Exception $e) {
+                Log::error($e->getMessage(), ['exception' => $e]);
             }
         });
     }

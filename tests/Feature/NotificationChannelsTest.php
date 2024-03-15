@@ -26,10 +26,33 @@ class NotificationChannelsTest extends TestCase
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::EMAIL)
+            ->where('label', 'Email')
             ->first();
 
         $this->assertEquals('email@example.com', $channel->data['email']);
         $this->assertTrue($channel->connected);
+    }
+
+    public function test_cannot_add_email_channel(): void
+    {
+        config()->set('mail.default', 'smtp');
+        config()->set('mail.mailers.smtp.host', '127.0.0.1'); // invalid host
+
+        $this->actingAs($this->user);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::EMAIL,
+            'email' => 'email@example.com',
+            'label' => 'Email',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::EMAIL)
+            ->where('label', 'Email')
+            ->first();
+
+        $this->assertNull($channel);
     }
 
     public function test_add_slack_channel(): void
@@ -53,6 +76,28 @@ class NotificationChannelsTest extends TestCase
         $this->assertTrue($channel->connected);
     }
 
+    public function test_cannot_add_slack_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'slack.com/*' => Http::response(['ok' => false], 401),
+        ]);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::SLACK,
+            'webhook_url' => 'https://hooks.slack.com/services/123/token',
+            'label' => 'Slack',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::SLACK)
+            ->first();
+
+        $this->assertNull($channel);
+    }
+
     public function test_add_discord_channel(): void
     {
         $this->actingAs($this->user);
@@ -74,9 +119,27 @@ class NotificationChannelsTest extends TestCase
         $this->assertTrue($channel->connected);
     }
 
-    /*
-     * @TODO fix json comparison
-     */
+    public function test_cannot_add_discord_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'discord.com/*' => Http::response(['ok' => false], 401),
+        ]);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::DISCORD,
+            'webhook_url' => 'https://discord.com/api/webhooks/123/token',
+            'label' => 'Discord',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::DISCORD)
+            ->first();
+
+        $this->assertNull($channel);
+    }
 
     public function test_add_telegram_channel(): void
     {
@@ -99,6 +162,29 @@ class NotificationChannelsTest extends TestCase
         $this->assertEquals('123', $channel->data['chat_id']);
         $this->assertEquals('token', $channel->data['bot_token']);
         $this->assertTrue($channel->connected);
+    }
+
+    public function test_cannot_add_telegram_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => false], 401),
+        ]);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::TELEGRAM,
+            'bot_token' => 'token',
+            'chat_id' => '123',
+            'label' => 'Telegram',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::TELEGRAM)
+            ->first();
+
+        $this->assertNull($channel);
     }
 
     public function test_see_channels_list(): void

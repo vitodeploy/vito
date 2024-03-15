@@ -28,7 +28,7 @@ class CreateServerProvider
         } catch (Exception) {
             throw ValidationException::withMessages([
                 'provider' => [
-                    __("Couldn't connect to provider. Please check your credentials and try again later."),
+                    sprintf("Couldn't connect to %s. Please check your credentials.", $input['provider']),
                 ],
             ]);
         }

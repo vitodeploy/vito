@@ -86,11 +86,6 @@ class User extends Authenticatable
         return $this->hasMany(ServerProvider::class);
     }
 
-    public function scripts(): HasMany
-    {
-        return $this->hasMany(Script::class, 'user_id');
-    }
-
     public function sourceControl(string $provider): HasOne
     {
         return $this->hasOne(SourceControl::class)->where('provider', $provider);

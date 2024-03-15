@@ -11,20 +11,52 @@ class ServerProvidersTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_connect_hetzner(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_connect_provider(string $provider, array $input): void
     {
         $this->actingAs($this->user);
 
         Http::fake();
 
-        $this->post(route('server-providers.connect'), [
-            'provider' => ServerProvider::HETZNER,
-            'name' => 'profile',
-            'token' => 'token',
-        ])->assertSessionDoesntHaveErrors();
+        $data = array_merge(
+            [
+                'provider' => $provider,
+                'name' => 'profile',
+            ],
+            $input
+        );
+        $this->post(route('server-providers.connect'), $data)->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('server_providers', [
-            'provider' => ServerProvider::HETZNER,
+            'provider' => $provider,
+            'profile' => 'profile',
+        ]);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_cannot_connect_to_provider(string $provider, array $input): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            '*' => Http::response([], 401),
+        ]);
+
+        $data = array_merge(
+            [
+                'provider' => $provider,
+                'name' => 'profile',
+            ],
+            $input
+        );
+        $this->post(route('server-providers.connect'), $data)->assertSessionHasErrors();
+
+        $this->assertDatabaseMissing('server_providers', [
+            'provider' => $provider,
             'profile' => 'profile',
         ]);
     }
@@ -41,19 +73,86 @@ class ServerProvidersTest extends TestCase
             ->assertSee($provider->profile);
     }
 
-    public function test_delete_provider(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_delete_provider(string $provider): void
     {
         $this->actingAs($this->user);
 
         $provider = \App\Models\ServerProvider::factory()->create([
             'user_id' => $this->user->id,
+            'provider' => $provider,
         ]);
 
-        $this->delete(route('server-providers.delete', $provider->id))
+        $this->delete(route('server-providers.delete', $provider))
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('server_providers', [
             'id' => $provider->id,
         ]);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_cannot_delete_provider(string $provider): void
+    {
+        $this->actingAs($this->user);
+
+        $provider = \App\Models\ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => $provider,
+        ]);
+
+        $this->server->update([
+            'provider_id' => $provider->id,
+        ]);
+
+        $this->delete(route('server-providers.delete', $provider))
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('toast.type', 'error')
+            ->assertSessionHas('toast.message', 'This server provider is being used by a server.');
+
+        $this->assertDatabaseHas('server_providers', [
+            'id' => $provider->id,
+        ]);
+    }
+
+    public static function data(): array
+    {
+        return [
+            // [
+            //     ServerProvider::AWS,
+            //     [
+            //         'key' => 'key',
+            //         'secret' => 'secret',
+            //     ],
+            // ],
+            [
+                ServerProvider::LINODE,
+                [
+                    'token' => 'token',
+                ],
+            ],
+            [
+                ServerProvider::DIGITALOCEAN,
+                [
+                    'token' => 'token',
+                ],
+            ],
+            [
+                ServerProvider::VULTR,
+                [
+                    'token' => 'token',
+                ],
+            ],
+            [
+                ServerProvider::HETZNER,
+                [
+                    'token' => 'token',
+                ],
+            ],
+        ];
     }
 }

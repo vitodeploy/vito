@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Enums\Database;
+use App\Enums\NotificationChannel;
 use App\Enums\ServiceStatus;
 use App\Enums\Webserver;
 use App\Models\Server;
@@ -31,11 +32,28 @@ abstract class TestCase extends BaseTestCase
 
         $this->user = User::factory()->create();
 
+        \App\Models\NotificationChannel::factory()->create([
+            'provider' => NotificationChannel::EMAIL,
+            'connected' => true,
+            'data' => [
+                'email' => 'user@example.com',
+            ],
+        ]);
+
         $this->setupServer();
 
         $this->setupSite();
 
         $this->setupKeys();
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        if (File::exists(storage_path('app/key-pairs-test'))) {
+            File::deleteDirectory(storage_path('app/key-pairs-test'));
+        }
     }
 
     private function setupServer(): void

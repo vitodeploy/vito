@@ -184,4 +184,70 @@ class ApplicationTest extends TestCase
 
         SSH::assertExecutedContains('echo "APP_ENV=production" | tee /home/vito/'.$this->site->domain.'/.env');
     }
+
+    public function test_git_hook_deployment(): void
+    {
+        SSH::fake();
+        Http::fake([
+            'github.com/*' => Http::response([
+                'sha' => '123',
+                'commit' => [
+                    'message' => 'test commit message',
+                    'name' => 'test commit name',
+                    'email' => 'user@example.com',
+                    'url' => 'https://github.com',
+                ],
+            ], 200),
+        ]);
+
+        $hook = GitHook::factory()->create([
+            'site_id' => $this->site->id,
+            'source_control_id' => $this->site->source_control_id,
+            'secret' => 'secret',
+            'events' => ['push'],
+            'actions' => ['deploy'],
+        ]);
+
+        $this->site->deploymentScript->update([
+            'content' => 'git pull',
+        ]);
+
+        $this->post(route('git-hooks'), [
+            'secret' => 'secret',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $this->site->id,
+            'deployment_script_id' => $this->site->deploymentScript->id,
+            'status' => DeploymentStatus::FINISHED,
+        ]);
+    }
+
+    public function test_git_hook_deployment_invalid_secret(): void
+    {
+        SSH::fake();
+        Http::fake();
+
+        $hook = GitHook::factory()->create([
+            'site_id' => $this->site->id,
+            'source_control_id' => $this->site->source_control_id,
+            'secret' => 'secret',
+            'events' => ['push'],
+            'actions' => ['deploy'],
+        ]);
+
+        $this->site->deploymentScript->update([
+            'content' => 'git pull',
+        ]);
+
+        $this->post(route('git-hooks'), [
+            'secret' => 'invalid-secret',
+        ])->assertNotFound();
+
+        $this->assertDatabaseMissing('deployments', [
+            'site_id' => $this->site->id,
+            'deployment_script_id' => $this->site->deploymentScript->id,
+            'status' => DeploymentStatus::FINISHED,
+        ]);
+    }
 }

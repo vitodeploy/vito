@@ -37,4 +37,11 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_redirect_if_not_authenticated(): void
+    {
+        $response = $this->get('/servers');
+
+        $response->assertRedirect('/login');
+    }
 }

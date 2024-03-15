@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class RunBackup
 {
-    public function run(Backup $backup): void
+    public function run(Backup $backup): BackupFile
     {
         $file = new BackupFile([
             'backup_id' => $backup->id,
@@ -26,5 +26,7 @@ class RunBackup
             $file->status = BackupFileStatus::FAILED;
             $file->save();
         })->onConnection('ssh');
+
+        return $file;
     }
 }

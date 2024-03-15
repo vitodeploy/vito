@@ -29,7 +29,7 @@ Route::prefix('settings/projects')->group(function () {
 Route::prefix('settings/server-providers')->group(function () {
     Route::get('/', [ServerProviderController::class, 'index'])->name('server-providers');
     Route::post('connect', [ServerProviderController::class, 'connect'])->name('server-providers.connect');
-    Route::delete('delete/{id}', [ServerProviderController::class, 'delete'])
+    Route::delete('delete/{serverProvider}', [ServerProviderController::class, 'delete'])
         ->name('server-providers.delete');
 });
 
@@ -37,7 +37,7 @@ Route::prefix('settings/server-providers')->group(function () {
 Route::prefix('settings/source-controls')->group(function () {
     Route::get('/', [SourceControlController::class, 'index'])->name('source-controls');
     Route::post('connect', [SourceControlController::class, 'connect'])->name('source-controls.connect');
-    Route::delete('delete/{id}', [SourceControlController::class, 'delete'])
+    Route::delete('delete/{sourceControl}', [SourceControlController::class, 'delete'])
         ->name('source-controls.delete');
 });
 
@@ -45,7 +45,7 @@ Route::prefix('settings/source-controls')->group(function () {
 Route::prefix('settings/storage-providers')->group(function () {
     Route::get('/', [StorageProviderController::class, 'index'])->name('storage-providers');
     Route::post('connect', [StorageProviderController::class, 'connect'])->name('storage-providers.connect');
-    Route::delete('delete/{id}', [StorageProviderController::class, 'delete'])
+    Route::delete('delete/{storageProvider}', [StorageProviderController::class, 'delete'])
         ->name('storage-providers.delete');
 });
 

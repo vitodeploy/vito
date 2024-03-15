@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\DatabaseStatus;
+use App\Enums\DatabaseUserStatus;
 use App\Facades\SSH;
 use App\Models\Database;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,6 +26,34 @@ class DatabaseTest extends TestCase
         $this->assertDatabaseHas('databases', [
             'name' => 'database',
             'status' => DatabaseStatus::READY,
+        ]);
+    }
+
+    public function test_create_database_with_user(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $this->post(route('servers.databases.store', $this->server), [
+            'name' => 'database',
+            'user' => 'on',
+            'username' => 'user',
+            'password' => 'password',
+            'remote' => 'on',
+            'host' => '%',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('databases', [
+            'name' => 'database',
+            'status' => DatabaseStatus::READY,
+        ]);
+
+        $this->assertDatabaseHas('database_users', [
+            'username' => 'user',
+            'databases' => json_encode(['database']),
+            'host' => '%',
+            'status' => DatabaseUserStatus::READY,
         ]);
     }
 

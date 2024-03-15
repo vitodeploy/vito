@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Actions\SourceControl\ConnectSourceControl;
+use App\Actions\SourceControl\DeleteSourceControl;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Http\Controllers\Controller;
@@ -11,9 +12,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-/**
- * @TODO Assign user to source control
- */
 class SourceControlController extends Controller
 {
     public function index(): View
@@ -34,11 +32,15 @@ class SourceControlController extends Controller
         return htmx()->redirect(route('source-controls'));
     }
 
-    public function delete(int $id): RedirectResponse
+    public function delete(SourceControl $sourceControl): RedirectResponse
     {
-        $sourceControl = SourceControl::query()->findOrFail($id);
+        try {
+            app(DeleteSourceControl::class)->delete($sourceControl);
+        } catch (\Exception $e) {
+            Toast::error($e->getMessage());
 
-        $sourceControl->delete();
+            return back();
+        }
 
         Toast::success('Source control deleted.');
 

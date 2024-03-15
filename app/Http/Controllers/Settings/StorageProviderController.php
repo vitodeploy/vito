@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Actions\StorageProvider\CreateStorageProvider;
+use App\Actions\StorageProvider\DeleteStorageProvider;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Http\Controllers\Controller;
@@ -32,14 +33,15 @@ class StorageProviderController extends Controller
         return htmx()->redirect(route('storage-providers'));
     }
 
-    /**
-     * @TODO Update servers using this provider
-     */
-    public function delete(int $id): RedirectResponse
+    public function delete(StorageProvider $storageProvider): RedirectResponse
     {
-        $storageProvider = StorageProvider::query()->findOrFail($id);
+        try {
+            app(DeleteStorageProvider::class)->delete($storageProvider);
+        } catch (\Exception $e) {
+            Toast::error($e->getMessage());
 
-        $storageProvider->delete();
+            return back();
+        }
 
         Toast::success('Storage provider deleted.');
 
