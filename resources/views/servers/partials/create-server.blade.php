@@ -1,9 +1,10 @@
 @php
     use App\Enums\Database;
     use App\Enums\Webserver;
+    use App\Enums\ServerType;
 @endphp
 
-<x-container x-data="">
+<x-container x-data="{type: '{{ old('type', ServerType::REGULAR) }}'}">
     <x-card>
         <x-slot name="title">{{ __("Create new Server") }}</x-slot>
         <x-slot name="description">
@@ -193,7 +194,7 @@
 
             <div>
                 <x-input-label for="type" value="Server Type" />
-                <x-select-input id="type" name="type" class="mt-1 w-full">
+                <x-select-input x-model="type" id="type" name="type" class="mt-1 w-full">
                     @foreach (config("core.server_types") as $serverType)
                         <option value="{{ $serverType }}" @if($serverType == old('type')) selected @endif>
                             {{ $serverType }}
@@ -206,7 +207,7 @@
             </div>
 
             <div class="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                <div>
+                <div x-show="['regular'].includes(type)">
                     <x-input-label for="webserver" value="Webserver" />
                     <x-select-input id="webserver" name="webserver" class="mt-1 w-full">
                         @foreach (config("core.webservers") as $ws)
@@ -219,7 +220,7 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div>
+                <div x-show="['regular', 'database'].includes(type)">
                     <x-input-label for="database" value="Database" />
                     <x-select-input id="database" name="database" class="mt-1 w-full">
                         @foreach (config("core.databases") as $db)
@@ -232,7 +233,7 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div>
+                <div x-show="['regular'].includes(type)">
                     <x-input-label for="php" value="PHP" />
                     <x-select-input id="php" name="php" class="mt-1 w-full">
                         @foreach (config("core.php_versions") as $p)
