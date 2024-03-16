@@ -181,7 +181,10 @@
                 <x-input-label for="os" value="Operating System" />
                 <x-select-input id="os" name="os" class="mt-1 w-full">
                     @foreach (config("core.operating_systems") as $operatingSystem)
-                        <option value="{{ $operatingSystem }}" @if($operatingSystem == old('os')) selected @endif>
+                        <option
+                            value="{{ $operatingSystem }}"
+                            @if($operatingSystem == old('os', 'ubuntu_22')) selected @endif
+                        >
                             {{ str($operatingSystem)->replace("_", " ")->ucfirst() }}
                             LTS
                         </option>
@@ -197,7 +200,7 @@
                 <x-select-input x-model="type" id="type" name="type" class="mt-1 w-full">
                     @foreach (config("core.server_types") as $serverType)
                         <option value="{{ $serverType }}" @if($serverType == old('type')) selected @endif>
-                            {{ $serverType }}
+                            {{ ucfirst($serverType) }}
                         </option>
                     @endforeach
                 </x-select-input>
@@ -207,7 +210,7 @@
             </div>
 
             <div class="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                <div x-show="[ServerType::REGULAR].includes(type)">
+                <div x-show="['{{ ServerType::REGULAR }}'].includes(type)">
                     <x-input-label for="webserver" value="Webserver" />
                     <x-select-input id="webserver" name="webserver" class="mt-1 w-full">
                         @foreach (config("core.webservers") as $ws)
@@ -220,7 +223,7 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div x-show="[ServerType::REGULAR, ServerType::DATABASE].includes(type)">
+                <div x-show="['{{ ServerType::REGULAR }}', '{{ ServerType::DATABASE }}'].includes(type)">
                     <x-input-label for="database" value="Database" />
                     <x-select-input id="database" name="database" class="mt-1 w-full">
                         @foreach (config("core.databases") as $db)
@@ -233,7 +236,7 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div x-show="[ServerType::REGULAR].includes(type)">
+                <div x-show="['{{ ServerType::REGULAR }}'].includes(type)">
                     <x-input-label for="php" value="PHP" />
                     <x-select-input id="php" name="php" class="mt-1 w-full">
                         @foreach (config("core.php_versions") as $p)
