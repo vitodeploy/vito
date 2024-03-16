@@ -18,6 +18,7 @@ use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use App\SSH\Services\Database\Mariadb;
 use App\SSH\Services\Database\Mysql;
+use App\SSH\Services\Database\Postgresql;
 use App\SSH\Services\Firewall\Ufw;
 use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\ProcessManager\Supervisor;
@@ -57,16 +58,42 @@ return [
         '8.1',
         '8.2',
     ],
-    'databases' => ['none', 'mysql57', 'mysql80', 'mariadb'],
+    'databases' => [
+        'none',
+        'mysql57',
+        'mysql80',
+        'mariadb',
+        'postgresql12',
+        'postgresql13',
+        'postgresql14',
+        'postgresql15',
+        'postgresql16',
+    ],
     'databases_name' => [
         'mysql57' => 'mysql',
         'mysql80' => 'mysql',
         'mariadb' => 'mariadb',
+        'postgresql12' => 'postgresql',
+        'postgresql13' => 'postgresql',
+        'postgresql14' => 'postgresql',
+        'postgresql15' => 'postgresql',
+        'postgresql16' => 'postgresql',
     ],
     'databases_version' => [
         'mysql57' => '5.7',
         'mysql80' => '8.0',
         'mariadb' => '10.3',
+        'postgresql12' => '12',
+        'postgresql13' => '13',
+        'postgresql14' => '14',
+        'postgresql15' => '15',
+        'postgresql16' => '16',
+    ],
+    'database_features' => [
+        'remote' => [
+            'mysql',
+            'mariadb',
+        ],
     ],
 
     /*
@@ -126,6 +153,7 @@ return [
         'nginx' => Nginx::class,
         'mysql' => Mysql::class,
         'mariadb' => Mariadb::class,
+        'postgresql' => Postgresql::class,
         'redis' => Redis::class,
         'php' => PHP::class,
         'ufw' => Ufw::class,
@@ -166,6 +194,29 @@ return [
             ],
             'ubuntu_22' => [
                 '10.3' => 'mariadb',
+            ],
+        ],
+        'postgresql' => [
+            'ubuntu_18' => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
+            ],
+            'ubuntu_20' => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
+            ],
+            'ubuntu_22' => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
             ],
         ],
         'php' => [

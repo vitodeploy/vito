@@ -2,10 +2,10 @@
 
 namespace App\SSH\Services\Database;
 
-class Mariadb extends AbstractDatabase
+class Postgresql extends AbstractDatabase
 {
     protected function getScriptsDir(): string
     {
-        return 'mysql';
+        return 'postgresql';
     }
 }

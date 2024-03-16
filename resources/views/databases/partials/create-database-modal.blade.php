@@ -65,20 +65,22 @@
                 @enderror
             </div>
 
-            <div class="mt-6">
-                <label for="db-remote" class="inline-flex items-center">
-                    <input
-                        id="db-remote"
-                        type="checkbox"
-                        x-model="remote"
-                        name="remote"
-                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
-                    />
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        {{ __("Enable remote access") }}
-                    </span>
-                </label>
-            </div>
+            @if (in_array($server->database()?->name, config("core.database_features.remote")))
+                <div class="mt-6">
+                    <label for="db-remote" class="inline-flex items-center">
+                        <input
+                            id="db-remote"
+                            type="checkbox"
+                            x-model="remote"
+                            name="remote"
+                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
+                        />
+                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                            {{ __("Enable remote access") }}
+                        </span>
+                    </label>
+                </div>
+            @endif
 
             <div x-show="remote">
                 <div class="mt-6">
