@@ -7,7 +7,6 @@
         "lint:fix": "prettier --write ./resources/views"
     },
     "devDependencies": {
-        "@ryangjchandler/alpine-clipboard": "^2.2.0",
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.9",
         "alpinejs": "^3.4.2",

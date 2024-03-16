@@ -1,15 +1,5 @@
-import tippy from 'tippy.js';
-
-Alpine.directive('clipboard', (el) => {
-    let text = el.textContent
-
-    el.addEventListener('click', () => {
-        navigator.clipboard.writeText(text)
-    })
-})
-
+import Alpine from 'alpinejs';
 window.Alpine = Alpine;
-
 Alpine.start();
 
 import htmx from "htmx.org";
@@ -55,8 +45,8 @@ window.toastr.options = {
     "preventDuplicates": true,
 }
 
+import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
-import Alpine from 'alpinejs';
 document.body.addEventListener('htmx:afterSettle', (event) => {
     tippy('[data-tooltip]', {
         content(reference) {
@@ -69,3 +59,26 @@ tippy('[data-tooltip]', {
         return reference.getAttribute('data-tooltip');
     },
 });
+
+window.copyToClipboard = async function (text) {
+    try {
+        await navigator.clipboard.writeText(text);
+    } catch (err) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+
+        textArea.style.position = "absolute";
+        textArea.style.left = "-999999px";
+
+        document.body.prepend(textArea);
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+        } catch (error) {
+            //
+        } finally {
+            textArea.remove();
+        }
+    }
+}

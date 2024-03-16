@@ -19,14 +19,11 @@
                     <x-heroicon-o-globe-alt class="mr-1 h-5 w-5 text-gray-500" />
                     @include("sites.partials.site-status")
                 </div>
-                <x-input-label
-                    class="mt-1 cursor-pointer"
-                    x-data="{ copied: false }"
-                    x-clipboard.raw="{{ $site->domain }}"
-                >
+                <x-input-label class="mt-1 cursor-pointer" x-data="{ copied: false }">
                     <div
                         class="flex items-center text-sm"
                         x-on:click="
+                            window.copyToClipboard('{{ $site->domain }}')
                             copied = true
                             setTimeout(() => {
                                 copied = false
@@ -34,7 +31,9 @@
                         "
                     >
                         <div x-show="copied" class="mr-1 flex items-center">
-                            <x-heroicon-o-check class="h-4 w-4 font-bold text-primary-600 dark:text-white" />
+                            <x-heroicon-o-clipboard-document-check
+                                class="h-4 w-4 font-bold text-primary-600 dark:text-white"
+                            />
                         </div>
                         {{ $site->domain }}
                     </div>
@@ -46,14 +45,11 @@
                     <x-heroicon-o-server class="mr-1 h-5 w-5 text-gray-500" />
                     @include("servers.partials.server-status", ["server" => $site->server])
                 </div>
-                <x-input-label
-                    class="mt-1 cursor-pointer"
-                    x-data="{ copied: false }"
-                    x-clipboard.raw="{{ $site->server->ip }}"
-                >
+                <x-input-label class="mt-1 cursor-pointer" x-data="{ copied: false }">
                     <div
                         class="flex items-center text-sm"
                         x-on:click="
+                            window.copyToClipboard('{{ $site->server->ip }}')
                             copied = true
                             setTimeout(() => {
                                 copied = false
@@ -61,7 +57,9 @@
                         "
                     >
                         <div x-show="copied" class="mr-1 flex items-center">
-                            <x-heroicon-o-check class="h-4 w-4 font-bold text-primary-600 dark:text-white" />
+                            <x-heroicon-o-clipboard-document-check
+                                class="h-4 w-4 font-bold text-primary-600 dark:text-white"
+                            />
                         </div>
                         {{ $site->server->ip }}
                     </div>

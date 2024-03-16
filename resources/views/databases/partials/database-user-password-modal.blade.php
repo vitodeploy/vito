@@ -20,17 +20,16 @@
                 {{ __("Close") }}
             </x-secondary-button>
 
-            <x-primary-button
-                x-data="{ copied: false }"
-                x-clipboard.raw="{{ session()->has('password') ? session()->get('password') : '' }}"
-                class="ml-2"
-            >
+            <x-primary-button x-data="{ copied: false }" class="ml-2">
                 <div x-show="copied" class="flex items-center">
                     {{ __("Copied") }}
                 </div>
                 <div
                     x-show="!copied"
                     x-on:click="
+                        window.copyToClipboard(
+                            '{{ session()->has("password") ? session()->get("password") : "" }}',
+                        )
                         copied = true
                         setTimeout(() => {
                             copied = false
