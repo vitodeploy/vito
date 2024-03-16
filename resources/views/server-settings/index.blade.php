@@ -14,14 +14,21 @@
                     <x-input-label for="pk">
                         {{ __("Public Key") }}
                     </x-input-label>
-                    <x-input-label class="cursor-pointer" x-data="{ copied: false }">
+                    <x-input-label
+                        class="cursor-pointer"
+                        x-data="{ copied: false }"
+                        id="public-key"
+                        data-public-key="{{ $server->public_key }}"
+                    >
                         <div x-show="copied" class="flex items-center">
                             {{ __("Copied") }}
                         </div>
                         <div
                             x-show="!copied"
                             x-on:click="
-                                window.copyToClipboard('{{ $server->public_key }}')
+                                window.copyToClipboard(
+                                    document.getElementById('public-key').getAttribute('data-public-key'),
+                                )
                                 copied = true
                                 setTimeout(() => {
                                     copied = false

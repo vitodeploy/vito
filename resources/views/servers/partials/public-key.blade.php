@@ -18,7 +18,12 @@
         <x-input-label for="pk">
             {{ __("Run this command on your server as root user") }}
         </x-input-label>
-        <x-input-label class="cursor-pointer" x-data="{ copied: false }">
+        <x-input-label
+            class="cursor-pointer"
+            x-data="{ copied: false }"
+            id="public-key"
+            data-clipboard="mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys && echo '{{ $key }}' >> /root/.ssh/authorized_keys"
+        >
             <div x-show="copied" class="flex items-center">
                 {{ __("Copied") }}
             </div>
@@ -26,7 +31,7 @@
                 x-show="!copied"
                 x-on:click="
                     window.copyToClipboard(
-                        'mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys && echo \'{{ $key }}\' >> /root/.ssh/authorized_keys',
+                        document.getElementById('public-key').getAttribute('data-clipboard'),
                     )
                     copied = true
                     setTimeout(() => {
