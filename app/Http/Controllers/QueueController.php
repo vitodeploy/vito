@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Queue\CreateQueue;
 use App\Actions\Queue\DeleteQueue;
+use App\Actions\Queue\GetQueueLogs;
 use App\Actions\Queue\ManageQueue;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
@@ -50,5 +51,10 @@ class QueueController extends Controller
         Toast::success('Queue is being deleted.');
 
         return back();
+    }
+
+    public function logs(Server $server, Site $site, Queue $queue): RedirectResponse
+    {
+        return back()->with('content', app(GetQueueLogs::class)->getLogs($queue));
     }
 }

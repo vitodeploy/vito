@@ -167,4 +167,27 @@ class QueuesTest extends TestCase
             'status' => QueueStatus::RUNNING,
         ]);
     }
+
+    public function test_show_logs(): void
+    {
+        SSH::fake('logs');
+
+        $this->actingAs($this->user);
+
+        $queue = Queue::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => QueueStatus::RUNNING,
+        ]);
+
+        $this->get(
+            route('servers.sites.queues.logs', [
+                'server' => $this->server,
+                'site' => $this->site,
+                'queue' => $queue,
+            ])
+        )
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('content', 'logs');
+    }
 }

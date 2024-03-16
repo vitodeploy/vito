@@ -4,8 +4,15 @@
     "isEntry": true,
     "src": "resources/css/app.css"
   },
+  "resources/js/app.css": {
+    "file": "assets/app-a1ae07b3.css",
+    "src": "resources/js/app.css"
+  },
   "resources/js/app.js": {
-    "file": "assets/app-c41c626e.js",
+    "css": [
+      "assets/app-a1ae07b3.css"
+    ],
+    "file": "assets/app-44a1ce19.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   }

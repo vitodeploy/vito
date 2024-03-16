@@ -54,6 +54,7 @@ Route::middleware(['server-is-ready', 'handle-ssh-errors'])->group(function () {
         Route::post('/{site}/queues', [QueueController::class, 'store'])->name('servers.sites.queues.store');
         Route::post('/{site}/queues/{queue}/action/{action}', [QueueController::class, 'action'])->name('servers.sites.queues.action');
         Route::delete('/{site}/queues/{queue}', [QueueController::class, 'destroy'])->name('servers.sites.queues.destroy');
+        Route::get('/{site}/queues/{queue}/logs', [QueueController::class, 'logs'])->name('servers.sites.queues.logs');
 
         // site settings
         Route::get('/{site}/settings', [SiteSettingController::class, 'index'])->name('servers.sites.settings');

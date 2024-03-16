@@ -27,27 +27,41 @@
                                     hx-post="{{ route('servers.sites.queues.action', ['server' => $server, 'site' => $site, 'queue' => $queue, 'action' => 'stop']) }}"
                                     hx-swap="outerHTML"
                                     hx-select="#queue-actions-{{ $queue->id }}"
+                                    data-tooltip="Stop"
                                 >
-                                    Stop
+                                    <x-heroicon-o-stop class="h-5 w-5" />
                                 </x-icon-button>
                                 <x-icon-button
                                     id="resume-{{ $queue->id }}"
                                     hx-post="{{ route('servers.sites.queues.action', ['server' => $server, 'site' => $site, 'queue' => $queue, 'action' => 'start']) }}"
                                     hx-swap="outerHTML"
                                     hx-select="#queue-actions-{{ $queue->id }}"
+                                    data-tooltip="Start"
                                 >
-                                    Start
+                                    <x-heroicon-o-play class="h-5 w-5" />
                                 </x-icon-button>
                                 <x-icon-button
                                     id="restart-{{ $queue->id }}"
                                     hx-post="{{ route('servers.sites.queues.action', ['server' => $server, 'site' => $site, 'queue' => $queue, 'action' => 'restart']) }}"
                                     hx-swap="outerHTML"
                                     hx-select="#queue-actions-{{ $queue->id }}"
+                                    data-tooltip="Restart"
                                 >
-                                    Restart
+                                    <x-heroicon-o-arrow-path class="h-5 w-5" />
+                                </x-icon-button>
+                                <x-icon-button
+                                    id="logs-{{ $queue->id }}"
+                                    x-on:click="$dispatch('open-modal', 'show-log'); document.getElementById('log-content').firstChild.innerHTML = '';"
+                                    hx-get="{{ route('servers.sites.queues.logs', ['server' => $server, 'site' => $site, 'queue' => $queue]) }}"
+                                    hx-target="#log-content"
+                                    hx-select="#log-content"
+                                    data-tooltip="Logs"
+                                >
+                                    <x-heroicon-o-square-3-stack-3d class="h-5 w-5" />
                                 </x-icon-button>
                                 <x-icon-button
                                     x-on:click="deleteAction = '{{ route('servers.sites.queues.destroy', ['server' => $server, 'site' => $site, 'queue' => $queue]) }}'; $dispatch('open-modal', 'delete-queue')"
+                                    data-tooltip="Delete"
                                 >
                                     <x-heroicon-o-trash class="h-5 w-5" />
                                 </x-icon-button>
@@ -71,4 +85,25 @@
         method="delete"
         x-bind:action="deleteAction"
     />
+    <x-modal name="show-log" max-width="4xl">
+        <div class="p-6">
+            <h2 class="mb-5 text-lg font-medium text-gray-900 dark:text-gray-100">
+                {{ __("View Log") }}
+            </h2>
+            <div id="log-content">
+                <x-console-view>
+                    @if (session()->has("content"))
+                        {{ session("content") }}
+                    @else
+                        Loading...
+                    @endif
+                </x-console-view>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button type="button" x-on:click="$dispatch('close')">
+                    {{ __("Close") }}
+                </x-secondary-button>
+            </div>
+        </div>
+    </x-modal>
 </div>

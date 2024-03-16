@@ -1,4 +1,4 @@
-import Alpine from 'alpinejs';
+import tippy from 'tippy.js';
 
 Alpine.directive('clipboard', (el) => {
     let text = el.textContent
@@ -54,3 +54,18 @@ window.toastr.options = {
     "positionClass": "toast-bottom-right",
     "preventDuplicates": true,
 }
+
+import 'tippy.js/dist/tippy.css';
+import Alpine from 'alpinejs';
+document.body.addEventListener('htmx:afterSettle', (event) => {
+    tippy('[data-tooltip]', {
+        content(reference) {
+            return reference.getAttribute('data-tooltip');
+        },
+    });
+});
+tippy('[data-tooltip]', {
+    content(reference) {
+        return reference.getAttribute('data-tooltip');
+    },
+});
