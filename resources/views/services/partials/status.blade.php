@@ -33,3 +33,15 @@
 @if ($status == \App\Enums\ServiceStatus::STOPPED)
     <x-status status="danger">{{ $status }}</x-status>
 @endif
+
+@if ($status == \App\Enums\ServiceStatus::ENABLING)
+    <x-status status="warning">{{ $status }}</x-status>
+@endif
+
+@if ($status == \App\Enums\ServiceStatus::DISABLING)
+    <x-status status="warning">{{ $status }}</x-status>
+@endif
+
+@if ($status == \App\Enums\ServiceStatus::DISABLED)
+    <x-status status="disabled">{{ $status }}</x-status>
+@endif

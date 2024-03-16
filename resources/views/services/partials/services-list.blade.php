@@ -54,6 +54,22 @@
                                     >
                                         {{ __("Restart") }}
                                     </x-dropdown-link>
+
+                                    @if ($service->status == \App\Enums\ServiceStatus::DISABLED)
+                                        <x-dropdown-link
+                                            class="cursor-pointer"
+                                            href="{{ route('servers.services.enable', ['server' => $server, 'service' => $service]) }}"
+                                        >
+                                            {{ __("Enable") }}
+                                        </x-dropdown-link>
+                                    @endif
+
+                                    <x-dropdown-link
+                                        class="cursor-pointer"
+                                        href="{{ route('servers.services.disable', ['server' => $server, 'service' => $service]) }}"
+                                    >
+                                        {{ __("Disable") }}
+                                    </x-dropdown-link>
                                 @endif
                             </x-slot>
                         </x-dropdown>

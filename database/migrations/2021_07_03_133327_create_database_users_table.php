@@ -16,7 +16,7 @@ return new class extends Migration
             $table->longText('password')->nullable();
             $table->json('databases')->nullable();
             $table->string('host')->default('localhost');
-            $table->enum('status', DatabaseUserStatus::getValues())->default(DatabaseUserStatus::CREATING);
+            $table->string('status')->default(DatabaseUserStatus::CREATING);
             $table->timestamps();
         });
     }

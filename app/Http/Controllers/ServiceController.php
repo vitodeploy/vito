@@ -44,4 +44,22 @@ class ServiceController extends Controller
 
         return back();
     }
+
+    public function enable(Server $server, Service $service): RedirectResponse
+    {
+        $service->enable();
+
+        Toast::success('Service is being enabled!');
+
+        return back();
+    }
+
+    public function disable(Server $server, Service $service): RedirectResponse
+    {
+        $service->disable();
+
+        Toast::success('Service is being disabled!');
+
+        return back();
+    }
 }

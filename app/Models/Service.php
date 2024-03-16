@@ -93,4 +93,14 @@ class Service extends AbstractModel
     {
         app(Manage::class)->restart($this);
     }
+
+    public function enable(): void
+    {
+        app(Manage::class)->enable($this);
+    }
+
+    public function disable(): void
+    {
+        app(Manage::class)->disable($this);
+    }
 }

@@ -119,6 +119,8 @@ Route::middleware(['server-is-ready', 'handle-ssh-errors'])->group(function () {
     Route::get('/{server}/services/{service}/start', [ServiceController::class, 'start'])->name('servers.services.start');
     Route::get('/{server}/services/{service}/stop', [ServiceController::class, 'stop'])->name('servers.services.stop');
     Route::get('/{server}/services/{service}/restart', [ServiceController::class, 'restart'])->name('servers.services.restart');
+    Route::get('/{server}/services/{service}/enable', [ServiceController::class, 'enable'])->name('servers.services.enable');
+    Route::get('/{server}/services/{service}/disable', [ServiceController::class, 'disable'])->name('servers.services.disable');
 });
 
 // settings

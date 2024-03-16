@@ -51,4 +51,34 @@ class Manage
             $service->save();
         })->onConnection('ssh');
     }
+
+    public function enable(Service $service): void
+    {
+        $service->status = ServiceStatus::ENABLING;
+        $service->save();
+        dispatch(function () use ($service) {
+            $status = $service->server->systemd()->enable($service->unit);
+            if (str($status)->contains('Active: active')) {
+                $service->status = ServiceStatus::READY;
+            } else {
+                $service->status = ServiceStatus::FAILED;
+            }
+            $service->save();
+        })->onConnection('ssh');
+    }
+
+    public function disable(Service $service): void
+    {
+        $service->status = ServiceStatus::DISABLING;
+        $service->save();
+        dispatch(function () use ($service) {
+            $status = $service->server->systemd()->disable($service->unit);
+            if (str($status)->contains('Active: inactive')) {
+                $service->status = ServiceStatus::DISABLED;
+            } else {
+                $service->status = ServiceStatus::FAILED;
+            }
+            $service->save();
+        })->onConnection('ssh');
+    }
 }

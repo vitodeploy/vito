@@ -13,7 +13,7 @@ class Systemd
     public function status(string $unit): string
     {
         $command = <<<EOD
-            sudo service $unit status | cat
+            sudo systemctl status $unit | cat
         EOD;
 
         return $this->server->ssh()->exec($command, sprintf('status-%s', $unit));
@@ -22,8 +22,8 @@ class Systemd
     public function start(string $unit): string
     {
         $command = <<<EOD
-            sudo service $unit start
-            sudo service $unit status | cat
+            sudo systemctl start $unit
+            sudo systemctl status $unit | cat
         EOD;
 
         return $this->server->ssh()->exec($command, sprintf('start-%s', $unit));
@@ -32,8 +32,8 @@ class Systemd
     public function stop(string $unit): string
     {
         $command = <<<EOD
-            sudo service $unit stop
-            sudo service $unit status | cat
+            sudo systemctl stop $unit
+            sudo systemctl status $unit | cat
         EOD;
 
         return $this->server->ssh()->exec($command, sprintf('stop-%s', $unit));
@@ -42,10 +42,32 @@ class Systemd
     public function restart(string $unit): string
     {
         $command = <<<EOD
-            sudo service $unit restart
-            sudo service $unit status | cat
+            sudo systemctl restart $unit
+            sudo systemctl status $unit | cat
         EOD;
 
         return $this->server->ssh()->exec($command, sprintf('restart-%s', $unit));
+    }
+
+    public function enable(string $unit): string
+    {
+        $command = <<<EOD
+            sudo systemctl start $unit
+            sudo systemctl enable $unit
+            sudo systemctl status $unit | cat
+        EOD;
+
+        return $this->server->ssh()->exec($command, sprintf('enable-%s', $unit));
+    }
+
+    public function disable(string $unit): string
+    {
+        $command = <<<EOD
+            sudo systemctl stop $unit
+            sudo systemctl disable $unit
+            sudo systemctl status $unit | cat
+        EOD;
+
+        return $this->server->ssh()->exec($command, sprintf('disable-%s', $unit));
     }
 }

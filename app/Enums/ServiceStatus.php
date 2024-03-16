@@ -23,4 +23,10 @@ final class ServiceStatus extends Enum
     const RESTARTING = 'restarting';
 
     const STOPPED = 'stopped';
+
+    const ENABLING = 'enabling';
+
+    const DISABLING = 'disabling';
+
+    const DISABLED = 'disabled';
 }

@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\CronjobStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +15,7 @@ return new class extends Migration
             $table->string('user');
             $table->string('frequency');
             $table->boolean('hidden')->default(0);
-            $table->enum('status', CronjobStatus::getValues());
+            $table->string('status');
             $table->timestamps();
         });
     }
