@@ -62,7 +62,8 @@ return [
         'none',
         'mysql57',
         'mysql80',
-        'mariadb',
+        'mariadb103',
+        'mariadb104',
         'postgresql12',
         'postgresql13',
         'postgresql14',
@@ -70,9 +71,11 @@ return [
         'postgresql16',
     ],
     'databases_name' => [
+        'none' => 'none',
         'mysql57' => 'mysql',
         'mysql80' => 'mysql',
-        'mariadb' => 'mariadb',
+        'mariadb103' => 'mariadb',
+        'mariadb104' => 'mariadb',
         'postgresql12' => 'postgresql',
         'postgresql13' => 'postgresql',
         'postgresql14' => 'postgresql',
@@ -80,9 +83,12 @@ return [
         'postgresql16' => 'postgresql',
     ],
     'databases_version' => [
+        'none' => '',
         'mysql57' => '5.7',
         'mysql80' => '8.0',
         'mariadb' => '10.3',
+        'mariadb103' => '10.3',
+        'mariadb104' => '10.4',
         'postgresql12' => '12',
         'postgresql13' => '13',
         'postgresql14' => '14',
@@ -188,12 +194,15 @@ return [
         'mariadb' => [
             'ubuntu_18' => [
                 '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
             ],
             'ubuntu_20' => [
                 '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
             ],
             'ubuntu_22' => [
                 '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
             ],
         ],
         'postgresql' => [

@@ -207,7 +207,7 @@
             </div>
 
             <div class="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                <div x-show="['regular'].includes(type)">
+                <div x-show="[ServerType::REGULAR].includes(type)">
                     <x-input-label for="webserver" value="Webserver" />
                     <x-select-input id="webserver" name="webserver" class="mt-1 w-full">
                         @foreach (config("core.webservers") as $ws)
@@ -220,12 +220,12 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div x-show="['regular', 'database'].includes(type)">
+                <div x-show="[ServerType::REGULAR, ServerType::DATABASE].includes(type)">
                     <x-input-label for="database" value="Database" />
                     <x-select-input id="database" name="database" class="mt-1 w-full">
                         @foreach (config("core.databases") as $db)
-                            <option value="{{ $db }}" @if($db == old('database', Database::MYSQL80)) selected @endif>
-                                {{ $db }}
+                            <option value="{{ $db }}" @if($db == old('database', Database::NONE)) selected @endif>
+                                {{ config("core.databases_name")[$db] }} {{ config("core.databases_version")[$db] }}
                             </option>
                         @endforeach
                     </x-select-input>
@@ -233,7 +233,7 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div x-show="['regular'].includes(type)">
+                <div x-show="[ServerType::REGULAR].includes(type)">
                     <x-input-label for="php" value="PHP" />
                     <x-select-input id="php" name="php" class="mt-1 w-full">
                         @foreach (config("core.php_versions") as $p)
