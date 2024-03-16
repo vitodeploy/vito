@@ -365,11 +365,6 @@ return [
      * firewall
      */
     'firewall_protocols_port' => [
-        'ssh' => 22,
-        'http' => 80,
-        'https' => 443,
-        'mysql' => 3306,
-        'ftp' => 21,
         'tcp' => '',
         'udp' => '',
     ],
