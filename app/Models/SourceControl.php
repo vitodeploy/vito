@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $provider
+ * @property array $provider_data
  * @property ?string $profile
  * @property ?string $url
  * @property string $access_token
@@ -18,6 +19,7 @@ class SourceControl extends AbstractModel
 
     protected $fillable = [
         'provider',
+        'provider_data',
         'profile',
         'url',
         'access_token',
@@ -25,6 +27,7 @@ class SourceControl extends AbstractModel
 
     protected $casts = [
         'access_token' => 'encrypted',
+        'provider_data' => 'encrypted:array',
     ];
 
     public function provider(): SourceControlProvider

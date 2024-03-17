@@ -69,12 +69,55 @@
                 @enderror
             </div>
 
-            <div class="mt-6">
+            <div x-show="['gitlab', 'github'].includes(provider)" class="mt-6">
                 <x-input-label for="token" value="API Key" />
                 <x-text-input value="{{ old('token') }}" id="token" name="token" type="text" class="mt-1 w-full" />
                 @error("token")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
+            </div>
+
+            <div x-show="provider === 'bitbucket'">
+                <div class="mt-6">
+                    <x-input-label for="username" value="Username" />
+                    <x-text-input
+                        value="{{ old('username') }}"
+                        id="username"
+                        name="username"
+                        type="text"
+                        class="mt-1 w-full"
+                    />
+                    <x-input-help>Your Bitbucket username</x-input-help>
+                    @error("username")
+                        <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
+
+                <div class="mt-6">
+                    <x-input-label for="password" value="Password" />
+                    <x-text-input
+                        value="{{ old('password') }}"
+                        id="password"
+                        name="password"
+                        type="text"
+                        class="mt-1 w-full"
+                    />
+                    <x-input-help>
+                        Create a new
+                        <a
+                            class="text-primary-500"
+                            href="https://bitbucket.org/account/settings/app-passwords/new"
+                            target="_blank"
+                        >
+                            App Password
+                        </a>
+                        in your Bitbucket account with write and admin access to Workspaces, Projects, Repositories and
+                        Webhooks
+                    </x-input-help>
+                    @error("password")
+                        <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
             </div>
 
             <div class="mt-6 flex justify-end">

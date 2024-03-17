@@ -16,7 +16,7 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function connect(): bool
     {
-        $res = Http::withToken($this->sourceControl->access_token)
+        $res = Http::withToken($this->data()['token'])
             ->get($this->getApiUrl().'/projects');
 
         return $res->successful();
@@ -28,7 +28,7 @@ class Gitlab extends AbstractSourceControlProvider
     public function getRepo(?string $repo = null): mixed
     {
         $repository = $repo ? urlencode($repo) : null;
-        $res = Http::withToken($this->sourceControl->access_token)
+        $res = Http::withToken($this->data()['token'])
             ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits');
 
         $this->handleResponseErrors($res, $repo);
@@ -49,7 +49,7 @@ class Gitlab extends AbstractSourceControlProvider
     public function deployHook(string $repo, array $events, string $secret): array
     {
         $repository = urlencode($repo);
-        $response = Http::withToken($this->sourceControl->access_token)->post(
+        $response = Http::withToken($this->data()['token'])->post(
             $this->getApiUrl().'/projects/'.$repository.'/hooks',
             [
                 'description' => 'deploy',
@@ -84,7 +84,7 @@ class Gitlab extends AbstractSourceControlProvider
     public function destroyHook(string $repo, string $hookId): void
     {
         $repository = urlencode($repo);
-        $response = Http::withToken($this->sourceControl->access_token)->delete(
+        $response = Http::withToken($this->data()['token'])->delete(
             $this->getApiUrl().'/projects/'.$repository.'/hooks/'.$hookId
         );
 
@@ -99,7 +99,7 @@ class Gitlab extends AbstractSourceControlProvider
     public function getLastCommit(string $repo, string $branch): ?array
     {
         $repository = urlencode($repo);
-        $res = Http::withToken($this->sourceControl->access_token)
+        $res = Http::withToken($this->data()['token'])
             ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits?ref_name='.$branch);
 
         $this->handleResponseErrors($res, $repo);
@@ -126,7 +126,7 @@ class Gitlab extends AbstractSourceControlProvider
     public function deployKey(string $title, string $repo, string $key): void
     {
         $repository = urlencode($repo);
-        $response = Http::withToken($this->sourceControl->access_token)->post(
+        $response = Http::withToken($this->data()['token'])->post(
             $this->getApiUrl().'/projects/'.$repository.'/deploy_keys',
             [
                 'title' => $title,

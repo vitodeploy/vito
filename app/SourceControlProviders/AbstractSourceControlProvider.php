@@ -17,6 +17,35 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         $this->sourceControl = $sourceControl;
     }
 
+    public function createRules(array $input): array
+    {
+        return [
+            'token' => 'required',
+            'url' => [
+                'nullable',
+                'url:http,https',
+                'ends_with:/',
+            ],
+        ];
+    }
+
+    public function createData(array $input): array
+    {
+        return [
+            'token' => $input['token'] ?? '',
+        ];
+    }
+
+    public function data(): array
+    {
+        // support for older data
+        $token = $this->sourceControl->access_token ?? '';
+
+        return [
+            'token' => $this->sourceControl->provider_data['token'] ?? $token,
+        ];
+    }
+
     /**
      * @throws SourceControlIsNotConnected
      * @throws RepositoryNotFound
