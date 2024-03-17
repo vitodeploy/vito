@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class Database extends Enum
+final class Database
 {
     const NONE = 'none';
 

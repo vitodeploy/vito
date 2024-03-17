@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class OperatingSystem extends Enum
+final class OperatingSystem
 {
     const UBUNTU18 = 'ubuntu_18';
 

@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class QueueStatus extends Enum
+final class QueueStatus
 {
     const RUNNING = 'running';
 

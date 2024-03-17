@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class SiteFeature extends Enum
+final class SiteFeature
 {
     const DEPLOYMENT = 'deployment';
 
