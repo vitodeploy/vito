@@ -24,7 +24,7 @@
                     <x-th>{{ __("Username") }}</x-th>
                     <x-th>{{ __("Created") }}</x-th>
                     <x-th class="flex items-center">
-                        <x-heroicon-o-link class="mr-1 h-5 w-5" />
+                        <x-heroicon name="o-link" class="mr-1 h-5 w-5" />
                         {{ __("Linked Databases") }}
                     </x-th>
                     <x-th>{{ __("Status") }}</x-th>
@@ -50,17 +50,17 @@
                                 hx-select="#database-user-password-content"
                                 hx-swap="outerHTML"
                             >
-                                <x-heroicon-o-lock-closed class="h-5 w-5" />
+                                <x-heroicon name="o-lock-closed" class="h-5 w-5" />
                             </x-icon-button>
                             <x-icon-button
                                 x-on:click="linkAction = '{{ route('servers.databases.users.link', ['server' => $server, 'databaseUser' => $databaseUser]) }}';linkedDatabases = {{ json_encode($databaseUser->databases) }}; $dispatch('open-modal', 'link-database-user');"
                             >
-                                <x-heroicon-o-link class="h-5 w-5" />
+                                <x-heroicon name="o-link" class="h-5 w-5" />
                             </x-icon-button>
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.databases.users.destroy', ['server' => $server, 'databaseUser' => $databaseUser]) }}'; $dispatch('open-modal', 'delete-database-user')"
                             >
-                                <x-heroicon-o-trash class="h-5 w-5" />
+                                <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </x-td>
                     </tr>

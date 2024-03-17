@@ -37,7 +37,7 @@
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.databases.destroy', ['server' => $server, 'database' => $database]) }}'; $dispatch('open-modal', 'delete-database')"
                             >
-                                <x-heroicon-o-trash class="h-5 w-5" />
+                                <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </x-td>
                     </tr>

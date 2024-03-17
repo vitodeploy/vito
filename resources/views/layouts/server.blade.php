@@ -19,7 +19,8 @@
                     "
                 >
                     <div x-show="copied" class="mr-1 flex items-center">
-                        <x-heroicon-o-clipboard-document-check
+                        <x-heroicon
+                            name="o-clipboard-document-check"
                             class="h-4 w-4 font-bold text-primary-600 dark:text-white"
                         />
                     </div>

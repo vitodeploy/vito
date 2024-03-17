@@ -27,7 +27,7 @@
                                         <x-slot name="trigger">
                                             <x-secondary-button>
                                                 {{ __("Actions") }}
-                                                <x-heroicon-o-chevron-up-down class="ml-1 h-5 w-5" />
+                                                <x-heroicon name="o-chevron-up-down" class="ml-1 h-5 w-5" />
                                             </x-secondary-button>
                                         </x-slot>
                                         <x-slot name="content">

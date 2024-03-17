@@ -36,7 +36,7 @@
                             hx-target="#log-content"
                             hx-select="#log-content"
                         >
-                            <x-heroicon-o-eye class="h-5 w-5" />
+                            <x-heroicon name="o-eye" class="h-5 w-5" />
                         </x-icon-button>
                     </x-td>
                 </tr>

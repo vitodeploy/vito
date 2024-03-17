@@ -36,27 +36,30 @@
             <x-dropdown>
                 <x-slot name="trigger">
                     <button type="button" class="flex items-center">
-                        <x-heroicon-o-moon x-show="isDark()" class="h-7 w-7" />
-                        <x-heroicon-o-sun x-show="!isDark()" class="h-7 w-7" />
+                        <x-heroicon name="o-moon" x-show="isDark()" class="h-7 w-7" />
+                        <x-heroicon name="o-sun" x-show="!isDark()" class="h-7 w-7" />
                     </button>
                 </x-slot>
                 <x-slot name="content">
                     <x-dropdown-link class="cursor-pointer" x-on:click="changeTheme('dark')">
-                        <x-heroicon-o-moon
+                        <x-heroicon
+                            name="o-moon"
                             class="mr-2 h-5 w-5"
                             x-bind:class="theme === 'dark' ? 'text-primary-600' : ''"
                         />
                         {{ __("Dark") }}
                     </x-dropdown-link>
                     <x-dropdown-link class="cursor-pointer" x-on:click="changeTheme('light')">
-                        <x-heroicon-o-sun
+                        <x-heroicon
+                            name="o-sun"
                             class="mr-2 h-5 w-5"
                             x-bind:class="theme === 'light' ? 'text-primary-600' : ''"
                         />
                         {{ __("Light") }}
                     </x-dropdown-link>
                     <x-dropdown-link class="cursor-pointer" x-on:click="changeTheme('system')">
-                        <x-heroicon-o-computer-desktop
+                        <x-heroicon
+                            name="o-computer-desktop"
                             class="mr-2 h-5 w-5"
                             x-bind:class="theme === 'system' ? 'text-primary-600' : ''"
                         />

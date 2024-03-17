@@ -16,7 +16,7 @@
         <div class="flex items-end">
             <div class="flex h-20 flex-col items-end justify-center">
                 <div class="flex items-center">
-                    <x-heroicon-o-globe-alt class="mr-1 h-5 w-5 text-gray-500" />
+                    <x-heroicon name="o-globe-alt" class="mr-1 h-5 w-5 text-gray-500" />
                     @include("sites.partials.site-status")
                 </div>
                 <x-input-label class="mt-1 cursor-pointer" x-data="{ copied: false }">
@@ -31,7 +31,8 @@
                         "
                     >
                         <div x-show="copied" class="mr-1 flex items-center">
-                            <x-heroicon-o-clipboard-document-check
+                            <x-heroicon
+                                name="o-clipboard-document-check"
                                 class="h-4 w-4 font-bold text-primary-600 dark:text-white"
                             />
                         </div>
@@ -42,7 +43,7 @@
             <div class="mx-5 h-20 border-r border-gray-200 dark:border-gray-800"></div>
             <div class="flex h-20 flex-col items-end justify-center">
                 <div class="flex items-center">
-                    <x-heroicon-o-server class="mr-1 h-5 w-5 text-gray-500" />
+                    <x-heroicon name="o-server" class="mr-1 h-5 w-5 text-gray-500" />
                     @include("servers.partials.server-status", ["server" => $site->server])
                 </div>
                 <x-input-label class="mt-1 cursor-pointer" x-data="{ copied: false }">
@@ -57,7 +58,8 @@
                         "
                     >
                         <div x-show="copied" class="mr-1 flex items-center">
-                            <x-heroicon-o-clipboard-document-check
+                            <x-heroicon
+                                name="o-clipboard-document-check"
                                 class="h-4 w-4 font-bold text-primary-600 dark:text-white"
                             />
                         </div>
@@ -79,7 +81,7 @@
                 :href="route('servers.sites.show', ['server' => $site->server, 'site' => $site])"
                 :active="request()->routeIs('servers.sites.show')"
             >
-                <x-heroicon-o-globe-alt class="mr-2 h-5 w-5" />
+                <x-heroicon name="o-globe-alt" class="mr-2 h-5 w-5" />
                 {{ __("Application") }}
             </x-secondary-sidebar-link>
             @if ($site->hasFeature(SiteFeature::SSL))
@@ -87,7 +89,7 @@
                     :href="route('servers.sites.ssl', ['server' => $site->server, 'site' => $site])"
                     :active="request()->routeIs('servers.sites.ssl')"
                 >
-                    <x-heroicon-o-lock-closed class="mr-2 h-5 w-5" />
+                    <x-heroicon name="o-lock-closed" class="mr-2 h-5 w-5" />
                     {{ __("SSL") }}
                 </x-secondary-sidebar-link>
             @endif
@@ -97,7 +99,7 @@
                     :href="route('servers.sites.queues', ['server' => $site->server, 'site' => $site])"
                     :active="request()->routeIs('servers.sites.queues')"
                 >
-                    <x-heroicon-o-queue-list class="mr-2 h-5 w-5" />
+                    <x-heroicon name="o-queue-list" class="mr-2 h-5 w-5" />
                     {{ __("Queues") }}
                 </x-secondary-sidebar-link>
             @endif
@@ -106,14 +108,14 @@
                 :href="route('servers.sites.settings', ['server' => $site->server, 'site' => $site])"
                 :active="request()->routeIs('servers.sites.settings')"
             >
-                <x-heroicon-o-cog-6-tooth class="mr-2 h-5 w-5" />
+                <x-heroicon name="o-cog-6-tooth" class="mr-2 h-5 w-5" />
                 {{ __("Settings") }}
             </x-secondary-sidebar-link>
             <x-secondary-sidebar-link
                 :href="route('servers.sites.logs', ['server' => $site->server, 'site' => $site])"
                 :active="request()->routeIs('servers.sites.logs')"
             >
-                <x-heroicon-o-square-3-stack-3d class="mr-2 h-5 w-5" />
+                <x-heroicon name="o-square-3-stack-3d" class="mr-2 h-5 w-5" />
                 {{ __("Logs") }}
             </x-secondary-sidebar-link>
         </div>

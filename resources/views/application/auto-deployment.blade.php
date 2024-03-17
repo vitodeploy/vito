@@ -17,7 +17,7 @@
                     >
                         {{ __("Enable") }}
                         @if ($site->isAutoDeployment())
-                            <x-heroicon-o-check class="ml-1 h-5 w-5 text-green-600" />
+                            <x-heroicon name="o-check" class="ml-1 h-5 w-5 text-green-600" />
                         @endif
                     </x-dropdown-link>
                     <x-dropdown-link
@@ -28,7 +28,7 @@
                     >
                         {{ __("Disable") }}
                         @if (! $site->isAutoDeployment())
-                            <x-heroicon-o-check class="ml-1 h-5 w-5 text-green-600" />
+                            <x-heroicon name="o-check" class="ml-1 h-5 w-5 text-green-600" />
                         @endif
                     </x-dropdown-link>
                 </div>

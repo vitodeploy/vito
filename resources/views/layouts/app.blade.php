@@ -66,7 +66,7 @@
                                 :href="route('servers.show', ['server' => $server])"
                                 :active="request()->routeIs('servers.show')"
                             >
-                                <x-heroicon-o-home class="h-6 w-6" />
+                                <x-heroicon name="o-home" class="h-6 w-6" />
                                 <span class="ml-2 text-gray-50">
                                     {{ __("Overview") }}
                                 </span>
@@ -76,7 +76,7 @@
                                     :href="route('servers.sites', ['server' => $server])"
                                     :active="request()->routeIs('servers.sites') || request()->is('servers/*/sites/*')"
                                 >
-                                    <x-heroicon-o-globe-alt class="h-6 w-6" />
+                                    <x-heroicon name="o-globe-alt" class="h-6 w-6" />
                                     <span class="ml-2 text-gray-50">
                                         {{ __("Sites") }}
                                     </span>
@@ -89,7 +89,7 @@
                                     :active="request()->routeIs('servers.databases') ||
                                     request()->routeIs('servers.databases.backups')"
                                 >
-                                    <x-heroicon-o-circle-stack class="h-6 w-6" />
+                                    <x-heroicon name="o-circle-stack" class="h-6 w-6" />
                                     <span class="ml-2 text-gray-50">
                                         {{ __("Databases") }}
                                     </span>
@@ -101,7 +101,7 @@
                                     :href="route('servers.php', ['server' => $server])"
                                     :active="request()->routeIs('servers.php')"
                                 >
-                                    <x-heroicon-o-code-bracket class="h-6 w-6" />
+                                    <x-heroicon name="o-code-bracket" class="h-6 w-6" />
                                     <span class="ml-2 text-gray-50">
                                         {{ __("PHP") }}
                                     </span>
@@ -113,7 +113,7 @@
                                     :href="route('servers.firewall', ['server' => $server])"
                                     :active="request()->routeIs('servers.firewall')"
                                 >
-                                    <x-heroicon-o-fire class="h-6 w-6" />
+                                    <x-heroicon name="o-fire" class="h-6 w-6" />
                                     <span class="ml-2 text-gray-50">
                                         {{ __("Firewall") }}
                                     </span>
@@ -124,7 +124,7 @@
                                 :href="route('servers.cronjobs', ['server' => $server])"
                                 :active="request()->routeIs('servers.cronjobs')"
                             >
-                                <x-heroicon-o-clock class="h-6 w-6" />
+                                <x-heroicon name="o-clock" class="h-6 w-6" />
                                 <span class="ml-2 text-gray-50">
                                     {{ __("Cronjobs") }}
                                 </span>
@@ -133,7 +133,7 @@
                                 :href="route('servers.ssh-keys', ['server' => $server])"
                                 :active="request()->routeIs('servers.ssh-keys')"
                             >
-                                <x-heroicon-o-key class="h-6 w-6" />
+                                <x-heroicon name="o-key" class="h-6 w-6" />
                                 <span class="ml-2 text-gray-50">
                                     {{ __("SSH Keys") }}
                                 </span>
@@ -142,7 +142,7 @@
                                 :href="route('servers.services', ['server' => $server])"
                                 :active="request()->routeIs('servers.services')"
                             >
-                                <x-heroicon-o-cog-6-tooth class="h-6 w-6" />
+                                <x-heroicon name="o-cog-6-tooth" class="h-6 w-6" />
                                 <span class="ml-2 text-gray-50">
                                     {{ __("Services") }}
                                 </span>
@@ -152,7 +152,7 @@
                                 :href="route('servers.settings', ['server' => $server])"
                                 :active="request()->routeIs('servers.settings')"
                             >
-                                <x-heroicon-o-wrench-screwdriver class="h-6 w-6" />
+                                <x-heroicon name="o-wrench-screwdriver" class="h-6 w-6" />
                                 <span class="ml-2 text-gray-50">
                                     {{ __("Settings") }}
                                 </span>
@@ -161,7 +161,7 @@
                                 :href="route('servers.logs', ['server' => $server])"
                                 :active="request()->routeIs('servers.logs')"
                             >
-                                <x-heroicon-o-square-3-stack-3d class="h-6 w-6" />
+                                <x-heroicon name="o-square-3-stack-3d" class="h-6 w-6" />
                                 <span class="ml-2 text-gray-50">
                                     {{ __("Logs") }}
                                 </span>

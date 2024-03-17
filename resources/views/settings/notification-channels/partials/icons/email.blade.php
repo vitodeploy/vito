@@ -1,1 +1,1 @@
-<x-heroicon-o-envelope class="h-10 w-10" />
+<x-heroicon name="o-envelope" class="h-10 w-10" />

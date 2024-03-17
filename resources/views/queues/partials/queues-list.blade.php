@@ -29,7 +29,7 @@
                                     hx-select="#queue-actions-{{ $queue->id }}"
                                     data-tooltip="Stop"
                                 >
-                                    <x-heroicon-o-stop class="h-5 w-5" />
+                                    <x-heroicon name="o-stop" class="h-5 w-5" />
                                 </x-icon-button>
                                 <x-icon-button
                                     id="resume-{{ $queue->id }}"
@@ -38,7 +38,7 @@
                                     hx-select="#queue-actions-{{ $queue->id }}"
                                     data-tooltip="Start"
                                 >
-                                    <x-heroicon-o-play class="h-5 w-5" />
+                                    <x-heroicon name="o-play" class="h-5 w-5" />
                                 </x-icon-button>
                                 <x-icon-button
                                     id="restart-{{ $queue->id }}"
@@ -47,7 +47,7 @@
                                     hx-select="#queue-actions-{{ $queue->id }}"
                                     data-tooltip="Restart"
                                 >
-                                    <x-heroicon-o-arrow-path class="h-5 w-5" />
+                                    <x-heroicon name="o-arrow-path" class="h-5 w-5" />
                                 </x-icon-button>
                                 <x-icon-button
                                     id="logs-{{ $queue->id }}"
@@ -57,13 +57,13 @@
                                     hx-select="#log-content"
                                     data-tooltip="Logs"
                                 >
-                                    <x-heroicon-o-square-3-stack-3d class="h-5 w-5" />
+                                    <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5" />
                                 </x-icon-button>
                                 <x-icon-button
                                     x-on:click="deleteAction = '{{ route('servers.sites.queues.destroy', ['server' => $server, 'site' => $site, 'queue' => $queue]) }}'; $dispatch('open-modal', 'delete-queue')"
                                     data-tooltip="Delete"
                                 >
-                                    <x-heroicon-o-trash class="h-5 w-5" />
+                                    <x-heroicon name="o-trash" class="h-5 w-5" />
                                 </x-icon-button>
                             </div>
                         </div>

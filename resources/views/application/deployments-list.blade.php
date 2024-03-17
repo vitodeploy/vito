@@ -45,7 +45,7 @@
                             hx-select="#show-log-content"
                             hx-swap="outerHTML"
                         >
-                            <x-heroicon-o-eye class="h-5 w-5" />
+                            <x-heroicon name="o-eye" class="h-5 w-5" />
                         </x-icon-button>
                     </x-td>
                 </tr>

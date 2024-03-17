@@ -61,14 +61,14 @@
                                 <x-icon-button
                                     x-on:click="restoreAction = '{{ route('servers.databases.backups.files.restore', ['server' => $server, 'backup' => $backup, 'backupFile' => $file]) }}'; $dispatch('open-modal', 'restore-backup')"
                                 >
-                                    <x-heroicon-o-arrow-path class="h-5 w-5" />
+                                    <x-heroicon name="o-arrow-path" class="h-5 w-5" />
                                 </x-icon-button>
                             @endif
 
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.databases.backups.files.destroy', ['server' => $server, 'backup' => $backup, 'backupFile' => $file]) }}'; $dispatch('open-modal', 'delete-backup-file')"
                             >
-                                <x-heroicon-o-trash class="h-5 w-5" />
+                                <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </x-td>
                     </tr>

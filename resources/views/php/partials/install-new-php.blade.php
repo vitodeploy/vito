@@ -2,7 +2,7 @@
     <x-slot name="trigger">
         <x-primary-button hx-disable>
             {{ __("Install PHP") }}
-            <x-heroicon-o-chevron-up-down class="ml-1 h-5 w-5" />
+            <x-heroicon name="o-chevron-up-down" class="ml-1 h-5 w-5" />
         </x-primary-button>
     </x-slot>
 

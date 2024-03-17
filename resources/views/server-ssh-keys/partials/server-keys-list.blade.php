@@ -32,7 +32,7 @@
                                 <x-icon-button
                                     x-on:click="deleteAction = '{{ route('servers.ssh-keys.destroy', ['server' => $server, 'sshKey' => $key]) }}'; $dispatch('open-modal', 'delete-key')"
                                 >
-                                    <x-heroicon-o-trash class="h-5 w-5" />
+                                    <x-heroicon name="o-trash" class="h-5 w-5" />
                                 </x-icon-button>
                             </div>
                         </div>

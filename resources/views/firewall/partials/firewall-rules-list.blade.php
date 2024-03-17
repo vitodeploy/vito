@@ -31,7 +31,7 @@
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.firewall.destroy', ['server' => $server, 'firewallRule' => $rule]) }}'; $dispatch('open-modal', 'delete-rule')"
                             >
-                                <x-heroicon-o-trash class="h-5 w-5" />
+                                <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </div>
                     </div>

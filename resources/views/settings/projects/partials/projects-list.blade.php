@@ -29,7 +29,7 @@
                     <x-icon-button
                         x-on:click="deleteAction = '{{ route('projects.delete', $project) }}'; $dispatch('open-modal', 'delete-project')"
                     >
-                        <x-heroicon-o-trash class="h-5 w-5" />
+                        <x-heroicon name="o-trash" class="h-5 w-5" />
                     </x-icon-button>
                 </div>
             </x-item-card>

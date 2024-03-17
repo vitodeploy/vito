@@ -36,12 +36,12 @@
                             <x-icon-button
                                 :href="route('servers.databases.backups', ['server' => $server, 'backup' => $backup])"
                             >
-                                <x-heroicon-o-circle-stack class="h-5 w-5" />
+                                <x-heroicon name="o-circle-stack" class="h-5 w-5" />
                             </x-icon-button>
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.databases.backups.destroy', ['server' => $server, 'backup' => $backup]) }}'; $dispatch('open-modal', 'delete-backup')"
                             >
-                                <x-heroicon-o-trash class="h-5 w-5" />
+                                <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </x-td>
                     </tr>

@@ -34,7 +34,7 @@
                                         <x-icon-button
                                             x-on:click="deleteAction = '{{ route('servers.sites.ssl.destroy', ['server' => $server, 'site' => $site, 'ssl' => $ssl]) }}'; $dispatch('open-modal', 'delete-ssl')"
                                         >
-                                            <x-heroicon-o-trash class="h-5 w-5" />
+                                            <x-heroicon name="o-trash" class="h-5 w-5" />
                                         </x-icon-button>
                                     </div>
                                 </div>

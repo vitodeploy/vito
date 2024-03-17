@@ -26,7 +26,7 @@
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('notification-channels.delete', $channel->id) }}'; $dispatch('open-modal', 'delete-channel')"
                             >
-                                <x-heroicon-o-trash class="h-5 w-5" />
+                                <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </div>
                     </div>

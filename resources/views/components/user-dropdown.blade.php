@@ -2,7 +2,7 @@
     <x-dropdown align="right" width="48">
         <x-slot name="trigger">
             <button class="flex items-center">
-                <x-heroicon-o-cog-6-tooth class="h-7 w-7" />
+                <x-heroicon name="o-cog-6-tooth" class="h-7 w-7" />
             </button>
         </x-slot>
         <x-slot name="content">
