@@ -14,17 +14,16 @@ class SourceControlsTest extends TestCase
     /**
      * @dataProvider data
      */
-    public function test_connect_provider(string $provider, ?string $customUrl): void
+    public function test_connect_provider(string $provider, ?string $customUrl, array $input): void
     {
         $this->actingAs($this->user);
 
         Http::fake();
 
-        $input = [
+        $input = array_merge([
             'name' => 'test',
             'provider' => $provider,
-            'token' => 'token',
-        ];
+        ], $input);
 
         if ($customUrl !== null) {
             $input['url'] = $customUrl;
@@ -89,10 +88,10 @@ class SourceControlsTest extends TestCase
     public static function data(): array
     {
         return [
-            ['github', null],
-            ['gitlab', null],
-            ['gitlab', 'https://git.example.com/'],
-            ['bitbucket', null],
+            ['github', null, ['token' => 'test']],
+            ['gitlab', null, ['token' => 'test']],
+            ['gitlab', 'https://git.example.com/', ['token' => 'test']],
+            ['bitbucket', null, ['username' => 'test', 'password' => 'test']],
         ];
     }
 }

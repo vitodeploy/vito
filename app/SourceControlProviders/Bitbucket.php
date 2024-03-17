@@ -13,9 +13,33 @@ class Bitbucket extends AbstractSourceControlProvider
 {
     protected string $apiUrl = 'https://api.bitbucket.org/2.0';
 
+    public function createRules(array $input): array
+    {
+        return [
+            'username' => 'required',
+            'password' => 'required',
+        ];
+    }
+
+    public function createData(array $input): array
+    {
+        return [
+            'username' => $input['username'] ?? '',
+            'password' => $input['password'] ?? '',
+        ];
+    }
+
+    public function data(): array
+    {
+        return [
+            'username' => $this->sourceControl->provider_data['username'] ?? '',
+            'password' => $this->sourceControl->provider_data['password'] ?? '',
+        ];
+    }
+
     public function connect(): bool
     {
-        $res = Http::withToken($this->sourceControl->access_token)
+        $res = Http::withHeaders($this->getAuthenticationHeaders())
             ->get($this->apiUrl.'/repositories');
 
         return $res->successful();
@@ -26,7 +50,7 @@ class Bitbucket extends AbstractSourceControlProvider
      */
     public function getRepo(?string $repo = null): mixed
     {
-        $res = Http::withToken($this->sourceControl->access_token)
+        $res = Http::withHeaders($this->getAuthenticationHeaders())
             ->get($this->apiUrl."/repositories/$repo");
 
         $this->handleResponseErrors($res, $repo);
@@ -44,14 +68,15 @@ class Bitbucket extends AbstractSourceControlProvider
      */
     public function deployHook(string $repo, array $events, string $secret): array
     {
-        $response = Http::withToken($this->sourceControl->access_token)->post($this->apiUrl."/repositories/$repo/hooks", [
-            'description' => 'deploy',
-            'url' => url('/api/git-hooks?secret='.$secret),
-            'events' => [
-                'repo:'.implode(',', $events),
-            ],
-            'active' => true,
-        ]);
+        $response = Http::withHeaders($this->getAuthenticationHeaders())
+            ->post($this->apiUrl."/repositories/$repo/hooks", [
+                'description' => 'deploy',
+                'url' => url('/api/git-hooks?secret='.$secret),
+                'events' => [
+                    'repo:'.implode(',', $events),
+                ],
+                'active' => true,
+            ]);
 
         if ($response->status() != 201) {
             throw new FailedToDeployGitHook($response->json()['error']['message']);
@@ -69,7 +94,8 @@ class Bitbucket extends AbstractSourceControlProvider
     public function destroyHook(string $repo, string $hookId): void
     {
         $hookId = urlencode($hookId);
-        $response = Http::withToken($this->sourceControl->access_token)->delete($this->apiUrl."/repositories/$repo/hooks/$hookId");
+        $response = Http::withHeaders($this->getAuthenticationHeaders())
+            ->delete($this->apiUrl."/repositories/$repo/hooks/$hookId");
 
         if ($response->status() != 204) {
             throw new FailedToDestroyGitHook('Error');
@@ -81,7 +107,7 @@ class Bitbucket extends AbstractSourceControlProvider
      */
     public function getLastCommit(string $repo, string $branch): ?array
     {
-        $res = Http::withToken($this->sourceControl->access_token)
+        $res = Http::withHeaders($this->getAuthenticationHeaders())
             ->get($this->apiUrl."/repositories/$repo/commits?include=".$branch);
 
         $this->handleResponseErrors($res, $repo);
@@ -108,7 +134,7 @@ class Bitbucket extends AbstractSourceControlProvider
      */
     public function deployKey(string $title, string $repo, string $key): void
     {
-        $res = Http::withToken($this->sourceControl->access_token)->post(
+        $res = Http::withHeaders($this->getAuthenticationHeaders())->post(
             $this->apiUrl."/repositories/$repo/deploy-keys",
             [
                 'label' => $title,
@@ -116,7 +142,7 @@ class Bitbucket extends AbstractSourceControlProvider
             ]
         );
 
-        if ($res->status() != 201) {
+        if ($res->status() != 200) {
             throw new FailedToDeployGitKey($res->json()['error']['message']);
         }
     }
@@ -128,6 +154,17 @@ class Bitbucket extends AbstractSourceControlProvider
         return [
             'name' => $committer[0],
             'email' => Str::replace('>', '', $committer[1]),
+        ];
+    }
+
+    private function getAuthenticationHeaders(): array
+    {
+        $username = $this->data()['username'];
+        $password = $this->data()['password'];
+        $basicAuth = base64_encode("$username:$password");
+
+        return [
+            'Authorization' => 'Basic '.$basicAuth,
         ];
     }
 }

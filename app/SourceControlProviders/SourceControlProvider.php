@@ -4,6 +4,12 @@ namespace App\SourceControlProviders;
 
 interface SourceControlProvider
 {
+    public function createRules(array $input): array;
+
+    public function createData(array $input): array;
+
+    public function data(): array;
+
     public function connect(): bool;
 
     public function getRepo(?string $repo = null): mixed;
