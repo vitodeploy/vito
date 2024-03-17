@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\OperatingSystem;
+use App\Enums\StorageProvider;
 use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
@@ -41,9 +43,8 @@ return [
      * General
      */
     'operating_systems' => [
-        // 'ubuntu_18',
-        'ubuntu_20',
-        'ubuntu_22',
+        OperatingSystem::UBUNTU20,
+        OperatingSystem::UBUNTU22,
     ],
     'webservers' => ['none', 'nginx'],
     'php_versions' => [
@@ -106,12 +107,22 @@ return [
     /*
      * Server
      */
-    'server_types' => \App\Enums\ServerType::getValues(),
+    'server_types' => [
+        \App\Enums\ServerType::REGULAR,
+        \App\Enums\ServerType::DATABASE,
+    ],
     'server_types_class' => [
         \App\Enums\ServerType::REGULAR => \App\ServerTypes\Regular::class,
         \App\Enums\ServerType::DATABASE => \App\ServerTypes\Database::class,
     ],
-    'server_providers' => \App\Enums\ServerProvider::getValues(),
+    'server_providers' => [
+        \App\Enums\ServerProvider::CUSTOM,
+        \App\Enums\ServerProvider::AWS,
+        \App\Enums\ServerProvider::LINODE,
+        \App\Enums\ServerProvider::DIGITALOCEAN,
+        \App\Enums\ServerProvider::VULTR,
+        \App\Enums\ServerProvider::HETZNER,
+    ],
     'server_providers_class' => [
         \App\Enums\ServerProvider::CUSTOM => \App\ServerProviders\Custom::class,
         \App\Enums\ServerProvider::AWS => AWS::class,
@@ -324,7 +335,6 @@ return [
         'github',
         'gitlab',
         'bitbucket',
-        'custom',
     ],
     'source_control_providers_class' => [
         'github' => Github::class,
@@ -397,11 +407,16 @@ return [
      * storage providers
      */
     'storage_providers' => [
-        'dropbox',
-        'ftp',
+        StorageProvider::DROPBOX,
+        StorageProvider::FTP,
     ],
     'storage_providers_class' => [
         'dropbox' => Dropbox::class,
         'ftp' => FTP::class,
+    ],
+
+    'ssl_types' => [
+        \App\Enums\SslType::LETSENCRYPT,
+        \App\Enums\SslType::CUSTOM,
     ],
 ];

@@ -42,7 +42,7 @@ class ConnectSourceControl
         $rules = [
             'provider' => [
                 'required',
-                Rule::in(\App\Enums\SourceControl::getValues()),
+                Rule::in(config('core.source_control_providers')),
             ],
             'name' => [
                 'required',

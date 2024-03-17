@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class SslType extends Enum
+final class SslType
 {
     const LETSENCRYPT = 'letsencrypt';
 

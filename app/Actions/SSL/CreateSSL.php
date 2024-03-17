@@ -47,7 +47,7 @@ class CreateSSL
         $rules = [
             'type' => [
                 'required',
-                Rule::in(SslType::getValues()),
+                Rule::in(config('core.ssl_types')),
             ],
         ];
         if (isset($input['type']) && $input['type'] == SslType::CUSTOM) {

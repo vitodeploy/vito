@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class BackupFileStatus extends Enum
+final class BackupFileStatus
 {
     const CREATED = 'created';
 

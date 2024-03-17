@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class FirewallRuleStatus extends Enum
+final class FirewallRuleStatus
 {
     const CREATING = 'creating';
 

@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class Webserver extends Enum
+final class Webserver
 {
     const NONE = 'none';
 

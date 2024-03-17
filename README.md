@@ -41,7 +41,6 @@ Vito is a self-hosted web application that helps you manage your servers and dep
 - Tailwindcss
 - Alpinejs
 - Vite
-- Laravel Enum by BenSampo
 - Log Viewer by Arunas Skirius
 - PHPSecLib
 - Laravel Blade Icons

@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class SiteStatus extends Enum
+final class SiteStatus
 {
     const READY = 'ready';
 

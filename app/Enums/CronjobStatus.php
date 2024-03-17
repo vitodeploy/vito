@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class CronjobStatus extends Enum
+final class CronjobStatus
 {
     const CREATING = 'creating';
 

@@ -21,7 +21,7 @@
                     <option value="" selected disabled>
                         {{ __("Select") }}
                     </option>
-                    @foreach (\App\Enums\SslType::getValues() as $t)
+                    @foreach (config("core.ssl_types") as $t)
                         <option value="{{ $t }}" @if($t == old('type')) selected @endif>
                             {{ $t }}
                         </option>
