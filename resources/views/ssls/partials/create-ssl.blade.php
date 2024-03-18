@@ -42,7 +42,9 @@
                         type="text"
                         class="mt-1 w-full"
                         rows="5"
-                    />
+                    >
+                        {{ old("certificate") }}
+                    </x-textarea>
                     @error("certificate")
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
@@ -57,8 +59,24 @@
                         type="text"
                         class="mt-1 w-full"
                         rows="5"
-                    />
+                    >
+                        {{ old("private") }}
+                    </x-textarea>
                     @error("private")
+                        <x-input-error class="mt-2" :messages="$message" />
+                    @enderror
+                </div>
+
+                <div class="mt-6">
+                    <x-input-label for="expires_at" :value="__('Expires At')" />
+                    <x-text-input
+                        value="{{ old('expires_at') }}"
+                        id="expires_at"
+                        name="expires_at"
+                        type="text"
+                        class="mt-1 w-full"
+                    />
+                    @error("expires_at")
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>

@@ -24,7 +24,7 @@ class CreateSSL
             'type' => $input['type'],
             'certificate' => $input['certificate'] ?? null,
             'pk' => $input['private'] ?? null,
-            'expires_at' => $input['type'] === SslType::LETSENCRYPT ? now()->addMonths(3) : null,
+            'expires_at' => $input['type'] === SslType::LETSENCRYPT ? now()->addMonths(3) : $input['expires_at'],
             'status' => SslStatus::CREATING,
         ]);
         $ssl->save();
@@ -53,6 +53,7 @@ class CreateSSL
         if (isset($input['type']) && $input['type'] == SslType::CUSTOM) {
             $rules['certificate'] = 'required';
             $rules['private'] = 'required';
+            $rules['expires_at'] = 'required|date_format:Y-m-d|after_or_equal:'.now();
         }
 
         Validator::make($input, $rules)->validate();

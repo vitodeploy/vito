@@ -41,7 +41,7 @@ class SslTest extends TestCase
             ->assertSeeText(__("You don't have any SSL certificates yet!"));
     }
 
-    public function test_create_ssl()
+    public function test_letsencrypt_ssl()
     {
         SSH::fake('Successfully received certificate');
 
@@ -57,6 +57,29 @@ class SslTest extends TestCase
         $this->assertDatabaseHas('ssls', [
             'site_id' => $this->site->id,
             'type' => SslType::LETSENCRYPT,
+            'status' => SslStatus::CREATED,
+        ]);
+    }
+
+    public function test_custom_ssl()
+    {
+        SSH::fake('Successfully received certificate');
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.sites.ssl.store', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'type' => SslType::CUSTOM,
+            'certificate' => 'certificate',
+            'private' => 'private',
+            'expires_at' => now()->addYear()->format('Y-m-d'),
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('ssls', [
+            'site_id' => $this->site->id,
+            'type' => SslType::CUSTOM,
             'status' => SslStatus::CREATED,
         ]);
     }
