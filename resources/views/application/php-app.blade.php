@@ -5,12 +5,12 @@
             {{ __("Here you can manage your application") }}
         </x-slot>
         <x-slot name="aside">
-            <div class="flex items-center">
-                <div class="mr-2">
+            <div class="flex flex-col items-end lg:flex-row lg:items-center">
+                <div class="mb-2 lg:mb-0 lg:mr-2">
                     @include("application.deploy")
                 </div>
                 @if ($site->source_control_id)
-                    <div class="mr-2">
+                    <div class="mb-2 lg:mb-0 lg:mr-2">
                         @include("application.auto-deployment")
                     </div>
                 @endif
