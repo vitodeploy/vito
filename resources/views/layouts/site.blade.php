@@ -8,11 +8,111 @@
     @endif
 
     <x-slot name="header">
-        <h2 class="text-lg font-semibold">
-            <a href="{{ $site->getUrl() }}" target="_blank">
-                {{ $site->domain }}
-            </a>
-        </h2>
+        <div class="hidden md:flex md:items-center md:justify-start">
+            <x-tab-item
+                class="mr-1"
+                :href="route('servers.sites.show', ['server' => $site->server, 'site' => $site])"
+                :active="request()->routeIs('servers.sites.show')"
+            >
+                <x-heroicon name="o-globe-alt" class="h-5 w-5" />
+                <span class="ml-2 hidden xl:block">Application</span>
+            </x-tab-item>
+            @if ($site->hasFeature(SiteFeature::SSL))
+                <x-tab-item
+                    class="mr-1"
+                    :href="route('servers.sites.ssl', ['server' => $site->server, 'site' => $site])"
+                    :active="request()->routeIs('servers.sites.ssl')"
+                >
+                    <x-heroicon name="o-lock-closed" class="h-5 w-5" />
+                    <span class="ml-2 hidden xl:block">SSL</span>
+                </x-tab-item>
+            @endif
+
+            @if ($site->hasFeature(SiteFeature::QUEUES))
+                <x-tab-item
+                    class="mr-1"
+                    :href="route('servers.sites.queues', ['server' => $site->server, 'site' => $site])"
+                    :active="request()->routeIs('servers.sites.queues')"
+                >
+                    <x-heroicon name="o-queue-list" class="h-5 w-5" />
+                    <span class="ml-2 hidden xl:block">Queues</span>
+                </x-tab-item>
+            @endif
+
+            <x-tab-item
+                class="mr-1"
+                :href="route('servers.sites.settings', ['server' => $site->server, 'site' => $site])"
+                :active="request()->routeIs('servers.sites.settings')"
+            >
+                <x-heroicon name="o-cog-6-tooth" class="h-5 w-5" />
+                <span class="ml-2 hidden xl:block">Settings</span>
+            </x-tab-item>
+            <x-tab-item
+                class="mr-1"
+                :href="route('servers.sites.logs', ['server' => $site->server, 'site' => $site])"
+                :active="request()->routeIs('servers.sites.logs')"
+            >
+                <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5" />
+                <span class="ml-2 hidden xl:block">Logs</span>
+            </x-tab-item>
+        </div>
+        <div class="md:hidden">
+            <x-dropdown align="left">
+                <x-slot name="trigger">
+                    <div
+                        class="flex w-full cursor-pointer items-center rounded-md border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                    >
+                        Select
+                        <button type="button" class="ml-2">
+                            <x-heroicon name="o-chevron-down" class="h-4 w-4 text-gray-400" />
+                        </button>
+                    </div>
+                </x-slot>
+                <x-slot name="content">
+                    <x-dropdown-link
+                        :href="route('servers.sites.show', ['server' => $site->server, 'site' => $site])"
+                        :active="request()->routeIs('servers.sites.show')"
+                    >
+                        <x-heroicon name="o-globe-alt" class="h-5 w-5" />
+                        <span class="ml-2">Application</span>
+                    </x-dropdown-link>
+                    @if ($site->hasFeature(SiteFeature::SSL))
+                        <x-dropdown-link
+                            :href="route('servers.sites.ssl', ['server' => $site->server, 'site' => $site])"
+                            :active="request()->routeIs('servers.sites.ssl')"
+                        >
+                            <x-heroicon name="o-lock-closed" class="h-5 w-5" />
+                            <span class="ml-2">SSL</span>
+                        </x-dropdown-link>
+                    @endif
+
+                    @if ($site->hasFeature(SiteFeature::QUEUES))
+                        <x-dropdown-link
+                            :href="route('servers.sites.queues', ['server' => $site->server, 'site' => $site])"
+                            :active="request()->routeIs('servers.sites.queues')"
+                        >
+                            <x-heroicon name="o-queue-list" class="h-5 w-5" />
+                            <span class="ml-2">Queues</span>
+                        </x-dropdown-link>
+                    @endif
+
+                    <x-dropdown-link
+                        :href="route('servers.sites.settings', ['server' => $site->server, 'site' => $site])"
+                        :active="request()->routeIs('servers.sites.settings')"
+                    >
+                        <x-heroicon name="o-cog-6-tooth" class="h-5 w-5" />
+                        <span class="ml-2">Settings</span>
+                    </x-dropdown-link>
+                    <x-dropdown-link
+                        :href="route('servers.sites.logs', ['server' => $site->server, 'site' => $site])"
+                        :active="request()->routeIs('servers.sites.logs')"
+                    >
+                        <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5" />
+                        <span class="ml-2">Logs</span>
+                    </x-dropdown-link>
+                </x-slot>
+            </x-dropdown>
+        </div>
         <div class="flex items-end">
             <div class="flex h-20 flex-col items-end justify-center">
                 <div class="flex items-center">
@@ -67,57 +167,6 @@
                     </div>
                 </x-input-label>
             </div>
-        </div>
-    </x-slot>
-
-    <x-slot name="sidebar">
-        <div class="flex h-16 items-center justify-center border-b border-gray-200 px-3 py-2 dark:border-gray-800">
-            <div class="w-full">
-                @include("layouts.partials.site-select", ["server" => $site->server, "site" => $site])
-            </div>
-        </div>
-        <div class="space-y-2 p-3">
-            <x-secondary-sidebar-link
-                :href="route('servers.sites.show', ['server' => $site->server, 'site' => $site])"
-                :active="request()->routeIs('servers.sites.show')"
-            >
-                <x-heroicon name="o-globe-alt" class="mr-2 h-5 w-5" />
-                {{ __("Application") }}
-            </x-secondary-sidebar-link>
-            @if ($site->hasFeature(SiteFeature::SSL))
-                <x-secondary-sidebar-link
-                    :href="route('servers.sites.ssl', ['server' => $site->server, 'site' => $site])"
-                    :active="request()->routeIs('servers.sites.ssl')"
-                >
-                    <x-heroicon name="o-lock-closed" class="mr-2 h-5 w-5" />
-                    {{ __("SSL") }}
-                </x-secondary-sidebar-link>
-            @endif
-
-            @if ($site->hasFeature(SiteFeature::QUEUES))
-                <x-secondary-sidebar-link
-                    :href="route('servers.sites.queues', ['server' => $site->server, 'site' => $site])"
-                    :active="request()->routeIs('servers.sites.queues')"
-                >
-                    <x-heroicon name="o-queue-list" class="mr-2 h-5 w-5" />
-                    {{ __("Queues") }}
-                </x-secondary-sidebar-link>
-            @endif
-
-            <x-secondary-sidebar-link
-                :href="route('servers.sites.settings', ['server' => $site->server, 'site' => $site])"
-                :active="request()->routeIs('servers.sites.settings')"
-            >
-                <x-heroicon name="o-cog-6-tooth" class="mr-2 h-5 w-5" />
-                {{ __("Settings") }}
-            </x-secondary-sidebar-link>
-            <x-secondary-sidebar-link
-                :href="route('servers.sites.logs', ['server' => $site->server, 'site' => $site])"
-                :active="request()->routeIs('servers.sites.logs')"
-            >
-                <x-heroicon name="o-square-3-stack-3d" class="mr-2 h-5 w-5" />
-                {{ __("Logs") }}
-            </x-secondary-sidebar-link>
         </div>
     </x-slot>
 

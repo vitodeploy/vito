@@ -54,7 +54,7 @@
             document.body.classList.add('overflow-y-hidden')
             setTimeout(() => {
                 this.$refs.input.select()
-            }, 100)
+            }, 50)
         },
         search(searchQuery) {
             this.showResults = true
@@ -132,13 +132,12 @@
     }"
     @open-search.window="openSearch"
 >
-    <div class="max-w-full">
+    <div x-show="open" class="absolute bottom-0 left-0 right-0 top-0 flex max-w-full items-start justify-center">
         <div
-            x-show="open"
             x-on:click="close"
-            class="fixed left-0 right-0 top-0 z-[1000] h-full w-full bg-black opacity-40"
+            class="fixed inset-0 bottom-0 left-0 right-0 top-0 z-[1000] items-center bg-gray-500 opacity-75 dark:bg-gray-900"
         ></div>
-        <div x-show="open" class="absolute z-[1001] flex w-full items-center justify-center lg:scale-110">
+        <div class="absolute z-[1000] mt-20 lg:scale-110">
             <div class="w-[500px]">
                 <x-text-input
                     id="search-input"

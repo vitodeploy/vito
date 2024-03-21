@@ -21,7 +21,7 @@
     <x-live id="live-backup-files">
         @if (count($files) > 0)
             <x-table class="mt-5">
-                <tr>
+                <x-tr>
                     <x-th>{{ __("Name") }}</x-th>
                     <x-th>{{ __("Created") }}</x-th>
                     {{-- <x-th>{{ __("Size") }}</x-th> --}}
@@ -29,9 +29,9 @@
                     <x-th>{{ __("Restored") }}</x-th>
                     <x-th>{{ __("Restored To") }}</x-th>
                     <x-th></x-th>
-                </tr>
+                </x-tr>
                 @foreach ($files as $file)
-                    <tr>
+                    <x-tr>
                         <x-td>{{ $file->name }}</x-td>
                         <x-td>
                             <x-datetime :value="$file->created_at" />
@@ -71,7 +71,7 @@
                                 <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </x-td>
-                    </tr>
+                    </x-tr>
                 @endforeach
             </x-table>
             <div class="mt-5">

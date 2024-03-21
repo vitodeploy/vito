@@ -38,25 +38,26 @@
 
         <div class="mt-[64px] w-full"></div>
 
-        @if (isset($header))
-            <header class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-                <div class="mx-auto flex h-20 w-full max-w-full items-center justify-between px-8">
-                    {{ $header }}
-                </div>
-            </header>
-        @endif
+        <div class="sm:ml-64">
+            @if (isset($header))
+                <header class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                    <div class="mx-auto flex h-20 w-full max-w-full items-center justify-between px-5">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endif
 
-        @if (isset($header2))
-            <header class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-                <div class="mx-auto max-w-full px-8 py-6">
-                    {{ $header2 }}
-                </div>
-            </header>
-        @endif
+            @if (isset($header2))
+                <header class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                    <div class="mx-auto max-w-full px-5 py-6">
+                        {{ $header2 }}
+                    </div>
+                </header>
+            @endif
 
-        <div class="px-4 py-10 sm:ml-64">
-            <!-- Page Heading -->
-            {{ $slot }}
+            <div class="px-4 py-10">
+                {{ $slot }}
+            </div>
         </div>
 
         <script>
