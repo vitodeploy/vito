@@ -16,14 +16,14 @@
     <x-live id="live-databases">
         @if (count($databases) > 0)
             <x-table>
-                <tr>
+                <x-tr>
                     <x-th>{{ __("Name") }}</x-th>
                     <x-th>{{ __("Created") }}</x-th>
                     <x-th>{{ __("Status") }}</x-th>
                     <x-th></x-th>
-                </tr>
+                </x-tr>
                 @foreach ($databases as $database)
-                    <tr>
+                    <x-tr>
                         <x-td>{{ $database->name }}</x-td>
                         <x-td>
                             <x-datetime :value="$database->created_at" />
@@ -40,7 +40,7 @@
                                 <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </x-td>
-                    </tr>
+                    </x-tr>
                 @endforeach
             </x-table>
         @else

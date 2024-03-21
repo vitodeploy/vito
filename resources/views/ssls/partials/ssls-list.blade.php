@@ -12,14 +12,14 @@
         <div x-data="" class="space-y-3">
             @if (count($ssls) > 0)
                 <x-table>
-                    <tr>
+                    <x-tr>
                         <x-th>{{ __("Type") }}</x-th>
                         <x-th>{{ __("Created") }}</x-th>
                         <x-th>{{ __("Expires at") }}</x-th>
                         <x-th></x-th>
-                    </tr>
+                    </x-tr>
                     @foreach ($ssls as $ssl)
-                        <tr>
+                        <x-tr>
                             <x-td>{{ $ssl->type }}</x-td>
                             <x-td>
                                 <x-datetime :value="$ssl->created_at" />
@@ -39,7 +39,7 @@
                                     </div>
                                 </div>
                             </x-td>
-                        </tr>
+                        </x-tr>
                     @endforeach
                 </x-table>
             @else

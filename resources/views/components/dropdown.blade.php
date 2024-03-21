@@ -1,4 +1,4 @@
-@props(["align" => "right", "width" => "48", "contentClasses" => "bg-white py-1 dark:bg-gray-800"])
+@props(["open" => false, "align" => "right", "width" => "48", "contentClasses" => "list-none divide-y divide-gray-100 rounded-md border border-gray-100 bg-white py-1 text-base shadow dark:divide-gray-600 dark:border-gray-600 dark:bg-gray-700"])
 
 @php
     switch ($align) {
@@ -24,7 +24,7 @@
     }
 @endphp
 
-<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
+<div class="relative" x-data="{ open: @js($open) }" @click.outside="open = false" @close.stop="open = false">
     <div @click="open = ! open">
         {{ $trigger }}
     </div>

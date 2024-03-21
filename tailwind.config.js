@@ -1,14 +1,17 @@
-const defaultTheme = require('tailwindcss/defaultTheme');
-const colors = require("tailwindcss/colors");
+import defaultTheme from 'tailwindcss/defaultTheme';
+import forms from '@tailwindcss/forms';
+import colors from "tailwindcss/colors";
+import flowbite from 'flowbite/plugin';
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
     darkMode: 'class',
+
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
-        './resources/js/**/*.vue',
+        "./node_modules/flowbite/**/*.js"
     ],
 
     theme: {
@@ -16,16 +19,23 @@ module.exports = {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
-
             colors: {
                 gray: colors.slate,
-                primary: colors.indigo
+                primary: colors.indigo,
+                green: colors.emerald,
+            },
+            variants: {
+                extend: {
+                    border: ['last'],
+                }
             },
         },
     },
 
     plugins: [
-        require('@tailwindcss/forms'),
-        require('@tailwindcss/typography'),
+        forms,
+        flowbite({
+            charts: true
+        })
     ],
 };

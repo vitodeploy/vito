@@ -5,11 +5,11 @@
             {{ __("Add or modify your ssh keys") }}
         </x-slot>
         <x-slot name="aside">
-            <div class="flex items-center">
-                <div>
+            <div class="flex flex-col items-end lg:flex-row lg:items-center">
+                <div class="mb-2 lg:mb-0 lg:mr-2">
                     @include("server-ssh-keys.partials.add-new-key")
                 </div>
-                <div class="ml-2">
+                <div>
                     @include("server-ssh-keys.partials.add-existing-key")
                 </div>
             </div>

@@ -13,15 +13,15 @@
     <x-live id="live-backups">
         @if (count($backups) > 0)
             <x-table>
-                <tr>
+                <x-tr>
                     <x-th>{{ __("Database") }}</x-th>
                     <x-th>{{ __("Created") }}</x-th>
                     <x-th>{{ __("Storage") }}</x-th>
                     <x-th>{{ __("Status") }}</x-th>
                     <x-th></x-th>
-                </tr>
+                </x-tr>
                 @foreach ($backups as $backup)
-                    <tr>
+                    <x-tr>
                         <x-td>{{ $backup->database->name }}</x-td>
                         <x-td>
                             <x-datetime :value="$backup->created_at" />
@@ -44,7 +44,7 @@
                                 <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>
                         </x-td>
-                    </tr>
+                    </x-tr>
                 @endforeach
             </x-table>
         @else

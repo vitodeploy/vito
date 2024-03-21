@@ -18,13 +18,13 @@
     </x-card-header>
     <x-live id="live-server-logs">
         <x-table>
-            <tr>
+            <x-tr>
                 <x-th>{{ __("Event") }}</x-th>
                 <x-th>{{ __("Date") }}</x-th>
                 <x-th></x-th>
-            </tr>
+            </x-tr>
             @foreach ($logs as $log)
-                <tr>
+                <x-tr>
                     <x-td>{{ $log->type }}</x-td>
                     <x-td>
                         <x-datetime :value="$log->created_at" />
@@ -39,7 +39,7 @@
                             <x-heroicon name="o-eye" class="h-5 w-5" />
                         </x-icon-button>
                     </x-td>
-                </tr>
+                </x-tr>
             @endforeach
         </x-table>
         @if ($logs instanceof \Illuminate\Pagination\LengthAwarePaginator)

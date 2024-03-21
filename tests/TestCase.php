@@ -31,6 +31,7 @@ abstract class TestCase extends BaseTestCase
         config()->set('filesystems.disks.key-pairs.root', storage_path('app/key-pairs-test'));
 
         $this->user = User::factory()->create();
+        $this->user->createDefaultProject();
 
         \App\Models\NotificationChannel::factory()->create([
             'provider' => NotificationChannel::EMAIL,
@@ -60,6 +61,7 @@ abstract class TestCase extends BaseTestCase
     {
         $this->server = Server::factory()->create([
             'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
         $keys = $this->server->sshKey();
