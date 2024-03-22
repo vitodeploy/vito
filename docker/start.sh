@@ -1,9 +1,8 @@
 #!/bin/bash
 
 INIT_FLAG="/var/www/html/storage/.INIT_ENV"
-DB_PASSWORD=${DB_PASSWORD:-"password"}
 NAME=${NAME:-"vito"}
-EMAIL=${EMAIL:-"vito@example.com"}
+EMAIL=${EMAIL:-"vito@vitodeploy.com"}
 PASSWORD=${PASSWORD:-"password"}
 
 # check if the flag file does not exist, indicating a first run
@@ -22,6 +21,8 @@ if [ ! -f "$INIT_FLAG" ]; then
     touch "$INIT_FLAG"
 fi
 
+chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 service php8.2-fpm start
 
 service nginx start
@@ -33,7 +34,6 @@ php /var/www/html/artisan route:clear
 php /var/www/html/artisan route:cache
 php /var/www/html/artisan view:clear
 php /var/www/html/artisan view:cache
-php /var/www/html/artisan icons:cache
 
 php /var/www/html/artisan user:create "$NAME" "$EMAIL" "$PASSWORD"
 

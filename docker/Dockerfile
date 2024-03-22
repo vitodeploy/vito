@@ -20,7 +20,7 @@ RUN apt update \
     && add-apt-repository ppa:ondrej/php -y \
     && apt update \
     && apt install -y php8.2 php8.2-fpm php8.2-mbstring php8.2-mcrypt php8.2-gd php8.2-xml \
-    php8.2-curl php8.2-gettext php8.2-zip php8.2-bcmath php8.2-soap php8.2-redis php8.3-sqlite3
+    php8.2-curl php8.2-gettext php8.2-zip php8.2-bcmath php8.2-soap php8.2-redis php8.2-sqlite3
 COPY docker/php.ini /etc/php/8.2/cli/conf.d/99-vito.ini
 
 # composer
