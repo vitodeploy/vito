@@ -2,37 +2,28 @@
 
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
-export V_USERNAME=vito
-export V_PASSWORD=$(openssl rand -base64 12)
-export V_IP_ADDRESS=$(curl https://freeipapi.com --silent)
-export V_IS_DOMAIN=1
 
-echo "Enter the domain you want to install Vito? (your-domain.com)"
-echo "Hit enter to use your IP address (${V_IP_ADDRESS}):"
-
-read V_DOMAIN
-
-if [[ -z "${V_DOMAIN}" ]]; then
-    export V_DOMAIN=${V_IP_ADDRESS}
-    export V_IS_DOMAIN=0
+if [[ -z "${V_USERNAME}" ]]; then
+  export V_USERNAME=vito
 fi
 
-echo "Enter your email address:"
+if [[ -z "${V_PASSWORD}" ]]; then
+  export V_PASSWORD=$(openssl rand -base64 12)
+fi
 
-read V_ADMIN_EMAIL
-
-echo "Enter your password:"
-
-read V_ADMIN_PASSWORD
-
-if [[ -z "${V_DOMAIN}" ]]; then
-  echo "Error: V_DOMAIN environment variable is not set."
-  exit 1
+if [[ -z "${V_ADMIN_EMAIL}" ]]; then
+  echo "Enter your email address:"
+  read V_ADMIN_EMAIL
 fi
 
 if [[ -z "${V_ADMIN_EMAIL}" ]]; then
   echo "Error: V_ADMIN_EMAIL environment variable is not set."
   exit 1
+fi
+
+if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
+  echo "Enter a password for Vito's dashboard:"
+  read V_ADMIN_PASSWORD
 fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
@@ -96,10 +87,10 @@ fi
 service nginx start
 
 # php
-export V_PHP_VERSION="8.1"
+export V_PHP_VERSION="8.2"
 add-apt-repository ppa:ondrej/php -y
 apt update
-apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis
+apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3
 if ! sed -i "s/www-data/${V_USERNAME}/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
     echo 'Error installing PHP' && exit 1
 fi
@@ -113,15 +104,14 @@ curl -sS https://getcomposer.org/installer -o composer-setup.php
 php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 # setup website
-export V_SSL=${V_SSL:-1}
 export COMPOSER_ALLOW_SUPERUSER=1
 export V_REPO="https://github.com/vitodeploy/vito.git"
 export V_VHOST_CONFIG="
 server {
     listen 80;
     listen [::]:80;
-    server_name ${V_DOMAIN};
-    root /home/${V_USERNAME}/${V_DOMAIN}/public;
+    server_name _;
+    root /home/${V_USERNAME}/vito/public;
 
     add_header X-Frame-Options \"SAMEORIGIN\";
     add_header X-Content-Type-Options \"nosniff\";
@@ -150,42 +140,39 @@ server {
     }
 }
 "
-rm -rf /home/${V_USERNAME}/${V_DOMAIN}
-mkdir /home/${V_USERNAME}/${V_DOMAIN}
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}
-chmod -R 755 /home/${V_USERNAME}/${V_DOMAIN}
-echo "${V_VHOST_CONFIG}" | tee /etc/nginx/sites-available/${V_DOMAIN}
-ln -s /etc/nginx/sites-available/${V_DOMAIN} /etc/nginx/sites-enabled/
+rm -rf /home/${V_USERNAME}/vito
+mkdir /home/${V_USERNAME}/vito
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/vito
+chmod -R 755 /home/${V_USERNAME}/vito
+rm /etc/nginx/sites-available/default
+rm /etc/nginx/sites-enabled/default
+echo "${V_VHOST_CONFIG}" | tee /etc/nginx/sites-available/vito
+ln -s /etc/nginx/sites-available/vito /etc/nginx/sites-enabled/
 service nginx restart
-rm -rf /home/${V_USERNAME}/${V_DOMAIN}
+rm -rf /home/${V_USERNAME}/vito
 git config --global core.fileMode false
-git clone ${V_REPO} /home/${V_USERNAME}/${V_DOMAIN}
-find /home/${V_USERNAME}/${V_DOMAIN} -type d -exec chmod 755 {} \;
-find /home/${V_USERNAME}/${V_DOMAIN} -type f -exec chmod 644 {} \;
-cd /home/${V_USERNAME}/${V_DOMAIN} && git config core.fileMode false
-cd /home/${V_USERNAME}/${V_DOMAIN} && composer install --no-dev
+git clone -b 1.x ${V_REPO} /home/${V_USERNAME}/vito
+find /home/${V_USERNAME}/vito -type d -exec chmod 755 {} \;
+find /home/${V_USERNAME}/vito -type f -exec chmod 644 {} \;
+cd /home/${V_USERNAME}/vito && git config core.fileMode false
+cd /home/${V_USERNAME}/vito && composer install --no-dev
 cp .env.prod .env
-if [[ ${V_SSL} == 1 ]]; then
-  export V_URL="https://${V_DOMAIN}"
-else
-  export V_URL="http://${V_DOMAIN}"
-fi
-sed -i "s|APP_URL=.*|APP_URL=${V_URL}|" /home/${V_USERNAME}/${V_DOMAIN}/.env
+touch /home/${V_USERNAME}/vito/storage/database.sqlite
 php artisan key:generate
 php artisan storage:link
 php artisan migrate --force
 php artisan user:create Vito ${V_ADMIN_EMAIL} ${V_ADMIN_PASSWORD}
-openssl genpkey -algorithm RSA -out /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem
-chmod 600 /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem
-ssh-keygen -y -f /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem > /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-public.key
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-private.pem
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/${V_DOMAIN}/storage/ssh-public.key
+openssl genpkey -algorithm RSA -out /home/${V_USERNAME}/vito/storage/ssh-private.pem
+chmod 600 /home/${V_USERNAME}/vito/storage/ssh-private.pem
+ssh-keygen -y -f /home/${V_USERNAME}/vito/storage/ssh-private.pem > /home/${V_USERNAME}/vito/storage/ssh-public.key
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/vito/storage/ssh-private.pem
+chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/vito/storage/ssh-public.key
 
 # setup supervisor
 export V_WORKER_CONFIG="
 [program:worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /home/${V_USERNAME}/${V_DOMAIN}/artisan queue:work --sleep=3 --backoff=0 --queue=default,ssh,ssh-long --timeout=3600 --tries=1
+command=php /home/${V_USERNAME}/vito/artisan queue:work --sleep=3 --backoff=0 --queue=default,ssh,ssh-long --timeout=3600 --tries=1
 autostart=1
 autorestart=1
 user=vito
@@ -205,17 +192,13 @@ supervisorctl update
 supervisorctl start worker:*
 
 # setup cronjobs
-echo "* * * * * cd /home/${V_USERNAME}/${V_DOMAIN} && php artisan schedule:run >> /dev/null 2>&1" | sudo -u ${V_USERNAME} crontab -
-
-# make the update file executable
-chmod +x /home/${V_USERNAME}/${V_DOMAIN}/update.sh
+echo "* * * * * cd /home/${V_USERNAME}/vito && php artisan schedule:run >> /dev/null 2>&1" | sudo -u ${V_USERNAME} crontab -
 
 # cleanup
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
 # cache
 php artisan config:cache
-php artisan icons:cache
 
 # print info
 echo "🎉 Congratulations!"
@@ -223,4 +206,3 @@ echo "✅ SSH User: ${V_USERNAME}"
 echo "✅ SSH Password: ${V_PASSWORD}"
 echo "✅ Admin Email: ${V_ADMIN_EMAIL}"
 echo "✅ Admin Password: ${V_ADMIN_PASSWORD}"
-echo "✅ URL: http://${V_DOMAIN}"

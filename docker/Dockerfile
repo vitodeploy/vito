@@ -19,9 +19,9 @@ RUN apt update \
     python2 dnsutils librsvg2-bin fswatch wget \
     && add-apt-repository ppa:ondrej/php -y \
     && apt update \
-    && apt install -y php8.1 php8.1-fpm php8.1-mbstring php8.1-mcrypt php8.1-gd php8.1-xml \
-    php8.1-curl php8.1-gettext php8.1-zip php8.1-bcmath php8.1-soap php8.1-redis
-COPY docker/standalone/php.ini /etc/php/8.1/cli/conf.d/99-vito.ini
+    && apt install -y php8.2 php8.2-fpm php8.2-mbstring php8.2-mcrypt php8.2-gd php8.2-xml \
+    php8.2-curl php8.2-gettext php8.2-zip php8.2-bcmath php8.2-soap php8.2-redis php8.3-sqlite3
+COPY docker/php.ini /etc/php/8.2/cli/conf.d/99-vito.ini
 
 # composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -37,14 +37,14 @@ RUN chown -R www-data:www-data /var/www/html \
 # webserver
 RUN rm /etc/nginx/sites-available/default
 RUN rm /etc/nginx/sites-enabled/default
-COPY docker/standalone/nginx.conf /etc/nginx/sites-available/default
+COPY docker/nginx.conf /etc/nginx/sites-available/default
 RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 # supervisord
-COPY docker/standalone/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # start
-COPY docker/standalone/start.sh /start.sh
+COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
 EXPOSE 80

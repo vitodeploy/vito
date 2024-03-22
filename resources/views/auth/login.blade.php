@@ -4,7 +4,7 @@
 
     <form method="POST" action="{{ route("login") }}">
         @csrf
-        <div x-data="{ isPasswordVisible: false }">
+        <div>
             <!-- Email Address -->
             <div>
                 <x-input-label for="email" :value="__('Email')" />
@@ -27,7 +27,7 @@
                 <x-text-input
                     id="password"
                     class="mt-1 block w-full"
-                    x-bind:type="isPasswordVisible ? 'text' : 'password'"
+                    type="password"
                     name="password"
                     required
                     autocomplete="current-password"
@@ -47,21 +47,6 @@
                         />
                         <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
                             {{ __("Remember me") }}
-                        </span>
-                    </label>
-                </div>
-
-                <!-- Show Password -->
-                <div class="mt-4 block">
-                    <label for="show_password" class="float-right inline-flex items-center">
-                        <input
-                            id="show_password"
-                            type="checkbox"
-                            x-model="isPasswordVisible"
-                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
-                        />
-                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                            {{ __("Show password") }}
                         </span>
                     </label>
                 </div>

@@ -1,3 +1,7 @@
+#!/bin/bash
+
+cd /home/vito/vito
+
 php artisan down
 
 git pull

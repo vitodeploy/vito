@@ -11,6 +11,12 @@
 
 Vito is a self-hosted web application that helps you manage your servers and deploy your PHP applications into production servers without a hassle.
 
+## Quick Start
+
+```sh
+bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/1.x/scripts/install.sh)
+```
+
 ## Features
 
 - Provisions and Manages the server
@@ -38,13 +44,13 @@ Vito is a self-hosted web application that helps you manage your servers and dep
 ## Credits
 
 - Laravel
+- PHPSecLib
+- PHPUnit
 - Tailwindcss
 - Alpinejs
+- HTMX
 - Vite
-- Log Viewer by Arunas Skirius
-- PHPSecLib
-- Laravel Blade Icons
-- Guzzlehttp
-- Owenvoke for `owenvoke/blade-fontawesome`
-- Axios
 - Toastr by CodeSeven
+- Prettier
+- Postcss
+- Flowbite

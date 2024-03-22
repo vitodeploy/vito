@@ -6,20 +6,23 @@ NAME=${NAME:-"vito"}
 EMAIL=${EMAIL:-"vito@example.com"}
 PASSWORD=${PASSWORD:-"password"}
 
-# Check if the flag file does not exist, indicating a first run
+# check if the flag file does not exist, indicating a first run
 if [ ! -f "$INIT_FLAG" ]; then
     echo "Initializing..."
 
-    # Generate SSH keys
+    # generate SSH keys
     openssl genpkey -algorithm RSA -out /var/www/html/storage/ssh-private.pem
     chmod 600 /var/www/html/storage/ssh-private.pem
     ssh-keygen -y -f /var/www/html/storage/ssh-private.pem > /var/www/html/storage/ssh-public.key
 
-    # Create the flag file to indicate completion of initialization tasks
+    # create sqlite database
+    touch /var/www/html/storage/database.sqlite
+
+    # create the flag file to indicate completion of initialization tasks
     touch "$INIT_FLAG"
 fi
 
-service php8.1-fpm start
+service php8.2-fpm start
 
 service nginx start
 
