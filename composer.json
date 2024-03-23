@@ -3,7 +3,7 @@
     "type": "project",
     "description": "The ultimate server management tool",
     "keywords": ["framework", "laravel"],
-    "license": "MIT",
+    "license": "AGPL-3.0",
     "require": {
         "php": "^8.1",
         "ext-ftp": "*",
