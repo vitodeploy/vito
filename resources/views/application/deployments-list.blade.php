@@ -24,7 +24,7 @@
                     <x-tr>
                         <x-td class="truncate">
                             <a
-                                href="{{ $deployment->commit_data["url"] ?? '#' }}"
+                                href="{{ $deployment->commit_data["url"] ?? "#" }}"
                                 target="_blank"
                                 class="block max-w-[500px] truncate font-semibold text-primary-600"
                             >
