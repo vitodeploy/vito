@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ServerController::class, 'index'])->name('servers');
 Route::get('/create', [ServerController::class, 'create'])->name('servers.create');
-Route::post('/create', [ServerController::class, 'store'])->name('servers.create');
+Route::post('/create', [ServerController::class, 'store']);
 
 Route::middleware('select-current-project')->group(function () {
     Route::get('/{server}', [ServerController::class, 'show'])->name('servers.show');
