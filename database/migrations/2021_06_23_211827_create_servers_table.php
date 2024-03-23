@@ -25,7 +25,7 @@ return new class extends Migration
             $table->longText('authentication')->nullable();
             $table->longText('public_key')->nullable();
             $table->string('status')->default('installing');
-            $table->tinyInteger('progress')->default(0);
+            $table->integer('progress')->default(0);
             $table->string('progress_step')->nullable();
             $table->timestamps();
         });

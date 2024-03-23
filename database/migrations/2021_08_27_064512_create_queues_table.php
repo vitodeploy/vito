@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('user');
             $table->boolean('auto_start')->default(1);
             $table->boolean('auto_restart')->default(1);
-            $table->tinyInteger('numprocs')->default(8);
+            $table->integer('numprocs')->default(8);
             $table->boolean('redirect_stderr')->default(1);
             $table->string('stdout_logfile')->nullable();
             $table->string('status');

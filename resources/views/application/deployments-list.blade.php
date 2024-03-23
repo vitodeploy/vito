@@ -24,11 +24,11 @@
                     <x-tr>
                         <x-td class="truncate">
                             <a
-                                href="{{ $deployment->commit_data["url"] }}"
+                                href="{{ $deployment->commit_data["url"] ?? '#' }}"
                                 target="_blank"
                                 class="block max-w-[500px] truncate font-semibold text-primary-600"
                             >
-                                {{ $deployment->commit_data["message"] }}
+                                {{ $deployment->commit_data["message"] ?? "No message" }}
                             </a>
                         </x-td>
                         <x-td>
