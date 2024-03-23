@@ -32,7 +32,7 @@ Route::middleware('select-current-project')->group(function () {
             // sites
             Route::get('/', [SiteController::class, 'index'])->name('servers.sites');
             Route::get('/create', [SiteController::class, 'create'])->name('servers.sites.create');
-            Route::post('/create', [SiteController::class, 'store'])->name('servers.sites.create');
+            Route::post('/create', [SiteController::class, 'store']);
             Route::get('/{site}', [SiteController::class, 'show'])->name('servers.sites.show');
             Route::delete('/{site}', [SiteController::class, 'destroy'])->name('servers.sites.destroy');
 
@@ -42,9 +42,9 @@ Route::middleware('select-current-project')->group(function () {
             Route::post('/{site}/application/deployment-script', [ApplicationController::class, 'updateDeploymentScript'])->name('servers.sites.application.deployment-script');
             Route::post('/{site}/application/branch', [ApplicationController::class, 'updateBranch'])->name('servers.sites.application.branch');
             Route::get('/{site}/application/env', [ApplicationController::class, 'getEnv'])->name('servers.sites.application.env');
-            Route::post('/{site}/application/env', [ApplicationController::class, 'updateEnv'])->name('servers.sites.application.env');
+            Route::post('/{site}/application/env', [ApplicationController::class, 'updateEnv']);
             Route::post('/{site}/application/auto-deployment', [ApplicationController::class, 'enableAutoDeployment'])->name('servers.sites.application.auto-deployment');
-            Route::delete('/{site}/application/auto-deployment', [ApplicationController::class, 'disableAutoDeployment'])->name('servers.sites.application.auto-deployment');
+            Route::delete('/{site}/application/auto-deployment', [ApplicationController::class, 'disableAutoDeployment']);
 
             // site ssl
             Route::get('/{site}/ssl', [SSLController::class, 'index'])->name('servers.sites.ssl');
@@ -61,7 +61,7 @@ Route::middleware('select-current-project')->group(function () {
             // site settings
             Route::get('/{site}/settings', [SiteSettingController::class, 'index'])->name('servers.sites.settings');
             Route::get('/{site}/settings/vhost', [SiteSettingController::class, 'getVhost'])->name('servers.sites.settings.vhost');
-            Route::post('/{site}/settings/vhost', [SiteSettingController::class, 'updateVhost'])->name('servers.sites.settings.vhost');
+            Route::post('/{site}/settings/vhost', [SiteSettingController::class, 'updateVhost']);
             Route::post('/{site}/settings/php', [SiteSettingController::class, 'updatePHPVersion'])->name('servers.sites.settings.php');
 
             // site logs
