@@ -51,6 +51,7 @@ class MigrateFromMysqlToSqlite extends Command
 
         $env = File::get(base_path('.env'));
         $env = str_replace('DB_CONNECTION=mysql', 'DB_CONNECTION=sqlite', $env);
+        $env = str_replace('DB_DATABASE=vito', '', $env);
         File::put(base_path('.env'), $env);
 
         $this->info('Migrated from Mysql to SQLite');
