@@ -1,6 +1,9 @@
 name: code-style
 
 on:
+  push:
+    branches:
+      - 1.x
   pull_request:
 
 jobs:
