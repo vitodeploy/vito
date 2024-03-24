@@ -39,7 +39,7 @@
                                             </x-dropdown-link>
                                             <x-dropdown-link
                                                 class="cursor-pointer"
-                                                x-on:click="$dispatch('open-modal', 'update-php-ini'); document.getElementById('ini').value = 'Loading...';"
+                                                x-on:click="version = '{{ $php->version }}'; $dispatch('open-modal', 'update-php-ini'); document.getElementById('ini').value = 'Loading...';"
                                                 hx-get="{{ route('servers.php.get-ini', ['server' => $server, 'version' => $php->version]) }}"
                                                 hx-swap="outerHTML"
                                                 hx-target="#update-php-ini-form"
