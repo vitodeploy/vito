@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
  * @method static init(Server $server, string $asUser = null)
  * @method static setLog(string $logType, int $siteId = null)
  * @method static connect()
- * @method static string exec(string $command, string $log = '', int $siteId = null)
+ * @method static string exec(string $command, string $log = '', int $siteId = null, ?bool $stream = false)
  * @method static string assertExecuted(array|string $commands)
  * @method static string assertExecutedContains(string $command)
  * @method static disconnect()

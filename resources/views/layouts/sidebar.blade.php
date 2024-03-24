@@ -118,6 +118,18 @@
 
                 <li>
                     <x-sidebar-link
+                        :href="route('servers.console', ['server' => $server])"
+                        :active="request()->routeIs('servers.console')"
+                    >
+                        <x-heroicon name="o-command-line" class="h-6 w-6" />
+                        <span class="ml-2">
+                            {{ __("Console") }}
+                        </span>
+                    </x-sidebar-link>
+                </li>
+
+                <li>
+                    <x-sidebar-link
                         :href="route('servers.settings', ['server' => $server])"
                         :active="request()->routeIs('servers.settings')"
                     >

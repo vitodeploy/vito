@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\ConsoleController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
@@ -123,6 +124,10 @@ Route::middleware('select-current-project')->group(function () {
         Route::get('/{server}/services/{service}/restart', [ServiceController::class, 'restart'])->name('servers.services.restart');
         Route::get('/{server}/services/{service}/enable', [ServiceController::class, 'enable'])->name('servers.services.enable');
         Route::get('/{server}/services/{service}/disable', [ServiceController::class, 'disable'])->name('servers.services.disable');
+
+        // console
+        Route::get('/{server}/console', [ConsoleController::class, 'index'])->name('servers.console');
+        Route::post('/{server}/console', [ConsoleController::class, 'run'])->name('servers.console.run');
     });
 
     // settings
