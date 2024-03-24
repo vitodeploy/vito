@@ -2,12 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\DatabaseStatus;
-use App\Jobs\DatabaseUser\CreateOnServer;
-use App\Jobs\DatabaseUser\DeleteFromServer;
-use App\Jobs\DatabaseUser\LinkUser;
-use App\Jobs\DatabaseUser\UnlinkUser;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -19,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $host
  * @property string $status
  * @property Server $server
- * @property string $full_user
  */
 class DatabaseUser extends AbstractModel
 {
@@ -47,50 +40,5 @@ class DatabaseUser extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
-    }
-
-    public function scopeHasDatabase(Builder $query, string $databaseName): Builder
-    {
-        return $query->where('databases', 'like', "%\"$databaseName\"%");
-    }
-
-    public function createOnServer(string $queue = 'ssh'): void
-    {
-        dispatch(new CreateOnServer($this))->onConnection($queue);
-    }
-
-    public function deleteFromServer(string $queue = 'ssh'): void
-    {
-        $this->status = DatabaseStatus::DELETING;
-        $this->save();
-
-        dispatch(new DeleteFromServer($this))->onConnection($queue);
-    }
-
-    public function linkNewDatabase(string $name): void
-    {
-        $linkedDatabases = $this->databases ?? [];
-        if (! in_array($name, $linkedDatabases)) {
-            $linkedDatabases[] = $name;
-            $this->databases = $linkedDatabases;
-            $this->unlinkUser();
-            $this->linkUser();
-            $this->save();
-        }
-    }
-
-    public function linkUser(string $queue = 'ssh'): void
-    {
-        dispatch(new LinkUser($this))->onConnection($queue);
-    }
-
-    public function unlinkUser(string $queue = 'ssh'): void
-    {
-        dispatch(new UnlinkUser($this))->onConnection($queue);
-    }
-
-    public function getFullUserAttribute(): string
-    {
-        return $this->username.'@'.$this->host;
     }
 }

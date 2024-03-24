@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class StorageProvider extends Enum
+final class StorageProvider
 {
     const DROPBOX = 'dropbox';
 

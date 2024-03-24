@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\BackupFileStatus;
-use App\Jobs\Backup\RestoreDatabase;
-use App\Jobs\StorageProvider\DeleteFile;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,8 +14,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $restored_to
  * @property Carbon $restored_at
  * @property Backup $backup
- * @property string $path
- * @property string $storage_path
  */
 class BackupFile extends AbstractModel
 {
@@ -56,11 +51,12 @@ class BackupFile extends AbstractModel
             }
         });
 
-        static::deleted(function (BackupFile $backupFile) {
-            dispatch(new DeleteFile(
-                $backupFile->backup->storage,
-                [$backupFile->storage_path]
-            ));
+        static::deleting(function (BackupFile $backupFile) {
+            $provider = $backupFile->backup->storage->provider();
+            $path = $backupFile->storagePath();
+            dispatch(function () use ($provider, $path) {
+                $provider->delete([$path]);
+            });
         });
     }
 
@@ -69,21 +65,13 @@ class BackupFile extends AbstractModel
         return $this->belongsTo(Backup::class);
     }
 
-    public function getPathAttribute(): string
+    public function path(): string
     {
-        return '/home/'.$this->backup->server->ssh_user.'/'.$this->name.'.zip';
+        return '/home/'.$this->backup->server->getSshUser().'/'.$this->name.'.zip';
     }
 
-    public function getStoragePathAttribute(): string
+    public function storagePath(): string
     {
-        return '/'.$this->name.'.zip';
-    }
-
-    public function restore(Database $database): void
-    {
-        $this->status = BackupFileStatus::RESTORING;
-        $this->restored_to = $database->name;
-        $this->save();
-        dispatch(new RestoreDatabase($this, $database))->onConnection('ssh');
+        return '/'.$this->backup->database->name.'/'.$this->name.'.zip';
     }
 }

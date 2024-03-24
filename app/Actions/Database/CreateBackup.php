@@ -24,15 +24,15 @@ class CreateBackup
         $backup = new Backup([
             'type' => $type,
             'server_id' => $server->id,
-            'database_id' => $input['database'] ?? null,
-            'storage_id' => $input['storage'],
-            'interval' => $input['interval'] == 'custom' ? $input['custom'] : $input['interval'],
-            'keep_backups' => $input['keep'],
+            'database_id' => $input['backup_database'] ?? null,
+            'storage_id' => $input['backup_storage'],
+            'interval' => $input['backup_interval'] == 'custom' ? $input['backup_custom'] : $input['backup_interval'],
+            'keep_backups' => $input['backup_keep'],
             'status' => BackupStatus::RUNNING,
         ]);
         $backup->save();
 
-        $backup->run();
+        app(RunBackup::class)->run($backup);
 
         return $backup;
     }
@@ -43,16 +43,16 @@ class CreateBackup
     private function validate($type, Server $server, array $input): void
     {
         $rules = [
-            'storage' => [
+            'backup_storage' => [
                 'required',
                 Rule::exists('storage_providers', 'id'),
             ],
-            'keep' => [
+            'backup_keep' => [
                 'required',
                 'numeric',
                 'min:1',
             ],
-            'interval' => [
+            'backup_interval' => [
                 'required',
                 Rule::in([
                     '0 * * * *',
@@ -63,13 +63,13 @@ class CreateBackup
                 ]),
             ],
         ];
-        if ($input['interval'] == 'custom') {
-            $rules['custom'] = [
+        if ($input['backup_interval'] == 'custom') {
+            $rules['backup_custom'] = [
                 'required',
             ];
         }
         if ($type === 'database') {
-            $rules['database'] = [
+            $rules['backup_database'] = [
                 'required',
                 Rule::exists('databases', 'id')
                     ->where('server_id', $server->id)

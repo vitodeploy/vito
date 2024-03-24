@@ -3,15 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\ServiceStatus;
-use App\Http\Livewire\Services\InstallPHPMyAdmin;
-use App\Http\Livewire\Services\ServicesList;
-use App\Jobs\Installation\InstallPHPMyAdmin as InstallationInstallPHPMyAdmin;
-use App\Jobs\Installation\UninstallPHPMyAdmin;
-use App\Jobs\Service\Manage;
-use App\Models\Service;
+use App\Facades\SSH;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ServicesTest extends TestCase
@@ -22,15 +15,12 @@ class ServicesTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->assertSee([
-                'nginx',
-                'php',
-                'supervisor',
-                'redis',
-                'ufw',
-                'php',
-            ]);
+        $this->get(route('servers.services', $this->server))
+            ->assertSee('nginx')
+            ->assertSee('php')
+            ->assertSee('supervisor')
+            ->assertSee('redis')
+            ->assertSee('ufw');
     }
 
     /**
@@ -38,15 +28,41 @@ class ServicesTest extends TestCase
      */
     public function test_restart_service(string $name): void
     {
-        $service = $this->server->services()->where('name', $name)->first();
+        $this->actingAs($this->user);
 
-        Bus::fake();
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('restart', $service->id)
-            ->assertSuccessful();
+        SSH::fake('Active: active');
 
-        Bus::assertDispatched(Manage::class);
+        $this->get(route('servers.services.restart', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::READY, $service->status);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_restart_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+
+        SSH::fake('Active: inactive');
+
+        $this->get(route('servers.services.restart', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
     }
 
     /**
@@ -54,15 +70,41 @@ class ServicesTest extends TestCase
      */
     public function test_stop_service(string $name): void
     {
-        $service = $this->server->services()->where('name', $name)->first();
+        $this->actingAs($this->user);
 
-        Bus::fake();
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('stop', $service->id)
-            ->assertSuccessful();
+        SSH::fake('Active: inactive');
 
-        Bus::assertDispatched(Manage::class);
+        $this->get(route('servers.services.stop', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::STOPPED, $service->status);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_stop_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+
+        SSH::fake('Active: active');
+
+        $this->get(route('servers.services.stop', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
     }
 
     /**
@@ -70,57 +112,125 @@ class ServicesTest extends TestCase
      */
     public function test_start_service(string $name): void
     {
-        $service = $this->server->services()->where('name', $name)->first();
+        $this->actingAs($this->user);
 
-        $service->status = ServiceStatus::STOPPED;
-        $service->save();
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Bus::fake();
+        SSH::fake('Active: active');
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('start', $service->id)
-            ->assertSuccessful();
+        $this->get(route('servers.services.start', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(Manage::class);
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::READY, $service->status);
     }
 
-    public function test_install_phpmyadmin(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_start_service(string $name): void
     {
-        Bus::fake();
+        $this->actingAs($this->user);
 
-        Livewire::test(InstallPHPMyAdmin::class, ['server' => $this->server])
-            ->set('allowed_ip', '0.0.0.0')
-            ->set('port', 5433)
-            ->call('install')
-            ->assertSuccessful();
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Bus::assertDispatched(InstallationInstallPHPMyAdmin::class);
+        SSH::fake('Active: inactive');
+
+        $this->get(route('servers.services.start', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
     }
 
-    public function test_uninstall_phpmyadmin(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_enable_service(string $name): void
     {
-        $service = Service::factory()->create([
-            'server_id' => $this->server->id,
-            'type' => 'phpmyadmin',
-            'type_data' => [
-                'allowed_ip' => '0.0.0.0',
-                'port' => '5433',
-                'php' => '8.1',
-            ],
-            'name' => 'phpmyadmin',
-            'version' => '5.1.2',
-            'status' => ServiceStatus::READY,
-            'is_default' => 1,
+        $this->actingAs($this->user);
 
-        ]);
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
 
-        Bus::fake();
+        SSH::fake('Active: active');
 
-        Livewire::test(ServicesList::class, ['server' => $this->server])
-            ->call('uninstall', $service->id)
-            ->assertSuccessful();
+        $this->get(route('servers.services.enable', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
 
-        Bus::assertDispatched(UninstallPHPMyAdmin::class);
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::READY, $service->status);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_enable_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+
+        SSH::fake('Active: inactive');
+
+        $this->get(route('servers.services.enable', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_disable_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+
+        SSH::fake('Active: inactive');
+
+        $this->get(route('servers.services.disable', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::DISABLED, $service->status);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_failed_to_disable_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+
+        SSH::fake('Active: active');
+
+        $this->get(route('servers.services.disable', [
+            'server' => $this->server,
+            'service' => $service,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
     }
 
     public static function data(): array

@@ -28,7 +28,14 @@ class InstallNewPHP
             'is_default' => false,
         ]);
         $php->save();
-        $php->install();
+
+        dispatch(function () use ($php) {
+            $php->handler()->install();
+            $php->status = ServiceStatus::READY;
+            $php->save();
+        })->catch(function () use ($php) {
+            $php->delete();
+        })->onConnection('ssh');
     }
 
     /**
@@ -41,12 +48,12 @@ class InstallNewPHP
                 'required',
                 Rule::in(config('core.php_versions')),
             ],
-        ])->validateWithBag('installPHP');
+        ])->validate();
 
         if (in_array($input['version'], $server->installedPHPVersions())) {
             throw ValidationException::withMessages(
                 ['version' => __('This version is already installed')]
-            )->errorBag('installPHP');
+            );
         }
     }
 }

@@ -2,12 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Http\Livewire\SourceControls\Connect;
-use App\Http\Livewire\SourceControls\SourceControlsList;
 use App\Models\SourceControl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class SourceControlsTest extends TestCase
@@ -17,24 +14,22 @@ class SourceControlsTest extends TestCase
     /**
      * @dataProvider data
      */
-    public function test_connect_provider(string $provider, ?string $customUrl): void
+    public function test_connect_provider(string $provider, ?string $customUrl, array $input): void
     {
         $this->actingAs($this->user);
 
         Http::fake();
 
-        $livewire = Livewire::test(Connect::class)
-            ->set('token', 'token')
-            ->set('name', 'profile')
-            ->set('provider', $provider);
+        $input = array_merge([
+            'name' => 'test',
+            'provider' => $provider,
+        ], $input);
 
         if ($customUrl !== null) {
-            $livewire->set('url', $customUrl);
+            $input['url'] = $customUrl;
         }
-
-        $livewire
-            ->call('connect')
-            ->assertSuccessful();
+        $this->post(route('source-controls.connect'), $input)
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('source_controls', [
             'provider' => $provider,
@@ -55,12 +50,37 @@ class SourceControlsTest extends TestCase
             'profile' => 'test',
         ]);
 
-        Livewire::test(SourceControlsList::class)
-            ->set('deleteId', $sourceControl->id)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('source-controls.delete', $sourceControl->id))
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('source_controls', [
+            'id' => $sourceControl->id,
+        ]);
+    }
+
+    /**
+     * @dataProvider data
+     */
+    public function test_cannot_delete_provider(string $provider): void
+    {
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => $provider,
+            'profile' => 'test',
+        ]);
+
+        $this->site->update([
+            'source_control_id' => $sourceControl->id,
+        ]);
+
+        $this->delete(route('source-controls.delete', $sourceControl->id))
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('toast.type', 'error')
+            ->assertSessionHas('toast.message', 'This source control is being used by a site.');
+
+        $this->assertDatabaseHas('source_controls', [
             'id' => $sourceControl->id,
         ]);
     }
@@ -68,10 +88,10 @@ class SourceControlsTest extends TestCase
     public static function data(): array
     {
         return [
-            ['github', null],
-            ['gitlab', null],
-            ['gitlab', 'https://git.example.com/'],
-            ['bitbucket', null],
+            ['github', null, ['token' => 'test']],
+            ['gitlab', null, ['token' => 'test']],
+            ['gitlab', 'https://git.example.com/', ['token' => 'test']],
+            ['bitbucket', null, ['username' => 'test', 'password' => 'test']],
         ];
     }
 }

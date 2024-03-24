@@ -3,14 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\DatabaseStatus;
+use App\Enums\DatabaseUserStatus;
 use App\Facades\SSH;
-use App\Http\Livewire\Databases\DatabaseList;
-use App\Jobs\Database\CreateOnServer;
-use App\Jobs\Database\DeleteFromServer;
 use App\Models\Database;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class DatabaseTest extends TestCase
@@ -21,20 +17,43 @@ class DatabaseTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Bus::fake();
+        SSH::fake();
 
-        SSH::fake()->outputShouldBe('test');
-
-        Livewire::test(DatabaseList::class, ['server' => $this->server])
-            ->set('name', 'database')
-            ->call('create')
-            ->assertSuccessful();
-
-        Bus::assertDispatched(CreateOnServer::class);
+        $this->post(route('servers.databases.store', $this->server), [
+            'name' => 'database',
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('databases', [
             'name' => 'database',
-            'status' => DatabaseStatus::CREATING,
+            'status' => DatabaseStatus::READY,
+        ]);
+    }
+
+    public function test_create_database_with_user(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $this->post(route('servers.databases.store', $this->server), [
+            'name' => 'database',
+            'user' => 'on',
+            'username' => 'user',
+            'password' => 'password',
+            'remote' => 'on',
+            'host' => '%',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('databases', [
+            'name' => 'database',
+            'status' => DatabaseStatus::READY,
+        ]);
+
+        $this->assertDatabaseHas('database_users', [
+            'username' => 'user',
+            'databases' => json_encode(['database']),
+            'host' => '%',
+            'status' => DatabaseUserStatus::READY,
         ]);
     }
 
@@ -46,31 +65,25 @@ class DatabaseTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        Livewire::test(DatabaseList::class, ['server' => $this->server])
-            ->assertSee([
-                $database->name,
-            ]);
+        $this->get(route('servers.databases', $this->server))
+            ->assertSee($database->name);
     }
 
     public function test_delete_database(): void
     {
         $this->actingAs($this->user);
 
-        Bus::fake();
+        SSH::fake();
 
         $database = Database::factory()->create([
             'server_id' => $this->server,
         ]);
 
-        Livewire::test(DatabaseList::class, ['server' => $this->server])
-            ->set('deleteId', $database->id)
-            ->call('delete');
+        $this->delete(route('servers.databases.destroy', [$this->server, $database]))
+            ->assertSessionDoesntHaveErrors();
 
-        $this->assertDatabaseHas('databases', [
+        $this->assertDatabaseMissing('databases', [
             'id' => $database->id,
-            'status' => DatabaseStatus::DELETING,
         ]);
-
-        Bus::assertDispatched(DeleteFromServer::class);
     }
 }

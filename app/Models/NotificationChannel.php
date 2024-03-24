@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Contracts\Notification;
+use App\Notifications\NotificationInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 
@@ -33,14 +33,14 @@ class NotificationChannel extends AbstractModel
         'is_default' => 'boolean',
     ];
 
-    public function provider(): \App\Contracts\NotificationChannel
+    public function provider(): \App\NotificationChannels\NotificationChannel
     {
         $class = config('core.notification_channels_providers_class')[$this->provider];
 
         return new $class($this);
     }
 
-    public static function notifyAll(Notification $notification): void
+    public static function notifyAll(NotificationInterface $notification): void
     {
         $channels = self::all();
         foreach ($channels as $channel) {

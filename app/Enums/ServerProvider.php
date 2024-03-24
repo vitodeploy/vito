@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class ServerProvider extends Enum
+final class ServerProvider
 {
     const CUSTOM = 'custom';
 

@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\DeploymentStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +15,7 @@ return new class extends Migration
             $table->unsignedInteger('log_id')->nullable();
             $table->json('commit_data')->nullable();
             $table->string('commit_id')->nullable();
-            $table->enum('status', DeploymentStatus::getValues());
+            $table->string('status');
             $table->timestamps();
         });
     }

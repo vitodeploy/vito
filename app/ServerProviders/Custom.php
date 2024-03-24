@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 
 class Custom extends AbstractProvider
 {
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         return [
             'ip' => [

@@ -1,5 +1,5 @@
 <x-server-layout :server="$server">
     <x-slot name="pageTitle">{{ __("SSH Keys") }}</x-slot>
 
-    <livewire:server-ssh-keys.server-keys-list :server="$server"/>
+    @include("server-ssh-keys.partials.server-keys-list")
 </x-server-layout>

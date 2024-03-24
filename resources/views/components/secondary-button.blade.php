@@ -1,24 +1,31 @@
-@props(['href', 'type', 'span', 'disabled'])
+@props([
+    "href",
+    "type",
+    "span",
+    "disabled",
+])
 
 @php
-    $class = 'inline-flex items-center px-4 py-1 h-9 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150';
+    $class =
+    "inline-flex h-9 min-w-max items-center rounded-md border border-gray-300 bg-white px-4 py-1 font-semibold text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-25 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800";
 @endphp
 
-@if(isset($href))
-    @if(isset($disabled))
+@if (isset($href))
+    @if (isset($disabled))
         @php
-            $class .= ' opacity-25 cursor-default';
+            $class .= " opacity-25 cursor-default";
         @endphp
-        <span {{ $attributes->merge(['class' => $class]) }}>
+
+        <span {{ $attributes->merge(["class" => $class]) }}>
             {{ $slot }}
         </span>
     @else
-        <a href="{{ $href }}" {{ $attributes->merge(['class' => $class]) }}>
+        <a href="{{ $href }}" {{ $attributes->merge(["class" => $class]) }}>
             {{ $slot }}
         </a>
     @endif
 @else
-    <button {{ $attributes->merge(['type' => $type ?? 'submit', 'class' => $class]) }}>
+    <button {{ $attributes->merge(["type" => $type ?? "submit", "class" => $class]) }}>
         {{ $slot }}
     </button>
 @endif

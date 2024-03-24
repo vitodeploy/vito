@@ -11,12 +11,12 @@
   <coverage/>
   <php>
     <env name="APP_ENV" value="testing"/>
+    <env name="APP_KEY" value="base64:d9kZW60V4lFEw2SPn6UiJ0cfi04v80EWP0GZ6kzoxNg="/>
+    <env name="DB_DATABASE" value="database-test.sqlite"/>
     <env name="BCRYPT_ROUNDS" value="4"/>
     <env name="CACHE_DRIVER" value="array"/>
     <env name="MAIL_MAILER" value="array"/>
-    <env name="QUEUE_CONNECTION" value="database"/>
-    <env name="SESSION_DRIVER" value="array"/>
-    <env name="TELESCOPE_ENABLED" value="false"/>
+    <env name="QUEUE_CONNECTION" value="sync"/>
   </php>
   <source>
     <include>

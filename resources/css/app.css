@@ -1,9 +1,12 @@
 @import "toastr.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 [x-cloak] {
     display: none !important;
+}
+
+body {
+    @apply text-gray-700 dark:text-gray-300;
 }

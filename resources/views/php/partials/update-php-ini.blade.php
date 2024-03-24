@@ -1,0 +1,39 @@
+<x-modal name="update-php-ini">
+    <form
+        id="update-php-ini-form"
+        hx-post="{{ route("servers.php.update-ini", ["server" => $server]) }}"
+        hx-swap="outerHTML"
+        hx-select="#update-php-ini-form"
+        class="p-6"
+    >
+        <input type="hidden" name="version" :value="version" />
+
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+            {{ __("Update php.ini") }}
+        </h2>
+
+        <div class="mt-6">
+            <x-input-label for="ini" value="php.ini" />
+            <x-textarea id="ini" name="ini" class="mt-1 w-full" rows="15">
+                {{ old("ini", session()->get("ini")) }}
+            </x-textarea>
+            @error("ini")
+                <x-input-error class="mt-2" :messages="$message" />
+            @enderror
+
+            @error("version")
+                <x-input-error class="mt-2" :messages="$message" />
+            @enderror
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <x-secondary-button type="button" x-on:click="$dispatch('close')">
+                {{ __("Cancel") }}
+            </x-secondary-button>
+
+            <x-primary-button hx-disable class="ml-3">
+                {{ __("Save") }}
+            </x-primary-button>
+        </div>
+    </form>
+</x-modal>

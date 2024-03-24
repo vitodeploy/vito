@@ -3,6 +3,7 @@
 namespace App\Actions\Site;
 
 use App\Models\Site;
+use App\SSH\Git\Git;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -14,8 +15,9 @@ class UpdateBranch
     public function update(Site $site, array $input): void
     {
         $this->validate($input);
-
-        $site->updateBranch($input['branch']);
+        $site->branch = $input['branch'];
+        app(Git::class)->checkout($site);
+        $site->save();
     }
 
     /**
@@ -25,6 +27,6 @@ class UpdateBranch
     {
         Validator::make($input, [
             'branch' => 'required',
-        ])->validateWithBag('updateBranch');
+        ]);
     }
 }

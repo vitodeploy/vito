@@ -2,9 +2,9 @@
 
 namespace App\Actions\ServerProvider;
 
-use App\Contracts\ServerProvider as ServerProviderContract;
 use App\Models\ServerProvider;
 use App\Models\User;
+use App\ServerProviders\ServerProvider as ServerProviderContract;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -28,7 +28,7 @@ class CreateServerProvider
         } catch (Exception) {
             throw ValidationException::withMessages([
                 'provider' => [
-                    __("Couldn't connect to provider. Please check your credentials and try again later."),
+                    sprintf("Couldn't connect to %s. Please check your credentials.", $input['provider']),
                 ],
             ]);
         }

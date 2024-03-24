@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
-use App\Contracts\SourceControlProvider;
+use App\SourceControlProviders\SourceControlProvider;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $provider
+ * @property array $provider_data
  * @property ?string $profile
  * @property ?string $url
  * @property string $access_token
@@ -17,6 +19,7 @@ class SourceControl extends AbstractModel
 
     protected $fillable = [
         'provider',
+        'provider_data',
         'profile',
         'url',
         'access_token',
@@ -24,6 +27,7 @@ class SourceControl extends AbstractModel
 
     protected $casts = [
         'access_token' => 'encrypted',
+        'provider_data' => 'encrypted:array',
     ];
 
     public function provider(): SourceControlProvider
@@ -36,5 +40,10 @@ class SourceControl extends AbstractModel
     public function getRepo(?string $repo = null): ?array
     {
         return $this->provider()->getRepo($repo);
+    }
+
+    public function sites(): HasMany
+    {
+        return $this->hasMany(Site::class);
     }
 }

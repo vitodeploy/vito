@@ -19,11 +19,14 @@ class CreateCronJob
             'server_id' => $server->id,
             'user' => $input['user'],
             'command' => $input['command'],
-            'frequency' => $input['frequency'],
+            'frequency' => $input['frequency'] == 'custom' ? $input['custom'] : $input['frequency'],
             'status' => CronjobStatus::CREATING,
         ]);
         $cronJob->save();
-        $cronJob->addToServer();
+
+        $server->cron()->update($cronJob->user, CronJob::crontab($server, $cronJob->user));
+        $cronJob->status = CronjobStatus::READY;
+        $cronJob->save();
     }
 
     /**
@@ -41,8 +44,17 @@ class CreateCronJob
             ],
             'frequency' => [
                 'required',
-                new CronRule(),
+                new CronRule(acceptCustom: true),
             ],
-        ])->validateWithBag('createCronJob');
+        ])->validate();
+
+        if ($input['frequency'] == 'custom') {
+            Validator::make($input, [
+                'custom' => [
+                    'required',
+                    new CronRule(),
+                ],
+            ])->validate();
+        }
     }
 }

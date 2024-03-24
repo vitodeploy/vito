@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class SslStatus extends Enum
+final class SslStatus
 {
     const CREATED = 'created';
 

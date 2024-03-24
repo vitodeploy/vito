@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class DatabaseStatus extends Enum
+final class DatabaseStatus
 {
     const READY = 'ready';
 

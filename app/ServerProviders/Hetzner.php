@@ -13,7 +13,7 @@ class Hetzner extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.hetzner.cloud/v1';
 
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         return [
             'os' => 'required|in:'.implode(',', config('core.operating_systems')),

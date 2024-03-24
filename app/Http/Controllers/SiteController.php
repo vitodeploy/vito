@@ -2,9 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Site\CreateSite;
+use App\Actions\Site\DeleteSite;
+use App\Enums\SiteType;
+use App\Facades\Toast;
+use App\Helpers\HtmxResponse;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\SourceControl;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class SiteController extends Controller
 {
@@ -12,13 +20,25 @@ class SiteController extends Controller
     {
         return view('sites.index', [
             'server' => $server,
+            'sites' => $server->sites()->orderByDesc('id')->get(),
         ]);
+    }
+
+    public function store(Server $server, Request $request): HtmxResponse
+    {
+        $site = app(CreateSite::class)->create($server, $request->input());
+
+        Toast::success('Site created');
+
+        return htmx()->redirect(route('servers.sites.show', [$server, $site]));
     }
 
     public function create(Server $server): View
     {
         return view('sites.create', [
             'server' => $server,
+            'type' => old('type', request()->query('type', SiteType::LARAVEL)),
+            'sourceControls' => SourceControl::all(),
         ]);
     }
 
@@ -30,43 +50,12 @@ class SiteController extends Controller
         ]);
     }
 
-    public function application(Server $server, Site $site): View
+    public function destroy(Server $server, Site $site): RedirectResponse
     {
-        return view('sites.application', [
-            'server' => $server,
-            'site' => $site,
-        ]);
-    }
+        app(DeleteSite::class)->delete($site);
 
-    public function ssl(Server $server, Site $site): View
-    {
-        return view('sites.ssl', [
-            'server' => $server,
-            'site' => $site,
-        ]);
-    }
+        Toast::success('Site is being deleted');
 
-    public function queues(Server $server, Site $site): View
-    {
-        return view('sites.queues', [
-            'server' => $server,
-            'site' => $site,
-        ]);
-    }
-
-    public function settings(Server $server, Site $site): View
-    {
-        return view('sites.settings', [
-            'server' => $server,
-            'site' => $site,
-        ]);
-    }
-
-    public function logs(Server $server, Site $site): View
-    {
-        return view('sites.logs', [
-            'server' => $server,
-            'site' => $site,
-        ]);
+        return redirect()->route('servers.sites', $server);
     }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Facades;
 
-use App\Contracts\Notification;
+use App\Notifications\NotificationInterface;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void send(object $notifiable, Notification $notification)
+ * @method static void send(object $notifiable, NotificationInterface $notification)
  */
 class Notifier extends Facade
 {

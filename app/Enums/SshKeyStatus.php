@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class SshKeyStatus extends Enum
+final class SshKeyStatus
 {
     const ADDING = 'adding';
 

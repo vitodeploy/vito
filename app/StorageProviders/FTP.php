@@ -3,10 +3,8 @@
 namespace App\StorageProviders;
 
 use App\Models\Server;
-use App\SSHCommands\Storage\DownloadFromFTPCommand;
-use App\SSHCommands\Storage\UploadToFTPCommand;
+use App\SSH\Storage\Storage;
 use FTP\Connection;
-use Throwable;
 
 class FTP extends AbstractStorageProvider
 {
@@ -49,48 +47,9 @@ class FTP extends AbstractStorageProvider
         return $isConnected;
     }
 
-    /**
-     * @throws Throwable
-     */
-    public function upload(Server $server, string $src, string $dest): array
+    public function ssh(Server $server): Storage
     {
-        $server->ssh()->exec(
-            new UploadToFTPCommand(
-                $src,
-                $this->storageProvider->credentials['path'].'/'.$dest,
-                $this->storageProvider->credentials['host'],
-                $this->storageProvider->credentials['port'],
-                $this->storageProvider->credentials['username'],
-                $this->storageProvider->credentials['password'],
-                $this->storageProvider->credentials['ssl'],
-                $this->storageProvider->credentials['passive'],
-            ),
-            'upload-to-ftp'
-        );
-
-        return [
-            'size' => null,
-        ];
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function download(Server $server, string $src, string $dest): void
-    {
-        $server->ssh()->exec(
-            new DownloadFromFTPCommand(
-                $this->storageProvider->credentials['path'].'/'.$src,
-                $dest,
-                $this->storageProvider->credentials['host'],
-                $this->storageProvider->credentials['port'],
-                $this->storageProvider->credentials['username'],
-                $this->storageProvider->credentials['password'],
-                $this->storageProvider->credentials['ssl'],
-                $this->storageProvider->credentials['passive'],
-            ),
-            'download-from-ftp'
-        );
+        return new \App\SSH\Storage\FTP($server, $this->storageProvider);
     }
 
     public function delete(array $paths): void

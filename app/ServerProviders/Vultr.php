@@ -15,7 +15,7 @@ class Vultr extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.vultr.com/v2';
 
-    public function createValidationRules($input): array
+    public function createRules($input): array
     {
         $rules = [
             'os' => 'required|in:'.implode(',', config('core.operating_systems')),

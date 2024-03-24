@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\CronjobStatus;
-use App\Jobs\CronJob\AddToServer;
-use App\Jobs\CronJob\RemoveFromServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $command
  * @property string $user
  * @property string $frequency
- * @property string $frequency_label
  * @property bool $hidden
  * @property string $status
  * @property string $crontab
@@ -37,19 +33,15 @@ class CronJob extends AbstractModel
         'hidden' => 'boolean',
     ];
 
-    protected $appends = [
-        'frequency_label',
-    ];
-
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
-    public function getCrontabAttribute(): string
+    public static function crontab(Server $server, string $user): string
     {
         $data = '';
-        $cronJobs = $this->server->cronJobs()->where('user', $this->user)->get();
+        $cronJobs = $server->cronJobs()->where('user', $user)->get();
         foreach ($cronJobs as $key => $cronJob) {
             $data .= $cronJob->frequency.' '.$cronJob->command;
             if ($key != count($cronJobs) - 1) {
@@ -60,19 +52,7 @@ class CronJob extends AbstractModel
         return $data;
     }
 
-    public function addToServer(): void
-    {
-        dispatch(new AddToServer($this))->onConnection('ssh');
-    }
-
-    public function removeFromServer(): void
-    {
-        $this->status = CronjobStatus::DELETING;
-        $this->save();
-        dispatch(new RemoveFromServer($this))->onConnection('ssh');
-    }
-
-    public function getFrequencyLabelAttribute(): string
+    public function frequencyLabel(): string
     {
         $labels = [
             '* * * * *' => 'Every minute',

@@ -2,30 +2,18 @@ name: tests
 
 on:
   push:
+    branches:
+      - 1.x
   pull_request:
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   tests:
     runs-on: ubuntu-22.04
 
-    services:
-      mysql:
-        image: mysql
-        env:
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_ROOT_PASSWORD: rootpassword
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     strategy:
       fail-fast: true
       matrix:
-        php: [ 8.1 ]
+        php: [8.2]
 
     steps:
       - uses: actions/checkout@v2
@@ -47,10 +35,8 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Create sqlite database
+        run: touch storage/database-test.sqlite
+
       - name: Run test suite
         run: php artisan test
-        env:
-          DB_HOST: 127.0.0.1
-          DB_DATABASE: test_db
-          DB_USERNAME: user
-          DB_PASSWORD: password

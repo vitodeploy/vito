@@ -54,15 +54,7 @@ return [
         'ssh' => [
             'driver' => 'database',
             'table' => 'jobs',
-            'queue' => 'ssh',
-            'timeout' => 240,
-            'retry_after' => 600,
-        ],
-
-        'ssh-long' => [
-            'driver' => 'database',
-            'table' => 'jobs',
-            'queue' => 'ssh-long',
+            'queue' => 'default',
             'timeout' => 600,
             'retry_after' => 600,
         ],
@@ -82,7 +74,7 @@ return [
 
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
-        'database' => env('DB_CONNECTION', 'mysql'),
+        'database' => env('DB_CONNECTION', 'sqlite'),
         'table' => 'failed_jobs',
     ],
 

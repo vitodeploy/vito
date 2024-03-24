@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\SslStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->longText('pk')->nullable();
             $table->longText('ca')->nullable();
             $table->timestamp('expires_at');
-            $table->enum('status', SslStatus::getValues());
+            $table->string('status');
             $table->timestamps();
         });
     }

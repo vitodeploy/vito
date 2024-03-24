@@ -2,7 +2,6 @@
 
 namespace App\ServerProviders;
 
-use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
@@ -11,6 +10,7 @@ use Aws\EC2InstanceConnect\EC2InstanceConnectClient;
 use Exception;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class AWS extends AbstractProvider
@@ -19,10 +19,13 @@ class AWS extends AbstractProvider
 
     protected EC2InstanceConnectClient $ec2InstanceConnectClient;
 
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         $rules = [
-            'os' => 'required|in:'.implode(',', OperatingSystem::getValues()),
+            'os' => [
+                'required',
+                Rule::in(config('core.operating_systems')),
+            ],
         ];
         // plans
         $plans = [];

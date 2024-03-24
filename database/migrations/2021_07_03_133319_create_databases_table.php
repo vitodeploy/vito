@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('server_id');
             $table->string('name');
-            $table->enum('status', DatabaseStatus::getValues())->default(DatabaseStatus::CREATING);
+            $table->string('status')->default(DatabaseStatus::CREATING);
             $table->timestamps();
         });
     }

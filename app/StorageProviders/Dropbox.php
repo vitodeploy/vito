@@ -2,12 +2,9 @@
 
 namespace App\StorageProviders;
 
-use App\Exceptions\BackupFileException;
 use App\Models\Server;
-use App\SSHCommands\Storage\DownloadFromDropboxCommand;
-use App\SSHCommands\Storage\UploadToDropboxCommand;
+use App\SSH\Storage\Storage;
 use Illuminate\Support\Facades\Http;
-use Throwable;
 
 class Dropbox extends AbstractStorageProvider
 {
@@ -37,44 +34,9 @@ class Dropbox extends AbstractStorageProvider
         return $res->successful();
     }
 
-    /**
-     * @throws Throwable
-     */
-    public function upload(Server $server, string $src, string $dest): array
+    public function ssh(Server $server): Storage
     {
-        $upload = $server->ssh()->exec(
-            new UploadToDropboxCommand(
-                $src,
-                $dest,
-                $this->storageProvider->credentials['token']
-            ),
-            'upload-to-dropbox'
-        );
-
-        $data = json_decode($upload, true);
-
-        if (isset($data['error'])) {
-            throw new BackupFileException('Failed to upload to Dropbox '.$data['error_summary'] ?? '');
-        }
-
-        return [
-            'size' => $data['size'] ?? null,
-        ];
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function download(Server $server, string $src, string $dest): void
-    {
-        $server->ssh()->exec(
-            new DownloadFromDropboxCommand(
-                $src,
-                $dest,
-                $this->storageProvider->credentials['token']
-            ),
-            'download-from-dropbox'
-        );
+        return new \App\SSH\Storage\Dropbox($server, $this->storageProvider);
     }
 
     public function delete(array $paths): void

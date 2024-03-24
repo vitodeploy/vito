@@ -13,12 +13,16 @@ class ConnectSourceControl
     public function connect(array $input): void
     {
         $this->validate($input);
+
         $sourceControl = new SourceControl([
             'provider' => $input['provider'],
             'profile' => $input['name'],
-            'access_token' => $input['token'],
             'url' => Arr::has($input, 'url') ? $input['url'] : null,
         ]);
+
+        $this->validateProvider($sourceControl, $input);
+
+        $sourceControl->provider_data = $sourceControl->provider()->createData($input);
 
         if (! $sourceControl->provider()->connect()) {
             throw ValidationException::withMessages([
@@ -38,20 +42,20 @@ class ConnectSourceControl
         $rules = [
             'provider' => [
                 'required',
-                Rule::in(\App\Enums\SourceControl::getValues()),
+                Rule::in(config('core.source_control_providers')),
             ],
             'name' => [
                 'required',
             ],
-            'token' => [
-                'required',
-            ],
-            'url' => [
-                'nullable',
-                'url:http,https',
-                'ends_with:/',
-            ],
         ];
         Validator::make($input, $rules)->validate();
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function validateProvider(SourceControl $sourceControl, array $input): void
+    {
+        Validator::make($input, $sourceControl->provider()->createRules($input))->validate();
     }
 }

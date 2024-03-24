@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class ServerType extends Enum
+final class ServerType
 {
     const REGULAR = 'regular';
 

@@ -2,16 +2,13 @@
 
 namespace App\Models;
 
-use App\Contracts\ServerType;
-use App\Enums\ServerStatus;
+use App\Actions\Server\CheckConnection;
 use App\Enums\ServiceStatus;
-use App\Facades\Notifier;
 use App\Facades\SSH;
-use App\Jobs\Installation\Upgrade;
-use App\Jobs\Server\CheckConnection;
-use App\Jobs\Server\RebootServer;
-use App\Notifications\ServerInstallationStarted;
-use App\Support\Testing\SSHFake;
+use App\ServerTypes\ServerType;
+use App\SSH\Cron\Cron;
+use App\SSH\OS\OS;
+use App\SSH\Systemd\Systemd;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -54,7 +51,6 @@ use Illuminate\Support\Str;
  * @property FirewallRule[] $firewallRules
  * @property CronJob[] $cronJobs
  * @property Queue[] $queues
- * @property ScriptExecution[] $scriptExecutions
  * @property Backup[] $backups
  * @property Queue[] $daemons
  * @property SshKey[] $sshKeys
@@ -124,7 +120,6 @@ class Server extends AbstractModel
             $server->cronJobs()->delete();
             $server->queues()->delete();
             $server->daemons()->delete();
-            $server->scriptExecutions()->delete();
             $server->sshKeys()->detach();
             if (File::exists($server->sshKey()['public_key_path'])) {
                 File::delete($server->sshKey()['public_key_path']);
@@ -190,11 +185,6 @@ class Server extends AbstractModel
         return $this->hasMany(Queue::class);
     }
 
-    public function scriptExecutions(): HasMany
-    {
-        return $this->hasMany(ScriptExecution::class);
-    }
-
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class);
@@ -203,6 +193,22 @@ class Server extends AbstractModel
     public function daemons(): HasMany
     {
         return $this->queues()->whereNull('site_id');
+    }
+
+    public function sshKeys(): BelongsToMany
+    {
+        return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
+
+    public function getSshUser(): string
+    {
+        if ($this->ssh_user) {
+            return $this->ssh_user;
+        }
+
+        return config('core.ssh_user');
     }
 
     public function service($type, $version = null): ?Service
@@ -230,6 +236,7 @@ class Server extends AbstractModel
 
         // If no default service found, get the first service with status ready or stopped
         if (! $service) {
+            /** @var Service $service */
             $service = $this->services()
                 ->where('type', $type)
                 ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])
@@ -243,24 +250,7 @@ class Server extends AbstractModel
         return $service;
     }
 
-    public function getServiceByUnit($unit): ?Service
-    {
-        /* @var Service $service */
-        $service = $this->services()
-            ->where('unit', $unit)
-            ->where('is_default', 1)
-            ->first();
-
-        return $service;
-    }
-
-    public function install(): void
-    {
-        $this->type()->install();
-        Notifier::send($this, new ServerInstallationStarted($this));
-    }
-
-    public function ssh(?string $user = null): \App\Helpers\SSH|SSHFake
+    public function ssh(?string $user = null): mixed
     {
         return SSH::init($this, $user);
     }
@@ -283,7 +273,7 @@ class Server extends AbstractModel
         return new $typeClass($this);
     }
 
-    public function provider(): \App\Contracts\ServerProvider
+    public function provider(): \App\ServerProviders\ServerProvider
     {
         $providerClass = config('core.server_providers_class')[$this->provider];
 
@@ -335,32 +325,8 @@ class Server extends AbstractModel
         return $this->service('php', $version);
     }
 
-    public function sshKeys(): BelongsToMany
-    {
-        return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
-            ->withPivot('status')
-            ->withTimestamps();
-    }
-
-    public function getSshUserAttribute(string $value): string
-    {
-        if ($value) {
-            return $value;
-        }
-
-        return config('core.ssh_user');
-    }
-
     public function sshKey(): array
     {
-        if (app()->environment() == 'testing') {
-            return [
-                'public_key' => 'public',
-                'public_key_path' => '/path',
-                'private_key_path' => '/path',
-            ];
-        }
-
         /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
 
@@ -371,46 +337,28 @@ class Server extends AbstractModel
         ];
     }
 
-    public function getServiceUnits(): array
+    public function checkConnection(): self
     {
-        $units = [];
-        $services = $this->services;
-        foreach ($services as $service) {
-            if ($service->unit) {
-                $units[] = $service->unit;
-            }
-        }
-
-        return $units;
+        return app(CheckConnection::class)->check($this);
     }
 
-    public function checkConnection(): void
-    {
-        dispatch(new CheckConnection($this))->onConnection('ssh');
-    }
-
-    public function installUpdates(): void
-    {
-        $this->available_updates = 0;
-        $this->security_updates = 0;
-        $this->save();
-        dispatch(new Upgrade($this))->onConnection('ssh');
-    }
-
-    public function reboot(): void
-    {
-        $this->status = 'disconnected';
-        $this->save();
-        dispatch(new RebootServer($this))->onConnection('ssh');
-    }
-
-    public function getHostnameAttribute(): string
+    public function hostname(): string
     {
         return Str::of($this->name)->slug();
     }
 
-    public function isReady(): bool
+    public function os(): OS
     {
-        return $this->status == ServerStatus::READY;
+        return new OS($this);
+    }
+
+    public function systemd(): Systemd
+    {
+        return new Systemd($this);
+    }
+
+    public function cron(): Cron
+    {
+        return new Cron($this);
     }
 }

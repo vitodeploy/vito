@@ -2,11 +2,8 @@
 
 namespace App\SiteTypes;
 
-use App\Contracts\SiteType;
-use App\Events\Broadcast;
-use App\Jobs\Site\DeleteSite;
+use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Site;
-use Closure;
 
 abstract class AbstractSiteType implements SiteType
 {
@@ -17,22 +14,25 @@ abstract class AbstractSiteType implements SiteType
         $this->site = $site;
     }
 
-    public function delete(): void
+    protected function progress(int $percentage): void
     {
-        dispatch(new DeleteSite($this->site))->onConnection('ssh');
+        $this->site->progress = $percentage;
+        $this->site->save();
     }
 
-    protected function progress(int $percentage): Closure
+    /**
+     * @throws SourceControlIsNotConnected
+     */
+    protected function deployKey(): void
     {
-        return function () use ($percentage) {
-            $this->site->progress = $percentage;
-            $this->site->save();
-            event(
-                new Broadcast('site-installation-progress', [
-                    'site' => $this->site,
-                    'percentage' => $percentage,
-                ])
-            );
-        };
+        $os = $this->site->server->os();
+        $os->generateSSHKey($this->site->getSshKeyName());
+        $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName());
+        $this->site->save();
+        $this->site->sourceControl()->provider()->deployKey(
+            $this->site->domain.'-key-'.$this->site->id,
+            $this->site->repository,
+            $this->site->ssh_key
+        );
     }
 }

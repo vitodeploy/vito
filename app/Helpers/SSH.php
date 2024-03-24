@@ -2,8 +2,9 @@
 
 namespace App\Helpers;
 
-use App\Contracts\SSHCommand;
 use App\Exceptions\SSHAuthenticationError;
+use App\Exceptions\SSHCommandError;
+use App\Exceptions\SSHConnectionError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use Exception;
@@ -21,7 +22,7 @@ class SSH
 
     public ?ServerLog $log;
 
-    protected SSH2|SFTP|null $connection;
+    protected SSH2|SFTP|null $connection = null;
 
     protected ?string $user;
 
@@ -37,8 +38,8 @@ class SSH
         $this->log = null;
         $this->asUser = null;
         $this->server = $server->refresh();
-        $this->user = $server->ssh_user;
-        if ($asUser && $asUser != $server->ssh_user) {
+        $this->user = $server->getSshUser();
+        if ($asUser && $asUser != $server->getSshUser()) {
             $this->user = $asUser;
             $this->asUser = $asUser;
         }
@@ -49,7 +50,7 @@ class SSH
         return $this;
     }
 
-    public function setLog(string $logType, $siteId = null): void
+    public function setLog(string $logType, $siteId = null): self
     {
         $this->log = $this->server->logs()->create([
             'site_id' => $siteId,
@@ -57,6 +58,8 @@ class SSH
             'type' => $logType,
             'disk' => config('core.logs_disk'),
         ]);
+
+        return $this;
     }
 
     /**
@@ -64,6 +67,7 @@ class SSH
      */
     public function connect(bool $sftp = false): void
     {
+        // If the IP is an IPv6 address, we need to wrap it in square brackets
         $ip = $this->server->ip;
         if (str($ip)->contains(':')) {
             $ip = '['.$ip.']';
@@ -84,14 +88,15 @@ class SSH
             Log::error('Error connecting', [
                 'msg' => $e->getMessage(),
             ]);
-            throw $e;
+            throw new SSHConnectionError($e->getMessage());
         }
     }
 
     /**
-     * @throws Throwable
+     * @throws SSHCommandError
+     * @throws SSHConnectionError
      */
-    public function exec(string|array|SSHCommand $commands, string $log = '', ?int $siteId = null): string
+    public function exec(string|array $commands, string $log = '', ?int $siteId = null): string
     {
         if ($log) {
             $this->setLog($log, $siteId);
@@ -99,20 +104,28 @@ class SSH
             $this->log = null;
         }
 
-        if (! $this->connection) {
-            $this->connect();
+        try {
+            if (! $this->connection) {
+                $this->connect();
+            }
+        } catch (Throwable $e) {
+            throw new SSHConnectionError($e->getMessage());
         }
 
         if (! is_array($commands)) {
             $commands = [$commands];
         }
 
-        $result = '';
-        foreach ($commands as $command) {
-            $result .= $this->executeCommand($command);
-        }
+        try {
+            $result = '';
+            foreach ($commands as $command) {
+                $result .= $this->executeCommand($command);
+            }
 
-        return $result;
+            return $result;
+        } catch (Throwable $e) {
+            throw new SSHCommandError($e->getMessage());
+        }
     }
 
     /**
@@ -131,19 +144,15 @@ class SSH
     /**
      * @throws Exception
      */
-    protected function executeCommand(string|SSHCommand $command): string
+    protected function executeCommand(string $command): string
     {
-        if ($command instanceof SSHCommand) {
-            $commandContent = $command->content();
-        } else {
-            $commandContent = $command;
-        }
-
         if ($this->asUser) {
-            $commandContent = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($commandContent).'"';
+            $command = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($command).'"';
         }
 
-        $output = $this->connection->exec($commandContent);
+        $this->connection->setTimeout(0);
+
+        $output = $this->connection->exec($command);
 
         $this->log?->write($output);
 
@@ -163,5 +172,13 @@ class SSH
             $this->connection->disconnect();
             $this->connection = null;
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function __destruct()
+    {
+        $this->disconnect();
     }
 }

@@ -1,15 +1,7 @@
 <?php
 
-use App\Jobs\Installation\InstallMariadb;
-use App\Jobs\Installation\InstallMysql;
-use App\Jobs\Installation\InstallNginx;
-use App\Jobs\Installation\InstallPHP;
-use App\Jobs\Installation\InstallPHPMyAdmin;
-use App\Jobs\Installation\InstallRedis;
-use App\Jobs\Installation\InstallSupervisor;
-use App\Jobs\Installation\InstallUfw;
-use App\Jobs\Installation\UninstallPHP;
-use App\Jobs\Installation\UninstallPHPMyAdmin;
+use App\Enums\OperatingSystem;
+use App\Enums\StorageProvider;
 use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
@@ -19,11 +11,6 @@ use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
-use App\ServiceHandlers\Database\Mysql;
-use App\ServiceHandlers\Firewall\Ufw;
-use App\ServiceHandlers\PHP;
-use App\ServiceHandlers\ProcessManager\Supervisor;
-use App\ServiceHandlers\Webserver\Nginx;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPSite;
@@ -31,6 +18,14 @@ use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
+use App\SSH\Services\Database\Mariadb;
+use App\SSH\Services\Database\Mysql;
+use App\SSH\Services\Database\Postgresql;
+use App\SSH\Services\Firewall\Ufw;
+use App\SSH\Services\PHP\PHP;
+use App\SSH\Services\ProcessManager\Supervisor;
+use App\SSH\Services\Redis\Redis;
+use App\SSH\Services\Webserver\Nginx;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
 
@@ -41,16 +36,15 @@ return [
     'ssh_user' => env('SSH_USER', 'vito'),
     'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME', 'ssh-public.key'),
     'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME', 'ssh-private.pem'),
-    'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs-local'), // should to be FilesystemAdapter storage
-    'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs-local'), // should to be FilesystemAdapter storage
+    'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs'), // should be FilesystemAdapter storage
+    'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs'), // should be FilesystemAdapter storage
 
     /*
      * General
      */
     'operating_systems' => [
-        // 'ubuntu_18',
-        'ubuntu_20',
-        'ubuntu_22',
+        OperatingSystem::UBUNTU20,
+        OperatingSystem::UBUNTU22,
     ],
     'webservers' => ['none', 'nginx'],
     'php_versions' => [
@@ -64,28 +58,71 @@ return [
         '8.0',
         '8.1',
         '8.2',
+        '8.3',
     ],
-    'databases' => ['none', 'mysql57', 'mysql80', 'mariadb'],
+    'databases' => [
+        'none',
+        'mysql57',
+        'mysql80',
+        'mariadb103',
+        'mariadb104',
+        'postgresql12',
+        'postgresql13',
+        'postgresql14',
+        'postgresql15',
+        'postgresql16',
+    ],
     'databases_name' => [
+        'none' => 'none',
         'mysql57' => 'mysql',
         'mysql80' => 'mysql',
-        'mariadb' => 'mariadb',
+        'mariadb103' => 'mariadb',
+        'mariadb104' => 'mariadb',
+        'postgresql12' => 'postgresql',
+        'postgresql13' => 'postgresql',
+        'postgresql14' => 'postgresql',
+        'postgresql15' => 'postgresql',
+        'postgresql16' => 'postgresql',
     ],
     'databases_version' => [
+        'none' => '',
         'mysql57' => '5.7',
         'mysql80' => '8.0',
         'mariadb' => '10.3',
+        'mariadb103' => '10.3',
+        'mariadb104' => '10.4',
+        'postgresql12' => '12',
+        'postgresql13' => '13',
+        'postgresql14' => '14',
+        'postgresql15' => '15',
+        'postgresql16' => '16',
+    ],
+    'database_features' => [
+        'remote' => [
+            'mysql',
+            'mariadb',
+        ],
     ],
 
     /*
      * Server
      */
-    'server_types' => \App\Enums\ServerType::getValues(),
+    'server_types' => [
+        \App\Enums\ServerType::REGULAR,
+        \App\Enums\ServerType::DATABASE,
+    ],
     'server_types_class' => [
         \App\Enums\ServerType::REGULAR => \App\ServerTypes\Regular::class,
         \App\Enums\ServerType::DATABASE => \App\ServerTypes\Database::class,
     ],
-    'server_providers' => \App\Enums\ServerProvider::getValues(),
+    'server_providers' => [
+        \App\Enums\ServerProvider::CUSTOM,
+        \App\Enums\ServerProvider::AWS,
+        \App\Enums\ServerProvider::LINODE,
+        \App\Enums\ServerProvider::DIGITALOCEAN,
+        \App\Enums\ServerProvider::VULTR,
+        \App\Enums\ServerProvider::HETZNER,
+    ],
     'server_providers_class' => [
         \App\Enums\ServerProvider::CUSTOM => \App\ServerProviders\Custom::class,
         \App\Enums\ServerProvider::AWS => AWS::class,
@@ -130,24 +167,12 @@ return [
     /*
      * Service
      */
-    'service_installers' => [
-        'nginx' => InstallNginx::class,
-        'mysql' => InstallMysql::class,
-        'mariadb' => InstallMariadb::class,
-        'php' => InstallPHP::class,
-        'redis' => InstallRedis::class,
-        'supervisor' => InstallSupervisor::class,
-        'ufw' => InstallUfw::class,
-        'phpmyadmin' => InstallPHPMyAdmin::class,
-    ],
-    'service_uninstallers' => [
-        'phpmyadmin' => UninstallPHPMyAdmin::class,
-        'php' => UninstallPHP::class,
-    ],
     'service_handlers' => [
         'nginx' => Nginx::class,
         'mysql' => Mysql::class,
-        'mariadb' => Mysql::class,
+        'mariadb' => Mariadb::class,
+        'postgresql' => Postgresql::class,
+        'redis' => Redis::class,
         'php' => PHP::class,
         'ufw' => Ufw::class,
         'supervisor' => Supervisor::class,
@@ -181,12 +206,38 @@ return [
         'mariadb' => [
             'ubuntu_18' => [
                 '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
             ],
             'ubuntu_20' => [
                 '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
             ],
             'ubuntu_22' => [
                 '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
+            ],
+        ],
+        'postgresql' => [
+            'ubuntu_18' => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
+            ],
+            'ubuntu_20' => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
+            ],
+            'ubuntu_22' => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
             ],
         ],
         'php' => [
@@ -200,6 +251,7 @@ return [
                 '8.0' => 'php8.0-fpm',
                 '8.1' => 'php8.1-fpm',
                 '8.2' => 'php8.2-fpm',
+                '8.3' => 'php8.3-fpm',
             ],
             'ubuntu_20' => [
                 '5.6' => 'php5.6-fpm',
@@ -210,7 +262,7 @@ return [
                 '7.4' => 'php7.4-fpm',
                 '8.0' => 'php8.0-fpm',
                 '8.1' => 'php8.1-fpm',
-                '8.2' => 'php8.2-fpm',
+                '8.3' => 'php8.3-fpm',
             ],
             'ubuntu_22' => [
                 '5.6' => 'php5.6-fpm',
@@ -222,6 +274,7 @@ return [
                 '8.0' => 'php8.0-fpm',
                 '8.1' => 'php8.1-fpm',
                 '8.2' => 'php8.2-fpm',
+                '8.3' => 'php8.3-fpm',
             ],
         ],
         'redis' => [
@@ -282,7 +335,6 @@ return [
         'github',
         'gitlab',
         'bitbucket',
-        'custom',
     ],
     'source_control_providers_class' => [
         'github' => Github::class,
@@ -323,11 +375,6 @@ return [
      * firewall
      */
     'firewall_protocols_port' => [
-        'ssh' => 22,
-        'http' => 80,
-        'https' => 443,
-        'mysql' => 3306,
-        'ftp' => 21,
         'tcp' => '',
         'udp' => '',
     ],
@@ -360,11 +407,16 @@ return [
      * storage providers
      */
     'storage_providers' => [
-        'dropbox',
-        'ftp',
+        StorageProvider::DROPBOX,
+        StorageProvider::FTP,
     ],
     'storage_providers_class' => [
         'dropbox' => Dropbox::class,
         'ftp' => FTP::class,
+    ],
+
+    'ssl_types' => [
+        \App\Enums\SslType::LETSENCRYPT,
+        \App\Enums\SslType::CUSTOM,
     ],
 ];

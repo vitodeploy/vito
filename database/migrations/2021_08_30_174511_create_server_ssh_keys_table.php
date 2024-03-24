@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\SshKeyStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('server_id');
             $table->unsignedBigInteger('ssh_key_id');
-            $table->enum('status', SshKeyStatus::getValues());
+            $table->string('status');
             $table->timestamps();
         });
     }

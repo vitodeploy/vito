@@ -2,16 +2,14 @@
 
 namespace App\SiteTypes;
 
+use App\Actions\Database\CreateDatabase;
+use App\Actions\Database\CreateDatabaseUser;
+use App\Actions\Database\LinkUser;
 use App\Enums\SiteFeature;
-use App\Jobs\Site\CreateVHost;
-use App\Jobs\Site\InstallWordpress;
 use App\Models\Database;
 use App\Models\DatabaseUser;
-use App\SSHCommands\Wordpress\UpdateWordpressCommand;
 use Closure;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\Rule;
-use Throwable;
 
 class Wordpress extends AbstractSiteType
 {
@@ -27,7 +25,7 @@ class Wordpress extends AbstractSiteType
         ];
     }
 
-    public function createValidationRules(array $input): array
+    public function createRules(array $input): array
     {
         return [
             'php_version' => [
@@ -70,7 +68,7 @@ class Wordpress extends AbstractSiteType
     public function data(array $input): array
     {
         return [
-            'url' => $this->site->url,
+            'url' => $this->site->getUrl(),
             'title' => $input['title'],
             'username' => $input['username'],
             'email' => $input['email'],
@@ -83,79 +81,37 @@ class Wordpress extends AbstractSiteType
 
     public function install(): void
     {
-        $chain = [
-            new CreateVHost($this->site),
-            $this->progress(15),
-            function () {
-                /** @var Database $database */
-                $database = $this->site->server->databases()->create([
-                    'name' => $this->site->type_data['database'],
-                ]);
-                $database->createOnServer('sync');
-                /** @var DatabaseUser $databaseUser */
-                $databaseUser = $this->site->server->databaseUsers()->create([
-                    'username' => $this->site->type_data['database_user'],
-                    'password' => $this->site->type_data['database_password'],
-                    'databases' => [$this->site->type_data['database']],
-                ]);
-                $databaseUser->createOnServer('sync');
-                $databaseUser->unlinkUser('sync');
-                $databaseUser->linkUser('sync');
-            },
-            $this->progress(50),
-            new InstallWordpress($this->site),
-            $this->progress(75),
-            function () {
-                $this->site->php()?->restart();
-                $this->site->installationFinished();
-            },
-        ];
-
-        Bus::chain($chain)
-            ->catch(function (Throwable $e) {
-                $this->site->installationFailed($e);
-            })
-            ->onConnection('ssh-long')
-            ->dispatch();
+        $this->site->server->webserver()->handler()->createVHost($this->site);
+        $this->progress(30);
+        /** @var Database $database */
+        $database = app(CreateDatabase::class)->create($this->site->server, [
+            'name' => $this->site->type_data['database'],
+        ]);
+        /** @var DatabaseUser $databaseUser */
+        $databaseUser = app(CreateDatabaseUser::class)->create($this->site->server, [
+            'username' => $this->site->type_data['database_user'],
+            'password' => $this->site->type_data['database_password'],
+            'remote' => false,
+            'host' => 'localhost',
+        ], [$database->name]);
+        app(LinkUser::class)->link($databaseUser, [
+            'databases' => [$database->name],
+        ]);
+        $this->site->php()?->restart();
+        $this->progress(60);
+        app(\App\SSH\Wordpress\Wordpress::class)->install($this->site);
     }
 
-    public function editValidationRules(array $input): array
+    public function editRules(array $input): array
     {
         return [
             'title' => 'required',
             'url' => 'required',
-            // 'email' => 'required|email',
         ];
     }
 
     public function edit(): void
     {
-        $this->site->status = 'installing';
-        $this->site->progress = 90;
-        $this->site->save();
-        $chain = [
-            function () {
-                $this->site->server->ssh()->exec(
-                    new UpdateWordpressCommand(
-                        $this->site->path,
-                        $this->site->type_data['url'],
-                        $this->site->type_data['username'] ?? '',
-                        $this->site->type_data['password'] ?? '',
-                        $this->site->type_data['email'] ?? '',
-                        $this->site->type_data['title'] ?? '',
-                    ),
-                    'update-wordpress',
-                    $this->site->id
-                );
-                $this->site->installationFinished();
-            },
-        ];
-
-        Bus::chain($chain)
-            ->catch(function (Throwable $e) {
-                $this->site->installationFailed($e);
-            })
-            ->onConnection('ssh')
-            ->dispatch();
+        //
     }
 }

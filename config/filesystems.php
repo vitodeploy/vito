@@ -57,11 +57,23 @@ return [
             'throw' => false,
         ],
 
+        'key-pairs' => [
+            'driver' => 'local',
+            'root' => storage_path('app/key-pairs'),
+        ],
+
+        // @deprecated
         'key-pairs-local' => [
             'driver' => 'local',
             'root' => storage_path('app/key-pairs'),
         ],
 
+        'server-logs' => [
+            'driver' => 'local',
+            'root' => storage_path('app/server-logs'),
+        ],
+
+        // @deprecated
         'server-logs-local' => [
             'driver' => 'local',
             'root' => storage_path('app/server-logs'),

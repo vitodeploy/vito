@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Enums\DatabaseUserStatus;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use Illuminate\Support\Facades\Validator;
@@ -24,8 +25,17 @@ class CreateDatabaseUser
             'host' => isset($input['remote']) && $input['remote'] ? $input['host'] : 'localhost',
             'databases' => $links,
         ]);
+        $server->database()->handler()->createUser(
+            $databaseUser->username,
+            $databaseUser->password,
+            $databaseUser->host
+        );
+        $databaseUser->status = DatabaseUserStatus::READY;
         $databaseUser->save();
-        $databaseUser->createOnServer();
+
+        if (count($links) > 0) {
+            app(LinkUser::class)->link($databaseUser, ['databases' => $links]);
+        }
 
         return $databaseUser;
     }

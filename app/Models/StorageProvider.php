@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $user_id
@@ -33,10 +34,15 @@ class StorageProvider extends AbstractModel
         return $this->belongsTo(User::class);
     }
 
-    public function provider(): \App\Contracts\StorageProvider
+    public function provider(): \App\StorageProviders\StorageProvider
     {
         $providerClass = config('core.storage_providers_class')[$this->provider];
 
         return new $providerClass($this);
+    }
+
+    public function backups(): HasMany
+    {
+        return $this->hasMany(Backup::class, 'storage_id');
     }
 }

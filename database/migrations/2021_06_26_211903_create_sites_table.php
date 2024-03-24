@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('branch')->nullable();
             $table->integer('port')->nullable();
             $table->string('status')->default('installing');
-            $table->tinyInteger('progress')->default(0);
+            $table->integer('progress')->default(0)->nullable();
             $table->timestamps();
         });
     }

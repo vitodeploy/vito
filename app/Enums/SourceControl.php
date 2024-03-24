@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
-
-final class SourceControl extends Enum
+final class SourceControl
 {
     const GITHUB = 'github';
 

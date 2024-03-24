@@ -16,7 +16,7 @@ return new class extends Migration
             $table->json('type_data')->nullable();
             $table->string('name');
             $table->string('version');
-            $table->enum('status', ServiceStatus::getValues())->default(ServiceStatus::INSTALLING);
+            $table->string('status')->default(ServiceStatus::INSTALLING);
             $table->boolean('is_default')->default(1);
             $table->string('unit')->nullable();
             $table->timestamps();

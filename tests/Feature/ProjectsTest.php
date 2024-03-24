@@ -2,12 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Http\Livewire\Projects\CreateProject;
-use App\Http\Livewire\Projects\EditProject;
-use App\Http\Livewire\Projects\ProjectsList;
 use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProjectsTest extends TestCase
@@ -18,10 +14,9 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(CreateProject::class)
-            ->set('inputs.name', 'test')
-            ->call('create')
-            ->assertSuccessful();
+        $this->post(route('projects.create'), [
+            'name' => 'test',
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('projects', [
             'name' => 'test',
@@ -36,10 +31,8 @@ class ProjectsTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(ProjectsList::class)
-            ->assertSee([
-                $project->name,
-            ]);
+        $this->get(route('projects'))
+            ->assertSee($project->name);
     }
 
     public function test_delete_project(): void
@@ -50,10 +43,8 @@ class ProjectsTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(ProjectsList::class)
-            ->set('deleteId', $project->id)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('projects.delete', $project))
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('projects', [
             'id' => $project->id,
@@ -68,16 +59,25 @@ class ProjectsTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(EditProject::class, [
-            'project' => $project,
-        ])
-            ->set('inputs.name', 'test')
-            ->call('save')
-            ->assertSuccessful();
+        $this->post(route('projects.update', $project), [
+            'name' => 'new-name',
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
-            'name' => 'test',
+            'name' => 'new-name',
         ]);
+    }
+
+    public function test_cannot_delete_last_project(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->delete(route('projects.delete', [
+            'project' => $this->user->currentProject,
+        ]))
+            ->assertSessionDoesntHaveErrors()
+            ->assertSessionHas('toast.type', 'error')
+            ->assertSessionHas('toast.message', 'Cannot delete the last project.');
     }
 }

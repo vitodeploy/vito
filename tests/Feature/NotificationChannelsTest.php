@@ -3,12 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationChannel;
-use App\Http\Livewire\NotificationChannels\AddChannel;
-use App\Http\Livewire\NotificationChannels\ChannelsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class NotificationChannelsTest extends TestCase
@@ -20,20 +17,42 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(AddChannel::class)
-            ->set('provider', NotificationChannel::EMAIL)
-            ->set('email', 'email@example.com')
-            ->set('label', 'Email')
-            ->call('add')
-            ->assertSuccessful();
-
-        $this->assertDatabaseHas('notification_channels', [
+        $this->post(route('notification-channels.add'), [
             'provider' => NotificationChannel::EMAIL,
-            'data' => cast_to_json([
-                'email' => 'email@example.com',
-            ]),
-            'connected' => 1,
-        ]);
+            'email' => 'email@example.com',
+            'label' => 'Email',
+        ])->assertSessionDoesntHaveErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::EMAIL)
+            ->where('label', 'Email')
+            ->first();
+
+        $this->assertEquals('email@example.com', $channel->data['email']);
+        $this->assertTrue($channel->connected);
+    }
+
+    public function test_cannot_add_email_channel(): void
+    {
+        config()->set('mail.default', 'smtp');
+        config()->set('mail.mailers.smtp.host', '127.0.0.1'); // invalid host
+
+        $this->actingAs($this->user);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::EMAIL,
+            'email' => 'email@example.com',
+            'label' => 'Email',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::EMAIL)
+            ->where('label', 'Email')
+            ->first();
+
+        $this->assertNull($channel);
     }
 
     public function test_add_slack_channel(): void
@@ -42,20 +61,41 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        Livewire::test(AddChannel::class)
-            ->set('provider', NotificationChannel::SLACK)
-            ->set('label', 'Slack')
-            ->set('webhook_url', 'https://hooks.slack.com/services/123/token')
-            ->call('add')
-            ->assertSuccessful();
-
-        $this->assertDatabaseHas('notification_channels', [
+        $this->post(route('notification-channels.add'), [
             'provider' => NotificationChannel::SLACK,
-            'data' => cast_to_json([
-                'webhook_url' => 'https://hooks.slack.com/services/123/token',
-            ]),
-            'connected' => 1,
+            'webhook_url' => 'https://hooks.slack.com/services/123/token',
+            'label' => 'Slack',
+        ])->assertSessionDoesntHaveErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::SLACK)
+            ->first();
+
+        $this->assertEquals('https://hooks.slack.com/services/123/token', $channel->data['webhook_url']);
+        $this->assertTrue($channel->connected);
+    }
+
+    public function test_cannot_add_slack_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'slack.com/*' => Http::response(['ok' => false], 401),
         ]);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::SLACK,
+            'webhook_url' => 'https://hooks.slack.com/services/123/token',
+            'label' => 'Slack',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::SLACK)
+            ->first();
+
+        $this->assertNull($channel);
     }
 
     public function test_add_discord_channel(): void
@@ -64,20 +104,41 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        Livewire::test(AddChannel::class)
-            ->set('provider', NotificationChannel::DISCORD)
-            ->set('label', 'Discord')
-            ->set('webhook_url', 'https://discord.com/api/webhooks/123/token')
-            ->call('add')
-            ->assertSuccessful();
-
-        $this->assertDatabaseHas('notification_channels', [
+        $this->post(route('notification-channels.add'), [
             'provider' => NotificationChannel::DISCORD,
-            'data' => cast_to_json([
-                'webhook_url' => 'https://discord.com/api/webhooks/123/token',
-            ]),
-            'connected' => 1,
+            'webhook_url' => 'https://discord.com/api/webhooks/123/token',
+            'label' => 'Discord',
+        ])->assertSessionDoesntHaveErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::DISCORD)
+            ->first();
+
+        $this->assertEquals('https://discord.com/api/webhooks/123/token', $channel->data['webhook_url']);
+        $this->assertTrue($channel->connected);
+    }
+
+    public function test_cannot_add_discord_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'discord.com/*' => Http::response(['ok' => false], 401),
         ]);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::DISCORD,
+            'webhook_url' => 'https://discord.com/api/webhooks/123/token',
+            'label' => 'Discord',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::DISCORD)
+            ->first();
+
+        $this->assertNull($channel);
     }
 
     public function test_add_telegram_channel(): void
@@ -86,22 +147,44 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        Livewire::test(AddChannel::class)
-            ->set('provider', NotificationChannel::TELEGRAM)
-            ->set('label', 'Telegram')
-            ->set('bot_token', 'token')
-            ->set('chat_id', '123')
-            ->call('add')
-            ->assertSuccessful();
-
-        $this->assertDatabaseHas('notification_channels', [
+        $this->post(route('notification-channels.add'), [
             'provider' => NotificationChannel::TELEGRAM,
-            'data' => cast_to_json([
-                'chat_id' => '123',
-                'bot_token' => 'token',
-            ]),
-            'connected' => 1,
+            'bot_token' => 'token',
+            'chat_id' => '123',
+            'label' => 'Telegram',
+        ])->assertSessionDoesntHaveErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::TELEGRAM)
+            ->first();
+
+        $this->assertEquals('123', $channel->data['chat_id']);
+        $this->assertEquals('token', $channel->data['bot_token']);
+        $this->assertTrue($channel->connected);
+    }
+
+    public function test_cannot_add_telegram_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => false], 401),
         ]);
+
+        $this->post(route('notification-channels.add'), [
+            'provider' => NotificationChannel::TELEGRAM,
+            'bot_token' => 'token',
+            'chat_id' => '123',
+            'label' => 'Telegram',
+        ])->assertSessionHasErrors();
+
+        /** @var \App\Models\NotificationChannel $channel */
+        $channel = \App\Models\NotificationChannel::query()
+            ->where('provider', NotificationChannel::TELEGRAM)
+            ->first();
+
+        $this->assertNull($channel);
     }
 
     public function test_see_channels_list(): void
@@ -110,10 +193,8 @@ class NotificationChannelsTest extends TestCase
 
         $channel = \App\Models\NotificationChannel::factory()->create();
 
-        Livewire::test(ChannelsList::class)
-            ->assertSee([
-                $channel->provider,
-            ]);
+        $this->get(route('notification-channels'))
+            ->assertSee($channel->provider);
     }
 
     public function test_delete_channel(): void
@@ -122,10 +203,8 @@ class NotificationChannelsTest extends TestCase
 
         $channel = \App\Models\NotificationChannel::factory()->create();
 
-        Livewire::test(ChannelsList::class)
-            ->set('deleteId', $channel->id)
-            ->call('delete')
-            ->assertSuccessful();
+        $this->delete(route('notification-channels.delete', $channel->id))
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('notification_channels', [
             'id' => $channel->id,

@@ -14,7 +14,7 @@ class ServerLogFactory extends Factory
         return [
             'type' => 'test-log',
             'name' => 'test.log',
-            'disk' => 'server-logs-local',
+            'disk' => 'server-logs',
         ];
     }
 }

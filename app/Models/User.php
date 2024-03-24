@@ -9,7 +9,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property int $id
@@ -34,7 +33,6 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens;
     use HasFactory;
     use Notifiable;
     use TwoFactorAuthenticatable;
@@ -84,11 +82,6 @@ class User extends Authenticatable
     public function serverProviders(): HasMany
     {
         return $this->hasMany(ServerProvider::class);
-    }
-
-    public function scripts(): HasMany
-    {
-        return $this->hasMany(Script::class, 'user_id');
     }
 
     public function sourceControl(string $provider): HasOne

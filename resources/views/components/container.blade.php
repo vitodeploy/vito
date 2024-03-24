@@ -1,3 +1,10 @@
-<div {!! $attributes->merge(['class' => 'py-12 max-w-7xl mx-auto px-6']) !!}>
+@php
+    $class = "mx-auto px-4 sm:px-6 lg:px-8";
+    if (! str($attributes->get("class"))->contains("max-w-")) {
+        $class .= " max-w-7xl";
+    }
+@endphp
+
+<div {!! $attributes->merge(["class" => $class]) !!}>
     {{ $slot }}
 </div>

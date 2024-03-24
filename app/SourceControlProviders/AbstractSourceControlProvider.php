@@ -2,7 +2,6 @@
 
 namespace App\SourceControlProviders;
 
-use App\Contracts\SourceControlProvider;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
@@ -16,6 +15,35 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
     public function __construct(SourceControl $sourceControl)
     {
         $this->sourceControl = $sourceControl;
+    }
+
+    public function createRules(array $input): array
+    {
+        return [
+            'token' => 'required',
+            'url' => [
+                'nullable',
+                'url:http,https',
+                'ends_with:/',
+            ],
+        ];
+    }
+
+    public function createData(array $input): array
+    {
+        return [
+            'token' => $input['token'] ?? '',
+        ];
+    }
+
+    public function data(): array
+    {
+        // support for older data
+        $token = $this->sourceControl->access_token ?? '';
+
+        return [
+            'token' => $this->sourceControl->provider_data['token'] ?? $token,
+        ];
     }
 
     /**

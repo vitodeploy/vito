@@ -2,10 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Http\Livewire\ServerLogs\LogsList;
 use App\Models\ServerLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class LogsTest extends TestCase
@@ -22,9 +20,6 @@ class LogsTest extends TestCase
         ]);
 
         $this->get(route('servers.logs', $this->server))
-            ->assertOk();
-
-        Livewire::test(LogsList::class, ['server' => $this->server])
             ->assertSeeText($log->type);
     }
 }

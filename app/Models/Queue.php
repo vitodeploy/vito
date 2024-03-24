@@ -2,11 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\QueueStatus;
-use App\Jobs\Queue\Deploy;
-use App\Jobs\Queue\GetLogs;
-use App\Jobs\Queue\Manage;
-use App\Jobs\Queue\Remove;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -21,8 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $redirect_stderr
  * @property string $stdout_logfile
  * @property string $status
- * @property string $log_directory
- * @property string $log_file
  * @property Server $server
  * @property Site $site
  */
@@ -73,71 +66,13 @@ class Queue extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
-    public function getLogDirectoryAttribute(): string
+    public function getLogDirectory(): string
     {
         return '/home/'.$this->user.'/.logs/workers';
     }
 
-    public function getLogFileAttribute(): string
+    public function getLogFile(): string
     {
-        return $this->log_directory.'/'.$this->id.'.log';
-    }
-
-    public function deploy(): void
-    {
-        dispatch(new Deploy($this))->onConnection('ssh');
-    }
-
-    private function action(string $type, string $status, string $successStatus, string $failStatus, string $failMessage): void
-    {
-        $this->status = $status;
-        $this->save();
-        dispatch(new Manage($this, $type, $successStatus, $failStatus, $failMessage))
-            ->onConnection('ssh');
-    }
-
-    public function start(): void
-    {
-        $this->action(
-            'start',
-            QueueStatus::STARTING,
-            QueueStatus::RUNNING,
-            QueueStatus::FAILED,
-            __('Failed to start')
-        );
-    }
-
-    public function stop(): void
-    {
-        $this->action(
-            'stop',
-            QueueStatus::STOPPING,
-            QueueStatus::STOPPED,
-            QueueStatus::FAILED,
-            __('Failed to stop')
-        );
-    }
-
-    public function restart(): void
-    {
-        $this->action(
-            'restart',
-            QueueStatus::RESTARTING,
-            QueueStatus::RUNNING,
-            QueueStatus::FAILED,
-            __('Failed to restart')
-        );
-    }
-
-    public function remove(): void
-    {
-        $this->status = QueueStatus::DELETING;
-        $this->save();
-        dispatch(new Remove($this))->onConnection('ssh');
-    }
-
-    public function getLogs(): void
-    {
-        dispatch(new GetLogs($this))->onConnection('ssh');
+        return $this->getLogDirectory().'/'.$this->id.'.log';
     }
 }

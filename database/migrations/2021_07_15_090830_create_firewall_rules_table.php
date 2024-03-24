@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('protocol');
             $table->integer('port');
             $table->ipAddress('source')->default('0.0.0.0');
-            $table->tinyInteger('mask')->default(0);
+            $table->string('mask')->nullable();
             $table->text('note')->nullable();
             $table->string('status')->default('creating');
             $table->timestamps();

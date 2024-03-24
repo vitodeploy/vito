@@ -21,10 +21,20 @@ class CreateRule
             'port' => $input['port'],
             'source' => $input['source'],
             'mask' => $input['mask'] ?? null,
-            'status' => FirewallRuleStatus::CREATING,
         ]);
+
+        $server->firewall()
+            ->handler()
+            ->addRule(
+                $rule->type,
+                $rule->getRealProtocol(),
+                $rule->port,
+                $rule->source,
+                $rule->mask
+            );
+
+        $rule->status = FirewallRuleStatus::READY;
         $rule->save();
-        $rule->addToServer();
 
         return $rule;
     }
@@ -56,6 +66,6 @@ class CreateRule
             'mask' => [
                 'numeric',
             ],
-        ])->validateWithBag('createRule');
+        ])->validate();
     }
 }

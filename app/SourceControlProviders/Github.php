@@ -16,7 +16,7 @@ class Github extends AbstractSourceControlProvider
     {
         $res = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->sourceControl->access_token,
+            'Authorization' => 'Bearer '.$this->data()['token'],
         ])->get($this->apiUrl.'/user/repos');
 
         return $res->successful();
@@ -34,7 +34,7 @@ class Github extends AbstractSourceControlProvider
         }
         $res = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->sourceControl->access_token,
+            'Authorization' => 'Bearer '.$this->data()['token'],
         ])->get($url);
 
         $this->handleResponseErrors($res, $repo);
@@ -54,7 +54,7 @@ class Github extends AbstractSourceControlProvider
     {
         $response = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->sourceControl->access_token,
+            'Authorization' => 'Bearer '.$this->data()['token'],
         ])->post($this->apiUrl."/repos/$repo/hooks", [
             'name' => 'web',
             'events' => $events,
@@ -82,7 +82,7 @@ class Github extends AbstractSourceControlProvider
     {
         $response = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->sourceControl->access_token,
+            'Authorization' => 'Bearer '.$this->data()['token'],
         ])->delete($this->apiUrl."/repos/$repo/hooks/$hookId");
 
         if ($response->status() != 204) {
@@ -98,7 +98,7 @@ class Github extends AbstractSourceControlProvider
         $url = $this->apiUrl.'/repos/'.$repo.'/commits/'.$branch;
         $res = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->sourceControl->access_token,
+            'Authorization' => 'Bearer '.$this->data()['token'],
         ])->get($url);
 
         $this->handleResponseErrors($res, $repo);
@@ -124,7 +124,7 @@ class Github extends AbstractSourceControlProvider
      */
     public function deployKey(string $title, string $repo, string $key): void
     {
-        $response = Http::withToken($this->sourceControl->access_token)->post(
+        $response = Http::withToken($this->data()['token'])->post(
             $this->apiUrl.'/repos/'.$repo.'/keys',
             [
                 'title' => $title,

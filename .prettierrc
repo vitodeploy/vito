@@ -1,0 +1,16 @@
+{
+    "plugins": ["prettier-plugin-blade", "prettier-plugin-tailwindcss"],
+    "overrides": [
+        {
+            "files": ["*.blade.php"],
+            "options": {
+                "parser": "blade",
+                "printWidth": 120,
+                "htmlWhitespaceSensitivity": "ignore",
+                "tabWidth": 4,
+                "quoteProps": "consistent",
+                "trailingComma": "none"
+            }
+        }
+    ]
+}

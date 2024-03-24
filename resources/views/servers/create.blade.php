@@ -1,5 +1,5 @@
 <x-app-layout>
     <x-slot name="pageTitle">{{ __("Create Server") }}</x-slot>
 
-    <livewire:servers.create-server />
+    @include("servers.partials.create-server")
 </x-app-layout>
