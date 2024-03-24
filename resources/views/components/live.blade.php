@@ -1,5 +1,5 @@
 @props([
-    "interval" => "30s",
+    "interval" => "7s",
     "id",
     "target" => null,
 ])

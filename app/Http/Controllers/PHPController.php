@@ -71,7 +71,9 @@ class PHPController extends Controller
 
         Toast::success('PHP ini updated!');
 
-        return back();
+        return back()->with([
+            'ini' => $request->input('ini'),
+        ]);
     }
 
     public function uninstall(Server $server, Request $request): RedirectResponse
