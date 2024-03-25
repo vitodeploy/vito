@@ -4,10 +4,12 @@
     <div
         x-data="{
             user: '{{ $server->ssh_user }}',
+            running: false,
             command: '',
             output: '',
             runUrl: '{{ route("servers.console.run", ["server" => $server]) }}',
             async run() {
+                this.running = true
                 this.output = 'Running...\n'
                 const fetchOptions = {
                     method: 'POST',
@@ -26,6 +28,11 @@
                 const decoder = new TextDecoder('utf-8')
 
                 while (true) {
+                    if (! this.running) {
+                        reader.cancel()
+                        this.output += '\nStopped!'
+                        break
+                    }
                     const { value, done } = await reader.read()
                     if (done) break
 
@@ -37,6 +44,10 @@
                         document.getElementById('console-output').scrollHeight
                 }
                 this.output += '\nDone!'
+                this.running = false
+            },
+            stop() {
+                this.running = false
             },
         }"
     >
@@ -69,7 +80,24 @@
                     class="mx-1 flex-grow"
                     autocomplete="off"
                 />
-                <x-primary-button id="btn-run" x-on:click="run" class="h-[40px]">Run</x-primary-button>
+                <x-secondary-button
+                    type="button"
+                    id="btn-stop"
+                    x-on:click="stop"
+                    class="mr-1 h-[40px]"
+                    x-bind:disabled="!running"
+                >
+                    Stop
+                </x-secondary-button>
+                <x-primary-button
+                    type="submit"
+                    id="btn-run"
+                    x-on:click="run"
+                    class="h-[40px]"
+                    x-bind:disabled="running || command === ''"
+                >
+                    Run
+                </x-primary-button>
             </form>
         </div>
     </div>
