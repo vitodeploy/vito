@@ -96,7 +96,7 @@ class SSH
      * @throws SSHCommandError
      * @throws SSHConnectionError
      */
-    public function exec(string|array $commands, string $log = '', ?int $siteId = null): string
+    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
     {
         if ($log) {
             $this->setLog($log, $siteId);
@@ -112,18 +112,34 @@ class SSH
             throw new SSHConnectionError($e->getMessage());
         }
 
-        if (! is_array($commands)) {
-            $commands = [$commands];
-        }
-
         try {
-            $result = '';
-            foreach ($commands as $command) {
-                $result .= $this->executeCommand($command);
+            if ($this->asUser) {
+                $command = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($command).'"';
             }
 
-            return $result;
+            $this->connection->setTimeout(0);
+            if ($stream) {
+                $this->connection->exec($command, function ($output) {
+                    $this->log?->write($output);
+                    echo $output;
+                    ob_flush();
+                    flush();
+                });
+
+                return '';
+            } else {
+                $output = $this->connection->exec($command);
+
+                $this->log?->write($output);
+
+                if (Str::contains($output, 'VITO_SSH_ERROR')) {
+                    throw new Exception('SSH command failed with an error');
+                }
+
+                return $output;
+            }
         } catch (Throwable $e) {
+            throw $e;
             throw new SSHCommandError($e->getMessage());
         }
     }
@@ -139,28 +155,6 @@ class SSH
             $this->connect(true);
         }
         $this->connection->put($remote, $local, SFTP::SOURCE_LOCAL_FILE);
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function executeCommand(string $command): string
-    {
-        if ($this->asUser) {
-            $command = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($command).'"';
-        }
-
-        $this->connection->setTimeout(0);
-
-        $output = $this->connection->exec($command);
-
-        $this->log?->write($output);
-
-        if (Str::contains($output, 'VITO_SSH_ERROR')) {
-            throw new Exception('SSH command failed with an error');
-        }
-
-        return $output;
     }
 
     /**
