@@ -34,7 +34,7 @@ class SSHFake extends SSH
         }
     }
 
-    public function exec(string|array $commands, string $log = '', ?int $siteId = null, ?bool $stream = false): string
+    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
     {
         if ($log) {
             $this->setLog($log, $siteId);
@@ -42,20 +42,18 @@ class SSHFake extends SSH
             $this->log = null;
         }
 
-        if (! is_array($commands)) {
-            $commands = [$commands];
-        }
-
-        foreach ($commands as $command) {
-            if (is_string($command)) {
-                $this->commands[] = $command;
-            } else {
-                $this->commands[] = get_class($command);
-            }
-        }
+        $this->commands[] = $command;
 
         $output = $this->output ?? 'fake output';
         $this->log?->write($output);
+
+        if ($stream) {
+            echo $output;
+            ob_flush();
+            flush();
+
+            return '';
+        }
 
         return $output;
     }
