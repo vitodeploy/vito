@@ -66,6 +66,7 @@ class DatabaseTest extends TestCase
         ]);
 
         $this->get(route('servers.databases', $this->server))
+            ->assertSuccessful()
             ->assertSee($database->name);
     }
 

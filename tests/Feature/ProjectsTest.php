@@ -32,6 +32,7 @@ class ProjectsTest extends TestCase
         ]);
 
         $this->get(route('projects'))
+            ->assertSuccessful()
             ->assertSee($project->name);
     }
 

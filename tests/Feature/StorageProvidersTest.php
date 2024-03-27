@@ -41,6 +41,7 @@ class StorageProvidersTest extends TestCase
         ]);
 
         $this->get(route('storage-providers'))
+            ->assertSuccessful()
             ->assertSee($provider->profile);
     }
 

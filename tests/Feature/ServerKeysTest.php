@@ -27,6 +27,7 @@ class ServerKeysTest extends TestCase
         ]);
 
         $this->get(route('servers.ssh-keys', $this->server))
+            ->assertSuccessful()
             ->assertSeeText('My first key');
     }
 

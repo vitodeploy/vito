@@ -15,6 +15,7 @@ class ConsoleTest extends TestCase
         $this->actingAs($this->user);
 
         $this->get(route('servers.console', $this->server))
+            ->assertSuccessful()
             ->assertSeeText('Headless Console');
     }
 

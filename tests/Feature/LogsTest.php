@@ -20,6 +20,7 @@ class LogsTest extends TestCase
         ]);
 
         $this->get(route('servers.logs', $this->server))
+            ->assertSuccessful()
             ->assertSeeText($log->type);
     }
 }

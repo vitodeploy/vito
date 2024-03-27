@@ -23,7 +23,7 @@ class ApplicationTest extends TestCase
                 'site' => $this->site,
             ])
         )
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee($this->site->domain);
     }
 
@@ -88,7 +88,7 @@ class ApplicationTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]))
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee('test commit message');
 
         $deployment = $this->site->deployments()->first();

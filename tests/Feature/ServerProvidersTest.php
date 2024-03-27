@@ -70,6 +70,7 @@ class ServerProvidersTest extends TestCase
         ]);
 
         $this->get(route('server-providers'))
+            ->assertSuccessful()
             ->assertSee($provider->profile);
     }
 

@@ -57,7 +57,7 @@ class SitesTest extends TestCase
         $this->get(route('servers.sites', [
             'server' => $this->server,
         ]))
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee($site->domain);
     }
 
@@ -178,7 +178,7 @@ class SitesTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]))
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee('Logs');
     }
 }
