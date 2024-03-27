@@ -5,16 +5,13 @@
 ])
 
 <div
-    id="{{ $id }}"
-    hx-get="{{ request()->getUri() }}"
-    hx-trigger="every {{ $interval }}"
+    {{ $attributes->merge(["interval" => $interval, "id" => $id, "hx-get" => request()->getUri(), "hx-trigger" => "every " . $interval, "hx-swap" => "outerHTML"]) }}
     @if ($target)
         hx-target="{{ $target }}"
         hx-select="{{ $target }}"
     @else
         hx-select="#{{ $id }}"
     @endif
-    hx-swap="outerHTML"
 >
     {{ $slot }}
 </div>

@@ -11,4 +11,6 @@ final class SiteType
     const LARAVEL = 'laravel';
 
     const WORDPRESS = 'wordpress';
+
+    const PHPMYADMIN = 'phpmyadmin';
 }

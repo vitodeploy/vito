@@ -13,6 +13,7 @@ use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPBlank;
+use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Bitbucket;
@@ -177,6 +178,9 @@ return [
         'ufw' => Ufw::class,
         'supervisor' => Supervisor::class,
     ],
+    'add_on_services' => [
+        // add-on services
+    ],
     'service_units' => [
         'nginx' => [
             'ubuntu_18' => [
@@ -320,12 +324,14 @@ return [
         \App\Enums\SiteType::PHP_BLANK,
         \App\Enums\SiteType::LARAVEL,
         \App\Enums\SiteType::WORDPRESS,
+        \App\Enums\SiteType::PHPMYADMIN,
     ],
     'site_types_class' => [
         \App\Enums\SiteType::PHP => PHPSite::class,
         \App\Enums\SiteType::PHP_BLANK => PHPBlank::class,
         \App\Enums\SiteType::LARAVEL => Laravel::class,
         \App\Enums\SiteType::WORDPRESS => Wordpress::class,
+        \App\Enums\SiteType::PHPMYADMIN => PHPMyAdmin::class,
     ],
 
     /*

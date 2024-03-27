@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Service\Create;
 use App\Facades\Toast;
+use App\Helpers\HtmxResponse;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
@@ -61,5 +64,14 @@ class ServiceController extends Controller
         Toast::success('Service is being disabled!');
 
         return back();
+    }
+
+    public function install(Server $server, Request $request): HtmxResponse
+    {
+        app(Create::class)->create($server, $request->input());
+
+        Toast::success('Service is being uninstalled!');
+
+        return htmx()->back();
     }
 }

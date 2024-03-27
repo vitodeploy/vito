@@ -158,6 +158,15 @@ class SitesTest extends TestCase
                     'web_directory' => 'public',
                 ],
             ],
+            [
+                [
+                    'type' => SiteType::PHPMYADMIN,
+                    'domain' => 'example.com',
+                    'alias' => 'www.example.com',
+                    'php_version' => '8.2',
+                    'version' => '5.1.2',
+                ],
+            ],
         ];
     }
 
