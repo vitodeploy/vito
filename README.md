@@ -37,7 +37,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/1.x/scripts/in
 - [Feedbacks](https://vitodeploy.featurebase.app)
 - [Roadmap](https://vitodeploy.featurebase.app/roadmap)
 - [Video Demo](https://youtu.be/rLRHIyEfON8)
-- [Discord](https://discord.gg/dcUWA5DV)
+- [Discord](https://discord.gg/uZeeHZZnm5)
 - [Contribution](/CONTRIBUTING.md)
 - [Security](/SECURITY.md)
 
