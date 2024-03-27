@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\Service\Manage;
 use App\Exceptions\ServiceInstallationFailed;
+use App\SSH\Services\AddOnServices\AbstractAddOnService;
 use App\SSH\Services\Database\Database as DatabaseHandler;
 use App\SSH\Services\Firewall\Firewall as FirewallHandler;
 use App\SSH\Services\PHP\PHP as PHPHandler;
@@ -53,7 +54,9 @@ class Service extends AbstractModel
         parent::boot();
 
         static::creating(function (Service $service) {
-            $service->unit = config('core.service_units')[$service->name][$service->server->os][$service->version];
+            if (array_key_exists($service->name, config('core.service_units'))) {
+                $service->unit = config('core.service_units')[$service->name][$service->server->os][$service->version];
+            }
         });
     }
 
@@ -63,7 +66,7 @@ class Service extends AbstractModel
     }
 
     public function handler(
-    ): PHPHandler|WebserverHandler|DatabaseHandler|FirewallHandler|ProcessManagerHandler|RedisHandler {
+    ): PHPHandler|WebserverHandler|DatabaseHandler|FirewallHandler|ProcessManagerHandler|RedisHandler|AbstractAddOnService {
         $handler = config('core.service_handlers')[$this->name];
 
         return new $handler($this);
@@ -81,26 +84,26 @@ class Service extends AbstractModel
 
     public function start(): void
     {
-        app(Manage::class)->start($this);
+        $this->unit && app(Manage::class)->start($this);
     }
 
     public function stop(): void
     {
-        app(Manage::class)->stop($this);
+        $this->unit && app(Manage::class)->stop($this);
     }
 
     public function restart(): void
     {
-        app(Manage::class)->restart($this);
+        $this->unit && app(Manage::class)->restart($this);
     }
 
     public function enable(): void
     {
-        app(Manage::class)->enable($this);
+        $this->unit && app(Manage::class)->enable($this);
     }
 
     public function disable(): void
     {
-        app(Manage::class)->disable($this);
+        $this->unit && app(Manage::class)->disable($this);
     }
 }

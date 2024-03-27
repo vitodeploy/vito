@@ -25,7 +25,7 @@ class SslTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]))
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee($ssl->type);
     }
 
@@ -37,7 +37,7 @@ class SslTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]))
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSeeText(__("You don't have any SSL certificates yet!"));
     }
 

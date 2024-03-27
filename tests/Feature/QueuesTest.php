@@ -27,7 +27,7 @@ class QueuesTest extends TestCase
                 'site' => $this->site,
             ])
         )
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee($queue->command);
     }
 

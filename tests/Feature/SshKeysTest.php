@@ -29,6 +29,7 @@ class SshKeysTest extends TestCase
         ]);
 
         $this->get(route('ssh-keys'))
+            ->assertSuccessful()
             ->assertSee($key->name);
     }
 

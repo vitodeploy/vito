@@ -1,80 +1,42 @@
 <div>
     <x-card-header>
-        <x-slot name="title">{{ __("Services") }}</x-slot>
-        <x-slot name="description">
-            {{ __("All services that we installed on your server are here") }}
-        </x-slot>
+        <x-slot name="title">Installed Services</x-slot>
+        <x-slot name="description">All services that we installed on your server are here</x-slot>
         <x-slot name="aside"></x-slot>
     </x-card-header>
 
-    <x-live id="live-services" interval="5s">
-        <div class="space-y-3">
+    <x-live id="live-services">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach ($services as $service)
-                <x-item-card>
-                    <div class="flex-none">
-                        <img src="{{ asset("static/images/" . $service->name . ".svg") }}" class="h-10 w-10" alt="" />
+                <div
+                    class="relative flex h-auto flex-col items-center justify-between space-y-3 rounded-b-md rounded-t-md border border-gray-200 bg-white text-center dark:border-gray-700 dark:bg-gray-800"
+                >
+                    <div class="absolute right-3 top-3">
+                        @include("services.partials.status", ["status" => $service->status])
                     </div>
-                    <div class="ml-3 flex flex-grow flex-col items-start justify-center">
-                        <div class="flex items-center">
-                            <div class="mr-2">{{ $service->name }}:{{ $service->version }}</div>
-                            @include("services.partials.status", ["status" => $service->status])
+                    <div class="space-y-3 p-5">
+                        <div class="flex items-center justify-center">
+                            <img
+                                src="{{ asset("static/images/" . $service->name . ".svg") }}"
+                                class="h-20 w-20"
+                                alt=""
+                            />
+                        </div>
+                        <div class="flex flex-grow flex-col items-start justify-center">
+                            <div class="flex items-center">
+                                <div class="flex items-center text-lg">
+                                    {{ $service->name }}
+                                    <x-status status="disabled" class="ml-1">{{ $service->version }}</x-status>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex items-center">
-                        <x-dropdown>
-                            <x-slot name="trigger">
-                                <x-secondary-button>
-                                    {{ __("Actions") }}
-                                </x-secondary-button>
-                            </x-slot>
-
-                            <x-slot name="content">
-                                @if ($service->unit)
-                                    @if ($service->status == \App\Enums\ServiceStatus::STOPPED)
-                                        <x-dropdown-link
-                                            class="cursor-pointer"
-                                            href="{{ route('servers.services.start', ['server' => $server, 'service' => $service]) }}"
-                                        >
-                                            {{ __("Start") }}
-                                        </x-dropdown-link>
-                                    @endif
-
-                                    @if ($service->status == \App\Enums\ServiceStatus::READY)
-                                        <x-dropdown-link
-                                            class="cursor-pointer"
-                                            href="{{ route('servers.services.stop', ['server' => $server, 'service' => $service]) }}"
-                                        >
-                                            {{ __("Stop") }}
-                                        </x-dropdown-link>
-                                    @endif
-
-                                    <x-dropdown-link
-                                        class="cursor-pointer"
-                                        href="{{ route('servers.services.restart', ['server' => $server, 'service' => $service]) }}"
-                                    >
-                                        {{ __("Restart") }}
-                                    </x-dropdown-link>
-
-                                    @if ($service->status == \App\Enums\ServiceStatus::DISABLED)
-                                        <x-dropdown-link
-                                            class="cursor-pointer"
-                                            href="{{ route('servers.services.enable', ['server' => $server, 'service' => $service]) }}"
-                                        >
-                                            {{ __("Enable") }}
-                                        </x-dropdown-link>
-                                    @endif
-
-                                    <x-dropdown-link
-                                        class="cursor-pointer"
-                                        href="{{ route('servers.services.disable', ['server' => $server, 'service' => $service]) }}"
-                                    >
-                                        {{ __("Disable") }}
-                                    </x-dropdown-link>
-                                @endif
-                            </x-slot>
-                        </x-dropdown>
+                    <div
+                        class="flex w-full items-center justify-between rounded-b-md border-t border-t-gray-200 bg-gray-50 p-2 dark:border-t-gray-600 dark:bg-gray-700"
+                    >
+                        @include("services.partials.actions." . $service->name)
                     </div>
-                </x-item-card>
+                </div>
             @endforeach
         </div>
     </x-live>

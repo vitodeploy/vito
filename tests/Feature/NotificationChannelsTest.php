@@ -194,6 +194,7 @@ class NotificationChannelsTest extends TestCase
         $channel = \App\Models\NotificationChannel::factory()->create();
 
         $this->get(route('notification-channels'))
+            ->assertSuccessful()
             ->assertSee($channel->provider);
     }
 

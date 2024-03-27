@@ -58,6 +58,7 @@ class DatabaseUserTest extends TestCase
         ]);
 
         $this->get(route('servers.databases', $this->server))
+            ->assertSuccessful()
             ->assertSee($databaseUser->username);
     }
 

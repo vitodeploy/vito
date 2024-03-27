@@ -41,6 +41,7 @@ class FirewallTest extends TestCase
         ]);
 
         $this->get(route('servers.firewall', $this->server))
+            ->assertSuccessful()
             ->assertSee($rule->source)
             ->assertSee($rule->port);
     }

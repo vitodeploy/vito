@@ -16,6 +16,8 @@ class ServicesTest extends TestCase
         $this->actingAs($this->user);
 
         $this->get(route('servers.services', $this->server))
+            ->assertSuccessful()
+            ->assertSee('mysql')
             ->assertSee('nginx')
             ->assertSee('php')
             ->assertSee('supervisor')
@@ -242,6 +244,7 @@ class ServicesTest extends TestCase
             ['redis'],
             ['ufw'],
             ['php'],
+            ['mysql'],
         ];
     }
 }

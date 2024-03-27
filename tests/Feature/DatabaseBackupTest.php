@@ -98,6 +98,7 @@ class DatabaseBackupTest extends TestCase
         ]);
 
         $this->get(route('servers.databases.backups', [$this->server, $backup]))
+            ->assertSuccessful()
             ->assertSee($backup->database->name);
     }
 

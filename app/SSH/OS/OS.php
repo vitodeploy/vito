@@ -131,4 +131,21 @@ class OS
 
         return $ssh->log;
     }
+
+    public function download(string $url, string $path): string
+    {
+        return $this->server->ssh()->exec(
+            $this->getScript('download.sh', [
+                'url' => $url,
+                'path' => $path,
+            ])
+        );
+    }
+
+    public function unzip(string $path): string
+    {
+        return $this->server->ssh()->exec(
+            'unzip '.$path
+        );
+    }
 }

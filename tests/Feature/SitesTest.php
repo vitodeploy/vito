@@ -57,7 +57,7 @@ class SitesTest extends TestCase
         $this->get(route('servers.sites', [
             'server' => $this->server,
         ]))
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee($site->domain);
     }
 
@@ -158,6 +158,15 @@ class SitesTest extends TestCase
                     'web_directory' => 'public',
                 ],
             ],
+            [
+                [
+                    'type' => SiteType::PHPMYADMIN,
+                    'domain' => 'example.com',
+                    'alias' => 'www.example.com',
+                    'php_version' => '8.2',
+                    'version' => '5.1.2',
+                ],
+            ],
         ];
     }
 
@@ -169,7 +178,7 @@ class SitesTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]))
-            ->assertOk()
+            ->assertSuccessful()
             ->assertSee('Logs');
     }
 }

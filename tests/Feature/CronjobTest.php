@@ -22,6 +22,7 @@ class CronjobTest extends TestCase
         ]);
 
         $this->get(route('servers.cronjobs', $this->server))
+            ->assertSuccessful()
             ->assertSeeText($cronjob->frequencyLabel());
     }
 

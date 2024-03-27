@@ -16,6 +16,7 @@ class ProfileTest extends TestCase
 
         $this
             ->get(route('profile'))
+            ->assertSuccessful()
             ->assertSee('Profile Information')
             ->assertSee('Update Password')
             ->assertSee('Two Factor Authentication');
