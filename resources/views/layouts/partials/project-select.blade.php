@@ -1,5 +1,5 @@
 <div data-tooltip="Project" class="cursor-pointer">
-    <x-dropdown align="left">
+    <x-dropdown width="full">
         <x-slot:trigger>
             <div>
                 <div
