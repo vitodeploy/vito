@@ -98,12 +98,12 @@ class OS
         );
     }
 
-    public function editFile(string $path, string $content): void
+    public function editFile(string $path, ?string $content = null): void
     {
         $this->server->ssh()->exec(
             $this->getScript('edit-file.sh', [
                 'path' => $path,
-                'content' => $content,
+                'content' => $content ?? '',
             ]),
         );
     }
