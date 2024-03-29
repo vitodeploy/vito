@@ -26,7 +26,9 @@ document.body.addEventListener('htmx:configRequest', (event) => {
     if (window.getSelection) { window.getSelection().removeAllRanges(); }
     else if (document.selection) { document.selection.empty(); }
 });
+let activeElement = null;
 document.body.addEventListener('htmx:beforeRequest', (event) => {
+    activeElement = document.activeElement;
     let targetElements = event.target.querySelectorAll('[hx-disable]');
     for (let i = 0; i < targetElements.length; i++) {
         targetElements[i].disabled = true;
@@ -36,6 +38,18 @@ document.body.addEventListener('htmx:afterRequest', (event) => {
     let targetElements = event.target.querySelectorAll('[hx-disable]');
     for (let i = 0; i < targetElements.length; i++) {
         targetElements[i].disabled = false;
+    }
+});
+document.body.addEventListener('htmx:afterSwap', (event) => {
+    tippy('[data-tooltip]', {
+        content(reference) {
+            return reference.getAttribute('data-tooltip');
+        },
+    });
+    if (activeElement) {
+        activeElement.blur();
+        activeElement.focus();
+        activeElement = null;
     }
 });
 
@@ -49,13 +63,6 @@ window.toastr.options = {
 
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
-document.body.addEventListener('htmx:afterSettle', (event) => {
-    tippy('[data-tooltip]', {
-        content(reference) {
-            return reference.getAttribute('data-tooltip');
-        },
-    });
-});
 tippy('[data-tooltip]', {
     content(reference) {
         return reference.getAttribute('data-tooltip');

@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
             return new Toast;
         });
 
-        if (str(config('app.url'))->startsWith('https://')) {
+        if (str(request()->url())->startsWith('https://')) {
             URL::forceScheme('https');
         }
     }
