@@ -7,7 +7,6 @@ use App\Helpers\SSH;
 use App\Helpers\Toast;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,9 +36,5 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('toast', function () {
             return new Toast;
         });
-
-        if (str(request()->url())->startsWith('https://')) {
-            URL::forceScheme('https');
-        }
     }
 }
