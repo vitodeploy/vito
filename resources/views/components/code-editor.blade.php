@@ -17,7 +17,9 @@
                     document.documentElement.className === 'dark'
                         ? 'one-dark'
                         : 'github'
-                editor = window.ace.edit(this.editorId)
+                editor = window.ace.edit(this.editorId, {
+                    tabSize: 1,
+                })
                 let contentElement = document.getElementById(
                     `text-${this.editorId}`,
                 )
