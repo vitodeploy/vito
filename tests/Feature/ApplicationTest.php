@@ -212,7 +212,7 @@ class ApplicationTest extends TestCase
             'content' => 'git pull',
         ]);
 
-        $this->post(route('git-hooks'), [
+        $this->post(route('api.git-hooks'), [
             'secret' => 'secret',
         ])->assertSessionDoesntHaveErrors();
 
@@ -240,7 +240,7 @@ class ApplicationTest extends TestCase
             'content' => 'git pull',
         ]);
 
-        $this->post(route('git-hooks'), [
+        $this->post(route('api.git-hooks'), [
             'secret' => 'invalid-secret',
         ])->assertNotFound();
 

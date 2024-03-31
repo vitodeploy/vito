@@ -4,7 +4,9 @@ cd /home/vito/vito
 
 php artisan down
 
-git pull
+git fetch --all
+
+git checkout $(git tag -l --merged 1.x --sort=-v:refname | head -n 1)
 
 composer install --no-dev
 

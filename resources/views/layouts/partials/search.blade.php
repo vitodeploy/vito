@@ -137,8 +137,8 @@
             x-on:click="close"
             class="fixed inset-0 bottom-0 left-0 right-0 top-0 z-[1000] items-center bg-gray-500 opacity-75 dark:bg-gray-900"
         ></div>
-        <div class="absolute z-[1000] mt-20 lg:scale-110">
-            <div class="w-[500px]">
+        <div class="absolute left-1 right-1 z-[1000] mt-20 md:left-auto md:right-auto lg:scale-110">
+            <div class="w-full px-10 md:w-[500px]">
                 <x-text-input
                     id="search-input"
                     x-ref="input"

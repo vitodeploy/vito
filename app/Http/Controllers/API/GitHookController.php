@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
 use App\Actions\Site\Deploy;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Facades\Notifier;
+use App\Http\Controllers\Controller;
 use App\Models\GitHook;
 use App\Models\ServerLog;
 use App\Notifications\SourceControlDisconnected;
