@@ -29,3 +29,8 @@ function htmx(): HtmxResponse
 {
     return new HtmxResponse();
 }
+
+function vito_version(): string
+{
+    return exec('git describe --tags');
+}

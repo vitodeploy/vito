@@ -27,9 +27,9 @@ COPY docker/php.ini /etc/php/8.2/cli/conf.d/99-vito.ini
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # app
-COPY . /var/www/html
-RUN rm -rf /var/www/html/vendor
-RUN rm -rf /var/www/html/.env
+RUN rm -rf /var/www/html
+RUN git clone -b 1.x https://github.com/vitodeploy/vito.git /var/www/html
+RUN git checkout $(git tag -l --merged 1.x --sort=-v:refname | head -n 1)
 RUN composer install --no-dev --prefer-dist
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache

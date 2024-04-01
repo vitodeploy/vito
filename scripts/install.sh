@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export VITO_VERSION="1.x"
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
@@ -151,11 +152,13 @@ ln -s /etc/nginx/sites-available/vito /etc/nginx/sites-enabled/
 service nginx restart
 rm -rf /home/${V_USERNAME}/vito
 git config --global core.fileMode false
-git clone -b 1.x ${V_REPO} /home/${V_USERNAME}/vito
+git clone -b ${VITO_VERSION} ${V_REPO} /home/${V_USERNAME}/vito
 find /home/${V_USERNAME}/vito -type d -exec chmod 755 {} \;
 find /home/${V_USERNAME}/vito -type f -exec chmod 644 {} \;
 cd /home/${V_USERNAME}/vito && git config core.fileMode false
-cd /home/${V_USERNAME}/vito && composer install --no-dev
+cd /home/${V_USERNAME}/vito
+git checkout $(git tag -l --merged ${VITO_VERSION} --sort=-v:refname | head -n 1)
+composer install --no-dev
 cp .env.prod .env
 touch /home/${V_USERNAME}/vito/storage/database.sqlite
 php artisan key:generate
