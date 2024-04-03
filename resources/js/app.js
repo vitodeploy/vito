@@ -23,12 +23,10 @@ window.htmx.defineExtension('disable-element', {
 });
 document.body.addEventListener('htmx:configRequest', (event) => {
     event.detail.headers['X-CSRF-TOKEN'] = document.head.querySelector('meta[name="csrf-token"]').content;
-    if (window.getSelection) { window.getSelection().removeAllRanges(); }
-    else if (document.selection) { document.selection.empty(); }
+    // if (window.getSelection) { window.getSelection().removeAllRanges(); }
+    // else if (document.selection) { document.selection.empty(); }
 });
-let activeElement = null;
 document.body.addEventListener('htmx:beforeRequest', (event) => {
-    activeElement = document.activeElement;
     let targetElements = event.target.querySelectorAll('[hx-disable]');
     for (let i = 0; i < targetElements.length; i++) {
         targetElements[i].disabled = true;
@@ -46,11 +44,6 @@ document.body.addEventListener('htmx:afterSwap', (event) => {
             return reference.getAttribute('data-tooltip');
         },
     });
-    if (activeElement) {
-        activeElement.blur();
-        activeElement.focus();
-        activeElement = null;
-    }
 });
 
 import toastr from 'toastr';

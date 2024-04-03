@@ -22,9 +22,9 @@
             hx-swap="outerHTML"
         >
             <div id="vhost-container">
-                <x-code-editor id="vhost" name="vhost" rows="10" class="mt-1 block w-full">
+                <x-textarea id="vhost" name="vhost" rows="10" class="mt-1 block min-h-[400px] w-full">
                     {{ session()->has("vhost") ? session()->get("vhost") : "Loading..." }}
-                </x-code-editor>
+                </x-textarea>
             </div>
             @error("vhost")
                 <x-input-error class="mt-2" :messages="$message" />

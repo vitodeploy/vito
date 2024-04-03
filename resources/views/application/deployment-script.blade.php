@@ -14,9 +14,9 @@
 
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
-                <x-code-editor id="script" name="script" lang="sh" class="mt-1 w-full">
+                <x-textarea id="script" name="script" class="mt-1 min-h-[400px] w-full">
                     {{ old("script", $site->deploymentScript?->content) }}
-                </x-code-editor>
+                </x-textarea>
                 @error("script")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
