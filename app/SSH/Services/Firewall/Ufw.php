@@ -16,6 +16,11 @@ class Ufw extends AbstractFirewall
         );
     }
 
+    public function uninstall(): void
+    {
+        //
+    }
+
     public function addRule(string $type, string $protocol, int $port, string $source, ?string $mask): void
     {
         $this->service->server->ssh()->exec(

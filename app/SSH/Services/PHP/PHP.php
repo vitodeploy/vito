@@ -3,21 +3,13 @@
 namespace App\SSH\Services\PHP;
 
 use App\Exceptions\SSHCommandError;
-use App\Models\Service;
 use App\SSH\HasScripts;
-use App\SSH\Services\ServiceInterface;
+use App\SSH\Services\AbstractService;
 use Illuminate\Support\Str;
 
-class PHP implements ServiceInterface
+class PHP extends AbstractService
 {
     use HasScripts;
-
-    protected Service $service;
-
-    public function __construct(Service $service)
-    {
-        $this->service = $service;
-    }
 
     public function install(): void
     {

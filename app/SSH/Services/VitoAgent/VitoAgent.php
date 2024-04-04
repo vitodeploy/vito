@@ -1,10 +1,10 @@
 <?php
 
-namespace App\SSH\Services\AddOnServices\VitoAgent;
+namespace App\SSH\Services\VitoAgent;
 
-use App\SSH\Services\AddOnServices\AbstractAddOnService;
+use App\SSH\Services\AbstractService;
 
-class VitoAgent extends AbstractAddOnService
+class VitoAgent extends AbstractService
 {
     const TAGS_URL = 'https://api.github.com/repos/vitodeploy/agent/tags';
 
@@ -22,16 +22,6 @@ class VitoAgent extends AbstractAddOnService
         ];
     }
 
-    public function create(): void
-    {
-
-    }
-
-    public function delete(): void
-    {
-
-    }
-
     public function data(): array
     {
         return [];
@@ -40,5 +30,10 @@ class VitoAgent extends AbstractAddOnService
     public function install(): void
     {
 
+    }
+
+    public function uninstall(): void
+    {
+        //
     }
 }

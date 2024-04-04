@@ -2,17 +2,12 @@
 
 namespace App\SSH\Services\Redis;
 
-use App\Models\Service;
 use App\SSH\HasScripts;
-use App\SSH\Services\ServiceInterface;
+use App\SSH\Services\AbstractService;
 
-class Redis implements ServiceInterface
+class Redis extends AbstractService
 {
     use HasScripts;
-
-    public function __construct(protected Service $service)
-    {
-    }
 
     public function install(): void
     {
@@ -20,5 +15,10 @@ class Redis implements ServiceInterface
             $this->getScript('install.sh'),
             'install-redis'
         );
+    }
+
+    public function uninstall(): void
+    {
+        //
     }
 }

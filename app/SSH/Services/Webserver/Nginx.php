@@ -25,6 +25,11 @@ class Nginx extends AbstractWebserver
         );
     }
 
+    public function uninstall(): void
+    {
+        //
+    }
+
     public function createVHost(Site $site): void
     {
         $this->service->server->ssh()->exec(

@@ -2,15 +2,8 @@
 
 namespace App\SSH\Services\Firewall;
 
-use App\Models\Service;
-use App\SSH\Services\ServiceInterface;
+use App\SSH\Services\AbstractService;
 
-abstract class AbstractFirewall implements Firewall, ServiceInterface
+abstract class AbstractFirewall extends AbstractService implements Firewall
 {
-    protected Service $service;
-
-    public function __construct(Service $service)
-    {
-        $this->service = $service;
-    }
 }

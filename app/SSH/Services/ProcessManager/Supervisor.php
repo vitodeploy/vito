@@ -17,6 +17,11 @@ class Supervisor extends AbstractProcessManager
         );
     }
 
+    public function uninstall(): void
+    {
+        //
+    }
+
     /**
      * @throws Throwable
      */
