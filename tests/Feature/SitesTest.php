@@ -46,6 +46,48 @@ class SitesTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider create_failure_data
+     */
+    public function test_create_site_failed_due_to_source_control(int $status): void
+    {
+        $inputs = [
+            'type' => SiteType::LARAVEL,
+            'domain' => 'example.com',
+            'alias' => 'www.example.com',
+            'php_version' => '8.2',
+            'web_directory' => 'public',
+            'repository' => 'test/test',
+            'branch' => 'main',
+            'composer' => true,
+        ];
+
+        SSH::fake();
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+            ], $status),
+        ]);
+
+        $this->actingAs($this->user);
+
+        /** @var \App\Models\SourceControl $sourceControl */
+        $sourceControl = \App\Models\SourceControl::factory()->create([
+            'provider' => SourceControl::GITHUB,
+        ]);
+
+        $inputs['source_control'] = $sourceControl->id;
+
+        $this->post(route('servers.sites.create', [
+            'server' => $this->server,
+        ]), $inputs)->assertSessionHasErrors();
+
+        $this->assertDatabaseMissing('sites', [
+            'domain' => 'example.com',
+            'status' => SiteStatus::READY,
+        ]);
+    }
+
     public function test_see_sites_list(): void
     {
         $this->actingAs($this->user);
@@ -101,6 +143,58 @@ class SitesTest extends TestCase
         $site->refresh();
 
         $this->assertEquals('8.2', $site->php_version);
+    }
+
+    public function test_update_source_control(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+            ], 201),
+        ]);
+
+        /** @var \App\Models\SourceControl $sourceControl */
+        $sourceControl = \App\Models\SourceControl::factory()->create([
+            'provider' => SourceControl::GITHUB,
+        ]);
+
+        $this->post(route('servers.sites.settings.source-control', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'source_control' => $sourceControl->id,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertEquals($sourceControl->id, $this->site->source_control_id);
+    }
+
+    public function test_failed_to_update_source_control(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+            ], 404),
+        ]);
+
+        /** @var \App\Models\SourceControl $sourceControl */
+        $sourceControl = \App\Models\SourceControl::factory()->create([
+            'provider' => SourceControl::GITHUB,
+        ]);
+
+        $this->post(route('servers.sites.settings.source-control', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'source_control' => $sourceControl->id,
+        ])->assertSessionHasErrors();
     }
 
     public function test_update_v_host(): void
@@ -167,6 +261,15 @@ class SitesTest extends TestCase
                     'version' => '5.1.2',
                 ],
             ],
+        ];
+    }
+
+    public static function create_failure_data(): array
+    {
+        return [
+            [401],
+            [403],
+            [404],
         ];
     }
 

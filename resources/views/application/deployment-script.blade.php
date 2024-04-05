@@ -12,6 +12,8 @@
                 {{ __("Deployment Script") }}
             </h2>
 
+            <div class="mt-6">A bash script that will be executed when you run the deployment process.</div>
+
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
                 <x-textarea id="script" name="script" class="mt-1 min-h-[400px] w-full">

@@ -34,8 +34,6 @@ class CreateSSL
             $ssl->status = SslStatus::CREATED;
             $ssl->save();
             $site->type()->edit();
-        })->catch(function () use ($ssl) {
-            $ssl->delete();
         });
     }
 

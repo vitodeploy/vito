@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Site\UpdateSourceControl;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Server;
@@ -60,6 +61,15 @@ class SiteSettingController extends Controller
         } catch (Throwable $e) {
             Toast::error($e->getMessage());
         }
+
+        return htmx()->back();
+    }
+
+    public function updateSourceControl(Server $server, Site $site, Request $request): HtmxResponse
+    {
+        $site = app(UpdateSourceControl::class)->update($site, $request->input());
+
+        Toast::success('Source control updated successfully!');
 
         return htmx()->back();
     }

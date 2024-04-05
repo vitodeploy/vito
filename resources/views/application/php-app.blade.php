@@ -19,6 +19,7 @@
                     <x-slot name="trigger">
                         <x-secondary-button>
                             {{ __("Manage") }}
+                            <x-heroicon name="o-chevron-down" class="ml-1 h-4 w-4" />
                         </x-secondary-button>
                     </x-slot>
                     <x-slot name="content">

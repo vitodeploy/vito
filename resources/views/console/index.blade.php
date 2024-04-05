@@ -10,7 +10,7 @@
             runUrl: '{{ route("servers.console.run", ["server" => $server]) }}',
             async run() {
                 this.running = true
-                this.output = 'Running...\n'
+                this.output = this.command + '\n'
                 const fetchOptions = {
                     method: 'POST',
                     headers: {
@@ -23,6 +23,7 @@
                     }),
                 }
 
+                this.command = ''
                 const response = await fetch(this.runUrl, fetchOptions)
                 const reader = response.body.getReader()
                 const decoder = new TextDecoder('utf-8')
