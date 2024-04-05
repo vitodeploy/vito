@@ -6,7 +6,7 @@
             @foreach ($sourceControls as $sourceControl)
                 <option
                     value="{{ $sourceControl->id }}"
-                    @if($sourceControl->id == old('source_control')) selected @endif
+                    @if($sourceControl->id == old('source_control', isset($site) ? $site->source_control_id : null)) selected @endif
                 >
                     {{ $sourceControl->profile }}
                     ({{ $sourceControl->provider }})

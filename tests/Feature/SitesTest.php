@@ -145,6 +145,58 @@ class SitesTest extends TestCase
         $this->assertEquals('8.2', $site->php_version);
     }
 
+    public function test_update_source_control(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+            ], 201),
+        ]);
+
+        /** @var \App\Models\SourceControl $sourceControl */
+        $sourceControl = \App\Models\SourceControl::factory()->create([
+            'provider' => SourceControl::GITHUB,
+        ]);
+
+        $this->post(route('servers.sites.settings.source-control', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'source_control' => $sourceControl->id,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertEquals($sourceControl->id, $this->site->source_control_id);
+    }
+
+    public function test_failed_to_update_source_control(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+            ], 404),
+        ]);
+
+        /** @var \App\Models\SourceControl $sourceControl */
+        $sourceControl = \App\Models\SourceControl::factory()->create([
+            'provider' => SourceControl::GITHUB,
+        ]);
+
+        $this->post(route('servers.sites.settings.source-control', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'source_control' => $sourceControl->id,
+        ])->assertSessionHasErrors();
+    }
+
     public function test_update_v_host(): void
     {
         SSH::fake();

@@ -3,6 +3,10 @@
 
     @include("site-settings.partials.change-php-version")
 
+    @if ($site->source_control_id)
+        @include("site-settings.partials.update-source-control")
+    @endif
+
     @include("site-settings.partials.update-v-host")
 
     <x-card>
