@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\DeleteSite;
+use App\Enums\SiteStatus;
 use App\Enums\SiteType;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
@@ -42,9 +43,33 @@ class SiteController extends Controller
         ]);
     }
 
-    public function show(Server $server, Site $site): View
+    public function show(Server $server, Site $site, Request $request): View|RedirectResponse|HtmxResponse
     {
+        if (in_array($site->status, [SiteStatus::INSTALLING, SiteStatus::INSTALLATION_FAILED])) {
+            if ($request->hasHeader('HX-Request')) {
+                return htmx()->redirect(route('servers.sites.installing', [$server, $site]));
+            }
+
+            return redirect()->route('servers.sites.installing', [$server, $site]);
+        }
+
         return view('sites.show', [
+            'server' => $server,
+            'site' => $site,
+        ]);
+    }
+
+    public function installing(Server $server, Site $site, Request $request): View|RedirectResponse|HtmxResponse
+    {
+        if (! in_array($site->status, [SiteStatus::INSTALLING, SiteStatus::INSTALLATION_FAILED])) {
+            if ($request->hasHeader('HX-Request')) {
+                return htmx()->redirect(route('servers.sites.show', [$server, $site]));
+            }
+
+            return redirect()->route('servers.sites.show', [$server, $site]);
+        }
+
+        return view('sites.installing', [
             'server' => $server,
             'site' => $site,
         ]);

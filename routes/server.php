@@ -36,6 +36,7 @@ Route::middleware('select-current-project')->group(function () {
             Route::post('/create', [SiteController::class, 'store']);
             Route::get('/{site}', [SiteController::class, 'show'])->name('servers.sites.show');
             Route::delete('/{site}', [SiteController::class, 'destroy'])->name('servers.sites.destroy');
+            Route::get('/{site}/installing', [SiteController::class, 'installing'])->name('servers.sites.installing');
 
             // site application
             Route::post('/{site}/application/deploy', [ApplicationController::class, 'deploy'])->name('servers.sites.application.deploy');
