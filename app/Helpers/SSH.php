@@ -133,7 +133,7 @@ class SSH
                 $this->log?->write($output);
 
                 if (Str::contains($output, 'VITO_SSH_ERROR')) {
-                    throw new Exception('SSH command failed with an error');
+                    throw new SSHCommandError('SSH command failed with an error');
                 }
 
                 return $output;

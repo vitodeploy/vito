@@ -3,6 +3,8 @@
 namespace App\Actions\Site;
 
 use App\Enums\SiteStatus;
+use App\Exceptions\RepositoryNotFound;
+use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Facades\Notifier;
 use App\Models\Server;
@@ -19,7 +21,6 @@ use Illuminate\Validation\ValidationException;
 class CreateSite
 {
     /**
-     * @throws SourceControlIsNotConnected
      * @throws ValidationException
      */
     public function create(Server $server, array $input): Site
@@ -47,7 +48,15 @@ class CreateSite
                 }
             } catch (SourceControlIsNotConnected) {
                 throw ValidationException::withMessages([
-                    'source_control' => __('Source control is not connected'),
+                    'source_control' => 'Source control is not connected',
+                ]);
+            } catch (RepositoryPermissionDenied) {
+                throw ValidationException::withMessages([
+                    'repository' => 'You do not have permission to access this repository',
+                ]);
+            } catch (RepositoryNotFound) {
+                throw ValidationException::withMessages([
+                    'repository' => 'Repository not found',
                 ]);
             }
 

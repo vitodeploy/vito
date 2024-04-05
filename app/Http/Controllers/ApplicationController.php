@@ -7,6 +7,8 @@ use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Exceptions\DeploymentScriptIsEmptyException;
+use App\Exceptions\RepositoryNotFound;
+use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
@@ -24,12 +26,14 @@ class ApplicationController extends Controller
             app(Deploy::class)->run($site);
 
             Toast::success('Deployment started!');
-        } catch (SourceControlIsNotConnected $e) {
-            Toast::error($e->getMessage());
-
-            return htmx()->redirect(route('source-controls'));
+        } catch (SourceControlIsNotConnected) {
+            Toast::error('Source control is not connected. Check site\'s settings.');
         } catch (DeploymentScriptIsEmptyException) {
             Toast::error('Deployment script is empty!');
+        } catch (RepositoryPermissionDenied) {
+            Toast::error('You do not have permission to access this repository!');
+        } catch (RepositoryNotFound) {
+            Toast::error('Repository not found!');
         }
 
         return htmx()->back();
@@ -83,6 +87,12 @@ class ApplicationController extends Controller
                 Toast::success('Auto deployment has been enabled.');
             } catch (SourceControlIsNotConnected) {
                 Toast::error('Source control is not connected. Check site\'s settings.');
+            } catch (DeploymentScriptIsEmptyException) {
+                Toast::error('Deployment script is empty!');
+            } catch (RepositoryPermissionDenied) {
+                Toast::error('You do not have permission to access this repository!');
+            } catch (RepositoryNotFound) {
+                Toast::error('Repository not found!');
             }
         }
 

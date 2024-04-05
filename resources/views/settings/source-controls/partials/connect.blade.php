@@ -38,6 +38,17 @@
                         @endif
                     @endforeach
                 </x-select-input>
+                <x-input-help>
+                    Check
+                    <a
+                        href="https://vitodeploy.com/settings/source-controls.html"
+                        class="text-primary-500"
+                        target="_blank"
+                    >
+                        here
+                    </a>
+                    to see what permissions you need
+                </x-input-help>
                 @error("provider")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
