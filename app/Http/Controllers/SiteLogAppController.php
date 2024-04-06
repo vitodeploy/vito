@@ -21,7 +21,13 @@ class SiteLogAppController extends Controller
 
     public function getLog(Server $server, Site $site)
     {
-        $data = $server->os()->readFile(data_get($site, 'type_data.log_app_path'));
+        $path = data_get($site, 'type_data.log_app_path');
+
+        if (empty($path)) {
+            return __('You must configure the path.');
+        }
+
+        $data = $server->os()->readFile($path);
         return empty($data) ? __('File: ":path" is empty.', ['path' => data_get($site, 'type_data.log_app_path')]) : $data;
     }
 
