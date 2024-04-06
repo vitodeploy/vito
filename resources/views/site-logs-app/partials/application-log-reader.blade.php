@@ -1,29 +1,29 @@
 <x-card>
-    <x-slot name="title">{{ __("Update VHost") }}</x-slot>
+    <x-slot name="title">{{ __("Application Log Viewer") }}</x-slot>
 
     <x-slot name="description">
-        {{ __("You can change your site's VHost configuration") }}
+        {{ __("Below you can see the log") }}
     </x-slot>
 
     <form
-        id="update-vhost"
-        hx-post="{{ route("servers.sites.settings.vhost", ["server" => $server, "site" => $site]) }}"
+        id="update-log-app-viewer"
+        hx-post="{{ route("servers.sites.logs-app.file", ["server" => $server, "site" => $site]) }}"
         hx-swap="outerHTML"
-        hx-select="#update-vhost"
+        hx-select="#update-log-app-viewer"
         class="space-y-6"
         hx-ext="disable-element"
-        hx-disable-element="#btn-update-vhost"
+        hx-disable-element="#btn-update-log-app-viewer"
     >
         <div
-            hx-get="{{ route("servers.sites.settings.vhost", ["server" => $server, "site" => $site]) }}"
+            hx-get="{{ route("servers.sites.logs-app.file", ["server" => $server, "site" => $site]) }}"
             hx-trigger="load"
-            hx-target="#vhost-container"
-            hx-select="#vhost-container"
+            hx-target="#log-app-viewer-container"
+            hx-select="#log-app-viewer-container"
             hx-swap="outerHTML"
         >
-            <div id="vhost-container">
+            <div id="log-app-viewer-container">
                 <x-textarea id="vhost" name="vhost" rows="10" class="mt-1 block min-h-[400px] w-full">
-                    {{ session()->has("vhost") ? session()->get("vhost") : "Loading..." }}
+                    {{ session()->has("log-app-viewer") ? session()->get("log-app-viewer") : "Loading..." }}
                 </x-textarea>
             </div>
             @error("vhost")

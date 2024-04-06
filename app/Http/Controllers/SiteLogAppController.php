@@ -19,6 +19,7 @@ class SiteLogAppController extends Controller
 
     public function getLog(Server $server, Site $site): RedirectResponse
     {
-        return back()->with('vhost', $server->webserver()->handler()->getVHost($site));
+        // working here.
+        return back()->with('log-app-viewer', $server->webserver()->handler()->getVHost($site));
     }
 }

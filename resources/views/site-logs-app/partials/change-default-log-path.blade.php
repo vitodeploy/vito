@@ -1,5 +1,5 @@
 <x-card>
-    <x-slot name="title">{{ __("Application Log Viewer") }}</x-slot>
+    <x-slot name="title">{{ __("Update Application Log File Path") }}</x-slot>
 
     <x-slot name="description">
         {{ __("You must choose the path where your application log is located.") }}
