@@ -213,6 +213,22 @@ class SitesTest extends TestCase
         ]))->assertSessionDoesntHaveErrors();
     }
 
+    public function test_update_log_app_path(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->get(route('servers.sites.logs-app.update-path', [
+            'server' => $this->server,
+            'site' => $site,
+        ]))->assertSessionDoesntHaveErrors();
+    }
+
     public static function create_data(): array
     {
         return [

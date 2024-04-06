@@ -74,6 +74,7 @@ Route::middleware('select-current-project')->group(function () {
             // site application logs
             Route::get('/{site}/app-logs', [SiteLogAppController::class, 'index'])->name('servers.sites.logs-app');
             Route::get('/{site}/app-logs/file', [SiteLogAppController::class, 'getLog'])->name('servers.sites.logs-app.file');
+            Route::post('/{site}/app-logs/path', [SiteLogAppController::class, 'updatePath'])->name('servers.sites.logs-app.update-path');
 
         });
 

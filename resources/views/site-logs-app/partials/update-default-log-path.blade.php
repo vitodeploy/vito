@@ -6,18 +6,18 @@
     </x-slot>
 
     <form
-        id="update-source-control"
-        hx-post="{{ route("servers.sites.settings.source-control", ["server" => $server, "site" => $site]) }}"
+        id="update-log-app-path"
+        hx-post="{{ route("servers.sites.logs-app.update-path", ["server" => $server, "site" => $site]) }}"
         hx-swap="outerHTML"
-        hx-select="#update-source-control"
+        hx-select="#update-log-app-path"
         hx-ext="disable-element"
-        hx-disable-element="#btn-update-source-control"
+        hx-disable-element="#btn-update-log-app-path"
         class="space-y-6"
     >
         <div>
             <x-input-label for="log_app_path" :value="__('Full Path')" />
             <x-text-input
-                value="{{ old('log_app_path') }}"
+                value="{{ old('log_app_path', data_get($site, 'type_data.log_app_path')) }}"
                 id="log_app_path"
                 placeholder="{{ old('log_app_path', data_get($site, 'path', '/home/...')) }}"
                 name="log_app_path"
