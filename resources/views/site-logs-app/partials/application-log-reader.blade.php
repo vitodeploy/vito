@@ -33,8 +33,8 @@
     </form>
 
     <x-slot name="actions">
-        <x-primary-button form="update-vhost" id="btn-update-vhost" hx-disable>
-            {{ __("Save") }}
+        <x-primary-button form="reload-app-log" id="btn-reload-app-log" hx-disable>
+            {{ __("Reload") }}
         </x-primary-button>
     </x-slot>
 </x-card>

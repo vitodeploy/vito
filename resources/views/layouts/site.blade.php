@@ -55,6 +55,14 @@
                 <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5" />
                 <span class="ml-2 hidden xl:block">Logs</span>
             </x-tab-item>
+            <x-tab-item
+                class="mr-1"
+                :href="route('servers.sites.logs-app', ['server' => $site->server, 'site' => $site])"
+                :active="request()->routeIs('servers.sites.logs-app')"
+            >
+                <x-heroicon name="o-document-magnifying-glass" class="h-5 w-5" />
+                <span class="ml-2 hidden xl:block">Site Logs</span>
+            </x-tab-item>
         </div>
         <div class="md:hidden">
             <x-dropdown align="left">
@@ -109,6 +117,13 @@
                     >
                         <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5" />
                         <span class="ml-2">Logs</span>
+                    </x-dropdown-link>
+                    <x-dropdown-link
+                        :href="route('servers.sites.logs', ['server' => $site->server, 'site' => $site])"
+                        :active="request()->routeIs('servers.sites.logs')"
+                    >
+                        <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5" />
+                        <span class="ml-2">Site Logs</span>
                     </x-dropdown-link>
                 </x-slot>
             </x-dropdown>

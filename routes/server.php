@@ -14,6 +14,7 @@ use App\Http\Controllers\ServerLogController;
 use App\Http\Controllers\ServerSettingController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\SiteLogAppController;
 use App\Http\Controllers\SiteLogController;
 use App\Http\Controllers\SiteSettingController;
 use App\Http\Controllers\SSHKeyController;
@@ -69,6 +70,11 @@ Route::middleware('select-current-project')->group(function () {
 
             // site logs
             Route::get('/{site}/logs', [SiteLogController::class, 'index'])->name('servers.sites.logs');
+
+            // site application logs
+            Route::get('/{site}/app-logs', [SiteLogAppController::class, 'index'])->name('servers.sites.logs-app');
+            Route::get('/{site}/app-logs/file', [SiteLogAppController::class, 'getLog'])->name('servers.sites.logs-app.file');
+
         });
 
         Route::prefix('/{server}/databases')->group(function () {
