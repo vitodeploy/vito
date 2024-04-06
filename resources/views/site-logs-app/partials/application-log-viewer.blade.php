@@ -53,9 +53,12 @@
                     return;
                 }
 
-                let viewer = document.getElementById("log-viewer");
-                viewer.value = event.detail.xhr.response;
-                viewer.scrollTop = viewer.scrollHeight  - STICKY_OFFSET;
+                const targetId = event.target.id;
+                if (targetId === "log-viewer" || targetId === "log-app-viewer-container") {
+                    let viewer = document.getElementById("log-viewer");
+                    viewer.value = event.detail.xhr.response;
+                    viewer.scrollTop = viewer.scrollHeight - STICKY_OFFSET;
+                }
             });
         </script>
 
