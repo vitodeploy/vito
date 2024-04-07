@@ -4,6 +4,7 @@ namespace App\Actions\PHP;
 
 use App\Enums\ServiceStatus;
 use App\Models\Server;
+use App\SSH\Services\PHP\PHP;
 use Illuminate\Validation\ValidationException;
 
 class ChangeDefaultCli
@@ -12,7 +13,9 @@ class ChangeDefaultCli
     {
         $this->validate($server, $input);
         $service = $server->php($input['version']);
-        $service->handler()->setDefaultCli();
+        /** @var PHP $handler */
+        $handler = $service->handler();
+        $handler->setDefaultCli();
         $server->defaultService('php')->update(['is_default' => 0]);
         $service->update(['is_default' => 1]);
         $service->update(['status' => ServiceStatus::READY]);

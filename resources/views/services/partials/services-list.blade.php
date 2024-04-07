@@ -15,10 +15,10 @@
                         @include("services.partials.status", ["status" => $service->status])
                     </div>
                     <div class="space-y-3 p-5">
-                        <div class="flex items-center justify-center">
+                        <div class="mt-5 flex items-center justify-center">
                             <img
                                 src="{{ asset("static/images/" . $service->name . ".svg") }}"
-                                class="h-20 w-20"
+                                class="h-[70px] w-[70px]"
                                 alt=""
                             />
                         </div>

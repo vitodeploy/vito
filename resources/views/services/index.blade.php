@@ -3,5 +3,5 @@
 
     @include("services.partials.services-list")
 
-    {{-- @include("services.partials.add-ons") --}}
+    @include("services.partials.available-services")
 </x-server-layout>

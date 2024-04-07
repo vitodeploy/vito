@@ -15,6 +15,7 @@ class Create
         $this->validate($server, $input);
 
         $service = new Service([
+            'server_id' => $server->id,
             'name' => $input['type'],
             'type' => $input['type'],
             'version' => $input['version'],
@@ -27,15 +28,13 @@ class Create
 
         $service->save();
 
-        $service->handler()->create();
-
         dispatch(function () use ($service) {
             $service->handler()->install();
             $service->status = ServiceStatus::READY;
             $service->save();
         })->catch(function () use ($service) {
-            $service->handler()->delete();
-            $service->delete();
+            $service->status = ServiceStatus::INSTALLATION_FAILED;
+            $service->save();
         })->onConnection('ssh');
 
         return $service;
@@ -46,8 +45,7 @@ class Create
         Validator::make($input, [
             'type' => [
                 'required',
-                Rule::in(config('core.add_on_services')),
-                Rule::unique('services', 'type')->where('server_id', $server->id),
+                Rule::in(array_keys(config('core.service_handlers'))),
             ],
             'version' => 'required',
         ])->validate();
