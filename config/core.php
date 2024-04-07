@@ -19,7 +19,7 @@ return [
     ],
     'webservers' => ['none', 'nginx'],
     'php_versions' => [
-        'none',
+        // 'none',
         // '5.6',
         '7.0',
         '7.1',
@@ -132,6 +132,17 @@ return [
     /*
      * Service
      */
+    'service_types' => [
+        'nginx' => 'webserver',
+        'mysql' => 'database',
+        'mariadb' => 'database',
+        'postgresql' => 'database',
+        'redis' => 'memory_database',
+        'php' => 'php',
+        'ufw' => 'firewall',
+        'supervisor' => 'process_manager',
+        'vito-agent' => 'monitoring',
+    ],
     'service_handlers' => [
         'nginx' => \App\SSH\Services\Webserver\Nginx::class,
         'mysql' => \App\SSH\Services\Database\Mysql::class,

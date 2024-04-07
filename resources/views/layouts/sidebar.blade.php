@@ -52,19 +52,17 @@
                     </li>
                 @endif
 
-                @if ($server->php())
-                    <li>
-                        <x-sidebar-link
-                            :href="route('servers.php', ['server' => $server])"
-                            :active="request()->routeIs('servers.php')"
-                        >
-                            <x-heroicon name="o-code-bracket" class="h-6 w-6" />
-                            <span class="ml-2">
-                                {{ __("PHP") }}
-                            </span>
-                        </x-sidebar-link>
-                    </li>
-                @endif
+                <li>
+                    <x-sidebar-link
+                        :href="route('servers.php', ['server' => $server])"
+                        :active="request()->routeIs('servers.php')"
+                    >
+                        <x-heroicon name="o-code-bracket" class="h-6 w-6" />
+                        <span class="ml-2">
+                            {{ __("PHP") }}
+                        </span>
+                    </x-sidebar-link>
+                </li>
 
                 @if ($server->firewall())
                     <li>

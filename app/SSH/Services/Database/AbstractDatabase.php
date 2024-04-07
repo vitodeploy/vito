@@ -2,15 +2,32 @@
 
 namespace App\SSH\Services\Database;
 
+use App\Enums\BackupStatus;
 use App\Models\BackupFile;
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
+use Closure;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
     use HasScripts;
 
     abstract protected function getScriptsDir(): string;
+
+    public function creationRules(array $input): array
+    {
+        return [
+            'type' => [
+                'required',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $databaseExists = $this->service->server->service('database');
+                    if ($databaseExists) {
+                        $fail('You already have a database service on the server.');
+                    }
+                },
+            ],
+        ];
+    }
 
     public function install(): void
     {
@@ -21,9 +38,35 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $this->service->validateInstall($status);
     }
 
+    public function deletionRules(): array
+    {
+        return [
+            'service' => [
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $hasDatabase = $this->service->server->databases()->exists();
+                    if ($hasDatabase) {
+                        $fail('You have database(s) on the server.');
+                    }
+                    $hasDatabaseUser = $this->service->server->databaseUsers()->exists();
+                    if ($hasDatabaseUser) {
+                        $fail('You have database user(s) on the server.');
+                    }
+                    $hasRunningBackup = $this->service->server->backups()
+                        ->where('status', BackupStatus::RUNNING)
+                        ->exists();
+                    if ($hasRunningBackup) {
+                        $fail('You have database backup(s) on the server.');
+                    }
+                },
+            ],
+        ];
+    }
+
     public function uninstall(): void
     {
-        //
+        $version = $this->service->version;
+        $command = $this->getScript($this->service->name.'/uninstall-'.$version.'.sh');
+        $this->service->server->ssh()->exec($command, 'uninstall-'.$this->service->name.'-'.$version);
     }
 
     public function create(string $name): void

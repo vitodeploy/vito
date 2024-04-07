@@ -5,11 +5,42 @@ namespace App\SSH\Services\PHP;
 use App\Exceptions\SSHCommandError;
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
+use Closure;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class PHP extends AbstractService
 {
     use HasScripts;
+
+    public function creationRules(array $input): array
+    {
+        return [
+            'version' => [
+                'required',
+                Rule::in(config('core.php_versions')),
+                Rule::unique('services', 'version')
+                    ->where('type', 'php')
+                    ->where('server_id', $this->service->server_id),
+            ],
+        ];
+    }
+
+    public function deletionRules(): array
+    {
+        return [
+            'service' => [
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $hasSite = $this->service->server->sites()
+                        ->where('php_version', $this->service->version)
+                        ->exists();
+                    if ($hasSite) {
+                        $fail('Some sites are using this PHP version.');
+                    }
+                },
+            ],
+        ];
+    }
 
     public function install(): void
     {

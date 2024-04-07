@@ -4,4 +4,6 @@
     @include("services.partials.services-list")
 
     @include("services.partials.available-services")
+
+    @stack("modals")
 </x-server-layout>

@@ -24,7 +24,7 @@
                     <div
                         class="flex w-full items-center justify-between rounded-b-md border-t border-t-gray-200 bg-gray-50 p-2 dark:border-t-gray-600 dark:bg-gray-700"
                     >
-                        @include("services.partials.service-installers." . $key)
+                        @include("services.partials.installers." . $key)
                     </div>
                 </div>
             @endif

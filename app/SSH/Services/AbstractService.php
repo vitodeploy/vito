@@ -20,6 +20,11 @@ abstract class AbstractService implements ServiceInterface
         return [];
     }
 
+    public function deletionRules(): array
+    {
+        return [];
+    }
+
     public function data(): array
     {
         return [];

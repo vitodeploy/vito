@@ -6,7 +6,8 @@
     hx-select="#install-vito-agent"
 >
     @csrf
-    <input type="hidden" name="type" value="vito-agent" />
+    <input type="hidden" name="name" value="vito-agent" />
+    <input type="hidden" name="type" value="monitoring" />
     <input type="hidden" name="version" value="latest" />
     <x-secondary-button class="!w-full" hx-disable>Install</x-secondary-button>
 </form>

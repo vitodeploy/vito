@@ -4,6 +4,7 @@ namespace App\ServerTypes;
 
 use App\Enums\ServiceStatus;
 use App\Models\Server;
+use App\SSH\Services\PHP\PHP;
 
 abstract class AbstractType implements ServerType
 {
@@ -31,7 +32,9 @@ abstract class AbstractType implements ServerType
             $service->update(['status' => ServiceStatus::READY]);
             if ($service->type == 'php') {
                 $this->progress($currentProgress, 'installing-composer');
-                $service->handler()->installComposer();
+                /** @var PHP $handler */
+                $handler = $service->handler();
+                $handler->installComposer();
             }
         }
         $this->progress(100, 'finishing');

@@ -16,7 +16,7 @@ class Create
 
         $service = new Service([
             'server_id' => $server->id,
-            'name' => $input['type'],
+            'name' => $input['name'],
             'type' => $input['type'],
             'version' => $input['version'],
             'status' => ServiceStatus::INSTALLING,
@@ -45,7 +45,11 @@ class Create
         Validator::make($input, [
             'type' => [
                 'required',
-                Rule::in(array_keys(config('core.service_handlers'))),
+                Rule::in(config('core.service_types')),
+            ],
+            'name' => [
+                'required',
+                Rule::in(array_keys(config('core.service_types'))),
             ],
             'version' => 'required',
         ])->validate();

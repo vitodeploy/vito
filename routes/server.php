@@ -127,6 +127,7 @@ Route::middleware('select-current-project')->group(function () {
         Route::get('/{server}/services/{service}/enable', [ServiceController::class, 'enable'])->name('servers.services.enable');
         Route::get('/{server}/services/{service}/disable', [ServiceController::class, 'disable'])->name('servers.services.disable');
         Route::post('/{server}/services/install', [ServiceController::class, 'install'])->name('servers.services.install');
+        Route::delete('/{server}/services/{service}/uninstall', [ServiceController::class, 'uninstall'])->name('servers.services.uninstall');
 
         // console
         Route::get('/{server}/console', [ConsoleController::class, 'index'])->name('servers.console');

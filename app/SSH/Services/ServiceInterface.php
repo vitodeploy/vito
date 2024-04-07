@@ -8,6 +8,8 @@ interface ServiceInterface
 
     public function creationData(array $input): array;
 
+    public function deletionRules(): array;
+
     public function data(): array;
 
     public function install(): void;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Service\Create;
+use App\Actions\Service\Uninstall;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Server;
@@ -69,6 +70,15 @@ class ServiceController extends Controller
     public function install(Server $server, Request $request): HtmxResponse
     {
         app(Create::class)->create($server, $request->input());
+
+        Toast::success('Service is being uninstalled!');
+
+        return htmx()->back();
+    }
+
+    public function uninstall(Server $server, Service $service): HtmxResponse
+    {
+        app(Uninstall::class)->uninstall($service);
 
         Toast::success('Service is being uninstalled!');
 
