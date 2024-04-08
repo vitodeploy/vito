@@ -282,6 +282,18 @@ class SitesTest extends TestCase
             'site' => $this->site,
         ]))
             ->assertSuccessful()
-            ->assertSee('Logs');
+            ->assertSee('Vito Logs');
+    }
+
+    public function test_see_logs_remote(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->get(route('servers.sites.logs.remote', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertSuccessful()
+            ->assertSee('Remote Logs');
     }
 }

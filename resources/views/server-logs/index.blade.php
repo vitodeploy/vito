@@ -4,5 +4,5 @@
     @endif
 
     @include("server-logs.partials.header")
-    @include("server-logs.partials.logs-list")
+    @include("server-logs.partials.logs-list-live")
 </x-server-layout>

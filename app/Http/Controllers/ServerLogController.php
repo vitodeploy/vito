@@ -37,7 +37,12 @@ class ServerLogController extends Controller
         return view('server-logs.remote-logs', [
             'server' => $server,
             'remote' => true,
-            'pageTitle' => __('Remote Logs')
+            'pageTitle' => __('Remote Logs'),
+            'logs' => $server
+                ->logs()
+                ->remote(true)
+                ->latest()
+                ->paginate(10),
         ]);
     }
 

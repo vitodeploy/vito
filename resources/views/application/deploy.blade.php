@@ -6,9 +6,9 @@
             hx-swap="outerHTML"
             hx-select="#deploy"
         >
-            <x-primary-button hx-disable>
+            <x-secondary-button icon="o-play-circle" iconAlign="right" :active="true" hx-disable>
                 {{ __("Deploy") }}
-            </x-primary-button>
+            </x-secondary-button>
         </form>
     @endif
 </div>

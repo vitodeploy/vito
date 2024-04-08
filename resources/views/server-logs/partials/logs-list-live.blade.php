@@ -1,10 +1,17 @@
 @php
-    if (isset($site)) {
+    if (isset($site) && !isset($remote)) {
         $logs = $site
             ->logs()
+            ->remote(false)
             ->latest()
             ->paginate(10);
-    } else if (isset($remote)) {
+    } elseif (isset($site) && isset($remote)) {
+        $logs = $site
+            ->logs()
+            ->remote(true, $site)
+            ->latest()
+            ->paginate(10);
+    } elseif (isset($remote)) {
         $logs = $server
             ->logs()
             ->remote()
@@ -24,23 +31,36 @@
 }">
     <x-card-header>
         <x-slot name="title">
-            @isset($pageTitle)
-                {{ $pageTitle }}
-            @else
-                {{ __("Logs") }}
-            @endisset
+            {{ $pageTitle ?? 'Logs' }}
         </x-slot>
     </x-card-header>
     <x-live id="live-server-logs">
         <x-table>
             <x-tr>
-                <x-th>{{ isset($remote) ? __("Path") : __("Event") }}</x-th>
+                <x-th>
+                    @isset($remote)
+                        {{ __("Path") }}
+                    @else
+                        {{ __("Event") }}
+                    @endisset
+                </x-th>
                 <x-th>{{ __("Date") }}</x-th>
                 <x-th></x-th>
             </x-tr>
             @foreach ($logs as $log)
                 <x-tr>
-                    <x-td>{{  isset($remote) ? $log->name : $log->type }}</x-td>
+                    <x-td class="flex flex-col">
+                        @isset($remote)
+                            {{ $log->name }}
+                        @else
+                            {{ $log->type }}
+                            @if (data_get($log, 'type') === 'remote')
+                                <span class="text-gray-400 text-sm">
+                                    {{ $log->name }}
+                                </span>
+                            @endif
+                        @endif
+                    </x-td>
                     <x-td>
                         <x-datetime :value="$log->created_at" />
                     </x-td>
@@ -54,7 +74,7 @@
                             <x-heroicon name="o-eye" class="h-5 w-5" />
                         </x-icon-button>
 
-                        @isset($remote)
+                        @if(isset($remote) && !isset($site))
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.logs.remote.destroy', ['server' => $server, 'serverLog' => $log->id]) }}'; $dispatch('open-modal', 'delete-remote-log')"
                             >

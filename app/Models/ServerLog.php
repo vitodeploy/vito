@@ -66,9 +66,13 @@ class ServerLog extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
-    public function scopeRemote($query, bool $active = true)
+    public function scopeRemote($query, bool $active = true, $site = null)
     {
         $query->where('is_remote', $active);
+
+        if ($site) {
+            $query->where('name', 'like', $site->path . '%');
+        }
     }
 
     public function write($buf): void
