@@ -54,10 +54,6 @@ class ServerController extends Controller
     {
         return view('servers.show', [
             'server' => $server,
-            'logs' => $server
-                ->logs()
-                ->latest()
-                ->paginate(10)
         ]);
     }
 
