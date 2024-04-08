@@ -143,7 +143,7 @@
                 <li>
                     <x-sidebar-link
                         :href="route('servers.logs', ['server' => $server])"
-                        :active="request()->routeIs('servers.logs')"
+                        :active="request()->routeIs('servers.logs*')"
                     >
                         <x-heroicon name="o-square-3-stack-3d" class="h-6 w-6" />
                         <span class="ml-2">

@@ -27,11 +27,13 @@ class ServerLog extends AbstractModel
         'type',
         'name',
         'disk',
+        'is_remote'
     ];
 
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'is_remote' => 'boolean',
     ];
 
     public static function boot(): void
@@ -64,6 +66,11 @@ class ServerLog extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
+    public function scopeRemote($query, bool $active = true)
+    {
+        $query->where('is_remote', $active);
+    }
+
     public function write($buf): void
     {
         if (Str::contains($buf, 'VITO_SSH_ERROR')) {
@@ -78,6 +85,10 @@ class ServerLog extends AbstractModel
 
     public function getContent(): ?string
     {
+        if (data_get($this, 'is_remote', false) === true) {
+            return $this->server->os()->readFile($this->name, 150);
+        }
+
         if (Storage::disk($this->disk)->exists($this->name)) {
             return Storage::disk($this->disk)->get($this->name);
         }

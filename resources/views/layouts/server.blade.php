@@ -5,6 +5,15 @@
 
     <x-slot name="header">
         <h2 class="text-lg font-semibold">{{ $server->name }}</h2>
+
+        @if (isset($header))
+            <header class="flex-grow border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                <div class="mx-auto flex h-20 w-full max-w-full items-center justify-between px-5">
+                    {{ $header }}
+                </div>
+            </header>
+        @endif
+
         <div class="flex flex-col items-end">
             @include("servers.partials.server-status")
             <x-input-label class="mt-1 cursor-pointer" x-data="{ copied: false }">
