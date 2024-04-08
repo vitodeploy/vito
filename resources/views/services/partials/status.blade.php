@@ -11,7 +11,7 @@
 @endif
 
 @if ($status == \App\Enums\ServiceStatus::UNINSTALLING)
-    <x-status status="danger">{{ $status }}</x-status>
+    <x-status status="warning">{{ $status }}</x-status>
 @endif
 
 @if ($status == \App\Enums\ServiceStatus::FAILED)

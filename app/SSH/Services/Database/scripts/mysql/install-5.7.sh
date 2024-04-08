@@ -1,5 +1,7 @@
 sudo DEBIAN_FRONTEND=noninteractive apt-get install mysql-server -y
 
+sudo systemctl unmask mysql.service
+
 sudo service mysql enable
 
 sudo service mysql start

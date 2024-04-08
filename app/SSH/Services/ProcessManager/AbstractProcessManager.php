@@ -13,7 +13,7 @@ abstract class AbstractProcessManager extends AbstractService implements Process
             'type' => [
                 'required',
                 function (string $attribute, mixed $value, Closure $fail) {
-                    $processManagerExists = $this->service->server->service('processManager');
+                    $processManagerExists = $this->service->server->processManager();
                     if ($processManagerExists) {
                         $fail('You already have a process manager service on the server.');
                     }

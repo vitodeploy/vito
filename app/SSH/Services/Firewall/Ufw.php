@@ -14,6 +14,7 @@ class Ufw extends AbstractFirewall
             $this->getScript('ufw/install-ufw.sh'),
             'install-ufw'
         );
+        $this->service->server->os()->cleanup();
     }
 
     public function uninstall(): void

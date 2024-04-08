@@ -325,6 +325,15 @@ class Server extends AbstractModel
         return $this->service('php', $version);
     }
 
+    public function memoryDatabase(?string $version = null): ?Service
+    {
+        if (! $version) {
+            return $this->defaultService('memory_database');
+        }
+
+        return $this->service('memory_database', $version);
+    }
+
     public function sshKey(): array
     {
         /** @var FilesystemAdapter $storageDisk */

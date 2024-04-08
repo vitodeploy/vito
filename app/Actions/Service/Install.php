@@ -8,9 +8,9 @@ use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class Create
+class Install
 {
-    public function create(Server $server, array $input): Service
+    public function install(Server $server, array $input): Service
     {
         $this->validate($server, $input);
 

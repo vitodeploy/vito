@@ -15,11 +15,18 @@ class Supervisor extends AbstractProcessManager
             $this->getScript('supervisor/install-supervisor.sh'),
             'install-supervisor'
         );
+        $this->service->server->os()->cleanup();
     }
 
     public function uninstall(): void
     {
-        //
+        $this->service->server->ssh()->exec(
+            $this->getScript('supervisor/uninstall-supervisor.sh'),
+            'uninstall-supervisor'
+        );
+        $status = $this->service->server->systemd()->status($this->service->unit);
+        $this->service->validateInstall($status);
+        $this->service->server->os()->cleanup();
     }
 
     /**

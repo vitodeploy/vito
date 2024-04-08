@@ -24,6 +24,7 @@ class Nginx extends AbstractWebserver
             ]),
             'install-nginx'
         );
+        $this->service->server->os()->cleanup();
     }
 
     public function deletionRules(): array
@@ -43,7 +44,11 @@ class Nginx extends AbstractWebserver
 
     public function uninstall(): void
     {
-        //
+        $this->service->server->ssh()->exec(
+            $this->getScript('nginx/uninstall-nginx.sh'),
+            'uninstall-nginx'
+        );
+        $this->service->server->os()->cleanup();
     }
 
     public function createVHost(Site $site): void

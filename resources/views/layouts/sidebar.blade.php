@@ -37,7 +37,7 @@
                     </li>
                 @endif
 
-                @if ($server->database())
+                @if ($server->database()?->status == \App\Enums\ServiceStatus::READY)
                     <li>
                         <x-sidebar-link
                             :href="route('servers.databases', ['server' => $server])"

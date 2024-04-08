@@ -20,7 +20,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
             'type' => [
                 'required',
                 function (string $attribute, mixed $value, Closure $fail) {
-                    $databaseExists = $this->service->server->service('database');
+                    $databaseExists = $this->service->server->database();
                     if ($databaseExists) {
                         $fail('You already have a database service on the server.');
                     }
@@ -36,6 +36,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $this->service->server->ssh()->exec($command, 'install-'.$this->service->name.'-'.$version);
         $status = $this->service->server->systemd()->status($this->service->unit);
         $this->service->validateInstall($status);
+        $this->service->server->os()->cleanup();
     }
 
     public function deletionRules(): array
@@ -65,8 +66,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
     public function uninstall(): void
     {
         $version = $this->service->version;
-        $command = $this->getScript($this->service->name.'/uninstall-'.$version.'.sh');
+        $command = $this->getScript($this->service->name.'/uninstall.sh');
         $this->service->server->ssh()->exec($command, 'uninstall-'.$this->service->name.'-'.$version);
+        $this->service->server->os()->cleanup();
     }
 
     public function create(string $name): void

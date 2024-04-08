@@ -52,6 +52,7 @@ class PHP extends AbstractService
             ]),
             'install-php-'.$this->service->version
         );
+        $this->service->server->os()->cleanup();
     }
 
     public function uninstall(): void
@@ -62,6 +63,7 @@ class PHP extends AbstractService
             ]),
             'uninstall-php-'.$this->service->version
         );
+        $this->service->server->os()->cleanup();
     }
 
     public function setDefaultCli(): void

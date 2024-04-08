@@ -16,7 +16,7 @@ class Redis extends AbstractService
             'type' => [
                 'required',
                 function (string $attribute, mixed $value, Closure $fail) {
-                    $redisExists = $this->service->server->service('redis');
+                    $redisExists = $this->service->server->memoryDatabase();
                     if ($redisExists) {
                         $fail('You already have a Redis service on the server.');
                     }
@@ -31,10 +31,17 @@ class Redis extends AbstractService
             $this->getScript('install.sh'),
             'install-redis'
         );
+        $status = $this->service->server->systemd()->status($this->service->unit);
+        $this->service->validateInstall($status);
+        $this->service->server->os()->cleanup();
     }
 
     public function uninstall(): void
     {
-        //
+        $this->service->server->ssh()->exec(
+            $this->getScript('uninstall.sh'),
+            'uninstall-redis'
+        );
+        $this->service->server->os()->cleanup();
     }
 }
