@@ -6,7 +6,7 @@
             ->latest()
             ->paginate(10);
     } elseif (isset($site) && isset($remote)) {
-        $logs = $site
+        $logs = $server
             ->logs()
             ->remote(true, $site)
             ->latest()
