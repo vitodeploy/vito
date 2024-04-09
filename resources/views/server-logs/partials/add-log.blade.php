@@ -6,10 +6,7 @@
         </x-slot>
         <x-slot name="aside">
             <div class="flex flex-col items-end lg:flex-row lg:items-center">
-                <x-primary-button
-                    class="cursor-pointer"
-                    x-on:click="$dispatch('open-modal', 'add-log')"
-                >
+                <x-primary-button class="cursor-pointer" x-on:click="$dispatch('open-modal', 'add-log')">
                     {{ __("Add Remote Log") }}
                 </x-primary-button>
 
@@ -36,12 +33,12 @@
                                 class="mt-1 w-full"
                             />
                             <datalist id="sites">
-                                @foreach($server->sites as $site)
-                                    <option>{{ str($site->path)->append('/') }}</option>
+                                @foreach ($server->sites as $site)
+                                    <option>{{ str($site->path)->append("/") }}</option>
                                 @endforeach
                             </datalist>
                             @error("path")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
 

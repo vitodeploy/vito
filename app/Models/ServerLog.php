@@ -27,7 +27,7 @@ class ServerLog extends AbstractModel
         'type',
         'name',
         'disk',
-        'is_remote'
+        'is_remote',
     ];
 
     protected $casts = [
@@ -71,7 +71,7 @@ class ServerLog extends AbstractModel
         $query->where('is_remote', $active);
 
         if ($site) {
-            $query->where('name', 'like', $site->path . '%');
+            $query->where('name', 'like', $site->path.'%');
         }
     }
 

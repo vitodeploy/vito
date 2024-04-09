@@ -17,7 +17,7 @@ class ServerLogController extends Controller
     {
         return view('server-logs.index', [
             'server' => $server,
-            'pageTitle' => __('Vito Logs')
+            'pageTitle' => __('Vito Logs'),
         ]);
     }
 
@@ -37,13 +37,13 @@ class ServerLogController extends Controller
         return view('server-logs.remote-logs', [
             'server' => $server,
             'remote' => true,
-            'pageTitle' => __('Remote Logs')
+            'pageTitle' => __('Remote Logs'),
         ]);
     }
 
     public function store(Server $server, Request $request): \App\Helpers\HtmxResponse
     {
-        app(CreateServerLog::class)->create($server,  $request->input());
+        app(CreateServerLog::class)->create($server, $request->input());
 
         Toast::success('Log added successfully.');
 

@@ -3,7 +3,6 @@
 namespace App\Actions\Server\Logs;
 
 use App\Models\ServerLog;
-use Illuminate\Validation\ValidationException;
 
 class DeleteServerLog
 {

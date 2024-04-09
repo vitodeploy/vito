@@ -53,7 +53,7 @@ class LogsTest extends TestCase
 
         $this->assertDatabaseHas('server_logs', [
             'is_remote' => true,
-            'path' => 'test-path'
+            'path' => 'test-path',
         ]);
     }
 }

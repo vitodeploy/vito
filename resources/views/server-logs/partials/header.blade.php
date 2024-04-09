@@ -9,16 +9,16 @@
             :href="route('servers.logs', ['server' => $server])"
             :active="request()->routeIs('servers.logs')"
         >
-            <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5"/>
-            <span class="ml-2 hidden xl:block">{{ __('Vito Logs') }}</span>
+            <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5" />
+            <span class="ml-2 hidden xl:block">{{ __("Vito Logs") }}</span>
         </x-tab-item>
         <x-tab-item
             class="mr-1"
             :href="route('servers.logs.remote', ['server' => $server])"
             :active="request()->routeIs('servers.logs.remote')"
         >
-            <x-heroicon name="o-document-magnifying-glass" class="h-5 w-5"/>
-            <span class="ml-2 hidden xl:block">{{ __('Remote Logs') }}</span>
+            <x-heroicon name="o-document-magnifying-glass" class="h-5 w-5" />
+            <span class="ml-2 hidden xl:block">{{ __("Remote Logs") }}</span>
         </x-tab-item>
     </div>
     <div class="md:hidden">
@@ -29,7 +29,7 @@
                 >
                     Select
                     <button type="button" class="ml-2">
-                        <x-heroicon name="o-chevron-down" class="h-4 w-4 text-gray-400"/>
+                        <x-heroicon name="o-chevron-down" class="h-4 w-4 text-gray-400" />
                     </button>
                 </div>
             </x-slot>
@@ -38,15 +38,15 @@
                     :href="route('servers.logs', ['server' => $server])"
                     :active="request()->routeIs('servers.logs')"
                 >
-                    <x-heroicon name="o-cog-6-tooth" class="h-5 w-5"/>
-                    <span class="ml-2">{{ __('Vito Logs') }}</span>
+                    <x-heroicon name="o-cog-6-tooth" class="h-5 w-5" />
+                    <span class="ml-2">{{ __("Vito Logs") }}</span>
                 </x-dropdown-link>
                 <x-dropdown-link
                     :href="route('servers.logs.remote', ['server' => $server])"
                     :active="request()->routeIs('servers.logs.remote')"
                 >
-                    <x-heroicon name="o-document-magnifying-glass" class="h-5 w-5"/>
-                    <span class="ml-2">{{ __('Remote Logs') }}</span>
+                    <x-heroicon name="o-document-magnifying-glass" class="h-5 w-5" />
+                    <span class="ml-2">{{ __("Remote Logs") }}</span>
                 </x-dropdown-link>
             </x-slot>
         </x-dropdown>

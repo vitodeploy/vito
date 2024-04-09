@@ -13,7 +13,7 @@ class SiteLogController extends Controller
         return view('site-logs.index', [
             'server' => $server,
             'site' => $site,
-            'pageTitle' => __('Vito Logs')
+            'pageTitle' => __('Vito Logs'),
         ]);
     }
 

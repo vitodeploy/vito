@@ -108,10 +108,10 @@ class OS
         );
     }
 
-    public function readFile(string $path, int|null $lastLines = null): string
+    public function readFile(string $path, ?int $lastLines = null): string
     {
         $params = [
-            'path' => $path
+            'path' => $path,
         ];
 
         if ($lastLines !== null) {

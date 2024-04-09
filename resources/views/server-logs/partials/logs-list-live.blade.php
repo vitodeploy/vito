@@ -1,5 +1,5 @@
 @php
-    if (isset($site) && !isset($remote)) {
+    if (isset($site) && ! isset($remote)) {
         $logs = $site
             ->logs()
             ->remote(false)
@@ -27,11 +27,11 @@
 @endphp
 
 <div x-data="{
-    deleteAction: ''
+    deleteAction: '',
 }">
     <x-card-header>
         <x-slot name="title">
-            {{ $pageTitle ?? 'Logs' }}
+            {{ $pageTitle ?? "Logs" }}
         </x-slot>
     </x-card-header>
     <x-live id="live-server-logs">
@@ -54,8 +54,8 @@
                             {{ $log->name }}
                         @else
                             {{ $log->type }}
-                            @if (data_get($log, 'type') === 'remote')
-                                <span class="text-gray-400 text-sm">
+                            @if (data_get($log, "type") === "remote")
+                                <span class="text-sm text-gray-400">
                                     {{ $log->name }}
                                 </span>
                             @endif
@@ -74,7 +74,7 @@
                             <x-heroicon name="o-eye" class="h-5 w-5" />
                         </x-icon-button>
 
-                        @if(isset($remote) && !isset($site))
+                        @if (isset($remote) && ! isset($site))
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.logs.remote.destroy', ['server' => $server, 'serverLog' => $log->id]) }}'; $dispatch('open-modal', 'delete-remote-log')"
                             >
