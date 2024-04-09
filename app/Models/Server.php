@@ -195,6 +195,11 @@ class Server extends AbstractModel
         return $this->queues()->whereNull('site_id');
     }
 
+    public function metrics(): HasMany
+    {
+        return $this->hasMany(Metric::class);
+    }
+
     public function sshKeys(): BelongsToMany
     {
         return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
@@ -332,6 +337,15 @@ class Server extends AbstractModel
         }
 
         return $this->service('memory_database', $version);
+    }
+
+    public function monitoring(?string $version = null): ?Service
+    {
+        if (! $version) {
+            return $this->defaultService('monitoring');
+        }
+
+        return $this->service('monitoring', $version);
     }
 
     public function sshKey(): array

@@ -7,6 +7,7 @@ use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
 use App\Http\Controllers\FirewallController;
+use App\Http\Controllers\MetricController;
 use App\Http\Controllers\PHPController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\ServerController;
@@ -128,6 +129,9 @@ Route::middleware('select-current-project')->group(function () {
         Route::get('/{server}/services/{service}/disable', [ServiceController::class, 'disable'])->name('servers.services.disable');
         Route::post('/{server}/services/install', [ServiceController::class, 'install'])->name('servers.services.install');
         Route::delete('/{server}/services/{service}/uninstall', [ServiceController::class, 'uninstall'])->name('servers.services.uninstall');
+
+        // metrics
+        Route::get('/{server}/metrics', [MetricController::class, 'index'])->name('servers.metrics');
 
         // console
         Route::get('/{server}/console', [ConsoleController::class, 'index'])->name('servers.console');

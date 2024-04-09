@@ -114,6 +114,20 @@
                     </x-sidebar-link>
                 </li>
 
+                @if ($server->monitoring())
+                    <li>
+                        <x-sidebar-link
+                            :href="route('servers.metrics', ['server' => $server])"
+                            :active="request()->routeIs('servers.metrics')"
+                        >
+                            <x-heroicon name="o-chart-bar" class="h-6 w-6" />
+                            <span class="ml-2">
+                                {{ __("Metrics") }}
+                            </span>
+                        </x-sidebar-link>
+                    </li>
+                @endif
+
                 <li>
                     <x-sidebar-link
                         :href="route('servers.console', ['server' => $server])"
