@@ -9,7 +9,7 @@ use App\SSH\Services\Database\Database as DatabaseHandler;
 use App\SSH\Services\Firewall\Firewall as FirewallHandler;
 use App\SSH\Services\PHP\PHP as PHPHandler;
 use App\SSH\Services\ProcessManager\ProcessManager as ProcessManagerHandler;
-use App\SSH\Services\Redis\Redis as RedisHandler;
+use App\SSH\Services\Redis\Postfix as RedisHandler;
 use App\SSH\Services\Webserver\Webserver as WebserverHandler;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

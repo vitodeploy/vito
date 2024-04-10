@@ -15,6 +15,7 @@ use App\SiteTypes\Laravel;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
+use App\SiteTypes\Roundcube;
 use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Github;
@@ -25,7 +26,7 @@ use App\SSH\Services\Database\Postgresql;
 use App\SSH\Services\Firewall\Ufw;
 use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\ProcessManager\Supervisor;
-use App\SSH\Services\Redis\Redis;
+use App\SSH\Services\Redis\Postfix;
 use App\SSH\Services\Webserver\Nginx;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
@@ -173,7 +174,7 @@ return [
         'mysql' => Mysql::class,
         'mariadb' => Mariadb::class,
         'postgresql' => Postgresql::class,
-        'redis' => Redis::class,
+        'redis' => Postfix::class,
         'php' => PHP::class,
         'ufw' => Ufw::class,
         'supervisor' => Supervisor::class,
@@ -325,6 +326,7 @@ return [
         \App\Enums\SiteType::LARAVEL,
         \App\Enums\SiteType::WORDPRESS,
         \App\Enums\SiteType::PHPMYADMIN,
+        \App\Enums\SiteType::ROUNDCUBE,
     ],
     'site_types_class' => [
         \App\Enums\SiteType::PHP => PHPSite::class,
@@ -332,6 +334,7 @@ return [
         \App\Enums\SiteType::LARAVEL => Laravel::class,
         \App\Enums\SiteType::WORDPRESS => Wordpress::class,
         \App\Enums\SiteType::PHPMYADMIN => PHPMyAdmin::class,
+        \App\Enums\SiteType::ROUNDCUBE => Roundcube::class,
     ],
 
     /*
@@ -355,6 +358,7 @@ return [
         'imagick',
         'exif',
         'gmagick',
+        'pdo',
         'gmp',
         'intl',
         'sqlite3',

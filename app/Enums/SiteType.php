@@ -13,4 +13,6 @@ final class SiteType
     const WORDPRESS = 'wordpress';
 
     const PHPMYADMIN = 'phpmyadmin';
+
+    const ROUNDCUBE = 'roundcube';
 }
