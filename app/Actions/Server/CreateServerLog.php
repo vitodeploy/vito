@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Server\Logs;
+namespace App\Actions\Server;
 
 use App\Models\Server;
 use Illuminate\Support\Facades\Validator;

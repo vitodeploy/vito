@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Server\Logs\CreateServerLog;
+use App\Actions\Server\CreateServerLog;
 use App\Facades\Toast;
 use App\Models\Server;
 use App\Models\ServerLog;
