@@ -18,7 +18,7 @@ class GetMetrics
         }
 
         $defaultInput = [
-            'period' => '1h',
+            'period' => '10m',
         ];
 
         $input = array_merge($defaultInput, $input);
@@ -45,13 +45,13 @@ class GetMetrics
             ->select(
                 [
                     DB::raw('created_at as date'),
-                    DB::raw('AVG(load) as load'),
-                    DB::raw('AVG(memory_total) as memory_total'),
-                    DB::raw('AVG(memory_used) as memory_used'),
-                    DB::raw('AVG(memory_free) as memory_free'),
-                    DB::raw('AVG(disk_total) as disk_total'),
-                    DB::raw('AVG(disk_used) as disk_used'),
-                    DB::raw('AVG(disk_free) as disk_free'),
+                    DB::raw('load as load'),
+                    DB::raw('memory_total as memory_total'),
+                    DB::raw('memory_used as memory_used'),
+                    DB::raw('memory_free as memory_free'),
+                    DB::raw('disk_total as disk_total'),
+                    DB::raw('disk_used as disk_used'),
+                    DB::raw('disk_free as disk_free'),
                     DB::raw('datetime(created_at, \'-1 '.$interval.'\') as date_interval'),
                 ],
             )
@@ -122,6 +122,8 @@ class GetMetrics
             'period' => [
                 'required',
                 Rule::in([
+                    '10m',
+                    '30m',
                     '1h',
                     '12h',
                     '1d',

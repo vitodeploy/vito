@@ -1,38 +1,39 @@
-<x-simple-card>
-    <div class="flex justify-between">
-        <div>Resource Usage</div>
+@props([
+    "id",
+    "type",
+    "title",
+    "color",
+    "sets",
+    "categories",
+    "toolbar" => false,
+])
+<x-simple-card {{ $attributes }}>
+    <div class="relative">
+        <div class="absolute left-4 top-4">{{ $title }}</div>
     </div>
-    <div id="load-chart"></div>
+    <div id="{{ $id }}" class="pt-4"></div>
     <script>
         window.addEventListener('load', function () {
             let options = {
                 series: [
-                    {
-                        name: 'CPU Load',
-                        data: @json($data["metrics"]->pluck("load")->toArray()),
-                        color: '#ff9900'
-                    },
-                    {
-                        name: 'Memory Usage',
-                        data: @json($data["metrics"]->pluck("memory_used")->toArray()),
-                        color: '#3366cc'
-                    },
-                    {
-                        name: 'Disk Usage',
-                        data: @json($data["metrics"]->pluck("disk_used")->toArray()),
-                        color: '#109618'
-                    }
+                    @foreach ($sets as $set)
+                        {
+                            name: '{{ $set["name"] }}',
+                            data: @json($set["data"]),
+                            color: '{{ $set["color"] }}'
+                        },
+                    @endforeach
                 ],
                 chart: {
-                    height: '400px',
+                    height: '100%',
                     maxWidth: '100%',
-                    type: 'line',
+                    type: '{{ $type }}',
                     fontFamily: 'Inter, sans-serif',
                     dropShadow: {
                         enabled: false
                     },
                     toolbar: {
-                        show: false
+                        show: @js($toolbar)
                     }
                 },
                 tooltip: {
@@ -44,15 +45,17 @@
                 legend: {
                     show: true
                 },
-                // fill: {
-                //     type: 'gradient',
-                //     gradient: {
-                //         opacityFrom: 0.55,
-                //         opacityTo: 0,
-                //         shade: '#1C64F2',
-                //         gradientToColors: ['#1C64F2']
-                //     }
-                // },
+                @if ($type == 'area')
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        opacityFrom: 0.55,
+                        opacityTo: 0,
+                        shade: '{{ $color }}',
+                        gradientToColors: ['{{ $color }}']
+                    }
+                },
+                @endif
                 dataLabels: {
                     enabled: false
                 },
@@ -70,7 +73,7 @@
                     }
                 },
                 xaxis: {
-                    categories: @json($data["metrics"]->pluck("date")->toArray()),
+                    categories: @json($categories),
                     labels: {
                         show: false
                     },
@@ -91,8 +94,8 @@
                 }
             };
 
-            if (document.getElementById('load-chart') && typeof ApexCharts !== 'undefined') {
-                const chart = new ApexCharts(document.getElementById('load-chart'), options);
+            if (document.getElementById('{{ $id }}') && typeof ApexCharts !== 'undefined') {
+                const chart = new ApexCharts(document.getElementById('{{ $id }}'), options);
                 chart.render();
             }
         });

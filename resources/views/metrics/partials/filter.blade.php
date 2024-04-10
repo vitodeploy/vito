@@ -1,4 +1,4 @@
-<div class="flex items-center" x-data="{ period: '{{ request()->query("period") ?? "1h" }}' }">
+<div class="flex items-center" x-data="{ period: '{{ request()->query("period") ?? "10m" }}' }">
     <x-dropdown align="left" class="ml-2">
         <x-slot name="trigger">
             <div>
@@ -13,6 +13,12 @@
             </div>
         </x-slot>
         <x-slot name="content">
+            <x-dropdown-link :href="route('servers.metrics', ['server' => $server, 'period' => '10m'])">
+                10 Minutes
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('servers.metrics', ['server' => $server, 'period' => '30m'])">
+                30 Minutes
+            </x-dropdown-link>
             <x-dropdown-link :href="route('servers.metrics', ['server' => $server, 'period' => '1h'])">
                 1 Hour
             </x-dropdown-link>
@@ -24,9 +30,6 @@
             </x-dropdown-link>
             <x-dropdown-link :href="route('servers.metrics', ['server' => $server, 'period' => '7d'])">
                 7 Days
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('servers.metrics', ['server' => $server, 'period' => '30d'])">
-                30 Days
             </x-dropdown-link>
             <x-dropdown-link x-on:click="period = 'custom'" class="cursor-pointer">Custom</x-dropdown-link>
         </x-slot>
@@ -68,6 +71,6 @@
                 <x-input-error class="absolute left-0 top-10 ml-1 mt-1" :messages="$errors->get('to')" />
             </div>
         </div>
-        <x-primary-button class="ml-2">{{ __("Filter") }}</x-primary-button>
+        <x-primary-button class="ml-2 h-[42px]">{{ __("Filter") }}</x-primary-button>
     </form>
 </div>

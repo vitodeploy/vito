@@ -17,7 +17,7 @@ class MetricsSeeder extends Seeder
     {
         $monitoring = Service::query()
             ->where('type', 'monitoring')
-            ->first();
+            ->firstOrFail();
 
         $range = CarbonPeriod::create(Carbon::now()->subHour(), '1 minute', Carbon::now());
         foreach ($range as $date) {
