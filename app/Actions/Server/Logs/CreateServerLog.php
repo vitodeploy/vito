@@ -30,6 +30,6 @@ class CreateServerLog
     {
         Validator::make($input, [
             'path' => 'required',
-        ]);
+        ])->validate();
     }
 }

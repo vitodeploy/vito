@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Server\Logs\CreateServerLog;
-use App\Actions\Server\Logs\DeleteServerLog;
 use App\Facades\Toast;
 use App\Models\Server;
 use App\Models\ServerLog;
@@ -52,7 +51,7 @@ class ServerLogController extends Controller
 
     public function destroy(Server $server, ServerLog $serverLog): RedirectResponse
     {
-        app(DeleteServerLog::class)->delete($serverLog);
+        $serverLog->delete();
 
         Toast::success('Remote log deleted successfully.');
 

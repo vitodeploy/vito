@@ -1,26 +1,18 @@
 @php
     if (isset($site) && ! isset($remote)) {
-        $logs = $site
-            ->logs()
-            ->remote(false)
+        $logs = \App\Models\ServerLog::getRemote($site->logs(), false)
             ->latest()
             ->paginate(10);
     } elseif (isset($site) && isset($remote)) {
-        $logs = $server
-            ->logs()
-            ->remote(true, $site)
+        $logs = \App\Models\ServerLog::getRemote($site->logs(), true, $site)
             ->latest()
             ->paginate(10);
     } elseif (isset($remote)) {
-        $logs = $server
-            ->logs()
-            ->remote()
+        $logs = \App\Models\ServerLog::getRemote($server->logs())
             ->latest()
             ->paginate(10);
     } else {
-        $logs = $server
-            ->logs()
-            ->remote(false)
+        $logs = \App\Models\ServerLog::getRemote($server->logs(), false)
             ->latest()
             ->paginate(10);
     }

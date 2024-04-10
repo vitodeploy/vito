@@ -66,13 +66,15 @@ class ServerLog extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
-    public function scopeRemote($query, bool $active = true, $site = null)
+    public static function getRemote($query, bool $active = true, ?Site $site = null)
     {
         $query->where('is_remote', $active);
 
         if ($site) {
             $query->where('name', 'like', $site->path.'%');
         }
+
+        return $query;
     }
 
     public function write($buf): void
@@ -89,7 +91,7 @@ class ServerLog extends AbstractModel
 
     public function getContent(): ?string
     {
-        if (data_get($this, 'is_remote', false) === true) {
+        if (! $this->is_remote) {
             return $this->server->os()->readFile($this->name, 150);
         }
 

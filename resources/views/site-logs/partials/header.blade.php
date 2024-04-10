@@ -5,21 +5,22 @@
     </x-slot>
     <x-slot name="aside">
         <x-secondary-button
-            icon="o-square-3-stack-3d"
             :active="!isset($remote)"
             x-data=""
-            class="mr-1"
+            class="flex items-center gap-1 mr-1"
             :href="route('servers.sites.logs', ['server' => $site->server, 'site' => $site])"
         >
+            <x-heroicon name="o-square-3-stack-3d" class="h-5 w-5"/>
             {{ __("Vito Logs") }}
         </x-secondary-button>
 
         <x-secondary-button
-            icon="o-document-magnifying-glass"
             :active="isset($remote)"
             x-data=""
+            class="flex items-center gap-1 mr-1"
             :href="route('servers.sites.logs.remote', ['server' => $site->server, 'site' => $site])"
         >
+            <x-heroicon name="o-document-magnifying-glass" class="h-5 w-5"/>
             {{ __("Remote Logs") }}
         </x-secondary-button>
     </x-slot>

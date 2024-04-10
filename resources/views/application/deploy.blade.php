@@ -6,9 +6,9 @@
             hx-swap="outerHTML"
             hx-select="#deploy"
         >
-            <x-secondary-button icon="o-play-circle" iconAlign="right" :active="true" hx-disable>
-                {{ __("Deploy") }}
-            </x-secondary-button>
+            <x-primary-button class="flex items-center justify-between gap-1" :active="true" hx-disable>
+                {{ __("Deploy") }} <x-heroicon name="o-play-circle" class="h-5 w-5" />
+            </x-primary-button>
         </form>
     @endif
 </div>
