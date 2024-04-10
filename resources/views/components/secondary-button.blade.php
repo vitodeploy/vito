@@ -4,8 +4,6 @@
     "span",
     "disabled",
     "active" => false,
-    "icon" => null,
-    "iconAlign" => "left",
 ])
 
 @php
