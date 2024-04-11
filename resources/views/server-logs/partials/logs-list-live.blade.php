@@ -3,10 +3,6 @@
         $logs = \App\Models\ServerLog::getRemote($site->logs(), false)
             ->latest()
             ->paginate(10);
-    } elseif (isset($site) && isset($remote)) {
-        $logs = \App\Models\ServerLog::getRemote($site->logs(), true, $site)
-            ->latest()
-            ->paginate(10);
     } elseif (isset($remote)) {
         $logs = \App\Models\ServerLog::getRemote($server->logs())
             ->latest()

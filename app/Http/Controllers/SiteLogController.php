@@ -16,14 +16,4 @@ class SiteLogController extends Controller
             'pageTitle' => __('Vito Logs'),
         ]);
     }
-
-    public function remote(Server $server, Site $site): View
-    {
-        return view('site-logs.remote', [
-            'server' => $server,
-            'site' => $site,
-            'pageTitle' => __('Remote Logs'),
-            'remote' => true,
-        ]);
-    }
 }

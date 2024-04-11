@@ -69,7 +69,6 @@ Route::middleware('select-current-project')->group(function () {
 
             // site logs
             Route::get('/{site}/logs', [SiteLogController::class, 'index'])->name('servers.sites.logs');
-            Route::get('/{site}/logs/remote', [SiteLogController::class, 'remote'])->name('servers.sites.logs.remote');
         });
 
         Route::prefix('/{server}/databases')->group(function () {
