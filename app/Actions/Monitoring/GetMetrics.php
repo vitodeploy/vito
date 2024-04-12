@@ -4,6 +4,7 @@ namespace App\Actions\Monitoring;
 
 use App\Models\Server;
 use Carbon\Carbon;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -37,7 +38,7 @@ class GetMetrics
         Server $server,
         Carbon $fromDate,
         Carbon $toDate,
-        ?string $interval = null
+        ?Expression $interval = null
     ): array {
         $metrics = DB::table('metrics')
             ->where('server_id', $server->id)
@@ -45,14 +46,14 @@ class GetMetrics
             ->select(
                 [
                     DB::raw('created_at as date'),
-                    DB::raw('load as load'),
-                    DB::raw('memory_total as memory_total'),
-                    DB::raw('memory_used as memory_used'),
-                    DB::raw('memory_free as memory_free'),
-                    DB::raw('disk_total as disk_total'),
-                    DB::raw('disk_used as disk_used'),
-                    DB::raw('disk_free as disk_free'),
-                    DB::raw('datetime(created_at, \'-1 '.$interval.'\') as date_interval'),
+                    DB::raw('AVG(load) as load'),
+                    DB::raw('AVG(memory_total) as memory_total'),
+                    DB::raw('AVG(memory_used) as memory_used'),
+                    DB::raw('AVG(memory_free) as memory_free'),
+                    DB::raw('AVG(disk_total) as disk_total'),
+                    DB::raw('AVG(disk_used) as disk_used'),
+                    DB::raw('AVG(disk_free) as disk_free'),
+                    $interval,
                 ],
             )
             ->groupByRaw('date_interval')
@@ -87,7 +88,7 @@ class GetMetrics
         return Carbon::now();
     }
 
-    private function getInterval(array $input): string
+    private function getInterval(array $input): Expression
     {
         if ($input['period'] === 'custom') {
             $from = new Carbon($input['from']);
@@ -102,18 +103,16 @@ class GetMetrics
         }
 
         if ($periodInHours <= 1) {
-            return 'minute';
+            return DB::raw("strftime('%Y-%m-%d %H:%M:00', created_at) as date_interval");
         }
 
         if ($periodInHours <= 24) {
-            return 'hour';
+            return DB::raw("strftime('%Y-%m-%d %H:00:00', created_at) as date_interval");
         }
 
         if ($periodInHours > 24) {
-            return 'day';
+            return DB::raw("strftime('%Y-%m-%d 00:00:00', created_at) as date_interval");
         }
-
-        return 'minute';
     }
 
     private function validate(array $input): void

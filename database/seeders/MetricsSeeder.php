@@ -15,11 +15,13 @@ class MetricsSeeder extends Seeder
      */
     public function run(): void
     {
+        Metric::query()->delete();
+
         $monitoring = Service::query()
             ->where('type', 'monitoring')
             ->firstOrFail();
 
-        $range = CarbonPeriod::create(Carbon::now()->subHour(), '1 minute', Carbon::now());
+        $range = CarbonPeriod::create(Carbon::now()->subDays(7), '1 minute', Carbon::now());
         foreach ($range as $date) {
             Metric::factory()->create([
                 'server_id' => $monitoring->server_id,

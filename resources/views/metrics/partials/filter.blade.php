@@ -1,7 +1,7 @@
 <div class="flex items-center" x-data="{ period: '{{ request()->query("period") ?? "10m" }}' }">
     <x-dropdown align="left" class="ml-2">
         <x-slot name="trigger">
-            <div>
+            <div data-tooltip="Change Period">
                 <div
                     class="flex w-full items-center rounded-md border border-gray-300 bg-white p-2.5 pr-10 text-sm capitalize text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                 >
