@@ -367,4 +367,11 @@ return [
         \App\Enums\SslType::LETSENCRYPT,
         \App\Enums\SslType::CUSTOM,
     ],
+
+    'metrics_data_retention' => [
+        7,
+        14,
+        30,
+        90,
+    ],
 ];

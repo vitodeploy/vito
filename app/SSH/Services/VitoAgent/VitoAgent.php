@@ -35,6 +35,7 @@ class VitoAgent extends AbstractService
         return [
             'url' => '',
             'secret' => Uuid::uuid4()->toString(),
+            'data_retention' => 10,
         ];
     }
 
@@ -43,6 +44,7 @@ class VitoAgent extends AbstractService
         return [
             'url' => $this->service->type_data['url'] ?? null,
             'secret' => $this->service->type_data['secret'] ?? null,
+            'data_retention' => $this->service->type_data['data_retention'] ?? 10,
         ];
     }
 

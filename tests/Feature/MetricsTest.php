@@ -35,6 +35,29 @@ class MetricsTest extends TestCase
         $this->actingAs($this->user);
 
         $this->get(route('servers.metrics', ['server' => $this->server]))
-            ->assertRedirect(route('servers.services', ['server' => $this->server]));
+            ->assertNotFound();
+    }
+
+    public function test_update_data_retention(): void
+    {
+        $this->actingAs($this->user);
+
+        Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'vito-agent',
+            'type' => 'monitoring',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->post(route('servers.metrics.settings', ['server' => $this->server]), [
+            'data_retention' => 30,
+        ])->assertSessionHas('toast.type', 'success');
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => $this->server->id,
+            'type' => 'monitoring',
+            'type_data->data_retention' => 30,
+        ]);
     }
 }

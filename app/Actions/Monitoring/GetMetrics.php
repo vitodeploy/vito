@@ -46,13 +46,13 @@ class GetMetrics
             ->select(
                 [
                     DB::raw('created_at as date'),
-                    DB::raw('AVG(load) as load'),
-                    DB::raw('AVG(memory_total) as memory_total'),
-                    DB::raw('AVG(memory_used) as memory_used'),
-                    DB::raw('AVG(memory_free) as memory_free'),
-                    DB::raw('AVG(disk_total) as disk_total'),
-                    DB::raw('AVG(disk_used) as disk_used'),
-                    DB::raw('AVG(disk_free) as disk_free'),
+                    DB::raw('ROUND(AVG(load), 2) as load'),
+                    DB::raw('ROUND(AVG(memory_total), 2) as memory_total'),
+                    DB::raw('ROUND(AVG(memory_used), 2) as memory_used'),
+                    DB::raw('ROUND(AVG(memory_free), 2) as memory_free'),
+                    DB::raw('ROUND(AVG(disk_total), 2) as disk_total'),
+                    DB::raw('ROUND(AVG(disk_used), 2) as disk_used'),
+                    DB::raw('ROUND(AVG(disk_free), 2) as disk_free'),
                     $interval,
                 ],
             )

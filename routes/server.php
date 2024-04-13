@@ -132,6 +132,7 @@ Route::middleware('select-current-project')->group(function () {
 
         // metrics
         Route::get('/{server}/metrics', [MetricController::class, 'index'])->name('servers.metrics');
+        Route::post('/{server}/metrics/settings', [MetricController::class, 'settings'])->name('servers.metrics.settings');
 
         // console
         Route::get('/{server}/console', [ConsoleController::class, 'index'])->name('servers.console');

@@ -6,6 +6,7 @@
     "sets",
     "categories",
     "toolbar" => false,
+    "formatter" => null,
 ])
 <x-simple-card {{ $attributes }}>
     <div class="relative">
@@ -87,9 +88,9 @@
                 yaxis: {
                     show: false,
                     labels: {
-                        formatter: function (value) {
-                            return parseInt(value);
-                        }
+                        @if ($formatter)
+                        formatter: {{ $formatter }},
+                        @endif
                     }
                 }
             };
