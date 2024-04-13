@@ -2,6 +2,7 @@
 
 namespace App\SSH\Services\VitoAgent;
 
+use App\Models\Metric;
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
 use Illuminate\Support\Facades\Http;
@@ -79,5 +80,6 @@ class VitoAgent extends AbstractService
             $this->getScript('uninstall.sh'),
             'uninstall-vito-agent'
         );
+        Metric::where('server_id', $this->service->server_id)->delete();
     }
 }

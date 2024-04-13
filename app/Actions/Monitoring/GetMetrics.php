@@ -127,7 +127,6 @@ class GetMetrics
                     '12h',
                     '1d',
                     '7d',
-                    '30d',
                     'custom',
                 ]),
             ],
