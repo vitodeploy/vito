@@ -148,4 +148,12 @@ class OS
             'unzip '.$path
         );
     }
+
+    public function cleanup(): void
+    {
+        $this->server->ssh()->exec(
+            $this->getScript('cleanup.sh'),
+            'cleanup'
+        );
+    }
 }

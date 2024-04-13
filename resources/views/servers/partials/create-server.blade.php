@@ -239,6 +239,7 @@
                 <div x-show="['{{ ServerType::REGULAR }}'].includes(type)">
                     <x-input-label for="php" value="PHP" />
                     <x-select-input id="php" name="php" class="mt-1 w-full">
+                        <option value="none" @if('none' == old('php', '8.2')) selected @endif>none</option>
                         @foreach (config("core.php_versions") as $p)
                             <option value="{{ $p }}" @if($p == old('php', '8.2')) selected @endif>
                                 {{ $p }}

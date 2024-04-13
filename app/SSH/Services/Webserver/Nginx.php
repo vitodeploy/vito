@@ -6,6 +6,7 @@ use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\SSH\HasScripts;
+use Closure;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -23,6 +24,31 @@ class Nginx extends AbstractWebserver
             ]),
             'install-nginx'
         );
+        $this->service->server->os()->cleanup();
+    }
+
+    public function deletionRules(): array
+    {
+        return [
+            'service' => [
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $hasSite = $this->service->server->sites()
+                        ->exists();
+                    if ($hasSite) {
+                        $fail('Cannot uninstall webserver while you have websites using it.');
+                    }
+                },
+            ],
+        ];
+    }
+
+    public function uninstall(): void
+    {
+        $this->service->server->ssh()->exec(
+            $this->getScript('nginx/uninstall-nginx.sh'),
+            'uninstall-nginx'
+        );
+        $this->service->server->os()->cleanup();
     }
 
     public function createVHost(Site $site): void

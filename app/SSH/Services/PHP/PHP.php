@@ -3,20 +3,43 @@
 namespace App\SSH\Services\PHP;
 
 use App\Exceptions\SSHCommandError;
-use App\Models\Service;
 use App\SSH\HasScripts;
-use App\SSH\Services\ServiceInterface;
+use App\SSH\Services\AbstractService;
+use Closure;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
-class PHP implements ServiceInterface
+class PHP extends AbstractService
 {
     use HasScripts;
 
-    protected Service $service;
-
-    public function __construct(Service $service)
+    public function creationRules(array $input): array
     {
-        $this->service = $service;
+        return [
+            'version' => [
+                'required',
+                Rule::in(config('core.php_versions')),
+                Rule::unique('services', 'version')
+                    ->where('type', 'php')
+                    ->where('server_id', $this->service->server_id),
+            ],
+        ];
+    }
+
+    public function deletionRules(): array
+    {
+        return [
+            'service' => [
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $hasSite = $this->service->server->sites()
+                        ->where('php_version', $this->service->version)
+                        ->exists();
+                    if ($hasSite) {
+                        $fail('Some sites are using this PHP version.');
+                    }
+                },
+            ],
+        ];
     }
 
     public function install(): void
@@ -29,6 +52,7 @@ class PHP implements ServiceInterface
             ]),
             'install-php-'.$this->service->version
         );
+        $this->service->server->os()->cleanup();
     }
 
     public function uninstall(): void
@@ -39,6 +63,7 @@ class PHP implements ServiceInterface
             ]),
             'uninstall-php-'.$this->service->version
         );
+        $this->service->server->os()->cleanup();
     }
 
     public function setDefaultCli(): void

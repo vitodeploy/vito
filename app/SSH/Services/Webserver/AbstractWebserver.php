@@ -2,12 +2,8 @@
 
 namespace App\SSH\Services\Webserver;
 
-use App\Models\Service;
-use App\SSH\Services\ServiceInterface;
+use App\SSH\Services\AbstractService;
 
-abstract class AbstractWebserver implements ServiceInterface, Webserver
+abstract class AbstractWebserver extends AbstractService implements Webserver
 {
-    public function __construct(protected Service $service)
-    {
-    }
 }
