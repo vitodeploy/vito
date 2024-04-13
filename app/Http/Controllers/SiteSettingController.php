@@ -26,7 +26,10 @@ class SiteSettingController extends Controller
 
     public function getVhost(Server $server, Site $site): RedirectResponse
     {
-        return back()->with('vhost', $server->webserver()->handler()->getVHost($site));
+        /** @var Webserver $handler */
+        $handler = $server->webserver()->handler();
+
+        return back()->with('vhost', $handler->getVHost($site));
     }
 
     public function updateVhost(Server $server, Site $site, Request $request): RedirectResponse
