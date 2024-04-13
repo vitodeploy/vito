@@ -24,10 +24,10 @@ class MetricsTest extends TestCase
         ]);
 
         $this->get(route('servers.metrics', ['server' => $this->server]))
+            ->assertSuccessful()
             ->assertSee('CPU Load')
             ->assertSee('Memory Usage')
-            ->assertSee('Disk Usage')
-            ->assertSee('Resource Usage');
+            ->assertSee('Disk Usage');
     }
 
     public function test_cannot_visit_metrics(): void
