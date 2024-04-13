@@ -1,4 +1,8 @@
+ARG RELEASE=1
+
 FROM ubuntu:22.04
+
+ENV RELEASE_ARG=$RELEASE
 
 WORKDIR /var/www/html
 
@@ -29,7 +33,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # app
 RUN rm -rf /var/www/html
 RUN git clone -b 1.x https://github.com/vitodeploy/vito.git /var/www/html
-RUN git checkout $(git tag -l --merged 1.x --sort=-v:refname | head -n 1)
+RUN [ "$RELEASE_ARG" -eq 1 ] && git checkout $(git tag -l --merged 1.x --sort=-v:refname | head -n 1)
 RUN composer install --no-dev --prefer-dist
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
