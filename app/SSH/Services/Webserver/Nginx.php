@@ -70,7 +70,7 @@ class Nginx extends AbstractWebserver
             $this->getScript('nginx/update-vhost.sh', [
                 'domain' => $site->domain,
                 'path' => $site->path,
-                'vhost' => $this->generateVhost($site, $noSSL),
+                'vhost' => $vhost ?? $this->generateVhost($site, $noSSL),
             ]),
             'update-vhost',
             $site->id
