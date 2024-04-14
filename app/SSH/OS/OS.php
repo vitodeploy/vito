@@ -108,18 +108,22 @@ class OS
         );
     }
 
-    public function readFile(string $path, ?int $lastLines = null): string
+    public function readFile(string $path): string
     {
-        $params = [
-            'path' => $path,
-        ];
-
-        if ($lastLines !== null) {
-            $params['lines'] = $lastLines;
-        }
-
         return $this->server->ssh()->exec(
-            $this->getScript('read-file.sh', $params)
+            $this->getScript('read-file.sh', [
+                'path' => $path,
+            ])
+        );
+    }
+
+    public function tail(string $path, int $lines): string
+    {
+        return $this->server->ssh()->exec(
+            $this->getScript('tail.sh', [
+                'path' => $path,
+                'lines' => $lines,
+            ])
         );
     }
 

@@ -93,7 +93,7 @@ class ServerLog extends AbstractModel
     public function getContent(): ?string
     {
         if ($this->is_remote) {
-            return $this->server->os()->readFile($this->name, 150);
+            return $this->server->os()->tail($this->name, 150);
         }
 
         if (Storage::disk($this->disk)->exists($this->name)) {

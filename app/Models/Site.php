@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\SourceControlIsNotConnected;
 use App\SiteTypes\SiteType;
+use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -185,7 +186,9 @@ class Site extends AbstractModel
 
     public function changePHPVersion($version): void
     {
-        $this->server->webserver()->handler()->changePHPVersion($this, $version);
+        /** @var Webserver $handler */
+        $handler = $this->server->webserver()->handler();
+        $handler->changePHPVersion($this, $version);
         $this->php_version = $version;
         $this->save();
     }
