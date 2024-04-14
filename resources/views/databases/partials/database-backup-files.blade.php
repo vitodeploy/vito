@@ -56,7 +56,7 @@
                                 -
                             @endif
                         </x-td>
-                        <x-td class="flex w-full justify-end">
+                        <x-td class="text-right">
                             @if (in_array($file->status, [\App\Enums\BackupFileStatus::CREATED, \App\Enums\BackupFileStatus::RESTORED, \App\Enums\BackupFileStatus::RESTORE_FAILED]))
                                 <x-icon-button
                                     x-on:click="restoreAction = '{{ route('servers.databases.backups.files.restore', ['server' => $server, 'backup' => $backup, 'backupFile' => $file]) }}'; $dispatch('open-modal', 'restore-backup')"

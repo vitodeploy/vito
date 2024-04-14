@@ -15,5 +15,5 @@
         @endif
     </x-live>
 
-    @include("server-logs.partials.logs-list")
+    @include("server-logs.partials.logs-list-live", ["pageTitle" => "Logs"])
 </div>

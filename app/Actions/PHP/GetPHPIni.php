@@ -3,6 +3,7 @@
 namespace App\Actions\PHP;
 
 use App\Models\Server;
+use App\SSH\Services\PHP\PHP;
 use Illuminate\Validation\ValidationException;
 
 class GetPHPIni
@@ -14,7 +15,10 @@ class GetPHPIni
         $php = $server->php($input['version']);
 
         try {
-            return $php->handler()->getPHPIni();
+            /** @var PHP $handler */
+            $handler = $php->handler();
+
+            return $handler->getPHPIni();
         } catch (\Throwable $e) {
             throw ValidationException::withMessages(
                 ['ini' => $e->getMessage()]

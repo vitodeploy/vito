@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
  * @property string $disk
  * @property Server $server
  * @property ?Site $site
+ * @property bool $is_remote
  */
 class ServerLog extends AbstractModel
 {
@@ -27,11 +28,13 @@ class ServerLog extends AbstractModel
         'type',
         'name',
         'disk',
+        'is_remote',
     ];
 
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'is_remote' => 'boolean',
     ];
 
     public static function boot(): void
@@ -64,6 +67,17 @@ class ServerLog extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
+    public static function getRemote($query, bool $active = true, ?Site $site = null)
+    {
+        $query->where('is_remote', $active);
+
+        if ($site) {
+            $query->where('name', 'like', $site->path.'%');
+        }
+
+        return $query;
+    }
+
     public function write($buf): void
     {
         if (Str::contains($buf, 'VITO_SSH_ERROR')) {
@@ -78,6 +92,10 @@ class ServerLog extends AbstractModel
 
     public function getContent(): ?string
     {
+        if ($this->is_remote) {
+            return $this->server->os()->tail($this->name, 150);
+        }
+
         if (Storage::disk($this->disk)->exists($this->name)) {
             return Storage::disk($this->disk)->get($this->name);
         }

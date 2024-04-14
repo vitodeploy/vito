@@ -282,6 +282,6 @@ class SitesTest extends TestCase
             'site' => $this->site,
         ]))
             ->assertSuccessful()
-            ->assertSee('Logs');
+            ->assertSee('Vito Logs');
     }
 }

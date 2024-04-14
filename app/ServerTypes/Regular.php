@@ -13,7 +13,7 @@ class Regular extends AbstractType
             ],
             'php' => [
                 'required',
-                'in:'.implode(',', config('core.php_versions')),
+                'in:none,'.implode(',', config('core.php_versions')),
             ],
             'database' => [
                 'required',

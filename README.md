@@ -36,7 +36,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/1.x/scripts/in
 - [Install via Docker](https://vitodeploy.com/introduction/installation.html#install-via-docker)
 - [Feedbacks](https://vitodeploy.featurebase.app)
 - [Roadmap](https://vitodeploy.featurebase.app/roadmap)
-- [Video Demo](https://youtu.be/rLRHIyEfON8)
+- [Video Demo](https://youtu.be/AbmUOBDOc28)
 - [Discord](https://discord.gg/uZeeHZZnm5)
 - [Contribution](/CONTRIBUTING.md)
 - [Security](/SECURITY.md)

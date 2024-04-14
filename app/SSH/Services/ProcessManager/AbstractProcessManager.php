@@ -2,15 +2,37 @@
 
 namespace App\SSH\Services\ProcessManager;
 
-use App\Models\Service;
-use App\SSH\Services\ServiceInterface;
+use App\SSH\Services\AbstractService;
+use Closure;
 
-abstract class AbstractProcessManager implements ProcessManager, ServiceInterface
+abstract class AbstractProcessManager extends AbstractService implements ProcessManager
 {
-    protected Service $service;
-
-    public function __construct(Service $service)
+    public function creationRules(array $input): array
     {
-        $this->service = $service;
+        return [
+            'type' => [
+                'required',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $processManagerExists = $this->service->server->processManager();
+                    if ($processManagerExists) {
+                        $fail('You already have a process manager service on the server.');
+                    }
+                },
+            ],
+        ];
+    }
+
+    public function deletionRules(): array
+    {
+        return [
+            'service' => [
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $hasQueue = $this->service->server->queues()->exists();
+                    if ($hasQueue) {
+                        $fail('You have queue(s) on the server.');
+                    }
+                },
+            ],
+        ];
     }
 }

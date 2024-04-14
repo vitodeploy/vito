@@ -1,5 +1,8 @@
 <x-server-layout :server="$server">
-    <x-slot name="pageTitle">{{ $server->name }} Logs</x-slot>
+    @if (isset($pageTitle))
+        <x-slot name="pageTitle">{{ $pageTitle }}</x-slot>
+    @endif
 
-    @include("server-logs.partials.logs-list")
+    @include("server-logs.partials.header")
+    @include("server-logs.partials.logs-list-live")
 </x-server-layout>

@@ -4,13 +4,7 @@ namespace App\Models;
 
 use App\Actions\Service\Manage;
 use App\Exceptions\ServiceInstallationFailed;
-use App\SSH\Services\AddOnServices\AbstractAddOnService;
-use App\SSH\Services\Database\Database as DatabaseHandler;
-use App\SSH\Services\Firewall\Firewall as FirewallHandler;
-use App\SSH\Services\PHP\PHP as PHPHandler;
-use App\SSH\Services\ProcessManager\ProcessManager as ProcessManagerHandler;
-use App\SSH\Services\Redis\Postfix as RedisHandler;
-use App\SSH\Services\Webserver\Webserver as WebserverHandler;
+use App\SSH\Services\ServiceInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -65,8 +59,8 @@ class Service extends AbstractModel
         return $this->belongsTo(Server::class);
     }
 
-    public function handler(
-    ): PHPHandler|WebserverHandler|DatabaseHandler|FirewallHandler|ProcessManagerHandler|RedisHandler|AbstractAddOnService {
+    public function handler(): ServiceInterface
+    {
         $handler = config('core.service_handlers')[$this->name];
 
         return new $handler($this);

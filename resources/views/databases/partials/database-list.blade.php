@@ -33,7 +33,7 @@
                                 @include("databases.partials.database-status", ["status" => $database->status])
                             </div>
                         </x-td>
-                        <x-td class="flex w-full justify-end">
+                        <x-td class="text-right">
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('servers.databases.destroy', ['server' => $server, 'database' => $database]) }}'; $dispatch('open-modal', 'delete-database')"
                             >

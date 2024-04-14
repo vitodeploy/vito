@@ -4,6 +4,7 @@ namespace App\Actions\PHP;
 
 use App\Models\Server;
 use App\Models\Service;
+use App\SSH\Services\PHP\PHP;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -23,7 +24,9 @@ class InstallPHPExtension
         $service->save();
 
         dispatch(function () use ($service, $input) {
-            $service->handler()->installExtension($input['extension']);
+            /** @var PHP $handler */
+            $handler = $service->handler();
+            $handler->installExtension($input['extension']);
         })->catch(function () use ($service, $input) {
             $service->refresh();
             $typeData = $service->type_data;

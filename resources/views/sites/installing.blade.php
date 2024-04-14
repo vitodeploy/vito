@@ -11,5 +11,5 @@
         @endif
     </x-live>
 
-    @include("server-logs.partials.logs-list", ["server" => $site->server, "site" => $site])
+    @include("server-logs.partials.logs-list-live", ["server" => $site->server, "site" => $site])
 </x-site-layout>

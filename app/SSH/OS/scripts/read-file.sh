@@ -1,1 +1,1 @@
-[ -f __path__ ] && cat __path__
+[ -f __path__ ] && sudo cat __path__

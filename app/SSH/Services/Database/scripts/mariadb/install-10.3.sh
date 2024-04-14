@@ -9,4 +9,6 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get update
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get install mariadb-server mariadb-backup -y
 
+sudo systemctl unmask mysql.service
+
 sudo service mysql start

@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Models\Server;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ServicesTest extends TestCase
@@ -22,6 +25,7 @@ class ServicesTest extends TestCase
             ->assertSee('php')
             ->assertSee('supervisor')
             ->assertSee('redis')
+            ->assertSee('vito-agent')
             ->assertSee('ufw');
     }
 
@@ -235,6 +239,45 @@ class ServicesTest extends TestCase
         $this->assertEquals(ServiceStatus::FAILED, $service->status);
     }
 
+    /**
+     * @dataProvider installData
+     */
+    public function test_install_service(string $name, string $type, string $version): void
+    {
+        Http::fake([
+            'https://api.github.com/repos/vito/vito-agent/releases/latest' => Http::response([
+                'tag_name' => '0.1.0',
+            ]),
+        ]);
+        SSH::fake('Active: active');
+
+        $this->actingAs($this->user);
+
+        $server = Server::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $keys = $server->sshKey();
+        if (! File::exists($keys['public_key_path']) || ! File::exists($keys['private_key_path'])) {
+            $server->provider()->generateKeyPair();
+        }
+        $this->post(route('servers.services.install', [
+            'server' => $server,
+        ]), [
+            'name' => $name,
+            'type' => $type,
+            'version' => $version,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => $server->id,
+            'name' => $name,
+            'type' => $type,
+            'status' => ServiceStatus::READY,
+        ]);
+    }
+
     public static function data(): array
     {
         return [
@@ -245,6 +288,52 @@ class ServicesTest extends TestCase
             ['ufw'],
             ['php'],
             ['mysql'],
+        ];
+    }
+
+    public static function installData(): array
+    {
+        return [
+            [
+                'nginx',
+                'webserver',
+                'latest',
+            ],
+            [
+                'php',
+                'php',
+                '7.4',
+            ],
+            [
+                'supervisor',
+                'process_manager',
+                'latest',
+            ],
+            [
+                'redis',
+                'memory_database',
+                'latest',
+            ],
+            [
+                'mysql',
+                'database',
+                '8.0',
+            ],
+            [
+                'mariadb',
+                'database',
+                '10.4',
+            ],
+            [
+                'postgresql',
+                'database',
+                '16',
+            ],
+            [
+                'vito-agent',
+                'monitoring',
+                'latest',
+            ],
         ];
     }
 }

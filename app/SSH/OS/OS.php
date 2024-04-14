@@ -117,6 +117,16 @@ class OS
         );
     }
 
+    public function tail(string $path, int $lines): string
+    {
+        return $this->server->ssh()->exec(
+            $this->getScript('tail.sh', [
+                'path' => $path,
+                'lines' => $lines,
+            ])
+        );
+    }
+
     public function runScript(string $path, string $script, ?int $siteId = null): ServerLog
     {
         $ssh = $this->server->ssh();
@@ -146,6 +156,14 @@ class OS
     {
         return $this->server->ssh()->exec(
             'unzip '.$path
+        );
+    }
+
+    public function cleanup(): void
+    {
+        $this->server->ssh()->exec(
+            $this->getScript('cleanup.sh'),
+            'cleanup'
         );
     }
 }
