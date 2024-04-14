@@ -28,7 +28,7 @@
                 </x-tab-item>
             @endif
 
-            @if ($site->hasFeature(SiteFeature::QUEUES))
+            @if ($site->hasFeature(SiteFeature::QUEUES) && $site->server->processManager()?->status == \App\Enums\ServiceStatus::READY)
                 <x-tab-item
                     class="mr-1"
                     :href="route('servers.sites.queues', ['server' => $site->server, 'site' => $site])"

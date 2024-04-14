@@ -7,6 +7,7 @@ use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Server;
 use App\Models\Site;
+use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,10 @@ class SiteSettingController extends Controller
 
     public function getVhost(Server $server, Site $site): RedirectResponse
     {
-        return back()->with('vhost', $server->webserver()->handler()->getVHost($site));
+        /** @var Webserver $handler */
+        $handler = $server->webserver()->handler();
+
+        return back()->with('vhost', $handler->getVHost($site));
     }
 
     public function updateVhost(Server $server, Site $site, Request $request): RedirectResponse
@@ -35,7 +39,9 @@ class SiteSettingController extends Controller
         ]);
 
         try {
-            $server->webserver()->handler()->updateVHost($site, false, $request->input('vhost'));
+            /** @var Webserver $handler */
+            $handler = $server->webserver()->handler();
+            $handler->updateVHost($site, false, $request->input('vhost'));
 
             Toast::success('VHost updated successfully!');
         } catch (Throwable $e) {

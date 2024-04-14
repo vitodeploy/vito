@@ -8,14 +8,15 @@ use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class Create
+class Install
 {
-    public function create(Server $server, array $input): Service
+    public function install(Server $server, array $input): Service
     {
         $this->validate($server, $input);
 
         $service = new Service([
-            'name' => $input['type'],
+            'server_id' => $server->id,
+            'name' => $input['name'],
             'type' => $input['type'],
             'version' => $input['version'],
             'status' => ServiceStatus::INSTALLING,
@@ -27,15 +28,13 @@ class Create
 
         $service->save();
 
-        $service->handler()->create();
-
         dispatch(function () use ($service) {
             $service->handler()->install();
             $service->status = ServiceStatus::READY;
             $service->save();
         })->catch(function () use ($service) {
-            $service->handler()->delete();
-            $service->delete();
+            $service->status = ServiceStatus::INSTALLATION_FAILED;
+            $service->save();
         })->onConnection('ssh');
 
         return $service;
@@ -46,8 +45,11 @@ class Create
         Validator::make($input, [
             'type' => [
                 'required',
-                Rule::in(config('core.add_on_services')),
-                Rule::unique('services', 'type')->where('server_id', $server->id),
+                Rule::in(config('core.service_types')),
+            ],
+            'name' => [
+                'required',
+                Rule::in(array_keys(config('core.service_types'))),
             ],
             'version' => 'required',
         ])->validate();

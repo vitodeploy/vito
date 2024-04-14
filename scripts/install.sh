@@ -192,7 +192,6 @@ touch /home/${V_USERNAME}/.logs/workers/worker.log
 echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
 supervisorctl reread
 supervisorctl update
-supervisorctl start worker:*
 
 # setup cronjobs
 echo "* * * * * cd /home/${V_USERNAME}/vito && php artisan schedule:run >> /dev/null 2>&1" | sudo -u ${V_USERNAME} crontab -
@@ -202,6 +201,9 @@ chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
 # cache
 php artisan config:cache
+
+# start worker
+supervisorctl start worker:*
 
 # print info
 echo "🎉 Congratulations!"
