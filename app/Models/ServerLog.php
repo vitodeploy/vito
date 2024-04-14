@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
  * @property string $disk
  * @property Server $server
  * @property ?Site $site
+ * @property bool $is_remote
  */
 class ServerLog extends AbstractModel
 {

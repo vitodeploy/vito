@@ -1,5 +1,5 @@
 @php
-    $class = "mx-auto px-4 sm:px-6 lg:px-8";
+    $class = "mx-auto";
     if (! str($attributes->get("class"))->contains("max-w-")) {
         $class .= " max-w-7xl";
     }
