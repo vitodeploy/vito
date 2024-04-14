@@ -49,7 +49,7 @@
                         <x-td>
                             <x-datetime :value="$log->created_at" />
                         </x-td>
-                        <x-td class="flex w-full justify-end">
+                        <x-td class="text-right">
                             <x-icon-button
                                 x-on:click="$dispatch('open-modal', 'show-log'); document.getElementById('log-content').firstChild.innerHTML = '';"
                                 hx-get="{{ route('servers.logs.show', ['server' => $server, 'serverLog' => $log->id]) }}"

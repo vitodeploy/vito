@@ -32,7 +32,7 @@
                                 @include("databases.partials.backup-status", ["status" => $backup->status])
                             </div>
                         </x-td>
-                        <x-td class="flex w-full justify-end">
+                        <x-td class="text-right">
                             <x-icon-button
                                 :href="route('servers.databases.backups', ['server' => $server, 'backup' => $backup])"
                             >

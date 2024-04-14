@@ -42,7 +42,7 @@
                                 @include("databases.partials.database-user-status", ["status" => $databaseUser->status])
                             </div>
                         </x-td>
-                        <x-td class="flex w-full justify-end">
+                        <x-td class="text-right">
                             <x-icon-button
                                 x-on:click="$dispatch('open-modal', 'database-user-password'); document.getElementById('txt-database-user-password').value = 'Loading...';"
                                 hx-post="{{ route('servers.databases.users.password', ['server' => $server, 'databaseUser' => $databaseUser]) }}"
