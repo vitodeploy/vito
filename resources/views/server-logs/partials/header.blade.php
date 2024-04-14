@@ -1,5 +1,5 @@
 @if (isset($pageTitle))
-    <x-slot name="pageTitle">{{ $pageTitle }} - {{ $server->name }}</x-slot>
+    <x-slot name="pageTitle">{{ $pageTitle }}</x-slot>
 @endif
 
 <x-slot name="header">

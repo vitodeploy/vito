@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
  * @property string $disk
  * @property Server $server
  * @property ?Site $site
+ * @property bool $is_remote
  */
 class ServerLog extends AbstractModel
 {
@@ -64,17 +65,6 @@ class ServerLog extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
-    }
-
-    public static function getRemote($query, bool $active = true, ?Site $site = null)
-    {
-        $query->where('is_remote', $active);
-
-        if ($site) {
-            $query->where('name', 'like', $site->path.'%');
-        }
-
-        return $query;
     }
 
     public function write($buf): void

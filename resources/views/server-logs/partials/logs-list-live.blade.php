@@ -1,14 +1,13 @@
 @php
-    if (isset($site) && ! isset($remote)) {
-        $logs = \App\Models\ServerLog::getRemote($site->logs(), false)
-            ->latest()
-            ->paginate(10);
-    } elseif (isset($remote)) {
-        $logs = \App\Models\ServerLog::getRemote($server->logs())
+    if (isset($site)) {
+        $logs = $site
+            ->logs()
             ->latest()
             ->paginate(10);
     } else {
-        $logs = \App\Models\ServerLog::getRemote($server->logs(), false)
+        $logs = $server
+            ->logs()
+            ->where("is_remote", isset($remote) ? 1 : 0)
             ->latest()
             ->paginate(10);
     }
@@ -42,7 +41,7 @@
                             {{ $log->name }}
                         @else
                             {{ $log->type }}
-                            @if (data_get($log, "type") === "remote")
+                            @if ($log->is_remote)
                                 <span class="text-sm text-gray-400">
                                     {{ $log->name }}
                                 </span>
