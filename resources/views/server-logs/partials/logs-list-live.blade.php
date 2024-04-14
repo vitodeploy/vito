@@ -23,54 +23,53 @@
     </x-card-header>
     <x-live id="live-server-logs">
         <x-table>
-            <x-tr>
-                <x-th>
-                    @isset($remote)
-                        {{ __("Path") }}
-                    @else
-                        {{ __("Event") }}
-                    @endisset
-                </x-th>
-                <x-th>{{ __("Date") }}</x-th>
-                <x-th></x-th>
-            </x-tr>
-            @foreach ($logs as $log)
+            <x-thead>
                 <x-tr>
-                    <x-td class="flex flex-col">
+                    <x-th>
                         @isset($remote)
-                            {{ $log->name }}
+                            {{ __("Path") }}
                         @else
-                            {{ $log->type }}
-                            @if ($log->is_remote)
-                                <span class="text-sm text-gray-400">
-                                    {{ $log->name }}
-                                </span>
-                            @endif
-                        @endif
-                    </x-td>
-                    <x-td>
-                        <x-datetime :value="$log->created_at" />
-                    </x-td>
-                    <x-td>
-                        <x-icon-button
-                            x-on:click="$dispatch('open-modal', 'show-log'); document.getElementById('log-content').firstChild.innerHTML = '';"
-                            hx-get="{{ route('servers.logs.show', ['server' => $server, 'serverLog' => $log->id]) }}"
-                            hx-target="#log-content"
-                            hx-select="#log-content"
-                        >
-                            <x-heroicon name="o-eye" class="h-5 w-5" />
-                        </x-icon-button>
-
-                        @if (isset($remote) && ! isset($site))
-                            <x-icon-button
-                                x-on:click="deleteAction = '{{ route('servers.logs.remote.destroy', ['server' => $server, 'serverLog' => $log->id]) }}'; $dispatch('open-modal', 'delete-remote-log')"
-                            >
-                                <x-heroicon name="o-trash" class="h-5 w-5" />
-                            </x-icon-button>
-                        @endif
-                    </x-td>
+                            {{ __("Event") }}
+                        @endisset
+                    </x-th>
+                    <x-th>{{ __("Date") }}</x-th>
+                    <x-th></x-th>
                 </x-tr>
-            @endforeach
+            </x-thead>
+            <x-tbody>
+                @foreach ($logs as $log)
+                    <x-tr>
+                        <x-td>
+                            @isset($remote)
+                                {{ $log->name }}
+                            @else
+                                {{ $log->type }}
+                            @endif
+                        </x-td>
+                        <x-td>
+                            <x-datetime :value="$log->created_at" />
+                        </x-td>
+                        <x-td class="flex w-full justify-end">
+                            <x-icon-button
+                                x-on:click="$dispatch('open-modal', 'show-log'); document.getElementById('log-content').firstChild.innerHTML = '';"
+                                hx-get="{{ route('servers.logs.show', ['server' => $server, 'serverLog' => $log->id]) }}"
+                                hx-target="#log-content"
+                                hx-select="#log-content"
+                            >
+                                <x-heroicon name="o-eye" class="h-5 w-5" />
+                            </x-icon-button>
+
+                            @if ($log->is_remote)
+                                <x-icon-button
+                                    x-on:click="deleteAction = '{{ route('servers.logs.remote.destroy', ['server' => $server, 'serverLog' => $log->id]) }}'; $dispatch('open-modal', 'delete-remote-log')"
+                                >
+                                    <x-heroicon name="o-trash" class="h-5 w-5" />
+                                </x-icon-button>
+                            @endif
+                        </x-td>
+                    </x-tr>
+                @endforeach
+            </x-tbody>
         </x-table>
         @if ($logs instanceof \Illuminate\Pagination\LengthAwarePaginator)
             <div class="mt-5">
