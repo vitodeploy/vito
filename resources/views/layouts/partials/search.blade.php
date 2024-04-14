@@ -132,7 +132,10 @@
     }"
     @open-search.window="openSearch"
 >
-    <div x-show="open" class="absolute bottom-0 left-0 right-0 top-0 flex max-w-full items-start justify-center">
+    <div
+        x-show="open"
+        class="fixed bottom-0 left-0 right-0 top-0 z-[2000] flex max-w-full items-start justify-center"
+    >
         <div
             x-on:click="close"
             class="fixed inset-0 bottom-0 left-0 right-0 top-0 z-[1000] items-center bg-gray-500 opacity-75 dark:bg-gray-900"
