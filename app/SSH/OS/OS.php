@@ -108,12 +108,18 @@ class OS
         );
     }
 
-    public function readFile(string $path): string
+    public function readFile(string $path, ?int $lastLines = null): string
     {
+        $params = [
+            'path' => $path,
+        ];
+
+        if ($lastLines !== null) {
+            $params['lines'] = $lastLines;
+        }
+
         return $this->server->ssh()->exec(
-            $this->getScript('read-file.sh', [
-                'path' => $path,
-            ])
+            $this->getScript('read-file.sh', $params)
         );
     }
 

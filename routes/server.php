@@ -150,6 +150,9 @@ Route::middleware('select-current-project')->group(function () {
     // logs
     Route::prefix('/{server}/logs')->group(function () {
         Route::get('/', [ServerLogController::class, 'index'])->name('servers.logs');
+        Route::get('/remote', [ServerLogController::class, 'remote'])->name('servers.logs.remote');
+        Route::post('/remote', [ServerLogController::class, 'store'])->name('servers.logs.remote.store');
+        Route::delete('/remote/{serverLog}', [ServerLogController::class, 'destroy'])->name('servers.logs.remote.destroy');
         Route::get('/{serverLog}', [ServerLogController::class, 'show'])->name('servers.logs.show');
     });
 });
