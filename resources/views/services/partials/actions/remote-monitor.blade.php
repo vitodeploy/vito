@@ -1,0 +1,6 @@
+@include("services.partials.unit-actions.restart", ["disabled" => true])
+@include("services.partials.unit-actions.start", ["disabled" => true])
+@include("services.partials.unit-actions.stop", ["disabled" => true])
+@include("services.partials.unit-actions.enable", ["disabled" => true])
+@include("services.partials.unit-actions.disable", ["disabled" => true])
+@include("services.partials.unit-actions.uninstall")

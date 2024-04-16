@@ -142,6 +142,7 @@ return [
         'ufw' => 'firewall',
         'supervisor' => 'process_manager',
         'vito-agent' => 'monitoring',
+        'remote-monitor' => 'monitoring',
     ],
     'service_handlers' => [
         'nginx' => \App\SSH\Services\Webserver\Nginx::class,
@@ -152,7 +153,8 @@ return [
         'php' => \App\SSH\Services\PHP\PHP::class,
         'ufw' => \App\SSH\Services\Firewall\Ufw::class,
         'supervisor' => \App\SSH\Services\ProcessManager\Supervisor::class,
-        'vito-agent' => \App\SSH\Services\VitoAgent\VitoAgent::class,
+        'vito-agent' => \App\SSH\Services\Monitoring\VitoAgent\VitoAgent::class,
+        'remote-monitor' => \App\SSH\Services\Monitoring\RemoteMonitor\RemoteMonitor::class,
     ],
     'service_units' => [
         'nginx' => [
