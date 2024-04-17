@@ -166,4 +166,21 @@ class OS
             'cleanup'
         );
     }
+
+    public function resourceInfo(): array
+    {
+        $info = $this->server->ssh()->exec(
+            $this->getScript('resource-info.sh'),
+        );
+
+        return [
+            'load' => str($info)->after('load:')->before(PHP_EOL)->toString(),
+            'memory_total' => str($info)->after('memory_total:')->before(PHP_EOL)->toString(),
+            'memory_used' => str($info)->after('memory_used:')->before(PHP_EOL)->toString(),
+            'memory_free' => str($info)->after('memory_free:')->before(PHP_EOL)->toString(),
+            'disk_total' => str($info)->after('disk_total:')->before(PHP_EOL)->toString(),
+            'disk_used' => str($info)->after('disk_used:')->before(PHP_EOL)->toString(),
+            'disk_free' => str($info)->after('disk_free:')->before(PHP_EOL)->toString(),
+        ];
+    }
 }

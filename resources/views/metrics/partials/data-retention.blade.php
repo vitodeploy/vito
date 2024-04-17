@@ -22,7 +22,12 @@
                 <x-input-label for="data_retention" value="Delete metrics older than" />
                 <x-select-input id="data_retention" name="data_retention" class="mt-1 w-full">
                     @foreach (config("core.metrics_data_retention") as $item)
-                        <option value="{{ $item }}">{{ $item }} Days</option>
+                        <option
+                            value="{{ $item }}"
+                            @if($server->monitoring()->handler()->data()['data_retention'] == $item) selected @endif
+                        >
+                            {{ $item }} Days
+                        </option>
                     @endforeach
                 </x-select-input>
                 @error("data_retention")

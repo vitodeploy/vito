@@ -1,6 +1,6 @@
 <?php
 
-namespace App\SSH\Services\VitoAgent;
+namespace App\SSH\Services\Monitoring\VitoAgent;
 
 use App\Models\Metric;
 use App\SSH\HasScripts;
