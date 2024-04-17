@@ -37,6 +37,8 @@ php /var/www/html/artisan view:cache
 
 php /var/www/html/artisan user:create "$NAME" "$EMAIL" "$PASSWORD"
 
+cron
+
 echo "Vito is running! 🚀"
 
 /usr/bin/supervisord
