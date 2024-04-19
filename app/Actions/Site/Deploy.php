@@ -6,6 +6,7 @@ use App\Enums\DeploymentStatus;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Deployment;
+use App\Models\ServerLog;
 use App\Models\Site;
 
 class Deploy
@@ -37,6 +38,13 @@ class Deploy
         $deployment->save();
 
         dispatch(function () use ($site, $deployment) {
+            $log = new ServerLog([
+                'server_id' => $site->server->id,
+                'site_id' => $site->id,
+                'name' => $site->id.'-'.strtotime('now').'-deployment.log',
+                'type' => 'deployment',
+                'disk' => config('core.logs_disk'),
+            ]);
             $log = $site->server->os()->runScript($site->path, $site->deploymentScript->content, $site->id);
             $deployment->status = DeploymentStatus::FINISHED;
             $deployment->log_id = $log->id;
