@@ -5,6 +5,7 @@ namespace App\SSH\Services\Monitoring\VitoAgent;
 use App\Models\Metric;
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
+use Closure;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Ramsey\Uuid\Uuid;
@@ -21,7 +22,12 @@ class VitoAgent extends AbstractService
     {
         return [
             'type' => [
-                Rule::unique('services', 'type')->where('server_id', $this->service->server_id),
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $monitoringExists = $this->service->server->monitoring();
+                    if ($monitoringExists) {
+                        $fail('You already have a monitoring service on the server.');
+                    }
+                },
             ],
             'version' => [
                 'required',

@@ -19,6 +19,10 @@
                 {{ __("Install Vito Agent") }}
             </h2>
 
+            @error("type")
+                <x-input-error class="mt-2" :messages="$message" />
+            @enderror
+
             <div class="mt-6">
                 <x-alert-warning>
                     Vito Agent is only works if you are running your Vito instance on a cloud not local! Consider

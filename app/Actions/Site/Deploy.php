@@ -38,16 +38,14 @@ class Deploy
         $deployment->save();
 
         dispatch(function () use ($site, $deployment) {
-            $log = new ServerLog([
-                'server_id' => $site->server->id,
-                'site_id' => $site->id,
-                'name' => $site->id.'-'.strtotime('now').'-deployment.log',
-                'type' => 'deployment',
-                'disk' => config('core.logs_disk'),
-            ]);
-            $log = $site->server->os()->runScript($site->path, $site->deploymentScript->content, $site->id);
-            $deployment->status = DeploymentStatus::FINISHED;
+            /** @var ServerLog $log */
+            $log = ServerLog::make($site->server, 'deploy-'.strtotime('now'))
+                ->forSite($site);
+            $log->save();
             $deployment->log_id = $log->id;
+            $deployment->save();
+            $site->server->os()->runScript($site->path, $site->deploymentScript->content, $log);
+            $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();
         })->catch(function () use ($deployment) {
             $deployment->status = DeploymentStatus::FAILED;

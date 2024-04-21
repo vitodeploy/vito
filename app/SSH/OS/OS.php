@@ -127,16 +127,18 @@ class OS
         );
     }
 
-    public function runScript(string $path, string $script, ?int $siteId = null): ServerLog
+    public function runScript(string $path, string $script, ?ServerLog $serverLog): ServerLog
     {
         $ssh = $this->server->ssh();
+        if ($serverLog) {
+            $ssh->setLog($serverLog);
+        }
         $ssh->exec(
             $this->getScript('run-script.sh', [
                 'path' => $path,
                 'script' => $script,
             ]),
-            'run-script',
-            $siteId
+            'run-script'
         );
 
         return $ssh->log;
