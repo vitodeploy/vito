@@ -49,7 +49,7 @@ class ApplicationTest extends TestCase
 
     public function test_deploy(): void
     {
-        SSH::fake();
+        SSH::fake('fake output');
         Http::fake([
             'github.com/*' => Http::response([
                 'sha' => '123',

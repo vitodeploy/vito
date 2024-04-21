@@ -14,17 +14,17 @@ class HandleSSHErrors
     public function handle(Request $request, Closure $next)
     {
         $res = $next($request);
-        if ($res instanceof Response && $res->exception) {
-            if ($res->exception instanceof SSHConnectionError || $res->exception instanceof SSHCommandError) {
-                Toast::error($res->exception->getMessage());
+        // if ($res instanceof Response && $res->exception) {
+        //     if ($res->exception instanceof SSHConnectionError || $res->exception instanceof SSHCommandError) {
+        //         Toast::error($res->exception->getMessage());
 
-                if ($request->hasHeader('HX-Request')) {
-                    return htmx()->back();
-                }
+        //         if ($request->hasHeader('HX-Request')) {
+        //             return htmx()->back();
+        //         }
 
-                return back();
-            }
-        }
+        //         return back();
+        //     }
+        // }
 
         return $res;
     }

@@ -115,4 +115,27 @@ class ServerLog extends AbstractModel
         $log->save();
         $log->write($content);
     }
+
+    public static function make(Server $server, string $type): ServerLog
+    {
+        return new static([
+            'server_id' => $server->id,
+            'name' => $server->id.'-'.strtotime('now').'-'.$type.'.log',
+            'type' => $type,
+            'disk' => config('core.logs_disk'),
+        ]);
+    }
+
+    public function forSite(Site|int $site): ServerLog
+    {
+        if ($site instanceof Site) {
+            $site = $site->id;
+        }
+
+        if (is_int($site)) {
+            $this->site_id = $site;
+        }
+
+        return $this;
+    }
 }
