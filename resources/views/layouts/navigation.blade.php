@@ -29,9 +29,13 @@
                         </div>
                     </a>
                 </div>
-                <div class="ml-5 cursor-pointer" x-data="">
+                <div class="ml-5 flex cursor-pointer items-center" x-data="">
+                    <div class="mr-2">
+                        @include("layouts.partials.project-select")
+                    </div>
+
                     <div
-                        class="flex w-full items-center rounded-md border border-gray-200 bg-gray-100 px-4 py-2 text-sm text-gray-900 focus:ring-4 focus:ring-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-gray-600"
+                        class="flex h-10 w-full items-center rounded-md border border-gray-200 bg-gray-100 px-4 py-2 text-sm text-gray-900 focus:ring-4 focus:ring-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-gray-600"
                         @click="$dispatch('open-search')"
                     >
                         <x-heroicon name="o-magnifying-glass" class="h-4 w-4" />
@@ -47,7 +51,7 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
-                            class="flex rounded-full text-sm focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                            class="flex rounded-full p-1 text-sm focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
                         >
                             <x-heroicon name="o-cog-6-tooth" class="h-8 w-8 rounded-full" />
                         </button>

@@ -35,7 +35,10 @@
         <div class="flex items-center justify-end">
             <x-dropdown>
                 <x-slot name="trigger">
-                    <button type="button" class="flex items-center">
+                    <button
+                        type="button"
+                        class="flex items-center rounded-full p-1 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
+                    >
                         <x-heroicon name="o-moon" x-show="isDark()" class="h-7 w-7" />
                         <x-heroicon name="o-sun" x-show="!isDark()" class="h-7 w-7" />
                     </button>

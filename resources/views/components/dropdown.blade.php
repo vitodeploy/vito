@@ -1,4 +1,4 @@
-@props(["open" => false, "align" => "right", "width" => "48", "contentClasses" => "list-none divide-y divide-gray-100 rounded-md border border-gray-100 bg-white py-1 text-base shadow dark:divide-gray-600 dark:border-gray-600 dark:bg-gray-700"])
+@props(["open" => false, "align" => "right", "width" => "48", "contentClasses" => "list-none divide-y divide-gray-100 rounded-md border border-gray-200 bg-white py-1 text-base dark:divide-gray-600 dark:border-gray-600 dark:bg-gray-700"])
 
 @php
     switch ($align) {
@@ -37,11 +37,11 @@
         x-transition:leave="transition duration-75 ease-in"
         x-transition:leave-start="scale-100 transform opacity-100"
         x-transition:leave-end="scale-95 transform opacity-0"
-        class="{{ $width }} {{ $alignmentClasses }} absolute z-50 mt-2 rounded-md shadow-lg"
+        class="{{ $width }} {{ $alignmentClasses }} absolute z-50 mt-2 rounded-md"
         style="display: none"
         @click="open = false"
     >
-        <div class="{{ $contentClasses }} rounded-md ring-1 ring-black ring-opacity-5">
+        <div class="{{ $contentClasses }} rounded-md">
             {{ $content }}
         </div>
     </div>

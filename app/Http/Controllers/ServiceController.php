@@ -71,7 +71,7 @@ class ServiceController extends Controller
     {
         app(Install::class)->install($server, $request->input());
 
-        Toast::success('Service is being uninstalled!');
+        Toast::success('Service is being installed!');
 
         return htmx()->back();
     }

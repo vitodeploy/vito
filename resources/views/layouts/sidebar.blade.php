@@ -5,10 +5,6 @@
 >
     <div class="h-full overflow-y-auto bg-white px-3 pb-4 dark:bg-gray-800">
         <ul class="space-y-2 font-medium">
-            <li x-data="">
-                @include("layouts.partials.project-select")
-            </li>
-            <x-hr />
             <li>
                 @include("layouts.partials.server-select")
             </li>
