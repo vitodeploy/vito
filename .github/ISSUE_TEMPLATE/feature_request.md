@@ -9,4 +9,4 @@ assignees: ''
 
 To request a feature or suggest an idea please add it to the feedback boards
 
-https://features.vitodeploy.com/
+https://vitodeploy.featurebase.app/
