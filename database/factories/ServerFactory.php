@@ -7,7 +7,6 @@ use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
 use App\Enums\ServerType;
 use App\Models\Server;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ServerFactory extends Factory
@@ -16,11 +15,7 @@ class ServerFactory extends Factory
 
     public function definition(): array
     {
-        /** @var User $user */
-        $user = User::factory()->create();
-
         return [
-            'user_id' => $user->id,
             'name' => $this->faker->name(),
             'ssh_user' => 'vito',
             'ip' => $this->faker->ipv4(),

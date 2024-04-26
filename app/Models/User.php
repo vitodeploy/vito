@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -120,9 +121,9 @@ class User extends Authenticatable
         return $connectedSourceControls;
     }
 
-    public function projects(): HasMany
+    public function projects(): BelongsToMany
     {
-        return $this->hasMany(Project::class);
+        return $this->belongsToMany(Project::class, 'user_project')->withTimestamps();
     }
 
     public function currentProject(): HasOne
@@ -141,9 +142,10 @@ class User extends Authenticatable
 
         if (! $project) {
             $project = new Project();
-            $project->user_id = $this->id;
             $project->name = 'Default';
             $project->save();
+
+            $project->users()->attach($this->id);
         }
 
         $this->current_project_id = $project->id;

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\UserRole;
+use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Http\Controllers\Controller;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -44,6 +47,52 @@ class UserController extends Controller
 
     public function show(User $user): View
     {
-        return view('admin.users.show', compact('user'));
+        return view('admin.users.show', [
+            'user' => $user,
+            'projects' => Project::query()->get(),
+        ]);
+    }
+
+    public function update(User $user, Request $request): RedirectResponse
+    {
+        $this->validate($request, [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'timezone' => [
+                'required',
+                Rule::in(timezone_identifiers_list()),
+            ],
+            'role' => [
+                'required',
+                Rule::in([UserRole::ADMIN, UserRole::USER]),
+                function ($attribute, $value, $fail) use ($user, $request) {
+                    if ($user->is($request->user()) && $value !== $user->role) {
+                        $fail('You cannot change your own role');
+                    }
+                },
+            ],
+        ]);
+
+        $user->update($request->only('name', 'email', 'timezone', 'role'));
+
+        Toast::success('User updated successfully');
+
+        return back();
+    }
+
+    public function updateProjects(User $user, Request $request): RedirectResponse
+    {
+        $this->validate($request, [
+            'projects.*' => [
+                'required',
+                Rule::exists('projects', 'id'),
+            ],
+        ]);
+
+        $user->projects()->sync($request->projects);
+
+        Toast::success('Projects updated successfully');
+
+        return back();
     }
 }

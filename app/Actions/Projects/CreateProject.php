@@ -13,11 +13,12 @@ class CreateProject
         $this->validate($user, $input);
 
         $project = new Project([
-            'user_id' => $user->id,
             'name' => $input['name'],
         ]);
 
         $project->save();
+
+        $project->users()->attach($user->id);
 
         return $project;
     }

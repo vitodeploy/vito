@@ -27,7 +27,12 @@ class CreateUserCommandTest extends TestCase
         $user = User::query()->where('email', 'john@doe.com')->first();
 
         $this->assertDatabaseHas('projects', [
+            'name' => 'Default',
+        ]);
+
+        $this->assertDatabaseHas('user_project', [
             'user_id' => $user->id,
+            'project_id' => $user->refresh()->current_project_id,
         ]);
     }
 

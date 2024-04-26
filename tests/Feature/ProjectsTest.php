@@ -27,9 +27,9 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $project = Project::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+        $project = Project::factory()->create();
+
+        $this->user->projects()->attach($project);
 
         $this->get(route('projects'))
             ->assertSuccessful()
@@ -40,9 +40,9 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $project = Project::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+        $project = Project::factory()->create();
+
+        $this->user->projects()->attach($project);
 
         $this->delete(route('projects.delete', $project))
             ->assertSessionDoesntHaveErrors();
@@ -56,9 +56,9 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $project = Project::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+        $project = Project::factory()->create();
+
+        $this->user->projects()->attach($project);
 
         $this->post(route('projects.update', $project), [
             'name' => 'new-name',

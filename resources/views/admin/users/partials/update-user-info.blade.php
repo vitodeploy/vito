@@ -9,7 +9,7 @@
 
     <form
         id="update-user-info"
-        hx-put="{{ route("admin.users.update", ["user" => $user]) }}"
+        hx-post="{{ route("admin.users.update", ["user" => $user]) }}"
         hx-swap="outerHTML"
         hx-select="#update-user-info"
         hx-trigger="submit"
@@ -63,6 +63,27 @@
                 @endforeach
             </x-select-input>
             @error("timezone")
+                <x-input-error class="mt-2" :messages="$message" />
+            @enderror
+        </div>
+
+        <div>
+            <x-input-label for="role" value="Role" />
+            <x-select-input id="role" name="role" class="mt-1 w-full">
+                <option
+                    value="{{ \App\Enums\UserRole::USER }}"
+                    @if(old('role', $user->role) === \App\Enums\UserRole::USER) selected @endif
+                >
+                    User
+                </option>
+                <option
+                    value="{{ \App\Enums\UserRole::ADMIN }}"
+                    @if(old('role', $user->role) === \App\Enums\UserRole::ADMIN) selected @endif
+                >
+                    Admin
+                </option>
+            </x-select-input>
+            @error("role")
                 <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>

@@ -11,6 +11,6 @@ Route::middleware('is-admin')->prefix('admin')->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
     Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
     Route::get('/users/{user}', [UserController::class, 'show'])->name('admin.users.show');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
-    Route::patch('/users/{user}/projects', [UserController::class, 'updateProjects'])->name('admin.users.update-projects');
+    Route::post('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::post('/users/{user}/projects', [UserController::class, 'updateProjects'])->name('admin.users.update-projects');
 });

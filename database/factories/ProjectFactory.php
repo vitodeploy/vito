@@ -16,7 +16,6 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => $this->faker->randomNumber(),
             'name' => $this->faker->name(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

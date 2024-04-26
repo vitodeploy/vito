@@ -68,9 +68,11 @@
                             </p>
                         </div>
 
-                        <x-dropdown-link :href="route('admin.dashboard')">
-                            {{ __("Admin Area") }}
-                        </x-dropdown-link>
+                        @if (auth()->user()->isAdmin())
+                            <x-dropdown-link :href="route('admin.dashboard')">
+                                {{ __("Admin Area") }}
+                            </x-dropdown-link>
+                        @endif
 
                         <x-dropdown-link :href="route('profile')">
                             {{ __("Profile") }}
