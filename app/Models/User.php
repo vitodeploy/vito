@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -30,6 +31,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $current_project_id
  * @property Project $currentProject
  * @property Collection<Project> $projects
+ * @property string $role
  */
 class User extends Authenticatable
 {
@@ -43,6 +45,7 @@ class User extends Authenticatable
         'password',
         'timezone',
         'current_project_id',
+        'role',
     ];
 
     protected $hidden = [
@@ -147,5 +150,10 @@ class User extends Authenticatable
         $this->save();
 
         return $project;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::ADMIN;
     }
 }

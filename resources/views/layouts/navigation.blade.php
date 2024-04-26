@@ -29,19 +29,21 @@
                         </div>
                     </a>
                 </div>
-                <div class="ml-5 flex cursor-pointer items-center" x-data="">
-                    <div class="mr-2">
-                        @include("layouts.partials.project-select")
-                    </div>
+                @if (! request()->is("admin*"))
+                    <div class="ml-5 flex cursor-pointer items-center" x-data="">
+                        <div class="mr-2">
+                            @include("layouts.partials.project-select")
+                        </div>
 
-                    <div
-                        class="flex h-10 w-full items-center rounded-md border border-gray-200 bg-gray-100 px-4 py-2 text-sm text-gray-900 focus:ring-4 focus:ring-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-gray-600"
-                        @click="$dispatch('open-search')"
-                    >
-                        <x-heroicon name="o-magnifying-glass" class="h-4 w-4" />
-                        <span class="ml-2 hidden lg:block">Press / to Search</span>
+                        <div
+                            class="flex h-10 w-full items-center rounded-md border border-gray-200 bg-gray-100 px-4 py-2 text-sm text-gray-900 focus:ring-4 focus:ring-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-gray-600"
+                            @click="$dispatch('open-search')"
+                        >
+                            <x-heroicon name="o-magnifying-glass" class="h-4 w-4" />
+                            <span class="ml-2 hidden lg:block">Press / to Search</span>
+                        </div>
                     </div>
-                </div>
+                @endif
             </div>
             <div class="flex items-center px-3 py-3">
                 <div class="mr-3">
@@ -65,6 +67,10 @@
                                 {{ auth()->user()->email }}
                             </p>
                         </div>
+
+                        <x-dropdown-link :href="route('admin.dashboard')">
+                            {{ __("Admin Area") }}
+                        </x-dropdown-link>
 
                         <x-dropdown-link :href="route('profile')">
                             {{ __("Profile") }}
