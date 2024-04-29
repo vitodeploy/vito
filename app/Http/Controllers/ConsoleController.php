@@ -11,6 +11,8 @@ class ConsoleController extends Controller
 {
     public function index(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('console.index', [
             'server' => $server,
         ]);
@@ -18,6 +20,8 @@ class ConsoleController extends Controller
 
     public function run(Server $server, Request $request)
     {
+        $this->authorize('manage', $server);
+
         $this->validate($request, [
             'user' => [
                 'required',

@@ -143,7 +143,7 @@
                     >
                         <x-heroicon name="o-wrench-screwdriver" class="h-6 w-6" />
                         <span class="ml-2">
-                            {{ __("Settings") }}
+                            {{ __("Server Settings") }}
                         </span>
                     </x-sidebar-link>
                 </li>
@@ -168,45 +168,72 @@
                     <span class="ml-2">Profile</span>
                 </x-sidebar-link>
             </li>
-            <li>
-                <x-sidebar-link :href="route('projects')" :active="request()->routeIs('projects')">
-                    <x-heroicon name="o-inbox-stack" class="h-6 w-6" />
-                    <span class="ml-2">Projects</span>
-                </x-sidebar-link>
-            </li>
-            <li>
-                <x-sidebar-link :href="route('server-providers')" :active="request()->routeIs('server-providers')">
-                    <x-heroicon name="o-server-stack" class="h-6 w-6" />
-                    <span class="ml-2">Server Providers</span>
-                </x-sidebar-link>
-            </li>
-            <li>
-                <x-sidebar-link :href="route('source-controls')" :active="request()->routeIs('source-controls')">
-                    <x-heroicon name="o-code-bracket" class="h-6 w-6" />
-                    <span class="ml-2">Source Controls</span>
-                </x-sidebar-link>
-            </li>
-            <li>
-                <x-sidebar-link :href="route('storage-providers')" :active="request()->routeIs('storage-providers')">
-                    <x-heroicon name="o-circle-stack" class="h-6 w-6" />
-                    <span class="ml-2">Storage Providers</span>
-                </x-sidebar-link>
-            </li>
-            <li>
-                <x-sidebar-link
-                    :href="route('notification-channels')"
-                    :active="request()->routeIs('notification-channels')"
-                >
-                    <x-heroicon name="o-bell" class="h-6 w-6" />
-                    <span class="ml-2">Notification Channels</span>
-                </x-sidebar-link>
-            </li>
-            <li>
-                <x-sidebar-link :href="route('ssh-keys')" :active="request()->routeIs('ssh-keys')">
-                    <x-heroicon name="o-key" class="h-6 w-6" />
-                    <span class="ml-2">SSH Keys</span>
-                </x-sidebar-link>
-            </li>
+
+            @if (auth()->user()->isAdmin())
+                <li>
+                    <x-sidebar-link
+                        :href="route('settings.users.index')"
+                        :active="request()->routeIs('settings.users*')"
+                    >
+                        <x-heroicon name="o-user-group" class="h-6 w-6" />
+                        <span class="ml-2">Users</span>
+                    </x-sidebar-link>
+                </li>
+                <li>
+                    <x-sidebar-link
+                        :href="route('settings.projects')"
+                        :active="request()->routeIs('settings.projects')"
+                    >
+                        <x-heroicon name="o-inbox-stack" class="h-6 w-6" />
+                        <span class="ml-2">Projects</span>
+                    </x-sidebar-link>
+                </li>
+                <li>
+                    <x-sidebar-link
+                        :href="route('settings.server-providers')"
+                        :active="request()->routeIs('settings.server-providers')"
+                    >
+                        <x-heroicon name="o-server-stack" class="h-6 w-6" />
+                        <span class="ml-2">Server Providers</span>
+                    </x-sidebar-link>
+                </li>
+                <li>
+                    <x-sidebar-link
+                        :href="route('settings.source-controls')"
+                        :active="request()->routeIs('settings.source-controls')"
+                    >
+                        <x-heroicon name="o-code-bracket" class="h-6 w-6" />
+                        <span class="ml-2">Source Controls</span>
+                    </x-sidebar-link>
+                </li>
+                <li>
+                    <x-sidebar-link
+                        :href="route('settings.storage-providers')"
+                        :active="request()->routeIs('settings.storage-providers')"
+                    >
+                        <x-heroicon name="o-circle-stack" class="h-6 w-6" />
+                        <span class="ml-2">Storage Providers</span>
+                    </x-sidebar-link>
+                </li>
+                <li>
+                    <x-sidebar-link
+                        :href="route('settings.notification-channels')"
+                        :active="request()->routeIs('settings.notification-channels')"
+                    >
+                        <x-heroicon name="o-bell" class="h-6 w-6" />
+                        <span class="ml-2">Notification Channels</span>
+                    </x-sidebar-link>
+                </li>
+                <li>
+                    <x-sidebar-link
+                        :href="route('settings.ssh-keys')"
+                        :active="request()->routeIs('settings.ssh-keys')"
+                    >
+                        <x-heroicon name="o-key" class="h-6 w-6" />
+                        <span class="ml-2">SSH Keys</span>
+                    </x-sidebar-link>
+                </li>
+            @endif
         </ul>
     </div>
 </aside>

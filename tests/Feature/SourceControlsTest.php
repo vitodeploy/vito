@@ -28,7 +28,7 @@ class SourceControlsTest extends TestCase
         if ($customUrl !== null) {
             $input['url'] = $customUrl;
         }
-        $this->post(route('source-controls.connect'), $input)
+        $this->post(route('settings.source-controls.connect'), $input)
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('source_controls', [
@@ -50,7 +50,7 @@ class SourceControlsTest extends TestCase
             'profile' => 'test',
         ]);
 
-        $this->delete(route('source-controls.delete', $sourceControl->id))
+        $this->delete(route('settings.source-controls.delete', $sourceControl->id))
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('source_controls', [
@@ -75,7 +75,7 @@ class SourceControlsTest extends TestCase
             'source_control_id' => $sourceControl->id,
         ]);
 
-        $this->delete(route('source-controls.delete', $sourceControl->id))
+        $this->delete(route('settings.source-controls.delete', $sourceControl->id))
             ->assertSessionDoesntHaveErrors()
             ->assertSessionHas('toast.type', 'error')
             ->assertSessionHas('toast.message', 'This source control is being used by a site.');

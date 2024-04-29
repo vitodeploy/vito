@@ -19,6 +19,8 @@ class QueueController extends Controller
 {
     public function index(Server $server, Site $site): View
     {
+        $this->authorize('manage', $server);
+
         return view('queues.index', [
             'server' => $server,
             'site' => $site,
@@ -28,6 +30,8 @@ class QueueController extends Controller
 
     public function store(Server $server, Site $site, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(CreateQueue::class)->create($site, $request->input());
 
         Toast::success('Queue is being created.');
@@ -37,6 +41,8 @@ class QueueController extends Controller
 
     public function action(Server $server, Site $site, Queue $queue, string $action): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(ManageQueue::class)->{$action}($queue);
 
         Toast::success('Queue is about to '.$action);
@@ -46,6 +52,8 @@ class QueueController extends Controller
 
     public function destroy(Server $server, Site $site, Queue $queue): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(DeleteQueue::class)->delete($queue);
 
         Toast::success('Queue is being deleted.');
@@ -55,6 +63,8 @@ class QueueController extends Controller
 
     public function logs(Server $server, Site $site, Queue $queue): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         return back()->with('content', app(GetQueueLogs::class)->getLogs($queue));
     }
 }

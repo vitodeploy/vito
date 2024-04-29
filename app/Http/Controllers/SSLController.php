@@ -17,6 +17,8 @@ class SSLController extends Controller
 {
     public function index(Server $server, Site $site): View
     {
+        $this->authorize('manage', $server);
+
         return view('ssls.index', [
             'server' => $server,
             'site' => $site,
@@ -26,6 +28,8 @@ class SSLController extends Controller
 
     public function store(Server $server, Site $site, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(CreateSSL::class)->create($site, $request->input());
 
         Toast::success('SSL certificate is being created.');
@@ -35,6 +39,8 @@ class SSLController extends Controller
 
     public function destroy(Server $server, Site $site, Ssl $ssl): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(DeleteSSL::class)->delete($ssl);
 
         Toast::success('SSL certificate has been deleted.');

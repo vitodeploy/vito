@@ -9,22 +9,22 @@
             <x-dropdown-link :href="route('profile')">
                 {{ __("Profile") }}
             </x-dropdown-link>
-            <x-dropdown-link :href="route('projects')">
+            <x-dropdown-link :href="route('settings.projects')">
                 {{ __("Projects") }}
             </x-dropdown-link>
-            <x-dropdown-link :href="route('server-providers')">
+            <x-dropdown-link :href="route('settings.server-providers')">
                 {{ __("Server Providers") }}
             </x-dropdown-link>
-            <x-dropdown-link :href="route('source-controls')">
+            <x-dropdown-link :href="route('settings.source-controls')">
                 {{ __("Source Controls") }}
             </x-dropdown-link>
-            <x-dropdown-link :href="route('storage-providers')">
+            <x-dropdown-link :href="route('settings.storage-providers')">
                 {{ __("Storage Providers") }}
             </x-dropdown-link>
-            <x-dropdown-link :href="route('notification-channels')">
+            <x-dropdown-link :href="route('settings.notification-channels')">
                 {{ __("Notification Channels") }}
             </x-dropdown-link>
-            <x-dropdown-link :href="route('ssh-keys')">
+            <x-dropdown-link :href="route('settings.ssh-keys')">
                 {{ __("SSH Keys") }}
             </x-dropdown-link>
             <!-- Authentication -->

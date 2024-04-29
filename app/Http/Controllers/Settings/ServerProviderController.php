@@ -30,7 +30,7 @@ class ServerProviderController extends Controller
 
         Toast::success('Server provider connected.');
 
-        return htmx()->redirect(route('server-providers'));
+        return htmx()->redirect(route('settings.server-providers'));
     }
 
     public function delete(ServerProvider $serverProvider): RedirectResponse

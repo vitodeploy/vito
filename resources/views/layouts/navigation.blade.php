@@ -3,7 +3,7 @@
 >
     <div class="w-full">
         <div class="flex items-center justify-between">
-            <div class="flex items-center justify-start">
+            <div class="flex flex-none items-center justify-start">
                 <div
                     class="flex items-center justify-start border-r border-gray-200 px-3 py-3 dark:border-gray-700 md:w-64"
                 >
@@ -17,7 +17,7 @@
                         <span class="sr-only">Open sidebar</span>
                         <x-heroicon name="o-bars-3-center-left" class="h-6 w-6" />
                     </button>
-                    <a href="/" class="ms-2 flex md:me-24">
+                    <a href="/" class="ms-2 flex flex-none md:me-24">
                         <div class="relative flex items-center justify-start text-3xl font-extrabold">
                             <x-application-logo class="h-9 w-9 rounded-md" />
                             <span class="ml-1 hidden md:block">Deploy</span>
@@ -70,9 +70,11 @@
                             {{ __("Profile") }}
                         </x-dropdown-link>
 
-                        <x-dropdown-link :href="route('projects')">
-                            {{ __("Projects") }}
-                        </x-dropdown-link>
+                        @if (auth()->user()->isAdmin())
+                            <x-dropdown-link :href="route('settings.projects')">
+                                {{ __("Projects") }}
+                            </x-dropdown-link>
+                        @endif
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route("logout") }}">

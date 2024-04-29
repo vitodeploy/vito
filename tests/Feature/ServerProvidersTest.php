@@ -27,7 +27,7 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        $this->post(route('server-providers.connect'), $data)->assertSessionDoesntHaveErrors();
+        $this->post(route('settings.server-providers.connect'), $data)->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('server_providers', [
             'provider' => $provider,
@@ -53,7 +53,7 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        $this->post(route('server-providers.connect'), $data)->assertSessionHasErrors();
+        $this->post(route('settings.server-providers.connect'), $data)->assertSessionHasErrors();
 
         $this->assertDatabaseMissing('server_providers', [
             'provider' => $provider,
@@ -69,7 +69,7 @@ class ServerProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->get(route('server-providers'))
+        $this->get(route('settings.server-providers'))
             ->assertSuccessful()
             ->assertSee($provider->profile);
     }
@@ -86,7 +86,7 @@ class ServerProvidersTest extends TestCase
             'provider' => $provider,
         ]);
 
-        $this->delete(route('server-providers.delete', $provider))
+        $this->delete(route('settings.server-providers.delete', $provider))
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('server_providers', [
@@ -110,7 +110,7 @@ class ServerProvidersTest extends TestCase
             'provider_id' => $provider->id,
         ]);
 
-        $this->delete(route('server-providers.delete', $provider))
+        $this->delete(route('settings.server-providers.delete', $provider))
             ->assertSessionDoesntHaveErrors()
             ->assertSessionHas('toast.type', 'error')
             ->assertSessionHas('toast.message', 'This server provider is being used by a server.');

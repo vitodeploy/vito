@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class CreateUserCommand extends Command
 {
-    protected $signature = 'user:create {name} {email} {password}';
+    protected $signature = 'user:create {name} {email} {password} {--role=admin}';
 
     protected $description = 'Create a new user';
 
@@ -25,6 +25,7 @@ class CreateUserCommand extends Command
             'name' => $this->argument('name'),
             'email' => $this->argument('email'),
             'password' => bcrypt($this->argument('password')),
+            'role' => $this->option('role'),
         ]);
 
         $this->info('User created!');

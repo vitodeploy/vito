@@ -18,6 +18,8 @@ class SiteSettingController extends Controller
 {
     public function index(Server $server, Site $site): View
     {
+        $this->authorize('manage', $server);
+
         return view('site-settings.index', [
             'server' => $server,
             'site' => $site,
@@ -26,6 +28,8 @@ class SiteSettingController extends Controller
 
     public function getVhost(Server $server, Site $site): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         /** @var Webserver $handler */
         $handler = $server->webserver()->handler();
 
@@ -34,6 +38,8 @@ class SiteSettingController extends Controller
 
     public function updateVhost(Server $server, Site $site, Request $request): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $this->validate($request, [
             'vhost' => 'required|string',
         ]);
@@ -53,6 +59,8 @@ class SiteSettingController extends Controller
 
     public function updatePHPVersion(Server $server, Site $site, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         $this->validate($request, [
             'version' => [
                 'required',
@@ -73,6 +81,8 @@ class SiteSettingController extends Controller
 
     public function updateSourceControl(Server $server, Site $site, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         $site = app(UpdateSourceControl::class)->update($site, $request->input());
 
         Toast::success('Source control updated successfully!');

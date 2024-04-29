@@ -6,7 +6,7 @@
     <x-modal name="create-project" :show="request()->has('create')">
         <form
             id="create-project-form"
-            hx-post="{{ route("projects.create") }}"
+            hx-post="{{ route("settings.projects.create") }}"
             hx-swap="outerHTML"
             hx-select="#create-project-form"
             hx-ext="disable-element"

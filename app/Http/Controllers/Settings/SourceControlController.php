@@ -29,7 +29,7 @@ class SourceControlController extends Controller
 
         Toast::success('Source control connected.');
 
-        return htmx()->redirect(route('source-controls'));
+        return htmx()->redirect(route('settings.source-controls'));
     }
 
     public function delete(SourceControl $sourceControl): RedirectResponse
@@ -44,6 +44,6 @@ class SourceControlController extends Controller
 
         Toast::success('Source control deleted.');
 
-        return redirect()->route('source-controls');
+        return redirect()->route('settings.source-controls');
     }
 }

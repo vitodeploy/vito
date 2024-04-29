@@ -13,7 +13,10 @@
                 </option>
             @endforeach
         </x-select-input>
-        <x-secondary-button :href="route('source-controls', ['redirect' => request()->url()])" class="ml-2 flex-none">
+        <x-secondary-button
+            :href="route('settings.source-controls', ['redirect' => request()->url()])"
+            class="ml-2 flex-none"
+        >
             {{ __("Connect") }}
         </x-secondary-button>
     </div>

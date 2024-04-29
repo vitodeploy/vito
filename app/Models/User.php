@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -30,6 +32,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $current_project_id
  * @property Project $currentProject
  * @property Collection<Project> $projects
+ * @property string $role
  */
 class User extends Authenticatable
 {
@@ -43,6 +46,7 @@ class User extends Authenticatable
         'password',
         'timezone',
         'current_project_id',
+        'role',
     ];
 
     protected $hidden = [
@@ -60,7 +64,9 @@ class User extends Authenticatable
         parent::boot();
 
         static::created(function (User $user) {
-            $user->createDefaultProject();
+            if (Project::count() === 0) {
+                $user->createDefaultProject();
+            }
         });
     }
 
@@ -117,9 +123,9 @@ class User extends Authenticatable
         return $connectedSourceControls;
     }
 
-    public function projects(): HasMany
+    public function projects(): BelongsToMany
     {
-        return $this->hasMany(Project::class);
+        return $this->belongsToMany(Project::class, 'user_project')->withTimestamps();
     }
 
     public function currentProject(): HasOne
@@ -138,14 +144,20 @@ class User extends Authenticatable
 
         if (! $project) {
             $project = new Project();
-            $project->user_id = $this->id;
-            $project->name = 'Default';
+            $project->name = 'default';
             $project->save();
+
+            $project->users()->attach($this->id);
         }
 
         $this->current_project_id = $project->id;
         $this->save();
 
         return $project;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::ADMIN;
     }
 }

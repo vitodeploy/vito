@@ -10,7 +10,7 @@
 
         <form
             id="add-channel-form"
-            hx-post="{{ route("notification-channels.add") }}"
+            hx-post="{{ route("settings.notification-channels.add") }}"
             hx-swap="outerHTML"
             hx-select="#add-channel-form"
             hx-ext="disable-element"

@@ -10,7 +10,7 @@
 
         <form
             id="connect-source-control-form"
-            hx-post="{{ route("source-controls.connect") }}"
+            hx-post="{{ route("settings.source-controls.connect") }}"
             hx-swap="outerHTML"
             hx-select="#connect-source-control-form"
             hx-ext="disable-element"

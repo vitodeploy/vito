@@ -6,7 +6,7 @@
     <x-modal name="add-key">
         <form
             id="add-ssh-key-form"
-            hx-post="{{ route("ssh-keys.add") }}"
+            hx-post="{{ route("settings.ssh-keys.add") }}"
             hx-swap="outerHTML"
             hx-select="#add-ssh-key-form"
             hx-ext="disable-element"

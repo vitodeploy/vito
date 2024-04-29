@@ -15,6 +15,8 @@ class MetricController extends Controller
 {
     public function index(Server $server, Request $request): View|RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $this->checkIfMonitoringServiceInstalled($server);
 
         return view('metrics.index', [
@@ -26,6 +28,8 @@ class MetricController extends Controller
 
     public function settings(Server $server, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         $this->checkIfMonitoringServiceInstalled($server);
 
         app(UpdateMetricSettings::class)->update($server, $request->input());
@@ -37,6 +41,8 @@ class MetricController extends Controller
 
     private function checkIfMonitoringServiceInstalled(Server $server): void
     {
+        $this->authorize('manage', $server);
+
         if (! $server->monitoring()) {
             abort(404, 'Monitoring service is not installed on this server');
         }

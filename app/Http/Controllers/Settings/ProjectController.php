@@ -20,7 +20,7 @@ class ProjectController extends Controller
     public function index(): View
     {
         return view('settings.projects.index', [
-            'projects' => auth()->user()->projects,
+            'projects' => Project::all(),
         ]);
     }
 
@@ -30,7 +30,7 @@ class ProjectController extends Controller
 
         Toast::success('Project created.');
 
-        return htmx()->redirect(route('projects'));
+        return htmx()->redirect(route('settings.projects'));
     }
 
     public function update(Request $request, Project $project): HtmxResponse
@@ -42,7 +42,7 @@ class ProjectController extends Controller
 
         Toast::success('Project updated.');
 
-        return htmx()->redirect(route('projects'));
+        return htmx()->redirect(route('settings.projects'));
     }
 
     public function delete(Project $project): RedirectResponse
@@ -73,6 +73,8 @@ class ProjectController extends Controller
 
         /** @var Project $project */
         $project = $user->projects()->findOrFail($projectId);
+
+        $this->authorize('view', $project);
 
         $user->current_project_id = $project->id;
         $user->save();

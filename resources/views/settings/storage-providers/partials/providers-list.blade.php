@@ -43,7 +43,7 @@
                     <div class="flex items-center">
                         <div class="inline">
                             <x-icon-button
-                                x-on:click="deleteAction = '{{ route('storage-providers.delete', $provider->id) }}'; $dispatch('open-modal', 'delete-provider')"
+                                x-on:click="deleteAction = '{{ route('settings.storage-providers.delete', $provider->id) }}'; $dispatch('open-modal', 'delete-provider')"
                             >
                                 <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>

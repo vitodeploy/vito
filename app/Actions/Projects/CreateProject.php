@@ -10,10 +10,13 @@ class CreateProject
 {
     public function create(User $user, array $input): Project
     {
+        if (isset($input['name'])) {
+            $input['name'] = strtolower($input['name']);
+        }
+
         $this->validate($user, $input);
 
         $project = new Project([
-            'user_id' => $user->id,
             'name' => $input['name'],
         ]);
 
@@ -29,7 +32,7 @@ class CreateProject
                 'required',
                 'string',
                 'max:255',
-                'unique:projects,name,NULL,id,user_id,'.$user->id,
+                'unique:projects,name',
             ],
         ])->validate();
     }

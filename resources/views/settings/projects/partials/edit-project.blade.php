@@ -6,7 +6,7 @@
     <x-modal name="edit-project-{{ $project->id }}">
         <form
             id="edit-project-form-{{ $project->id }}"
-            hx-post="{{ route("projects.update", $project) }}"
+            hx-post="{{ route("settings.projects.update", $project) }}"
             hx-swap="outerHTML"
             hx-select="#edit-project-form-{{ $project->id }}"
             hx-ext="disable-element"

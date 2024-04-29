@@ -10,7 +10,7 @@
 
         <form
             id="connect-provider-form"
-            hx-post="{{ route("server-providers.connect") }}"
+            hx-post="{{ route("settings.server-providers.connect") }}"
             hx-swap="outerHTML"
             hx-select="#connect-provider-form"
             hx-ext="disable-element"

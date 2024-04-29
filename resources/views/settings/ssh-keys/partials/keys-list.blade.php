@@ -21,7 +21,7 @@
                     <div class="flex items-center">
                         <div class="inline">
                             <x-icon-button
-                                x-on:click="deleteAction = '{{ route('ssh-keys.delete', $key->id) }}'; $dispatch('open-modal', 'delete-ssh-key')"
+                                x-on:click="deleteAction = '{{ route('settings.ssh-keys.delete', $key->id) }}'; $dispatch('open-modal', 'delete-ssh-key')"
                             >
                                 <x-heroicon name="o-trash" class="h-5 w-5" />
                             </x-icon-button>

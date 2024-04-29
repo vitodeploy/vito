@@ -30,7 +30,7 @@ class StorageProviderController extends Controller
 
         Toast::success('Storage provider connected.');
 
-        return htmx()->redirect(route('storage-providers'));
+        return htmx()->redirect(route('settings.storage-providers'));
     }
 
     public function delete(StorageProvider $storageProvider): RedirectResponse

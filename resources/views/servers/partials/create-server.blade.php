@@ -70,7 +70,7 @@
                             @endforeach
                         </x-select-input>
                         <x-secondary-button
-                            :href="route('server-providers', ['provider' => $provider])"
+                            :href="route('settings.server-providers', ['provider' => $provider])"
                             class="ml-2 flex-none"
                         >
                             {{ __("Connect") }}
