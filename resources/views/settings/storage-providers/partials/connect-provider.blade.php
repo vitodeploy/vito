@@ -10,7 +10,7 @@
 
         <form
             id="connect-storage-provider-form"
-            hx-post="{{ route("storage-providers.connect") }}"
+            hx-post="{{ route("settings.storage-providers.connect") }}"
             hx-swap="outerHTML"
             hx-select="#connect-storage-provider-form"
             hx-ext="disable-element"

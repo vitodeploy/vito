@@ -5,10 +5,10 @@ namespace App\View\Components;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class ProfileLayout extends Component
+class SettingsLayout extends Component
 {
     public function render(): View
     {
-        return view('layouts.profile');
+        return view('layouts.settings');
     }
 }

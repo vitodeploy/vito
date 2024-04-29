@@ -17,7 +17,7 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::EMAIL,
             'email' => 'email@example.com',
             'label' => 'Email',
@@ -40,7 +40,7 @@ class NotificationChannelsTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::EMAIL,
             'email' => 'email@example.com',
             'label' => 'Email',
@@ -61,7 +61,7 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::SLACK,
             'webhook_url' => 'https://hooks.slack.com/services/123/token',
             'label' => 'Slack',
@@ -84,7 +84,7 @@ class NotificationChannelsTest extends TestCase
             'slack.com/*' => Http::response(['ok' => false], 401),
         ]);
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::SLACK,
             'webhook_url' => 'https://hooks.slack.com/services/123/token',
             'label' => 'Slack',
@@ -104,7 +104,7 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::DISCORD,
             'webhook_url' => 'https://discord.com/api/webhooks/123/token',
             'label' => 'Discord',
@@ -127,7 +127,7 @@ class NotificationChannelsTest extends TestCase
             'discord.com/*' => Http::response(['ok' => false], 401),
         ]);
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::DISCORD,
             'webhook_url' => 'https://discord.com/api/webhooks/123/token',
             'label' => 'Discord',
@@ -147,7 +147,7 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::TELEGRAM,
             'bot_token' => 'token',
             'chat_id' => '123',
@@ -172,7 +172,7 @@ class NotificationChannelsTest extends TestCase
             'api.telegram.org/*' => Http::response(['ok' => false], 401),
         ]);
 
-        $this->post(route('notification-channels.add'), [
+        $this->post(route('settings.notification-channels.add'), [
             'provider' => NotificationChannel::TELEGRAM,
             'bot_token' => 'token',
             'chat_id' => '123',
@@ -193,7 +193,7 @@ class NotificationChannelsTest extends TestCase
 
         $channel = \App\Models\NotificationChannel::factory()->create();
 
-        $this->get(route('notification-channels'))
+        $this->get(route('settings.notification-channels'))
             ->assertSuccessful()
             ->assertSee($channel->provider);
     }
@@ -204,7 +204,7 @@ class NotificationChannelsTest extends TestCase
 
         $channel = \App\Models\NotificationChannel::factory()->create();
 
-        $this->delete(route('notification-channels.delete', $channel->id))
+        $this->delete(route('settings.notification-channels.delete', $channel->id))
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('notification_channels', [

@@ -41,7 +41,7 @@
                         </option>
                     @endforeach
                 </x-select-input>
-                <x-secondary-button :href="route('storage-providers')" class="ml-2 flex-none">
+                <x-secondary-button :href="route('settings.storage-providers')" class="ml-2 flex-none">
                     Connect
                 </x-secondary-button>
             </div>

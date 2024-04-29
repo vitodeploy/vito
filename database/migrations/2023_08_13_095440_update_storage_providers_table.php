@@ -9,14 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('storage_providers', function (Blueprint $table) {
-            $table->dropColumn('token');
-            $table->dropColumn('refresh_token');
-            $table->dropColumn('token_expires_at');
-            $table->dropColumn('label');
-            $table->dropColumn('connected');
             $table->unsignedBigInteger('user_id')->after('id');
             $table->string('profile')->after('user_id');
             $table->longText('credentials')->nullable()->after('provider');
+        });
+        Schema::table('storage_providers', function (Blueprint $table) {
+            $table->dropColumn(['token', 'refresh_token', 'token_expires_at', 'label', 'connected']);
         });
     }
 
@@ -27,9 +25,9 @@ return new class extends Migration
             $table->string('refresh_token')->nullable();
             $table->string('token_expires_at')->nullable();
             $table->string('label')->nullable();
-            $table->dropColumn('user_id');
-            $table->dropColumn('profile');
-            $table->dropColumn('credentials');
+        });
+        Schema::table('storage_providers', function (Blueprint $table) {
+            $table->dropColumn(['user_id', 'profile', 'credentials']);
         });
     }
 };

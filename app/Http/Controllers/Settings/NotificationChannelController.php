@@ -29,7 +29,7 @@ class NotificationChannelController extends Controller
 
         Toast::success('Channel added successfully');
 
-        return htmx()->redirect(route('notification-channels'));
+        return htmx()->redirect(route('settings.notification-channels'));
     }
 
     public function delete(int $id): RedirectResponse
@@ -40,6 +40,6 @@ class NotificationChannelController extends Controller
 
         Toast::success('Channel deleted successfully');
 
-        return redirect()->route('notification-channels');
+        return redirect()->route('settings.notification-channels');
     }
 }

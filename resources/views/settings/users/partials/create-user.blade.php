@@ -4,7 +4,7 @@
     <x-modal name="create-user">
         <form
             id="create-user-form"
-            hx-post="{{ route("admin.users.store") }}"
+            hx-post="{{ route("settings.users.store") }}"
             hx-swap="outerHTML"
             hx-select="#create-user-form"
             hx-ext="disable-element"

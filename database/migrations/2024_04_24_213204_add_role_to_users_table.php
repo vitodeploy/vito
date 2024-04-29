@@ -16,11 +16,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('role')->default(UserRole::USER);
         });
-        $firstUser = User::query()->orderBy('id')->first();
-        if ($firstUser) {
-            $firstUser->role = UserRole::ADMIN;
-            $firstUser->save();
-        }
+        User::query()->update(['role' => UserRole::ADMIN]);
     }
 
     /**

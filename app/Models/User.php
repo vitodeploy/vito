@@ -64,7 +64,9 @@ class User extends Authenticatable
         parent::boot();
 
         static::created(function (User $user) {
-            $user->createDefaultProject();
+            if (Project::count() === 0) {
+                $user->createDefaultProject();
+            }
         });
     }
 
@@ -142,7 +144,7 @@ class User extends Authenticatable
 
         if (! $project) {
             $project = new Project();
-            $project->name = 'Default';
+            $project->name = 'default';
             $project->save();
 
             $project->users()->attach($this->id);

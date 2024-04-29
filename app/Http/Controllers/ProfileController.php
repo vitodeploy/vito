@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers;
 
 use App\Actions\User\UpdateUserPassword;
 use App\Actions\User\UpdateUserProfileInformation;
 use App\Facades\Toast;
-use App\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +13,7 @@ class ProfileController extends Controller
 {
     public function index(): View
     {
-        return view('settings.profile.index');
+        return view('profile.index');
     }
 
     public function info(Request $request): RedirectResponse

@@ -16,6 +16,8 @@ class CronjobController extends Controller
 {
     public function index(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('cronjobs.index', [
             'server' => $server,
             'cronjobs' => $server->cronJobs,
@@ -24,6 +26,8 @@ class CronjobController extends Controller
 
     public function store(Server $server, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(CreateCronJob::class)->create($server, $request->input());
 
         Toast::success('Cronjob created successfully.');
@@ -33,6 +37,8 @@ class CronjobController extends Controller
 
     public function destroy(Server $server, CronJob $cronJob): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(DeleteCronJob::class)->delete($server, $cronJob);
 
         Toast::success('Cronjob deleted successfully.');

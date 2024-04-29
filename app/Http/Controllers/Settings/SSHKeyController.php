@@ -29,7 +29,7 @@ class SSHKeyController extends Controller
 
         Toast::success('SSH Key added');
 
-        return htmx()->redirect(route('ssh-keys'));
+        return htmx()->redirect(route('settings.ssh-keys'));
     }
 
     public function delete(int $id): RedirectResponse
@@ -40,6 +40,6 @@ class SSHKeyController extends Controller
 
         Toast::success('SSH Key deleted');
 
-        return redirect()->route('ssh-keys');
+        return redirect()->route('settings.ssh-keys');
     }
 }

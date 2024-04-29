@@ -19,7 +19,7 @@ class StorageProvidersTest extends TestCase
 
         Http::fake();
 
-        $this->post(route('storage-providers.connect'), [
+        $this->post(route('settings.storage-providers.connect'), [
             'provider' => StorageProvider::DROPBOX,
             'name' => 'profile',
             'token' => 'token',
@@ -40,7 +40,7 @@ class StorageProvidersTest extends TestCase
             'provider' => StorageProvider::DROPBOX,
         ]);
 
-        $this->get(route('storage-providers'))
+        $this->get(route('settings.storage-providers'))
             ->assertSuccessful()
             ->assertSee($provider->profile);
     }
@@ -53,7 +53,7 @@ class StorageProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->delete(route('storage-providers.delete', $provider->id))
+        $this->delete(route('settings.storage-providers.delete', $provider->id))
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('storage_providers', [
@@ -79,7 +79,7 @@ class StorageProvidersTest extends TestCase
             'storage_id' => $provider->id,
         ]);
 
-        $this->delete(route('storage-providers.delete', $provider->id))
+        $this->delete(route('settings.storage-providers.delete', $provider->id))
             ->assertSessionDoesntHaveErrors()
             ->assertSessionHas('toast.type', 'error')
             ->assertSessionHas('toast.message', 'This storage provider is being used by a backup.');

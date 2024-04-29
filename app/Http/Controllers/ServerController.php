@@ -19,6 +19,9 @@ class ServerController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
+
+        $this->authorize('viewAny', [Server::class, $user->currentProject]);
+
         $servers = $user->currentProject->servers()->orderByDesc('created_at')->get();
 
         return view('servers.index', compact('servers'));
@@ -26,6 +29,11 @@ class ServerController extends Controller
 
     public function create(Request $request): View
     {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $this->authorize('create', [Server::class, $user->currentProject]);
+
         $provider = $request->query('provider', old('provider', \App\Enums\ServerProvider::CUSTOM));
         $serverProviders = ServerProvider::query()->where('provider', $provider)->get();
 
@@ -40,8 +48,13 @@ class ServerController extends Controller
      */
     public function store(Request $request): HtmxResponse
     {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $this->authorize('create', [Server::class, $user->currentProject]);
+
         $server = app(CreateServer::class)->create(
-            $request->user(),
+            $user,
             $request->input()
         );
 
@@ -52,6 +65,8 @@ class ServerController extends Controller
 
     public function show(Server $server): View
     {
+        $this->authorize('view', $server);
+
         return view('servers.show', [
             'server' => $server,
         ]);
@@ -59,6 +74,8 @@ class ServerController extends Controller
 
     public function delete(Server $server): RedirectResponse
     {
+        $this->authorize('delete', $server);
+
         $server->delete();
 
         Toast::success('Server deleted successfully.');

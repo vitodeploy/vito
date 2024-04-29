@@ -17,6 +17,8 @@ class DatabaseController extends Controller
 {
     public function index(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('databases.index', [
             'server' => $server,
             'databases' => $server->databases,
@@ -27,6 +29,8 @@ class DatabaseController extends Controller
 
     public function store(Server $server, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         $database = app(CreateDatabase::class)->create($server, $request->input());
 
         if ($request->input('user')) {
@@ -40,6 +44,8 @@ class DatabaseController extends Controller
 
     public function destroy(Server $server, Database $database): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(DeleteDatabase::class)->delete($server, $database);
 
         Toast::success('Database deleted successfully.');

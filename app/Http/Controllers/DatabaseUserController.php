@@ -16,6 +16,8 @@ class DatabaseUserController extends Controller
 {
     public function store(Server $server, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         $database = app(CreateDatabaseUser::class)->create($server, $request->input());
 
         if ($request->input('user')) {
@@ -29,6 +31,8 @@ class DatabaseUserController extends Controller
 
     public function destroy(Server $server, DatabaseUser $databaseUser): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(DeleteDatabaseUser::class)->delete($server, $databaseUser);
 
         Toast::success('User deleted successfully.');
@@ -38,6 +42,8 @@ class DatabaseUserController extends Controller
 
     public function password(Server $server, DatabaseUser $databaseUser): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         return back()->with([
             'password' => $databaseUser->password,
         ]);
@@ -45,6 +51,8 @@ class DatabaseUserController extends Controller
 
     public function link(Server $server, DatabaseUser $databaseUser, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(LinkUser::class)->link($databaseUser, $request->input());
 
         Toast::success('Database linked successfully.');

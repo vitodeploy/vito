@@ -1,12 +1,12 @@
-<x-app-layout>
-    <x-slot name="pageTitle">Admin - Users</x-slot>
+<x-settings-layout>
+    <x-slot name="pageTitle">Users</x-slot>
 
     <x-container>
         <x-card-header>
             <x-slot name="title">Users</x-slot>
             <x-slot name="description">Here you can manage users</x-slot>
             <x-slot name="aside">
-                @include("admin.users.partials.create-user")
+                @include("settings.users.partials.create-user")
             </x-slot>
         </x-card-header>
         <div class="space-y-3" x-data="{ deleteAction: '' }">
@@ -36,10 +36,12 @@
                                 </div>
                             </x-td>
                             <x-td class="text-right">
-                                <x-icon-button>
+                                <x-icon-button
+                                    x-on:click="deleteAction = '{{ route('settings.users.delete', ['user' => $user]) }}'; $dispatch('open-modal', 'delete-user')"
+                                >
                                     <x-heroicon name="o-trash" class="h-5 w-5" />
                                 </x-icon-button>
-                                <x-icon-button :href="route('admin.users.show', ['user' => $user])">
+                                <x-icon-button :href="route('settings.users.show', ['user' => $user])">
                                     <x-heroicon name="o-cog-6-tooth" class="h-5 w-5" />
                                 </x-icon-button>
                             </x-td>
@@ -47,6 +49,13 @@
                     @endforeach
                 </x-tbody>
             </x-table>
+            <x-confirmation-modal
+                name="delete-user"
+                :title="__('Confirm')"
+                :description="__('Are you sure that you want to delete this user?')"
+                method="delete"
+                x-bind:action="deleteAction"
+            />
         </div>
     </x-container>
-</x-app-layout>
+</x-settings-layout>

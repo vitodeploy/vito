@@ -3,13 +3,9 @@
 
     <x-slot name="description">You can update user's info here</x-slot>
 
-    <x-slot name="aside">
-        <x-secondary-button :href="route('admin.users.index')">Back to Users</x-secondary-button>
-    </x-slot>
-
     <form
         id="update-user-info"
-        hx-post="{{ route("admin.users.update", ["user" => $user]) }}"
+        hx-post="{{ route("settings.users.update", ["user" => $user]) }}"
         hx-swap="outerHTML"
         hx-select="#update-user-info"
         hx-trigger="submit"
@@ -84,6 +80,14 @@
                 </option>
             </x-select-input>
             @error("role")
+                <x-input-error class="mt-2" :messages="$message" />
+            @enderror
+        </div>
+
+        <div>
+            <x-input-label for="password" value="New Password" />
+            <x-text-input id="password" name="password" type="password" class="mt-1 w-full" />
+            @error("password")
                 <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>

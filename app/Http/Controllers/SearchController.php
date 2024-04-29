@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Server;
 use App\Models\Site;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,10 +24,22 @@ class SearchController extends Controller
                 $query->where('name', 'like', '%'.$request->input('q').'%')
                     ->orWhere('ip', 'like', '%'.$request->input('q').'%');
             })
+            ->whereHas('project', function (Builder $projectQuery) {
+                $projectQuery->whereHas('users', function (Builder $userQuery) {
+                    $userQuery->where('user_id', auth()->user()->id);
+                });
+            })
             ->get();
 
         $sites = Site::query()
             ->where('domain', 'like', '%'.$request->input('q').'%')
+            ->whereHas('server', function (Builder $serverQuery) {
+                $serverQuery->whereHas('project', function (Builder $projectQuery) {
+                    $projectQuery->whereHas('users', function (Builder $userQuery) {
+                        $userQuery->where('user_id', auth()->user()->id);
+                    });
+                });
+            })
             ->get();
 
         $result = [];

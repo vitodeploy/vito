@@ -35,7 +35,7 @@ class Slack extends AbstractNotificationChannel
             __('Congratulations! 🎉'),
             __("You've connected your Slack to :app", ['app' => config('app.name')])."\n".
             __('Manage your notification channels')."\n".
-            route('notification-channels')
+            route('settings.notification-channels')
         );
 
         if (! $connect) {

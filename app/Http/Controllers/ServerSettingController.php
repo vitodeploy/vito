@@ -15,11 +15,15 @@ class ServerSettingController extends Controller
 {
     public function index(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('server-settings.index', compact('server'));
     }
 
     public function checkConnection(Server $server): RedirectResponse|HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         $oldStatus = $server->status;
 
         $server = $server->checkConnection();
@@ -41,6 +45,8 @@ class ServerSettingController extends Controller
 
     public function reboot(Server $server): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(RebootServer::class)->reboot($server);
 
         Toast::info('Server is rebooting.');
@@ -50,6 +56,8 @@ class ServerSettingController extends Controller
 
     public function edit(Request $request, Server $server): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(EditServer::class)->edit($server, $request->input());
 
         Toast::success('Server updated.');
