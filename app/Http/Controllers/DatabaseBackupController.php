@@ -78,6 +78,13 @@ class DatabaseBackupController extends Controller
 
         $backupFile->delete();
 
+        $backupFile
+            ->backup
+            ->storage
+            ->provider()
+            ->ssh($server)
+            ->delete($backupFile->storagePath());
+
         Toast::success('Backup file deleted successfully.');
 
         return back();
