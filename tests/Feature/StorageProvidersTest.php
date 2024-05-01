@@ -88,4 +88,20 @@ class StorageProvidersTest extends TestCase
             'id' => $provider->id,
         ]);
     }
+
+    public function test_create_local_driver(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->post(route('settings.storage-providers.connect'), [
+            'provider' => StorageProvider::LOCAL,
+            'name' => 'profile',
+            'path' => '/home/vito/backups',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('storage_providers', [
+            'provider' => StorageProvider::LOCAL,
+            'profile' => 'profile',
+        ]);
+    }
 }

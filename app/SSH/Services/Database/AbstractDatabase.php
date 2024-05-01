@@ -159,7 +159,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
 
         // cleanup
-        $this->service->server->ssh()->exec('rm '.$backupFile->name.'.zip');
+        $this->service->server->ssh()->exec('rm '.$backupFile->path());
 
         $backupFile->size = $upload['size'];
         $backupFile->save();

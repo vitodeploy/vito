@@ -359,10 +359,12 @@ return [
     'storage_providers' => [
         \App\Enums\StorageProvider::DROPBOX,
         \App\Enums\StorageProvider::FTP,
+        \App\Enums\StorageProvider::LOCAL,
     ],
     'storage_providers_class' => [
-        'dropbox' => \App\StorageProviders\Dropbox::class,
-        'ftp' => \App\StorageProviders\Ftp::class,
+        \App\Enums\StorageProvider::DROPBOX => \App\StorageProviders\Dropbox::class,
+        \App\Enums\StorageProvider::FTP => \App\StorageProviders\Ftp::class,
+        \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
     ],
 
     'ssl_types' => [
