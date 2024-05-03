@@ -37,8 +37,7 @@
                     <li>
                         <x-sidebar-link
                             :href="route('servers.databases', ['server' => $server])"
-                            :active="request()->routeIs('servers.databases') ||
-                            request()->routeIs('servers.databases.backups')"
+                            :active="request()->routeIs('servers.databases') || request()->routeIs('servers.databases.backups')"
                         >
                             <x-heroicon name="o-circle-stack" class="h-6 w-6" />
                             <span class="ml-2">
