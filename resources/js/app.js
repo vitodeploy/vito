@@ -50,14 +50,6 @@ document.body.addEventListener('htmx:afterSwap', (event) => {
     });
 });
 
-import toastr from 'toastr';
-window.toastr = toastr;
-window.toastr.options = {
-    "debug": false,
-    "positionClass": "toast-bottom-right",
-    "preventDuplicates": true,
-}
-
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 tippy('[data-tooltip]', {

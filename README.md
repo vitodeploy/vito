@@ -50,8 +50,6 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/1.x/scripts/in
 - Alpinejs
 - HTMX
 - Vite
-- Toastr by CodeSeven
 - Prettier
 - Postcss
 - Flowbite
-- svgrepo.com

@@ -8,7 +8,7 @@
     $classes =
         $active ?? false
             ? $class . " border-primary-600"
-            : $class . " border-primary-200 dark:border-primary-600 dark:border-opacity-20"
+            : $class . " border-primary-200 dark:border-primary-600 dark:border-opacity-20";
 @endphp
 
 <div {{ $attributes->merge(["class" => $classes]) }}>
