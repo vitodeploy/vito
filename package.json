@@ -21,7 +21,6 @@
         "prettier-plugin-tailwindcss": "^0.5.11",
         "tailwindcss": "^3.1.0",
         "tippy.js": "^6.3.7",
-        "toastr": "^2.1.4",
         "vite": "^4.5.3",
         "apexcharts": "^3.44.2",
         "flowbite-datepicker": "^1.2.6"
