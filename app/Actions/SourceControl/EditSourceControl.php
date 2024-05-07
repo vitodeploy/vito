@@ -4,7 +4,6 @@ namespace App\Actions\SourceControl;
 
 use App\Models\SourceControl;
 use App\Models\User;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -15,7 +14,7 @@ class EditSourceControl
         $this->validate($input);
 
         $sourceControl->profile = $input['name'];
-        $sourceControl->url = Arr::has($input, 'url') ? $input['url'] : null;
+        $sourceControl->url = isset($input['url']) ? $input['url'] : null;
         $sourceControl->project_id = isset($input['global']) && $input['global'] ? null : $user->current_project_id;
 
         $this->validateProvider($sourceControl, $input);

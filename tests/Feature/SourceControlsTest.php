@@ -102,18 +102,22 @@ class SourceControlsTest extends TestCase
     /**
      * @dataProvider data
      */
-    public function test_edit_source_control(string $provider, string $url, array $input): void
+    public function test_edit_source_control(string $provider, ?string $url, array $input): void
     {
+        Http::fake();
+
         $this->actingAs($this->user);
 
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => $provider,
             'profile' => 'old-name',
+            'url' => $url,
         ]);
 
         $this->post(route('settings.source-controls.update', $sourceControl->id), array_merge([
             'name' => 'new-name',
+            'url' => $url,
         ], $input))->assertSessionDoesntHaveErrors();
 
         $sourceControl->refresh();
