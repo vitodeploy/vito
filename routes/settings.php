@@ -38,6 +38,7 @@ Route::prefix('settings/source-controls')->group(function () {
     Route::get('/', [SourceControlController::class, 'index'])->name('settings.source-controls');
     Route::post('connect', [SourceControlController::class, 'connect'])->name('settings.source-controls.connect');
     Route::delete('delete/{sourceControl}', [SourceControlController::class, 'delete'])->name('settings.source-controls.delete');
+    Route::post('edit/{sourceControl}', [SourceControlController::class, 'update'])->name('settings.source-controls.update');
 });
 
 // storage-providers

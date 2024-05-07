@@ -35,6 +35,20 @@ class SourceControlsTest extends TestCase
             'provider' => $provider,
             'url' => $customUrl,
         ]);
+
+        if (isset($input['global'])) {
+            $this->assertDatabaseHas('source_controls', [
+                'provider' => $provider,
+                'url' => $customUrl,
+                'project_id' => null,
+            ]);
+        } else {
+            $this->assertDatabaseHas('source_controls', [
+                'provider' => $provider,
+                'url' => $customUrl,
+                'project_id' => $this->user->current_project_id,
+            ]);
+        }
     }
 
     /**
@@ -85,10 +99,34 @@ class SourceControlsTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider data
+     */
+    public function test_edit_source_control(string $provider, string $url, array $input): void
+    {
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => $provider,
+            'profile' => 'old-name',
+        ]);
+
+        $this->post(route('settings.source-controls.update', $sourceControl->id), array_merge([
+            'name' => 'new-name',
+        ], $input))->assertSessionDoesntHaveErrors();
+
+        $sourceControl->refresh();
+
+        $this->assertEquals('new-name', $sourceControl->profile);
+        $this->assertEquals($url, $sourceControl->url);
+    }
+
     public static function data(): array
     {
         return [
             ['github', null, ['token' => 'test']],
+            ['github', null, ['token' => 'test', 'global' => '1']],
             ['gitlab', null, ['token' => 'test']],
             ['gitlab', 'https://git.example.com/', ['token' => 'test']],
             ['bitbucket', null, ['username' => 'test', 'password' => 'test']],

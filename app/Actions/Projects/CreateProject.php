@@ -14,7 +14,7 @@ class CreateProject
             $input['name'] = strtolower($input['name']);
         }
 
-        $this->validate($user, $input);
+        $this->validate($input);
 
         $project = new Project([
             'name' => $input['name'],
@@ -22,10 +22,12 @@ class CreateProject
 
         $project->save();
 
+        $project->users()->attach($user);
+
         return $project;
     }
 
-    private function validate(User $user, array $input): void
+    private function validate(array $input): void
     {
         Validator::make($input, [
             'name' => [
