@@ -18,7 +18,8 @@
 
 <div
     x-data="{
-        show: @js($show),
+        forceShow: @js($show),
+        show: false,
         focusables() {
             // All focusable element types...
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
@@ -34,6 +35,7 @@
         prevFocusableIndex() { return Math.max(0, this.focusables().indexOf(document.activeElement)) -1 },
     }"
     x-init="
+        setTimeout(() => (show = forceShow), 100)
         $watch('show', (value) => {
             if (value) {
                 document.body.classList.add('overflow-y-hidden')

@@ -4,23 +4,18 @@ namespace App\Actions\SourceControl;
 
 use App\Models\SourceControl;
 use App\Models\User;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class ConnectSourceControl
+class EditSourceControl
 {
-    public function connect(User $user, array $input): void
+    public function edit(SourceControl $sourceControl, User $user, array $input): void
     {
         $this->validate($input);
 
-        $sourceControl = new SourceControl([
-            'provider' => $input['provider'],
-            'profile' => $input['name'],
-            'url' => Arr::has($input, 'url') ? $input['url'] : null,
-            'project_id' => isset($input['global']) && $input['global'] ? null : $user->current_project_id,
-        ]);
+        $sourceControl->profile = $input['name'];
+        $sourceControl->url = isset($input['url']) ? $input['url'] : null;
+        $sourceControl->project_id = isset($input['global']) && $input['global'] ? null : $user->current_project_id;
 
         $this->validateProvider($sourceControl, $input);
 
@@ -42,10 +37,6 @@ class ConnectSourceControl
     private function validate(array $input): void
     {
         $rules = [
-            'provider' => [
-                'required',
-                Rule::in(config('core.source_control_providers')),
-            ],
             'name' => [
                 'required',
             ],
