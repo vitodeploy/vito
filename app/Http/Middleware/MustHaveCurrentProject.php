@@ -2,12 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Facades\Toast;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class SelectCurrentProject
+class MustHaveCurrentProject
 {
     /**
      * Handle an incoming request.
@@ -16,15 +17,13 @@ class SelectCurrentProject
      */
     public function handle(Request $request, Closure $next): Response
     {
-        /** @var Server $server */
-        $server = $request->route('server');
-
         /** @var User $user */
         $user = $request->user();
 
-        if ($server->project_id != $user->current_project_id && $user->can('view', $server)) {
-            $user->current_project_id = $server->project_id;
-            $user->save();
+        if (! $user->currentProject) {
+            Toast::warning('Please select a project to continue');
+
+            return redirect()->route('profile');
         }
 
         return $next($request);

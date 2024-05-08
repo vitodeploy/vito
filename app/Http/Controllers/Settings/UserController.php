@@ -7,6 +7,7 @@ use App\Actions\User\UpdateUser;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Http\Controllers\Controller;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -55,6 +56,18 @@ class UserController extends Controller
         ]);
 
         $user->projects()->sync($request->projects);
+
+        if ($user->currentProject && ! $user->projects->contains($user->currentProject)) {
+            $user->current_project_id = null;
+            $user->save();
+        }
+
+        /** @var Project $firstProject */
+        $firstProject = $user->projects->first();
+        if (! $user->currentProject && $firstProject) {
+            $user->current_project_id = $firstProject->id;
+            $user->save();
+        }
 
         Toast::success('Projects updated successfully');
 
