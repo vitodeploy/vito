@@ -19,6 +19,8 @@ class ProjectController extends Controller
 {
     public function index(): View
     {
+        $this->authorize('viewAny', Project::class);
+
         return view('settings.projects.index', [
             'projects' => Project::all(),
         ]);
@@ -26,6 +28,8 @@ class ProjectController extends Controller
 
     public function create(Request $request): HtmxResponse
     {
+        $this->authorize('create', Project::class);
+
         app(CreateProject::class)->create($request->user(), $request->input());
 
         Toast::success('Project created.');
@@ -35,8 +39,7 @@ class ProjectController extends Controller
 
     public function update(Request $request, Project $project): HtmxResponse
     {
-        /** @var Project $project */
-        $project = $request->user()->projects()->findOrFail($project->id);
+        $this->authorize('update', $project);
 
         app(UpdateProject::class)->update($project, $request->input());
 
@@ -47,6 +50,8 @@ class ProjectController extends Controller
 
     public function delete(Project $project): RedirectResponse
     {
+        $this->authorize('delete', $project);
+
         /** @var User $user */
         $user = auth()->user();
 

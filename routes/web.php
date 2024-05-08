@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
         require __DIR__.'/settings.php';
     });
 
-    Route::prefix('/servers')->group(function () {
+    Route::prefix('/servers')->middleware('must-have-current-project')->group(function () {
         require __DIR__.'/server.php';
     });
 
