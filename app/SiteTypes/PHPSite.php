@@ -68,7 +68,9 @@ class PHPSite extends AbstractSiteType
      */
     public function install(): void
     {
-        $this->site->server->webserver()->handler()->createVHost($this->site);
+        /** @var Webserver $webserver */
+        $webserver = $this->site->server->webserver()->handler();
+        $webserver->createVHost($this->site);
         $this->progress(15);
         $this->deployKey();
         $this->progress(30);
