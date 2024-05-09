@@ -94,12 +94,6 @@ class SSH
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
     {
         if (! $this->log && $log) {
-            $this->log = $this->server->logs()->create([
-                'site_id' => $siteId,
-                'name' => $this->server->id.'-'.strtotime('now').'-'.$log.'.log',
-                'type' => $log,
-                'disk' => config('core.logs_disk'),
-            ]);
             $this->log = ServerLog::make($this->server, $log);
             if ($siteId) {
                 $this->log->forSite($siteId);

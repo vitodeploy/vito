@@ -81,7 +81,9 @@ class Wordpress extends AbstractSiteType
 
     public function install(): void
     {
-        $this->site->server->webserver()->handler()->createVHost($this->site);
+        /** @var Webserver $webserver */
+        $webserver = $this->site->server->webserver()->handler();
+        $webserver->createVHost($this->site);
         $this->progress(30);
         /** @var Database $database */
         $database = app(CreateDatabase::class)->create($this->site->server, [
