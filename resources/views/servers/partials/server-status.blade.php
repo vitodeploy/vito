@@ -14,4 +14,8 @@
     @if ($server->status == \App\Enums\ServerStatus::INSTALLATION_FAILED)
         <x-status status="danger">{{ $server->status }}</x-status>
     @endif
+
+    @if ($server->status == \App\Enums\ServerStatus::UPDATING)
+        <x-status status="warning">{{ $server->status }}</x-status>
+    @endif
 </div>

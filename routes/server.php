@@ -145,6 +145,8 @@ Route::middleware('select-current-project')->group(function () {
         Route::post('/check-connection', [ServerSettingController::class, 'checkConnection'])->name('servers.settings.check-connection');
         Route::post('/reboot', [ServerSettingController::class, 'reboot'])->name('servers.settings.reboot');
         Route::post('/edit', [ServerSettingController::class, 'edit'])->name('servers.settings.edit');
+        Route::post('/check-updates', [ServerSettingController::class, 'checkUpdates'])->name('servers.settings.check-updates');
+        Route::post('/update', [ServerSettingController::class, 'update'])->name('servers.settings.update');
     });
 
     // logs

@@ -55,6 +55,7 @@ use Illuminate\Support\Str;
  * @property Queue[] $daemons
  * @property SshKey[] $sshKeys
  * @property string $hostname
+ * @property int $updates
  */
 class Server extends AbstractModel
 {
@@ -82,6 +83,7 @@ class Server extends AbstractModel
         'security_updates',
         'progress',
         'progress_step',
+        'updates',
     ];
 
     protected $casts = [
@@ -95,6 +97,7 @@ class Server extends AbstractModel
         'available_updates' => 'integer',
         'security_updates' => 'integer',
         'progress' => 'integer',
+        'updates' => 'integer',
     ];
 
     protected $hidden = [
@@ -383,5 +386,12 @@ class Server extends AbstractModel
     public function cron(): Cron
     {
         return new Cron($this);
+    }
+
+    public function checkForUpdates(): void
+    {
+        $this->update([
+            'updates' => $this->os()->availableUpdates(),
+        ]);
     }
 }

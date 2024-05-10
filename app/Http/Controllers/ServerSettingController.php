@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Server\EditServer;
 use App\Actions\Server\RebootServer;
+use App\Actions\Server\Update;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Server;
@@ -63,5 +64,25 @@ class ServerSettingController extends Controller
         Toast::success('Server updated.');
 
         return back();
+    }
+
+    public function checkUpdates(Server $server): RedirectResponse
+    {
+        $this->authorize('manage', $server);
+
+        $server->checkForUpdates();
+
+        return back();
+    }
+
+    public function update(Server $server): HtmxResponse
+    {
+        $this->authorize('manage', $server);
+
+        app(Update::class)->update($server);
+
+        Toast::info('Updating server. This may take a few minutes.');
+
+        return htmx()->back();
     }
 }
