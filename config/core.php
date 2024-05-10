@@ -16,6 +16,7 @@ return [
     'operating_systems' => [
         \App\Enums\OperatingSystem::UBUNTU20,
         \App\Enums\OperatingSystem::UBUNTU22,
+        \App\Enums\OperatingSystem::UBUNTU24,
     ],
     'webservers' => ['none', 'nginx'],
     'php_versions' => [
@@ -106,26 +107,32 @@ return [
         'custom' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'aws' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'ubuntu',
             \App\Enums\OperatingSystem::UBUNTU22 => 'ubuntu',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'ubuntu',
         ],
         'linode' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'digitalocean' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'vultr' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'hetzner' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
     ],
 
@@ -164,6 +171,9 @@ return [
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 'latest' => 'nginx',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                'latest' => 'nginx',
+            ],
         ],
         'mysql' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
@@ -171,6 +181,10 @@ return [
                 '8.0' => 'mysql',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                '5.7' => 'mysql',
+                '8.0' => 'mysql',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
             ],
@@ -184,6 +198,10 @@ return [
                 '10.3' => 'mariadb',
                 '10.4' => 'mariadb',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
+            ],
         ],
         'postgresql' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
@@ -194,6 +212,13 @@ return [
                 '16' => 'postgresql',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 '12' => 'postgresql',
                 '13' => 'postgresql',
                 '14' => 'postgresql',
@@ -225,12 +250,27 @@ return [
                 '8.2' => 'php8.2-fpm',
                 '8.3' => 'php8.3-fpm',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                '5.6' => 'php5.6-fpm',
+                '7.0' => 'php7.0-fpm',
+                '7.1' => 'php7.1-fpm',
+                '7.2' => 'php7.2-fpm',
+                '7.3' => 'php7.3-fpm',
+                '7.4' => 'php7.4-fpm',
+                '8.0' => 'php8.0-fpm',
+                '8.1' => 'php8.1-fpm',
+                '8.2' => 'php8.2-fpm',
+                '8.3' => 'php8.3-fpm',
+            ],
         ],
         'redis' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
                 'latest' => 'redis',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                'latest' => 'redis',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 'latest' => 'redis',
             ],
         ],
@@ -241,6 +281,9 @@ return [
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 'latest' => 'supervisor',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                'latest' => 'supervisor',
+            ],
         ],
         'ufw' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
@@ -249,12 +292,18 @@ return [
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 'latest' => 'ufw',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                'latest' => 'ufw',
+            ],
         ],
         'vito-agent' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
                 'latest' => 'vito-agent',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                'latest' => 'vito-agent',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 'latest' => 'vito-agent',
             ],
         ],
