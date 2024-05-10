@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property User $user
  * @property Collection<Server> $servers
  * @property Collection<NotificationChannel> $notificationChannels
+ * @property Collection<SourceControl> $sourceControls
  */
 class Project extends Model
 {
@@ -58,5 +59,10 @@ class Project extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_project')->withTimestamps();
+    }
+
+    public function sourceControls(): HasMany
+    {
+        return $this->hasMany(SourceControl::class);
     }
 }

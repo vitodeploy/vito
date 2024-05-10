@@ -69,5 +69,6 @@ class Kernel extends HttpKernel
         'handle-ssh-errors' => HandleSSHErrors::class,
         'select-current-project' => SelectCurrentProject::class,
         'is-admin' => \App\Http\Middleware\IsAdmin::class,
+        'must-have-current-project' => \App\Http\Middleware\MustHaveCurrentProject::class,
     ];
 }

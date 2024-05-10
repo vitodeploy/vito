@@ -183,7 +183,7 @@
                     @foreach (config("core.operating_systems") as $operatingSystem)
                         <option
                             value="{{ $operatingSystem }}"
-                            @if($operatingSystem == old('os', 'ubuntu_22')) selected @endif
+                            @if($operatingSystem == old('os', \App\Enums\OperatingSystem::UBUNTU24)) selected @endif
                         >
                             {{ str($operatingSystem)->replace("_", " ")->ucfirst() }}
                             LTS

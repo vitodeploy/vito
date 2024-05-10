@@ -9,4 +9,6 @@ final class OperatingSystem
     const UBUNTU20 = 'ubuntu_20';
 
     const UBUNTU22 = 'ubuntu_22';
+
+    const UBUNTU24 = 'ubuntu_24';
 }

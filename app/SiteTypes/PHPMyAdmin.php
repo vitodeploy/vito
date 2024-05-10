@@ -41,9 +41,12 @@ class PHPMyAdmin extends PHPSite
 
     public function install(): void
     {
-        $this->site->server->webserver()->handler()->createVHost($this->site);
+        /** @var Webserver $webserver */
+        $webserver = $this->site->server->webserver()->handler();
+        $webserver->createVHost($this->site);
         $this->progress(30);
         app(\App\SSH\PHPMyAdmin\PHPMyAdmin::class)->install($this->site);
         $this->progress(65);
+        $this->site->php()?->restart();
     }
 }
