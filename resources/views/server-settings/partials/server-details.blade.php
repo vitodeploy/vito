@@ -17,7 +17,11 @@
     <div class="flex items-center justify-between">
         <div>{{ __("Last Update Checked") }}</div>
         <div>
-            <x-datetime :value="$server->last_update_check" />
+            @if ($server->last_update_check)
+                <x-datetime :value="$server->last_update_check" />
+            @else
+                -
+            @endif
         </div>
     </div>
     <div>
