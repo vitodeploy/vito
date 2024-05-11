@@ -11,4 +11,6 @@ final class ServerStatus
     const INSTALLATION_FAILED = 'installation_failed';
 
     const DISCONNECTED = 'disconnected';
+
+    const UPDATING = 'updating';
 }

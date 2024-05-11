@@ -2,6 +2,7 @@
 
 namespace App\Actions\Server;
 
+use App\Enums\ServerStatus;
 use App\Facades\Notifier;
 use App\Models\Server;
 use App\Notifications\ServerDisconnected;
@@ -15,12 +16,12 @@ class CheckConnection
         try {
             $server->ssh()->connect();
             $server->refresh();
-            if ($status == 'disconnected') {
-                $server->status = 'ready';
+            if (in_array($status, [ServerStatus::DISCONNECTED, ServerStatus::UPDATING])) {
+                $server->status = ServerStatus::READY;
                 $server->save();
             }
         } catch (Throwable) {
-            $server->status = 'disconnected';
+            $server->status = ServerStatus::DISCONNECTED;
             $server->save();
             Notifier::send($server, new ServerDisconnected($server));
         }

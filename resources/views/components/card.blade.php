@@ -1,4 +1,4 @@
-<div class="mx-auto mb-10">
+<div {{ $attributes->merge(["class" => "mx-auto mb-10"]) }}>
     <x-card-header>
         @if (isset($title))
             <x-slot name="title">{{ $title }}</x-slot>

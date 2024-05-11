@@ -30,6 +30,19 @@ class OS
         );
     }
 
+    public function availableUpdates(): int
+    {
+        $result = $this->server->ssh()->exec(
+            $this->getScript('available-updates.sh'),
+            'check-available-updates'
+        );
+
+        // -1 because the first line is not a package
+        $availableUpdates = str($result)->after('Available updates:')->trim()->toInteger() - 1;
+
+        return max($availableUpdates, 0);
+    }
+
     public function createUser(string $user, string $password, string $key): void
     {
         $this->server->ssh()->exec(

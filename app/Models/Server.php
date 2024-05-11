@@ -9,6 +9,7 @@ use App\ServerTypes\ServerType;
 use App\SSH\Cron\Cron;
 use App\SSH\OS\OS;
 use App\SSH\Systemd\Systemd;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -55,6 +56,8 @@ use Illuminate\Support\Str;
  * @property Queue[] $daemons
  * @property SshKey[] $sshKeys
  * @property string $hostname
+ * @property int $updates
+ * @property Carbon $last_update_check
  */
 class Server extends AbstractModel
 {
@@ -82,6 +85,8 @@ class Server extends AbstractModel
         'security_updates',
         'progress',
         'progress_step',
+        'updates',
+        'last_update_check',
     ];
 
     protected $casts = [
@@ -95,6 +100,8 @@ class Server extends AbstractModel
         'available_updates' => 'integer',
         'security_updates' => 'integer',
         'progress' => 'integer',
+        'updates' => 'integer',
+        'last_update_check' => 'datetime',
     ];
 
     protected $hidden = [
@@ -383,5 +390,12 @@ class Server extends AbstractModel
     public function cron(): Cron
     {
         return new Cron($this);
+    }
+
+    public function checkForUpdates(): void
+    {
+        $this->updates = $this->os()->availableUpdates();
+        $this->last_update_check = now();
+        $this->save();
     }
 }
