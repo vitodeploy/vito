@@ -48,7 +48,7 @@
 
             <x-secondary-button
                 id="btn-check-updates"
-                class="mb-2 md:mb-0 md:ml-2"
+                class="mt-2 md:ml-2 md:mt-0"
                 hx-post="{{ route('servers.settings.check-updates', $server) }}"
                 hx-swap="outerHTML"
                 hx-target="#server-details"
