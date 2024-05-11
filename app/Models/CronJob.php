@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CronjobStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -41,7 +42,14 @@ class CronJob extends AbstractModel
     public static function crontab(Server $server, string $user): string
     {
         $data = '';
-        $cronJobs = $server->cronJobs()->where('user', $user)->get();
+        $cronJobs = $server->cronJobs()
+            ->where('user', $user)
+            ->whereIn('status', [
+                CronjobStatus::READY,
+                CronjobStatus::CREATING,
+                CronjobStatus::ENABLING,
+            ])
+            ->get();
         foreach ($cronJobs as $key => $cronJob) {
             $data .= $cronJob->frequency.' '.$cronJob->command;
             if ($key != count($cronJobs) - 1) {

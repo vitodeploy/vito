@@ -432,7 +432,7 @@
                                 ></path>
                             </svg>
                             <p
-                                class="font-medium leading-none text-gray-800 dark:text-white"
+                                class="text-sm font-medium leading-none text-gray-800 dark:text-white"
                                 x-text="toast.message"
                             ></p>
                         </div>

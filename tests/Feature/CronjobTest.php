@@ -99,4 +99,60 @@ class CronjobTest extends TestCase
         SSH::assertExecutedContains("echo '* * * 1 1 ls -la' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
+
+    public function test_enable_cronjob()
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        /** @var CronJob $cronjob */
+        $cronjob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'vito',
+            'command' => 'ls -la',
+            'frequency' => '* * * 1 1',
+            'status' => CronjobStatus::DISABLED,
+        ]);
+
+        $this->post(route('servers.cronjobs.enable', [
+            'server' => $this->server,
+            'cronJob' => $cronjob,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $cronjob->refresh();
+
+        $this->assertEquals(CronjobStatus::READY, $cronjob->status);
+
+        SSH::assertExecutedContains("echo '* * * 1 1 ls -la' | sudo -u vito crontab -");
+        SSH::assertExecutedContains('sudo -u vito crontab -l');
+    }
+
+    public function test_disable_cronjob()
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        /** @var CronJob $cronjob */
+        $cronjob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'vito',
+            'command' => 'ls -la',
+            'frequency' => '* * * 1 1',
+            'status' => CronjobStatus::READY,
+        ]);
+
+        $this->post(route('servers.cronjobs.disable', [
+            'server' => $this->server,
+            'cronJob' => $cronjob,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $cronjob->refresh();
+
+        $this->assertEquals(CronjobStatus::DISABLED, $cronjob->status);
+
+        SSH::assertExecutedContains("echo '' | sudo -u vito crontab -");
+        SSH::assertExecutedContains('sudo -u vito crontab -l');
+    }
 }
