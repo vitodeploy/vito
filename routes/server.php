@@ -113,6 +113,8 @@ Route::middleware('select-current-project')->group(function () {
         Route::get('/{server}/cronjobs', [CronjobController::class, 'index'])->name('servers.cronjobs');
         Route::post('/{server}/cronjobs', [CronjobController::class, 'store'])->name('servers.cronjobs.store');
         Route::delete('/{server}/cronjobs/{cronJob}', [CronjobController::class, 'destroy'])->name('servers.cronjobs.destroy');
+        Route::post('/{server}/cronjobs/{cronJob}/enable', [CronjobController::class, 'enable'])->name('servers.cronjobs.enable');
+        Route::post('/{server}/cronjobs/{cronJob}/disable', [CronjobController::class, 'disable'])->name('servers.cronjobs.disable');
 
         // ssh keys
         Route::get('/{server}/ssh-keys', [SSHKeyController::class, 'index'])->name('servers.ssh-keys');

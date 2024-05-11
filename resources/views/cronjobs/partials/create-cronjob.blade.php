@@ -30,6 +30,11 @@
                     type="text"
                     class="mt-1 w-full"
                 />
+                <x-input-help class="mt-2">
+                    <a href="https://vitodeploy.com/servers/cronjobs.html" target="_blank" class="text-primary-500">
+                        How the command should look like?
+                    </a>
+                </x-input-help>
                 @error("command")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror

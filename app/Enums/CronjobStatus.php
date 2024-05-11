@@ -9,4 +9,10 @@ final class CronjobStatus
     const READY = 'ready';
 
     const DELETING = 'deleting';
+
+    const ENABLING = 'enabling';
+
+    const DISABLING = 'disabling';
+
+    const DISABLED = 'disabled';
 }
