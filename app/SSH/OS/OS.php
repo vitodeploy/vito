@@ -40,7 +40,7 @@ class OS
         // -1 because the first line is not a package
         $availableUpdates = str($result)->after('Available updates:')->trim()->toInteger() - 1;
 
-        return $availableUpdates ?? 0;
+        return max($availableUpdates, 0);
     }
 
     public function createUser(string $user, string $password, string $key): void

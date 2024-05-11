@@ -14,21 +14,20 @@
             <div class="border-t border-gray-200 dark:border-gray-700"></div>
         </div>
     </div>
+    <div class="flex items-center justify-between">
+        <div>{{ __("Last Update Checked") }}</div>
+        <div>
+            <x-datetime :value="$server->last_update_check" />
+        </div>
+    </div>
+    <div>
+        <div class="py-5">
+            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+        </div>
+    </div>
     <div id="available-updates" class="flex items-center justify-between">
         <div>{{ __("Available Updates") }} ({{ $server->updates }})</div>
         <div class="flex flex-col items-end md:flex-row md:items-center">
-            <x-secondary-button
-                id="btn-check-updates"
-                class="mb-2 md:mb-0 md:mr-2"
-                hx-post="{{ route('servers.settings.check-updates', $server) }}"
-                hx-swap="outerHTML"
-                hx-target="#available-updates"
-                hx-select="#available-updates"
-                hx-ext="disable-element"
-                hx-disable-element="#btn-check-updates"
-            >
-                {{ __("Check") }}
-            </x-secondary-button>
             @if ($server->updates > 0)
                 <x-primary-button
                     id="btn-update-server"
@@ -42,6 +41,19 @@
                     {{ __("Update") }}
                 </x-primary-button>
             @endif
+
+            <x-secondary-button
+                id="btn-check-updates"
+                class="mb-2 md:mb-0 md:ml-2"
+                hx-post="{{ route('servers.settings.check-updates', $server) }}"
+                hx-swap="outerHTML"
+                hx-target="#server-details"
+                hx-select="#server-details"
+                hx-ext="disable-element"
+                hx-disable-element="#btn-check-updates"
+            >
+                {{ __("Check") }}
+            </x-secondary-button>
         </div>
     </div>
     <div>

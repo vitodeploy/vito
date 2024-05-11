@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::table('servers', function (Blueprint $table) {
             $table->integer('updates')->default(0);
+            $table->timestamp('last_update_check')->nullable();
         });
     }
 
@@ -17,6 +18,7 @@ return new class extends Migration
     {
         Schema::table('servers', function (Blueprint $table) {
             $table->dropColumn('updates');
+            $table->dropColumn('last_update_check');
         });
     }
 };
