@@ -21,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 class CreateSite
 {
     /**
-     * @throws ValidationException
+     * @throws SourceControlIsNotConnected
      */
     public function create(Server $server, array $input): Site
     {
@@ -33,7 +33,7 @@ class CreateSite
                 'server_id' => $server->id,
                 'type' => $input['type'],
                 'domain' => $input['domain'],
-                'aliases' => isset($input['alias']) ? [$input['alias']] : [],
+                'aliases' => $input['aliases'] ?? [],
                 'path' => '/home/'.$server->getSshUser().'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
             ]);
@@ -115,7 +115,7 @@ class CreateSite
                     return $query->where('server_id', $server->id);
                 }),
             ],
-            'alias' => [
+            'aliases.*' => [
                 new DomainRule(),
             ],
         ];

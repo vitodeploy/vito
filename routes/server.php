@@ -67,6 +67,7 @@ Route::middleware('select-current-project')->group(function () {
             Route::post('/{site}/settings/vhost', [SiteSettingController::class, 'updateVhost']);
             Route::post('/{site}/settings/php', [SiteSettingController::class, 'updatePHPVersion'])->name('servers.sites.settings.php');
             Route::post('/{site}/settings/source-control', [SiteSettingController::class, 'updateSourceControl'])->name('servers.sites.settings.source-control');
+            Route::post('/{site}/settings/update-aliases', [SiteSettingController::class, 'updateAliases'])->name('servers.sites.settings.aliases');
 
             // site logs
             Route::get('/{site}/logs', [SiteLogController::class, 'index'])->name('servers.sites.logs');
