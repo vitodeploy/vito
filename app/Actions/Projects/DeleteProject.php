@@ -17,11 +17,15 @@ class DeleteProject
         }
 
         if ($user->current_project_id == $project->id) {
-            /** @var Project $randomProject */
-            $randomProject = $user->projects()->where('id', '!=', $project->id)->first();
-            $user->current_project_id = $randomProject->id;
-            $user->save();
+            throw ValidationException::withMessages([
+                'project' => __('Cannot delete your current project.'),
+            ]);
         }
+
+        /** @var Project $randomProject */
+        $randomProject = $user->projects()->where('project_id', '!=', $project->id)->first();
+        $user->current_project_id = $randomProject->id;
+        $user->save();
 
         $project->delete();
     }

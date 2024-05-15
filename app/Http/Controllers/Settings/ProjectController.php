@@ -55,9 +55,6 @@ class ProjectController extends Controller
         /** @var User $user */
         $user = auth()->user();
 
-        /** @var Project $project */
-        $project = $user->projects()->findOrFail($project->id);
-
         try {
             app(DeleteProject::class)->delete($user, $project);
         } catch (ValidationException $e) {
