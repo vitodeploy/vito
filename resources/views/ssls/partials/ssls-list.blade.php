@@ -14,6 +14,7 @@
                 <x-table>
                     <x-tr>
                         <x-th>{{ __("Type") }}</x-th>
+                        <x-th>{{ __("Domains") }}</x-th>
                         <x-th>{{ __("Created") }}</x-th>
                         <x-th>{{ __("Expires at") }}</x-th>
                         <x-th></x-th>
@@ -21,6 +22,15 @@
                     @foreach ($ssls as $ssl)
                         <x-tr>
                             <x-td>{{ $ssl->type }}</x-td>
+                            <x-td>
+                                <div class="flex-col space-y-1">
+                                    @foreach ($ssl->getDomains() as $domain)
+                                        <x-status status="disabled" class="lowercase">
+                                            {{ $domain }}
+                                        </x-status>
+                                    @endforeach
+                                </div>
+                            </x-td>
                             <x-td>
                                 <x-datetime :value="$ssl->created_at" />
                             </x-td>

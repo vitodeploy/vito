@@ -28,6 +28,10 @@ class CreateSSL
             'expires_at' => $input['type'] === SslType::LETSENCRYPT ? now()->addMonths(3) : $input['expires_at'],
             'status' => SslStatus::CREATING,
         ]);
+        $ssl->domains = [$site->domain];
+        if (isset($input['aliases']) && $input['aliases']) {
+            $ssl->domains = array_merge($ssl->domains, $site->aliases);
+        }
         $ssl->save();
 
         dispatch(function () use ($site, $ssl) {

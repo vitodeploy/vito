@@ -20,7 +20,7 @@ class SslFactory extends Factory
             'ca' => $this->faker->word(),
             'expires_at' => Carbon::now()->addDay(),
             'status' => SslStatus::CREATED,
-            'domains' => 'example.com',
+            'domains' => ['example.com'],
         ];
     }
 }

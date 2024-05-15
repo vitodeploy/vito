@@ -55,21 +55,7 @@
                 @enderror
             </div>
 
-            <div>
-                <x-input-label for="alias" :value="__('Alias')" />
-                <x-text-input
-                    value="{{ old('alias') }}"
-                    id="alias"
-                    name="alias"
-                    type="text"
-                    class="mt-1 block w-full"
-                    autocomplete="alias"
-                    placeholder="www.example.com"
-                />
-                @error("alias")
-                    <x-input-error class="mt-2" :messages="$message" />
-                @enderror
-            </div>
+            @include("sites.partials.create.fields.aliases")
 
             @include("sites.partials.create." . $type)
         </form>

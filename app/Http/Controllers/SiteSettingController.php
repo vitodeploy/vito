@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateSourceControl;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
@@ -83,9 +84,20 @@ class SiteSettingController extends Controller
     {
         $this->authorize('manage', $server);
 
-        $site = app(UpdateSourceControl::class)->update($site, $request->input());
+        app(UpdateSourceControl::class)->update($site, $request->input());
 
         Toast::success('Source control updated successfully!');
+
+        return htmx()->back();
+    }
+
+    public function updateAliases(Server $server, Site $site, Request $request): HtmxResponse
+    {
+        $this->authorize('manage', $server);
+
+        app(UpdateAliases::class)->update($site, $request->input());
+
+        Toast::success('Aliases updated successfully!');
 
         return htmx()->back();
     }

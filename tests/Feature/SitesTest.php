@@ -42,6 +42,7 @@ class SitesTest extends TestCase
 
         $this->assertDatabaseHas('sites', [
             'domain' => 'example.com',
+            'aliases' => json_encode($inputs['aliases'] ?? []),
             'status' => SiteStatus::READY,
         ]);
     }
@@ -54,7 +55,7 @@ class SitesTest extends TestCase
         $inputs = [
             'type' => SiteType::LARAVEL,
             'domain' => 'example.com',
-            'alias' => 'www.example.com',
+            'aliases' => ['www.example.com'],
             'php_version' => '8.2',
             'web_directory' => 'public',
             'repository' => 'test/test',
@@ -220,7 +221,7 @@ class SitesTest extends TestCase
                 [
                     'type' => SiteType::LARAVEL,
                     'domain' => 'example.com',
-                    'alias' => 'www.example.com',
+                    'aliases' => ['www.example.com', 'www2.example.com'],
                     'php_version' => '8.2',
                     'web_directory' => 'public',
                     'repository' => 'test/test',
@@ -232,7 +233,7 @@ class SitesTest extends TestCase
                 [
                     'type' => SiteType::WORDPRESS,
                     'domain' => 'example.com',
-                    'alias' => 'www.example.com',
+                    'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
                     'title' => 'Example',
                     'username' => 'example',
@@ -247,7 +248,7 @@ class SitesTest extends TestCase
                 [
                     'type' => SiteType::PHP_BLANK,
                     'domain' => 'example.com',
-                    'alias' => 'www.example.com',
+                    'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
                     'web_directory' => 'public',
                 ],
@@ -256,7 +257,7 @@ class SitesTest extends TestCase
                 [
                     'type' => SiteType::PHPMYADMIN,
                     'domain' => 'example.com',
-                    'alias' => 'www.example.com',
+                    'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
                     'version' => '5.1.2',
                 ],

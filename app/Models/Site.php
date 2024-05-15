@@ -278,4 +278,9 @@ class Site extends AbstractModel
             return '';
         }
     }
+
+    public function hasSSL(): bool
+    {
+        return $this->ssls->isNotEmpty();
+    }
 }

@@ -3,6 +3,8 @@
 
     @include("site-settings.partials.change-php-version")
 
+    @include("site-settings.partials.update-aliases")
+
     @if ($site->source_control_id)
         @include("site-settings.partials.update-source-control")
     @endif

@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
  * @property string $status
  * @property Site $site
  * @property string $ca_path
+ * @property ?array $domains
  */
 class Ssl extends AbstractModel
 {
@@ -30,6 +31,7 @@ class Ssl extends AbstractModel
         'ca',
         'expires_at',
         'status',
+        'domains',
     ];
 
     protected $casts = [
@@ -38,6 +40,7 @@ class Ssl extends AbstractModel
         'pk' => 'encrypted',
         'ca' => 'encrypted',
         'expires_at' => 'datetime',
+        'domains' => 'array',
     ];
 
     public function site(): BelongsTo
@@ -110,5 +113,17 @@ class Ssl extends AbstractModel
         }
 
         return true;
+    }
+
+    public function getDomains(): array
+    {
+        if (! empty($this->domains) && is_array($this->domains)) {
+            return $this->domains;
+        }
+
+        $this->domains = [$this->site->domain];
+        $this->save();
+
+        return $this->domains;
     }
 }
