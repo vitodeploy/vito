@@ -9,6 +9,8 @@ echo "Checking out the latest tag..."
 NEW_RELEASE=$(git tag -l --merged 1.x --sort=-v:refname | head -n 1)
 git checkout "$NEW_RELEASE"
 
+git pull origin "$NEW_RELEASE"
+
 echo "Installing composer dependencies..."
 composer install --no-dev
 
