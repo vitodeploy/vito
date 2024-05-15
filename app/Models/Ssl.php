@@ -117,7 +117,7 @@ class Ssl extends AbstractModel
 
     public function getDomains(): array
     {
-        if (! empty($this->domains)) {
+        if (! empty($this->domains) && is_array($this->domains)) {
             return $this->domains;
         }
 
