@@ -65,7 +65,7 @@
 
         <div class="space-y-3">
             <x-console-view id="console-output">
-                <div class="w-full" x-text="output"></div>
+                <div class="w-full font-mono whitespace-pre" x-text="output"></div>
             </x-console-view>
             <form onsubmit="return false" id="console-form" class="flex items-center justify-between">
                 <x-select-input x-model="user" id="user" name="user" class="flex-none" data-tooltip="User">
