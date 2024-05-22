@@ -14,6 +14,7 @@ class Composer
         $site->server->ssh()->exec(
             $this->getScript('composer-install.sh', [
                 'path' => $site->path,
+                'php_version' => $site->php_version,
             ]),
             'composer-install',
             $site->id
