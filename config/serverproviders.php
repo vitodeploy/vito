@@ -487,6 +487,7 @@ return [
             'ubuntu_18' => 'linode/ubuntu18.04',
             'ubuntu_20' => 'linode/ubuntu20.04',
             'ubuntu_22' => 'linode/ubuntu22.04',
+            'ubuntu_24' => 'linode/ubuntu24.04',
         ],
     ],
     'digitalocean' => [
@@ -618,6 +619,7 @@ return [
             'ubuntu_18' => '112929540',
             'ubuntu_20' => '112929454',
             'ubuntu_22' => '129211873',
+            'ubuntu_24' => '155133621',
         ],
     ],
     'vultr' => [
@@ -789,6 +791,7 @@ return [
             'ubuntu_18' => '270',
             'ubuntu_20' => '387',
             'ubuntu_22' => '1743',
+            'ubuntu_24' => '2284',
         ],
     ],
     'hetzner' => [
@@ -920,6 +923,7 @@ return [
             'ubuntu_18' => 'ubuntu-18.04',
             'ubuntu_20' => 'ubuntu-20.04',
             'ubuntu_22' => 'ubuntu-22.04',
+            'ubuntu_24' => 'ubuntu-24.04',
         ],
     ],
 ];
