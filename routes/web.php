@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScriptController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\ProjectController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,14 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('/servers')->middleware('must-have-current-project')->group(function () {
         require __DIR__.'/server.php';
+    });
+
+    Route::prefix('/scripts')->group(function () {
+        Route::get('/', [ScriptController::class, 'index'])->name('scripts.index');
+        Route::post('/', [ScriptController::class, 'store'])->name('scripts.store');
+        Route::post('/{script}/edit', [ScriptController::class, 'edit'])->name('scripts.edit');
+        Route::post('/{script}/execute', [ScriptController::class, 'execute'])->name('scripts.execute');
+        Route::delete('/{script}/delete', [ScriptController::class, 'delete'])->name('scripts.delete');
     });
 
     Route::get('/search', [SearchController::class, 'search'])->name('search');
