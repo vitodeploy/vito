@@ -140,6 +140,5 @@ class SshKeysTest extends TestCase
                 self::EXPECT_FAILURE,
             ],
         ];
-
     }
 }
