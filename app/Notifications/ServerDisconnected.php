@@ -26,6 +26,6 @@ class ServerDisconnected extends AbstractNotification
         return (new MailMessage)
             ->subject(__('Server disconnected!'))
             ->line("We've disconnected from your server [".$this->server->name.'].')
-            ->line('Please check your sever is online and make sure that has our public keys in it');
+            ->line('Please check your server is online and make sure that has our public keys in it');
     }
 }

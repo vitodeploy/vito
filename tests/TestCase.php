@@ -24,6 +24,10 @@ abstract class TestCase extends BaseTestCase
 
     protected Site $site;
 
+    public const EXPECT_SUCCESS = true;
+
+    public const EXPECT_FAILURE = false;
+
     public function setUp(): void
     {
         parent::setUp();
