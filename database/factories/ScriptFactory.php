@@ -2,21 +2,19 @@
 
 namespace Database\Factories;
 
-use App\Enums\ScriptExecutionStatus;
-use App\Models\ScriptExecution;
+use App\Models\Script;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class ScriptExecutionFactory extends Factory
+class ScriptFactory extends Factory
 {
-    protected $model = ScriptExecution::class;
+    protected $model = Script::class;
 
     public function definition(): array
     {
         return [
-            'user' => 'root',
-            'variables' => [],
-            'status' => ScriptExecutionStatus::EXECUTING,
+            'name' => $this->faker->name(),
+            'content' => 'ls -la',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];
