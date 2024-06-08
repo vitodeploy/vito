@@ -32,9 +32,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('/scripts')->group(function () {
         Route::get('/', [ScriptController::class, 'index'])->name('scripts.index');
         Route::post('/', [ScriptController::class, 'store'])->name('scripts.store');
+        Route::get('/{script}', [ScriptController::class, 'show'])->name('scripts.show');
         Route::post('/{script}/edit', [ScriptController::class, 'edit'])->name('scripts.edit');
         Route::post('/{script}/execute', [ScriptController::class, 'execute'])->name('scripts.execute');
         Route::delete('/{script}/delete', [ScriptController::class, 'delete'])->name('scripts.delete');
+        Route::get('/{script}/log/{execution}', [ScriptController::class, 'log'])->name('scripts.log');
     });
 
     Route::get('/search', [SearchController::class, 'search'])->name('search');

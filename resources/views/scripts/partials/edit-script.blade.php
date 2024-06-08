@@ -1,4 +1,8 @@
-<x-modal name="edit-script" :show="true">
+<x-modal
+    name="edit-script"
+    :show="true"
+    x-on:modal-edit-script-closed.window="window.history.pushState('', '', '{{ route('scripts.index') }}');"
+>
     <form
         id="edit-script-form"
         hx-post="{{ route("scripts.edit", ["script" => $script]) }}"
@@ -11,27 +15,11 @@
         </h2>
 
         <div class="mt-6">
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input
-                value="{{ old('name', $script->name) }}"
-                id="name"
-                name="name"
-                type="text"
-                class="mt-1 w-full"
-            />
-            @error("name")
-                <x-input-error class="mt-2" :messages="$message" />
-            @enderror
+            @include("scripts.partials.fields.name", ["value" => old("name", $script->name)])
         </div>
 
         <div class="mt-6">
-            <x-input-label for="content" :value="__('Content')" />
-            <x-textarea id="content" name="content" class="mt-1 min-h-[400px] w-full">
-                {{ old("content", $script->content) }}
-            </x-textarea>
-            @error("content")
-                <x-input-error class="mt-2" :messages="$message" />
-            @enderror
+            @include("scripts.partials.fields.content", ["value" => old("content", $script->content)])
         </div>
 
         <div class="mt-6 flex justify-end">

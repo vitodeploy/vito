@@ -8,6 +8,8 @@ use App\Actions\Script\ExecuteScript;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Script;
+use App\Models\ScriptExecution;
+use App\Models\Server;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +19,8 @@ class ScriptController extends Controller
 {
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Script::class);
+
         /** @var User $user */
         $user = auth()->user();
 
@@ -35,8 +39,20 @@ class ScriptController extends Controller
         return view('scripts.index', $data);
     }
 
+    public function show(Script $script): View
+    {
+        $this->authorize('view', $script);
+
+        return view('scripts.show', [
+            'script' => $script,
+            'executions' => $script->executions()->latest()->paginate(20),
+        ]);
+    }
+
     public function store(Request $request): HtmxResponse
     {
+        $this->authorize('create', Script::class);
+
         /** @var User $user */
         $user = auth()->user();
 
@@ -49,12 +65,7 @@ class ScriptController extends Controller
 
     public function edit(Request $request, Script $script): HtmxResponse
     {
-        /** @var User $user */
-        $user = auth()->user();
-
-        if ($script->user_id !== $user->id) {
-            abort(403);
-        }
+        $this->authorize('update', $script);
 
         app(EditScript::class)->edit($script, $request->input());
 
@@ -63,35 +74,38 @@ class ScriptController extends Controller
         return htmx()->redirect(route('scripts.index'));
     }
 
-    public function execute(Request $request, Script $script): HtmxResponse
+    public function execute(Script $script, Request $request): HtmxResponse
     {
-        /** @var User $user */
-        $user = auth()->user();
+        $this->validate($request, [
+            'server' => 'required|exists:servers,id',
+        ]);
 
-        if ($script->user_id !== $user->id) {
-            abort(403);
-        }
+        $server = Server::findOrFail($request->input('server'));
 
-        app(ExecuteScript::class)->execute($script, $request->input());
+        $this->authorize('execute', [$script, $server]);
+
+        app(ExecuteScript::class)->execute($script, $server, $request->input());
 
         Toast::success('Executing the script...');
 
-        return htmx()->redirect(route('scripts.index'));
+        return htmx()->redirect(route('scripts.show', $script));
     }
 
     public function delete(Script $script): RedirectResponse
     {
-        /** @var User $user */
-        $user = auth()->user();
-
-        if ($script->user_id !== $user->id) {
-            abort(403);
-        }
+        $this->authorize('delete', $script);
 
         $script->delete();
 
         Toast::success('Script deleted.');
 
         return redirect()->route('scripts.index');
+    }
+
+    public function log(Script $script, ScriptExecution $execution): RedirectResponse
+    {
+        $this->authorize('view', $script);
+
+        return back()->with('content', $execution->serverLog?->getContent());
     }
 }

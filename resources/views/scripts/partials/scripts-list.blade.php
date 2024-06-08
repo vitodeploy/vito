@@ -24,17 +24,21 @@
                             <x-td>{{ $script->id }}</x-td>
                             <x-td>{{ $script->name }}</x-td>
                             <x-td>
-                                @if ($script->last_executed_at)
-                                    <x-datetime :value="$script->last_executed_at" />
+                                @if ($script->lastExecution)
+                                    <x-datetime :value="$script->lastExecution->created_at" />
                                 @else
                                     -
                                 @endif
                             </x-td>
                             <x-td class="text-right">
+                                <x-icon-button :href="route('scripts.show', $script)" data-tooltip="Executions">
+                                    <x-heroicon name="o-eye" class="h-5 w-5" />
+                                </x-icon-button>
                                 <x-icon-button
                                     data-tooltip="Execute"
                                     id="execute-{{ $script->id }}"
                                     hx-get="{{ route('scripts.index', ['execute' => $script->id]) }}"
+                                    hx-replace-url="true"
                                     hx-select="#execute"
                                     hx-target="#execute"
                                     hx-ext="disable-element"
@@ -46,6 +50,7 @@
                                     data-tooltip="Edit"
                                     id="edit-{{ $script->id }}"
                                     hx-get="{{ route('scripts.index', ['edit' => $script->id]) }}"
+                                    hx-replace-url="true"
                                     hx-select="#edit"
                                     hx-target="#edit"
                                     hx-ext="disable-element"

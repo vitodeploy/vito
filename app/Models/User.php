@@ -167,15 +167,12 @@ class User extends Authenticatable
         return $this->hasMany(Script::class);
     }
 
-    /**
-     * @return Collection<Server>
-     */
-    public function allServers(): Collection
+    public function allServers(): Builder
     {
         return Server::query()->whereHas('project', function (Builder $query) {
             $query->whereHas('users', function ($query) {
                 $query->where('user_id', $this->id);
             });
-        })->get();
+        });
     }
 }

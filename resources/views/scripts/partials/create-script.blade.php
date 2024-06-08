@@ -16,21 +16,11 @@
             </h2>
 
             <div class="mt-6">
-                <x-input-label for="name" :value="__('Name')" />
-                <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
-                @error("name")
-                    <x-input-error class="mt-2" :messages="$message" />
-                @enderror
+                @include("scripts.partials.fields.name", ["value" => old("name")])
             </div>
 
             <div class="mt-6">
-                <x-input-label for="content" :value="__('Content')" />
-                <x-textarea id="content" name="content" class="mt-1 min-h-[400px] w-full">
-                    {{ old("content") }}
-                </x-textarea>
-                @error("content")
-                    <x-input-error class="mt-2" :messages="$message" />
-                @enderror
+                @include("scripts.partials.fields.content", ["value" => old("content")])
             </div>
 
             <div class="mt-6 flex justify-end">

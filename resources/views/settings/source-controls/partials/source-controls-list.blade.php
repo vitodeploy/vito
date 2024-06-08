@@ -29,6 +29,7 @@
                             <x-icon-button
                                 id="edit-{{ $sourceControl->id }}"
                                 hx-get="{{ route('settings.source-controls', ['edit' => $sourceControl->id]) }}"
+                                hx-replace-url="true"
                                 hx-select="#edit"
                                 hx-target="#edit"
                                 hx-ext="disable-element"

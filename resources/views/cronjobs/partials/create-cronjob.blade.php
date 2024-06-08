@@ -41,23 +41,7 @@
             </div>
 
             <div class="mt-6">
-                @php
-                    $user = old("user", "vito");
-                @endphp
-
-                <x-input-label for="user" :value="__('User')" />
-                <x-select-input id="user" name="user" class="mt-1 w-full">
-                    <option value="" selected disabled>
-                        {{ __("Select") }}
-                    </option>
-                    <option value="root" @if($user === 'root') selected @endif>root</option>
-                    <option value="{{ $server->getSshUser() }}" @if($user === $server->getSshUser()) selected @endif>
-                        {{ $server->getSshUser() }}
-                    </option>
-                </x-select-input>
-                @error("user")
-                    <x-input-error class="mt-2" :messages="$message" />
-                @enderror
+                @include("fields.user", ["value" => old("user")])
             </div>
 
             <div class="mt-6">
