@@ -78,6 +78,11 @@ class ScriptTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
+        $scriptExecution = ScriptExecution::factory()->create([
+            'script_id' => $script->id,
+            'status' => ScriptExecutionStatus::EXECUTING,
+        ]);
+
         $this->delete(
             route('scripts.delete', [
                 'script' => $script,
@@ -86,6 +91,10 @@ class ScriptTest extends TestCase
 
         $this->assertDatabaseMissing('scripts', [
             'id' => $script->id,
+        ]);
+
+        $this->assertDatabaseMissing('script_executions', [
+            'id' => $scriptExecution->id,
         ]);
     }
 

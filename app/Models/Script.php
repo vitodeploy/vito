@@ -29,6 +29,15 @@ class Script extends AbstractModel
         'content',
     ];
 
+    public static function boot(): void
+    {
+        parent::boot();
+
+        static::deleting(function (Script $script) {
+            $script->executions()->delete();
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
