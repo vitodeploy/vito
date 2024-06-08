@@ -140,9 +140,9 @@ class OS
         );
     }
 
-    public function runScript(string $path, string $script, ?ServerLog $serverLog): ServerLog
+    public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null): ServerLog
     {
-        $ssh = $this->server->ssh();
+        $ssh = $this->server->ssh($user);
         if ($serverLog) {
             $ssh->setLog($serverLog);
         }

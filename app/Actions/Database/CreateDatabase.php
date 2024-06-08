@@ -22,7 +22,9 @@ class CreateDatabase
             'server_id' => $server->id,
             'name' => $input['name'],
         ]);
-        $server->database()->handler()->create($database->name);
+        /** @var \App\SSH\Services\Database\Database */
+        $databaseHandler = $server->database()->handler();
+        $databaseHandler->create($database->name);
         $database->status = DatabaseStatus::READY;
         $database->save();
 

@@ -162,6 +162,13 @@
             @endif
 
             <li>
+                <x-sidebar-link :href="route('scripts.index')" :active="request()->routeIs('scripts.*')">
+                    <x-heroicon name="o-bolt" class="h-6 w-6" />
+                    <span class="ml-2">Scripts</span>
+                </x-sidebar-link>
+            </li>
+
+            <li>
                 <x-sidebar-link :href="route('profile')" :active="request()->routeIs('profile')">
                     <x-heroicon name="o-user-circle" class="h-6 w-6" />
                     <span class="ml-2">Profile</span>

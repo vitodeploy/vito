@@ -42,6 +42,7 @@
                 {{ $attributes->has("focusable") ? "setTimeout(() => firstFocusable().focus(), 100)" : "" }}
             } else {
                 document.body.classList.remove('overflow-y-hidden')
+                $dispatch('modal-{{ $name }}-closed')
             }
         })
     "
@@ -54,6 +55,7 @@
     x-show="show"
     class="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0"
     style="display: {{ $show ? "block" : "none" }}"
+    {{ $attributes }}
 >
     <div
         x-show="show"

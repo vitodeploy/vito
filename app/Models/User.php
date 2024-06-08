@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -159,5 +160,19 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === UserRole::ADMIN;
+    }
+
+    public function scripts(): HasMany
+    {
+        return $this->hasMany(Script::class);
+    }
+
+    public function allServers(): Builder
+    {
+        return Server::query()->whereHas('project', function (Builder $query) {
+            $query->whereHas('users', function ($query) {
+                $query->where('user_id', $this->id);
+            });
+        });
     }
 }

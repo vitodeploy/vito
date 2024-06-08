@@ -1,4 +1,8 @@
-<x-modal name="edit-source-control" :show="true">
+<x-modal
+    name="edit-source-control"
+    :show="true"
+    x-on:modal-edit-source-control-closed.window="window.history.pushState('', '', '{{ route('settings.source-controls') }}');"
+>
     <form
         id="edit-source-control-form"
         hx-post="{{ route("settings.source-controls.update", ["sourceControl" => $sourceControl->id]) }}"
