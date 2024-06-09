@@ -5,6 +5,7 @@ use App\Http\Controllers\Settings\ProjectController;
 use App\Http\Controllers\Settings\ServerProviderController;
 use App\Http\Controllers\Settings\SourceControlController;
 use App\Http\Controllers\Settings\SSHKeyController;
+use App\Http\Controllers\Settings\ApiV1Controller;
 use App\Http\Controllers\Settings\StorageProviderController;
 use App\Http\Controllers\Settings\UserController;
 use Illuminate\Support\Facades\Route;
@@ -61,3 +62,6 @@ Route::prefix('settings/ssh-keys')->group(function () {
     Route::post('add', [SshKeyController::class, 'add'])->name('settings.ssh-keys.add');
     Route::delete('delete/{id}', [SshKeyController::class, 'delete'])->name('settings.ssh-keys.delete');
 });
+
+// api-v1
+Route::resource('settings/api-v1', ApiV1Controller::class)->except(['create', 'edit']);

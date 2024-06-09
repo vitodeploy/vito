@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
-use InvalidArgumentException;
+use App\Traits\ApiQueryBuilder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use \Illuminate\Http\JsonResponse;
+
+use App\Actions\User\CreateUser;
+use App\Actions\User\UpdateUser;
 use App\Models\User;
-use Carbon\Carbon;
 
 class UserController extends Controller
 {
+    use ApiQueryBuilder;
+
     /**
      * Define relationships that are allowed to be loaded.
      *
@@ -75,7 +79,7 @@ class UserController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function users(Request $request)
+    public function all(Request $request): JsonResponse
     {
         $users = User::query();
 
@@ -101,160 +105,103 @@ class UserController extends Controller
             $users->paginate($request->get('paginate', 15))->toArray()
         ), 200);
     }
-
+    
     /**
-     * Apply relationships to the query.
+     * Create a new user.
      *
-     * @param Builder $query
-     * @param array $sorts
-     * @return void
-     * @throws InvalidArgumentException
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    protected function applyRelations(Builder $query): void
+    public function create(Request $request): JsonResponse
     {
-        $includes = request()->get('include', '');
-
-        if(!$includes) {
-            return;
-        }
-
-        // turn includes into an array & remove any spaces
-        $includes = explode(',', $includes);
-        $includes = array_map('trim', $includes);
-
-        foreach ($includes as $relation) {
-            if (!in_array($relation, $this->relations)) {
-                throw new InvalidArgumentException("Relation $relation is not allowed");
+        try {
+            $user = app(CreateUser::class)->create($request->input());
+        } catch (\Exception $error) {
+            if($error instanceof ValidationException) {
+                return response()->json(['success' => false, 'errors' => $error->validator->errors()->all()], 422);
             }
 
-            $query->with($relation);
+            return response()->json(['success' => false, 'errors' => [$error->getMessage()]], 500);
         }
+
+        return response()->json(['status' => true, 'data' => $user], 201);
     }
 
     /**
-     * Apply filters to the query.
+     * Get a single user.
      *
-     * @param Builder $query
-     * @param array $filters
-     * @return void
-     * @throws InvalidArgumentException
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    protected function applyFilters(Builder $query)
+    public function get(Request $request, $id): JsonResponse
     {
-        $filters = request()->get('filter', []);
+        $user = User::query()->where('id', $id)->first();
 
-        // check if value is an array
-        if(!is_array($filters)) {
-            throw new InvalidArgumentException("Filter must be in format ?filter[key]=value");
+        if (!$user) {
+            return response()->json(['success' => false, 'errors' => ['User not found']], 404);
         }
 
-        // check if filters are empty
-        if(empty($filters)) {
-            return;
+        try {
+            // add relations
+            $this->applyRelations($user);
+
+        } catch (\Exception $error) {
+            return response()->json(['success' => false, 'errors' => [$error->getMessage()]], 422);
         }
 
-        foreach ($filters as $key => $value) {
-            if (!in_array($key, $this->filters)) {
-                throw new InvalidArgumentException("Filter $key is not allowed");
-            }
-
-            $query->where($key, $value);
-        }
+        return response()->json(['status' => true, 'data' => $user], 200);
     }
 
     /**
-     * Apply sorting to the query.
+     * Update a user.
      *
-     * @param Builder $query
-     * @param array $sorts
-     * @return void
-     * @throws InvalidArgumentException
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    protected function applySorts(Builder $query): void
+    public function update(Request $request, $id): JsonResponse
     {
-        $sorts = request()->get('sort', []);
+        $user = User::query()->where('id', $id)->first();
 
-        // check if value is an array
-        if(!is_array($sorts)) {
-            throw new InvalidArgumentException("Sorting filters must be of format ?sort[key]=value");
+        if (!$user) {
+            return response()->json(['success' => false, 'errors' => ['User not found']], 404);
         }
 
-        // check if sorts are empty
-        if(empty($sorts)) {
-            return;
-        }
-
-        foreach ($sorts as $key => $operator) {
-            if (!in_array($key, $this->sorts)) {
-                throw new InvalidArgumentException("Sorting by $key is not allowed");
+        try {
+            app(UpdateUser::class)->update($user, $request->input());
+        } catch (\Exception $error) {
+            if($error instanceof ValidationException) {
+                return response()->json(['success' => false, 'errors' => $error->validator->errors()->all()], 422);
             }
 
-            if ($operator === 'random') {
-                $query->inRandomOrder();
-            } else {
-                $query->orderBy($key, $operator);
-            }
+            return response()->json(['success' => false, 'errors' => [$error->getMessage()]], 500);
         }
+
+        return response()->json(['status' => true, 'data' => $user], 200);
     }
 
     /**
-     * Apply date filters to the query.
+     * Delete a user.
      *
-     * @param Builder $query
-     * @return void
-     * @throws InvalidArgumentException
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    protected function applyDateFilters(Builder $query)
+    public function delete(Request $request, $id): JsonResponse
     {
-        $dateFilter = request()->get('date');
+        $user = User::query()->where('id', $id)->first();
 
-        if (!$dateFilter) {
-            return;
+        if (!$user) {
+            return response()->json(['success' => false, 'errors' => ['User not found']], 404);
         }
 
-        switch ($dateFilter) {
-            case 'today':
-                $query->whereDate('created_at', '=', Carbon::today()->toDateString());
-                break;
-            case 'yesterday':
-                $query->whereDate('created_at', '=', Carbon::yesterday()->toDateString());
-                break;
-            case '3days':
-                $query->whereDate('created_at', '>=', Carbon::now()->subDays(3)->toDateString());
-                break;
-            case '7days':
-                $query->whereDate('created_at', '>=', Carbon::now()->subDays(7)->toDateString());
-                break;
-            case '14days':
-                $query->whereDate('created_at', '>=', Carbon::now()->subDays(14)->toDateString());
-                break;
-            case '30days':
-                $query->whereDate('created_at', '>=', Carbon::now()->subDays(30)->toDateString());
-                break;
-            case '90days':
-                $query->whereDate('created_at', '>=', Carbon::now()->subDays(90)->toDateString());
-                break;
-            default:
-                $dates = explode(',', $dateFilter);
-                if (count($dates) === 2) {
-                    try {
-                        $startDate = Carbon::parse($dates[0]);
-                        $endDate = Carbon::parse($dates[1]);
-
-                        // Ensure that the start date is not after the end date
-                        if ($startDate->gt($endDate)) {
-                            throw new InvalidArgumentException("Start date must be before end date.");
-                        }
-
-                        $query->whereBetween('created_at', [$startDate, $endDate]);
-                    } catch (\Exception $e) {
-                        throw new InvalidArgumentException("Invalid date format. Dates should be in 'YYYY-MM-DD' format.");
-                    }
-                } else {
-                    throw new InvalidArgumentException("Custom date range must be in format 'YYYY-MM-DD,YYYY-MM-DD'");
-                }
-                break;
+        try {
+            $user->delete();
+        } catch (\Exception $error) {
+            return response()->json(['success' => false, 'errors' => [$error->getMessage()]], 500);
         }
+
+        return response()->json(['status' => true], 200);
     }
-
 }
