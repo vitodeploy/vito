@@ -17,7 +17,7 @@ jobs:
         node-version: ["20.x"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -26,7 +26,7 @@ jobs:
 
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -38,10 +38,10 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Run pint
-        run: ./vendor/bin/pint --test
+        run: ./vendor/bin/pint
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "20.x"
 
@@ -50,3 +50,10 @@ jobs:
 
       - name: Run lint
         run: npm run lint
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        id: auto-commit-action
+
+      - name: "Run if changes have been detected"
+        if: steps.auto-commit-action.outputs.changes_detected == 'true'
+        run: echo "Fix coding styles"
