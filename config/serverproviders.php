@@ -920,7 +920,6 @@ return [
             ],
         ],
         'images' => [
-            'ubuntu_18' => 'ubuntu-18.04',
             'ubuntu_20' => 'ubuntu-20.04',
             'ubuntu_22' => 'ubuntu-22.04',
             'ubuntu_24' => 'ubuntu-24.04',
