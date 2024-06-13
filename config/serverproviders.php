@@ -796,25 +796,63 @@ return [
     ],
     'hetzner' => [
         'plans' => [
+
+            /* Shared vCPUs x86 */
             [
-                'title' => 'CX11 - 1 Cores - 2 Memory - 20 Disk',
+                'title' => 'CX11 - 1 Cores (Intel) - 2 Memory - 20 Disk (eu only)',
                 'value' => 'cx11',
             ],
             [
-                'title' => 'CX21 - 2 Cores - 4 Memory - 40 Disk',
+                'title' => 'CX22 - 2 Cores (Intel) - 4 Memory - 40 Disk (eu only)',
+                'value' => 'cx22',
+            ],
+            [
+                'title' => 'CPX11 - 2 Cores (AMD) - 2 Memory - 40 Disk (eu only)',
+                'value' => 'cpx11',
+            ],
+            [
+                'title' => 'CX21 - 2 Cores (Intel) - 4 Memory - 40 Disk (eu only)',
                 'value' => 'cx21',
             ],
             [
-                'title' => 'CX31 - 2 Cores - 8 Memory - 80 Disk',
+                'title' => 'CX32 - 4 Cores (Intel) - 8 Memory - 80 Disk (eu only)',
+                'value' => 'cx32',
+            ],
+            [
+                'title' => 'CPX21 - 3 Cores (AMD) - 4 Memory - 80 Disk',
+                'value' => 'cpx21',
+            ],
+            [
+                'title' => 'CX31 - 2 Cores (Intel) - 8 Memory - 80 Disk (eu only)',
                 'value' => 'cx31',
             ],
             [
-                'title' => 'CX41 - 4 Cores - 16 Memory - 160 Disk',
+                'title' => 'CPX31 - 4 Cores (AMD) - 8 Memory - 160 Disk',
+                'value' => 'cpx31',
+            ],
+            [
+                'title' => 'CX42 - 8 Cores (Intel) - 16 Memory - 160 Disk (eu only)',
+                'value' => 'cx42',
+            ],
+            [
+                'title' => 'CX41 - 4 Cores (Intel) - 16 Memory - 160 Disk (eu only)',
                 'value' => 'cx41',
             ],
             [
-                'title' => 'CX51 - 8 Cores - 32 Memory - 240 Disk',
+                'title' => 'CPX41 - 8 Cores (AMD) - 16 Memory - 240 Disk',
+                'value' => 'cpx41',
+            ],
+            [
+                'title' => 'CX52 - 16 Cores (Intel) - 32 Memory - 320 Disk (eu only)',
+                'value' => 'cx52',
+            ],
+            [
+                'title' => 'CX51 - 8 Cores (Intel) - 32 Memory - 240 Disk (eu only)',
                 'value' => 'cx51',
+            ],
+            [
+                'title' => 'CPX51 - 16 Cores (AMD) - 32 Memory - 360 Disk',
+                'value' => 'cpx51',
             ],
             [
                 'title' => 'CCX11 Dedicated CPU - 2 Cores - 8 Memory - 80 Disk',
@@ -836,65 +874,49 @@ return [
                 'title' => 'CCX51 Dedicated CPU - 32 Cores - 128 Memory - 600 Disk',
                 'value' => 'ccx51',
             ],
+
+            /* Shared vCPUs Arm64 */
             [
-                'title' => 'CPX 11 - 2 Cores - 2 Memory - 40 Disk',
-                'value' => 'cpx11',
-            ],
-            [
-                'title' => 'CPX 21 - 3 Cores - 4 Memory - 80 Disk',
-                'value' => 'cpx21',
-            ],
-            [
-                'title' => 'CPX 31 - 4 Cores - 8 Memory - 160 Disk',
-                'value' => 'cpx31',
-            ],
-            [
-                'title' => 'CPX 41 - 8 Cores - 16 Memory - 240 Disk',
-                'value' => 'cpx41',
-            ],
-            [
-                'title' => 'CPX 51 - 16 Cores - 32 Memory - 360 Disk',
-                'value' => 'cpx51',
-            ],
-            [
-                'title' => 'CCX12 Dedicated CPU - 2 Cores - 8 Memory - 80 Disk',
-                'value' => 'ccx12',
-            ],
-            [
-                'title' => 'CCX22 Dedicated CPU - 4 Cores - 16 Memory - 160 Disk',
-                'value' => 'ccx22',
-            ],
-            [
-                'title' => 'CCX32 Dedicated CPU - 8 Cores - 32 Memory - 240 Disk',
-                'value' => 'ccx32',
-            ],
-            [
-                'title' => 'CCX42 Dedicated CPU - 16 Cores - 64 Memory - 360 Disk',
-                'value' => 'ccx42',
-            ],
-            [
-                'title' => 'CCX52 Dedicated CPU - 32 Cores - 128 Memory - 600 Disk',
-                'value' => 'ccx52',
-            ],
-            [
-                'title' => 'CCX62 Dedicated CPU - 48 Cores - 192 Memory - 960 Disk',
-                'value' => 'ccx62',
-            ],
-            [
-                'title' => 'CAX11 - 2 Cores - 4 Memory - 40 Disk',
+                'title' => 'CAX11 - 2 Cores (ARM64) - 4 Memory - 40 Disk',
                 'value' => 'cax11',
             ],
             [
-                'title' => 'CAX21 - 4 Cores - 8 Memory - 80 Disk',
+                'title' => 'CAX21 - 4 Cores (ARM64) - 8 Memory - 80 Disk',
                 'value' => 'cax21',
             ],
             [
-                'title' => 'CAX31 - 8 Cores - 16 Memory - 160 Disk',
+                'title' => 'CAX31 - 8 Cores (ARM64) - 16 Memory - 160 Disk',
                 'value' => 'cax31',
             ],
             [
-                'title' => 'CAX41 - 16 Cores - 32 Memory - 320 Disk',
+                'title' => 'CAX41 - 16 Cores (ARM64) - 32 Memory - 320 Disk',
                 'value' => 'cax41',
+            ],
+
+            /* Dedicated vCPUs */
+            [
+                'title' => 'CCX13 Dedicated CPU - 2 Cores (AMD) - 8 Memory - 80 Disk',
+                'value' => 'ccx13',
+            ],
+            [
+                'title' => 'CCX23 Dedicated CPU - 4 Cores (AMD) - 16 Memory - 160 Disk',
+                'value' => 'ccx23',
+            ],
+            [
+                'title' => 'CCX33 Dedicated CPU - 8 Cores (AMD) - 32 Memory - 240 Disk',
+                'value' => 'ccx33',
+            ],
+            [
+                'title' => 'CCX43 Dedicated CPU - 16 Cores (AMD) - 64 Memory - 360 Disk',
+                'value' => 'ccx43',
+            ],
+            [
+                'title' => 'CCX53 Dedicated CPU - 32 Cores (AMD) - 128 Memory - 600 Disk',
+                'value' => 'ccx53',
+            ],
+            [
+                'title' => 'CCX63 Dedicated CPU - 48 Cores (AMD) - 192 Memory - 960 Disk',
+                'value' => 'ccx63',
             ],
         ],
         'regions' => [
@@ -920,7 +942,6 @@ return [
             ],
         ],
         'images' => [
-            'ubuntu_18' => 'ubuntu-18.04',
             'ubuntu_20' => 'ubuntu-20.04',
             'ubuntu_22' => 'ubuntu-22.04',
             'ubuntu_24' => 'ubuntu-24.04',
