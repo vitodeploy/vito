@@ -24,6 +24,27 @@
                 @enderror
             </div>
 
+            <div class="mt-6">
+                <div class="flex items-center">
+                    <x-input-label class="mr-1" :value="__('Available Variables')" />
+                    (
+                    <a
+                        href="https://vitodeploy.com/sites/application.html#deployment-script"
+                        target="_blank"
+                        class="text-primary-500"
+                    >
+                        {{ __("How to use?") }}
+                    </a>
+                    )
+                </div>
+                <div class="mt-1 rounded-lg bg-gray-100 p-4 dark:bg-gray-700">
+                    @foreach ($site->environmentVariables() as $key => $variable)
+                        {{ $key }}={{ $variable }}
+                        <br />
+                    @endforeach
+                </div>
+            </div>
+
             <div class="mt-6 flex items-center justify-end">
                 <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}
