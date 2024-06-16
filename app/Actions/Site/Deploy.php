@@ -44,7 +44,12 @@ class Deploy
             $log->save();
             $deployment->log_id = $log->id;
             $deployment->save();
-            $site->server->os()->runScript($site->path, $site->deploymentScript->content, $log);
+            $site->server->os()->runScript(
+                path: $site->path,
+                script: $site->deploymentScript->content,
+                serverLog: $log,
+                variables: $site->environmentVariables($deployment)
+            );
             $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();
         })->catch(function () use ($deployment) {
