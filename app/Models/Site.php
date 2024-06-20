@@ -283,4 +283,17 @@ class Site extends AbstractModel
     {
         return $this->ssls->isNotEmpty();
     }
+
+    public function environmentVariables(?Deployment $deployment = null): array
+    {
+        return [
+            'SITE_PATH' => $this->path,
+            'DOMAIN' => $this->domain,
+            'BRANCH' => $this->branch ?? '',
+            'REPOSITORY' => $this->repository ?? '',
+            'COMMIT_ID' => $deployment?->commit_id ?? '',
+            'PHP_VERSION' => $this->php_version,
+            'PHP_PATH' => '/usr/bin/php'.$this->php_version,
+        ];
+    }
 }

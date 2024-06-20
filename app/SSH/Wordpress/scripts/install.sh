@@ -24,4 +24,4 @@ if ! wp --path=__path__ core install --url='http://__domain__' --title="__title_
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-print "Wordpress installed!"
+echo "Wordpress installed!"

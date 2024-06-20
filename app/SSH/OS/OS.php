@@ -140,19 +140,23 @@ class OS
         );
     }
 
-    public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null): ServerLog
+    public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null, ?array $variables = []): ServerLog
     {
         $ssh = $this->server->ssh($user);
         if ($serverLog) {
             $ssh->setLog($serverLog);
         }
-        $ssh->exec(
-            $this->getScript('run-script.sh', [
-                'path' => $path,
-                'script' => $script,
-            ]),
-            'run-script'
-        );
+        $command = '';
+        foreach ($variables as $key => $variable) {
+            $command .= "$key=$variable".PHP_EOL;
+        }
+        $command .= $this->getScript('run-script.sh', [
+            'path' => $path,
+            'script' => $script,
+        ]);
+        $ssh->exec($command, 'run-script');
+
+        info($command);
 
         return $ssh->log;
     }
