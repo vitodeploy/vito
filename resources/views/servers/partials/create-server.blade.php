@@ -95,6 +95,8 @@
                     type="text"
                     class="mt-1 block w-full"
                     autocomplete="name"
+                    required
+                    title="Please enter a valid server name."
                 />
                 @error("name")
                     <x-input-error class="mt-2" :messages="$message" />
@@ -155,6 +157,8 @@
                             type="text"
                             class="mt-1 block w-full"
                             autocomplete="ip"
+                            pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4})$"
+                            title="Please enter a valid IP address."
                         />
                         @error("ip")
                             <x-input-error class="mt-2" :messages="$message" />
@@ -166,9 +170,10 @@
                             value="{{ old('port') }}"
                             id="port"
                             name="port"
-                            type="text"
+                            type="number"
                             class="mt-1 block w-full"
                             autocomplete="port"
+                            title="Please enter a valid port number."
                         />
                         @error("port")
                             <x-input-error class="mt-2" :messages="$message" />
