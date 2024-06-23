@@ -82,10 +82,12 @@ return [
     'server_types' => [
         \App\Enums\ServerType::REGULAR,
         \App\Enums\ServerType::DATABASE,
+        \App\Enums\ServerType::LOAD_BALANCER,
     ],
     'server_types_class' => [
         \App\Enums\ServerType::REGULAR => \App\ServerTypes\Regular::class,
         \App\Enums\ServerType::DATABASE => \App\ServerTypes\Database::class,
+        \App\Enums\ServerType::LOAD_BALANCER => \App\ServerTypes\LoadBalancer::class,
     ],
     'server_providers' => [
         \App\Enums\ServerProvider::CUSTOM,
