@@ -2,6 +2,7 @@
 
 namespace App\SiteTypes;
 
+use App\Enums\ServerType;
 use App\Enums\SiteFeature;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\SSH\Composer\Composer;
@@ -27,6 +28,12 @@ class PHPSite extends AbstractSiteType
 
     public function createRules(array $input): array
     {
+        if ($this->site->server->type === ServerType::LOAD_BALANCER) {
+            return [
+                // We may want to take the php config anyway so we can auto-deploy to servers when we connect
+                // the load balancer to the servers.
+            ];
+        }
         return [
             'php_version' => [
                 'required',
@@ -72,6 +79,11 @@ class PHPSite extends AbstractSiteType
         $webserver = $this->site->server->webserver()->handler();
         $webserver->createVHost($this->site);
         $this->progress(15);
+        if ($this->site->server->type === ServerType::LOAD_BALANCER) {
+            $this->progress(65);
+            return;
+        }
+
         $this->deployKey();
         $this->progress(30);
         app(Git::class)->clone($this->site);
