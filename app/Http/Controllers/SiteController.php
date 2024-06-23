@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\DeleteSite;
+use App\Enums\ServerType;
 use App\Enums\SiteStatus;
 use App\Enums\SiteType;
 use App\Facades\Toast;
@@ -59,6 +60,13 @@ class SiteController extends Controller
             }
 
             return redirect()->route('servers.sites.installing', [$server, $site]);
+        }
+
+        if ($server->type === ServerType::LOAD_BALANCER) {
+            return view('sites.show-load-balancer', [
+                'server' => $server,
+                'site' => $site,
+            ]);
         }
 
         return view('sites.show', [

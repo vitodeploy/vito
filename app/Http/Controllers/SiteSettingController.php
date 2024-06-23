@@ -45,15 +45,15 @@ class SiteSettingController extends Controller
             'vhost' => 'required|string',
         ]);
 
-        try {
+//        try {
             /** @var Webserver $handler */
             $handler = $server->webserver()->handler();
-            $handler->updateVHost($site, false, $request->input('vhost'));
+            $handler->updateVHost($site, false, null);
 
             Toast::success('VHost updated successfully!');
-        } catch (Throwable $e) {
-            Toast::error($e->getMessage());
-        }
+//        } catch (Throwable $e) {
+//            Toast::error($e->getMessage());
+//        }
 
         return back();
     }
