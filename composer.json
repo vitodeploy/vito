@@ -12,7 +12,7 @@
         "ext-ftp": "*",
         "aws/aws-sdk-php": "^3.158",
         "laravel/fortify": "^1.17",
-        "laravel/framework": "^10.0",
+        "laravel/framework": "^11.0",
         "laravel/tinker": "^2.8",
         "phpseclib/phpseclib": "~3.0"
     },
@@ -21,7 +21,7 @@
         "laravel/pint": "^1.10",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^7.0",
+        "nunomaduro/collision": "^8.1",
         "phpunit/phpunit": "^10.0",
         "spatie/laravel-ignition": "^2.0"
     },
