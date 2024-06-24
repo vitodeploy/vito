@@ -186,7 +186,7 @@ class Nginx extends AbstractWebserver
             if ($ssl) {
                 $vhost = $this->getScript('nginx/reverse-vhost-ssl.conf');
             }
-            $vhost = Str::replace('__port__', (string)$site->port, $vhost);
+            $vhost = Str::replace('__port__', (string) $site->port, $vhost);
         }
 
         $vhost = Str::replace('__domain__', $site->domain, $vhost);
@@ -212,25 +212,26 @@ class Nginx extends AbstractWebserver
                 'web_directory' => $site->web_directory,
                 'ssl' => $ssl,
             ],
-            $ssl ? [
-                'certificate' => $ssl->getCertificatePath(),
-                'private_key' => $ssl->getPkPath(),
-            ] : [],
-            [
-                'servers' => [
-                    [
-                        'host' => '127.0.0.1',
-                        'port' => '20',
-                        'weight' => 1,
-                        'backup' => false,
-                        'down' => false,
-                    ]
-                ],
-                'balanceMethod' => 'ip_hash',
-            ]);
+                $ssl ? [
+                    'certificate' => $ssl->getCertificatePath(),
+                    'private_key' => $ssl->getPkPath(),
+                ] : [],
+                [
+                    'servers' => [
+                        [
+                            'host' => '127.0.0.1',
+                            'port' => '20',
+                            'weight' => 1,
+                            'backup' => false,
+                            'down' => false,
+                        ],
+                    ],
+                    'balanceMethod' => 'ip_hash',
+                ]);
 
             $vhost = view('scripts.load-balancer-vhost', $data)->toHtml();
         }
+
         return $vhost;
     }
 }

@@ -34,6 +34,7 @@ class PHPSite extends AbstractSiteType
                 // the load balancer to the servers.
             ];
         }
+
         return [
             'php_version' => [
                 'required',
@@ -81,9 +82,9 @@ class PHPSite extends AbstractSiteType
         $this->progress(15);
         if ($this->site->server->type === ServerType::LOAD_BALANCER) {
             $this->progress(65);
+
             return;
         }
-
         $this->deployKey();
         $this->progress(30);
         app(Git::class)->clone($this->site);
