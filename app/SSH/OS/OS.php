@@ -10,9 +10,7 @@ class OS
 {
     use HasScripts;
 
-    public function __construct(protected Server $server)
-    {
-    }
+    public function __construct(protected Server $server) {}
 
     public function installDependencies(): void
     {
