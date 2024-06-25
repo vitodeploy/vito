@@ -106,24 +106,6 @@ class User extends Authenticatable
         return $this->hasOne(StorageProvider::class)->where('provider', $provider);
     }
 
-    public function connectedStorageProviders(): HasMany
-    {
-        return $this->storageProviders()->where('connected', true);
-    }
-
-    public function connectedSourceControls(): array
-    {
-        $connectedSourceControls = [];
-        $sourceControls = $this->sourceControls()
-            ->where('connected', 1)
-            ->get(['provider']);
-        foreach ($sourceControls as $sourceControl) {
-            $connectedSourceControls[] = $sourceControl->provider;
-        }
-
-        return $connectedSourceControls;
-    }
-
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(Project::class, 'user_project')->withTimestamps();
@@ -132,11 +114,6 @@ class User extends Authenticatable
     public function currentProject(): HasOne
     {
         return $this->HasOne(Project::class, 'id', 'current_project_id');
-    }
-
-    public function isMemberOfProject(Project $project): bool
-    {
-        return $project->user_id === $this->id;
     }
 
     public function createDefaultProject(): Project

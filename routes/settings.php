@@ -46,6 +46,7 @@ Route::prefix('settings/storage-providers')->group(function () {
     Route::get('/', [StorageProviderController::class, 'index'])->name('settings.storage-providers');
     Route::post('connect', [StorageProviderController::class, 'connect'])->name('settings.storage-providers.connect');
     Route::delete('delete/{storageProvider}', [StorageProviderController::class, 'delete'])->name('settings.storage-providers.delete');
+    Route::post('edit/{storageProvider}', [StorageProviderController::class, 'update'])->name('settings.storage-providers.update');
 });
 
 // notification-channels
@@ -53,6 +54,7 @@ Route::prefix('settings/notification-channels')->group(function () {
     Route::get('/', [NotificationChannelController::class, 'index'])->name('settings.notification-channels');
     Route::post('add', [NotificationChannelController::class, 'add'])->name('settings.notification-channels.add');
     Route::delete('delete/{id}', [NotificationChannelController::class, 'delete'])->name('settings.notification-channels.delete');
+    Route::post('edit/{notificationChannel}', [NotificationChannelController::class, 'update'])->name('settings.notification-channels.update');
 });
 
 // ssh-keys

@@ -57,10 +57,10 @@ class SourceControl extends AbstractModel
         return $this->belongsTo(Project::class);
     }
 
-    public static function getByCurrentProject(): Collection
+    public static function getByProjectId(int $projectId): Collection
     {
         return self::query()
-            ->where('project_id', auth()->user()->current_project_id)
+            ->where('project_id', $projectId)
             ->orWhereNull('project_id')->get();
     }
 }

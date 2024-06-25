@@ -29,7 +29,7 @@ class SSHKeyController extends Controller
     {
         $this->authorize('manage', $server);
 
-        /** @var \App\Models\SshKey $key */
+        /** @var SshKey $key */
         $key = app(CreateSshKey::class)->create(
             $request->user(),
             $request->input()

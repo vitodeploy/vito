@@ -99,6 +99,8 @@ class ServerKeysTest extends TestCase
      */
     public function test_create_ssh_key_handles_invalid_or_partial_keys(array $postBody, bool $expectedToSucceed): void
     {
+        SSH::fake();
+
         $this->actingAs($this->user);
 
         // Some existing amount of seed data to make the test more realistic

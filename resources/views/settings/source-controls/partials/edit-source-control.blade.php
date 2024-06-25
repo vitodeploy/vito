@@ -109,7 +109,7 @@
 
         <div class="mt-6">
             <x-checkbox
-                id="global"
+                id="edit-global"
                 name="global"
                 :checked="old('global', $sourceControl->project_id === null ? 1 : null)"
                 value="1"

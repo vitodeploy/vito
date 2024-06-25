@@ -19,6 +19,7 @@ class AddChannel
             'user_id' => $user->id,
             'provider' => $input['provider'],
             'label' => $input['label'],
+            'project_id' => isset($input['global']) && $input['global'] ? null : $user->current_project_id,
         ]);
         $this->validateType($channel, $input);
         $channel->data = $channel->provider()->createData($input);
