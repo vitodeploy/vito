@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -55,10 +55,10 @@ class StorageProvider extends AbstractModel
         return $this->belongsTo(Project::class);
     }
 
-    public static function getByProjectId(int $projectId): Collection
+    public static function getByProjectId(int $projectId): Builder
     {
         return self::query()
             ->where('project_id', $projectId)
-            ->orWhereNull('project_id')->get();
+            ->orWhereNull('project_id');
     }
 }

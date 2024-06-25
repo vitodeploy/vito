@@ -35,7 +35,7 @@
             <div class="mt-1 flex items-center">
                 <x-select-input id="backup_storage" name="backup_storage" class="mt-1 w-full">
                     <option value="" selected disabled>{{ __("Select") }}</option>
-                    @foreach (\App\Models\StorageProvider::getByProjectId(auth()->user()->current_project_id) as $st)
+                    @foreach (\App\Models\StorageProvider::getByProjectId(auth()->user()->current_project_id)->get() as $st)
                         <option value="{{ $st->id }}" @if(old('backup_storage') == $st->id) selected @endif>
                             {{ $st->profile }} - {{ $st->provider }}
                         </option>

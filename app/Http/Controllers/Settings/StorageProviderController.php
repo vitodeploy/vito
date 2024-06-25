@@ -18,7 +18,7 @@ class StorageProviderController extends Controller
     public function index(Request $request): View
     {
         $data = [
-            'providers' => StorageProvider::getByProjectId(auth()->user()->current_project_id),
+            'providers' => StorageProvider::getByProjectId(auth()->user()->current_project_id)->get(),
         ];
 
         if ($request->has('edit')) {

@@ -17,7 +17,7 @@ class NotificationChannelController extends Controller
     public function index(Request $request): View
     {
         $data = [
-            'channels' => NotificationChannel::getByProjectId(auth()->user()->current_project_id),
+            'channels' => NotificationChannel::getByProjectId(auth()->user()->current_project_id)->get(),
         ];
 
         if ($request->has('edit')) {

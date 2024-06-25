@@ -31,6 +31,7 @@ Route::prefix('settings/server-providers')->group(function () {
     Route::get('/', [ServerProviderController::class, 'index'])->name('settings.server-providers');
     Route::post('connect', [ServerProviderController::class, 'connect'])->name('settings.server-providers.connect');
     Route::delete('delete/{serverProvider}', [ServerProviderController::class, 'delete'])->name('settings.server-providers.delete');
+    Route::post('edit/{serverProvider}', [ServerProviderController::class, 'update'])->name('settings.server-providers.update');
 });
 
 // source-controls
