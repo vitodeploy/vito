@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="mt-5">
-                    {{ __('If you are unable to scan the QR code, please use the 2FA secret instead.') }}
+                    {{ __("If you are unable to scan the QR code, please use the 2FA secret instead.") }}
                 </div>
 
                 <div class="mt-2">
