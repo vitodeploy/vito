@@ -57,7 +57,9 @@
 
             @include("sites.partials.create.fields.aliases")
 
+            @if ($server->type !== \App\Enums\ServerType::LOAD_BALANCER)
             @include("sites.partials.create." . $type)
+            @endif
         </form>
         <x-slot name="actions">
             <x-primary-button id="btn-create-site" hx-disable form="create-site-form">

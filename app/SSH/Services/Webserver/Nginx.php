@@ -2,6 +2,7 @@
 
 namespace App\SSH\Services\Webserver;
 
+use App\Enums\ServerType;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -200,6 +201,35 @@ class Nginx extends AbstractWebserver
 
         if ($site->php_version) {
             $vhost = Str::replace('__php_version__', $site->php_version, $vhost);
+        }
+
+        if ($site->server->type === ServerType::LOAD_BALANCER) {
+            // TODO: Revisit this, maybe extract all of the vhost configs into views instead of manually replacing the text
+            $data = array_merge([
+                'domain' => $site->domain,
+                'aliases' => $site->getAliasesString(),
+                'path' => $site->path,
+                'web_directory' => $site->web_directory,
+                'ssl' => $ssl,
+            ],
+                $ssl ? [
+                    'certificate' => $ssl->getCertificatePath(),
+                    'private_key' => $ssl->getPkPath(),
+                ] : [],
+                [
+                    'servers' => [
+                        [
+                            'host' => '127.0.0.1',
+                            'port' => '20',
+                            'weight' => 1,
+                            'backup' => false,
+                            'down' => false,
+                        ],
+                    ],
+                    'balanceMethod' => 'ip_hash',
+                ]);
+
+            $vhost = view('scripts.load-balancer-vhost', $data)->toHtml();
         }
 
         return $vhost;

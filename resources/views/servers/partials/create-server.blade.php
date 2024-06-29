@@ -210,7 +210,7 @@
             </div>
 
             <div class="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                <div x-show="['{{ ServerType::REGULAR }}'].includes(type)">
+                <div x-show="{{ json_encode([ServerType::REGULAR, ServerType::LOAD_BALANCER]) }}.includes(type)">
                     <x-input-label for="webserver" value="Webserver" />
                     <x-select-input id="webserver" name="webserver" class="mt-1 w-full">
                         @foreach (config("core.webservers") as $ws)
@@ -223,7 +223,7 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div x-show="['{{ ServerType::REGULAR }}', '{{ ServerType::DATABASE }}'].includes(type)">
+                <div x-show="{{json_encode([ServerType::REGULAR, ServerType::DATABASE])}}.includes(type)">
                     <x-input-label for="database" value="Database" />
                     <x-select-input id="database" name="database" class="mt-1 w-full">
                         @foreach (config("core.databases") as $db)
@@ -236,7 +236,7 @@
                         <x-input-error class="mt-2" :messages="$message" />
                     @enderror
                 </div>
-                <div x-show="['{{ ServerType::REGULAR }}'].includes(type)">
+                <div x-show="{{ json_encode([ServerType::REGULAR]) }}.includes(type)">
                     <x-input-label for="php" value="PHP" />
                     <x-select-input id="php" name="php" class="mt-1 w-full">
                         <option value="none" @if('none' == old('php', '8.2')) selected @endif>none</option>
