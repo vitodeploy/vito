@@ -46,6 +46,16 @@
                 <div class="mt-5">
                     {!! auth()->user()->twoFactorQrCodeSvg() !!}
                 </div>
+
+                <div class="mt-5">
+                    {{ __("If you are unable to scan the QR code, please use the 2FA secret instead.") }}
+                </div>
+
+                <div class="mt-2">
+                    <div class="inline-block rounded-md border border-gray-100 p-2 dark:border-gray-700">
+                        {{ decrypt(auth()->user()->two_factor_secret) }}
+                    </div>
+                </div>
             @endif
 
             {{-- Show 2FA Recovery Codes --}}
