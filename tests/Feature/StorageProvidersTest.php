@@ -13,21 +13,24 @@ class StorageProvidersTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_connect_dropbox(): void
+    /**
+     * @dataProvider createData
+     */
+    public function test_create(array $input): void
     {
         $this->actingAs($this->user);
 
-        Http::fake();
+        if ($input['provider'] === StorageProvider::DROPBOX) {
+            Http::fake();
+        }
 
-        $this->post(route('settings.storage-providers.connect'), [
-            'provider' => StorageProvider::DROPBOX,
-            'name' => 'profile',
-            'token' => 'token',
-        ])->assertSessionDoesntHaveErrors();
+        $this->post(route('settings.storage-providers.connect'), $input)
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('storage_providers', [
-            'provider' => StorageProvider::DROPBOX,
-            'profile' => 'profile',
+            'provider' => $input['provider'],
+            'profile' => $input['name'],
+            'project_id' => isset($input['global']) ? null : $this->user->current_project_id,
         ]);
     }
 
@@ -89,19 +92,69 @@ class StorageProvidersTest extends TestCase
         ]);
     }
 
-    public function test_create_local_driver(): void
+    /**
+     * @TODO: complete FTP tests
+     */
+    public static function createData(): array
     {
-        $this->actingAs($this->user);
-
-        $this->post(route('settings.storage-providers.connect'), [
-            'provider' => StorageProvider::LOCAL,
-            'name' => 'profile',
-            'path' => '/home/vito/backups',
-        ])->assertSessionDoesntHaveErrors();
-
-        $this->assertDatabaseHas('storage_providers', [
-            'provider' => StorageProvider::LOCAL,
-            'profile' => 'profile',
-        ]);
+        return [
+            [
+                [
+                    'provider' => StorageProvider::LOCAL,
+                    'name' => 'local-test',
+                    'path' => '/home/vito/backups',
+                ],
+            ],
+            [
+                [
+                    'provider' => StorageProvider::LOCAL,
+                    'name' => 'local-test',
+                    'path' => '/home/vito/backups',
+                    'global' => 1,
+                ],
+            ],
+            //            [
+            //                [
+            //                    'provider' => StorageProvider::FTP,
+            //                    'name' => 'ftp-test',
+            //                    'host' => '1.2.3.4',
+            //                    'port' => '22',
+            //                    'path' => '/home/vito',
+            //                    'username' => 'username',
+            //                    'password' => 'password',
+            //                    'ssl' => 1,
+            //                    'passive' => 1,
+            //                ],
+            //            ],
+            //            [
+            //                [
+            //                    'provider' => StorageProvider::FTP,
+            //                    'name' => 'ftp-test',
+            //                    'host' => '1.2.3.4',
+            //                    'port' => '22',
+            //                    'path' => '/home/vito',
+            //                    'username' => 'username',
+            //                    'password' => 'password',
+            //                    'ssl' => 1,
+            //                    'passive' => 1,
+            //                    'global' => 1,
+            //                ],
+            //            ],
+            [
+                [
+                    'provider' => StorageProvider::DROPBOX,
+                    'name' => 'dropbox-test',
+                    'token' => 'token',
+                ],
+            ],
+            [
+                [
+                    'provider' => StorageProvider::DROPBOX,
+                    'name' => 'dropbox-test',
+                    'token' => 'token',
+                    'global' => 1,
+                ],
+            ],
+        ];
     }
 }

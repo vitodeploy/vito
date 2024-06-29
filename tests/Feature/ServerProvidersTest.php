@@ -32,6 +32,7 @@ class ServerProvidersTest extends TestCase
         $this->assertDatabaseHas('server_providers', [
             'provider' => $provider,
             'profile' => 'profile',
+            'project_id' => isset($input['global']) ? null : $this->user->current_project_id,
         ]);
     }
 
@@ -134,6 +135,13 @@ class ServerProvidersTest extends TestCase
                 ServerProvider::LINODE,
                 [
                     'token' => 'token',
+                ],
+            ],
+            [
+                ServerProvider::LINODE,
+                [
+                    'token' => 'token',
+                    'global' => 1,
                 ],
             ],
             [
