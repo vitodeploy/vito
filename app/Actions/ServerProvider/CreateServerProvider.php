@@ -38,6 +38,7 @@ class CreateServerProvider
         $serverProvider->profile = $input['name'];
         $serverProvider->provider = $input['provider'];
         $serverProvider->credentials = $provider->credentialData($input);
+        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $user->current_project_id;
         $serverProvider->save();
 
         return $serverProvider;

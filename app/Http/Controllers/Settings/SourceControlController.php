@@ -18,7 +18,7 @@ class SourceControlController extends Controller
     public function index(Request $request): View
     {
         $data = [
-            'sourceControls' => SourceControl::getByCurrentProject(),
+            'sourceControls' => SourceControl::getByProjectId(auth()->user()->current_project_id)->get(),
         ];
 
         if ($request->has('edit')) {

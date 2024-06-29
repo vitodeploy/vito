@@ -35,7 +35,9 @@ class ServerController extends Controller
         $this->authorize('create', [Server::class, $user->currentProject]);
 
         $provider = $request->query('provider', old('provider', \App\Enums\ServerProvider::CUSTOM));
-        $serverProviders = ServerProvider::query()->where('provider', $provider)->get();
+        $serverProviders = ServerProvider::getByProjectId(auth()->user()->current_project_id)
+            ->where('provider', $provider)
+            ->get();
 
         return view('servers.create', [
             'serverProviders' => $serverProviders,

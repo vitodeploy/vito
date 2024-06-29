@@ -21,12 +21,14 @@ class NotificationChannelsTest extends TestCase
             'provider' => NotificationChannel::EMAIL,
             'email' => 'email@example.com',
             'label' => 'Email',
+            'global' => 1,
         ])->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::EMAIL)
             ->where('label', 'Email')
+            ->whereNull('project_id')
             ->first();
 
         $this->assertEquals('email@example.com', $channel->data['email']);

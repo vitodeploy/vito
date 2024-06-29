@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Actions\StorageProvider\CreateStorageProvider;
 use App\Actions\StorageProvider\DeleteStorageProvider;
+use App\Actions\StorageProvider\EditStorageProvider;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Http\Controllers\Controller;
@@ -14,11 +15,17 @@ use Illuminate\Http\Request;
 
 class StorageProviderController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        return view('settings.storage-providers.index', [
-            'providers' => auth()->user()->storageProviders,
-        ]);
+        $data = [
+            'providers' => StorageProvider::getByProjectId(auth()->user()->current_project_id)->get(),
+        ];
+
+        if ($request->has('edit')) {
+            $data['editProvider'] = StorageProvider::find($request->input('edit'));
+        }
+
+        return view('settings.storage-providers.index', $data);
     }
 
     public function connect(Request $request): HtmxResponse
@@ -29,6 +36,19 @@ class StorageProviderController extends Controller
         );
 
         Toast::success('Storage provider connected.');
+
+        return htmx()->redirect(route('settings.storage-providers'));
+    }
+
+    public function update(StorageProvider $storageProvider, Request $request): HtmxResponse
+    {
+        app(EditStorageProvider::class)->edit(
+            $storageProvider,
+            $request->user(),
+            $request->input(),
+        );
+
+        Toast::success('Provider updated.');
 
         return htmx()->redirect(route('settings.storage-providers'));
     }

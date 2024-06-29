@@ -68,7 +68,7 @@ class ProjectController extends Controller
         return back();
     }
 
-    public function switch($projectId): RedirectResponse
+    public function switch(Request $request, $projectId): RedirectResponse
     {
         /** @var User $user */
         $user = auth()->user();
@@ -80,6 +80,11 @@ class ProjectController extends Controller
 
         $user->current_project_id = $project->id;
         $user->save();
+
+        // check if the referer is settings/*
+        if (str_contains($request->headers->get('referer'), 'settings')) {
+            return redirect()->to($request->headers->get('referer'));
+        }
 
         return redirect()->route('servers');
     }

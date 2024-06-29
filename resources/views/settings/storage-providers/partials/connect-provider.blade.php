@@ -201,6 +201,15 @@
                 </div>
             @endif
 
+            <div class="mt-6">
+                <x-checkbox id="global" name="global" :checked="old('global')" value="1">
+                    Is Global (Accessible in all projects)
+                </x-checkbox>
+                @error("global")
+                    <x-input-error class="mt-2" :messages="$message" />
+                @enderror
+            </div>
+
             <div class="mt-6 flex justify-end">
                 <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}

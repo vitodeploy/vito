@@ -14,7 +14,7 @@ class EditSourceControl
         $this->validate($input);
 
         $sourceControl->profile = $input['name'];
-        $sourceControl->url = isset($input['url']) ? $input['url'] : null;
+        $sourceControl->url = $input['url'] ?? null;
         $sourceControl->project_id = isset($input['global']) && $input['global'] ? null : $user->current_project_id;
 
         $this->validateProvider($sourceControl, $input);

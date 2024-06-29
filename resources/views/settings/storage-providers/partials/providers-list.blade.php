@@ -18,13 +18,29 @@
                         />
                     </div>
                     <div class="ml-3 flex flex-grow flex-col items-start justify-center">
-                        <span class="mb-1">{{ $provider->profile }}</span>
+                        <div class="mb-1 flex items-center">
+                            {{ $provider->profile }}
+                            @if (! $provider->project_id)
+                                <x-status status="disabled" class="ml-2">GLOBAL</x-status>
+                            @endif
+                        </div>
                         <span class="text-sm text-gray-400">
                             <x-datetime :value="$provider->created_at" />
                         </span>
                     </div>
                     <div class="flex items-center">
                         <div class="inline">
+                            <x-icon-button
+                                id="edit-{{ $provider->id }}"
+                                hx-get="{{ route('settings.storage-providers', ['edit' => $provider->id]) }}"
+                                hx-replace-url="true"
+                                hx-select="#edit"
+                                hx-target="#edit"
+                                hx-ext="disable-element"
+                                hx-disable-element="#edit-{{ $provider->id }}"
+                            >
+                                <x-heroicon name="o-pencil" class="h-5 w-5" />
+                            </x-icon-button>
                             <x-icon-button
                                 x-on:click="deleteAction = '{{ route('settings.storage-providers.delete', $provider->id) }}'; $dispatch('open-modal', 'delete-provider')"
                             >
@@ -36,6 +52,12 @@
             @endforeach
 
             @include("settings.storage-providers.partials.delete-storage-provider")
+
+            <div id="edit">
+                @if (isset($editProvider))
+                    @include("settings.storage-providers.partials.edit-provider", ["storageProvider" => $editProvider])
+                @endif
+            </div>
         @else
             <x-simple-card>
                 <div class="text-center">

@@ -21,6 +21,7 @@ class CreateStorageProvider
             'user_id' => $user->id,
             'provider' => $input['provider'],
             'profile' => $input['name'],
+            'project_id' => isset($input['global']) && $input['global'] ? null : $user->current_project_id,
         ]);
 
         $this->validateProvider($input, $storageProvider->provider()->validationRules());
