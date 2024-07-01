@@ -2,21 +2,19 @@
 
 namespace App\ValidationRules;
 
-use Illuminate\Contracts\Validation\Rule;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class DomainRule implements Rule
+class DomainRule implements ValidationRule
 {
-    public function passes($attribute, $value): bool
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value) {
-            return preg_match("/^(?!\-)(?:[a-zA-Z\d\-]{0,62}[a-zA-Z\d]\.){1,126}(?!\d+)[a-zA-Z\d]{1,63}$/", $value);
+        if (! $value) {
+            return;
         }
-
-        return true;
-    }
-
-    public function message(): string
-    {
-        return __('Domain is not valid');
+        if (preg_match("/^(?!\-)(?:[a-zA-Z\d\-]{0,62}[a-zA-Z\d]\.){1,126}(?!\d+)[a-zA-Z\d]{1,63}$/", $value) === 1) {
+            return;
+        }
+        $fail('Domain is not valid')->translate();
     }
 }

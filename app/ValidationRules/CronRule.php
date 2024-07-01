@@ -3,9 +3,9 @@
 namespace App\ValidationRules;
 
 use Cron\CronExpression;
-use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class CronRule implements Rule
+class CronRule implements ValidationRule
 {
     private bool $acceptCustom;
 
@@ -14,13 +14,14 @@ class CronRule implements Rule
         $this->acceptCustom = $acceptCustom;
     }
 
-    public function passes($attribute, $value): bool
+    public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
-        return CronExpression::isValidExpression($value) || ($this->acceptCustom && $value === 'custom');
-    }
-
-    public function message(): string
-    {
-        return __('Invalid frequency');
+        if (CronExpression::isValidExpression($value)) {
+            return;
+        }
+        if ($this->acceptCustom && $value === 'custom') {
+            return;
+        }
+        $fail('Invalid frequency')->translate();
     }
 }
