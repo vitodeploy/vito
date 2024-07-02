@@ -2,27 +2,16 @@
 
 namespace App\ValidationRules;
 
-use Illuminate\Contracts\Validation\Rule;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-class RestrictedIPAddressesRule implements Rule
+class RestrictedIPAddressesRule implements ValidationRule
 {
-    /**
-     * Determine if the validation rule passes.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
-     */
-    public function passes($attribute, $value)
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        return ! in_array($value, config('core.restricted_ip_addresses'));
-    }
-
-    /**
-     * @return array|\Illuminate\Contracts\Translation\Translator|string|null
-     */
-    public function message()
-    {
-        return __('IP address is restricted.');
+        if (! in_array($value, config('core.restricted_ip_addresses'))) {
+            return;
+        }
+        $fail('IP address is restricted')->translate();
     }
 }
