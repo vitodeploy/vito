@@ -8,9 +8,11 @@ class UpdateEnv
 {
     public function update(Site $site, array $input): void
     {
+        $env = str_replace('"', '\"', $input['env']);
+
         $site->server->os()->editFile(
             $site->path.'/.env',
-            $input['env']
+            $env
         );
     }
 }
