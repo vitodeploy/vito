@@ -2,21 +2,22 @@
 
 namespace App\SSH\Services\Monitoring\VitoAgent;
 
+use Closure;
+use Ramsey\Uuid\Uuid;
 use App\Models\Metric;
 use App\SSH\HasScripts;
-use App\SSH\Services\AbstractService;
-use Closure;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Facades\Http;
+use App\SSH\Services\AbstractService;
 
 class VitoAgent extends AbstractService
 {
     use HasScripts;
 
-    const TAGS_URL = 'https://api.github.com/repos/vitodeploy/agent/tags';
+    public const TAGS_URL = 'https://api.github.com/repos/vitodeploy/agent/tags';
 
-    const DOWNLOAD_URL = 'https://github.com/vitodeploy/agent/releases/download/%s';
+    public const DOWNLOAD_URL = 'https://github.com/vitodeploy/agent/releases/download/%s';
 
     public function creationRules(array $input): array
     {
@@ -39,7 +40,7 @@ class VitoAgent extends AbstractService
     public function creationData(array $input): array
     {
         return [
-            'url' => '',
+            'url' => $this->getAgentUrl(),
             'secret' => Uuid::uuid4()->toString(),
             'data_retention' => 10,
         ];
@@ -64,12 +65,6 @@ class VitoAgent extends AbstractService
         $this->service->save();
         $downloadUrl = sprintf(self::DOWNLOAD_URL, $this->service->version);
 
-        $data = $this->data();
-        $data['url'] = route('api.servers.agent', [$this->service->server, $this->service->id]);
-        $this->service->type_data = $data;
-        $this->service->save();
-        $this->service->refresh();
-
         $this->service->server->ssh()->exec(
             $this->getScript('install.sh', [
                 'download_url' => $downloadUrl,
@@ -89,5 +84,25 @@ class VitoAgent extends AbstractService
             'uninstall-vito-agent'
         );
         Metric::where('server_id', $this->service->server_id)->delete();
+    }
+
+    private function getAgentUrl(): string
+    {
+        $appUrl = config('app.url');
+        $urlHost = rescue(fn () => parse_url($appUrl, PHP_URL_HOST));
+
+        // If app.url is empty or localhost, set it to the current request URL
+        if(empty($urlHost) || Str::contains($urlHost, 'localhost')) {
+            config([
+                'app.url' => sprintf('%s://%s', request()->getScheme(), request()->getHttpHost())
+            ]);
+        }
+
+        $agentUrl = route('api.servers.agent', [$this->service->server, $this->service->id]);
+
+        // Reset app.url to the original value
+        config(['app.url' => $appUrl]);
+
+        return $agentUrl;
     }
 }
