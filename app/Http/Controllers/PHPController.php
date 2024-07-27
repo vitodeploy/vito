@@ -81,7 +81,7 @@ class PHPController extends Controller
 
         app(UpdatePHPIni::class)->update($server, $request->input());
 
-        Toast::success('PHP ini updated!');
+        Toast::success(__('PHP ini (:type) updated!', ['type' => $request->input('type')]));
 
         return back()->with([
             'ini' => $request->input('ini'),

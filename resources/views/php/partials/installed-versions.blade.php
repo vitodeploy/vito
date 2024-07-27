@@ -37,16 +37,19 @@
                                             >
                                                 {{ __("Install Extension") }}
                                             </x-dropdown-link>
-                                            <x-dropdown-link
-                                                class="cursor-pointer"
-                                                x-on:click="version = '{{ $php->version }}'; $dispatch('open-modal', 'update-php-ini'); document.getElementById('ini').value = 'Loading...';"
-                                                hx-get="{{ route('servers.php.get-ini', ['server' => $server, 'version' => $php->version]) }}"
-                                                hx-swap="outerHTML"
-                                                hx-target="#update-php-ini-form"
-                                                hx-select="#update-php-ini-form"
-                                            >
-                                                {{ __("Edit php.ini") }}
-                                            </x-dropdown-link>
+                                            @foreach ([\App\Enums\PHPIniType::FPM, \App\Enums\PHPIniType::CLI] as $type)
+                                                <x-dropdown-link
+                                                    class="cursor-pointer"
+                                                    x-on:click="version = '{{ $php->version }}'; $dispatch('open-modal', 'update-php-ini-{{ $type }}'); document.getElementById('ini').value = 'Loading...';"
+                                                    hx-get="{{ route('servers.php.get-ini', ['server' => $server, 'version' => $php->version, 'type' => $type]) }}"
+                                                    hx-swap="outerHTML"
+                                                    hx-target="#update-php-ini-{{ $type }}-form"
+                                                    hx-select="#update-php-ini-{{ $type }}-form"
+                                                >
+                                                    {{ __("Edit php.ini (:type)", ["type" => $type]) }}
+                                                </x-dropdown-link>
+                                            @endforeach
+
                                             <x-dropdown-link
                                                 class="cursor-pointer"
                                                 href="{{ route('servers.services.restart', ['server' => $server, 'service' => $php]) }}"
@@ -85,6 +88,7 @@
         method="delete"
         x-bind:action="uninstallAction"
     />
-    @include("php.partials.update-php-ini")
+    @include("php.partials.update-php-ini", ["type" => \App\Enums\PHPIniType::CLI])
+    @include("php.partials.update-php-ini", ["type" => \App\Enums\PHPIniType::FPM])
     @include("php.partials.install-extension")
 </div>
