@@ -179,10 +179,10 @@ class ApplicationTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]), [
-            'env' => 'APP_ENV=production',
+            'env' => 'APP_ENV="production"',
         ])->assertSessionDoesntHaveErrors();
 
-        SSH::assertExecutedContains('echo "APP_ENV=production" | tee /home/vito/'.$this->site->domain.'/.env');
+        SSH::assertFileUploaded('/home/vito/'.$this->site->domain.'/.env', 'APP_ENV="production"');
     }
 
     public function test_git_hook_deployment(): void

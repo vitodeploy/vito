@@ -2,9 +2,14 @@
 
 namespace App\SSH\OS;
 
+use App\Exceptions\SSHUploadFailed;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\SSH\HasScripts;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Throwable;
 
 class OS
 {
@@ -109,14 +114,25 @@ class OS
         );
     }
 
+    /**
+     * @throws SSHUploadFailed
+     */
     public function editFile(string $path, ?string $content = null): void
     {
-        $this->server->ssh()->exec(
-            $this->getScript('edit-file.sh', [
-                'path' => $path,
-                'content' => $content ?? '',
-            ]),
-        );
+        $tmpName = Str::random(10).strtotime('now');
+        try {
+            /** @var FilesystemAdapter $storageDisk */
+            $storageDisk = Storage::disk('local');
+            $storageDisk->put($tmpName, $content);
+            $this->server->ssh()->upload(
+                $storageDisk->path($tmpName),
+                $path
+            );
+        } catch (Throwable) {
+            throw new SSHUploadFailed();
+        } finally {
+            $this->deleteTempFile($tmpName);
+        }
     }
 
     public function readFile(string $path): string
@@ -199,5 +215,12 @@ class OS
             'disk_used' => str($info)->after('disk_used:')->before(PHP_EOL)->toString(),
             'disk_free' => str($info)->after('disk_free:')->before(PHP_EOL)->toString(),
         ];
+    }
+
+    private function deleteTempFile(string $name): void
+    {
+        if (Storage::disk('local')->exists($name)) {
+            Storage::disk('local')->delete($name);
+        }
     }
 }

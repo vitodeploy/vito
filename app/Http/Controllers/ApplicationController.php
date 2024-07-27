@@ -10,6 +10,7 @@ use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
+use App\Exceptions\SSHUploadFailed;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Deployment;
@@ -81,9 +82,12 @@ class ApplicationController extends Controller
     {
         $this->authorize('manage', $server);
 
-        app(UpdateEnv::class)->update($site, $request->input());
-
-        Toast::success('Env updated!');
+        try {
+            app(UpdateEnv::class)->update($site, $request->input());
+            Toast::success('Env updated!');
+        } catch (SSHUploadFailed) {
+            Toast::error('Failed to update .env file!');
+        }
 
         return back();
     }
