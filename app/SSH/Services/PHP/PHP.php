@@ -102,12 +102,10 @@ class PHP extends AbstractService
         );
     }
 
-    public function getPHPIni(): string
+    public function getPHPIni(string $type): string
     {
-        return $this->service->server->ssh()->exec(
-            $this->getScript('get-php-ini.sh', [
-                'version' => $this->service->version,
-            ])
+        return $this->service->server->os()->readFile(
+            sprintf('/etc/php/%s/%s/php.ini', $this->service->version, $type)
         );
     }
 }
