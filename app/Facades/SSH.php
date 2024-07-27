@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
  * @method static string exec(string $command, string $log = '', int $siteId = null, ?bool $stream = false)
  * @method static string assertExecuted(array|string $commands)
  * @method static string assertExecutedContains(string $command)
+ * @method static string assertFileUploaded(string $toPath, ?string $content = null)
+ * @method static string getUploadedLocalPath()
  * @method static disconnect()
  */
 class SSH extends FacadeAlias
