@@ -334,6 +334,9 @@ return [
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 'latest' => 'postfix',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                'latest' => 'postfix',
+            ],
         ]
     ],
 

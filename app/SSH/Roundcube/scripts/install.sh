@@ -52,4 +52,4 @@ if ! sudo echo "$config_content" > __path__/config/config.inc.php; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-print "Roundcube installed!"
+echo "Roundcube installed!"

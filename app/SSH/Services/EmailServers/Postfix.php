@@ -26,7 +26,7 @@ class Postfix extends AbstractService
                 function (string $attribute, mixed $value, Closure $fail) {
                     $postfixExists = $this->service->server->emailService();
                     if ($postfixExists) {
-                        $fail('You already have a Redis service on the server.');
+                        $fail('You already have a email service on the server.');
                     }
                 },
             ],
