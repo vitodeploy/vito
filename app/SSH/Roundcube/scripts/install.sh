@@ -31,8 +31,8 @@ fi
 config_content="<?php
 \$config = [];
 \$config['db_dsnw'] = 'sqlite:///__path__/database.sqlite?mode=0646';
-\$config['imap_host'] = 'localhost:143';
-\$config['smtp_host'] = 'localhost:587';
+\$config['imap_host'] = '__domain__:143';
+\$config['smtp_host'] = '__domain__:25';
 \$config['smtp_user'] = '%u';
 \$config['smtp_pass'] = '%p';
 \$config['support_url'] = '__support_url__';

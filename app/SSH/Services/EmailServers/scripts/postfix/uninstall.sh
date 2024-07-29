@@ -1,15 +1,24 @@
-sudo postfix stop
+#!/bin/bash
 
-sudo DEBIAN_FRONTEND=noninteractive apt-get remove postfix -y
+# Detener los servicios de Postfix y Dovecot
+sudo systemctl stop postfix
+sudo systemctl stop dovecot
 
+# Deshabilitar los servicios para que no se inicien al arrancar
+sudo systemctl disable postfix
+sudo systemctl disable dovecot
+
+# Desinstalar Postfix y Dovecot
+sudo apt purge -y postfix dovecot-core dovecot-imapd dovecot-pop3d dovecot-sieve dovecot-lmtpd
+
+# Eliminar los archivos de configuración y datos de Postfix y Dovecot
 sudo rm -rf /etc/postfix
+sudo rm -rf /etc/dovecot
+sudo rm -rf /var/mail
+sudo rm -rf /var/spool/postfix
 
-socket_path=$(sudo find /var/spool/postfix -type s -name "mux")
+# Limpiar paquetes no utilizados y archivos residuales
+sudo apt autoremove -y
+sudo apt clean
 
-if [ -n "$socket_path" ]; then
-    sudo rm -f "$socket_path"
-fi
-
-sudo DEBIAN_FRONTEND=noninteractive sudo apt-get autoremove -y
-
-sudo DEBIAN_FRONTEND=noninteractive sudo apt-get autoclean -y
+echo "Desinstalación de Postfix y Dovecot completada."
