@@ -339,6 +339,14 @@ class Server extends AbstractModel
         return $this->service('memory_database', $version);
     }
 
+    public function emailService(?string $version = null): ?Service
+    {
+        if (! $version) {
+            return $this->defaultService('email_service');
+        }
+
+        return $this->service('email_service', $version);
+    }
     public function monitoring(?string $version = null): ?Service
     {
         if (! $version) {

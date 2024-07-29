@@ -142,6 +142,7 @@ return [
         'ufw' => 'firewall',
         'supervisor' => 'process_manager',
         'vito-agent' => 'monitoring',
+        'postfix' => 'email_service',
     ],
     'service_handlers' => [
         'nginx' => \App\SSH\Services\Webserver\Nginx::class,
@@ -149,6 +150,7 @@ return [
         'mariadb' => \App\SSH\Services\Database\Mariadb::class,
         'postgresql' => \App\SSH\Services\Database\Postgresql::class,
         'redis' => \App\SSH\Services\Redis\Redis::class,
+        'postfix' => \App\SSH\Services\EmailServers\Postfix::class,
         'php' => \App\SSH\Services\PHP\PHP::class,
         'ufw' => \App\SSH\Services\Firewall\Ufw::class,
         'supervisor' => \App\SSH\Services\ProcessManager\Supervisor::class,
@@ -256,6 +258,14 @@ return [
                 'latest' => 'vito-agent',
             ],
         ],
+        'postfix' => [
+            \App\Enums\OperatingSystem::UBUNTU20 => [
+                'latest' => 'postfix',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU22 => [
+                'latest' => 'postfix',
+            ],
+        ]
     ],
 
     /*
@@ -275,7 +285,7 @@ return [
         \App\Enums\SiteType::LARAVEL => \App\SiteTypes\Laravel::class,
         \App\Enums\SiteType::WORDPRESS => \App\SiteTypes\Wordpress::class,
         \App\Enums\SiteType::PHPMYADMIN => \App\SiteTypes\PHPMyAdmin::class,
-        \App\Enums\SiteType::ROUNDCUBE => Roundcube::class,
+        \App\Enums\SiteType::ROUNDCUBE => \App\SiteTypes\Roundcube::class,
     ],
 
     /*
