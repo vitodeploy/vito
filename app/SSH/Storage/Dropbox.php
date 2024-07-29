@@ -44,4 +44,12 @@ class Dropbox extends AbstractStorage
             'download-from-dropbox'
         );
     }
+
+    /**
+     * @TODO Implement delete method
+     */
+    public function delete(string $path): void
+    {
+        //
+    }
 }

@@ -6,6 +6,7 @@ use App\Enums\DeploymentStatus;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Deployment;
+use App\Models\ServerLog;
 use App\Models\Site;
 
 class Deploy
@@ -29,7 +30,7 @@ class Deploy
             'deployment_script_id' => $site->deploymentScript->id,
             'status' => DeploymentStatus::DEPLOYING,
         ]);
-        $lastCommit = $site->sourceControl()->provider()->getLastCommit($site->repository, $site->branch);
+        $lastCommit = $site->sourceControl()?->provider()?->getLastCommit($site->repository, $site->branch);
         if ($lastCommit) {
             $deployment->commit_id = $lastCommit['commit_id'];
             $deployment->commit_data = $lastCommit['commit_data'];
@@ -37,9 +38,19 @@ class Deploy
         $deployment->save();
 
         dispatch(function () use ($site, $deployment) {
-            $log = $site->server->os()->runScript($site->path, $site->deploymentScript->content, $site->id);
-            $deployment->status = DeploymentStatus::FINISHED;
+            /** @var ServerLog $log */
+            $log = ServerLog::make($site->server, 'deploy-'.strtotime('now'))
+                ->forSite($site);
+            $log->save();
             $deployment->log_id = $log->id;
+            $deployment->save();
+            $site->server->os()->runScript(
+                path: $site->path,
+                script: $site->deploymentScript->content,
+                serverLog: $log,
+                variables: $site->environmentVariables($deployment)
+            );
+            $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();
         })->catch(function () use ($deployment) {
             $deployment->status = DeploymentStatus::FAILED;

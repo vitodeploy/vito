@@ -82,6 +82,12 @@
                 </div>
             </div>
 
+            <div class="mt-6">
+                <x-checkbox id="aliases" name="aliases" :checked="old('aliases')" value="1">
+                    Set SSL for site's aliases as well
+                </x-checkbox>
+            </div>
+
             <div class="mt-6 flex justify-end">
                 <x-secondary-button type="button" x-on:click="$dispatch('close')">
                     {{ __("Cancel") }}

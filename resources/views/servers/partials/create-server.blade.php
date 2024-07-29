@@ -70,7 +70,7 @@
                             @endforeach
                         </x-select-input>
                         <x-secondary-button
-                            :href="route('server-providers', ['provider' => $provider])"
+                            :href="route('settings.server-providers', ['provider' => $provider])"
                             class="ml-2 flex-none"
                         >
                             {{ __("Connect") }}
@@ -183,7 +183,7 @@
                     @foreach (config("core.operating_systems") as $operatingSystem)
                         <option
                             value="{{ $operatingSystem }}"
-                            @if($operatingSystem == old('os', 'ubuntu_22')) selected @endif
+                            @if($operatingSystem == old('os', \App\Enums\OperatingSystem::UBUNTU24)) selected @endif
                         >
                             {{ str($operatingSystem)->replace("_", " ")->ucfirst() }}
                             LTS

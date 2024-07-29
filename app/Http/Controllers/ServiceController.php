@@ -16,6 +16,8 @@ class ServiceController extends Controller
 {
     public function index(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('services.index', [
             'server' => $server,
             'services' => $server->services,
@@ -24,6 +26,8 @@ class ServiceController extends Controller
 
     public function start(Server $server, Service $service): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $service->start();
 
         Toast::success('Service is being started!');
@@ -33,6 +37,8 @@ class ServiceController extends Controller
 
     public function stop(Server $server, Service $service): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $service->stop();
 
         Toast::success('Service is being stopped!');
@@ -42,6 +48,8 @@ class ServiceController extends Controller
 
     public function restart(Server $server, Service $service): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $service->restart();
 
         Toast::success('Service is being restarted!');
@@ -51,6 +59,8 @@ class ServiceController extends Controller
 
     public function enable(Server $server, Service $service): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $service->enable();
 
         Toast::success('Service is being enabled!');
@@ -60,6 +70,8 @@ class ServiceController extends Controller
 
     public function disable(Server $server, Service $service): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $service->disable();
 
         Toast::success('Service is being disabled!');
@@ -69,15 +81,19 @@ class ServiceController extends Controller
 
     public function install(Server $server, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(Install::class)->install($server, $request->input());
 
-        Toast::success('Service is being uninstalled!');
+        Toast::success('Service is being installed!');
 
         return htmx()->back();
     }
 
     public function uninstall(Server $server, Service $service): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(Uninstall::class)->uninstall($service);
 
         Toast::success('Service is being uninstalled!');

@@ -19,39 +19,41 @@ class ProjectController extends Controller
 {
     public function index(): View
     {
+        $this->authorize('viewAny', Project::class);
+
         return view('settings.projects.index', [
-            'projects' => auth()->user()->projects,
+            'projects' => Project::all(),
         ]);
     }
 
     public function create(Request $request): HtmxResponse
     {
+        $this->authorize('create', Project::class);
+
         app(CreateProject::class)->create($request->user(), $request->input());
 
         Toast::success('Project created.');
 
-        return htmx()->redirect(route('projects'));
+        return htmx()->redirect(route('settings.projects'));
     }
 
     public function update(Request $request, Project $project): HtmxResponse
     {
-        /** @var Project $project */
-        $project = $request->user()->projects()->findOrFail($project->id);
+        $this->authorize('update', $project);
 
         app(UpdateProject::class)->update($project, $request->input());
 
         Toast::success('Project updated.');
 
-        return htmx()->redirect(route('projects'));
+        return htmx()->redirect(route('settings.projects'));
     }
 
     public function delete(Project $project): RedirectResponse
     {
+        $this->authorize('delete', $project);
+
         /** @var User $user */
         $user = auth()->user();
-
-        /** @var Project $project */
-        $project = $user->projects()->findOrFail($project->id);
 
         try {
             app(DeleteProject::class)->delete($user, $project);
@@ -66,7 +68,7 @@ class ProjectController extends Controller
         return back();
     }
 
-    public function switch($projectId): RedirectResponse
+    public function switch(Request $request, $projectId): RedirectResponse
     {
         /** @var User $user */
         $user = auth()->user();
@@ -74,8 +76,15 @@ class ProjectController extends Controller
         /** @var Project $project */
         $project = $user->projects()->findOrFail($projectId);
 
+        $this->authorize('view', $project);
+
         $user->current_project_id = $project->id;
         $user->save();
+
+        // check if the referer is settings/*
+        if (str_contains($request->headers->get('referer'), 'settings')) {
+            return redirect()->to($request->headers->get('referer'));
+        }
 
         return redirect()->route('servers');
     }

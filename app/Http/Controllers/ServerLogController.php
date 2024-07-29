@@ -14,6 +14,8 @@ class ServerLogController extends Controller
 {
     public function index(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('server-logs.index', [
             'server' => $server,
             'pageTitle' => __('Vito Logs'),
@@ -22,6 +24,8 @@ class ServerLogController extends Controller
 
     public function show(Server $server, ServerLog $serverLog): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         if ($server->id != $serverLog->server_id) {
             abort(404);
         }
@@ -33,6 +37,8 @@ class ServerLogController extends Controller
 
     public function remote(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('server-logs.remote-logs', [
             'server' => $server,
             'remote' => true,
@@ -42,6 +48,8 @@ class ServerLogController extends Controller
 
     public function store(Server $server, Request $request): \App\Helpers\HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(CreateServerLog::class)->create($server, $request->input());
 
         Toast::success('Log added successfully.');
@@ -51,6 +59,8 @@ class ServerLogController extends Controller
 
     public function destroy(Server $server, ServerLog $serverLog): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $serverLog->delete();
 
         Toast::success('Remote log deleted successfully.');

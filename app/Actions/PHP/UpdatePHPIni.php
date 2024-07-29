@@ -2,10 +2,13 @@
 
 namespace App\Actions\PHP;
 
+use App\Enums\PHPIniType;
 use App\Models\Server;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -22,19 +25,19 @@ class UpdatePHPIni
 
         $tmpName = Str::random(10).strtotime('now');
         try {
-            /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+            /** @var FilesystemAdapter $storageDisk */
             $storageDisk = Storage::disk('local');
 
             $storageDisk->put($tmpName, $input['ini']);
             $service->server->ssh('root')->upload(
                 $storageDisk->path($tmpName),
-                "/etc/php/$service->version/cli/php.ini"
+                sprintf('/etc/php/%s/%s/php.ini', $service->version, $input['type'])
             );
             $this->deleteTempFile($tmpName);
         } catch (Throwable) {
             $this->deleteTempFile($tmpName);
             throw ValidationException::withMessages([
-                'ini' => __("Couldn't update php.ini file!"),
+                'ini' => __("Couldn't update php.ini (:type) file!", ['type' => $input['type']]),
             ]);
         }
 
@@ -56,6 +59,10 @@ class UpdatePHPIni
                 'string',
             ],
             'version' => 'required|string',
+            'type' => [
+                'required',
+                Rule::in([PHPIniType::CLI, PHPIniType::FPM]),
+            ],
         ])->validate();
 
         if (! in_array($input['version'], $server->installedPHPVersions())) {

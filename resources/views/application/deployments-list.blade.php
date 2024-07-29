@@ -1,8 +1,8 @@
 @php
     $deployments = $site
-    ->deployments()
-    ->latest()
-    ->paginate(10);
+        ->deployments()
+        ->latest()
+        ->paginate(10);
 @endphp
 
 <div x-data="">

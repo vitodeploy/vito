@@ -10,6 +10,7 @@ use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
+use App\Exceptions\SSHUploadFailed;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Models\Deployment;
@@ -22,6 +23,8 @@ class ApplicationController extends Controller
 {
     public function deploy(Server $server, Site $site): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         try {
             app(Deploy::class)->run($site);
 
@@ -41,11 +44,15 @@ class ApplicationController extends Controller
 
     public function showDeploymentLog(Server $server, Site $site, Deployment $deployment): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         return back()->with('content', $deployment->log?->getContent());
     }
 
     public function updateDeploymentScript(Server $server, Site $site, Request $request): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(UpdateDeploymentScript::class)->update($site, $request->input());
 
         Toast::success('Deployment script updated!');
@@ -55,6 +62,8 @@ class ApplicationController extends Controller
 
     public function updateBranch(Server $server, Site $site, Request $request): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(UpdateBranch::class)->update($site, $request->input());
 
         Toast::success('Branch updated!');
@@ -64,20 +73,29 @@ class ApplicationController extends Controller
 
     public function getEnv(Server $server, Site $site): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         return back()->with('env', $site->getEnv());
     }
 
     public function updateEnv(Server $server, Site $site, Request $request): RedirectResponse
     {
-        app(UpdateEnv::class)->update($site, $request->input());
+        $this->authorize('manage', $server);
 
-        Toast::success('Env updated!');
+        try {
+            app(UpdateEnv::class)->update($site, $request->input());
+            Toast::success('Env updated!');
+        } catch (SSHUploadFailed) {
+            Toast::error('Failed to update .env file!');
+        }
 
         return back();
     }
 
     public function enableAutoDeployment(Server $server, Site $site): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         if (! $site->isAutoDeployment()) {
             try {
                 $site->enableAutoDeployment();
@@ -101,6 +119,8 @@ class ApplicationController extends Controller
 
     public function disableAutoDeployment(Server $server, Site $site): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         if ($site->isAutoDeployment()) {
             try {
                 $site->disableAutoDeployment();

@@ -13,21 +13,24 @@ class StorageProvidersTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_connect_dropbox(): void
+    /**
+     * @dataProvider createData
+     */
+    public function test_create(array $input): void
     {
         $this->actingAs($this->user);
 
-        Http::fake();
+        if ($input['provider'] === StorageProvider::DROPBOX) {
+            Http::fake();
+        }
 
-        $this->post(route('storage-providers.connect'), [
-            'provider' => StorageProvider::DROPBOX,
-            'name' => 'profile',
-            'token' => 'token',
-        ])->assertSessionDoesntHaveErrors();
+        $this->post(route('settings.storage-providers.connect'), $input)
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('storage_providers', [
-            'provider' => StorageProvider::DROPBOX,
-            'profile' => 'profile',
+            'provider' => $input['provider'],
+            'profile' => $input['name'],
+            'project_id' => isset($input['global']) ? null : $this->user->current_project_id,
         ]);
     }
 
@@ -40,7 +43,7 @@ class StorageProvidersTest extends TestCase
             'provider' => StorageProvider::DROPBOX,
         ]);
 
-        $this->get(route('storage-providers'))
+        $this->get(route('settings.storage-providers'))
             ->assertSuccessful()
             ->assertSee($provider->profile);
     }
@@ -53,7 +56,7 @@ class StorageProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->delete(route('storage-providers.delete', $provider->id))
+        $this->delete(route('settings.storage-providers.delete', $provider->id))
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('storage_providers', [
@@ -79,7 +82,7 @@ class StorageProvidersTest extends TestCase
             'storage_id' => $provider->id,
         ]);
 
-        $this->delete(route('storage-providers.delete', $provider->id))
+        $this->delete(route('settings.storage-providers.delete', $provider->id))
             ->assertSessionDoesntHaveErrors()
             ->assertSessionHas('toast.type', 'error')
             ->assertSessionHas('toast.message', 'This storage provider is being used by a backup.');
@@ -87,5 +90,71 @@ class StorageProvidersTest extends TestCase
         $this->assertDatabaseHas('storage_providers', [
             'id' => $provider->id,
         ]);
+    }
+
+    /**
+     * @TODO: complete FTP tests
+     */
+    public static function createData(): array
+    {
+        return [
+            [
+                [
+                    'provider' => StorageProvider::LOCAL,
+                    'name' => 'local-test',
+                    'path' => '/home/vito/backups',
+                ],
+            ],
+            [
+                [
+                    'provider' => StorageProvider::LOCAL,
+                    'name' => 'local-test',
+                    'path' => '/home/vito/backups',
+                    'global' => 1,
+                ],
+            ],
+            //            [
+            //                [
+            //                    'provider' => StorageProvider::FTP,
+            //                    'name' => 'ftp-test',
+            //                    'host' => '1.2.3.4',
+            //                    'port' => '22',
+            //                    'path' => '/home/vito',
+            //                    'username' => 'username',
+            //                    'password' => 'password',
+            //                    'ssl' => 1,
+            //                    'passive' => 1,
+            //                ],
+            //            ],
+            //            [
+            //                [
+            //                    'provider' => StorageProvider::FTP,
+            //                    'name' => 'ftp-test',
+            //                    'host' => '1.2.3.4',
+            //                    'port' => '22',
+            //                    'path' => '/home/vito',
+            //                    'username' => 'username',
+            //                    'password' => 'password',
+            //                    'ssl' => 1,
+            //                    'passive' => 1,
+            //                    'global' => 1,
+            //                ],
+            //            ],
+            [
+                [
+                    'provider' => StorageProvider::DROPBOX,
+                    'name' => 'dropbox-test',
+                    'token' => 'token',
+                ],
+            ],
+            [
+                [
+                    'provider' => StorageProvider::DROPBOX,
+                    'name' => 'dropbox-test',
+                    'token' => 'token',
+                    'global' => 1,
+                ],
+            ],
+        ];
     }
 }

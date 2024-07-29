@@ -3,6 +3,7 @@
 namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
+use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Validation\Rule;
 
 class PHPBlank extends PHPSite
@@ -42,7 +43,9 @@ class PHPBlank extends PHPSite
 
     public function install(): void
     {
-        $this->site->server->webserver()->handler()->createVHost($this->site);
+        /** @var Webserver $webserver */
+        $webserver = $this->site->server->webserver()->handler();
+        $webserver->createVHost($this->site);
         $this->progress(65);
         $this->site->php()?->restart();
     }

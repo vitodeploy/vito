@@ -19,7 +19,7 @@ RUN apt-get install -y nginx
 
 # php
 RUN apt-get update \
-    && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor libcap2-bin libpng-dev \
+    && apt-get install -y cron gnupg gosu curl ca-certificates zip unzip git supervisor libcap2-bin libpng-dev \
     python2 dnsutils librsvg2-bin fswatch wget \
     && add-apt-repository ppa:ondrej/php -y \
     && apt-get update \
@@ -43,6 +43,8 @@ RUN rm /etc/nginx/sites-available/default
 RUN rm /etc/nginx/sites-enabled/default
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+RUN echo "* * * * * cd /var/www/html && php artisan schedule:run >> /var/log/cron.log 2>&1" | crontab -
 
 # supervisord
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf

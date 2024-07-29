@@ -6,6 +6,7 @@ use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -27,14 +28,23 @@ class CreateSSL
             'expires_at' => $input['type'] === SslType::LETSENCRYPT ? now()->addMonths(3) : $input['expires_at'],
             'status' => SslStatus::CREATING,
         ]);
+        $ssl->domains = [$site->domain];
+        if (isset($input['aliases']) && $input['aliases']) {
+            $ssl->domains = array_merge($ssl->domains, $site->aliases);
+        }
         $ssl->save();
 
         dispatch(function () use ($site, $ssl) {
-            $site->server->webserver()->handler()->setupSSL($ssl);
+            /** @var Webserver $webserver */
+            $webserver = $site->server->webserver()->handler();
+            $webserver->setupSSL($ssl);
             $ssl->status = SslStatus::CREATED;
             $ssl->save();
             $site->type()->edit();
-        });
+        })->catch(function () use ($ssl) {
+            $ssl->status = SslStatus::FAILED;
+            $ssl->save();
+        })->onConnection('ssh');
     }
 
     /**

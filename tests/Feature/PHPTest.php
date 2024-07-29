@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PHPIniType;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Service;
@@ -136,7 +137,10 @@ class PHPTest extends TestCase
         ]))->assertSessionHasErrors();
     }
 
-    public function test_get_php_ini(): void
+    /**
+     * @dataProvider php_ini_data
+     */
+    public function test_get_php_ini(string $version, string $type): void
     {
         SSH::fake('[PHP ini]');
 
@@ -144,11 +148,15 @@ class PHPTest extends TestCase
 
         $this->get(route('servers.php.get-ini', [
             'server' => $this->server,
-            'version' => '8.2',
+            'version' => $version,
+            'type' => $type,
         ]))->assertSessionHas('ini');
     }
 
-    public function test_update_php_ini(): void
+    /**
+     * @dataProvider php_ini_data
+     */
+    public function test_update_php_ini(string $version, string $type): void
     {
         SSH::fake();
 
@@ -156,11 +164,20 @@ class PHPTest extends TestCase
 
         $this->post(route('servers.php.update-ini', [
             'server' => $this->server,
-            'version' => '8.2',
+            'version' => $version,
+            'type' => $type,
             'ini' => 'new ini',
         ]))
             ->assertSessionDoesntHaveErrors()
             ->assertSessionHas('toast.type', 'success')
-            ->assertSessionHas('toast.message', 'PHP ini updated!');
+            ->assertSessionHas('toast.message', __('PHP ini (:type) updated!', ['type' => $type]));
+    }
+
+    public static function php_ini_data(): array
+    {
+        return [
+            ['8.2', PHPIniType::FPM],
+            ['8.2', PHPIniType::CLI],
+        ];
     }
 }

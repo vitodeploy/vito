@@ -10,26 +10,31 @@ class CreateProject
 {
     public function create(User $user, array $input): Project
     {
-        $this->validate($user, $input);
+        if (isset($input['name'])) {
+            $input['name'] = strtolower($input['name']);
+        }
+
+        $this->validate($input);
 
         $project = new Project([
-            'user_id' => $user->id,
             'name' => $input['name'],
         ]);
 
         $project->save();
 
+        $project->users()->attach($user);
+
         return $project;
     }
 
-    private function validate(User $user, array $input): void
+    private function validate(array $input): void
     {
         Validator::make($input, [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                'unique:projects,name,NULL,id,user_id,'.$user->id,
+                'unique:projects,name',
             ],
         ])->validate();
     }

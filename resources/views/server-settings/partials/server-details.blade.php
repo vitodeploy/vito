@@ -1,4 +1,4 @@
-<x-card>
+<x-card id="server-details">
     <x-slot name="title">{{ __("Details") }}</x-slot>
     <x-slot name="description">
         {{ __("More details about your server") }}
@@ -7,6 +7,57 @@
         <div>{{ __("Created At") }}</div>
         <div>
             <x-datetime :value="$server->created_at" />
+        </div>
+    </div>
+    <div>
+        <div class="py-5">
+            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+        </div>
+    </div>
+    <div class="flex items-center justify-between">
+        <div>{{ __("Last Update Checked") }}</div>
+        <div>
+            @if ($server->last_update_check)
+                <x-datetime :value="$server->last_update_check" />
+            @else
+                -
+            @endif
+        </div>
+    </div>
+    <div>
+        <div class="py-5">
+            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+        </div>
+    </div>
+    <div id="available-updates" class="flex items-center justify-between">
+        <div>{{ __("Available Updates") }} ({{ $server->updates }})</div>
+        <div class="flex flex-col items-end md:flex-row md:items-center">
+            @if ($server->updates > 0)
+                <x-primary-button
+                    id="btn-update-server"
+                    hx-post="{{ route('servers.settings.update', $server) }}"
+                    hx-swap="outerHTML"
+                    hx-target="#server-details"
+                    hx-select="#server-details"
+                    hx-ext="disable-element"
+                    hx-disable-element="#btn-update-server"
+                >
+                    {{ __("Update") }}
+                </x-primary-button>
+            @endif
+
+            <x-secondary-button
+                id="btn-check-updates"
+                class="mt-2 md:ml-2 md:mt-0"
+                hx-post="{{ route('servers.settings.check-updates', $server) }}"
+                hx-swap="outerHTML"
+                hx-target="#server-details"
+                hx-select="#server-details"
+                hx-ext="disable-element"
+                hx-disable-element="#btn-check-updates"
+            >
+                {{ __("Check") }}
+            </x-secondary-button>
         </div>
     </div>
     <div>

@@ -50,14 +50,9 @@ class SSH
         return $this;
     }
 
-    public function setLog(string $logType, $siteId = null): self
+    public function setLog(ServerLog $log): self
     {
-        $this->log = $this->server->logs()->create([
-            'site_id' => $siteId,
-            'name' => $this->server->id.'-'.strtotime('now').'-'.$logType.'.log',
-            'type' => $logType,
-            'disk' => config('core.logs_disk'),
-        ]);
+        $this->log = $log;
 
         return $this;
     }
@@ -98,10 +93,12 @@ class SSH
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
     {
-        if ($log) {
-            $this->setLog($log, $siteId);
-        } else {
-            $this->log = null;
+        if (! $this->log && $log) {
+            $this->log = ServerLog::make($this->server, $log);
+            if ($siteId) {
+                $this->log->forSite($siteId);
+            }
+            $this->log->save();
         }
 
         try {
@@ -132,8 +129,8 @@ class SSH
 
                 $this->log?->write($output);
 
-                if (Str::contains($output, 'VITO_SSH_ERROR')) {
-                    throw new SSHCommandError('SSH command failed with an error');
+                if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {
+                    throw new SSHCommandError('SSH command failed with an error', $this->connection->getExitStatus());
                 }
 
                 return $output;

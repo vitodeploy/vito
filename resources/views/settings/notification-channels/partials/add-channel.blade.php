@@ -10,7 +10,7 @@
 
         <form
             id="add-channel-form"
-            hx-post="{{ route("notification-channels.add") }}"
+            hx-post="{{ route("settings.notification-channels.add") }}"
             hx-swap="outerHTML"
             hx-select="#add-channel-form"
             hx-ext="disable-element"
@@ -96,6 +96,15 @@
                     class="mt-1 w-full"
                 />
                 @error("chat_id")
+                    <x-input-error class="mt-2" :messages="$message" />
+                @enderror
+            </div>
+
+            <div class="mt-6">
+                <x-checkbox id="global" name="global" :checked="old('global')" value="1">
+                    Is Global (Accessible in all projects)
+                </x-checkbox>
+                @error("global")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>

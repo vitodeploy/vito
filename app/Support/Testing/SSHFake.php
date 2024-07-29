@@ -17,6 +17,12 @@ class SSHFake extends SSH
 
     protected bool $connectionWillFail = false;
 
+    protected string $uploadedLocalPath;
+
+    protected string $uploadedRemotePath;
+
+    protected string $uploadedContent;
+
     public function __construct(?string $output = null)
     {
         $this->output = $output;
@@ -36,10 +42,13 @@ class SSHFake extends SSH
 
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
     {
-        if ($log) {
-            $this->setLog($log, $siteId);
-        } else {
-            $this->log = null;
+        if (! $this->log && $log) {
+            $this->log = $this->server->logs()->create([
+                'site_id' => $siteId,
+                'name' => $this->server->id.'-'.strtotime('now').'-'.$log.'.log',
+                'type' => $log,
+                'disk' => config('core.logs_disk'),
+            ]);
         }
 
         $this->commands[] = $command;
@@ -60,6 +69,9 @@ class SSHFake extends SSH
 
     public function upload(string $local, string $remote): void
     {
+        $this->uploadedLocalPath = $local;
+        $this->uploadedRemotePath = $remote;
+        $this->uploadedContent = file_get_contents($local);
         $this->log = null;
     }
 
@@ -101,5 +113,23 @@ class SSHFake extends SSH
             );
         }
         Assert::assertTrue(true, $executed);
+    }
+
+    public function assertFileUploaded(string $toPath, ?string $content = null): void
+    {
+        if (! $this->uploadedLocalPath || ! $this->uploadedRemotePath) {
+            Assert::fail('File is not uploaded');
+        }
+
+        Assert::assertEquals($toPath, $this->uploadedRemotePath);
+
+        if ($content) {
+            Assert::assertEquals($content, $this->uploadedContent);
+        }
+    }
+
+    public function getUploadedLocalPath(): string
+    {
+        return $this->uploadedLocalPath;
     }
 }

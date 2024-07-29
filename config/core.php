@@ -16,6 +16,7 @@ return [
     'operating_systems' => [
         \App\Enums\OperatingSystem::UBUNTU20,
         \App\Enums\OperatingSystem::UBUNTU22,
+        \App\Enums\OperatingSystem::UBUNTU24,
     ],
     'webservers' => ['none', 'nginx'],
     'php_versions' => [
@@ -37,6 +38,9 @@ return [
         'mysql80',
         'mariadb103',
         'mariadb104',
+        'mariadb106',
+        'mariadb1011',
+        'mariadb114',
         'postgresql12',
         'postgresql13',
         'postgresql14',
@@ -49,6 +53,9 @@ return [
         'mysql80' => 'mysql',
         'mariadb103' => 'mariadb',
         'mariadb104' => 'mariadb',
+        'mariadb106' => 'mariadb',
+        'mariadb1011' => 'mariadb',
+        'mariadb114' => 'mariadb',
         'postgresql12' => 'postgresql',
         'postgresql13' => 'postgresql',
         'postgresql14' => 'postgresql',
@@ -62,6 +69,9 @@ return [
         'mariadb' => '10.3',
         'mariadb103' => '10.3',
         'mariadb104' => '10.4',
+        'mariadb106' => '10.6',
+        'mariadb1011' => '10.11',
+        'mariadb114' => '11.4',
         'postgresql12' => '12',
         'postgresql13' => '13',
         'postgresql14' => '14',
@@ -106,26 +116,32 @@ return [
         'custom' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'aws' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'ubuntu',
             \App\Enums\OperatingSystem::UBUNTU22 => 'ubuntu',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'ubuntu',
         ],
         'linode' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'digitalocean' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'vultr' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'hetzner' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'root',
             \App\Enums\OperatingSystem::UBUNTU22 => 'root',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
     ],
 
@@ -143,6 +159,7 @@ return [
         'supervisor' => 'process_manager',
         'vito-agent' => 'monitoring',
         'postfix' => 'email_service',
+        'remote-monitor' => 'monitoring',
     ],
     'service_handlers' => [
         'nginx' => \App\SSH\Services\Webserver\Nginx::class,
@@ -154,7 +171,8 @@ return [
         'php' => \App\SSH\Services\PHP\PHP::class,
         'ufw' => \App\SSH\Services\Firewall\Ufw::class,
         'supervisor' => \App\SSH\Services\ProcessManager\Supervisor::class,
-        'vito-agent' => \App\SSH\Services\VitoAgent\VitoAgent::class,
+        'vito-agent' => \App\SSH\Services\Monitoring\VitoAgent\VitoAgent::class,
+        'remote-monitor' => \App\SSH\Services\Monitoring\RemoteMonitor\RemoteMonitor::class,
     ],
     'service_units' => [
         'nginx' => [
@@ -162,6 +180,9 @@ return [
                 'latest' => 'nginx',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                'latest' => 'nginx',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 'latest' => 'nginx',
             ],
         ],
@@ -174,15 +195,32 @@ return [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                '5.7' => 'mysql',
+                '8.0' => 'mysql',
+            ],
         ],
         'mariadb' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
                 '10.3' => 'mariadb',
                 '10.4' => 'mariadb',
+                '10.6' => 'mariadb',
+                '10.11' => 'mariadb',
+                '11.4' => 'mariadb',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 '10.3' => 'mariadb',
                 '10.4' => 'mariadb',
+                '10.6' => 'mariadb',
+                '10.11' => 'mariadb',
+                '11.4' => 'mariadb',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                '10.3' => 'mariadb',
+                '10.4' => 'mariadb',
+                '10.6' => 'mariadb',
+                '10.11' => 'mariadb',
+                '11.4' => 'mariadb',
             ],
         ],
         'postgresql' => [
@@ -194,6 +232,13 @@ return [
                 '16' => 'postgresql',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                '12' => 'postgresql',
+                '13' => 'postgresql',
+                '14' => 'postgresql',
+                '15' => 'postgresql',
+                '16' => 'postgresql',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 '12' => 'postgresql',
                 '13' => 'postgresql',
                 '14' => 'postgresql',
@@ -225,12 +270,27 @@ return [
                 '8.2' => 'php8.2-fpm',
                 '8.3' => 'php8.3-fpm',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                '5.6' => 'php5.6-fpm',
+                '7.0' => 'php7.0-fpm',
+                '7.1' => 'php7.1-fpm',
+                '7.2' => 'php7.2-fpm',
+                '7.3' => 'php7.3-fpm',
+                '7.4' => 'php7.4-fpm',
+                '8.0' => 'php8.0-fpm',
+                '8.1' => 'php8.1-fpm',
+                '8.2' => 'php8.2-fpm',
+                '8.3' => 'php8.3-fpm',
+            ],
         ],
         'redis' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
                 'latest' => 'redis',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                'latest' => 'redis',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 'latest' => 'redis',
             ],
         ],
@@ -241,6 +301,9 @@ return [
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 'latest' => 'supervisor',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                'latest' => 'supervisor',
+            ],
         ],
         'ufw' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
@@ -249,12 +312,18 @@ return [
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 'latest' => 'ufw',
             ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                'latest' => 'ufw',
+            ],
         ],
         'vito-agent' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
                 'latest' => 'vito-agent',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
+                'latest' => 'vito-agent',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
                 'latest' => 'vito-agent',
             ],
         ],
@@ -370,10 +439,12 @@ return [
     'storage_providers' => [
         \App\Enums\StorageProvider::DROPBOX,
         \App\Enums\StorageProvider::FTP,
+        \App\Enums\StorageProvider::LOCAL,
     ],
     'storage_providers_class' => [
-        'dropbox' => \App\StorageProviders\Dropbox::class,
-        'ftp' => \App\StorageProviders\Ftp::class,
+        \App\Enums\StorageProvider::DROPBOX => \App\StorageProviders\Dropbox::class,
+        \App\Enums\StorageProvider::FTP => \App\StorageProviders\Ftp::class,
+        \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
     ],
 
     'ssl_types' => [

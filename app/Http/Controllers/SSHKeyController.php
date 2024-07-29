@@ -17,6 +17,8 @@ class SSHKeyController extends Controller
 {
     public function index(Server $server): View
     {
+        $this->authorize('manage', $server);
+
         return view('server-ssh-keys.index', [
             'server' => $server,
             'keys' => $server->sshKeys,
@@ -25,7 +27,9 @@ class SSHKeyController extends Controller
 
     public function store(Server $server, Request $request): HtmxResponse
     {
-        /** @var \App\Models\SshKey $key */
+        $this->authorize('manage', $server);
+
+        /** @var SshKey $key */
         $key = app(CreateSshKey::class)->create(
             $request->user(),
             $request->input()
@@ -38,6 +42,8 @@ class SSHKeyController extends Controller
 
     public function destroy(Server $server, SshKey $sshKey): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(DeleteKeyFromServer::class)->delete($server, $sshKey);
 
         Toast::success('SSH Key has been deleted.');
@@ -47,6 +53,8 @@ class SSHKeyController extends Controller
 
     public function deploy(Server $server, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(DeployKeyToServer::class)->deploy(
             $request->user(),
             $server,

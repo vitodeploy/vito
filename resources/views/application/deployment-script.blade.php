@@ -16,12 +16,33 @@
 
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
-                <x-textarea id="script" name="script" class="mt-1 min-h-[400px] w-full">
+                <x-textarea id="script" name="script" class="mt-1 min-h-[400px] w-full font-mono">
                     {{ old("script", $site->deploymentScript?->content) }}
                 </x-textarea>
                 @error("script")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
+            </div>
+
+            <div class="mt-6">
+                <div class="flex items-center">
+                    <x-input-label class="mr-1" :value="__('Available Variables')" />
+                    (
+                    <a
+                        href="https://vitodeploy.com/sites/application.html#deployment-script"
+                        target="_blank"
+                        class="text-primary-500"
+                    >
+                        {{ __("How to use?") }}
+                    </a>
+                    )
+                </div>
+                <div class="mt-1 rounded-lg bg-gray-100 p-4 dark:bg-gray-700">
+                    @foreach ($site->environmentVariables() as $key => $variable)
+                        {{ $key }}={{ $variable }}
+                        <br />
+                    @endforeach
+                </div>
             </div>
 
             <div class="mt-6 flex items-center justify-end">

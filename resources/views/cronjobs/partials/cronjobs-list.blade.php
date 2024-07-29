@@ -12,19 +12,50 @@
         <div x-data="" class="space-y-3">
             @if (count($cronjobs) > 0)
                 @foreach ($cronjobs as $cronjob)
-                    <x-item-card>
+                    <x-item-card id="cronjob-{{ $cronjob->id }}">
                         <div class="flex flex-grow flex-col items-start justify-center">
-                            <span class="mb-1 flex items-center lowercase text-red-600">
+                            <div class="mb-1 text-left text-xs lowercase text-red-600 md:text-sm">
                                 {{ $cronjob->command }}
-                            </span>
-                            <span class="text-sm text-gray-400">
+                            </div>
+                            <div class="text-xs text-gray-400 md:text-sm">
                                 {{ $cronjob->frequencyLabel() }}
-                            </span>
+                            </div>
                         </div>
                         <div class="flex items-center">
                             @include("cronjobs.partials.status", ["status" => $cronjob->status])
-                            <div class="inline">
+                            <div class="ml-1 inline">
+                                @if ($cronjob->status == \App\Enums\CronjobStatus::READY)
+                                    <x-icon-button
+                                        id="disable-cronjob-{{ $cronjob->id }}"
+                                        data-tooltip="Disable Cronjob"
+                                        hx-post="{{ route('servers.cronjobs.disable', ['server' => $server, 'cronJob' => $cronjob]) }}"
+                                        hx-target="#cronjob-{{ $cronjob->id }}"
+                                        hx-select="#cronjob-{{ $cronjob->id }}"
+                                        hx-swap="outerHTML"
+                                        hx-ext="disable-element"
+                                        hx-disable-element="#disable-cronjob-{{ $cronjob->id }}"
+                                    >
+                                        <x-heroicon name="o-stop" class="h-5 w-5" />
+                                    </x-icon-button>
+                                @endif
+
+                                @if ($cronjob->status == \App\Enums\CronjobStatus::DISABLED)
+                                    <x-icon-button
+                                        id="enable-cronjob-{{ $cronjob->id }}"
+                                        data-tooltip="Enable Cronjob"
+                                        hx-post="{{ route('servers.cronjobs.enable', ['server' => $server, 'cronJob' => $cronjob]) }}"
+                                        hx-target="#cronjob-{{ $cronjob->id }}"
+                                        hx-select="#cronjob-{{ $cronjob->id }}"
+                                        hx-swap="outerHTML"
+                                        hx-ext="disable-element"
+                                        hx-disable-element="#enable-cronjob-{{ $cronjob->id }}"
+                                    >
+                                        <x-heroicon name="o-play" class="h-5 w-5" />
+                                    </x-icon-button>
+                                @endif
+
                                 <x-icon-button
+                                    data-tooltip="Delete Cronjob"
                                     x-on:click="deleteAction = '{{ route('servers.cronjobs.destroy', ['server' => $server, 'cronJob' => $cronjob]) }}'; $dispatch('open-modal', 'delete-cronjob')"
                                 >
                                     <x-heroicon name="o-trash" class="h-5 w-5" />

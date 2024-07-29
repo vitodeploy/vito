@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array $credentials
  * @property bool $connected
  * @property User $user
+ * @property ?int $project_id
  */
 class ServerProvider extends AbstractModel
 {
@@ -24,12 +26,14 @@ class ServerProvider extends AbstractModel
         'provider',
         'credentials',
         'connected',
+        'project_id',
     ];
 
     protected $casts = [
         'user_id' => 'integer',
         'credentials' => 'encrypted:array',
         'connected' => 'boolean',
+        'project_id' => 'integer',
     ];
 
     public function user(): BelongsTo
@@ -45,5 +49,17 @@ class ServerProvider extends AbstractModel
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class, 'provider_id');
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public static function getByProjectId(int $projectId): Builder
+    {
+        return self::query()
+            ->where('project_id', $projectId)
+            ->orWhereNull('project_id');
     }
 }

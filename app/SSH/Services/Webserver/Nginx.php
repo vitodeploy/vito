@@ -117,9 +117,14 @@ class Nginx extends AbstractWebserver
      */
     public function setupSSL(Ssl $ssl): void
     {
+        $domains = '';
+        foreach ($ssl->getDomains() as $domain) {
+            $domains .= ' -d '.$domain;
+        }
         $command = $this->getScript('nginx/create-letsencrypt-ssl.sh', [
             'email' => $ssl->site->server->creator->email,
             'domain' => $ssl->site->domain,
+            'domains' => $domains,
             'web_directory' => $ssl->site->getWebDirectoryPath(),
         ]);
         if ($ssl->type == 'custom') {

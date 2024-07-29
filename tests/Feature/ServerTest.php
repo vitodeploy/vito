@@ -280,4 +280,32 @@ class ServerTest extends TestCase
             'status' => ServerStatus::DISCONNECTED,
         ]);
     }
+
+    public function test_check_updates(): void
+    {
+        SSH::fake('Available updates:10');
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.settings.check-updates', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->server->refresh();
+        $this->assertEquals(9, $this->server->updates);
+    }
+
+    public function test_update_server(): void
+    {
+        SSH::fake('Available updates:0');
+
+        $this->actingAs($this->user);
+
+        $this->post(route('servers.settings.update', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->server->refresh();
+
+        $this->assertEquals(ServerStatus::READY, $this->server->status);
+        $this->assertEquals(0, $this->server->updates);
+    }
 }

@@ -45,4 +45,12 @@ class FTP extends AbstractStorage
             'download-from-ftp'
         );
     }
+
+    /**
+     * @TODO Implement delete method
+     */
+    public function delete(string $path): void
+    {
+        //
+    }
 }

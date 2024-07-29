@@ -1,23 +1,29 @@
-#!/bin/bash
+echo "Updating Vito..."
 
 cd /home/vito/vito
 
-php artisan down
-
+echo "Pulling changes..."
 git fetch --all
 
-git checkout $(git tag -l --merged 1.x --sort=-v:refname | head -n 1)
+echo "Checking out the latest tag..."
+NEW_RELEASE=$(git tag -l --merged 1.x --sort=-v:refname | head -n 1)
+git checkout "$NEW_RELEASE"
 
+git pull origin "$NEW_RELEASE"
+
+echo "Installing composer dependencies..."
 composer install --no-dev
 
+echo "Running migrations..."
 php artisan migrate --force
 
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
+echo "Optimizing..."
+php artisan optimize:clear
+php artisan optimize
 
-php artisan config:cache
-
+echo "Restarting workers..."
 sudo supervisorctl restart worker:*
 
-php artisan up
+bash scripts/post-update.sh
+
+echo "Vito updated successfully to $NEW_RELEASE! 🎉"

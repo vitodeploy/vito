@@ -1,5 +1,5 @@
 <x-icon-button
-    :disabled="$service->status != \App\Enums\ServiceStatus::STOPPED"
+    :disabled="isset($disabled) ? $disabled : $service->status != \App\Enums\ServiceStatus::STOPPED"
     data-tooltip="Start Service"
     class="cursor-pointer"
     href="{{ route('servers.services.start', ['server' => $server, 'service' => $service]) }}"

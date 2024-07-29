@@ -7,7 +7,5 @@ use App\NotificationChannels\NotificationChannel as NotificationChannelInterface
 
 abstract class AbstractNotificationChannel implements NotificationChannelInterface
 {
-    public function __construct(protected NotificationChannel $notificationChannel)
-    {
-    }
+    public function __construct(protected NotificationChannel $notificationChannel) {}
 }

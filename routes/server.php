@@ -67,6 +67,7 @@ Route::middleware('select-current-project')->group(function () {
             Route::post('/{site}/settings/vhost', [SiteSettingController::class, 'updateVhost']);
             Route::post('/{site}/settings/php', [SiteSettingController::class, 'updatePHPVersion'])->name('servers.sites.settings.php');
             Route::post('/{site}/settings/source-control', [SiteSettingController::class, 'updateSourceControl'])->name('servers.sites.settings.source-control');
+            Route::post('/{site}/settings/update-aliases', [SiteSettingController::class, 'updateAliases'])->name('servers.sites.settings.aliases');
 
             // site logs
             Route::get('/{site}/logs', [SiteLogController::class, 'index'])->name('servers.sites.logs');
@@ -113,6 +114,8 @@ Route::middleware('select-current-project')->group(function () {
         Route::get('/{server}/cronjobs', [CronjobController::class, 'index'])->name('servers.cronjobs');
         Route::post('/{server}/cronjobs', [CronjobController::class, 'store'])->name('servers.cronjobs.store');
         Route::delete('/{server}/cronjobs/{cronJob}', [CronjobController::class, 'destroy'])->name('servers.cronjobs.destroy');
+        Route::post('/{server}/cronjobs/{cronJob}/enable', [CronjobController::class, 'enable'])->name('servers.cronjobs.enable');
+        Route::post('/{server}/cronjobs/{cronJob}/disable', [CronjobController::class, 'disable'])->name('servers.cronjobs.disable');
 
         // ssh keys
         Route::get('/{server}/ssh-keys', [SSHKeyController::class, 'index'])->name('servers.ssh-keys');
@@ -145,6 +148,8 @@ Route::middleware('select-current-project')->group(function () {
         Route::post('/check-connection', [ServerSettingController::class, 'checkConnection'])->name('servers.settings.check-connection');
         Route::post('/reboot', [ServerSettingController::class, 'reboot'])->name('servers.settings.reboot');
         Route::post('/edit', [ServerSettingController::class, 'edit'])->name('servers.settings.edit');
+        Route::post('/check-updates', [ServerSettingController::class, 'checkUpdates'])->name('servers.settings.check-updates');
+        Route::post('/update', [ServerSettingController::class, 'update'])->name('servers.settings.update');
     });
 
     // logs

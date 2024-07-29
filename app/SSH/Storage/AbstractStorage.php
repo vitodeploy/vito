@@ -7,7 +7,5 @@ use App\Models\StorageProvider;
 
 abstract class AbstractStorage implements Storage
 {
-    public function __construct(protected Server $server, protected StorageProvider $storageProvider)
-    {
-    }
+    public function __construct(protected Server $server, protected StorageProvider $storageProvider) {}
 }

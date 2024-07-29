@@ -5,6 +5,7 @@ namespace Tests;
 use App\Enums\Database;
 use App\Enums\NotificationChannel;
 use App\Enums\ServiceStatus;
+use App\Enums\UserRole;
 use App\Enums\Webserver;
 use App\Models\Server;
 use App\Models\Site;
@@ -23,6 +24,10 @@ abstract class TestCase extends BaseTestCase
 
     protected Site $site;
 
+    public const EXPECT_SUCCESS = true;
+
+    public const EXPECT_FAILURE = false;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -30,7 +35,9 @@ abstract class TestCase extends BaseTestCase
         config()->set('queue.connections.ssh.driver', 'sync');
         config()->set('filesystems.disks.key-pairs.root', storage_path('app/key-pairs-test'));
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
         $this->user->createDefaultProject();
 
         \App\Models\NotificationChannel::factory()->create([

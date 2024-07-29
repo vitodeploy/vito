@@ -63,19 +63,19 @@
                 <x-simple-card class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <span class="text-center lg:text-left">Total Memory</span>
                     <div class="text-center text-xl font-bold text-gray-600 dark:text-gray-400 lg:text-right">
-                        {{ $lastMetric ? $lastMetric->memory_total : "-" }} MB
+                        {{ $lastMetric ? number_format((int) ($lastMetric->memory_total / 1024)) : "-" }} MB
                     </div>
                 </x-simple-card>
                 <x-simple-card class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <span class="text-center lg:text-left">Used Memory</span>
                     <div class="text-center text-xl font-bold text-gray-600 dark:text-gray-400 lg:text-right">
-                        {{ $lastMetric ? $lastMetric->memory_used : "-" }} MB
+                        {{ $lastMetric ? number_format((int) ($lastMetric->memory_used / 1024)) : "-" }} MB
                     </div>
                 </x-simple-card>
                 <x-simple-card class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <span class="text-center lg:text-left">Free Memory</span>
                     <div class="text-center text-xl font-bold text-gray-600 dark:text-gray-400 lg:text-right">
-                        {{ $lastMetric ? $lastMetric->memory_free : "-" }} MB
+                        {{ $lastMetric ? number_format((int) ($lastMetric->memory_free / 1024)) : "-" }} MB
                     </div>
                 </x-simple-card>
             </div>
@@ -83,19 +83,19 @@
                 <x-simple-card class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <span class="text-center lg:text-left">Total Space</span>
                     <div class="text-center text-xl font-bold text-gray-600 dark:text-gray-400 lg:text-right">
-                        {{ $lastMetric ? $lastMetric->disk_total : "-" }} MB
+                        {{ $lastMetric ? number_format($lastMetric->disk_total) : "-" }} MB
                     </div>
                 </x-simple-card>
                 <x-simple-card class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <span class="text-center lg:text-left">Used Space</span>
                     <div class="text-center text-xl font-bold text-gray-600 dark:text-gray-400 lg:text-right">
-                        {{ $lastMetric ? $lastMetric->disk_used : "-" }} MB
+                        {{ $lastMetric ? number_format($lastMetric->disk_used) : "-" }} MB
                     </div>
                 </x-simple-card>
                 <x-simple-card class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <span class="text-center lg:text-left">Free Space</span>
                     <div class="text-center text-xl font-bold text-gray-600 dark:text-gray-400 lg:text-right">
-                        {{ $lastMetric ? $lastMetric->disk_free : "-" }} MB
+                        {{ $lastMetric ? number_format($lastMetric->disk_free) : "-" }} MB
                     </div>
                 </x-simple-card>
             </div>

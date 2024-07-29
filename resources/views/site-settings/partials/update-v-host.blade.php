@@ -22,7 +22,7 @@
             hx-swap="outerHTML"
         >
             <div id="vhost-container">
-                <x-textarea id="vhost" name="vhost" rows="10" class="mt-1 block min-h-[400px] w-full">
+                <x-textarea id="vhost" name="vhost" rows="10" class="mt-1 block min-h-[400px] w-full font-mono">
                     {{ session()->has("vhost") ? session()->get("vhost") : "Loading..." }}
                 </x-textarea>
             </div>

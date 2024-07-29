@@ -22,7 +22,7 @@ class SelectCurrentProject
         /** @var User $user */
         $user = $request->user();
 
-        if ($server->project_id != $user->current_project_id) {
+        if ($server->project_id != $user->current_project_id && $user->can('view', $server)) {
             $user->current_project_id = $server->project_id;
             $user->save();
         }

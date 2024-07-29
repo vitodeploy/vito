@@ -24,7 +24,7 @@ fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
   echo "Enter a password for Vito's dashboard:"
-  read V_ADMIN_PASSWORD
+  read -s V_ADMIN_PASSWORD
 fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
@@ -134,6 +134,7 @@ server {
         fastcgi_pass unix:/var/run/php/php${V_PHP_VERSION}-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
     }
 
     location ~ /\.(?!well-known).* {

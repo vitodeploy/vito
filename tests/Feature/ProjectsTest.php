@@ -14,7 +14,7 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('projects.create'), [
+        $this->post(route('settings.projects.create'), [
             'name' => 'test',
         ])->assertSessionDoesntHaveErrors();
 
@@ -27,11 +27,11 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $project = Project::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+        $project = Project::factory()->create();
 
-        $this->get(route('projects'))
+        $this->user->projects()->attach($project);
+
+        $this->get(route('settings.projects'))
             ->assertSuccessful()
             ->assertSee($project->name);
     }
@@ -40,11 +40,11 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $project = Project::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+        $project = Project::factory()->create();
 
-        $this->delete(route('projects.delete', $project))
+        $this->user->projects()->attach($project);
+
+        $this->delete(route('settings.projects.delete', $project))
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('projects', [
@@ -56,11 +56,11 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $project = Project::factory()->create([
-            'user_id' => $this->user->id,
-        ]);
+        $project = Project::factory()->create();
 
-        $this->post(route('projects.update', $project), [
+        $this->user->projects()->attach($project);
+
+        $this->post(route('settings.projects.update', $project), [
             'name' => 'new-name',
         ])->assertSessionDoesntHaveErrors();
 
@@ -74,7 +74,7 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->delete(route('projects.delete', [
+        $this->delete(route('settings.projects.delete', [
             'project' => $this->user->currentProject,
         ]))
             ->assertSessionDoesntHaveErrors()

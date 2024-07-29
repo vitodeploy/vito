@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\SourceControlIsNotConnected;
+use App\Exceptions\SSHError;
 use App\SiteTypes\SiteType;
 use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -271,6 +272,28 @@ class Site extends AbstractModel
 
     public function getEnv(): string
     {
-        return $this->server->os()->readFile($this->path.'/.env');
+        try {
+            return $this->server->os()->readFile($this->path.'/.env');
+        } catch (SSHError) {
+            return '';
+        }
+    }
+
+    public function hasSSL(): bool
+    {
+        return $this->ssls->isNotEmpty();
+    }
+
+    public function environmentVariables(?Deployment $deployment = null): array
+    {
+        return [
+            'SITE_PATH' => $this->path,
+            'DOMAIN' => $this->domain,
+            'BRANCH' => $this->branch ?? '',
+            'REPOSITORY' => $this->repository ?? '',
+            'COMMIT_ID' => $deployment?->commit_id ?? '',
+            'PHP_VERSION' => $this->php_version,
+            'PHP_PATH' => '/usr/bin/php'.$this->php_version,
+        ];
     }
 }

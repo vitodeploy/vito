@@ -58,206 +58,267 @@ return [
         ],
         'regions' => [
             [
-                'title' => 'US East (N. Virginia) (us-east-1)',
-                'value' => 'us-east-1',
-            ],
-            [
-                'title' => 'US East (Ohio) (us-east-2)',
+                'title' => 'US East (Ohio)',
                 'value' => 'us-east-2',
             ],
             [
-                'title' => 'US West (N. California) (us-west-1)',
+                'title' => 'US East (Virginia)',
+                'value' => 'us-east-1',
+            ],
+            [
+                'title' => 'US West (N. California)',
                 'value' => 'us-west-1',
             ],
             [
-                'title' => 'US West (Oregon) (us-west-2)',
+                'title' => 'US West (Oregon)',
                 'value' => 'us-west-2',
             ],
             [
-                'title' => 'Asia Pacific (Hong Kong) (ap-east-1)',
+                'title' => 'Africa (Cape Town)',
+                'value' => 'af-south-1',
+            ],
+            [
+                'title' => 'Asia Pacific (Hong Kong)',
                 'value' => 'ap-east-1',
             ],
             [
-                'title' => 'Asia Pacific (Mumbai) (ap-south-1)',
+                'title' => 'Asia Pacific (Hyderabad)',
+                'value' => 'ap-south-2',
+            ],
+            [
+                'title' => 'Asia Pacific (Jakarta)',
+                'value' => 'ap-southeast-3',
+            ],
+            [
+                'title' => 'Asia Pacific (Melbourne)',
+                'value' => 'ap-southeast-4',
+            ],
+            [
+                'title' => 'Asia Pacific (Mumbai)',
                 'value' => 'ap-south-1',
             ],
             [
-                'title' => 'Asia Pacific (Singapore) (ap-southeast-1',
-                'value' => 'ap-southeast-1',
+                'title' => 'Asia Pacific (Osaka)',
+                'value' => 'ap-northeast-3',
             ],
             [
-                'title' => 'Asia Pacific (Seoul) (ap-northeast-2)',
+                'title' => 'Asia Pacific (Seoul)',
                 'value' => 'ap-northeast-2',
             ],
             [
-                'title' => 'Asia Pacific (Tokyo) (ap-northeast-1)',
-                'value' => 'ap-northeast-1',
+                'title' => 'Asia Pacific (Singapore)',
+                'value' => 'ap-southeast-1',
             ],
             [
-                'title' => 'Asia Pacific (Sydney) (ap-southeast-2)',
+                'title' => 'Asia Pacific (Sydney)',
                 'value' => 'ap-southeast-2',
             ],
             [
-                'title' => 'Canada (Central) (ca-central-1)',
+                'title' => 'Asia Pacific (Tokyo)',
+                'value' => 'ap-northeast-1',
+            ],
+            [
+                'title' => 'Canada (Central)',
                 'value' => 'ca-central-1',
             ],
             [
-                'title' => 'Europe (Frankfurt) (eu-central-1)',
+                'title' => 'Canada West (Calgary)',
+                'value' => 'ca-west-1',
+            ],
+            [
+                'title' => 'Europe (Frankfurt)',
                 'value' => 'eu-central-1',
             ],
             [
-                'title' => 'Europe (Ireland) (eu-west-1)',
+                'title' => 'Europe (Ireland)',
                 'value' => 'eu-west-1',
             ],
             [
-                'title' => 'Europe (London) (eu-west-2)',
+                'title' => 'Europe (London)',
                 'value' => 'eu-west-2',
             ],
             [
-                'title' => 'Europe (Paris) (eu-west-3)',
-                'value' => 'eu-west-3',
-            ],
-            [
-                'title' => 'Europe (Milan) (eu-south-1)',
+                'title' => 'Europe (Milan)',
                 'value' => 'eu-south-1',
             ],
             [
-                'title' => 'Europe (Stockholm) (eu-north-1)',
+                'title' => 'Europe (Paris)',
+                'value' => 'eu-west-3',
+            ],
+            [
+                'title' => 'Europe (Spain)',
+                'value' => 'eu-south-2',
+            ],
+            [
+                'title' => 'Europe (Stockholm)',
                 'value' => 'eu-north-1',
             ],
             [
-                'title' => 'Middle East (Bahrain) (me-south-1)',
+                'title' => 'Europe (Zurich)',
+                'value' => 'eu-central-2',
+            ],
+            [
+                'title' => 'Israel (Tel Aviv)',
+                'value' => 'il-central-1',
+            ],
+            [
+                'title' => 'Middle East (Bahrain)',
                 'value' => 'me-south-1',
             ],
             [
-                'title' => 'South America (São Paulo) (sa-east-1)',
-                'value' => 'sa-east-1',
+                'title' => 'Middle East (UAE)',
+                'value' => 'me-central-1',
             ],
             [
-                'title' => 'Africa (Cape Town) (af-south-1)',
-                'value' => 'af-south-1',
+                'title' => 'South America (São Paulo)',
+                'value' => 'sa-east-1',
             ],
         ],
         'images' => [
-            'af-south-1' => [
-                'ubuntu_20' => 'ami-03684d4c2541e5333',
-                'ubuntu_22' => 'ami-05759acc7d8973892',
-            ],
-            'ap-east-1' => [
-                'ubuntu_20' => 'ami-0b19a97bf326b4931',
-                'ubuntu_22' => 'ami-03490b1b7425e5fe3',
-            ],
-            'ap-northeast-1' => [
-                'ubuntu_20' => 'ami-0e25df74d27e028e6',
-                'ubuntu_22' => 'ami-09a81b370b76de6a2',
-            ],
-            'ap-northeast-2' => [
-                'ubuntu_20' => 'ami-003a709e1e4ce3729',
-                'ubuntu_22' => 'ami-086cae3329a3f7d75',
-            ],
-            'ap-northeast-3' => [
-                'ubuntu_20' => 'ami-06c1367bd83de7d47',
-                'ubuntu_22' => 'ami-0690c54203f5f67da',
-            ],
-            'ap-south-1' => [
-                'ubuntu_20' => 'ami-0b88997c830e88c76',
-                'ubuntu_22' => 'ami-0287a05f0ef0e9d9a',
-            ],
-            'ap-south-2' => [
-                'ubuntu_20' => 'ami-049e2ae605332dba6',
-                'ubuntu_22' => 'ami-06fe902e167e67d33',
-            ],
-            'ap-southeast-1' => [
-                'ubuntu_20' => 'ami-0a6461ddb52e9db63',
-                'ubuntu_22' => 'ami-078c1149d8ad719a7',
-            ],
-            'ap-southeast-2' => [
-                'ubuntu_20' => 'ami-0a9fb81cc3289919c',
-                'ubuntu_22' => 'ami-0df4b2961410d4cff',
-            ],
-            'ap-southeast-3' => [
-                'ubuntu_20' => 'ami-05ee5bed682a3fff0',
-                'ubuntu_22' => 'ami-0fb6d1fdeeea10488',
-            ],
-            'ap-southeast-4' => [
-                'ubuntu_20' => 'ami-02f9759882b112414',
-                'ubuntu_22' => 'ami-043a030d3eeabec75',
-            ],
-            'ca-central-1' => [
-                'ubuntu_20' => 'ami-0daaea212e620de87',
-                'ubuntu_22' => 'ami-06873c81b882339ac',
-            ],
-            'cn-north-1' => [
-                'ubuntu_20' => 'ami-0c8bcac1fe3389a72',
-                'ubuntu_22' => 'ami-0728a1a4cc9e07753',
-            ],
-            'cn-northwest-1' => [
-                'ubuntu_20' => 'ami-0415bfb3ea62e17c0',
-                'ubuntu_22' => 'ami-05529cf859783e600',
-            ],
-            'eu-central-1' => [
-                'ubuntu_20' => 'ami-0b369586722023326',
-                'ubuntu_22' => 'ami-06dd92ecc74fdfb36',
-            ],
-            'eu-central-2' => [
-                'ubuntu_20' => 'ami-070c78d5ed65f11c8',
-                'ubuntu_22' => 'ami-07cf963e6321c9e6a',
-            ],
-            'eu-north-1' => [
-                'ubuntu_20' => 'ami-0c5863072fc83557e',
-                'ubuntu_22' => 'ami-0fe8bec493a81c7da',
-            ],
-            'eu-south-1' => [
-                'ubuntu_20' => 'ami-0966ff128f1497260',
-                'ubuntu_22' => 'ami-0b03947fd0ce0eed2',
-            ],
             'eu-south-2' => [
-                'ubuntu_20' => 'ami-087296a5b46cb95ce',
-                'ubuntu_22' => 'ami-03486abd2962c176f',
+                'ubuntu_24' => 'ami-0a50f993202fe4f22',
+                'ubuntu_22' => 'ami-043e9941c6aec0f52',
+                'ubuntu_20' => 'ami-086f353893612e446',
             ],
             'eu-west-1' => [
-                'ubuntu_20' => 'ami-0e3e7f215a53e2a86',
-                'ubuntu_22' => 'ami-0694d931cee176e7d',
+                'ubuntu_24' => 'ami-0776c814353b4814d',
+                'ubuntu_22' => 'ami-0d0fa503c811361ab',
+                'ubuntu_20' => 'ami-0008aa5cb0cde3400',
+            ],
+            'af-south-1' => [
+                'ubuntu_24' => 'ami-0bfda59e8f84ff5ed',
+                'ubuntu_22' => 'ami-0d06a4031539a9be6',
+                'ubuntu_20' => 'ami-0ea465fccfaf199ce',
             ],
             'eu-west-2' => [
-                'ubuntu_20' => 'ami-0b22eee5ba6bb6772',
-                'ubuntu_22' => 'ami-0505148b3591e4c07',
+                'ubuntu_24' => 'ami-053a617c6207ecc7b',
+                'ubuntu_22' => 'ami-0eb5c35d7b89f3488',
+                'ubuntu_20' => 'ami-0608dbf22649c0159',
             ],
-            'eu-west-3' => [
-                'ubuntu_20' => 'ami-0f14fa1f9c69f4111',
-                'ubuntu_22' => 'ami-00983e8a26e4c9bd9',
+            'eu-south-1' => [
+                'ubuntu_24' => 'ami-0355c99d0faba8847',
+                'ubuntu_22' => 'ami-0bdcf995dcfebf29c',
+                'ubuntu_20' => 'ami-034ea9dc86027e603',
+            ],
+            'ap-south-1' => [
+                'ubuntu_24' => 'ami-0f58b397bc5c1f2e8',
+                'ubuntu_22' => 'ami-0f16c6c3de733b474',
+                'ubuntu_20' => 'ami-02f829375c976f810',
             ],
             'il-central-1' => [
-                'ubuntu_20' => 'ami-0703881563bf5fab7',
-                'ubuntu_22' => 'ami-03869c813f5a2e20c',
+                'ubuntu_24' => 'ami-04a4b28d712600827',
+                'ubuntu_22' => 'ami-09cd8eea397932e88',
+                'ubuntu_20' => 'ami-03988803bd4e18212',
+            ],
+            'eu-north-1' => [
+                'ubuntu_24' => 'ami-0705384c0b33c194c',
+                'ubuntu_22' => 'ami-0fff1012fc5cb9f25',
+                'ubuntu_20' => 'ami-07cca21629288f454',
             ],
             'me-central-1' => [
-                'ubuntu_20' => 'ami-04a5bde3b044c7c21',
-                'ubuntu_22' => 'ami-02168d82d5c12118f',
+                'ubuntu_24' => 'ami-048798fd481c4c791',
+                'ubuntu_22' => 'ami-042fcc4c33a3b6429',
+                'ubuntu_20' => 'ami-0f98fff9d77968c80',
+            ],
+            'ca-central-1' => [
+                'ubuntu_24' => 'ami-0c4596ce1e7ae3e68',
+                'ubuntu_22' => 'ami-04fea581fe25e2675',
+                'ubuntu_20' => 'ami-05690acfbddfbeaf6',
+            ],
+            'eu-west-3' => [
+                'ubuntu_24' => 'ami-00ac45f3035ff009e',
+                'ubuntu_22' => 'ami-0b020d95f579c8f43',
+                'ubuntu_20' => 'ami-0130b7d3ec1d07e4f',
+            ],
+            'ap-south-2' => [
+                'ubuntu_24' => 'ami-008616ec4a2c6975e',
+                'ubuntu_22' => 'ami-088e75eecea53e53e',
+                'ubuntu_20' => 'ami-0688d182e7c22ec3f',
+            ],
+            'ca-west-1' => [
+                'ubuntu_24' => 'ami-07022089d2e36ace0',
+                'ubuntu_22' => 'ami-02e22cefcad05a835',
+                'ubuntu_20' => 'ami-03890126b7675fac8',
+            ],
+            'eu-central-1' => [
+                'ubuntu_24' => 'ami-01e444924a2233b07',
+                'ubuntu_22' => 'ami-01a93368cab494eb5',
+                'ubuntu_20' => 'ami-07fd6b7604806e876',
             ],
             'me-south-1' => [
-                'ubuntu_20' => 'ami-0165b692f5714e330',
-                'ubuntu_22' => 'ami-0f8d2a6080634ee69',
+                'ubuntu_24' => 'ami-087f3ec3fdda67295',
+                'ubuntu_22' => 'ami-03ae386fab11fa0a1',
+                'ubuntu_20' => 'ami-0f65a186b3552f348',
             ],
-            'sa-east-1' => [
-                'ubuntu_20' => 'ami-095ca107fb46b81e6',
-                'ubuntu_22' => 'ami-0b6c2d49148000cd5',
+            'ap-northeast-1' => [
+                'ubuntu_24' => 'ami-01bef798938b7644d',
+                'ubuntu_22' => 'ami-08e32db9e33e28876',
+                'ubuntu_20' => 'ami-0ed286a950292f370',
             ],
-            'us-east-1' => [
-                'ubuntu_20' => 'ami-0fe0238291c8e3f07',
-                'ubuntu_22' => 'ami-0fc5d935ebf8bc3bc',
-            ],
-            'us-east-2' => [
-                'ubuntu_20' => 'ami-0b6968e5c7117349a',
-                'ubuntu_22' => 'ami-0e83be366243f524a',
+            'ap-southeast-1' => [
+                'ubuntu_24' => 'ami-003c463c8207b4dfa',
+                'ubuntu_22' => 'ami-084cab24460184bd3',
+                'ubuntu_20' => 'ami-081ee02c4cdf3917c',
             ],
             'us-west-1' => [
-                'ubuntu_20' => 'ami-092efbcc9a2d2be8a',
-                'ubuntu_22' => 'ami-0cbd40f694b804622',
+                'ubuntu_24' => 'ami-08012c0a9ee8e21c4',
+                'ubuntu_22' => 'ami-023f8bebe991375fd',
+                'ubuntu_20' => 'ami-0344f34a6875de16a',
+            ],
+            'ap-southeast-3' => [
+                'ubuntu_24' => 'ami-00c31062c5966e820',
+                'ubuntu_22' => 'ami-0fd547652d1673e30',
+                'ubuntu_20' => 'ami-0699dddffd3542faf',
+            ],
+            'ap-northeast-2' => [
+                'ubuntu_24' => 'ami-0e6f2b2fa0ca704d0',
+                'ubuntu_22' => 'ami-0720c7fcba4b88b36',
+                'ubuntu_20' => 'ami-03ec7d02334d21d49',
+            ],
+            'ap-southeast-2' => [
+                'ubuntu_24' => 'ami-080660c9757080771',
+                'ubuntu_22' => 'ami-0d9d3b991cfa8ac6e',
+                'ubuntu_20' => 'ami-06c7a70c38594fef6',
+            ],
+            'us-east-1' => [
+                'ubuntu_24' => 'ami-04b70fa74e45c3917',
+                'ubuntu_22' => 'ami-0cfa2ad4242c3168d',
+                'ubuntu_20' => 'ami-0e3a6d8ff4c8fe246',
             ],
             'us-west-2' => [
-                'ubuntu_20' => 'ami-0a55cdf919d10eac9',
-                'ubuntu_22' => 'ami-0efcece6bed30fd98',
+                'ubuntu_24' => 'ami-0cf2b4e024cdb6960',
+                'ubuntu_22' => 'ami-09c3a3c2cf6003f6c',
+                'ubuntu_20' => 'ami-091c4300a778841cc',
+            ],
+            'ap-east-1' => [
+                'ubuntu_24' => 'ami-026789b06a607b9a5',
+                'ubuntu_22' => 'ami-0361acb22fef7522b',
+                'ubuntu_20' => 'ami-0c0665dcea29a292d',
+            ],
+            'eu-central-2' => [
+                'ubuntu_24' => 'ami-053ea2f9d1d6ac54c',
+                'ubuntu_22' => 'ami-09407f9985de426af',
+                'ubuntu_20' => 'ami-00c9866441e3616dd',
+            ],
+            'us-east-2' => [
+                'ubuntu_24' => 'ami-09040d770ffe2224f',
+                'ubuntu_22' => 'ami-0b986fc833876b42e',
+                'ubuntu_20' => 'ami-010e55fe08af05fa7',
+            ],
+            'ap-northeast-3' => [
+                'ubuntu_24' => 'ami-0b9bc7dcdbcff394e',
+                'ubuntu_22' => 'ami-063600dcf13c07ebc',
+                'ubuntu_20' => 'ami-0b7108d627f57c7c8',
+            ],
+            'sa-east-1' => [
+                'ubuntu_24' => 'ami-04716897be83e3f04',
+                'ubuntu_22' => 'ami-0e6dfcf4e0e4dfc52',
+                'ubuntu_20' => 'ami-050e1159c5a10dd81',
+            ],
+            'ap-southeast-4' => [
+                'ubuntu_24' => 'ami-0396cf525fd0aa5c1',
+                'ubuntu_22' => 'ami-097638dc9b6250206',
+                'ubuntu_20' => 'ami-02d0fccf5cdcdd8c5',
             ],
         ],
     ],
@@ -426,6 +487,7 @@ return [
             'ubuntu_18' => 'linode/ubuntu18.04',
             'ubuntu_20' => 'linode/ubuntu20.04',
             'ubuntu_22' => 'linode/ubuntu22.04',
+            'ubuntu_24' => 'linode/ubuntu24.04',
         ],
     ],
     'digitalocean' => [
@@ -557,6 +619,7 @@ return [
             'ubuntu_18' => '112929540',
             'ubuntu_20' => '112929454',
             'ubuntu_22' => '129211873',
+            'ubuntu_24' => '155133621',
         ],
     ],
     'vultr' => [
@@ -728,29 +791,68 @@ return [
             'ubuntu_18' => '270',
             'ubuntu_20' => '387',
             'ubuntu_22' => '1743',
+            'ubuntu_24' => '2284',
         ],
     ],
     'hetzner' => [
         'plans' => [
+
+            /* Shared vCPUs x86 */
             [
-                'title' => 'CX11 - 1 Cores - 2 Memory - 20 Disk',
+                'title' => 'CX11 - 1 Cores (Intel) - 2 Memory - 20 Disk (eu only)',
                 'value' => 'cx11',
             ],
             [
-                'title' => 'CX21 - 2 Cores - 4 Memory - 40 Disk',
+                'title' => 'CX22 - 2 Cores (Intel) - 4 Memory - 40 Disk (eu only)',
+                'value' => 'cx22',
+            ],
+            [
+                'title' => 'CPX11 - 2 Cores (AMD) - 2 Memory - 40 Disk (eu only)',
+                'value' => 'cpx11',
+            ],
+            [
+                'title' => 'CX21 - 2 Cores (Intel) - 4 Memory - 40 Disk (eu only)',
                 'value' => 'cx21',
             ],
             [
-                'title' => 'CX31 - 2 Cores - 8 Memory - 80 Disk',
+                'title' => 'CX32 - 4 Cores (Intel) - 8 Memory - 80 Disk (eu only)',
+                'value' => 'cx32',
+            ],
+            [
+                'title' => 'CPX21 - 3 Cores (AMD) - 4 Memory - 80 Disk',
+                'value' => 'cpx21',
+            ],
+            [
+                'title' => 'CX31 - 2 Cores (Intel) - 8 Memory - 80 Disk (eu only)',
                 'value' => 'cx31',
             ],
             [
-                'title' => 'CX41 - 4 Cores - 16 Memory - 160 Disk',
+                'title' => 'CPX31 - 4 Cores (AMD) - 8 Memory - 160 Disk',
+                'value' => 'cpx31',
+            ],
+            [
+                'title' => 'CX42 - 8 Cores (Intel) - 16 Memory - 160 Disk (eu only)',
+                'value' => 'cx42',
+            ],
+            [
+                'title' => 'CX41 - 4 Cores (Intel) - 16 Memory - 160 Disk (eu only)',
                 'value' => 'cx41',
             ],
             [
-                'title' => 'CX51 - 8 Cores - 32 Memory - 240 Disk',
+                'title' => 'CPX41 - 8 Cores (AMD) - 16 Memory - 240 Disk',
+                'value' => 'cpx41',
+            ],
+            [
+                'title' => 'CX52 - 16 Cores (Intel) - 32 Memory - 320 Disk (eu only)',
+                'value' => 'cx52',
+            ],
+            [
+                'title' => 'CX51 - 8 Cores (Intel) - 32 Memory - 240 Disk (eu only)',
                 'value' => 'cx51',
+            ],
+            [
+                'title' => 'CPX51 - 16 Cores (AMD) - 32 Memory - 360 Disk',
+                'value' => 'cpx51',
             ],
             [
                 'title' => 'CCX11 Dedicated CPU - 2 Cores - 8 Memory - 80 Disk',
@@ -772,65 +874,49 @@ return [
                 'title' => 'CCX51 Dedicated CPU - 32 Cores - 128 Memory - 600 Disk',
                 'value' => 'ccx51',
             ],
+
+            /* Shared vCPUs Arm64 */
             [
-                'title' => 'CPX 11 - 2 Cores - 2 Memory - 40 Disk',
-                'value' => 'cpx11',
-            ],
-            [
-                'title' => 'CPX 21 - 3 Cores - 4 Memory - 80 Disk',
-                'value' => 'cpx21',
-            ],
-            [
-                'title' => 'CPX 31 - 4 Cores - 8 Memory - 160 Disk',
-                'value' => 'cpx31',
-            ],
-            [
-                'title' => 'CPX 41 - 8 Cores - 16 Memory - 240 Disk',
-                'value' => 'cpx41',
-            ],
-            [
-                'title' => 'CPX 51 - 16 Cores - 32 Memory - 360 Disk',
-                'value' => 'cpx51',
-            ],
-            [
-                'title' => 'CCX12 Dedicated CPU - 2 Cores - 8 Memory - 80 Disk',
-                'value' => 'ccx12',
-            ],
-            [
-                'title' => 'CCX22 Dedicated CPU - 4 Cores - 16 Memory - 160 Disk',
-                'value' => 'ccx22',
-            ],
-            [
-                'title' => 'CCX32 Dedicated CPU - 8 Cores - 32 Memory - 240 Disk',
-                'value' => 'ccx32',
-            ],
-            [
-                'title' => 'CCX42 Dedicated CPU - 16 Cores - 64 Memory - 360 Disk',
-                'value' => 'ccx42',
-            ],
-            [
-                'title' => 'CCX52 Dedicated CPU - 32 Cores - 128 Memory - 600 Disk',
-                'value' => 'ccx52',
-            ],
-            [
-                'title' => 'CCX62 Dedicated CPU - 48 Cores - 192 Memory - 960 Disk',
-                'value' => 'ccx62',
-            ],
-            [
-                'title' => 'CAX11 - 2 Cores - 4 Memory - 40 Disk',
+                'title' => 'CAX11 - 2 Cores (ARM64) - 4 Memory - 40 Disk',
                 'value' => 'cax11',
             ],
             [
-                'title' => 'CAX21 - 4 Cores - 8 Memory - 80 Disk',
+                'title' => 'CAX21 - 4 Cores (ARM64) - 8 Memory - 80 Disk',
                 'value' => 'cax21',
             ],
             [
-                'title' => 'CAX31 - 8 Cores - 16 Memory - 160 Disk',
+                'title' => 'CAX31 - 8 Cores (ARM64) - 16 Memory - 160 Disk',
                 'value' => 'cax31',
             ],
             [
-                'title' => 'CAX41 - 16 Cores - 32 Memory - 320 Disk',
+                'title' => 'CAX41 - 16 Cores (ARM64) - 32 Memory - 320 Disk',
                 'value' => 'cax41',
+            ],
+
+            /* Dedicated vCPUs */
+            [
+                'title' => 'CCX13 Dedicated CPU - 2 Cores (AMD) - 8 Memory - 80 Disk',
+                'value' => 'ccx13',
+            ],
+            [
+                'title' => 'CCX23 Dedicated CPU - 4 Cores (AMD) - 16 Memory - 160 Disk',
+                'value' => 'ccx23',
+            ],
+            [
+                'title' => 'CCX33 Dedicated CPU - 8 Cores (AMD) - 32 Memory - 240 Disk',
+                'value' => 'ccx33',
+            ],
+            [
+                'title' => 'CCX43 Dedicated CPU - 16 Cores (AMD) - 64 Memory - 360 Disk',
+                'value' => 'ccx43',
+            ],
+            [
+                'title' => 'CCX53 Dedicated CPU - 32 Cores (AMD) - 128 Memory - 600 Disk',
+                'value' => 'ccx53',
+            ],
+            [
+                'title' => 'CCX63 Dedicated CPU - 48 Cores (AMD) - 192 Memory - 960 Disk',
+                'value' => 'ccx63',
             ],
         ],
         'regions' => [
@@ -856,9 +942,9 @@ return [
             ],
         ],
         'images' => [
-            'ubuntu_18' => 'ubuntu-18.04',
             'ubuntu_20' => 'ubuntu-20.04',
             'ubuntu_22' => 'ubuntu-22.04',
+            'ubuntu_24' => 'ubuntu-24.04',
         ],
     ],
 ];

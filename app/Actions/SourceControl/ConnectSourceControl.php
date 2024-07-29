@@ -3,6 +3,7 @@
 namespace App\Actions\SourceControl;
 
 use App\Models\SourceControl;
+use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class ConnectSourceControl
 {
-    public function connect(array $input): void
+    public function connect(User $user, array $input): void
     {
         $this->validate($input);
 
@@ -18,6 +19,7 @@ class ConnectSourceControl
             'provider' => $input['provider'],
             'profile' => $input['name'],
             'url' => Arr::has($input, 'url') ? $input['url'] : null,
+            'project_id' => isset($input['global']) && $input['global'] ? null : $user->current_project_id,
         ]);
 
         $this->validateProvider($sourceControl, $input);

@@ -1,6 +1,6 @@
 
 <p align="center">
-    <img alt="srcshot 2024-02-23 at 16 26 21@2x" src="https://github.com/vitodeploy/vito/assets/61919774/9b3ae8fe-996a-4e10-b42e-74097f8e5512" alt="VitoDeploy>
+    <img src="https://github.com/vitodeploy/vito/assets/61919774/8060fded-58e3-4d58-b58b-5b717b0718e9" alt="VitoDeploy>
     <p align="center">
         <a href="https://github.com/vitodeploy/vito/actions"><img alt="GitHub Workflow Status" src="https://github.com/vitodeploy/vito/workflows/tests/badge.svg"></a>
     </p>
@@ -50,8 +50,6 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/1.x/scripts/in
 - Alpinejs
 - HTMX
 - Vite
-- Toastr by CodeSeven
 - Prettier
 - Postcss
 - Flowbite
-- svgrepo.com

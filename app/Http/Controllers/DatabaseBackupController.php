@@ -18,6 +18,8 @@ class DatabaseBackupController extends Controller
 {
     public function show(Server $server, Backup $backup): View
     {
+        $this->authorize('manage', $server);
+
         return view('databases.backups', [
             'server' => $server,
             'databases' => $server->databases,
@@ -28,6 +30,8 @@ class DatabaseBackupController extends Controller
 
     public function run(Server $server, Backup $backup): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         app(RunBackup::class)->run($backup);
 
         Toast::success('Backup is running.');
@@ -37,6 +41,8 @@ class DatabaseBackupController extends Controller
 
     public function store(Server $server, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(CreateBackup::class)->create('database', $server, $request->input());
 
         Toast::success('Backup created successfully.');
@@ -46,6 +52,8 @@ class DatabaseBackupController extends Controller
 
     public function destroy(Server $server, Backup $backup): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $backup->delete();
 
         Toast::success('Backup deleted successfully.');
@@ -55,6 +63,8 @@ class DatabaseBackupController extends Controller
 
     public function restore(Server $server, Backup $backup, BackupFile $backupFile, Request $request): HtmxResponse
     {
+        $this->authorize('manage', $server);
+
         app(RestoreBackup::class)->restore($backupFile, $request->input());
 
         Toast::success('Backup restored successfully.');
@@ -64,7 +74,16 @@ class DatabaseBackupController extends Controller
 
     public function destroyFile(Server $server, Backup $backup, BackupFile $backupFile): RedirectResponse
     {
+        $this->authorize('manage', $server);
+
         $backupFile->delete();
+
+        $backupFile
+            ->backup
+            ->storage
+            ->provider()
+            ->ssh($server)
+            ->delete($backupFile->storagePath());
 
         Toast::success('Backup file deleted successfully.');
 

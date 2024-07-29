@@ -102,7 +102,7 @@ class GetMetrics
             )->diffInHours();
         }
 
-        if ($periodInHours <= 1) {
+        if (abs($periodInHours) <= 1) {
             return DB::raw("strftime('%Y-%m-%d %H:%M:00', created_at) as date_interval");
         }
 
