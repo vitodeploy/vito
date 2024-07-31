@@ -59,6 +59,20 @@
                     </x-sidebar-link>
                 </li>
 
+                @if ($server->emailService())
+                    <li>
+                        <x-sidebar-link
+                            :href="route('servers.email-service', ['server' => $server])"
+                            :active="request()->routeIs('servers.email-service')"
+                        >
+                            <x-heroicon name="o-envelope" class="h-6 w-6" />
+                            <span class="ml-2">
+                                {{ __("Email Service Manager") }}
+                            </span>
+                        </x-sidebar-link>
+                    </li>
+                @endif
+
                 @if ($server->firewall())
                     <li>
                         <x-sidebar-link
@@ -72,6 +86,7 @@
                         </x-sidebar-link>
                     </li>
                 @endif
+
 
                 <li>
                     <x-sidebar-link

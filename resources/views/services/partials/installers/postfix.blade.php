@@ -26,8 +26,12 @@
                 @error("version")
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
+            </div>
+            <div class="mt-6">
+                <x-input-label for="domain" value="Domain" />
+                <x-text-input :required="true" placeholder="mail.example.com" id="domain" name="domain" class="mt-2 w-full" />
 
-                @error("type")
+                @error("domain")
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>

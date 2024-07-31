@@ -6,6 +6,7 @@ use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
+use App\Http\Controllers\EmailServiceController;
 use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\MetricController;
 use App\Http\Controllers\PHPController;
@@ -104,6 +105,9 @@ Route::middleware('select-current-project')->group(function () {
         Route::get('/{server}/php/get-ini', [PHPController::class, 'getIni'])->name('servers.php.get-ini');
         Route::post('/{server}/php/update-ini', [PHPController::class, 'updateIni'])->name('servers.php.update-ini');
         Route::delete('/{server}/php/uninstall', [PHPController::class, 'uninstall'])->name('servers.php.uninstall');
+
+        // email service
+        Route::get('/{server}/email-service', [EmailServiceController::class, 'index'])->name('servers.email-service');
 
         // firewall
         Route::get('/{server}/firewall', [FirewallController::class, 'index'])->name('servers.firewall');

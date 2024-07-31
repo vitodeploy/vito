@@ -25,7 +25,6 @@ class Install
         Validator::make($input, $service->handler()->creationRules($input))->validate();
 
         $service->type_data = $service->handler()->creationData($input);
-
         $service->save();
 
         dispatch(function () use ($service) {

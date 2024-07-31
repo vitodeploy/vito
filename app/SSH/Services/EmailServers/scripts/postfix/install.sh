@@ -6,9 +6,17 @@ sudo apt update && sudo apt upgrade -y
 # Instalar Postfix
 sudo DEBIAN_FRONTEND=noninteractive apt install -y postfix
 
+# Instalar DKim
+sudo apt-get install opendkim
+
+# todo: ver domsain
+sudo opendkim-genkey -t -s default -d __domain__
+
+#despues de esto, hay que coger el default.txt y ponerlo en el domain.
+
 # Seleccionar el tipo de configuración de Postfix
 sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
-sudo debconf-set-selections <<< "postfix postfix/mailname string $(hostname --fqdn)"
+sudo debconf-set-selections <<< "postfix postfix/mailname string __domain__"
 
 # Reiniciar Postfix para aplicar la configuración
 sudo systemctl restart postfix
@@ -45,9 +53,15 @@ sudo systemctl restart dovecot
 # Configuración de Postfix para usar Dovecot SASL
 sudo postconf -e 'smtpd_sasl_type = dovecot'
 sudo postconf -e 'smtpd_sasl_path = private/auth'
+#sudo postconf -e 'milter_protocol = 2'
+#sudo postconf -e 'milter_default_action = accept'
+#sudo postconf -e 'smtpd_milters = unix:/var/spool/postfix/opendkim/opendkim.sock'
+#sudo postconf -e 'non_smtpd_milters = unix:/var/spool/postfix/opendkim/opendkim.sock'
+
 sudo postconf -e 'smtpd_sasl_auth_enable = yes'
+sudo postconf -e 'inet_protocols = ipv4'
 sudo postconf -e 'smtpd_sasl_security_options = noanonymous'
-sudo postconf -e 'smtpd_sasl_local_domain = $myhostname'
+sudo postconf -e 'smtpd_sasl_local_domain = __domain__'
 sudo postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination'
 
 # Configurar Dovecot para Postfix SASL

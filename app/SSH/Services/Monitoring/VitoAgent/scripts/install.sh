@@ -1,4 +1,4 @@
-arch=$(uname -m)
+    arch=$(uname -m)
 
 if [ "$arch" == "x86_64" ]; then
     executable="vitoagent-linux-amd64"
