@@ -24,7 +24,7 @@ fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
   echo "Enter a password for Vito's dashboard:"
-  read -s V_ADMIN_PASSWORD
+  read V_ADMIN_PASSWORD
 fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
