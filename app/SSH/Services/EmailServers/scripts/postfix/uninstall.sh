@@ -1,24 +1,33 @@
 #!/bin/bash
 
-# Detener los servicios de Postfix y Dovecot
+# Desactivar y detener los servicios
+sudo systemctl disable postfix
 sudo systemctl stop postfix
+
+sudo systemctl disable dovecot
 sudo systemctl stop dovecot
 
-# Deshabilitar los servicios para que no se inicien al arrancar
-sudo systemctl disable postfix
-sudo systemctl disable dovecot
+sudo systemctl disable opendkim
+sudo systemctl stop opendkim
 
-# Desinstalar Postfix y Dovecot
-sudo apt purge -y postfix dovecot-core dovecot-imapd dovecot-pop3d dovecot-sieve dovecot-lmtpd
+# Eliminar los paquetes de Postfix, Dovecot y OpenDKIM
+sudo DEBIAN_FRONTEND=noninteractive apt purge -y postfix dovecot-core dovecot-imapd dovecot-pop3d dovecot-sieve dovecot-lmtpd opendkim opendkim-tools
 
-# Eliminar los archivos de configuración y datos de Postfix y Dovecot
+# Eliminar archivos de configuración de Postfix
 sudo rm -rf /etc/postfix
-sudo rm -rf /etc/dovecot
-sudo rm -rf /var/mail
 sudo rm -rf /var/spool/postfix
 
-# Limpiar paquetes no utilizados y archivos residuales
-sudo apt autoremove -y
-sudo apt clean
+# Eliminar archivos de configuración de Dovecot
+sudo rm -rf /etc/dovecot
+sudo rm -rf /var/mail/vhosts
 
-echo "Desinstalación de Postfix y Dovecot completada."
+# Eliminar archivos de configuración de OpenDKIM
+sudo rm -rf /etc/opendkim
+
+# Actualizar la lista de paquetes y limpiar dependencias no necesarias
+sudo apt update
+sudo apt autoremove -y
+sudo apt autoclean -y
+
+# Confirmar desinstalación
+echo "Postfix, Dovecot y OpenDKIM han sido desinstalados y su configuración eliminada."

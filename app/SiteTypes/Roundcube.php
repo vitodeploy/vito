@@ -33,6 +33,8 @@ class Roundcube extends AbstractSiteType
                 Rule::in($this->site->server->installedPHPVersions()),
             ],
             'version' => 'required|string',
+            'imap_host' => 'required|string',
+            'smtp_host' => 'required|string',
             'support_url' => 'sometimes',
         ];
     }
@@ -50,6 +52,8 @@ class Roundcube extends AbstractSiteType
         return [
             'version' => $input['version'],
             'url' => $this->site->getUrl(),
+            'imap_host' => $input['imap_host'],
+            'smtp_host' => $input['smtp_host'],
             'support_url' => $input['support_url'],
         ];
     }

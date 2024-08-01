@@ -16,6 +16,8 @@ class Roundcube
                 'version' => $site->type_data['version'],
                 'path' => $site->path,
                 'domain' => $site->domain,
+                'imap_host' => $site->type_data['imap_host'],
+                'smtp_host' => $site->type_data['smtp_host'],
                 'support_url' => $site->type_data['support_url'],
             ]),
             'install-roundcube'
