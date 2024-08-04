@@ -21,9 +21,8 @@
             >
                 <x-input-label for="env" :value="__('.env')" />
                 <div id="env-content">
-                    <x-textarea id="env" name="env" rows="10" class="mt-1 block min-h-[400px] w-full font-mono">
-                        {{ old("env", session()->get("env") ?? "Loading...") }}
-                    </x-textarea>
+                    @php($envValue = old("env", session()->get("env") ?? "Loading..."))
+                    <x-editor id="env" name="env" lang="env" :value="$envValue" />
                 </div>
                 @error("env")
                     <x-input-error class="mt-2" :messages="$message" />

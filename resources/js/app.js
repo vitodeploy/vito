@@ -1,5 +1,6 @@
 import 'flowbite';
 import 'flowbite/dist/datepicker.js';
+import './ace-editor/ace-editor';
 
 import Alpine from 'alpinejs';
 window.Alpine = Alpine;
