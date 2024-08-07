@@ -17,7 +17,7 @@
             <div class="mt-6">
                 <x-input-label for="script" :value="__('Script')" />
                 @php($value = old("script", $site->deploymentScript?->content))
-                <x-editor id="script" name="script" lang="sh" :value="$value"  />
+                <x-editor id="script" name="script" lang="sh" :value="$value" />
                 @error("script")
                     <x-input-error class="mt-2" :messages="$message" />
                 @enderror
