@@ -15,9 +15,8 @@
 
         <div class="mt-6">
             <x-input-label for="ini" value="php.ini" />
-            <x-textarea id="ini" name="ini" class="mt-1 w-full font-mono" rows="15">
-                {{ old("ini", session()->get("ini")) }}
-            </x-textarea>
+            @php($ini = old("ini", session()->get("ini") ?? "Loading..."))
+            <x-editor id="ini" name="ini" lang="ini" :value="$ini" />
             @error("ini")
                 <x-input-error class="mt-2" :messages="$message" />
             @enderror

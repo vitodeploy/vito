@@ -40,7 +40,7 @@
                                             @foreach ([\App\Enums\PHPIniType::FPM, \App\Enums\PHPIniType::CLI] as $type)
                                                 <x-dropdown-link
                                                     class="cursor-pointer"
-                                                    x-on:click="version = '{{ $php->version }}'; $dispatch('open-modal', 'update-php-ini-{{ $type }}'); document.getElementById('ini').value = 'Loading...';"
+                                                    x-on:click="version = '{{ $php->version }}'; $dispatch('open-modal', 'update-php-ini-{{ $type }}');"
                                                     hx-get="{{ route('servers.php.get-ini', ['server' => $server, 'version' => $php->version, 'type' => $type]) }}"
                                                     hx-swap="outerHTML"
                                                     hx-target="#update-php-ini-{{ $type }}-form"

@@ -22,9 +22,8 @@
             hx-swap="outerHTML"
         >
             <div id="vhost-container">
-                <x-textarea id="vhost" name="vhost" rows="10" class="mt-1 block min-h-[400px] w-full font-mono">
-                    {{ session()->has("vhost") ? session()->get("vhost") : "Loading..." }}
-                </x-textarea>
+                @php($vhost = old("vhost", session()->get("vhost") ?? "Loading..."))
+                <x-editor id="vhost" name="vhost" lang="nginx" :value="$vhost" />
             </div>
             @error("vhost")
                 <x-input-error class="mt-2" :messages="$message" />
