@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Helpers\FTP;
 use App\Helpers\Notifier;
 use App\Helpers\SSH;
 use App\Helpers\Toast;
@@ -35,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
         });
         $this->app->bind('toast', function () {
             return new Toast;
+        });
+        $this->app->bind('ftp', function () {
+            return new FTP;
         });
     }
 }
