@@ -430,7 +430,7 @@ return [
     ],
     'storage_providers_class' => [
         \App\Enums\StorageProvider::DROPBOX => \App\StorageProviders\Dropbox::class,
-        \App\Enums\StorageProvider::FTP => \App\StorageProviders\Ftp::class,
+        \App\Enums\StorageProvider::FTP => \App\StorageProviders\FTP::class,
         \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
     ],
 
