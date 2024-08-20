@@ -1,9 +1,9 @@
 <div x-data="">
     <div class="inline-flex gap-1">
         <div
-            id="tags-list-{{ str(get_class($taggable))->afterLast('\\')->lower() }}-{{ $taggable->id }}"
+            id="tags-list-{{ $taggable->id }}"
             class="inline-flex gap-1"
-            @if (!isset($oobOff) || !$oobOff)
+            @if (! isset($oobOff) || ! $oobOff)
                 hx-swap-oob="outerHTML"
             @endif
         >
