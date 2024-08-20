@@ -6,6 +6,7 @@ use App\Http\Controllers\Settings\ServerProviderController;
 use App\Http\Controllers\Settings\SourceControlController;
 use App\Http\Controllers\Settings\SSHKeyController;
 use App\Http\Controllers\Settings\StorageProviderController;
+use App\Http\Controllers\Settings\TagController;
 use App\Http\Controllers\Settings\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,4 +64,12 @@ Route::prefix('settings/ssh-keys')->group(function () {
     Route::get('/', [SSHKeyController::class, 'index'])->name('settings.ssh-keys');
     Route::post('add', [SshKeyController::class, 'add'])->name('settings.ssh-keys.add');
     Route::delete('delete/{id}', [SshKeyController::class, 'delete'])->name('settings.ssh-keys.delete');
+});
+
+// tags
+Route::prefix('/tags')->group(function () {
+    Route::get('/', [TagController::class, 'index'])->name('settings.tags');
+    Route::post('/create', [TagController::class, 'create'])->name('settings.tags.create');
+    Route::post('/{tag}', [TagController::class, 'update'])->name('settings.tags.update');
+    Route::delete('/{tag}', [TagController::class, 'delete'])->name('settings.tags.delete');
 });
