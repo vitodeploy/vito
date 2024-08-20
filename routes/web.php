@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScriptController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\ProjectController;
+use App\Http\Controllers\Settings\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +24,11 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('is-admin')->group(function () {
         require __DIR__.'/settings.php';
+    });
+
+    Route::prefix('/settings/tags')->group(function () {
+        Route::post('/attach', [TagController::class, 'attach'])->name('tags.attach');
+        Route::post('/{tag}/detach', [TagController::class, 'detach'])->name('tags.detach');
     });
 
     Route::prefix('/servers')->middleware('must-have-current-project')->group(function () {

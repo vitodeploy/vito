@@ -71,5 +71,6 @@
         </script>
         <x-toast />
         <x-htmx-error-handler />
+        @stack("footer")
     </body>
 </html>

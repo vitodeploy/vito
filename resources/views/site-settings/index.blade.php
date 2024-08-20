@@ -1,6 +1,8 @@
 <x-site-layout :site="$site">
     <x-slot name="pageTitle">{{ __("Settings") }}</x-slot>
 
+    @include("site-settings.partials.site-details")
+
     @include("site-settings.partials.change-php-version")
 
     @include("site-settings.partials.update-aliases")
