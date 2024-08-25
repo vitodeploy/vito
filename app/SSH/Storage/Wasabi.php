@@ -51,11 +51,7 @@ class Wasabi extends AbstractStorage
             'region' => $this->storageProvider->credentials['region']
         ]);
 
-        Log::info("Command: " . $downloadCommand);
-
         $download = $this->server->ssh()->exec($downloadCommand, 'download-from-s3');
-
-        Log::info("Download command output: " . $download);
 
         if (!str_contains($download, 'Download successful')) {
             Log::error('Failed to download from S3', ['output' => $download]);
