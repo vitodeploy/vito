@@ -230,6 +230,14 @@
                             <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
+
+                        <a
+                            class="mt-1 text-primary-500"
+                            href="https://docs.wasabi.com/docs/creating-a-user-account-and-access-key"
+                            target="_blank"
+                        >
+                            How to generate?
+                        </a>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -259,6 +267,7 @@
                             <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
+
                     </div>
 
                 </div>
