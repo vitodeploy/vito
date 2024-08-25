@@ -5,8 +5,19 @@ if ! command -v aws &> /dev/null
 then
     echo "AWS CLI is not installed. Installing..."
 
-    # Install AWS CLI v2 with the --update flag
-    sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    # Detect system architecture
+    ARCH=$(uname -m)
+    if [ "$ARCH" == "x86_64" ]; then
+        CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+    elif [ "$ARCH" == "aarch64" ]; then
+        CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
+    else
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+    fi
+
+    # Download and install AWS CLI
+    sudo curl "$CLI_URL" -o "awscliv2.zip"
     sudo unzip awscliv2.zip
     sudo ./aws/install --update
     sudo rm -rf awscliv2.zip aws
