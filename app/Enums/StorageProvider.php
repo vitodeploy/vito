@@ -9,4 +9,5 @@ final class StorageProvider
     const FTP = 'ftp';
 
     const LOCAL = 'local';
+    const WASABI = 'wasabi';
 }

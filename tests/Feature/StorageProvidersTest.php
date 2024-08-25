@@ -164,6 +164,27 @@ class StorageProvidersTest extends TestCase
                     'global' => 1,
                 ],
             ],
+            [
+                [
+                    'provider' => StorageProvider::WASABI,
+                    'name' => 'wasabi-test',
+                    'key' => 'wasabi-key',
+                    'secret' => 'wasabi-secret',
+                    'region' => 'us-east-1',
+                    'bucket' => 'wasabi-bucket',
+                ],
+            ],
+            [
+                [
+                    'provider' => StorageProvider::WASABI,
+                    'name' => 'wasabi-test',
+                    'key' => 'wasabi-key',
+                    'secret' => 'wasabi-secret',
+                    'region' => 'us-east-1',
+                    'bucket' => 'wasabi-bucket',
+                    'global' => 1,
+                ],
+            ],
         ];
     }
 }

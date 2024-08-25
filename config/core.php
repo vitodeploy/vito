@@ -427,11 +427,14 @@ return [
         \App\Enums\StorageProvider::DROPBOX,
         \App\Enums\StorageProvider::FTP,
         \App\Enums\StorageProvider::LOCAL,
+        \App\Enums\StorageProvider::WASABI,
     ],
     'storage_providers_class' => [
         \App\Enums\StorageProvider::DROPBOX => \App\StorageProviders\Dropbox::class,
         \App\Enums\StorageProvider::FTP => \App\StorageProviders\FTP::class,
         \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
+        \App\Enums\StorageProvider::WASABI => \App\StorageProviders\Wasabi::class,
+
     ],
 
     'ssl_types' => [
