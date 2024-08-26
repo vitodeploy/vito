@@ -3,6 +3,7 @@
 # Configure AWS CLI with provided credentials
 /usr/local/bin/aws configure set aws_access_key_id "__key__"
 /usr/local/bin/aws configure set aws_secret_access_key "__secret__"
+/usr/local/bin/aws configure set default.region "__region__"
 
 # Use the provided endpoint in the correct format
 ENDPOINT="__endpoint__"
@@ -14,7 +15,7 @@ SRC="__src__"
 DEST="__dest__"
 
 # Download the file from S3
-echo "Downloading s3://__bucket____src__ to __dest__"
+echo "Downloading s3://__bucket__/__src__ to __dest__"
 download_output=$(/usr/local/bin/aws s3 cp "s3://$BUCKET/$SRC" "$DEST" --endpoint-url="$ENDPOINT" --region "$REGION" 2>&1)
 download_exit_code=$?
 

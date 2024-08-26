@@ -25,7 +25,7 @@ then
     echo "AWS CLI installation completed."
 else
     echo "AWS CLI is already installed."
-    aws --version
+    /usr/local/bin/aws --version
 fi
 
 # Configure AWS CLI with provided credentials

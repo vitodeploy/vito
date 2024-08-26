@@ -3,15 +3,13 @@
 namespace App\StorageProviders;
 
 use App\Models\Server;
-use App\SSH\Storage\Wasabi as WasabiStorage;
+use App\SSH\Storage\S3 as S3Storage;
 use App\SSH\Storage\Storage;
 use Aws\S3\Exception\S3Exception;
 use Illuminate\Support\Facades\Log;
 
-class Wasabi extends S3AbstractStorageProvider
+class S3 extends S3AbstractStorageProvider
 {
-    private const DEFAULT_REGION = 'us-east-1';
-
     public function validationRules(): array
     {
         return [
@@ -37,7 +35,7 @@ class Wasabi extends S3AbstractStorageProvider
     public function connect(): bool
     {
         try {
-            $this->setBucketRegion(self::DEFAULT_REGION);
+            $this->setBucketRegion($this->storageProvider->credentials['region']);
             $this->setApiUrl();
             $this->buildClientConfig();
             $this->getClient()->listBuckets();
@@ -48,40 +46,15 @@ class Wasabi extends S3AbstractStorageProvider
         }
     }
 
-
-    /**
-     * Build the configuration array for the S3 client.
-     * This method can be overridden by child classes to modify the configuration.
-     */
-    public function buildClientConfig(): array
-    {
-        $this->clientConfig = [
-            'credentials' => [
-                'key' => $this->storageProvider->credentials['key'],
-                'secret' => $this->storageProvider->credentials['secret'],
-            ],
-            'region' => $this->getBucketRegion(),
-            'version' => 'latest',
-            'endpoint' => $this->getApiUrl(),
-            'use_path_style_endpoint' => true,
-        ];
-
-        return $this->clientConfig;
-    }
-
     public function ssh(Server $server): Storage
     {
-        return new WasabiStorage($server, $this->storageProvider);
-    }
-
-    public function setApiUrl(string $region = null): void
-    {
-        $this->bucketRegion = $region ?? $this->bucketRegion;
-        $this->apiUrl = "https://s3.{$this->bucketRegion}.wasabisys.com";
+        return new S3Storage($server, $this->storageProvider);
     }
 
     public function delete(array $paths): void
     {
 
     }
+
 }
+
