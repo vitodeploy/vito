@@ -1,6 +1,6 @@
-<x-secondary-button class="!w-full" x-on:click="$dispatch('open-modal', 'install-postfix')">Install</x-secondary-button>
+<x-secondary-button class="!w-full" x-on:click="$dispatch('open-modal', 'install-stalwart')">Install</x-secondary-button>
 @push("modals")
-    <x-modal name="install-postfix">
+    <x-modal name="install-stalwart">
         <form
             id="install-postfix-form"
             hx-post="{{ route("servers.services.install", ["server" => $server]) }}"
@@ -9,11 +9,11 @@
             class="p-6"
         >
             @csrf
-            <input type="hidden" name="name" value="postfix" />
+            <input type="hidden" name="name" value="stalwart" />
             <input type="hidden" name="type" value="email_service" />
 
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {{ __("Install Postfix") }}
+                {{ __("Install Stalwart") }}
             </h2>
 
             <div class="mt-6">
@@ -28,12 +28,18 @@
                 @enderror
             </div>
             <div class="mt-6">
-                <x-input-label for="domain" value="Domain" />
+                <x-input-label for="domain" value="Hostname Domain" />
                 <x-text-input :required="true" placeholder="mail.example.com" id="domain" name="domain" class="mt-2 w-full" />
 
                 @error("domain")
                 <x-input-error class="mt-2" :messages="$message" />
                 @enderror
+            </div>
+
+            <div class="mt-6">
+                {!! __("After installation you should check <strong><a href=\":logs\">server logs</a></strong> to know the user/password to access Stalwart.", [
+    'logs' => route('servers.logs', $server)
+]) !!}
             </div>
 
             <div class="mt-6 flex justify-end">

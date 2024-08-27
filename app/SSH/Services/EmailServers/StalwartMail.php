@@ -7,19 +7,45 @@ use App\SSH\Services\AbstractService;
 use Closure;
 use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
-class Postfix extends AbstractService
+class Stalwart extends AbstractService
 {
     use HasScripts;
 
     public function install(): void
     {
-        Log::debug('Test; ' . data_get($this->service, 'type_data.domain'));
         $this->service->server->ssh()->exec(
-            $this->getScript('postfix/install.sh', [
+            $this->getScript('stalwart/install.sh', [
                 'domain' => data_get($this->service, 'type_data.domain')
             ]),
-            'install-postfix'
+            'install-stalwart'
+        );
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function restart(int $id, ?int $siteId = null): void
+    {
+        $this->service->server->ssh()->exec(
+            $this->getScript('stalwart/restart.sh', [
+                'id' => $id,
+            ]),
+            'restart-stalwart'
+        );
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function stop(int $id, ?int $siteId = null): void
+    {
+        $this->service->server->ssh()->exec(
+            $this->getScript('stalwart/stop.sh', [
+                'id' => $id,
+            ]),
+            'stop-stalwart'
         );
     }
 
@@ -36,8 +62,8 @@ class Postfix extends AbstractService
             'type' => [
                 'required',
                 function (string $attribute, mixed $value, Closure $fail) {
-                    $postfixExists = $this->service->server->emailService();
-                    if ($postfixExists) {
+                    $serviceExists = $this->service->server->emailService();
+                    if ($serviceExists) {
                         $fail('You already have a email service on the server.');
                     }
                 },
@@ -61,8 +87,8 @@ class Postfix extends AbstractService
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('postfix/uninstall.sh'),
-            'uninstall-postfix'
+            $this->getScript('stalwart/uninstall.sh'),
+            'uninstall-stalwart'
         );
         $this->service->server->os()->cleanup();
     }
