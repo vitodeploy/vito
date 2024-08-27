@@ -1,15 +1,15 @@
-<x-secondary-button class="!w-full" x-on:click="$dispatch('open-modal', 'install-stalwart')">Install</x-secondary-button>
+<x-secondary-button class="!w-full" x-on:click="$dispatch('open-modal', 'install-stalwart-mail')">Install</x-secondary-button>
 @push("modals")
-    <x-modal name="install-stalwart">
+    <x-modal name="install-stalwart-mail">
         <form
-            id="install-postfix-form"
+            id="install-stalwart-mail-form"
             hx-post="{{ route("servers.services.install", ["server" => $server]) }}"
             hx-swap="outerHTML"
-            hx-select="#install-postfix-form"
+            hx-select="#install-stalwart-mail-form"
             class="p-6"
         >
             @csrf
-            <input type="hidden" name="name" value="stalwart" />
+            <input type="hidden" name="name" value="stalwart-mail" />
             <input type="hidden" name="type" value="email_service" />
 
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -28,7 +28,7 @@
                 @enderror
             </div>
             <div class="mt-6">
-                <x-input-label for="domain" value="Hostname Domain" />
+                <x-input-label for="domain" value="Main Hostname Domain" />
                 <x-text-input :required="true" placeholder="mail.example.com" id="domain" name="domain" class="mt-2 w-full" />
 
                 @error("domain")
@@ -47,7 +47,7 @@
                     {{ __("Cancel") }}
                 </x-secondary-button>
 
-                <x-primary-button id="btn-install-postfix" hx-disable class="ml-3">
+                <x-primary-button id="btn-install-stalwart-mail" hx-disable class="ml-3">
                     {{ __("Install") }}
                 </x-primary-button>
             </div>

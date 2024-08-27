@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
-class Stalwart extends AbstractService
+class StalwartMail extends AbstractService
 {
     use HasScripts;
 
@@ -33,19 +33,6 @@ class Stalwart extends AbstractService
                 'id' => $id,
             ]),
             'restart-stalwart'
-        );
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function stop(int $id, ?int $siteId = null): void
-    {
-        $this->service->server->ssh()->exec(
-            $this->getScript('stalwart/stop.sh', [
-                'id' => $id,
-            ]),
-            'stop-stalwart'
         );
     }
 

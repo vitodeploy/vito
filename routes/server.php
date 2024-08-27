@@ -106,9 +106,6 @@ Route::middleware('select-current-project')->group(function () {
         Route::post('/{server}/php/update-ini', [PHPController::class, 'updateIni'])->name('servers.php.update-ini');
         Route::delete('/{server}/php/uninstall', [PHPController::class, 'uninstall'])->name('servers.php.uninstall');
 
-        // email service
-        Route::get('/{server}/email-service', [EmailServiceController::class, 'index'])->name('servers.email-service');
-
         // firewall
         Route::get('/{server}/firewall', [FirewallController::class, 'index'])->name('servers.firewall');
         Route::post('/{server}/firewall', [FirewallController::class, 'store'])->name('servers.firewall.store');

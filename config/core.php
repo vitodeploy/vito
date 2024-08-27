@@ -158,7 +158,7 @@ return [
         'ufw' => 'firewall',
         'supervisor' => 'process_manager',
         'vito-agent' => 'monitoring',
-        'postfix' => 'email_service',
+        'stalwart-mail' => 'email_service',
         'remote-monitor' => 'monitoring',
     ],
     'service_handlers' => [
@@ -167,7 +167,7 @@ return [
         'mariadb' => \App\SSH\Services\Database\Mariadb::class,
         'postgresql' => \App\SSH\Services\Database\Postgresql::class,
         'redis' => \App\SSH\Services\Redis\Redis::class,
-        'postfix' => \App\SSH\Services\EmailServers\Postfix::class,
+        'stalwart-mail' => \App\SSH\Services\EmailServers\StalwartMail::class,
         'php' => \App\SSH\Services\PHP\PHP::class,
         'ufw' => \App\SSH\Services\Firewall\Ufw::class,
         'supervisor' => \App\SSH\Services\ProcessManager\Supervisor::class,
@@ -327,15 +327,15 @@ return [
                 'latest' => 'vito-agent',
             ],
         ],
-        'postfix' => [
+        'stalwart-mail' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [
-                'latest' => 'postfix',
+                'latest' => 'stalwart-mail',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
-                'latest' => 'postfix',
+                'latest' => 'stalwart-mail',
             ],
             \App\Enums\OperatingSystem::UBUNTU24 => [
-                'latest' => 'postfix',
+                'latest' => 'stalwart-mail',
             ],
         ]
     ],
