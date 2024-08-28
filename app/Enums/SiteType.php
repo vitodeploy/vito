@@ -14,5 +14,5 @@ final class SiteType
 
     const PHPMYADMIN = 'phpmyadmin';
 
-    const ROUNDCUBE = 'roundcube';
+    const REVERSE_PROXY = 'reverse-proxy';
 }

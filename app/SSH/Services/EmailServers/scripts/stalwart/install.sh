@@ -14,6 +14,7 @@ echo "Changing hostname..."
 sleep 10
 
 sudo perl -pi -e 's/lookup.default.hostname = ".*"/lookup.default.hostname = "__domain__"/' /opt/stalwart-mail/etc/config.toml
-sudo service stalwart-mail restart
+sed -i '/server.listener.https.bind = "\[::\]:443"/d; /server.listener.https.protocol = "http"/d; /server.listener.https.tls.implicit = true/d' nombre_del_archivo
 
+sudo service stalwart-mail restart
 echo "Service installed."

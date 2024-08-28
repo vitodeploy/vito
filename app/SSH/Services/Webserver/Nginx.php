@@ -180,6 +180,18 @@ class Nginx extends AbstractWebserver
                 $vhost = $this->getScript('nginx/php-vhost-ssl.conf');
             }
         }
+
+        if ($site->type()->language() === 'reverse-proxy') {
+            $vhost = $this->getScript('nginx/reverse-proxy/reverse-proxy.conf', [
+                'port' => data_get($site, 'type_data.port')
+            ]);
+            if ($ssl) {
+                $vhost = $this->getScript('nginx/reverse-proxy/reverse-proxy-ssl.conf', [
+                    'port' => data_get($site, 'type_data.port')
+                ]);
+            }
+        }
+
         if ($site->port) {
             $vhost = $this->getScript('nginx/reverse-vhost.conf');
             if ($ssl) {
