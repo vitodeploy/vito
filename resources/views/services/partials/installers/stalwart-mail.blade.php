@@ -37,6 +37,15 @@
             </div>
 
             <div class="mt-6">
+                <x-input-label for="site_domain" value="Stalwart Panel Access Domain" />
+                <x-text-input :required="true" placeholder="stalwart.example.com" id="site_domain" name="site_domain" class="mt-2 w-full" />
+                <span class="text-xs">We will use this domain to create a new site to access Stalwart admin panel instead of using an IP address and port.</span>
+                @error("site_domain")
+                <x-input-error class="mt-2" :messages="$message" />
+                @enderror
+            </div>
+
+            <div class="mt-6 text-red-600">
                 {!! __("After installation you should check <strong><a href=\":logs\">server logs</a></strong> to know the user/password to access Stalwart.", [
     'logs' => route('servers.logs', $server)
 ]) !!}

@@ -3,6 +3,8 @@
 namespace App\SSH\Services\EmailServers;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\DeleteSite;
+use App\Models\Site;
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
 use Closure;
@@ -20,7 +22,7 @@ class StalwartMail extends AbstractService
         $site = app(CreateSite::class)->create($this->service->server, [
             'type' => \App\Enums\SiteType::REVERSE_PROXY,
             'port' => '8080',
-            'domain' => data_get($this->service, 'type_data.domain'),
+            'domain' => data_get($this->service, 'type_data.site_domain'),
         ]);
 
         if (! $site) {
@@ -52,6 +54,7 @@ class StalwartMail extends AbstractService
     {
         return [
             'domain' => $input['domain'],
+            'site_domain' => $input['site_domain'],
         ];
     }
 
@@ -80,11 +83,35 @@ class StalwartMail extends AbstractService
                     }
                 },
             ],
+            'site_domain' => [
+                'required',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (empty($value)) {
+                        $fail('A domain is required to access Stalwart panel.');
+                    }
+
+                    $validateDomain = filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false;
+                    if (! $validateDomain) {
+                        $fail('The domain you specified is not valid.');
+                    }
+                },
+            ]
         ];
     }
 
     public function uninstall(): void
     {
+        $site = Site::query()
+            ->where('server_id', $this->service->server->id)
+            ->where('domain', data_get($this->service, 'type_data.site_domain'))
+            ->first();
+
+        if ($site) {
+            app(DeleteSite::class)->delete(
+                $site
+            );
+        }
+
         $this->service->server->ssh()->exec(
             $this->getScript('stalwart/uninstall.sh'),
             'uninstall-stalwart'
