@@ -2,4 +2,6 @@
 
 namespace App\SiteTypes;
 
-class Laravel extends PHPSite {}
+class Laravel extends PHPSite
+{
+}

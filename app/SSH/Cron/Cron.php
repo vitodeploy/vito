@@ -6,7 +6,9 @@ use App\Models\Server;
 
 class Cron
 {
-    public function __construct(protected Server $server) {}
+    public function __construct(protected Server $server)
+    {
+    }
 
     public function update(string $user, string $cron): void
     {

@@ -73,7 +73,6 @@
                     </li>
                 @endif
 
-
                 <li>
                     <x-sidebar-link
                         :href="route('servers.cronjobs', ['server' => $server])"

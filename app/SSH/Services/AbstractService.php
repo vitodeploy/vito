@@ -6,7 +6,9 @@ use App\Models\Service;
 
 abstract class AbstractService implements ServiceInterface
 {
-    public function __construct(protected Service $service) {}
+    public function __construct(protected Service $service)
+    {
+    }
 
     public function creationRules(array $input): array
     {

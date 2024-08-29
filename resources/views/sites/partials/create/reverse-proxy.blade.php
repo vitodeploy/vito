@@ -9,6 +9,6 @@
         placeholder="8080"
     />
     @error("port")
-    <x-input-error class="mt-2" :messages="$message" />
+        <x-input-error class="mt-2" :messages="$message" />
     @enderror
 </div>

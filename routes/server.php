@@ -6,7 +6,6 @@ use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
-use App\Http\Controllers\EmailServiceController;
 use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\MetricController;
 use App\Http\Controllers\PHPController;

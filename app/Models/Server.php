@@ -354,6 +354,7 @@ class Server extends AbstractModel
 
         return $this->service('email_service', $version);
     }
+
     public function monitoring(?string $version = null): ?Service
     {
         if (! $version) {

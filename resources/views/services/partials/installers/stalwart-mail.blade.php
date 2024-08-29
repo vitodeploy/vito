@@ -1,4 +1,6 @@
-<x-secondary-button class="!w-full" x-on:click="$dispatch('open-modal', 'install-stalwart-mail')">Install</x-secondary-button>
+<x-secondary-button class="!w-full" x-on:click="$dispatch('open-modal', 'install-stalwart-mail')">
+    Install
+</x-secondary-button>
 @push("modals")
     <x-modal name="install-stalwart-mail">
         <form
@@ -19,36 +21,51 @@
             <div class="mt-6">
                 <x-input-label for="version" value="Version" />
                 <x-select-input id="version" name="version" class="mt-1 w-full">
-                        <option value="latest">
-                            Latest
-                        </option>
+                    <option value="latest">Latest</option>
                 </x-select-input>
                 @error("version")
-                <x-input-error class="mt-2" :messages="$message" />
+                    <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
             <div class="mt-6">
                 <x-input-label for="domain" value="Main Hostname Domain" />
-                <x-text-input :required="true" placeholder="mail.example.com" id="domain" name="domain" class="mt-2 w-full" />
+                <x-text-input
+                    :required="true"
+                    placeholder="mail.example.com"
+                    id="domain"
+                    name="domain"
+                    class="mt-2 w-full"
+                />
 
                 @error("domain")
-                <x-input-error class="mt-2" :messages="$message" />
+                    <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
             <div class="mt-6">
                 <x-input-label for="site_domain" value="Stalwart Panel Access Domain" />
-                <x-text-input :required="true" placeholder="stalwart.example.com" id="site_domain" name="site_domain" class="mt-2 w-full" />
-                <span class="text-xs">We will use this domain to create a new site to access Stalwart admin panel instead of using an IP address and port.</span>
+                <x-text-input
+                    :required="true"
+                    placeholder="stalwart.example.com"
+                    id="site_domain"
+                    name="site_domain"
+                    class="mt-2 w-full"
+                />
+                <span class="text-xs">
+                    We will use this domain to create a new site to access Stalwart admin panel instead of using an IP
+                    address and port.
+                </span>
                 @error("site_domain")
-                <x-input-error class="mt-2" :messages="$message" />
+                    <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
             <div class="mt-6 text-red-600">
-                {!! __("After installation you should check <strong><a href=\":logs\">server logs</a></strong> to know the user/password to access Stalwart.", [
-    'logs' => route('servers.logs', $server)
-]) !!}
+                {!!
+                    __("After installation you should check <strong><a href=\":logs\">server logs</a></strong> to know the user/password to access Stalwart.", [
+                        "logs" => route("servers.logs", $server),
+                    ])
+                !!}
             </div>
 
             <div class="mt-6 flex justify-end">

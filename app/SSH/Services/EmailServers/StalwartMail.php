@@ -4,7 +4,6 @@ namespace App\SSH\Services\EmailServers;
 
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\DeleteSite;
-use App\Enums\ServerStatus;
 use App\Models\Site;
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
@@ -37,7 +36,7 @@ class StalwartMail extends AbstractService
 
         $this->service->server->ssh()->exec(
             $this->getScript('stalwart/install.sh', [
-                'domain' => data_get($this->service, 'type_data.domain')
+                'domain' => data_get($this->service, 'type_data.domain'),
             ]),
             'install-stalwart'
         );
@@ -101,7 +100,7 @@ class StalwartMail extends AbstractService
                         $fail('The domain you specified is not valid.');
                     }
                 },
-            ]
+            ],
         ];
     }
 

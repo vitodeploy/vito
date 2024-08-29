@@ -39,7 +39,7 @@ class ReverseProxy extends AbstractSiteType
         return [
             'url' => $this->site->getUrl(),
             'port' => $input['port'],
-            'auto-installed' => $input['auto-installed'] ?? null
+            'auto-installed' => $input['auto-installed'] ?? null,
         ];
     }
 

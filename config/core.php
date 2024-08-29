@@ -337,7 +337,7 @@ return [
             \App\Enums\OperatingSystem::UBUNTU24 => [
                 'latest' => 'stalwart-mail',
             ],
-        ]
+        ],
     ],
 
     /*

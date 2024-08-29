@@ -6,7 +6,9 @@ use App\Models\Server;
 
 class Systemd
 {
-    public function __construct(protected Server $server) {}
+    public function __construct(protected Server $server)
+    {
+    }
 
     public function status(string $unit): string
     {

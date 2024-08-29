@@ -7,7 +7,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class SiteInstallationFailed extends AbstractNotification
 {
-    public function __construct(protected Site $site) {}
+    public function __construct(protected Site $site)
+    {
+    }
 
     public function rawText(): string
     {

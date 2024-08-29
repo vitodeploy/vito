@@ -8,7 +8,9 @@ use Illuminate\View\Component;
 
 class ServerLayout extends Component
 {
-    public function __construct(public Server $server) {}
+    public function __construct(public Server $server)
+    {
+    }
 
     public function render(): View
     {

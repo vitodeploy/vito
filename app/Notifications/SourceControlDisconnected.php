@@ -7,7 +7,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class SourceControlDisconnected extends AbstractNotification
 {
-    public function __construct(protected SourceControl $sourceControl) {}
+    public function __construct(protected SourceControl $sourceControl)
+    {
+    }
 
     public function rawText(): string
     {
