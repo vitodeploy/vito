@@ -37,6 +37,7 @@ class StalwartMail extends AbstractService
         $this->service->server->ssh()->exec(
             $this->getScript('stalwart/install.sh', [
                 'domain' => data_get($this->service, 'type_data.domain'),
+                'site_domain' => data_get($this->service, 'type_data.site_domain'),
             ]),
             'install-stalwart'
         );
