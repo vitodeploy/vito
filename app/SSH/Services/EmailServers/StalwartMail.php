@@ -4,6 +4,7 @@ namespace App\SSH\Services\EmailServers;
 
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\DeleteSite;
+use App\Enums\ServerStatus;
 use App\Models\Site;
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
@@ -19,15 +20,20 @@ class StalwartMail extends AbstractService
      */
     public function install(): void
     {
-        $site = app(CreateSite::class)->create($this->service->server, [
+        $site = $this->siteDomain(
+            data_get($this->service, 'type_data.site_domain')
+        );
+
+        if ($site) {
+            throw new \Exception('Failed to install stalwart-mail when creating the app panel domain, already in use.');
+        }
+
+        app(CreateSite::class)->create($this->service->server, [
             'type' => \App\Enums\SiteType::REVERSE_PROXY,
             'port' => '8080',
+            'auto-installed' => 'stalwart-mail',
             'domain' => data_get($this->service, 'type_data.site_domain'),
         ]);
-
-        if (! $site) {
-            throw new \Exception('Failed to install stalwart-mail, the app domain not created.');
-        }
 
         $this->service->server->ssh()->exec(
             $this->getScript('stalwart/install.sh', [
@@ -101,12 +107,11 @@ class StalwartMail extends AbstractService
 
     public function uninstall(): void
     {
-        $site = Site::query()
-            ->where('server_id', $this->service->server->id)
-            ->where('domain', data_get($this->service, 'type_data.site_domain'))
-            ->first();
+        $site = $this->siteDomain(
+            data_get($this->service, 'type_data.site_domain'),
+        );
 
-        if ($site) {
+        if (data_get($site, 'type_data.auto-installed') === 'stalwart-mail') {
             app(DeleteSite::class)->delete(
                 $site
             );
@@ -117,5 +122,13 @@ class StalwartMail extends AbstractService
             'uninstall-stalwart'
         );
         $this->service->server->os()->cleanup();
+    }
+
+    private function siteDomain($domain)
+    {
+        return Site::query()
+            ->where('server_id', $this->service->server->id)
+            ->where('domain', $domain)
+            ->first();
     }
 }
