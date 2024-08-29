@@ -65,4 +65,9 @@ class Project extends Model
     {
         return $this->hasMany(SourceControl::class);
     }
+
+    public function tags(): HasMany
+    {
+        return $this->hasMany(Tag::class);
+    }
 }

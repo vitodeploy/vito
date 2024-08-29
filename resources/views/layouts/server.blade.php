@@ -11,7 +11,12 @@
                 </div>
             </header>
         @else
-            <h2 class="text-lg font-semibold">{{ $server->name }}</h2>
+            <div class="flex items-center">
+                <h2 class="text-lg font-semibold">{{ $server->name }}</h2>
+                <div class="ml-2">
+                    @include("settings.tags.tags", ["taggable" => $server])
+                </div>
+            </div>
         @endif
 
         <div class="flex flex-col items-end">

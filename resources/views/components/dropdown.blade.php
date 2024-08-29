@@ -2,12 +2,18 @@
     "open" => false,
     "align" => "right",
     "width" => "48",
-    "contentClasses" => "list-none divide-y divide-gray-100 rounded-md border border-gray-200 bg-white py-1 text-base dark:divide-gray-600 dark:border-gray-600 dark:bg-gray-700",
+    "contentClasses" => "list-none divide-y divide-gray-100 rounded-md bg-white text-base dark:divide-gray-600 dark:bg-gray-700",
     "search" => false,
     "searchUrl" => "",
+    "hideIfEmpty" => false,
+    "closeOnClick" => true,
 ])
 
 @php
+    if (! $hideIfEmpty) {
+        $contentClasses .= " py-1 border border-gray-200 dark:border-gray-600";
+    }
+
     switch ($align) {
         case "left":
             $alignmentClasses = "left-0 origin-top-left";
@@ -24,6 +30,9 @@
     switch ($width) {
         case "48":
             $width = "w-48";
+            break;
+        case "56":
+            $width = "w-56";
             break;
         case "full":
             $width = "w-full";
@@ -46,31 +55,9 @@
         x-transition:leave-end="scale-95 transform opacity-0"
         class="{{ $width }} {{ $alignmentClasses }} absolute z-50 mt-2 rounded-md"
         style="display: none"
-        @click="open = false"
+        @if ($closeOnClick) @click="open = false" @endif
     >
         <div class="{{ $contentClasses }} rounded-md">
-            @if ($search)
-                <div class="p-2">
-                    <input
-                        type="text"
-                        x-ref="search"
-                        x-model="search"
-                        x-on:keydown.window.prevent.enter="open = false"
-                        x-on:keydown.window.prevent.escape="open = false"
-                        x-on:keydown.window.prevent.arrow-up="
-                            open = true
-                            $refs.search.focus()
-                        "
-                        x-on:keydown.window.prevent.arrow-down="
-                            open = true
-                            $refs.search.focus()
-                        "
-                        class="w-full rounded-md border border-gray-200 p-2"
-                        placeholder="Search..."
-                    />
-                </div>
-            @endif
-
             {{ $content }}
         </div>
     </div>

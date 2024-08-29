@@ -41,7 +41,7 @@ class FTP extends AbstractStorageProvider
         $isConnected = $connection && $this->login($connection);
 
         if ($isConnected) {
-            ftp_close($connection);
+            \App\Facades\FTP::close($connection);
         }
 
         return $isConnected;
@@ -58,31 +58,36 @@ class FTP extends AbstractStorageProvider
 
         if ($connection && $this->login($connection)) {
             if ($this->storageProvider->credentials['passive']) {
-                ftp_pasv($connection, true);
+                \App\Facades\FTP::passive($connection, true);
             }
 
             foreach ($paths as $path) {
-                ftp_delete($connection, $this->storageProvider->credentials['path'].'/'.$path);
+                \App\Facades\FTP::delete($connection, $this->storageProvider->credentials['path'].'/'.$path);
             }
         }
 
-        ftp_close($connection);
+        \App\Facades\FTP::close($connection);
     }
 
     private function connection(): bool|Connection
     {
         $credentials = $this->storageProvider->credentials;
-        if ($credentials['ssl']) {
-            return ftp_ssl_connect($credentials['host'], $credentials['port'], 5);
-        }
 
-        return ftp_connect($credentials['host'], $credentials['port'], 5);
+        return \App\Facades\FTP::connect(
+            $credentials['host'],
+            $credentials['port'],
+            $credentials['ssl']
+        );
     }
 
-    private function login(Connection $connection): bool
+    private function login(bool|Connection $connection): bool
     {
         $credentials = $this->storageProvider->credentials;
 
-        return ftp_login($connection, $credentials['username'], $credentials['password']);
+        return \App\Facades\FTP::login(
+            $credentials['username'],
+            $credentials['password'],
+            $connection
+        );
     }
 }

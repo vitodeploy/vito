@@ -446,7 +446,7 @@ return [
     ],
     'storage_providers_class' => [
         \App\Enums\StorageProvider::DROPBOX => \App\StorageProviders\Dropbox::class,
-        \App\Enums\StorageProvider::FTP => \App\StorageProviders\Ftp::class,
+        \App\Enums\StorageProvider::FTP => \App\StorageProviders\FTP::class,
         \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
     ],
 
@@ -460,5 +460,31 @@ return [
         14,
         30,
         90,
+    ],
+
+    'tag_colors' => [
+        'slate',
+        'gray',
+        'red',
+        'orange',
+        'amber',
+        'yellow',
+        'lime',
+        'green',
+        'emerald',
+        'teal',
+        'cyan',
+        'sky',
+        'blue',
+        'indigo',
+        'violet',
+        'purple',
+        'fuchsia',
+        'pink',
+        'rose',
+    ],
+    'taggable_types' => [
+        \App\Models\Server::class,
+        \App\Models\Site::class,
     ],
 ];

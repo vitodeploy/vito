@@ -162,6 +162,13 @@
             @endif
 
             <li>
+                <x-sidebar-link :href="route('servers')" :active="request()->routeIs('servers')">
+                    <x-heroicon name="o-server" class="h-6 w-6" />
+                    <span class="ml-2">Servers</span>
+                </x-sidebar-link>
+            </li>
+
+            <li>
                 <x-sidebar-link :href="route('scripts.index')" :active="request()->routeIs('scripts.*')">
                     <x-heroicon name="o-bolt" class="h-6 w-6" />
                     <span class="ml-2">Scripts</span>
@@ -237,6 +244,12 @@
                     >
                         <x-heroicon name="o-key" class="h-6 w-6" />
                         <span class="ml-2">SSH Keys</span>
+                    </x-sidebar-link>
+                </li>
+                <li>
+                    <x-sidebar-link :href="route('settings.tags')" :active="request()->routeIs('settings.tags')">
+                        <x-heroicon name="o-tag" class="h-6 w-6" />
+                        <span class="ml-2">Tags</span>
                     </x-sidebar-link>
                 </li>
             @endif

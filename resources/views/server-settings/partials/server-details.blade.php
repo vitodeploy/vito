@@ -110,4 +110,15 @@
             </div>
         </div>
     </div>
+    <div>
+        <div class="py-5">
+            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+        </div>
+    </div>
+    <div class="flex items-center justify-between">
+        <div>{{ __("Tags") }}</div>
+        <div>
+            @include("settings.tags.tags", ["taggable" => $server, "edit" => true])
+        </div>
+    </div>
 </x-card>

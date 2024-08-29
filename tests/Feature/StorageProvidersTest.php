@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\StorageProvider;
+use App\Facades\FTP;
 use App\Models\Backup;
 use App\Models\Database;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,8 +25,16 @@ class StorageProvidersTest extends TestCase
             Http::fake();
         }
 
+        if ($input['provider'] === StorageProvider::FTP) {
+            FTP::fake();
+        }
+
         $this->post(route('settings.storage-providers.connect'), $input)
             ->assertSessionDoesntHaveErrors();
+
+        if ($input['provider'] === StorageProvider::FTP) {
+            FTP::assertConnected($input['host']);
+        }
 
         $this->assertDatabaseHas('storage_providers', [
             'provider' => $input['provider'],
@@ -113,33 +122,33 @@ class StorageProvidersTest extends TestCase
                     'global' => 1,
                 ],
             ],
-            //            [
-            //                [
-            //                    'provider' => StorageProvider::FTP,
-            //                    'name' => 'ftp-test',
-            //                    'host' => '1.2.3.4',
-            //                    'port' => '22',
-            //                    'path' => '/home/vito',
-            //                    'username' => 'username',
-            //                    'password' => 'password',
-            //                    'ssl' => 1,
-            //                    'passive' => 1,
-            //                ],
-            //            ],
-            //            [
-            //                [
-            //                    'provider' => StorageProvider::FTP,
-            //                    'name' => 'ftp-test',
-            //                    'host' => '1.2.3.4',
-            //                    'port' => '22',
-            //                    'path' => '/home/vito',
-            //                    'username' => 'username',
-            //                    'password' => 'password',
-            //                    'ssl' => 1,
-            //                    'passive' => 1,
-            //                    'global' => 1,
-            //                ],
-            //            ],
+            [
+                [
+                    'provider' => StorageProvider::FTP,
+                    'name' => 'ftp-test',
+                    'host' => '1.2.3.4',
+                    'port' => '22',
+                    'path' => '/home/vito',
+                    'username' => 'username',
+                    'password' => 'password',
+                    'ssl' => 1,
+                    'passive' => 1,
+                ],
+            ],
+            [
+                [
+                    'provider' => StorageProvider::FTP,
+                    'name' => 'ftp-test',
+                    'host' => '1.2.3.4',
+                    'port' => '22',
+                    'path' => '/home/vito',
+                    'username' => 'username',
+                    'password' => 'password',
+                    'ssl' => 1,
+                    'passive' => 1,
+                    'global' => 1,
+                ],
+            ],
             [
                 [
                     'provider' => StorageProvider::DROPBOX,
