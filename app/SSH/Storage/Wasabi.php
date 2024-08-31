@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class Wasabi extends S3AbstractStorage
 {
-    use HasScripts, HasS3Storage;
+    use HasS3Storage, HasScripts;
 
     public function __construct(Server $server, StorageProvider $storageProvider)
     {
@@ -28,18 +28,18 @@ class Wasabi extends S3AbstractStorage
         $uploadCommand = $this->getScript('wasabi/upload.sh', [
             'src' => $src,
             'bucket' => $this->storageProvider->credentials['bucket'],
-            'dest' => $this->prepareS3Path($this->storageProvider->credentials['path'] . '/' . $dest),
+            'dest' => $this->prepareS3Path($this->storageProvider->credentials['path'].'/'.$dest),
             'key' => $this->storageProvider->credentials['key'],
             'secret' => $this->storageProvider->credentials['secret'],
             'region' => $this->storageProvider->credentials['region'],
-            'endpoint' => $this->getApiUrl()
+            'endpoint' => $this->getApiUrl(),
         ]);
 
         $upload = $this->server->ssh()->exec($uploadCommand, 'upload-to-wasabi');
 
-        if (str_contains($upload, 'Error') || !str_contains($upload, 'upload:')) {
+        if (str_contains($upload, 'Error') || ! str_contains($upload, 'upload:')) {
             Log::error('Failed to upload to wasabi', ['output' => $upload]);
-            throw new SSHCommandError('Failed to upload to wasabi: ' . $upload);
+            throw new SSHCommandError('Failed to upload to wasabi: '.$upload);
         }
 
         return [
@@ -54,35 +54,31 @@ class Wasabi extends S3AbstractStorage
     public function download(string $src, string $dest): void
     {
         $downloadCommand = $this->getScript('wasabi/download.sh', [
-            'src' => $this->prepareS3Path($this->storageProvider->credentials['path'] . '/' . $src),
+            'src' => $this->prepareS3Path($this->storageProvider->credentials['path'].'/'.$src),
             'dest' => $dest,
             'bucket' => $this->storageProvider->credentials['bucket'],
             'key' => $this->storageProvider->credentials['key'],
             'secret' => $this->storageProvider->credentials['secret'],
             'region' => $this->storageProvider->credentials['region'],
-            'endpoint' => $this->getApiUrl()
+            'endpoint' => $this->getApiUrl(),
         ]);
 
         $download = $this->server->ssh()->exec($downloadCommand, 'download-from-wasabi');
 
-        if (!str_contains($download, 'Download successful')) {
+        if (! str_contains($download, 'Download successful')) {
             Log::error('Failed to download from wasabi', ['output' => $download]);
-            throw new SSHCommandError('Failed to download from wasabi: ' . $download);
+            throw new SSHCommandError('Failed to download from wasabi: '.$download);
         }
     }
 
     /**
      * @TODO Implement delete method
      */
-    public function delete(string $path): void
-    {
+    public function delete(string $path): void {}
 
-    }
-
-    public function setApiUrl(string $region = null): void
+    public function setApiUrl(?string $region = null): void
     {
         $this->bucketRegion = $region ?? $this->bucketRegion;
         $this->apiUrl = "https://{$this->storageProvider->credentials['bucket']}.s3.{$this->getBucketRegion()}.wasabisys.com";
     }
-
 }

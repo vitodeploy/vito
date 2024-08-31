@@ -5,6 +5,7 @@ namespace App\SSH\Storage;
 abstract class S3AbstractStorage extends AbstractStorage
 {
     protected ?string $apiUrl = null;
+
     protected ?string $bucketRegion = null;
 
     public function getApiUrl(): string
@@ -12,7 +13,7 @@ abstract class S3AbstractStorage extends AbstractStorage
         return $this->apiUrl;
     }
 
-    public function setApiUrl(string $region = null): void
+    public function setApiUrl(?string $region = null): void
     {
         $this->bucketRegion = $region ?? $this->bucketRegion;
         $this->apiUrl = "https://s3.{$this->bucketRegion}.amazonaws.com";

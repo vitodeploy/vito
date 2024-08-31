@@ -12,7 +12,7 @@ trait HasS3Storage
         $path = preg_replace('/\/+/', '/', $path);
 
         if ($prefix) {
-            $path = trim($prefix, '/') . '/' . $path;
+            $path = trim($prefix, '/').'/'.$path;
         }
 
         return $path;

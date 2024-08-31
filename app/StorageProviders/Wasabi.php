@@ -3,8 +3,8 @@
 namespace App\StorageProviders;
 
 use App\Models\Server;
-use App\SSH\Storage\Wasabi as WasabiStorage;
 use App\SSH\Storage\Storage;
+use App\SSH\Storage\Wasabi as WasabiStorage;
 use Aws\S3\Exception\S3Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -41,13 +41,14 @@ class Wasabi extends S3AbstractStorageProvider
             $this->setApiUrl();
             $this->buildClientConfig();
             $this->getClient()->listBuckets();
+
             return true;
         } catch (S3Exception $e) {
             Log::error('Failed to connect to S3', ['exception' => $e]);
+
             return false;
         }
     }
-
 
     /**
      * Build the configuration array for the S3 client.
@@ -74,14 +75,11 @@ class Wasabi extends S3AbstractStorageProvider
         return new WasabiStorage($server, $this->storageProvider);
     }
 
-    public function setApiUrl(string $region = null): void
+    public function setApiUrl(?string $region = null): void
     {
         $this->bucketRegion = $region ?? $this->bucketRegion;
         $this->apiUrl = "https://s3.{$this->bucketRegion}.wasabisys.com";
     }
 
-    public function delete(array $paths): void
-    {
-
-    }
+    public function delete(array $paths): void {}
 }

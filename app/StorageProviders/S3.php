@@ -39,9 +39,11 @@ class S3 extends S3AbstractStorageProvider
             $this->setApiUrl();
             $this->buildClientConfig();
             $this->getClient()->listBuckets();
+
             return true;
         } catch (S3Exception $e) {
             Log::error('Failed to connect to S3', ['exception' => $e]);
+
             return false;
         }
     }
@@ -51,10 +53,5 @@ class S3 extends S3AbstractStorageProvider
         return new S3Storage($server, $this->storageProvider);
     }
 
-    public function delete(array $paths): void
-    {
-
-    }
-
+    public function delete(array $paths): void {}
 }
-

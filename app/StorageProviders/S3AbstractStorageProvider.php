@@ -5,12 +5,16 @@ namespace App\StorageProviders;
 use App\Models\StorageProvider;
 use Aws\S3\S3Client;
 
-abstract class S3AbstractStorageProvider extends AbstractStorageProvider implements S3StorageInterface, S3ClientInterface
+abstract class S3AbstractStorageProvider extends AbstractStorageProvider implements S3ClientInterface, S3StorageInterface
 {
     protected ?string $apiUrl = null;
+
     protected ?string $bucketRegion = null;
+
     protected ?S3Client $client = null;
+
     protected StorageProvider $storageProvider;
+
     protected array $clientConfig = [];
 
     public function getApiUrl(): string
@@ -18,7 +22,7 @@ abstract class S3AbstractStorageProvider extends AbstractStorageProvider impleme
         return $this->apiUrl;
     }
 
-    public function setApiUrl(string $region = null): void
+    public function setApiUrl(?string $region = null): void
     {
         $this->bucketRegion = $region ?? $this->bucketRegion;
         $this->apiUrl = "https://s3.{$this->bucketRegion}.amazonaws.com";
@@ -34,9 +38,6 @@ abstract class S3AbstractStorageProvider extends AbstractStorageProvider impleme
         $this->bucketRegion = $region;
     }
 
-    /**
-     * @return S3Client
-     */
     public function getClient(): S3Client
     {
         return new S3Client($this->clientConfig);
@@ -63,8 +64,6 @@ abstract class S3AbstractStorageProvider extends AbstractStorageProvider impleme
 
     /**
      * Set or update a configuration parameter for the S3 client.
-     *
-     * @param array $param
      */
     public function setConfigParam(array $param): void
     {

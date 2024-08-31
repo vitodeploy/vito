@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class S3 extends S3AbstractStorage
 {
-    use HasScripts, HasS3Storage;
+    use HasS3Storage, HasScripts;
 
     public function __construct(Server $server, StorageProvider $storageProvider)
     {
@@ -28,18 +28,18 @@ class S3 extends S3AbstractStorage
         $uploadCommand = $this->getScript('s3/upload.sh', [
             'src' => $src,
             'bucket' => $this->storageProvider->credentials['bucket'],
-            'dest' => $this->prepareS3Path($this->storageProvider->credentials['path'] . '/' . $dest),
+            'dest' => $this->prepareS3Path($this->storageProvider->credentials['path'].'/'.$dest),
             'key' => $this->storageProvider->credentials['key'],
             'secret' => $this->storageProvider->credentials['secret'],
             'region' => $this->getBucketRegion(),
-            'endpoint' => $this->getApiUrl()
+            'endpoint' => $this->getApiUrl(),
         ]);
 
         $upload = $this->server->ssh()->exec($uploadCommand, 'upload-to-s3');
 
-        if (str_contains($upload, 'Error') || !str_contains($upload, 'upload:')) {
+        if (str_contains($upload, 'Error') || ! str_contains($upload, 'upload:')) {
             Log::error('Failed to upload to S3', ['output' => $upload]);
-            throw new SSHCommandError('Failed to upload to S3: ' . $upload);
+            throw new SSHCommandError('Failed to upload to S3: '.$upload);
         }
 
         return [
@@ -54,29 +54,25 @@ class S3 extends S3AbstractStorage
     public function download(string $src, string $dest): void
     {
         $downloadCommand = $this->getScript('s3/download.sh', [
-            'src' => $this->prepareS3Path($this->storageProvider->credentials['path'] . '/' . $src),
+            'src' => $this->prepareS3Path($this->storageProvider->credentials['path'].'/'.$src),
             'dest' => $dest,
             'bucket' => $this->storageProvider->credentials['bucket'],
             'key' => $this->storageProvider->credentials['key'],
             'secret' => $this->storageProvider->credentials['secret'],
             'region' => $this->getBucketRegion(),
-            'endpoint' => $this->getApiUrl()
+            'endpoint' => $this->getApiUrl(),
         ]);
 
         $download = $this->server->ssh()->exec($downloadCommand, 'download-from-s3');
 
-        if (!str_contains($download, 'Download successful')) {
+        if (! str_contains($download, 'Download successful')) {
             Log::error('Failed to download from S3', ['output' => $download]);
-            throw new SSHCommandError('Failed to download from S3: ' . $download);
+            throw new SSHCommandError('Failed to download from S3: '.$download);
         }
     }
 
     /**
      * @TODO Implement delete method
      */
-    public function delete(string $path): void
-    {
-
-    }
-
+    public function delete(string $path): void {}
 }
