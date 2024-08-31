@@ -6,13 +6,13 @@ use App\Enums\StorageProvider;
 use App\Facades\FTP;
 use App\Models\Backup;
 use App\Models\Database;
+use App\Models\StorageProvider as StorageProviderModel;
 use App\StorageProviders\S3;
 use App\StorageProviders\Wasabi;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use App\Models\StorageProvider as StorageProviderModel;
 use Tests\TestCase;
 
 class StorageProvidersTest extends TestCase
@@ -134,7 +134,7 @@ class StorageProvidersTest extends TestCase
                 'region' => 'us-east-1',
                 'bucket' => 'fake-bucket',
                 'path' => '/',
-            ]
+            ],
         ]);
 
         // Mock the S3Client's method `listBuckets`
@@ -171,7 +171,7 @@ class StorageProvidersTest extends TestCase
                 'region' => 'us-east-1',
                 'bucket' => 'fake-bucket',
                 'path' => '/',
-            ]
+            ],
         ]);
 
         // Mock the S3Client's method `listBuckets`
@@ -208,7 +208,7 @@ class StorageProvidersTest extends TestCase
                 'region' => 'us-east-1',
                 'bucket' => 'fake-bucket',
                 'path' => '/',
-            ]
+            ],
         ]);
 
         // Mock the S3Client's method `listBuckets`
@@ -245,7 +245,7 @@ class StorageProvidersTest extends TestCase
                 'region' => 'us-east-1',
                 'bucket' => 'fake-bucket',
                 'path' => '/',
-            ]
+            ],
         ]);
 
         // Mock the S3Client's method `listBuckets`
@@ -334,8 +334,7 @@ class StorageProvidersTest extends TestCase
                     'token' => 'token',
                     'global' => 1,
                 ],
-            ]
+            ],
         ];
     }
-
 }
