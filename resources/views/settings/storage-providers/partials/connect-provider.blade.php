@@ -207,7 +207,7 @@
                         <x-input-label for="path" value="Path" />
                         <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
                         @error("path")
-                        <x-input-error class="mt-2" :messages="$message" />
+                            <x-input-error class="mt-2" :messages="$message" />
                         @enderror
                     </div>
                     <div class="grid grid-cols-2 gap-2">
@@ -221,7 +221,7 @@
                                 class="mt-1 w-full"
                             />
                             @error("key")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
                         <div class="mt-6">
@@ -234,7 +234,7 @@
                                 class="mt-1 w-full"
                             />
                             @error("secret")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
 
@@ -257,7 +257,7 @@
                                 class="mt-1 w-full"
                             />
                             @error("region")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
                         <div class="mt-6">
@@ -270,7 +270,7 @@
                                 class="mt-1 w-full"
                             />
                             @error("bucket")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
                     </div>
@@ -283,7 +283,7 @@
                         <x-input-label for="path" value="Path" />
                         <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
                         @error("path")
-                        <x-input-error class="mt-2" :messages="$message" />
+                            <x-input-error class="mt-2" :messages="$message" />
                         @enderror
                     </div>
                     <div class="grid grid-cols-2 gap-2">
@@ -297,7 +297,7 @@
                                 class="mt-1 w-full"
                             />
                             @error("key")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
                         <div class="mt-6">
@@ -310,7 +310,7 @@
                                 class="mt-1 w-full"
                             />
                             @error("secret")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
 
@@ -333,7 +333,7 @@
                                 class="mt-1 w-full"
                             />
                             @error("region")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
                         <div class="mt-6">
@@ -346,10 +346,9 @@
                                 class="mt-1 w-full"
                             />
                             @error("bucket")
-                            <x-input-error class="mt-2" :messages="$message" />
+                                <x-input-error class="mt-2" :messages="$message" />
                             @enderror
                         </div>
-
                     </div>
                 </div>
             @endif
