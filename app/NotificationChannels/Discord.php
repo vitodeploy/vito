@@ -56,7 +56,7 @@ class Discord extends AbstractNotificationChannel
             'content' => '*'.$subject.'*'."\n".$text,
         ]);
 
-        return $connect->ok();
+        return $connect->successful();
     }
 
     public function send(object $notifiable, NotificationInterface $notification): void
