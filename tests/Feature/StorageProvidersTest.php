@@ -137,15 +137,21 @@ class StorageProvidersTest extends TestCase
             ],
         ]);
 
-        // Mock the S3Client's method `listBuckets`
+        // Mock the S3Client
         $s3ClientMock = $this->getMockBuilder(S3Client::class)
             ->disableOriginalConstructor()
-            ->addMethods(['listBuckets'])
+            ->onlyMethods(['getCommand', 'execute'])
             ->getMock();
 
-        // Expect the listBuckets method to be called and return an empty array
+        // Mock the getCommand method
         $s3ClientMock->expects($this->once())
-            ->method('listBuckets')
+            ->method('getCommand')
+            ->with('listBuckets')
+            ->willReturn(new \Aws\Command('listBuckets'));
+
+        // Mock the execute method
+        $s3ClientMock->expects($this->once())
+            ->method('execute')
             ->willReturn(['Buckets' => []]);
 
         // Mock the S3 class to return the mocked S3Client
@@ -174,16 +180,22 @@ class StorageProvidersTest extends TestCase
             ],
         ]);
 
-        // Mock the S3Client's method `listBuckets`
+        // Mock the S3Client
         $s3ClientMock = $this->getMockBuilder(S3Client::class)
             ->disableOriginalConstructor()
-            ->addMethods(['listBuckets'])
+            ->onlyMethods(['getCommand', 'execute'])
             ->getMock();
 
-        // Expect the listBuckets method to throw an S3Exception
+        // Mock the getCommand method
         $s3ClientMock->expects($this->once())
-            ->method('listBuckets')
-            ->willThrowException(new S3Exception('Error', new \Aws\Command('listBuckets')));
+            ->method('getCommand')
+            ->with('listBuckets')
+            ->willReturn(new \Aws\Command('listBuckets'));
+
+        // Mock the execute method to throw an S3Exception
+        $s3ClientMock->expects($this->once())
+            ->method('execute')
+            ->willThrowException(new S3Exception('Error', new \Aws\Command('ListBuckets')));
 
         // Mock the S3 class to return the mocked S3Client
         $s3 = $this->getMockBuilder(S3::class)
@@ -201,7 +213,7 @@ class StorageProvidersTest extends TestCase
     public function test_wasabi_connect_successful()
     {
         $storageProvider = StorageProviderModel::factory()->create([
-            'provider' => StorageProvider::S3,
+            'provider' => StorageProvider::WASABI,
             'credentials' => [
                 'key' => 'fake-key',
                 'secret' => 'fake-secret',
@@ -211,28 +223,34 @@ class StorageProvidersTest extends TestCase
             ],
         ]);
 
-        // Mock the S3Client's method `listBuckets`
+        // Mock the S3Client (Wasabi uses S3-compatible API)
         $s3ClientMock = $this->getMockBuilder(S3Client::class)
             ->disableOriginalConstructor()
-            ->addMethods(['listBuckets'])
+            ->onlyMethods(['getCommand', 'execute'])
             ->getMock();
 
-        // Expect the listBuckets method to be called and return an empty array
+        // Mock the getCommand method
         $s3ClientMock->expects($this->once())
-            ->method('listBuckets')
+            ->method('getCommand')
+            ->with('listBuckets')
+            ->willReturn(new \Aws\Command('listBuckets'));
+
+        // Mock the execute method
+        $s3ClientMock->expects($this->once())
+            ->method('execute')
             ->willReturn(['Buckets' => []]);
 
-        // Mock the S3 class to return the mocked S3Client
-        $s3 = $this->getMockBuilder(Wasabi::class)
+        // Mock the Wasabi class to return the mocked S3Client
+        $wasabi = $this->getMockBuilder(Wasabi::class)
             ->setConstructorArgs([$storageProvider])
             ->onlyMethods(['getClient'])
             ->getMock();
 
-        $s3->expects($this->once())
+        $wasabi->expects($this->once())
             ->method('getClient')
             ->willReturn($s3ClientMock);
 
-        $this->assertTrue($s3->connect());
+        $this->assertTrue($wasabi->connect());
     }
 
     public function test_wasabi_connect_failure()
@@ -248,28 +266,34 @@ class StorageProvidersTest extends TestCase
             ],
         ]);
 
-        // Mock the S3Client's method `listBuckets`
+        // Mock the S3Client (Wasabi uses S3-compatible API)
         $s3ClientMock = $this->getMockBuilder(S3Client::class)
             ->disableOriginalConstructor()
-            ->addMethods(['listBuckets'])
+            ->onlyMethods(['getCommand', 'execute'])
             ->getMock();
 
-        // Expect the listBuckets method to throw an S3Exception
+        // Mock the getCommand method
         $s3ClientMock->expects($this->once())
-            ->method('listBuckets')
-            ->willThrowException(new S3Exception('Error', new \Aws\Command('listBuckets')));
+            ->method('getCommand')
+            ->with('listBuckets')
+            ->willReturn(new \Aws\Command('listBuckets'));
 
-        // Mock the S3 class to return the mocked S3Client
-        $s3 = $this->getMockBuilder(Wasabi::class)
+        // Mock the execute method to throw an S3Exception
+        $s3ClientMock->expects($this->once())
+            ->method('execute')
+            ->willThrowException(new S3Exception('Error', new \Aws\Command('ListBuckets')));
+
+        // Mock the Wasabi class to return the mocked S3Client
+        $wasabi = $this->getMockBuilder(Wasabi::class)
             ->setConstructorArgs([$storageProvider])
             ->onlyMethods(['getClient'])
             ->getMock();
 
-        $s3->expects($this->once())
+        $wasabi->expects($this->once())
             ->method('getClient')
             ->willReturn($s3ClientMock);
 
-        $this->assertFalse($s3->connect());
+        $this->assertFalse($wasabi->connect());
     }
 
     /**
