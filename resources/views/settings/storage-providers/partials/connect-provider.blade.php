@@ -1,3 +1,14 @@
+@use(App\Enums\StorageProvider)
+@php
+    $storageProviders = [
+        StorageProvider::DROPBOX,
+        StorageProvider::FTP,
+        StorageProvider::LOCAL,
+        StorageProvider::S3,
+        StorageProvider::WASABI,
+    ];
+@endphp
+
 <div>
     <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'connect-provider')">
         {{ __("Connect") }}
@@ -57,7 +68,7 @@
                     @endforeach
                 </x-select-input>
                 @error("provider")
-                    <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
@@ -65,292 +76,12 @@
                 <x-input-label for="name" value="Name" />
                 <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
                 @error("name")
-                    <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
-            @if ($provider == \App\Enums\StorageProvider::DROPBOX)
-                <div class="mt-6">
-                    <x-input-label for="token" value="API Key" />
-                    <x-text-input value="{{ old('token') }}" id="token" name="token" type="text" class="mt-1 w-full" />
-                    @error("token")
-                        <x-input-error class="mt-2" :messages="$message" />
-                    @enderror
-
-                    <a
-                        class="mt-1 text-primary-500"
-                        href="https://dropbox.tech/developers/generate-an-access-token-for-your-own-account"
-                        target="_blank"
-                    >
-                        How to generate?
-                    </a>
-                </div>
-            @endif
-
-            @if ($provider == \App\Enums\StorageProvider::FTP)
-                <div class="mt-6">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="mt-6">
-                            <x-input-label for="host" value="Host" />
-                            <x-text-input
-                                value="{{ old('host') }}"
-                                id="host"
-                                name="host"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("host")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                        <div class="mt-6">
-                            <x-input-label for="port" value="Port" />
-                            <x-text-input
-                                value="{{ old('port') }}"
-                                id="port"
-                                name="port"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("port")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="mt-6">
-                        <x-input-label for="path" value="Path" />
-                        <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
-                        @error("path")
-                            <x-input-error class="mt-2" :messages="$message" />
-                        @enderror
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="mt-6">
-                            <x-input-label for="username" value="Username" />
-                            <x-text-input
-                                value="{{ old('username') }}"
-                                id="username"
-                                name="username"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("username")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                        <div class="mt-6">
-                            <x-input-label for="password" value="Password" />
-                            <x-text-input
-                                value="{{ old('password') }}"
-                                id="password"
-                                name="password"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("password")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="mt-6">
-                            <x-input-label for="ssl" :value="__('SSL')" />
-                            <x-select-input id="ssl" name="ssl" class="mt-1 w-full">
-                                <option value="1" @if(old('ssl')) selected @endif>
-                                    {{ __("Yes") }}
-                                </option>
-                                <option value="0" @if(!old('ssl')) selected @endif>
-                                    {{ __("No") }}
-                                </option>
-                            </x-select-input>
-                            @error("ssl")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                        <div class="mt-6">
-                            <x-input-label for="passive" :value="__('Passive')" />
-                            <x-select-input id="passive" name="passive" class="mt-1 w-full">
-                                <option value="1" @if(old('passive')) selected @endif>
-                                    {{ __("Yes") }}
-                                </option>
-                                <option value="0" @if(!old('passive')) selected @endif>
-                                    {{ __("No") }}
-                                </option>
-                            </x-select-input>
-                            @error("passive")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if ($provider == \App\Enums\StorageProvider::LOCAL)
-                <div class="mt-6">
-                    <x-input-label for="path" value="Absolute Path" />
-                    <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
-                    <x-input-help>
-                        The absolute path on your server that the database exists. like `/home/vito/db-backups`
-                    </x-input-help>
-                    <x-input-help>
-                        Make sure that the path exists and the `vito` user has permission to write to it.
-                    </x-input-help>
-                    @error("path")
-                        <x-input-error class="mt-2" :messages="$message" />
-                    @enderror
-                </div>
-            @endif
-
-            @if ($provider == \App\Enums\StorageProvider::S3)
-                <div class="mt-6">
-                    <div class="mt-6">
-                        <x-input-label for="path" value="Path" />
-                        <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
-                        @error("path")
-                            <x-input-error class="mt-2" :messages="$message" />
-                        @enderror
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="mt-6">
-                            <x-input-label for="key" value="Key" />
-                            <x-text-input
-                                value="{{ old('key') }}"
-                                id="key"
-                                name="key"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("key")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                        <div class="mt-6">
-                            <x-input-label for="secret" value="Secret" />
-                            <x-text-input
-                                value="{{ old('secret') }}"
-                                id="secret"
-                                name="secret"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("secret")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-
-                        <a
-                            class="mt-1 text-primary-500"
-                            href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/configuring-bucket-key.html"
-                            target="_blank"
-                        >
-                            How to generate?
-                        </a>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="mt-6">
-                            <x-input-label for="region" value="Region" />
-                            <x-text-input
-                                value="{{ old('region') }}"
-                                id="region"
-                                name="region"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("region")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                        <div class="mt-6">
-                            <x-input-label for="bucket" value="Bucket" />
-                            <x-text-input
-                                value="{{ old('bucket') }}"
-                                id="bucket"
-                                name="bucket"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("bucket")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if ($provider == \App\Enums\StorageProvider::WASABI)
-                <div class="mt-6">
-                    <div class="mt-6">
-                        <x-input-label for="path" value="Path" />
-                        <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
-                        @error("path")
-                            <x-input-error class="mt-2" :messages="$message" />
-                        @enderror
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="mt-6">
-                            <x-input-label for="key" value="Key" />
-                            <x-text-input
-                                value="{{ old('key') }}"
-                                id="key"
-                                name="key"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("key")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                        <div class="mt-6">
-                            <x-input-label for="secret" value="Secret" />
-                            <x-text-input
-                                value="{{ old('secret') }}"
-                                id="secret"
-                                name="secret"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("secret")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-
-                        <a
-                            class="mt-1 text-primary-500"
-                            href="https://docs.wasabi.com/docs/creating-a-user-account-and-access-key"
-                            target="_blank"
-                        >
-                            How to generate?
-                        </a>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="mt-6">
-                            <x-input-label for="region" value="Region" />
-                            <x-text-input
-                                value="{{ old('region') }}"
-                                id="region"
-                                name="region"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("region")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                        <div class="mt-6">
-                            <x-input-label for="bucket" value="Bucket" />
-                            <x-text-input
-                                value="{{ old('bucket') }}"
-                                id="bucket"
-                                name="bucket"
-                                type="text"
-                                class="mt-1 w-full"
-                            />
-                            @error("bucket")
-                                <x-input-error class="mt-2" :messages="$message" />
-                            @enderror
-                        </div>
-                    </div>
-                </div>
+            @if(in_array($provider, $storageProviders))
+                @include("settings.storage-providers.providers.{$provider}")
             @endif
 
             <div class="mt-6">
@@ -358,7 +89,7 @@
                     Is Global (Accessible in all projects)
                 </x-checkbox>
                 @error("global")
-                    <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
