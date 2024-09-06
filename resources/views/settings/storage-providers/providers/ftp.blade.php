@@ -2,28 +2,16 @@
     <div class="grid grid-cols-2 gap-2">
         <div class="mt-6">
             <x-input-label for="host" value="Host" />
-            <x-text-input
-                value="{{ old('host') }}"
-                id="host"
-                name="host"
-                type="text"
-                class="mt-1 w-full"
-            />
+            <x-text-input value="{{ old('host') }}" id="host" name="host" type="text" class="mt-1 w-full" />
             @error("host")
-            <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>
         <div class="mt-6">
             <x-input-label for="port" value="Port" />
-            <x-text-input
-                value="{{ old('port') }}"
-                id="port"
-                name="port"
-                type="text"
-                class="mt-1 w-full"
-            />
+            <x-text-input value="{{ old('port') }}" id="port" name="port" type="text" class="mt-1 w-full" />
             @error("port")
-            <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>
     </div>
@@ -31,34 +19,22 @@
         <x-input-label for="path" value="Path" />
         <x-text-input value="{{ old('path') }}" id="path" name="path" type="text" class="mt-1 w-full" />
         @error("path")
-        <x-input-error class="mt-2" :messages="$message" />
+            <x-input-error class="mt-2" :messages="$message" />
         @enderror
     </div>
     <div class="grid grid-cols-2 gap-2">
         <div class="mt-6">
             <x-input-label for="username" value="Username" />
-            <x-text-input
-                value="{{ old('username') }}"
-                id="username"
-                name="username"
-                type="text"
-                class="mt-1 w-full"
-            />
+            <x-text-input value="{{ old('username') }}" id="username" name="username" type="text" class="mt-1 w-full" />
             @error("username")
-            <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>
         <div class="mt-6">
             <x-input-label for="password" value="Password" />
-            <x-text-input
-                value="{{ old('password') }}"
-                id="password"
-                name="password"
-                type="text"
-                class="mt-1 w-full"
-            />
+            <x-text-input value="{{ old('password') }}" id="password" name="password" type="text" class="mt-1 w-full" />
             @error("password")
-            <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>
     </div>
@@ -74,7 +50,7 @@
                 </option>
             </x-select-input>
             @error("ssl")
-            <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>
         <div class="mt-6">
@@ -88,7 +64,7 @@
                 </option>
             </x-select-input>
             @error("passive")
-            <x-input-error class="mt-2" :messages="$message" />
+                <x-input-error class="mt-2" :messages="$message" />
             @enderror
         </div>
     </div>

@@ -2,7 +2,7 @@
     <x-input-label for="token" value="API Key" />
     <x-text-input value="{{ old('token') }}" id="token" name="token" type="text" class="mt-1 w-full" />
     @error("token")
-    <x-input-error class="mt-2" :messages="$message" />
+        <x-input-error class="mt-2" :messages="$message" />
     @enderror
 
     <a

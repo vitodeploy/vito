@@ -68,7 +68,7 @@
                     @endforeach
                 </x-select-input>
                 @error("provider")
-                <x-input-error class="mt-2" :messages="$message" />
+                    <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
@@ -76,11 +76,11 @@
                 <x-input-label for="name" value="Name" />
                 <x-text-input value="{{ old('name') }}" id="name" name="name" type="text" class="mt-1 w-full" />
                 @error("name")
-                <x-input-error class="mt-2" :messages="$message" />
+                    <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
-            @if(in_array($provider, $storageProviders))
+            @if (in_array($provider, $storageProviders))
                 @include("settings.storage-providers.providers.{$provider}")
             @endif
 
@@ -89,7 +89,7 @@
                     Is Global (Accessible in all projects)
                 </x-checkbox>
                 @error("global")
-                <x-input-error class="mt-2" :messages="$message" />
+                    <x-input-error class="mt-2" :messages="$message" />
                 @enderror
             </div>
 
