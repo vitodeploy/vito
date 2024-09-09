@@ -27,15 +27,21 @@ class CreateProject
         return $project;
     }
 
-    private function validate(array $input): void
+    public static function rules(): array
     {
-        Validator::make($input, [
+        return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
                 'unique:projects,name',
+                'lowercase:projects,name',
             ],
-        ])->validate();
+        ];
+    }
+
+    private function validate(array $input): void
+    {
+        Validator::make($input, self::rules())->validate();
     }
 }

@@ -27,7 +27,12 @@ class CreateUser
 
     private function validate(array $input): void
     {
-        Validator::make($input, [
+        Validator::make($input, self::rules())->validate();
+    }
+
+    public static function rules(): array
+    {
+        return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
@@ -35,6 +40,6 @@ class CreateUser
                 'required',
                 Rule::in([UserRole::ADMIN, UserRole::USER]),
             ],
-        ])->validate();
+        ];
     }
 }

@@ -2,15 +2,13 @@
     "name": "vitodeploy/vito",
     "type": "project",
     "description": "The ultimate server management tool",
-    "keywords": [
-        "framework",
-        "laravel"
-    ],
+    "keywords": ["framework", "laravel"],
     "license": "AGPL-3.0",
     "require": {
         "php": "^8.2",
         "ext-ftp": "*",
         "aws/aws-sdk-php": "^3.158",
+        "filament/filament": "^3.2",
         "laravel/fortify": "^1.17",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.8",
@@ -43,7 +41,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
