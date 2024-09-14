@@ -476,4 +476,9 @@ return [
         \App\Models\Server::class,
         \App\Models\Site::class,
     ],
+
+    'user_roles' => [
+        \App\Enums\UserRole::USER,
+        \App\Enums\UserRole::ADMIN,
+    ]
 ];

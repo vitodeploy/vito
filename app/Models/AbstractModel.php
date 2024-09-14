@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasTimezoneTimestamps;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class AbstractModel extends Model
 {
+    use HasTimezoneTimestamps;
+
     public function jsonUpdate(string $field, string $key, mixed $value, bool $save = true): void
     {
         $current = $this->{$field};

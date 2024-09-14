@@ -56,6 +56,7 @@ use Illuminate\Support\Str;
  * @property Backup[] $backups
  * @property Queue[] $daemons
  * @property SshKey[] $sshKeys
+ * @property Tag[] $tags
  * @property string $hostname
  * @property int $updates
  * @property Carbon $last_update_check

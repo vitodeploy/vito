@@ -48,11 +48,6 @@ class UpdateUser
             'role' => [
                 'required',
                 Rule::in([UserRole::ADMIN, UserRole::USER]),
-                function ($attribute, $value, $fail) use ($user) {
-                    if ($user->is(auth()->user()) && $value !== $user->role) {
-                        $fail('You cannot change your own role');
-                    }
-                },
             ],
         ];
     }

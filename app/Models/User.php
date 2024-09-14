@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Traits\HasTimezoneTimestamps;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -34,10 +36,13 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Project $currentProject
  * @property Collection<Project> $projects
  * @property string $role
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class User extends Authenticatable
 {
     use HasFactory;
+    use HasTimezoneTimestamps;
     use Notifiable;
     use TwoFactorAuthenticatable;
 

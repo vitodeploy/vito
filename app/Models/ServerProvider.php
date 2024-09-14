@@ -15,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $connected
  * @property User $user
  * @property ?int $project_id
+ * @property Server[] $servers
+ * @property Project $project
+ * @property string $image_url
  */
 class ServerProvider extends AbstractModel
 {
@@ -61,5 +64,10 @@ class ServerProvider extends AbstractModel
         return self::query()
             ->where('project_id', $projectId)
             ->orWhereNull('project_id');
+    }
+
+    public function getImageUrlAttribute(): string
+    {
+        return url('/static/images/'.$this->provider.'.svg');
     }
 }
