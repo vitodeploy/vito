@@ -19,6 +19,7 @@ class ListProjects extends ListRecords
         return [
             CreateAction::make()
                 ->label('Create Project')
+                ->icon('heroicon-o-plus')
                 ->using(function (array $data) {
                     return app(CreateProject::class)->create(auth()->user(), $data);
                 })

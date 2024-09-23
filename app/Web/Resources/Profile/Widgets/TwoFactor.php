@@ -21,7 +21,7 @@ class TwoFactor extends Widget implements HasForms
         'updated' => '$refresh',
     ];
 
-    protected static string $view = 'web.profile.widgets.two-factor';
+    protected static string $view = 'web.resources.profile.widgets.two-factor';
 
     public bool $enabled = false;
 
@@ -38,16 +38,16 @@ class TwoFactor extends Widget implements HasForms
     {
         return $form->schema([
             Actions::make([
-                Action::make('enable')
-                    ->color('primary')
-                    ->label('Enable')
-                    ->visible(! $this->enabled)
-                    ->action(fn () => $this->enableTwoFactor()),
-                Action::make('disable')
-                    ->color('danger')
-                    ->label('Disable')
-                    ->visible($this->enabled)
-                    ->action(fn () => $this->disableTwoFactor()),
+                Action::make('two-factor')
+                    ->color($this->enabled ? 'danger' : 'primary')
+                    ->label($this->enabled ? 'Disable' : 'Enable')
+                    ->action(function () {
+                        if ($this->enabled) {
+                            $this->disableTwoFactor();
+                        } else {
+                            $this->enableTwoFactor();
+                        }
+                    }),
                 Action::make('regenerate')
                     ->color('gray')
                     ->label('Regenerate Recovery Codes')

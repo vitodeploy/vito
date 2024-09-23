@@ -21,6 +21,8 @@ use Filament\Tables\Table;
 
 class UserResource extends Resource
 {
+    protected static ?string $navigationGroup = 'Settings';
+
     protected static ?string $model = User::class;
 
     protected static ?string $slug = 'users';
@@ -83,7 +85,10 @@ class UserResource extends Resource
                     ->icon('heroicon-o-rectangle-stack')
                     ->action(function ($record, array $data) {
                         app(UpdateProjects::class)->update($record, $data);
-                        Notification::make()->success()->title('Projects Updated')->send();
+                        Notification::make()
+                            ->title('Projects Updated')
+                            ->success()
+                            ->send();
                     })
                     ->form(function (Form $form, $record) {
                         return $form

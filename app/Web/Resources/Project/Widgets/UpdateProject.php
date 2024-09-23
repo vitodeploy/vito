@@ -15,7 +15,7 @@ class UpdateProject extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.project.widgets.update-project';
+    protected static string $view = 'web.resources.project.widgets.update-project';
 
     public Project $project;
 
@@ -58,6 +58,9 @@ class UpdateProject extends Widget implements HasForms
                 'name' => $this->name,
             ]);
 
-        Notification::make()->title('Project updated successfully!')->success()->send();
+        Notification::make()
+            ->title('Project updated successfully!')
+            ->success()
+            ->send();
     }
 }

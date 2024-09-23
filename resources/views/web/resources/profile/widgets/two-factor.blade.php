@@ -26,7 +26,7 @@
                     @endforeach
                 </div>
             @endif
-
+            
             {{ $this->form }}
         </div>
     </x-filament::section>

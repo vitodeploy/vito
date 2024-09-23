@@ -9,5 +9,5 @@ class Profile extends Page
 {
     protected static string $resource = ProfileResource::class;
 
-    protected static string $view = 'web.profile.pages.index';
+    protected static string $view = 'web.resources.profile.pages.index';
 }

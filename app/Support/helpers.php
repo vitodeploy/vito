@@ -27,7 +27,7 @@ function date_with_timezone($date, $timezone): string
 
 function htmx(): HtmxResponse
 {
-    return new HtmxResponse();
+    return new HtmxResponse;
 }
 
 function vito_version(): string
@@ -47,4 +47,11 @@ function convert_time_format($string): string
     $string = preg_replace('/(\d+)d/', '$1 days', $string);
 
     return preg_replace('/(\d+)h/', '$1 hours', $string);
+}
+
+function get_public_key_content(): string
+{
+    return str(file_get_contents(storage_path(config('core.ssh_public_key_name'))))
+        ->replace("\n", '')
+        ->toString();
 }

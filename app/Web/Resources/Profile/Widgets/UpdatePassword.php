@@ -48,7 +48,7 @@ class UpdatePassword extends Widget implements HasForms
                 ->footerActions([
                     Action::make('save')
                         ->label('Save')
-                        ->submit('form'),
+                        ->action(fn () => $this->submit()),
                 ]),
         ];
     }

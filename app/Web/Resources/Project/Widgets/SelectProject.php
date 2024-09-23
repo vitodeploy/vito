@@ -13,7 +13,7 @@ class SelectProject extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.project.widgets.select-project';
+    protected static string $view = 'web.resources.project.widgets.select-project';
 
     public int|string|null $project;
 
@@ -24,7 +24,6 @@ class SelectProject extends Widget implements HasForms
                 if (auth()->user()->isAdmin()) {
                     return;
                 }
-
                 $query->where('user_id', auth()->id())
                     ->orWhereHas('users', fn ($query) => $query->where('user_id', auth()->id()));
             })
@@ -32,35 +31,23 @@ class SelectProject extends Widget implements HasForms
             ->mapWithKeys(fn ($project) => [$project->id => $project->name])
             ->toArray();
 
-        $options['new-project'] = 'New Project';
-
         return [
             Select::make('project')
                 ->name('project')
                 ->model($this->project)
+                ->hiddenLabel()
                 ->searchable()
                 ->options($options)
-                ->searchPrompt('Search...')
-                ->extraAttributes(['class' => '-mx-2'])
+                ->searchPrompt('Select a project...')
+                ->extraAttributes(['class' => 'min-w-[150px] pointer-choices'])
                 ->selectablePlaceholder(false)
+                ->hiddenLabel()
                 ->live(),
         ];
     }
 
     public function updatedProject($value): void
     {
-        if (! $value) {
-            auth()->user()->update(['current_project_id' => null]);
-
-            return;
-        }
-
-        if ($value === 'new-project') {
-            $this->redirect(route('filament.app.resources.projects.index'));
-
-            return;
-        }
-
         $project = Project::query()->findOrFail($value);
         $this->authorize('view', $project);
         auth()->user()->update(['current_project_id' => $value]);

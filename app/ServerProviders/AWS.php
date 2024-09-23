@@ -10,7 +10,6 @@ use Aws\EC2InstanceConnect\EC2InstanceConnectClient;
 use Exception;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Throwable;
 
 class AWS extends AbstractProvider
@@ -21,12 +20,7 @@ class AWS extends AbstractProvider
 
     public function createRules(array $input): array
     {
-        $rules = [
-            'os' => [
-                'required',
-                Rule::in(config('core.operating_systems')),
-            ],
-        ];
+        $rules = [];
         // plans
         $plans = [];
         foreach (config('serverproviders.aws.plans') as $plan) {
@@ -82,14 +76,18 @@ class AWS extends AbstractProvider
         }
     }
 
-    public function plans(): array
+    public function plans(?string $region): array
     {
-        return config('serverproviders.aws.plans');
+        return collect(config('serverproviders.aws.plans'))
+            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+            ->toArray();
     }
 
     public function regions(): array
     {
-        return config('serverproviders.aws.regions');
+        return collect(config('serverproviders.aws.regions'))
+            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+            ->toArray();
     }
 
     public function create(): void

@@ -40,8 +40,14 @@ export default {
             },
             colors: {
                 gray: colors.slate,
+                slate: colors.slate,
                 primary: colors.indigo,
                 green: colors.emerald,
+                success: colors.emerald,
+                danger: colors.red,
+                warning: colors.yellow,
+                info: colors.blue,
+                secondary: colors.gray,
             },
             variants: {
                 extend: {

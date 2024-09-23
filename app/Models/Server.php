@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Actions\Server\CheckConnection;
+use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\ServerTypes\ServerType;
 use App\SSH\Cron\Cron;
 use App\SSH\OS\OS;
 use App\SSH\Systemd\Systemd;
+use App\Support\Testing\SSHFake;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -137,6 +139,24 @@ class Server extends AbstractModel
                 File::delete($server->sshKey()['private_key_path']);
             }
         });
+    }
+
+    public static array $statusColors = [
+        ServerStatus::READY => 'success',
+        ServerStatus::INSTALLING => 'warning',
+        ServerStatus::DISCONNECTED => 'gray',
+        ServerStatus::INSTALLATION_FAILED => 'danger',
+        ServerStatus::UPDATING => 'warning',
+    ];
+
+    public function isReady(): bool
+    {
+        return $this->status === ServerStatus::READY;
+    }
+
+    public function isInstalling(): bool
+    {
+        return in_array($this->status, [ServerStatus::INSTALLING, ServerStatus::INSTALLATION_FAILED]);
     }
 
     public function project(): BelongsTo
@@ -269,7 +289,7 @@ class Server extends AbstractModel
         return $service;
     }
 
-    public function ssh(?string $user = null): mixed
+    public function ssh(?string $user = null): \App\Helpers\SSH|SSHFake
     {
         return SSH::init($this, $user);
     }
@@ -296,7 +316,7 @@ class Server extends AbstractModel
     {
         $providerClass = config('core.server_providers_class')[$this->provider];
 
-        return new $providerClass($this);
+        return new $providerClass($this->serverProvider, $this);
     }
 
     public function webserver(?string $version = null): ?Service
@@ -404,5 +424,14 @@ class Server extends AbstractModel
         $this->updates = $this->os()->availableUpdates();
         $this->last_update_check = now();
         $this->save();
+    }
+
+    public function getAvailableUpdatesAttribute(?int $value): int
+    {
+        if (! $value) {
+            return 0;
+        }
+
+        return $value;
     }
 }

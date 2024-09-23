@@ -1,0 +1,3 @@
+<div>
+    {{ $this->serverInfo }}
+</div>

@@ -15,7 +15,7 @@ class Custom extends AbstractProvider
             'ip' => [
                 'required',
                 Rule::unique('servers', 'ip'),
-                new RestrictedIPAddressesRule(),
+                new RestrictedIPAddressesRule,
             ],
             'port' => [
                 'required',
@@ -46,7 +46,7 @@ class Custom extends AbstractProvider
         return true;
     }
 
-    public function plans(): array
+    public function plans(?string $region): array
     {
         return [];
     }

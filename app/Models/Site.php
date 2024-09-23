@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SiteStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\SiteTypes\SiteType;
@@ -71,6 +72,13 @@ class Site extends AbstractModel
         'progress' => 'integer',
         'aliases' => 'array',
         'source_control_id' => 'integer',
+    ];
+
+    public static array $statusColors = [
+        SiteStatus::READY => 'success',
+        SiteStatus::INSTALLING => 'warning',
+        SiteStatus::INSTALLATION_FAILED => 'danger',
+        SiteStatus::DELETING => 'danger',
     ];
 
     public static function boot(): void

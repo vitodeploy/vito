@@ -16,7 +16,7 @@ class AddUser extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.project.widgets.add-user';
+    protected static string $view = 'web.resources.project.widgets.add-user';
 
     public Project $project;
 
@@ -58,7 +58,10 @@ class AddUser extends Widget implements HasForms
                 'user' => $this->user,
             ]);
 
-        Notification::make()->title('User added!')->success()->send();
+        Notification::make()
+            ->title('User added!')
+            ->success()
+            ->send();
 
         $this->user = null;
     }

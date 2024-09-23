@@ -16,9 +16,7 @@ class DigitalOcean extends AbstractProvider
 
     public function createRules(array $input): array
     {
-        $rules = [
-            'os' => 'required|in:'.implode(',', config('core.operating_systems')),
-        ];
+        $rules = [];
         // plans
         $plans = [];
         foreach (config('serverproviders.digitalocean.plans') as $plan) {
@@ -70,14 +68,18 @@ class DigitalOcean extends AbstractProvider
         return true;
     }
 
-    public function plans(): array
+    public function plans(?string $region): array
     {
-        return config('serverproviders.digitalocean.plans');
+        return collect(config('serverproviders.digitalocean.plans'))
+            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+            ->toArray();
     }
 
     public function regions(): array
     {
-        return config('serverproviders.digitalocean.regions');
+        return collect(config('serverproviders.digitalocean.regions'))
+            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+            ->toArray();
     }
 
     /**

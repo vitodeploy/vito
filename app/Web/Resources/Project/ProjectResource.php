@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProjectResource extends Resource
 {
+    protected static ?string $navigationGroup = 'Settings';
+
     protected static ?string $model = Project::class;
 
     protected static ?string $slug = 'projects';

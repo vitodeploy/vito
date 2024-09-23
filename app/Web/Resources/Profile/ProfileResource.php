@@ -6,6 +6,8 @@ use Filament\Resources\Resource;
 
 class ProfileResource extends Resource
 {
+    protected static ?string $navigationGroup = 'Settings';
+
     protected static ?string $slug = 'profile';
 
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
