@@ -16,7 +16,7 @@ class AddUser extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.resources.project.widgets.add-user';
+    protected static string $view = 'web.components.form';
 
     public Project $project;
 
@@ -42,7 +42,7 @@ class AddUser extends Widget implements HasForms
                 ->footerActions([
                     Action::make('add')
                         ->label('Add')
-                        ->submit('form'),
+                        ->action(fn() => $this->submit()),
                 ]),
         ];
     }

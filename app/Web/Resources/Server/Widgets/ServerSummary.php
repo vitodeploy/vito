@@ -23,11 +23,11 @@ class ServerSummary extends Widget implements HasForms, HasInfolists
 
     protected $listeners = ['$refresh'];
 
-    public Server $server;
-
     protected static bool $isLazy = false;
 
     protected static string $view = 'web.components.infolist';
+
+    public Server $server;
 
     public function infolist(Infolist $infolist): Infolist
     {

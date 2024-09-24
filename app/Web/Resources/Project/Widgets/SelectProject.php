@@ -13,7 +13,7 @@ class SelectProject extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.resources.project.widgets.select-project';
+    protected static string $view = 'web.components.form';
 
     public int|string|null $project;
 

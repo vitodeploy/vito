@@ -2,26 +2,31 @@
 
 namespace App\Web\Resources\Profile\Widgets;
 
-use Filament\Forms\Components\Actions;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Infolists\Components\Actions\Action;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
+use Filament\Infolists\Concerns\InteractsWithInfolists;
+use Filament\Infolists\Contracts\HasInfolists;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
 use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 
-class TwoFactor extends Widget implements HasForms
+class TwoFactor extends Widget implements HasForms, HasInfolists
 {
     use InteractsWithForms;
+    use InteractsWithInfolists;
 
-    protected $listeners = [
-        'updated' => '$refresh',
-    ];
+    protected $listeners = ['$refresh'];
 
-    protected static string $view = 'web.resources.profile.widgets.two-factor';
+    protected static bool $isLazy = false;
+
+    protected static string $view = 'web.components.infolist';
 
     public bool $enabled = false;
 
@@ -34,26 +39,58 @@ class TwoFactor extends Widget implements HasForms
         }
     }
 
-    public function form(Form $form): Form
+    public function infolist(Infolist $infolist): Infolist
     {
-        return $form->schema([
-            Actions::make([
-                Action::make('two-factor')
-                    ->color($this->enabled ? 'danger' : 'primary')
-                    ->label($this->enabled ? 'Disable' : 'Enable')
-                    ->action(function () {
-                        if ($this->enabled) {
-                            $this->disableTwoFactor();
-                        } else {
-                            $this->enableTwoFactor();
-                        }
-                    }),
-                Action::make('regenerate')
-                    ->color('gray')
-                    ->label('Regenerate Recovery Codes')
-                    ->visible($this->enabled)
-                    ->action(fn () => $this->regenerateRecoveryCodes()),
-            ]),
+        return $infolist->schema([
+            Section::make()
+                ->heading('Two Factor Authentication')
+                ->description('Here you can activate 2FA to secure your account')
+                ->schema([
+                    TextEntry::make('disabled')
+                        ->hiddenLabel()
+                        ->state('Two factor authentication is disabled.')
+                        ->visible(! $this->enabled),
+                    ViewEntry::make('qr_code')
+                        ->hiddenLabel()
+                        ->view('web.components.container', [
+                            'content' => $this->enabled ? auth()->user()->twoFactorQrCodeSvg() : null
+                        ])
+                        ->visible($this->enabled && $this->showCodes),
+                    TextEntry::make('qr_code_manual')
+                        ->label('If you are unable to scan the QR code, please use the 2FA secret instead.')
+                        ->state($this->enabled ? decrypt(auth()->user()->two_factor_secret) : null)
+                        ->copyable()
+                        ->visible($this->enabled && $this->showCodes),
+                    TextEntry::make('recovery_codes_text')
+                        ->hiddenLabel()
+                        ->color('warning')
+                        ->state('Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.')
+                        ->visible($this->enabled),
+                    ViewEntry::make('recovery_codes')
+                        ->hiddenLabel()
+                        ->extraAttributes(['class' => 'rounded-lg border border-gray-100 p-2 dark:border-gray-700'])
+                        ->view('web.components.container', [
+                            'content' => $this->enabled ? implode("</br>", json_decode(decrypt(auth()->user()->two_factor_recovery_codes), true)) : null
+                        ])
+                        ->visible($this->enabled)
+                ])
+                ->footerActions([
+                    Action::make('two-factor')
+                        ->color($this->enabled ? 'danger' : 'primary')
+                        ->label($this->enabled ? 'Disable' : 'Enable')
+                        ->action(function () {
+                            if ($this->enabled) {
+                                $this->disableTwoFactor();
+                            } else {
+                                $this->enableTwoFactor();
+                            }
+                        }),
+                    Action::make('regenerate')
+                        ->color('gray')
+                        ->label('Regenerate Recovery Codes')
+                        ->visible($this->enabled)
+                        ->action(fn() => $this->regenerateRecoveryCodes()),
+                ])
         ]);
     }
 
@@ -69,7 +106,7 @@ class TwoFactor extends Widget implements HasForms
             ->title('Two factor authentication enabled')
             ->send();
 
-        $this->dispatch('updated');
+        $this->dispatch('$refresh');
     }
 
     public function disableTwoFactor(): void
@@ -84,7 +121,7 @@ class TwoFactor extends Widget implements HasForms
             ->title('Two factor authentication disabled')
             ->send();
 
-        $this->dispatch('updated');
+        $this->dispatch('$refresh');
     }
 
     public function regenerateRecoveryCodes(): void
@@ -96,6 +133,6 @@ class TwoFactor extends Widget implements HasForms
             ->title('Recovery codes generated')
             ->send();
 
-        $this->dispatch('updated');
+        $this->dispatch('$refresh');
     }
 }

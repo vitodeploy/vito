@@ -20,11 +20,13 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
-    public Server $server;
+    protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
 
     protected static string $view = 'web.components.infolist';
+
+    public Server $server;
 
     public function infolist(Infolist $infolist): Infolist
     {

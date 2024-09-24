@@ -16,6 +16,8 @@ class ProfileInformation extends Widget implements HasForms
 {
     use InteractsWithForms;
 
+    protected static bool $isLazy = false;
+
     protected static string $view = 'web.components.form';
 
     public string $name;

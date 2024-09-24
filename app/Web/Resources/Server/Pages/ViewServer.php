@@ -25,6 +25,8 @@ class ViewServer extends Page
 
     public Server $server;
 
+    protected $listeners = ['$refresh'];
+
     public function getWidgets(): array
     {
         $widgets = [];

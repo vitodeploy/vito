@@ -4,9 +4,15 @@ namespace App\Web\Traits;
 
 use App\Models\Server;
 use App\Web\Resources\Server\Widgets\ServerSummary;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 trait HasServerInfoWidget
 {
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     protected function getServer(): ?Server
     {
         if (session()->has('current_server_id')) {
@@ -19,6 +25,10 @@ trait HasServerInfoWidget
         return null;
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     protected function getHeaderWidgets(): array
     {
         $server = $this->getServer();

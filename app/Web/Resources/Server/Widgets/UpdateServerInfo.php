@@ -17,6 +17,10 @@ class UpdateServerInfo extends Widget implements HasForms
 {
     use InteractsWithForms;
 
+    protected static bool $isLazy = false;
+
+    protected static string $view = 'web.components.form';
+
     public Server $server;
 
     public string $name;
@@ -32,8 +36,6 @@ class UpdateServerInfo extends Widget implements HasForms
         $this->ip = $server->ip;
         $this->port = $server->port;
     }
-
-    protected static string $view = 'web.components.form';
 
     public function form(Form $form): Form
     {

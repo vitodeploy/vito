@@ -15,7 +15,7 @@ class UpdateProject extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.resources.project.widgets.update-project';
+    protected static string $view = 'web.components.form';
 
     public Project $project;
 
@@ -42,7 +42,7 @@ class UpdateProject extends Widget implements HasForms
                 ->footerActions([
                     Action::make('save')
                         ->label('Save')
-                        ->submit('form'),
+                        ->action(fn () => $this->submit()),
                 ]),
         ];
     }

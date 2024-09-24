@@ -15,6 +15,8 @@ class UpdatePassword extends Widget implements HasForms
 {
     use InteractsWithForms;
 
+    protected static bool $isLazy = false;
+
     protected static string $view = 'web.components.form';
 
     public string $current_password = '';

@@ -10,15 +10,21 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class SelectServer extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.resources.server.widgets.select-server';
+    protected static string $view = 'web.components.form';
 
     public int|string|null $server = null;
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function mount(): void
     {
         $server = Server::query()
