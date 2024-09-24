@@ -38,13 +38,13 @@ class WebServiceProvider extends ServiceProvider
     public function boot(): void
     {
         FilamentView::registerRenderHook(
-            PanelsRenderHook::TOPBAR_START,
+            PanelsRenderHook::SIDEBAR_NAV_START,
             fn () => Livewire::mount(SelectProject::class)
         );
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::SIDEBAR_NAV_START,
-            fn () => Livewire::mount(SelectServer::class)
-        );
+        //        FilamentView::registerRenderHook(
+        //            PanelsRenderHook::SIDEBAR_NAV_START,
+        //            fn () => Livewire::mount(SelectServer::class)
+        //        );
         FilamentColor::register([
             'slate' => Color::Slate,
             'gray' => Color::Zinc,
@@ -94,8 +94,8 @@ class WebServiceProvider extends ServiceProvider
                 Web\Resources\ServerProvider\ServerProviderResource::class,
 
                 Web\Resources\Server\ServerResource::class,
-                Web\Resources\Site\SiteResource::class,
             ])
+            ->discoverClusters(in: app_path('Web/Clusters'), for: 'App\\Web\\Clusters')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

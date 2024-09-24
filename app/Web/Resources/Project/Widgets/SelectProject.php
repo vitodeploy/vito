@@ -35,13 +35,12 @@ class SelectProject extends Widget implements HasForms
             Select::make('project')
                 ->name('project')
                 ->model($this->project)
-                ->hiddenLabel()
+                ->label('Project')
                 ->searchable()
                 ->options($options)
                 ->searchPrompt('Select a project...')
-                ->extraAttributes(['class' => 'min-w-[150px] pointer-choices'])
+                ->extraAttributes(['class' => '-mx-2 pointer-choices'])
                 ->selectablePlaceholder(false)
-                ->hiddenLabel()
                 ->live(),
         ];
     }

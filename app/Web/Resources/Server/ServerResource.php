@@ -3,6 +3,8 @@
 namespace App\Web\Resources\Server;
 
 use App\Models\Server;
+use App\Web\Clusters\Servers\Resources\Overview\OverviewResource;
+use App\Web\Clusters\Servers\Resources\Overview\Pages\Overview;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
@@ -25,15 +27,15 @@ class ServerResource extends Resource
         return [
             Widgets\SelectServer::class,
             Widgets\ServerSummary::class,
-            Widgets\UpdateServerInfo::class,
-            Widgets\ServerDetails::class,
-            Widgets\InstallingServer::class,
         ];
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(function (Server $server) {
+                return OverviewResource::getUrl('index', ['server' => $server]);
+            })
             ->columns([
                 TextColumn::make('id')
                     ->searchable()
@@ -74,7 +76,6 @@ class ServerResource extends Resource
         return [
             'index' => Pages\ListServers::route('/'),
             'create' => Pages\CreateServer::route('/create'),
-            'view' => Pages\ViewServer::route('/{record}'),
         ];
     }
 
@@ -105,6 +106,6 @@ class ServerResource extends Resource
 
     public static function getGlobalSearchResultUrl(Model $record): ?string
     {
-        return Pages\ViewServer::getUrl(['record' => $record]);
+        return Overview::getUrl(['server' => $record]);
     }
 }

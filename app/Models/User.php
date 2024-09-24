@@ -5,8 +5,11 @@ namespace App\Models;
 use App\Enums\UserRole;
 use App\Traits\HasTimezoneTimestamps;
 use Carbon\Carbon;
+use Filament\Models\Contracts\HasTenants;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -39,7 +42,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class User extends Authenticatable
+class User extends Authenticatable implements HasTenants
 {
     use HasFactory;
     use HasTimezoneTimestamps;
@@ -116,6 +119,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Project::class, 'user_project')->withTimestamps();
     }
 
+    public function getTenants(Panel $panel): Collection
+    {
+        return $this->projects;
+    }
+
+    public function canAccessTenant(Model $tenant): bool
+    {
+        return $this->projects()->whereKey($tenant)->exists();
+    }
+
     public function currentProject(): HasOne
     {
         return $this->HasOne(Project::class, 'id', 'current_project_id');
@@ -126,7 +139,7 @@ class User extends Authenticatable
         $project = $this->projects()->first();
 
         if (! $project) {
-            $project = new Project();
+            $project = new Project;
             $project->name = 'default';
             $project->save();
 

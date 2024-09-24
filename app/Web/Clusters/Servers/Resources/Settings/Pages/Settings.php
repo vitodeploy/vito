@@ -1,31 +1,39 @@
 <?php
 
-namespace App\Web\Resources\Server\Pages;
+namespace App\Web\Clusters\Servers\Resources\Settings\Pages;
 
 use App\Actions\Server\RebootServer;
 use App\Models\Server;
-use App\Web\Resources\Server\ServerResource;
-use App\Web\Resources\Server\Widgets\InstallingServer;
-use App\Web\Resources\Server\Widgets\ServerDetails;
-use App\Web\Resources\Server\Widgets\UpdateServerInfo;
+use App\Web\Clusters\Servers\Resources\Overview\Widgets\InstallingServer;
+use App\Web\Clusters\Servers\Resources\Settings\SettingsResource;
+use App\Web\Clusters\Servers\Resources\Settings\Widgets\ServerDetails;
+use App\Web\Clusters\Servers\Resources\Settings\Widgets\UpdateServerInfo;
 use App\Web\Traits\HasServerInfoWidget;
+use App\Web\Traits\PageHasCluster;
 use App\Web\Traits\PageHasWidgets;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
-use Illuminate\Contracts\Support\Htmlable;
 
-class ViewServer extends Page
+class Settings extends Page
 {
     use HasServerInfoWidget;
+    use PageHasCluster;
     use PageHasWidgets;
 
-    protected static string $resource = ServerResource::class;
+    protected static string $resource = SettingsResource::class;
 
-    public Server $server;
+    protected function getExtraAttributes(): array
+    {
+        return [
+            'wire:poll.5s' => '$refresh',
+        ];
+    }
 
     protected $listeners = ['$refresh'];
+
+    public Server $server;
 
     public function getWidgets(): array
     {
@@ -46,21 +54,6 @@ class ViewServer extends Page
         }
 
         return $widgets;
-    }
-
-    public function getTitle(): string|Htmlable
-    {
-        return $this->server->name;
-    }
-
-    public function mount(Server $record): void
-    {
-        $this->server = $record;
-    }
-
-    public function refresh(): void
-    {
-        $this->dispatch('refresh');
     }
 
     protected function getHeaderActions(): array

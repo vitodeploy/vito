@@ -6,7 +6,7 @@ use App\Actions\Server\CreateServer as CreateServerAction;
 use App\Enums\ServerProvider;
 use App\Enums\ServerType;
 use App\Web\Fields\AlertField;
-use App\Web\Resources\Server\Fields\Provider;
+use App\Web\Fields\ProviderField;
 use App\Web\Resources\Server\ServerResource;
 use App\Web\Resources\ServerProvider\ServerProviderResource;
 use Filament\Forms\Components\Actions\Action;
@@ -45,7 +45,7 @@ class CreateServer extends CreateRecord
         ]);
 
         return $form->schema([
-            Provider::make('provider')
+            ProviderField::make('provider')
                 ->label('Select a provider')
                 ->default(ServerProvider::CUSTOM)
                 ->live()
@@ -222,7 +222,7 @@ class CreateServer extends CreateRecord
                 try {
                     $server = app(CreateServerAction::class)->create(auth()->user(), $this->all()['data']);
 
-                    $this->redirect(ViewServer::getUrl(['record' => $server]));
+                    $this->redirect(ServerSettings::getUrl(['record' => $server]));
                 } catch (Throwable $e) {
                     Notification::make()
                         ->title($e->getMessage())

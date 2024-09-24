@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Web\Resources\Server\Widgets;
+namespace App\Web\Clusters\Servers\Resources\Overview\Widgets;
 
 use App\Models\Server;
 use Filament\Forms\Concerns\InteractsWithForms;

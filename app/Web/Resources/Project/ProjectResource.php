@@ -22,6 +22,8 @@ class ProjectResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
+    protected static bool $isScopedToTenant = false;
+
     public static function getWidgets(): array
     {
         return [
@@ -35,7 +37,7 @@ class ProjectResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->recordUrl(fn (Project $record) => route('filament.app.resources.projects.settings', $record))
+            ->recordUrl(fn (Project $record) => Pages\ProjectSettings::getUrl(['record' => $record]))
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
@@ -52,7 +54,7 @@ class ProjectResource extends Resource
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
-                    ->url(fn (Project $record) => route('filament.app.resources.projects.settings', $record)),
+                    ->url(fn (Project $record) => Pages\ProjectSettings::getUrl(['record' => $record])),
             ])
             ->bulkActions([
                 //
@@ -67,27 +69,27 @@ class ProjectResource extends Resource
         ];
     }
 
-    public static function getGlobalSearchEloquentQuery(): Builder
-    {
-        return parent::getGlobalSearchEloquentQuery();
-    }
-
-    public static function getGlobalSearchResultUrl(Model $record): ?string
-    {
-        return route('filament.app.resources.projects.settings', $record);
-    }
-
-    public static function getGloballySearchableAttributes(): array
-    {
-        return ['name'];
-    }
-
-    public static function getGlobalSearchResultDetails(Model $record): array
-    {
-        $details = [];
-
-        $details['Project'] = $record->name;
-
-        return $details;
-    }
+    //    public static function getGlobalSearchEloquentQuery(): Builder
+    //    {
+    //        return parent::getGlobalSearchEloquentQuery();
+    //    }
+    //
+    //    public static function getGlobalSearchResultUrl(Model $record): ?string
+    //    {
+    //        return route('filament.app.resources.projects.settings', $record);
+    //    }
+    //
+    //    public static function getGloballySearchableAttributes(): array
+    //    {
+    //        return ['name'];
+    //    }
+    //
+    //    public static function getGlobalSearchResultDetails(Model $record): array
+    //    {
+    //        $details = [];
+    //
+    //        $details['Project'] = $record->name;
+    //
+    //        return $details;
+    //    }
 }

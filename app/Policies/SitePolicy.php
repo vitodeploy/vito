@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\ServerStatus;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -13,13 +12,12 @@ class SitePolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->currentProject?->users->contains($user);
+        return true;
     }
 
     public function view(User $user, Site $site): bool
     {
-        return ($user->isAdmin() || $user->currentProject?->users->contains($user)) &&
-            $site->server->status === ServerStatus::READY;
+        return $user->isAdmin() || $site->server->project->users->contains($user);
     }
 
     public function create(User $user): bool
@@ -29,13 +27,11 @@ class SitePolicy
 
     public function update(User $user, Site $site): bool
     {
-        return ($user->isAdmin() || $user->currentProject?->users->contains($user)) &&
-            $site->server->status === ServerStatus::READY;
+        return $user->isAdmin() || $user->currentProject?->users->contains($user);
     }
 
     public function delete(User $user, Site $site): bool
     {
-        return ($user->isAdmin() || $user->currentProject?->users->contains($user)) &&
-            $site->server->status === ServerStatus::READY;
+        return $user->isAdmin() || $user->currentProject?->users->contains($user);
     }
 }

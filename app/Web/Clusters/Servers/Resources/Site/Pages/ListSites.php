@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Web\Resources\Site\Pages;
+namespace App\Web\Clusters\Servers\Resources\Site\Pages;
 
-use App\Web\Resources\Site\SiteResource;
+use App\Web\Clusters\Servers\Resources\Site\SiteResource;
 use App\Web\Traits\HasServerInfoWidget;
+use App\Web\Traits\PageHasCluster;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSites extends ListRecords
 {
     use HasServerInfoWidget;
+    use PageHasCluster;
 
     protected $listeners = ['$refresh'];
 

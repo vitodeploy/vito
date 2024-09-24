@@ -101,22 +101,26 @@ class CreateSite
     /**
      * @throws ValidationException
      */
-    private function validateInputs(Server $server, array $input): void
+    public static function rules(array $input): void
     {
         $rules = [
+            'server_id' => [
+                'required',
+                'exists:servers,id',
+            ],
             'type' => [
                 'required',
                 Rule::in(config('core.site_types')),
             ],
             'domain' => [
                 'required',
-                new DomainRule(),
+                new DomainRule,
                 Rule::unique('sites', 'domain')->where(function ($query) use ($server) {
                     return $query->where('server_id', $server->id);
                 }),
             ],
             'aliases.*' => [
-                new DomainRule(),
+                new DomainRule,
             ],
         ];
 

@@ -7,6 +7,7 @@ use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\SiteTypes\SiteType;
 use App\SSH\Services\Webserver\Webserver;
+use App\Traits\HasProjectThroughServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,6 +46,7 @@ use Illuminate\Support\Str;
 class Site extends AbstractModel
 {
     use HasFactory;
+    use HasProjectThroughServer;
 
     protected $fillable = [
         'server_id',

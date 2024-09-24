@@ -3,7 +3,6 @@
 namespace App\Web\Resources\Server\Widgets;
 
 use App\Models\Server;
-use App\Web\Resources\Server\Pages\ViewServer;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\Actions\Action;
@@ -38,7 +37,7 @@ class ServerSummary extends Widget implements HasForms, HasInfolists
                     ->schema([
                         TextEntry::make('name')
                             ->label('Name')
-                            ->url(fn (Server $record) => ViewServer::getUrl(['record' => $record])),
+                            ->url(fn (Server $record) => '/'),
                         TextEntry::make('ip')
                             ->label('IP Address')
                             ->icon('heroicon-o-clipboard-document')

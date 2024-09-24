@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Web\Resources\Server\Widgets;
+namespace App\Web\Clusters\Servers\Resources\Settings\Widgets;
 
 use App\Actions\Server\Update;
 use App\Models\Server;
