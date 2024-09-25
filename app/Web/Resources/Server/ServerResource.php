@@ -75,7 +75,7 @@ class ServerResource extends Resource
     {
         return [
             'index' => Pages\ListServers::route('/'),
-            'create' => Pages\CreateServer::route('/create'),
+            'create' => Pages\CreateServer::route('/create/new'),
         ];
     }
 

@@ -8,7 +8,7 @@ use App\Web\Clusters\Servers\Resources\Overview\Widgets\InstallingServer;
 use App\Web\Clusters\Servers\Resources\Settings\SettingsResource;
 use App\Web\Clusters\Servers\Resources\Settings\Widgets\ServerDetails;
 use App\Web\Clusters\Servers\Resources\Settings\Widgets\UpdateServerInfo;
-use App\Web\Traits\HasServerInfoWidget;
+use App\Web\Traits\PageHasServerInfoWidget;
 use App\Web\Traits\PageHasCluster;
 use App\Web\Traits\PageHasWidgets;
 use Filament\Actions\Action;
@@ -18,7 +18,7 @@ use Filament\Resources\Pages\Page;
 
 class Settings extends Page
 {
-    use HasServerInfoWidget;
+    use PageHasServerInfoWidget;
     use PageHasCluster;
     use PageHasWidgets;
 

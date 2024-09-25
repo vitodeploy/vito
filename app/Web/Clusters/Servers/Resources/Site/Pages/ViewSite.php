@@ -5,14 +5,14 @@ namespace App\Web\Clusters\Servers\Resources\Site\Pages;
 use App\Models\Server;
 use App\Models\Site;
 use App\Web\Clusters\Servers\Resources\Site\SiteResource;
-use App\Web\Traits\HasServerInfoWidget;
+use App\Web\Traits\PageHasServerInfoWidget;
 use App\Web\Traits\PageHasCluster;
 use App\Web\Traits\PageHasWidgets;
 use Filament\Resources\Pages\Page;
 
 class ViewSite extends Page
 {
-    use HasServerInfoWidget;
+    use PageHasServerInfoWidget;
     use PageHasCluster;
     use PageHasWidgets;
 

@@ -4,10 +4,10 @@ namespace App\Web\Traits;
 
 trait PageHasCluster
 {
-    public function getMaxContentWidth(): ?string
-    {
-        return 'full';
-    }
+//    public function getMaxContentWidth(): ?string
+//    {
+//        return 'full';
+//    }
 
     public function getSubNavigation(): array
     {

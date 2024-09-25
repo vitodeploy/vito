@@ -7,7 +7,7 @@ use App\Web\Resources\Server\Widgets\ServerSummary;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-trait HasServerInfoWidget
+trait PageHasServerInfoWidget
 {
     /**
      * @throws ContainerExceptionInterface

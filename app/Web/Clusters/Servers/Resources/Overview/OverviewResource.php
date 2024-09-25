@@ -14,6 +14,8 @@ class OverviewResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
+    protected static ?string $navigationLabel = 'Overview';
+
     protected static ?int $navigationSort = 0;
 
     protected static ?string $cluster = Servers::class;

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Servers extends Cluster
 {
-    protected static ?string $slug = 'servers/view/{server}';
+    protected static ?string $slug = 'servers/{server}';
 
     protected static bool $shouldRegisterNavigation = false;
 
