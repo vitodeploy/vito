@@ -6,7 +6,9 @@ use Illuminate\View\ComponentAttributeBag;
 
 trait PageHasWidgets
 {
-    protected array $extraAttributes = [];
+    protected array $extraAttributes = [
+        'wire:poll.5s' => '$dispatch(\'$refresh\')',
+    ];
 
     protected function getExtraAttributes(): array
     {

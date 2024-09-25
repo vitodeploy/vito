@@ -9,12 +9,9 @@ use App\Web\Traits\ResourceHasServersCluster;
 use Exception;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 
 class SiteResource extends Resource
 {
@@ -26,13 +23,11 @@ class SiteResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $cluster = Servers::class;
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @throws Exception
      */
     public static function table(Table $table): Table
@@ -56,17 +51,16 @@ class SiteResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('server_id')
-                    ->options(function () {
-                        return Server::query()
-                            ->where('project_id', auth()->user()->current_project_id)
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    })
-                    ->searchable()
-                    ->default(session()->get('current_server_id') ?? null)
-                    ->label('Server'),
+                //
             ]);
+    }
+
+    public static function canCreate(): bool
+    {
+        ds(static::getServerFromRoute());
+        ds(auth()->user()->can('create', [static::getModel(), static::getServerFromRoute()]));
+
+        return auth()->user()->can('create', [static::getModel(), static::getServerFromRoute()]);
     }
 
     public static function getPages(): array

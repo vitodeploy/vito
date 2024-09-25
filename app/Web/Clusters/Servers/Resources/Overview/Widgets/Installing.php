@@ -13,7 +13,7 @@ use Filament\Infolists\Infolist;
 use Filament\Widgets\Widget;
 use Illuminate\View\ComponentAttributeBag;
 
-class InstallingServer extends Widget implements HasForms, HasInfolists
+class Installing extends Widget implements HasForms, HasInfolists
 {
     use InteractsWithForms;
     use InteractsWithInfolists;
@@ -33,11 +33,16 @@ class InstallingServer extends Widget implements HasForms, HasInfolists
                 Section::make()
                     ->heading('Installing Server')
                     ->icon(function () {
+                        if ($this->server->isInstallationFailed()) {
+                            return 'heroicon-o-x-circle';
+                        }
+
                         return view('filament::components.loading-indicator')
                             ->with('attributes', new ComponentAttributeBag([
                                 'class' => 'mr-2 size-[24px] text-primary-400',
                             ]));
                     })
+                    ->iconColor($this->server->isInstallationFailed() ? 'danger' : 'primary')
                     ->schema([
                         ViewEntry::make('progress')
                             ->hiddenLabel()

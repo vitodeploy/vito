@@ -4,7 +4,6 @@ namespace App\Web\Resources\Server;
 
 use App\Models\Server;
 use App\Web\Clusters\Servers\Resources\Overview\OverviewResource;
-use App\Web\Clusters\Servers\Resources\Overview\Pages\Overview;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
@@ -34,7 +33,7 @@ class ServerResource extends Resource
     {
         return $table
             ->recordUrl(function (Server $server) {
-                return OverviewResource::getUrl('index', ['server' => $server]);
+                return OverviewResource::getUrl(parameters: ['server' => $server]);
             })
             ->columns([
                 TextColumn::make('id')
@@ -106,6 +105,6 @@ class ServerResource extends Resource
 
     public static function getGlobalSearchResultUrl(Model $record): ?string
     {
-        return Overview::getUrl(['server' => $record]);
+        return OverviewResource::getUrl(parameters: ['server' => $record]);
     }
 }

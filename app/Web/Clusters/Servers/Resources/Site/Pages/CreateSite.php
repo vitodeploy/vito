@@ -3,9 +3,9 @@
 namespace App\Web\Clusters\Servers\Resources\Site\Pages;
 
 use App\Web\Clusters\Servers\Resources\Site\SiteResource;
-use App\Web\Fields\AlertField;
-use App\Web\Traits\PageHasServerInfoWidget;
 use App\Web\Traits\PageHasCluster;
+use App\Web\Traits\PageHasServerInfoWidget;
+use Filament\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
@@ -13,8 +13,8 @@ use Throwable;
 
 class CreateSite extends CreateRecord
 {
-    use PageHasServerInfoWidget;
     use PageHasCluster;
+    use PageHasServerInfoWidget;
 
     protected static string $resource = SiteResource::class;
 
@@ -23,7 +23,7 @@ class CreateSite extends CreateRecord
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('read-the-docs')
+            Action::make('read-the-docs')
                 ->label('Read the Docs')
                 ->icon('heroicon-o-document-text')
                 ->color('gray')
@@ -34,20 +34,12 @@ class CreateSite extends CreateRecord
 
     public function form(Form $form): Form
     {
-        if (! session()->has('current_server_id')) {
-            return $form->schema([
-                AlertField::make('no-server-selected')
-                    ->warning()
-                    ->message('Select a server from the left sidebar first!'),
-            ])->columns(1);
-        }
-
         return $form->schema([
 
         ])->columns(1);
     }
 
-    protected function getCreateFormAction(): \Filament\Actions\Action
+    protected function getCreateFormAction(): Action
     {
         $action = parent::getCreateFormAction();
         if (! session()->has('current_server_id')) {

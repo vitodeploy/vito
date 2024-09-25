@@ -159,6 +159,11 @@ class Server extends AbstractModel
         return in_array($this->status, [ServerStatus::INSTALLING, ServerStatus::INSTALLATION_FAILED]);
     }
 
+    public function isInstallationFailed(): bool
+    {
+        return $this->status === ServerStatus::INSTALLATION_FAILED;
+    }
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');

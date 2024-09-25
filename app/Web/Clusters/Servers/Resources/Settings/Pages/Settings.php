@@ -4,12 +4,11 @@ namespace App\Web\Clusters\Servers\Resources\Settings\Pages;
 
 use App\Actions\Server\RebootServer;
 use App\Models\Server;
-use App\Web\Clusters\Servers\Resources\Overview\Widgets\InstallingServer;
 use App\Web\Clusters\Servers\Resources\Settings\SettingsResource;
 use App\Web\Clusters\Servers\Resources\Settings\Widgets\ServerDetails;
 use App\Web\Clusters\Servers\Resources\Settings\Widgets\UpdateServerInfo;
-use App\Web\Traits\PageHasServerInfoWidget;
 use App\Web\Traits\PageHasCluster;
+use App\Web\Traits\PageHasServerInfoWidget;
 use App\Web\Traits\PageHasWidgets;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -18,18 +17,11 @@ use Filament\Resources\Pages\Page;
 
 class Settings extends Page
 {
-    use PageHasServerInfoWidget;
     use PageHasCluster;
+    use PageHasServerInfoWidget;
     use PageHasWidgets;
 
     protected static string $resource = SettingsResource::class;
-
-    protected function getExtraAttributes(): array
-    {
-        return [
-            'wire:poll.5s' => '$refresh',
-        ];
-    }
 
     protected $listeners = ['$refresh'];
 
@@ -37,23 +29,14 @@ class Settings extends Page
 
     public function getWidgets(): array
     {
-        $widgets = [];
-        if ($this->server->isInstalling()) {
-            $widgets[] = [
-                InstallingServer::class, ['server' => $this->server],
-            ];
-        } else {
-            $widgets = array_merge($widgets, [
-                [
-                    ServerDetails::class, ['server' => $this->server],
-                ],
-                [
-                    UpdateServerInfo::class, ['server' => $this->server],
-                ],
-            ]);
-        }
-
-        return $widgets;
+        return [
+            [
+                ServerDetails::class, ['server' => $this->server],
+            ],
+            [
+                UpdateServerInfo::class, ['server' => $this->server],
+            ],
+        ];
     }
 
     protected function getHeaderActions(): array
