@@ -14,7 +14,7 @@ interface ServerProvider
 
     public function connect(?array $credentials = null): bool;
 
-    public function plans(): array;
+    public function plans(?string $region): array;
 
     public function regions(): array;
 

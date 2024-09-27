@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\SiteStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\SiteTypes\SiteType;
 use App\SSH\Services\Webserver\Webserver;
+use App\Traits\HasProjectThroughServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +46,7 @@ use Illuminate\Support\Str;
 class Site extends AbstractModel
 {
     use HasFactory;
+    use HasProjectThroughServer;
 
     protected $fillable = [
         'server_id',
@@ -71,6 +74,13 @@ class Site extends AbstractModel
         'progress' => 'integer',
         'aliases' => 'array',
         'source_control_id' => 'integer',
+    ];
+
+    public static array $statusColors = [
+        SiteStatus::READY => 'success',
+        SiteStatus::INSTALLING => 'warning',
+        SiteStatus::INSTALLATION_FAILED => 'danger',
+        SiteStatus::DELETING => 'danger',
     ];
 
     public static function boot(): void

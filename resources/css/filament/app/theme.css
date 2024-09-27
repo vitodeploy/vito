@@ -1,0 +1,11 @@
+@import '/vendor/filament/filament/resources/css/theme.css';
+
+@config 'tailwind.config.js';
+
+.fi-breadcrumbs .fi-breadcrumbs-item-label {
+    @apply text-xs;
+}
+
+.choices__item--selectable {
+    @apply cursor-pointer;
+}

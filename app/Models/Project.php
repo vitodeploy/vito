@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasTimezoneTimestamps;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,12 +19,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $updated_at
  * @property User $user
  * @property Collection<Server> $servers
+ * @property Collection<User> $users
  * @property Collection<NotificationChannel> $notificationChannels
  * @property Collection<SourceControl> $sourceControls
  */
 class Project extends Model
 {
     use HasFactory;
+    use HasTimezoneTimestamps;
 
     protected $fillable = [
         'user_id',
