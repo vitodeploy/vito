@@ -1,3 +1,3 @@
-<div>
+<form class="fi-form">
     {{ $this->form }}
-</div>
+</form>

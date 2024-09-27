@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Web;
-use App\Web\Resources\Project\Widgets\SelectProject;
-use App\Web\Resources\Server\Widgets\SelectServer;
+use App\Web\Pages\Settings\Projects\Widgets\SelectProject;
 use Exception;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -41,10 +39,6 @@ class WebServiceProvider extends ServiceProvider
             PanelsRenderHook::SIDEBAR_NAV_START,
             fn () => Livewire::mount(SelectProject::class)
         );
-        //        FilamentView::registerRenderHook(
-        //            PanelsRenderHook::SIDEBAR_NAV_START,
-        //            fn () => Livewire::mount(SelectServer::class)
-        //        );
         FilamentColor::register([
             'slate' => Color::Slate,
             'gray' => Color::Zinc,
@@ -84,18 +78,7 @@ class WebServiceProvider extends ServiceProvider
             ->viteTheme('resources/css/filament/app/theme.css')
             ->brandLogo(fn () => view('web.components.brand'))
             ->brandLogoHeight('30px')
-            ->pages([
-                Web\Pages\Dashboard::class,
-            ])
-            ->resources([
-                Web\Resources\Profile\ProfileResource::class,
-                Web\Resources\Project\ProjectResource::class,
-                Web\Resources\User\UserResource::class,
-                Web\Resources\ServerProvider\ServerProviderResource::class,
-
-                Web\Resources\Server\ServerResource::class,
-            ])
-            ->discoverClusters(in: app_path('Web/Clusters'), for: 'App\\Web\\Clusters')
+            ->discoverPages(in: app_path('Web/Pages'), for: 'App\\Web\\Pages')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
