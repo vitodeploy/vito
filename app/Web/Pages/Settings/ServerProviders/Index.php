@@ -39,6 +39,7 @@ class Index extends Page
         return [
             CreateAction::make()
                 ->label('Connect')
+                ->icon('heroicon-o-wifi')
                 ->modalHeading('Connect to a Server Provider')
                 ->modalSubmitActionLabel('Connect')
                 ->createAnother(false)

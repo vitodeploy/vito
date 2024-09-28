@@ -30,7 +30,7 @@ class Settings extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('update', request()->route('server')) ?? false;
+        return auth()->user()?->can('update', static::getServerFromRoute()) ?? false;
     }
 
     public function getWidgets(): array

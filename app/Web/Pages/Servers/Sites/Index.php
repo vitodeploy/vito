@@ -23,6 +23,11 @@ class Index extends Page
 
     public Server $server;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('viewAny', [Site::class, static::getServerFromRoute()]) ?? false;
+    }
+
     public function getWidgets(): array
     {
         return [
@@ -36,7 +41,8 @@ class Index extends Page
             CreateAction::make()
                 ->authorize(fn () => auth()->user()?->can('create', [Site::class, $this->server]))
                 ->createAnother(false)
-                ->label('Create a Site'),
+                ->label('Create a Site')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

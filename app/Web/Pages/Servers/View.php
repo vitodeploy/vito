@@ -3,7 +3,10 @@
 namespace App\Web\Pages\Servers;
 
 use App\Models\Server;
+use App\Models\ServerLog;
+use App\Web\Pages\Servers\Logs\Widgets\LogsList;
 use App\Web\Pages\Servers\Widgets\Installing;
+use App\Web\Pages\Servers\Widgets\ServerStats;
 use App\Web\Traits\PageHasServer;
 use App\Web\Traits\PageHasWidgets;
 use Filament\Pages\Page;
@@ -31,7 +34,7 @@ class View extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view', request()->route('server')) ?? false;
+        return auth()->user()?->can('view', static::getServerFromRoute()) ?? false;
     }
 
     #[On('$refresh')]
@@ -48,12 +51,18 @@ class View extends Page
 
     public function getWidgets(): array
     {
+        $widgets = [];
+
         if ($this->server->isInstalling()) {
-            return [
-                [Installing::class, ['server' => $this->server]],
-            ];
+            $widgets[] = [Installing::class, ['server' => $this->server]];
+        } else {
+            $widgets[] = [ServerStats::class, ['server' => $this->server]];
         }
 
-        return [];
+        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
+            $widgets[] = [LogsList::class, ['server' => $this->server]];
+        }
+
+        return $widgets;
     }
 }

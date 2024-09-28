@@ -43,6 +43,7 @@ class Index extends Page
         return [
             CreateAction::make()
                 ->label('Create User')
+                ->icon('heroicon-o-plus')
                 ->authorize('create', User::class)
                 ->action(function (array $data) {
                     $user = app(CreateUser::class)->create($data);

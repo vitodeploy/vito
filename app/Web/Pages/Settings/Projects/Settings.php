@@ -60,6 +60,7 @@ class Settings extends Page
             DeleteAction::make()
                 ->record($this->project)
                 ->label('Delete Project')
+                ->icon('heroicon-o-trash')
                 ->modalHeading('Delete Project')
                 ->modalDescription('Are you sure you want to delete this project? This action will delete all associated data and cannot be undone.')
                 ->using(function (Project $record) {

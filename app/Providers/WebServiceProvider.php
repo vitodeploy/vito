@@ -41,7 +41,7 @@ class WebServiceProvider extends ServiceProvider
         );
         FilamentColor::register([
             'slate' => Color::Slate,
-            'gray' => Color::Zinc,
+            'gray' => Color::Gray,
             'red' => Color::Red,
             'orange' => Color::Orange,
             'amber' => Color::Amber,

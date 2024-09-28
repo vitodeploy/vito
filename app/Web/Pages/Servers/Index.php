@@ -24,6 +24,11 @@ class Index extends Page
         return static::getRouteName().'*';
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('viewAny', Server::class) ?? false;
+    }
+
     public function getWidgets(): array
     {
         return [
@@ -36,6 +41,7 @@ class Index extends Page
         return [
             Action::make('create')
                 ->label('Create a Server')
+                ->icon('heroicon-o-plus')
                 ->url(Create::getUrl())
                 ->authorize('create', Server::class),
         ];

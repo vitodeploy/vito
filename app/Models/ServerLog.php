@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @property int $server_id
@@ -46,7 +48,7 @@ class ServerLog extends AbstractModel
                 if (Storage::disk($log->disk)->exists($log->name)) {
                     Storage::disk($log->disk)->delete($log->name);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error($e->getMessage(), ['exception' => $e]);
             }
         });
@@ -65,6 +67,11 @@ class ServerLog extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    public function download(): StreamedResponse
+    {
+        return Storage::disk($this->disk)->download($this->name);
     }
 
     public static function getRemote($query, bool $active = true, ?Site $site = null)

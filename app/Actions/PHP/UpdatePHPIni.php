@@ -6,7 +6,6 @@ use App\Enums\PHPIniType;
 use App\Models\Server;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -19,8 +18,6 @@ class UpdatePHPIni
      */
     public function update(Server $server, array $input): void
     {
-        $this->validate($server, $input);
-
         $service = $server->php($input['version']);
 
         $tmpName = Str::random(10).strtotime('now');
@@ -51,24 +48,23 @@ class UpdatePHPIni
         }
     }
 
-    public function validate(Server $server, array $input): void
+    public static function rules(Server $server): array
     {
-        Validator::make($input, [
+        return [
             'ini' => [
                 'required',
                 'string',
             ],
-            'version' => 'required|string',
+            'version' => [
+                'required',
+                Rule::exists('services', 'version')
+                    ->where('server_id', $server->id)
+                    ->where('type', 'php'),
+            ],
             'type' => [
                 'required',
                 Rule::in([PHPIniType::CLI, PHPIniType::FPM]),
             ],
-        ])->validate();
-
-        if (! in_array($input['version'], $server->installedPHPVersions())) {
-            throw ValidationException::withMessages(
-                ['version' => __('This version is not installed')]
-            );
-        }
+        ];
     }
 }

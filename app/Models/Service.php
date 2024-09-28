@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\Service\Manage;
+use App\Enums\ServiceStatus;
 use App\Exceptions\ServiceInstallationFailed;
 use App\SSH\Services\ServiceInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -54,6 +55,21 @@ class Service extends AbstractModel
         });
     }
 
+    public static array $statusColors = [
+        ServiceStatus::READY => 'success',
+        ServiceStatus::INSTALLING => 'warning',
+        ServiceStatus::INSTALLATION_FAILED => 'danger',
+        ServiceStatus::UNINSTALLING => 'warning',
+        ServiceStatus::FAILED => 'danger',
+        ServiceStatus::STARTING => 'warning',
+        ServiceStatus::STOPPING => 'warning',
+        ServiceStatus::RESTARTING => 'warning',
+        ServiceStatus::STOPPED => 'danger',
+        ServiceStatus::ENABLING => 'warning',
+        ServiceStatus::DISABLING => 'warning',
+        ServiceStatus::DISABLED => 'gray',
+    ];
+
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
@@ -72,7 +88,7 @@ class Service extends AbstractModel
     public function validateInstall($result): void
     {
         if (! Str::contains($result, 'Active: active')) {
-            throw new ServiceInstallationFailed();
+            throw new ServiceInstallationFailed;
         }
     }
 
