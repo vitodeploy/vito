@@ -13,26 +13,26 @@ class ServicePolicy
 
     public function viewAny(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
     }
 
     public function view(User $user, Service $service): bool
     {
-        return $user->isAdmin() || $service->server->project->users->contains($user);
+        return ($user->isAdmin() || $service->server->project->users->contains($user)) && $service->server->isReady();
     }
 
     public function create(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
     }
 
     public function update(User $user, Service $service): bool
     {
-        return $user->isAdmin() || $service->server->project->users->contains($user);
+        return ($user->isAdmin() || $service->server->project->users->contains($user)) && $service->server->isReady();
     }
 
     public function delete(User $user, Service $service): bool
     {
-        return $user->isAdmin() || $service->server->project->users->contains($user);
+        return ($user->isAdmin() || $service->server->project->users->contains($user)) && $service->server->isReady();
     }
 }

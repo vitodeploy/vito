@@ -28,6 +28,8 @@ class PHPList extends Widget
 {
     public Server $server;
 
+    protected $listeners = ['$refresh'];
+
     protected function getTableQuery(): Builder
     {
         return Service::query()->where('type', 'php')->where('server_id', $this->server->id);
@@ -51,8 +53,9 @@ class PHPList extends Widget
                 ->color(fn (Service $service) => $service->is_default ? 'primary' : 'gray')
                 ->state(fn (Service $service) => $service->is_default ? 'Yes' : 'No')
                 ->sortable(),
-            TextColumn::make('created_at_by_timezone')
-                ->label('Installed At'),
+            TextColumn::make('created_at')
+                ->label('Installed At')
+                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone),
         ];
     }
 
@@ -77,7 +80,7 @@ class PHPList extends Widget
     private function installExtensionAction(): Action
     {
         return Action::make('install-extension')
-            ->authorize(fn (Service $php) => auth()->user()?->can('update', [$php, $this->server]))
+            ->authorize(fn (Service $php) => auth()->user()?->can('update', $php))
             ->label('Install Extension')
             ->modalHeading('Install PHP Extension')
             ->modalWidth(MaxWidth::Large)
@@ -114,7 +117,7 @@ class PHPList extends Widget
     private function defaultPHPCliAction(): Action
     {
         return Action::make('default-php-cli')
-            ->authorize(fn (Service $php) => auth()->user()?->can('update', [$php, $this->server]))
+            ->authorize(fn (Service $php) => auth()->user()?->can('update', $php))
             ->label('Make Default CLI')
             ->hidden(fn (Service $service) => $service->is_default)
             ->action(function (Service $service) {
@@ -141,7 +144,7 @@ class PHPList extends Widget
     private function editPHPIniAction(string $type): Action
     {
         return Action::make('php-ini-'.$type)
-            ->authorize(fn (Service $php) => auth()->user()?->can('update', [$php, $this->server]))
+            ->authorize(fn (Service $php) => auth()->user()?->can('update', $php))
             ->label('Update PHP ini ('.$type.')')
             ->modalWidth(MaxWidth::TwoExtraLarge)
             ->modalSubmitActionLabel('Save')
@@ -188,7 +191,7 @@ class PHPList extends Widget
     private function restartFPMAction(): Action
     {
         return Action::make('restart-fpm')
-            ->authorize(fn (Service $php) => auth()->user()?->can('update', [$php, $this->server]))
+            ->authorize(fn (Service $php) => auth()->user()?->can('update', $php))
             ->label('Restart PHP FPM')
             ->action(function (Service $service) {
                 try {
@@ -209,7 +212,7 @@ class PHPList extends Widget
     private function uninstallAction(): Action
     {
         return Action::make('uninstall')
-            ->authorize(fn (Service $php) => auth()->user()?->can('delete', [$php, $this->server]))
+            ->authorize(fn (Service $php) => auth()->user()?->can('update', $php))
             ->label('Uninstall')
             ->color('danger')
             ->requiresConfirmation()

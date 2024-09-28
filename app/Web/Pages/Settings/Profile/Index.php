@@ -2,16 +2,13 @@
 
 namespace App\Web\Pages\Settings\Profile;
 
+use App\Web\Components\Page;
 use App\Web\Pages\Settings\Profile\Widgets\ProfileInformation;
 use App\Web\Pages\Settings\Profile\Widgets\TwoFactor;
 use App\Web\Pages\Settings\Profile\Widgets\UpdatePassword;
-use App\Web\Traits\PageHasWidgets;
-use Filament\Pages\Page;
 
 class Index extends Page
 {
-    use PageHasWidgets;
-
     protected static ?string $navigationGroup = 'Settings';
 
     protected static ?string $slug = 'settings/profile';

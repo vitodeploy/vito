@@ -4,19 +4,17 @@ namespace App\Web\Pages\Servers;
 
 use App\Actions\Server\RebootServer;
 use App\Models\Server;
+use App\Web\Components\Page;
 use App\Web\Pages\Servers\Widgets\ServerDetails;
 use App\Web\Pages\Servers\Widgets\UpdateServerInfo;
 use App\Web\Traits\PageHasServer;
-use App\Web\Traits\PageHasWidgets;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 
 class Settings extends Page
 {
     use PageHasServer;
-    use PageHasWidgets;
 
     protected static ?string $slug = 'servers/{server}/settings';
 

@@ -4,16 +4,14 @@ namespace App\Web\Pages\Servers\Sites;
 
 use App\Models\Server;
 use App\Models\Site;
+use App\Web\Components\Page;
 use App\Web\Pages\Servers\Sites\Widgets\SitesList;
 use App\Web\Traits\PageHasServer;
-use App\Web\Traits\PageHasWidgets;
 use Filament\Actions\CreateAction;
-use Filament\Pages\Page;
 
 class Index extends Page
 {
     use PageHasServer;
-    use PageHasWidgets;
 
     protected static ?string $slug = 'servers/{server}/sites';
 

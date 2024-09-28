@@ -129,7 +129,7 @@ class OS
                 $path
             );
         } catch (Throwable) {
-            throw new SSHUploadFailed();
+            throw new SSHUploadFailed;
         } finally {
             $this->deleteTempFile($tmpName);
         }

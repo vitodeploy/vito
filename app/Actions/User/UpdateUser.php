@@ -39,7 +39,7 @@ class UpdateUser
             'email' => [
                 'required',
                 'email', 'max:255',
-                Rule::unique('users', 'email')->ignore($user->id)
+                Rule::unique('users', 'email')->ignore($user->id),
             ],
             'timezone' => [
                 'required',

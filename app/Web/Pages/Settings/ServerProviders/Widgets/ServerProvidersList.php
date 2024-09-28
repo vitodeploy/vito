@@ -41,8 +41,9 @@ class ServerProvidersList extends Widget
                 ->formatStateUsing(function (ServerProvider $record) {
                     return $record->project_id ? 'No' : 'Yes';
                 }),
-            TextColumn::make('created_at_by_timezone')
+            TextColumn::make('created_at')
                 ->label('Created At')
+                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
                 ->searchable()
                 ->sortable(),
         ];

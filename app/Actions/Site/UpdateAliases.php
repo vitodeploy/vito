@@ -26,7 +26,7 @@ class UpdateAliases
     {
         Validator::make($input, [
             'aliases.*' => [
-                new DomainRule(),
+                new DomainRule,
             ],
         ])->validate();
     }

@@ -22,7 +22,7 @@ class Deploy
         }
 
         if (! $site->deploymentScript?->content) {
-            throw new DeploymentScriptIsEmptyException();
+            throw new DeploymentScriptIsEmptyException;
         }
 
         $deployment = new Deployment([

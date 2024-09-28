@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BackupStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -48,6 +49,13 @@ class Backup extends AbstractModel
             $backup->files()->delete();
         });
     }
+
+    public static array $statusColors = [
+        BackupStatus::READY => 'success',
+        BackupStatus::RUNNING => 'warning',
+        BackupStatus::DELETING => 'warning',
+        BackupStatus::FAILED => 'danger',
+    ];
 
     public function server(): BelongsTo
     {

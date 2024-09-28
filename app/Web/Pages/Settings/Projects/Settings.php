@@ -4,20 +4,17 @@ namespace App\Web\Pages\Settings\Projects;
 
 use App\Actions\Projects\DeleteProject;
 use App\Models\Project;
+use App\Web\Components\Page;
 use App\Web\Pages\Settings\Projects\Widgets\AddUser;
 use App\Web\Pages\Settings\Projects\Widgets\ProjectUsersList;
 use App\Web\Pages\Settings\Projects\Widgets\UpdateProject;
-use App\Web\Traits\PageHasWidgets;
 use Exception;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 
 class Settings extends Page
 {
-    use PageHasWidgets;
-
     protected static ?string $slug = 'settings/projects/{project}';
 
     protected static ?string $title = 'Project Settings';

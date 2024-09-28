@@ -3,6 +3,7 @@
 namespace App\Web\Traits;
 
 use App\Models\Server;
+use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
 use App\Web\Pages\Servers\Logs\Index as LogsIndex;
 use App\Web\Pages\Servers\PHP\Index as PHPIndex;
 use App\Web\Pages\Servers\Settings as ServerSettings;
@@ -26,35 +27,42 @@ trait PageHasServer
         $items = [];
 
         if (ServerView::canAccess()) {
-            $items[] = NavigationItem::make('Overview')
+            $items[] = NavigationItem::make(ServerView::getNavigationLabel())
                 ->icon('heroicon-o-chart-pie')
                 ->isActiveWhen(fn () => request()->routeIs(ServerView::getRouteName()))
                 ->url(ServerView::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (SitesIndex::canAccess()) {
-            $items[] = NavigationItem::make('Sites')
+            $items[] = NavigationItem::make(SitesIndex::getNavigationLabel())
                 ->icon('heroicon-o-globe-alt')
                 ->isActiveWhen(fn () => request()->routeIs(SitesIndex::getRouteName().'*'))
                 ->url(SitesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
+        if (DatabasesIndex::canAccess()) {
+            $items[] = NavigationItem::make(DatabasesIndex::getNavigationLabel())
+                ->icon('heroicon-o-circle-stack')
+                ->isActiveWhen(fn () => request()->routeIs(DatabasesIndex::getRouteName().'*'))
+                ->url(DatabasesIndex::getUrl(parameters: ['server' => $this->server]));
+        }
+
         if (PHPIndex::canAccess()) {
-            $items[] = NavigationItem::make('PHP')
+            $items[] = NavigationItem::make(PHPIndex::getNavigationLabel())
                 ->icon('heroicon-o-code-bracket')
                 ->isActiveWhen(fn () => request()->routeIs(PHPIndex::getRouteName().'*'))
                 ->url(PHPIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (LogsIndex::canAccess()) {
-            $items[] = NavigationItem::make('Logs')
+            $items[] = NavigationItem::make(LogsIndex::getNavigationLabel())
                 ->icon('heroicon-o-square-3-stack-3d')
                 ->isActiveWhen(fn () => request()->routeIs(LogsIndex::getRouteName().'*'))
                 ->url(LogsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (ServerSettings::canAccess()) {
-            $items[] = NavigationItem::make('Settings')
+            $items[] = NavigationItem::make(ServerSettings::getNavigationLabel())
                 ->icon('heroicon-o-cog-6-tooth')
                 ->isActiveWhen(fn () => request()->routeIs(ServerSettings::getRouteName().'*'))
                 ->url(ServerSettings::getUrl(parameters: ['server' => $this->server]));

@@ -13,14 +13,14 @@ class UpdateProjects
         $this->validate($input);
         $user->projects()->sync($input['projects']);
 
-        if ($user->currentProject && !$user->projects->contains($user->currentProject)) {
+        if ($user->currentProject && ! $user->projects->contains($user->currentProject)) {
             $user->current_project_id = null;
             $user->save();
         }
 
         /** @var Project $firstProject */
         $firstProject = $user->projects->first();
-        if (!$user->currentProject && $firstProject) {
+        if (! $user->currentProject && $firstProject) {
             $user->current_project_id = $firstProject->id;
             $user->save();
         }

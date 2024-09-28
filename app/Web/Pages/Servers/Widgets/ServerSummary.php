@@ -55,7 +55,13 @@ class ServerSummary extends Widget implements HasForms, HasInfolists
                                     ->icon('heroicon-o-arrow-path')
                                     ->tooltip('Check Connection')
                                     ->action(function (Server $record) {
+                                        $previousStatus = $record->status;
+
                                         $record = $record->checkConnection();
+
+                                        if ($previousStatus !== $record->status) {
+                                            $this->redirect(url()->previous());
+                                        }
 
                                         $this->dispatch('$refresh');
 

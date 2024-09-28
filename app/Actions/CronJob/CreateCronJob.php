@@ -52,7 +52,7 @@ class CreateCronJob
             Validator::make($input, [
                 'custom' => [
                     'required',
-                    new CronRule(),
+                    new CronRule,
                 ],
             ])->validate();
         }

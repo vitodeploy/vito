@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DatabaseStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,6 +46,13 @@ class Database extends AbstractModel
             });
         });
     }
+
+    public static array $statusColors = [
+        DatabaseStatus::READY => 'success',
+        DatabaseStatus::CREATING => 'warning',
+        DatabaseStatus::DELETING => 'warning',
+        DatabaseStatus::FAILED => 'danger',
+    ];
 
     public function server(): BelongsTo
     {

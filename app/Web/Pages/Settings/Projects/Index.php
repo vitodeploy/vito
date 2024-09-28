@@ -4,17 +4,14 @@ namespace App\Web\Pages\Settings\Projects;
 
 use App\Actions\Projects\CreateProject;
 use App\Models\Project;
-use App\Web\Traits\PageHasWidgets;
+use App\Web\Components\Page;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
-    use PageHasWidgets;
-
     protected static ?string $navigationGroup = 'Settings';
 
     protected static ?string $slug = 'settings/projects';

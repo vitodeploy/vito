@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Widgets;
 
 use App\Models\Server;
+use App\Web\Pages\Servers\Settings;
 use App\Web\Pages\Servers\View;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -41,8 +42,9 @@ class ServersList extends Widget
                 ->color(fn (Server $server) => Server::$statusColors[$server->status])
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('created_at_by_timezone')
+            TextColumn::make('created_at')
                 ->label('Created At')
+                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
                 ->searchable()
                 ->sortable(),
         ];
@@ -57,7 +59,7 @@ class ServersList extends Widget
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
                     ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->url(fn (Server $record) => '/'),
+                    ->url(fn (Server $record) => Settings::getUrl(parameters: ['server' => $record])),
             ]);
     }
 }

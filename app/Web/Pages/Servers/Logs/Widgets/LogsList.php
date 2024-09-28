@@ -23,16 +23,18 @@ class LogsList extends Widget
         return ServerLog::query()->where('server_id', $this->server->id);
     }
 
-    protected static ?string $heading = 'Logs';
+    protected static ?string $heading = '';
 
     protected function getTableColumns(): array
     {
         return [
             TextColumn::make('name')
+                ->label('Event')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('created_at_by_timezone')
+            TextColumn::make('created_at')
                 ->label('Created At')
+                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
                 ->sortable(),
         ];
     }
@@ -68,7 +70,8 @@ class LogsList extends Widget
             ])
             ->actions([
                 Action::make('view')
-                    ->label('View')
+                    ->hiddenLabel()
+                    ->tooltip('View')
                     ->icon('heroicon-o-eye')
                     ->authorize(fn ($record) => auth()->user()->can('view', $record))
                     ->modalHeading('View Log')
@@ -81,7 +84,8 @@ class LogsList extends Widget
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
                 Action::make('download')
-                    ->label('Download')
+                    ->hiddenLabel()
+                    ->tooltip('Download')
                     ->color('secondary')
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->authorize(fn ($record) => auth()->user()->can('view', $record))

@@ -5,28 +5,21 @@ namespace App\Web\Pages\Servers\PHP;
 use App\Actions\PHP\InstallNewPHP;
 use App\Models\Server;
 use App\Models\Service;
+use App\Web\Components\Page;
 use App\Web\Pages\Servers\PHP\Widgets\PHPList;
 use App\Web\Traits\PageHasServer;
-use App\Web\Traits\PageHasWidgets;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Pages\Page;
 
 class Index extends Page
 {
     use PageHasServer;
-    use PageHasWidgets;
 
     protected static ?string $slug = 'servers/{server}/php';
 
     protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $title = 'PHP';
-
-    protected function getExtraAttributes(): array
-    {
-        return [];
-    }
 
     public Server $server;
 

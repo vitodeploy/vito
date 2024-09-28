@@ -3,14 +3,11 @@
 namespace App\Web\Pages\Servers;
 
 use App\Models\Server;
-use App\Web\Traits\PageHasWidgets;
+use App\Web\Components\Page;
 use Filament\Actions\Action;
-use Filament\Pages\Page;
 
 class Index extends Page
 {
-    use PageHasWidgets;
-
     protected static ?string $slug = 'servers';
 
     protected static ?string $navigationIcon = 'heroicon-o-server-stack';

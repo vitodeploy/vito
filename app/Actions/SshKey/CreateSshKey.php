@@ -36,7 +36,7 @@ class CreateSshKey
             'name' => 'required',
             'public_key' => [
                 'required',
-                new SshKeyRule(),
+                new SshKeyRule,
             ],
         ])->validate();
     }

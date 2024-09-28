@@ -3,15 +3,12 @@
 namespace App\Web\Pages\Settings\ServerProviders;
 
 use App\Enums\ServerProvider;
-use App\Web\Traits\PageHasWidgets;
+use App\Web\Components\Page;
 use Filament\Actions\CreateAction;
-use Filament\Pages\Page;
 use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
-    use PageHasWidgets;
-
     protected static ?string $navigationGroup = 'Settings';
 
     protected static ?string $slug = 'settings/server-providers';

@@ -480,5 +480,5 @@ return [
     'user_roles' => [
         \App\Enums\UserRole::USER,
         \App\Enums\UserRole::ADMIN,
-    ]
+    ],
 ];
