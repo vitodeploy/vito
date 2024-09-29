@@ -12,7 +12,12 @@ class FTP extends AbstractStorageProvider
     {
         return [
             'host' => 'required',
-            'port' => 'required|numeric',
+            'port' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:65535',
+            ],
             'path' => 'required',
             'username' => 'required',
             'password' => 'required',

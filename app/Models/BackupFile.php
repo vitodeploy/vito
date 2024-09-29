@@ -66,7 +66,8 @@ class BackupFile extends AbstractModel
         BackupFileStatus::CREATING => 'warning',
         BackupFileStatus::FAILED => 'danger',
         BackupFileStatus::DELETING => 'warning',
-        BackupFileStatus::RESTORED => 'warning',
+        BackupFileStatus::RESTORING => 'warning',
+        BackupFileStatus::RESTORED => 'primary',
         BackupFileStatus::RESTORE_FAILED => 'danger',
     ];
 

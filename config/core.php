@@ -481,4 +481,13 @@ return [
         \App\Enums\UserRole::USER,
         \App\Enums\UserRole::ADMIN,
     ],
+
+    'cronjob_intervals' => [
+        '* * * * *' => 'Every Minute',
+        '0 * * * *' => 'Hourly',
+        '0 0 * * *' => 'Daily',
+        '0 0 * * 0' => 'Weekly',
+        '0 0 1 * *' => 'Monthly',
+        'custom' => 'Custom',
+    ],
 ];

@@ -93,6 +93,7 @@ class WebServiceProvider extends ServiceProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->login()
             ->spa()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->globalSearchFieldKeyBindingSuffix();

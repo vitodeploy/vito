@@ -9,7 +9,7 @@ use App\Enums\Webserver;
 use App\Models\Server;
 use App\Web\Fields\AlertField;
 use App\Web\Fields\ProviderField;
-use App\Web\Pages\Servers\Index;
+use App\Web\Pages\Servers\View;
 use App\Web\Pages\Settings\ServerProviders\Actions\Create;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
@@ -72,7 +72,6 @@ class CreateServer extends Widget implements HasForms
                     ->label('Select a provider')
                     ->default(ServerProvider::CUSTOM)
                     ->live()
-                    ->reactive()
                     ->reactive()
                     ->afterStateUpdated(function (callable $set) {
                         $set('server_provider', null);
@@ -184,21 +183,20 @@ class CreateServer extends Widget implements HasForms
                         Select::make('os')
                             ->label('OS')
                             ->native(false)
-                            ->selectablePlaceholder(false)
                             ->rules(fn ($get) => CreateServerAction::rules($this->all())['os'])
-                            ->options(function () {
-                                return collect(config('core.operating_systems'))
-                                    ->mapWithKeys(fn ($value) => [$value => $value]);
-                            }),
+                            ->options(
+                                collect(config('core.operating_systems'))
+                                    ->mapWithKeys(fn ($value) => [$value => $value])
+                            ),
                         Select::make('type')
                             ->label('Server Type')
                             ->native(false)
                             ->selectablePlaceholder(false)
                             ->rules(fn ($get) => CreateServerAction::rules($this->all())['type'])
-                            ->options(function () {
-                                return collect(config('core.server_types'))
-                                    ->mapWithKeys(fn ($value) => [$value => $value]);
-                            })
+                            ->options(
+                                collect(config('core.server_types'))
+                                    ->mapWithKeys(fn ($value) => [$value => $value])
+                            )
                             ->default(ServerType::REGULAR),
                     ]),
                 Grid::make(3)
@@ -208,30 +206,29 @@ class CreateServer extends Widget implements HasForms
                             ->native(false)
                             ->selectablePlaceholder(false)
                             ->rules(fn ($get) => CreateServerAction::rules($this->all())['webserver'] ?? [])
-                            ->options(function () {
-                                return collect(config('core.webservers'))
-                                    ->mapWithKeys(fn ($value) => [$value => $value]);
-                            }),
+                            ->options(
+                                collect(config('core.webservers'))->mapWithKeys(fn ($value) => [$value => $value])
+                            ),
                         Select::make('database')
                             ->label('Database')
                             ->native(false)
                             ->selectablePlaceholder(false)
                             ->rules(fn ($get) => CreateServerAction::rules($this->all())['database'] ?? [])
-                            ->options(function () {
-                                return collect(config('core.databases_name'))
+                            ->options(
+                                collect(config('core.databases_name'))
                                     ->mapWithKeys(fn ($value, $key) => [
                                         $key => $value.' '.config('core.databases_version')[$key],
-                                    ]);
-                            }),
+                                    ])
+                            ),
                         Select::make('php')
                             ->label('PHP')
                             ->native(false)
                             ->selectablePlaceholder(false)
                             ->rules(fn ($get) => CreateServerAction::rules($this->all())['php'] ?? [])
-                            ->options(function () {
-                                return collect(config('core.php_versions'))
-                                    ->mapWithKeys(fn ($value) => [$value => $value]);
-                            }),
+                            ->options(
+                                collect(config('core.php_versions'))
+                                    ->mapWithKeys(fn ($value) => [$value => $value])
+                            ),
                     ]),
                 Actions::make([
                     Action::make('create')
@@ -252,7 +249,7 @@ class CreateServer extends Widget implements HasForms
         try {
             $server = app(CreateServerAction::class)->create(auth()->user(), $this->all()['data']);
 
-            $this->redirect(Index::getUrl());
+            $this->redirect(View::getUrl(['server' => $server]));
         } catch (Throwable $e) {
             Notification::make()
                 ->title($e->getMessage())

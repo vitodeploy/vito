@@ -15,11 +15,11 @@ class Wasabi extends S3AbstractStorageProvider
     public function validationRules(): array
     {
         return [
-            'key' => 'required|string',
-            'secret' => 'required|string',
-            'region' => 'required|string',
-            'bucket' => 'required|string',
-            'path' => 'required|string',
+            'key' => 'required',
+            'secret' => 'required',
+            'region' => 'required',
+            'bucket' => 'required',
+            'path' => 'required',
         ];
     }
 

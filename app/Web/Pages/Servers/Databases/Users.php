@@ -7,6 +7,7 @@ use App\Actions\Database\CreateDatabaseUser;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Web\Components\Page;
+use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Traits\PageHasServer;
 use Exception;
 use Filament\Actions\Action;
@@ -15,7 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 
-class Users extends Page
+class Users extends Page implements HasSecondSubNav
 {
     use PageHasServer;
     use Traits\Navigation;

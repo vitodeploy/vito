@@ -2,12 +2,22 @@
 
 namespace App\Web\Pages\Servers\Databases;
 
+use App\Actions\Database\CreateBackup;
 use App\Models\Backup;
 use App\Models\Server;
+use App\Models\StorageProvider;
 use App\Web\Components\Page;
+use App\Web\Contracts\HasSecondSubNav;
+use App\Web\Pages\Settings\StorageProviders\Actions\Create;
 use App\Web\Traits\PageHasServer;
+use Exception;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Support\Enums\MaxWidth;
 
-class Backups extends Page
+class Backups extends Page implements HasSecondSubNav
 {
     use PageHasServer;
     use Traits\Navigation;
@@ -28,7 +38,73 @@ class Backups extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('Create backup')
+                ->icon('heroicon-o-plus')
+                ->modalWidth(MaxWidth::Large)
+                ->authorize(fn () => auth()->user()?->can('create', [Backup::class, $this->server]))
+                ->form([
+                    Select::make('database')
+                        ->label('Database')
+                        ->options($this->server->databases()->pluck('name', 'id')->toArray())
+                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['database'])
+                        ->searchable(),
+                    Select::make('storage')
+                        ->label('Storage')
+                        ->options(StorageProvider::getByProjectId($this->server->project_id)->pluck('profile', 'id')->toArray())
+                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['storage'])
+                        ->suffixAction(
+                            \Filament\Forms\Components\Actions\Action::make('connect')
+                                ->form(Create::form())
+                                ->modalHeading('Connect to a new storage provider')
+                                ->modalSubmitActionLabel('Connect')
+                                ->icon('heroicon-o-wifi')
+                                ->tooltip('Connect to a new storage provider')
+                                ->modalWidth(MaxWidth::Medium)
+                                ->authorize(fn () => auth()->user()->can('create', StorageProvider::class))
+                                ->action(fn (array $data) => Create::action($data))
+                        ),
+                    Select::make('interval')
+                        ->label('Interval')
+                        ->options(config('core.cronjob_intervals'))
+                        ->reactive()
+                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['interval']),
+                    TextInput::make('custom_interval')
+                        ->label('Custom Interval (Cron)')
+                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['custom_interval'])
+                        ->visible(fn (callable $get) => $get('interval') === 'custom')
+                        ->placeholder('0 * * * *'),
+                    TextInput::make('keep')
+                        ->label('Backups to Keep')
+                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['keep'])
+                        ->helperText('How many backups to keep before deleting the oldest one'),
+                ])
+                ->modalSubmitActionLabel('Create')
+                ->action(function (array $data) {
+                    try {
+                        app(CreateBackup::class)->create($this->server, $data);
 
+                        $this->dispatch('$refresh');
+
+                        Notification::make()
+                            ->success()
+                            ->title('Backup created!')
+                            ->send();
+                    } catch (Exception $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title($e->getMessage())
+                            ->send();
+
+                        throw $e;
+                    }
+                }),
+        ];
+    }
+
+    public function getWidgets(): array
+    {
+        return [
+            [Widgets\BackupsList::class, ['server' => $this->server]],
         ];
     }
 }

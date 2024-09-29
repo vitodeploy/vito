@@ -10,8 +10,6 @@ use Filament\Navigation\NavigationItem;
 
 trait Navigation
 {
-    public bool $hasSecondSubNavigation = true;
-
     public function getSecondSubNavigation(): array
     {
         $items = [];
@@ -32,7 +30,7 @@ trait Navigation
 
         if (Backups::canAccess()) {
             $items[] = NavigationItem::make(Backups::getNavigationLabel())
-                ->icon('heroicon-o-circle-stack')
+                ->icon('heroicon-o-cloud')
                 ->isActiveWhen(fn () => request()->routeIs(Backups::getRouteName()))
                 ->url(Backups::getUrl(parameters: ['server' => $this->server]));
         }

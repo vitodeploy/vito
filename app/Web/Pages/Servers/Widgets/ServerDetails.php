@@ -54,7 +54,17 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                 Action::make('check-update')
                                     ->icon('heroicon-o-arrow-path')
                                     ->tooltip('Check Now')
-                                    ->action(fn (Server $record) => $record->checkForUpdates())
+                                    ->action(function (Server $record) {
+                                        $record->checkForUpdates();
+
+                                        $this->dispatch('$refresh');
+
+                                        Notification::make()
+                                            ->info()
+                                            ->title('Available updates:')
+                                            ->body($record->available_updates)
+                                            ->send();
+                                    })
                             ),
                         TextEntry::make('available_updates')
                             ->label('Available Updates')

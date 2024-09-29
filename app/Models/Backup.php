@@ -6,6 +6,7 @@ use App\Enums\BackupStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $type
@@ -46,14 +47,14 @@ class Backup extends AbstractModel
         parent::boot();
 
         static::deleting(function (Backup $backup) {
-            $backup->files()->delete();
+            $backup->files()->each(function (BackupFile $file) {
+                $file->delete();
+            });
         });
     }
 
     public static array $statusColors = [
-        BackupStatus::READY => 'success',
-        BackupStatus::RUNNING => 'warning',
-        BackupStatus::DELETING => 'warning',
+        BackupStatus::RUNNING => 'success',
         BackupStatus::FAILED => 'danger',
     ];
 
@@ -75,5 +76,10 @@ class Backup extends AbstractModel
     public function files(): HasMany
     {
         return $this->hasMany(BackupFile::class, 'backup_id');
+    }
+
+    public function lastFile(): HasOne
+    {
+        return $this->hasOne(BackupFile::class, 'backup_id')->latest();
     }
 }
