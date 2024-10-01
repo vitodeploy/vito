@@ -3,23 +3,24 @@
 namespace App\Web\Pages\Settings\Projects\Widgets;
 
 use App\Models\Project;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
-class SelectProject extends Widget implements HasForms
+class SelectProject extends Widget
 {
-    use InteractsWithForms;
+    protected static string $view = 'web.widgets.select-project';
 
-    protected static string $view = 'web.components.form';
+    public ?Project $currentProject;
+
+    public Collection $projects;
 
     public int|string|null $project;
 
-    protected function getFormSchema(): array
+    public function mount(): void
     {
-        $options = Project::query()
+        $this->currentProject = auth()->user()->currentProject;
+        $this->projects = Project::query()
             ->where(function (Builder $query) {
                 if (auth()->user()->isAdmin()) {
                     return;
@@ -27,35 +28,14 @@ class SelectProject extends Widget implements HasForms
                 $query->where('user_id', auth()->id())
                     ->orWhereHas('users', fn ($query) => $query->where('user_id', auth()->id()));
             })
-            ->get()
-            ->mapWithKeys(fn ($project) => [$project->id => $project->name])
-            ->toArray();
-
-        return [
-            Select::make('project')
-                ->name('project')
-                ->model($this->project)
-                ->label('Project')
-                ->searchable()
-                ->options($options)
-                ->searchPrompt('Select a project...')
-                ->extraAttributes(['class' => '-mx-2 pointer-choices'])
-                ->selectablePlaceholder(false)
-                ->live(),
-        ];
+            ->get();
     }
 
-    public function updatedProject($value): void
+    public function updateProject(Project $project): void
     {
-        $project = Project::query()->findOrFail($value);
         $this->authorize('view', $project);
-        auth()->user()->update(['current_project_id' => $value]);
+        auth()->user()->update(['current_project_id' => $project->id]);
 
-        $this->redirect('/app');
-    }
-
-    public function mount(): void
-    {
-        $this->project = auth()->user()->current_project_id;
+        $this->redirect('/');
     }
 }

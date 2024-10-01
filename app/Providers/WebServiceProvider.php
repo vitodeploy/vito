@@ -39,6 +39,10 @@ class WebServiceProvider extends ServiceProvider
             PanelsRenderHook::SIDEBAR_NAV_START,
             fn () => Livewire::mount(SelectProject::class)
         );
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::SIDEBAR_FOOTER,
+            fn () => view('web.components.app-version')
+        );
         FilamentColor::register([
             'slate' => Color::Slate,
             'gray' => Color::Gray,
@@ -96,6 +100,7 @@ class WebServiceProvider extends ServiceProvider
             ->login()
             ->spa()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->sidebarCollapsibleOnDesktop()
             ->globalSearchFieldKeyBindingSuffix();
     }
 }

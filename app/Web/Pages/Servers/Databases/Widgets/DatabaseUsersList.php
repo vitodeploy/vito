@@ -65,7 +65,7 @@ class DatabaseUsersList extends Widget
         return Action::make('password')
             ->hiddenLabel()
             ->icon('heroicon-o-key')
-            ->color('secondary')
+            ->color('gray')
             ->modalHeading('Database user\'s password')
             ->modalWidth(MaxWidth::Large)
             ->tooltip('Show the password')

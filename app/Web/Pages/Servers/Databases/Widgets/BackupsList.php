@@ -62,7 +62,7 @@ class BackupsList extends Widget
                     ->hiddenLabel()
                     ->icon('heroicon-o-rectangle-stack')
                     ->modalHeading('Backup Files')
-                    ->color('secondary')
+                    ->color('gray')
                     ->tooltip('Show backup files')
                     ->authorize(fn (Backup $record) => auth()->user()->can('viewAny', [BackupFile::class, $record]))
                     ->modalContent(fn (Backup $record) => view('web.components.dynamic-widget', [

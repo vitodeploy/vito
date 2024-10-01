@@ -172,6 +172,56 @@ return [
         'vito-agent' => \App\SSH\Services\Monitoring\VitoAgent\VitoAgent::class,
         'remote-monitor' => \App\SSH\Services\Monitoring\RemoteMonitor\RemoteMonitor::class,
     ],
+    'service_versions' => [
+        'nginx' => [
+            'latest',
+        ],
+        'mysql' => [
+            '5.7',
+            '8.0',
+        ],
+        'mariadb' => [
+            '10.3',
+            '10.4',
+            '10.6',
+            '10.11',
+            '11.4',
+        ],
+        'postgresql' => [
+            '12',
+            '13',
+            '14',
+            '15',
+            '16',
+        ],
+        'redis' => [
+            'latest',
+        ],
+        'php' => [
+            '5.6',
+            '7.0',
+            '7.1',
+            '7.2',
+            '7.3',
+            '7.4',
+            '8.0',
+            '8.1',
+            '8.2',
+            '8.3',
+        ],
+        'ufw' => [
+            'latest',
+        ],
+        'supervisor' => [
+            'latest',
+        ],
+        'vito-agent' => [
+            'latest',
+        ],
+        'remote-monitor' => [
+            'latest',
+        ],
+    ],
     'service_units' => [
         'nginx' => [
             \App\Enums\OperatingSystem::UBUNTU20 => [

@@ -55,8 +55,6 @@ class CreateStorageProvider
             $rules = array_merge($rules, $provider->validationRules());
         }
 
-        ds($rules);
-
         return $rules;
     }
 }

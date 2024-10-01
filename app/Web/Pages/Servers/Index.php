@@ -52,6 +52,12 @@ class Index extends Page
         ]);
 
         return [
+            \Filament\Actions\Action::make('read-the-docs')
+                ->label('Read the Docs')
+                ->icon('heroicon-o-document-text')
+                ->color('gray')
+                ->url('https://vitodeploy.com/servers/create-server.html')
+                ->openUrlInNewTab(),
             \Filament\Actions\Action::make('create')
                 ->label('Create a Server')
                 ->icon('heroicon-o-plus')
@@ -96,6 +102,8 @@ class Index extends Page
                         )
                         ->placeholder('Select profile')
                         ->native(false)
+                        ->live()
+                        ->reactive()
                         ->selectablePlaceholder(false)
                         ->visible(fn ($get) => $get('provider') !== ServerProvider::CUSTOM),
                     Grid::make()
@@ -110,7 +118,7 @@ class Index extends Page
                                         return [];
                                     }
 
-                                    return \App\Models\ServerProvider::regions($get('serer_provider'));
+                                    return \App\Models\ServerProvider::regions($get('server_provider'));
                                 })
                                 ->loadingMessage('Loading regions...')
                                 ->disabled(fn ($get) => ! $get('server_provider'))
@@ -219,6 +227,7 @@ class Index extends Page
                                 ),
                         ]),
                 ])
+                ->modalSubmitActionLabel('Create')
                 ->action(function ($input) {
                     $this->authorize('create', Server::class);
 

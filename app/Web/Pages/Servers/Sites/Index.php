@@ -5,7 +5,6 @@ namespace App\Web\Pages\Servers\Sites;
 use App\Models\Server;
 use App\Models\Site;
 use App\Web\Components\Page;
-use App\Web\Pages\Servers\Sites\Widgets\SitesList;
 use App\Web\Traits\PageHasServer;
 use Filament\Actions\CreateAction;
 
@@ -29,7 +28,7 @@ class Index extends Page
     public function getWidgets(): array
     {
         return [
-            [SitesList::class, ['server' => $this->server]],
+            [Widgets\SitesList::class, ['server' => $this->server]],
         ];
     }
 

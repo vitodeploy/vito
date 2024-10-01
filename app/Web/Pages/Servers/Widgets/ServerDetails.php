@@ -49,7 +49,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                         TextEntry::make('last_updated_check')
                             ->label('Last Updated Check')
                             ->inlineLabel()
-                            ->state(fn (Server $record) => $record->getDateTimeByTimezone($record->last_update_check) ?? '-')
+                            ->state(fn (Server $record) => $record->last_update_check?->ago())
                             ->suffixAction(
                                 Action::make('check-update')
                                     ->icon('heroicon-o-arrow-path')

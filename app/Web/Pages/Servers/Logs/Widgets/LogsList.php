@@ -86,7 +86,7 @@ class LogsList extends Widget
                 Action::make('download')
                     ->hiddenLabel()
                     ->tooltip('Download')
-                    ->color('secondary')
+                    ->color('gray')
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->authorize(fn ($record) => auth()->user()->can('view', $record))
                     ->action(fn (ServerLog $record) => $record->download()),

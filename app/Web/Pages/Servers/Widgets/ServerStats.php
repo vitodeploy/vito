@@ -18,7 +18,7 @@ class ServerStats extends BaseWidget
 
         if ($this->server->webserver()) {
             $stats[] = Stat::make('Sites', $this->server->sites()->count())
-                ->icon('heroicon-o-globe-alt');
+                ->icon('heroicon-o-cursor-arrow-ripple');
         }
 
         if ($this->server->database()) {

@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
  * @property string $status
  * @property bool $is_default
  * @property Server $server
+ * @property string $image_url
  */
 class Service extends AbstractModel
 {
@@ -115,5 +116,10 @@ class Service extends AbstractModel
     public function disable(): void
     {
         $this->unit && app(Manage::class)->disable($this);
+    }
+
+    public function getImageUrlAttribute(): string
+    {
+        return url('/static/images/'.$this->name.'.svg');
     }
 }

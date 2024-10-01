@@ -10,6 +10,7 @@ use App\Web\Pages\Servers\PHP\Widgets\PHPList;
 use App\Web\Traits\PageHasServer;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Support\Enums\IconPosition;
 
 class Index extends Page
 {
@@ -57,7 +58,8 @@ class Index extends Page
             ActionGroup::make($phps)
                 ->authorize(fn () => auth()->user()?->can('create', [Service::class, $this->server]))
                 ->label('Install PHP')
-                ->icon('heroicon-o-plus')
+                ->icon('heroicon-o-chevron-up-down')
+                ->iconPosition(IconPosition::After)
                 ->dropdownPlacement('bottom-end')
                 ->color('primary')
                 ->button(),

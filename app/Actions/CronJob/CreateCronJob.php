@@ -6,15 +6,11 @@ use App\Enums\CronjobStatus;
 use App\Models\CronJob;
 use App\Models\Server;
 use App\ValidationRules\CronRule;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class CreateCronJob
 {
     public function create(Server $server, array $input): void
     {
-        $this->validate($input);
-
         $cronJob = new CronJob([
             'server_id' => $server->id,
             'user' => $input['user'],
@@ -29,12 +25,9 @@ class CreateCronJob
         $cronJob->save();
     }
 
-    /**
-     * @throws ValidationException
-     */
-    private function validate(array $input): void
+    public static function rules(array $input): array
     {
-        Validator::make($input, [
+        $rules = [
             'command' => [
                 'required',
             ],
@@ -46,15 +39,15 @@ class CreateCronJob
                 'required',
                 new CronRule(acceptCustom: true),
             ],
-        ])->validate();
+        ];
 
-        if ($input['frequency'] == 'custom') {
-            Validator::make($input, [
-                'custom' => [
-                    'required',
-                    new CronRule,
-                ],
-            ])->validate();
+        if (isset($input['frequency']) && $input['frequency'] == 'custom') {
+            $rules['custom'] = [
+                'required',
+                new CronRule,
+            ];
         }
+
+        return $rules;
     }
 }

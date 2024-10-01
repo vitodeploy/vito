@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Exceptions\SSHAuthenticationError;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHConnectionError;
+use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use Exception;
@@ -88,8 +89,7 @@ class SSH
     }
 
     /**
-     * @throws SSHCommandError
-     * @throws SSHConnectionError
+     * @throws SSHError
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
     {
@@ -136,7 +136,6 @@ class SSH
                 return $output;
             }
         } catch (Throwable $e) {
-            throw $e;
             throw new SSHCommandError($e->getMessage());
         }
     }

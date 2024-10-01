@@ -18,8 +18,10 @@ class Cron
             if ! sudo -u $user crontab -l; then
                 echo 'VITO_SSH_ERROR' && exit 1
             fi
+
+            echo 'cron updated!'
         EOD;
 
-        $this->server->ssh()->exec($command);
+        $this->server->ssh()->exec($command, 'update-cron');
     }
 }
