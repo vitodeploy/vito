@@ -25,6 +25,6 @@
         "prettier-plugin-tailwindcss": "^0.5.11",
         "tailwindcss": "^3.4.10",
         "tippy.js": "^6.3.7",
-        "vite": "^4.5.3"
+        "vite": "^4.5.5"
     }
 }
