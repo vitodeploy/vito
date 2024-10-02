@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature request
+    url: https://github.com/vitodeploy/vito/discussions/new?category=ideas
+    about: Share ideas for new features
+  - name: Support
+    url: https://github.com/vitodeploy/vito/discussions/new?category=q-a
+    about: Ask the community for help
+  - name: Discord
+    url: https://discord.gg/uZeeHZZnm5
+    about: Join the community
