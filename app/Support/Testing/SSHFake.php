@@ -40,7 +40,7 @@ class SSHFake extends SSH
         }
     }
 
-    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
+    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
         if (! $this->log && $log) {
             $this->log = $this->server->logs()->create([

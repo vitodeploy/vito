@@ -3,6 +3,7 @@
 namespace App\Web\Traits;
 
 use App\Models\Server;
+use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
 use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
 use App\Web\Pages\Servers\Firewall\Index as FirewallIndex;
@@ -86,6 +87,13 @@ trait PageHasServer
                 ->icon('heroicon-o-chart-bar')
                 ->isActiveWhen(fn () => request()->routeIs(MetricsIndex::getRouteName().'*'))
                 ->url(MetricsIndex::getUrl(parameters: ['server' => $this->server]));
+        }
+
+        if (ConsoleIndex::canAccess()) {
+            $items[] = NavigationItem::make(ConsoleIndex::getNavigationLabel())
+                ->icon('heroicon-o-command-line')
+                ->isActiveWhen(fn () => request()->routeIs(ConsoleIndex::getRouteName().'*'))
+                ->url(ConsoleIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (LogsIndex::canAccess()) {

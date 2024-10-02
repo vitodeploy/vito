@@ -91,7 +91,7 @@ class SSH
     /**
      * @throws SSHError
      */
-    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
+    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
         if (! $this->log && $log) {
             $this->log = ServerLog::make($this->server, $log);
@@ -116,11 +116,10 @@ class SSH
 
             $this->connection->setTimeout(0);
             if ($stream) {
-                $this->connection->exec($command, function ($output) {
+                $this->connection->exec($command, function ($output) use ($streamCallback) {
                     $this->log?->write($output);
-                    echo $output;
-                    ob_flush();
-                    flush();
+
+                    return $streamCallback($output);
                 });
 
                 return '';
