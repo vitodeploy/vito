@@ -11,12 +11,17 @@
 }
 
 .fi-sidebar {
-    @apply bg-gray-100/50 dark:bg-gray-900/50 !important;
+    @apply bg-gray-100 dark:bg-gray-900 !important;
+}
+
+.fi-sidebar-item a, .fi-tenant-menu-trigger {
+    @apply hover:bg-gray-200/50 hover:dark:bg-gray-800 !important;
 }
 
 .fi-sidebar-item-active a {
-    @apply bg-gray-100 dark:bg-gray-800/50 !important;
+    @apply bg-gray-200/50 dark:bg-gray-800 !important;
 }
+
 
 .fi-btn-color-primary {
     background-image: linear-gradient(to bottom right, rgba(var(--primary-500), 1), rgba(var(--primary-900), 1));

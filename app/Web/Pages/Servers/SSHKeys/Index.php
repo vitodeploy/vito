@@ -4,10 +4,8 @@ namespace App\Web\Pages\Servers\SSHKeys;
 
 use App\Actions\SshKey\CreateSshKey;
 use App\Actions\SshKey\DeployKeyToServer;
-use App\Models\Server;
 use App\Models\SshKey;
-use App\Web\Components\Page;
-use App\Web\Traits\PageHasServer;
+use App\Web\Pages\Servers\Page;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -18,15 +16,9 @@ use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}/ssh-keys';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'SSH Keys';
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

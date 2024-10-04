@@ -61,15 +61,13 @@ class Console extends Component implements HasForms
                                             $this->running = true;
                                             $ssh = $this->server->ssh($this->data['user']);
                                             $log = 'console-'.time();
-                                            defer(function () use ($ssh, $log) {
-                                                $ssh->exec(command: $this->data['command'], log: $log, stream: true, streamCallback: function ($output) {
-                                                    $this->output .= $output;
-                                                    $this->stream(
-                                                        to: 'output',
-                                                        content: $output,
-                                                    );
-                                                });
-                                            })->name($log);
+                                            $ssh->exec(command: $this->data['command'], log: $log, stream: true, streamCallback: function ($output) {
+                                                $this->output .= $output;
+                                                $this->stream(
+                                                    to: 'output',
+                                                    content: $output,
+                                                );
+                                            });
                                         }),
                                     Action::make('stop')
                                         ->view('web.components.dynamic-widget', [

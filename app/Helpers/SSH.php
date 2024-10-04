@@ -93,6 +93,7 @@ class SSH
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
+        ds($command);
         if (! $this->log && $log) {
             $this->log = ServerLog::make($this->server, $log);
             if ($siteId) {
@@ -129,13 +130,19 @@ class SSH
                 $this->log?->write($output);
 
                 if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {
-                    throw new SSHCommandError('SSH command failed with an error', $this->connection->getExitStatus());
+                    throw new SSHCommandError(
+                        message: 'SSH command failed with an error',
+                        log: $this->log
+                    );
                 }
 
                 return $output;
             }
         } catch (Throwable $e) {
-            throw new SSHCommandError($e->getMessage());
+            throw new SSHCommandError(
+                message: $e->getMessage(),
+                log: $this->log
+            );
         }
     }
 

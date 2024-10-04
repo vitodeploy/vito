@@ -6,6 +6,7 @@ use App\Enums\SiteFeature;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\SSH\Composer\Composer;
 use App\SSH\Git\Git;
+use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Validation\Rule;
 
 class PHPSite extends AbstractSiteType
@@ -36,11 +37,17 @@ class PHPSite extends AbstractSiteType
                 'required',
                 Rule::exists('source_controls', 'id'),
             ],
+            'web_directory' => [
+                'nullable',
+            ],
             'repository' => [
                 'required',
             ],
             'branch' => [
                 'required',
+            ],
+            'composer' => [
+                'nullable',
             ],
         ];
     }
@@ -53,6 +60,7 @@ class PHPSite extends AbstractSiteType
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',
             'php_version' => $input['php_version'] ?? '',
+            'composer' => $input['php_version'] ?? '',
         ];
     }
 

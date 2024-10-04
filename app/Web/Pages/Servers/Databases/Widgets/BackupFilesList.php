@@ -5,7 +5,7 @@ namespace App\Web\Pages\Servers\Databases\Widgets;
 use App\Actions\Database\RestoreBackup;
 use App\Models\Backup;
 use App\Models\BackupFile;
-use Exception;
+use App\Models\Database;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
@@ -63,7 +63,7 @@ class BackupFilesList extends Widget
                     ->icon('heroicon-o-arrow-path')
                     ->modalHeading('Restore Backup')
                     ->tooltip('Restore Backup')
-                    ->authorize(fn (BackupFile $record) => auth()->user()->can('update', $record->backup->database))
+                    ->authorize(fn (BackupFile $record) => auth()->user()->can('update', $record->backup))
                     ->form([
                         Select::make('database')
                             ->label('Restore to')
@@ -73,23 +73,23 @@ class BackupFilesList extends Widget
                     ])
                     ->modalWidth(MaxWidth::Large)
                     ->action(function (BackupFile $record, array $data) {
-                        try {
+                        run_action($this, function () use ($record, $data) {
+                            $this->validate();
+
+                            /** @var Database $database */
+                            $database = Database::query()->findOrFail($data['database']);
+
+                            $this->authorize('update', $database);
+
                             app(RestoreBackup::class)->restore($record, $data);
 
                             Notification::make()
                                 ->success()
                                 ->title('Backup is being restored')
                                 ->send();
-                        } catch (Exception $e) {
-                            Notification::make()
-                                ->danger()
-                                ->title($e->getMessage())
-                                ->send();
 
-                            throw $e;
-                        }
-
-                        $this->dispatch('$refresh');
+                            $this->dispatch('$refresh');
+                        });
                     }),
                 Action::make('delete')
                     ->hiddenLabel()
@@ -100,18 +100,10 @@ class BackupFilesList extends Widget
                     ->authorize(fn (BackupFile $record) => auth()->user()->can('delete', $record))
                     ->requiresConfirmation()
                     ->action(function (BackupFile $record) {
-                        try {
+                        run_action($this, function () use ($record) {
                             $record->delete();
-                        } catch (Exception $e) {
-                            Notification::make()
-                                ->danger()
-                                ->title($e->getMessage())
-                                ->send();
-
-                            throw $e;
-                        }
-
-                        $this->dispatch('$refresh');
+                            $this->dispatch('$refresh');
+                        });
                     }),
             ]);
     }

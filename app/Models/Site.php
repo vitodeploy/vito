@@ -102,6 +102,21 @@ class Site extends AbstractModel
         });
     }
 
+    public function isReady(): bool
+    {
+        return $this->status === SiteStatus::READY;
+    }
+
+    public function isInstalling(): bool
+    {
+        return in_array($this->status, [SiteStatus::INSTALLING, SiteStatus::INSTALLATION_FAILED]);
+    }
+
+    public function isInstallationFailed(): bool
+    {
+        return $this->status === SiteStatus::INSTALLATION_FAILED;
+    }
+
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

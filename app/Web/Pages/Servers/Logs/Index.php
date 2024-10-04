@@ -2,23 +2,15 @@
 
 namespace App\Web\Pages\Servers\Logs;
 
-use App\Models\Server;
 use App\Models\ServerLog;
-use App\Web\Components\Page;
 use App\Web\Pages\Servers\Logs\Widgets\LogsList;
-use App\Web\Traits\PageHasServer;
+use App\Web\Pages\Servers\Page;
 
 class Index extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}/logs';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'Logs';
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

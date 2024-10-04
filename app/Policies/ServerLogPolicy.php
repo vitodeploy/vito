@@ -35,4 +35,9 @@ class ServerLogPolicy
     {
         return $user->isAdmin() || $serverLog->server->project->users->contains($user);
     }
+
+    public function deleteMany(User $user, Server $server): bool
+    {
+        return $user->isAdmin() || $server->project->users->contains($user);
+    }
 }

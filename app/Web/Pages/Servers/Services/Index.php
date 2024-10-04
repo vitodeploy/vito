@@ -3,10 +3,8 @@
 namespace App\Web\Pages\Servers\Services;
 
 use App\Actions\Service\Install;
-use App\Models\Server;
 use App\Models\Service;
-use App\Web\Components\Page;
-use App\Web\Traits\PageHasServer;
+use App\Web\Pages\Servers\Page;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -15,15 +13,9 @@ use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}/services';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'Services';
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

@@ -4,12 +4,10 @@ namespace App\Web\Pages\Servers\Databases;
 
 use App\Actions\Database\CreateBackup;
 use App\Models\Backup;
-use App\Models\Server;
 use App\Models\StorageProvider;
-use App\Web\Components\Page;
 use App\Web\Contracts\HasSecondSubNav;
+use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Settings\StorageProviders\Actions\Create;
-use App\Web\Traits\PageHasServer;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -19,16 +17,11 @@ use Filament\Support\Enums\MaxWidth;
 
 class Backups extends Page implements HasSecondSubNav
 {
-    use PageHasServer;
     use Traits\Navigation;
 
     protected static ?string $slug = 'servers/{server}/databases/backups';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'Backups';
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

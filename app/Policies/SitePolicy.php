@@ -16,9 +16,10 @@ class SitePolicy
         return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
     }
 
-    public function view(User $user, Site $site): bool
+    public function view(User $user, Site $site, Server $server): bool
     {
         return ($user->isAdmin() || $site->server->project->users->contains($user)) &&
+            $site->server_id === $server->id &&
             $site->server->isReady();
     }
 
@@ -27,15 +28,17 @@ class SitePolicy
         return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
     }
 
-    public function update(User $user, Site $site): bool
+    public function update(User $user, Site $site, Server $server): bool
     {
         return ($user->isAdmin() || $site->server->project->users->contains($user)) &&
+            $site->server_id === $server->id &&
             $site->server->isReady();
     }
 
-    public function delete(User $user, Site $site): bool
+    public function delete(User $user, Site $site, Server $server): bool
     {
         return ($user->isAdmin() || $site->server->project->users->contains($user)) &&
+            $site->server_id === $server->id &&
             $site->server->isReady();
     }
 }

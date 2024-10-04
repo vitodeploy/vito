@@ -70,7 +70,7 @@ class Backup extends AbstractModel
 
     public function database(): BelongsTo
     {
-        return $this->belongsTo(Database::class);
+        return $this->belongsTo(Database::class)->withTrashed();
     }
 
     public function files(): HasMany

@@ -73,6 +73,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                 Action::make('update-server')
                                     ->icon('heroicon-o-check-circle')
                                     ->tooltip('Update Now')
+                                    ->requiresConfirmation()
                                     ->action(function (Server $record) {
                                         app(Update::class)->update($record);
 

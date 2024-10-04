@@ -4,9 +4,7 @@ namespace App\Web\Pages\Servers\CronJobs;
 
 use App\Actions\CronJob\CreateCronJob;
 use App\Models\CronJob;
-use App\Models\Server;
-use App\Web\Components\Page;
-use App\Web\Traits\PageHasServer;
+use App\Web\Pages\Servers\Page;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -16,17 +14,11 @@ use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}/cronjobs';
-
-    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $title = 'Cron Jobs';
 
     protected $listeners = ['$refresh'];
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

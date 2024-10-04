@@ -4,7 +4,7 @@ namespace App\Web\Pages\Servers\Sites\Widgets;
 
 use App\Models\Server;
 use App\Models\Site;
-use App\Web\Pages\Servers\View;
+use App\Web\Pages\Servers\Sites\View;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -28,11 +28,12 @@ class SitesList extends Widget
             TextColumn::make('id')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('server.name')
+            TextColumn::make('domain')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('domain')
-                ->searchable(),
+            TextColumn::make('created_at')
+                ->formatStateUsing(fn (Site $record) => $record->created_at_by_timezone)
+                ->sortable(),
             TextColumn::make('status')
                 ->label('Status')
                 ->badge()
@@ -45,13 +46,13 @@ class SitesList extends Widget
     public function getTable(): Table
     {
         return $this->table
-//            ->recordUrl(fn (Server $record) => View::getUrl(parameters: ['server' => $record]))
+            ->recordUrl(fn (Site $record) => View::getUrl(parameters: ['server' => $this->server, 'site' => $record]))
             ->actions([
-                //                Action::make('settings')
-                //                    ->label('Settings')
-                //                    ->icon('heroicon-o-cog-6-tooth')
-                //                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                //                    ->url(fn (Server $record) => '/'),
+                Action::make('settings')
+                    ->label('Settings')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->authorize(fn (Site $record) => auth()->user()->can('update', [$record, $this->server]))
+                    ->url(fn (Site $record) => '/'),
             ]);
     }
 }

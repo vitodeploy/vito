@@ -3,26 +3,18 @@
 namespace App\Web\Pages\Servers\PHP;
 
 use App\Actions\PHP\InstallNewPHP;
-use App\Models\Server;
 use App\Models\Service;
-use App\Web\Components\Page;
+use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Servers\PHP\Widgets\PHPList;
-use App\Web\Traits\PageHasServer;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Support\Enums\IconPosition;
 
 class Index extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}/php';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'PHP';
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

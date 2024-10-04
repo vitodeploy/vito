@@ -97,13 +97,17 @@ class ServerLog extends AbstractModel
         }
     }
 
-    public function getContent(): ?string
+    public function getContent($lines = null): ?string
     {
         if ($this->is_remote) {
-            return $this->server->os()->tail($this->name, 150);
+            return $this->server->os()->tail($this->name, $lines ?? 150);
         }
 
         if (Storage::disk($this->disk)->exists($this->name)) {
+            if ($lines) {
+                return tail(Storage::disk($this->disk)->path($this->name), $lines);
+            }
+
             return Storage::disk($this->disk)->get($this->name);
         }
 

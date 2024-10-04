@@ -4,9 +4,7 @@ namespace App\Web\Pages\Servers\Firewall;
 
 use App\Actions\FirewallRule\CreateRule;
 use App\Models\FirewallRule;
-use App\Models\Server;
-use App\Web\Components\Page;
-use App\Web\Traits\PageHasServer;
+use App\Web\Pages\Servers\Page;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -16,17 +14,11 @@ use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}/firewall';
-
-    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $title = 'Firewall';
 
     protected $listeners = ['$refresh'];
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

@@ -2,26 +2,17 @@
 
 namespace App\Web\Pages\Servers;
 
-use App\Models\Server;
 use App\Models\ServerLog;
-use App\Web\Components\Page;
 use App\Web\Pages\Servers\Logs\Widgets\LogsList;
 use App\Web\Pages\Servers\Widgets\Installing;
 use App\Web\Pages\Servers\Widgets\ServerStats;
-use App\Web\Traits\PageHasServer;
 use Livewire\Attributes\On;
 
 class View extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'Overview';
-
-    public Server $server;
 
     public string $previousStatus;
 
@@ -58,7 +49,12 @@ class View extends Page
         }
 
         if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
-            $widgets[] = [LogsList::class, ['server' => $this->server]];
+            $widgets[] = [
+                LogsList::class, [
+                    'server' => $this->server,
+                    'label' => 'Logs',
+                ],
+            ];
         }
 
         return $widgets;

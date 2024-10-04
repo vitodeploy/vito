@@ -14,7 +14,6 @@ use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -25,8 +24,6 @@ class CreateSite
      */
     public function create(Server $server, array $input): Site
     {
-        $this->validateInputs($server, $input);
-
         DB::beginTransaction();
         try {
             $site = new Site([
@@ -59,9 +56,6 @@ class CreateSite
                     'repository' => 'Repository not found',
                 ]);
             }
-
-            // validate type
-            $this->validateType($site, $input);
 
             // set type data
             $site->type_data = $site->type()->data($input);
@@ -101,13 +95,9 @@ class CreateSite
     /**
      * @throws ValidationException
      */
-    public static function rules(array $input): void
+    public static function rules(Server $server, array $input): array
     {
         $rules = [
-            'server_id' => [
-                'required',
-                'exists:servers,id',
-            ],
             'type' => [
                 'required',
                 Rule::in(config('core.site_types')),
@@ -124,16 +114,20 @@ class CreateSite
             ],
         ];
 
-        Validator::make($input, $rules)->validate();
+        return array_merge($rules, self::typeRules($server, $input));
     }
 
-    /**
-     * @throws ValidationException
-     */
-    private function validateType(Site $site, array $input): void
+    private static function typeRules(Server $server, array $input): array
     {
-        $rules = $site->type()->createRules($input);
+        if (! isset($input['type']) || ! in_array($input['type'], config('core.site_types'))) {
+            return [];
+        }
 
-        Validator::make($input, $rules)->validate();
+        $site = new Site([
+            'server_id' => $server->id,
+            'type' => $input['type']]
+        );
+
+        return $site->type()->createRules($input);
     }
 }

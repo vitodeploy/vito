@@ -3,7 +3,6 @@
 namespace App\Actions\Site;
 
 use App\Models\Site;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class UpdateDeploymentScript
@@ -13,8 +12,6 @@ class UpdateDeploymentScript
      */
     public function update(Site $site, array $input): void
     {
-        $this->validate($input);
-
         $site->deploymentScript()->update([
             'content' => $input['script'],
         ]);
@@ -23,10 +20,10 @@ class UpdateDeploymentScript
     /**
      * @throws ValidationException
      */
-    protected function validate(array $input): void
+    public static function rules(): array
     {
-        Validator::make($input, [
-            'script' => 'required',
-        ]);
+        return [
+            'script' => ['required', 'string'],
+        ];
     }
 }

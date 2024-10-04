@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Web\Traits;
+namespace App\Web\Pages\Servers;
 
 use App\Models\Server;
+use App\Web\Components\Page as BasePage;
 use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
 use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
@@ -13,15 +14,19 @@ use App\Web\Pages\Servers\PHP\Index as PHPIndex;
 use App\Web\Pages\Servers\Services\Index as ServicesIndex;
 use App\Web\Pages\Servers\Settings as ServerSettings;
 use App\Web\Pages\Servers\Sites\Index as SitesIndex;
-use App\Web\Pages\Servers\SshKeys\Index as SshKeysIndex;
+use App\Web\Pages\Servers\SSHKeys\Index as SshKeysIndex;
 use App\Web\Pages\Servers\View as ServerView;
 use App\Web\Pages\Servers\Widgets\ServerSummary;
 use Filament\Navigation\NavigationItem;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
-trait PageHasServer
+abstract class Page extends BasePage
 {
+    public Server $server;
+
+    protected static bool $shouldRegisterNavigation = false;
+
     public function getSubNavigation(): array
     {
         $items = [];

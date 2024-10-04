@@ -4,9 +4,13 @@ namespace App\Web\Pages\Servers\Logs\Widgets;
 
 use App\Models\Server;
 use App\Models\ServerLog;
+use App\Models\Site;
 use Exception;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
@@ -18,12 +22,20 @@ class LogsList extends Widget
 {
     public Server $server;
 
+    public ?Site $site = null;
+
+    public ?string $label = '';
+
     protected function getTableQuery(): Builder
     {
-        return ServerLog::query()->where('server_id', $this->server->id);
+        return ServerLog::query()
+            ->where('server_id', $this->server->id)
+            ->where(function (Builder $query) {
+                if ($this->site) {
+                    $query->where('site_id', $this->site->id);
+                }
+            });
     }
-
-    protected static ?string $heading = '';
 
     protected function getTableColumns(): array
     {
@@ -68,6 +80,7 @@ class LogsList extends Widget
                             );
                     }),
             ])
+            ->heading($this->label)
             ->actions([
                 Action::make('view')
                     ->hiddenLabel()
@@ -90,6 +103,19 @@ class LogsList extends Widget
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->authorize(fn ($record) => auth()->user()->can('view', $record))
                     ->action(fn (ServerLog $record) => $record->download()),
-            ]);
+                DeleteAction::make()
+                    ->hiddenLabel()
+                    ->tooltip('Delete')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->authorize(fn ($record) => auth()->user()->can('delete', $record)),
+            ])
+            ->bulkActions(
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->requiresConfirmation()
+                        ->authorize(auth()->user()->can('deleteMany', [ServerLog::class, $this->server])),
+                ])
+            );
     }
 }

@@ -4,18 +4,14 @@ namespace App\Web\Pages\Servers;
 
 use App\Actions\Server\RebootServer;
 use App\Models\Server;
-use App\Web\Components\Page;
 use App\Web\Pages\Servers\Widgets\ServerDetails;
 use App\Web\Pages\Servers\Widgets\UpdateServerInfo;
-use App\Web\Traits\PageHasServer;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 
 class Settings extends Page
 {
-    use PageHasServer;
-
     protected static ?string $slug = 'servers/{server}/settings';
 
     protected static bool $shouldRegisterNavigation = false;
@@ -23,8 +19,6 @@ class Settings extends Page
     protected static ?string $title = 'Settings';
 
     protected $listeners = ['$refresh'];
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

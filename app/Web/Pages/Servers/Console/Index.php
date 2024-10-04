@@ -2,25 +2,17 @@
 
 namespace App\Web\Pages\Servers\Console;
 
-use App\Models\Server;
-use App\Web\Components\Page;
-use App\Web\Traits\PageHasServer;
+use App\Web\Pages\Servers\Page;
 
 class Index extends Page
 {
-    use PageHasServer;
-
     protected ?string $live = '';
 
     protected $listeners = [];
 
     protected static ?string $slug = 'servers/{server}/console';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'Console';
-
-    public Server $server;
 
     public static function canAccess(): bool
     {

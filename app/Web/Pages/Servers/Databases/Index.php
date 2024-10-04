@@ -4,11 +4,8 @@ namespace App\Web\Pages\Servers\Databases;
 
 use App\Actions\Database\CreateDatabase;
 use App\Models\Database;
-use App\Models\Server;
-use App\Web\Components\Page;
 use App\Web\Contracts\HasSecondSubNav;
-use App\Web\Traits\PageHasServer;
-use Exception;
+use App\Web\Pages\Servers\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
@@ -17,16 +14,11 @@ use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page implements HasSecondSubNav
 {
-    use PageHasServer;
     use Traits\Navigation;
 
     protected static ?string $slug = 'servers/{server}/databases';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $title = 'Databases';
-
-    public Server $server;
 
     public static function canAccess(): bool
     {
@@ -67,7 +59,7 @@ class Index extends Page implements HasSecondSubNav
                 ])
                 ->modalSubmitActionLabel('Create')
                 ->action(function (array $data) {
-                    try {
+                    run_action($this, function () use ($data) {
                         app(CreateDatabase::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');
@@ -76,14 +68,7 @@ class Index extends Page implements HasSecondSubNav
                             ->success()
                             ->title('Database Created!')
                             ->send();
-                    } catch (Exception $e) {
-                        Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
-                            ->send();
-
-                        throw $e;
-                    }
+                    });
                 }),
         ];
     }

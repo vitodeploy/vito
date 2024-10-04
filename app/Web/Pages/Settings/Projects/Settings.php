@@ -4,7 +4,7 @@ namespace App\Web\Pages\Settings\Projects;
 
 use App\Actions\Projects\DeleteProject;
 use App\Models\Project;
-use App\Web\Components\Page;
+use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Settings\Projects\Widgets\AddUser;
 use App\Web\Pages\Settings\Projects\Widgets\ProjectUsersList;
 use App\Web\Pages\Settings\Projects\Widgets\UpdateProject;
@@ -18,8 +18,6 @@ class Settings extends Page
     protected static ?string $slug = 'settings/projects/{project}';
 
     protected static ?string $title = 'Project Settings';
-
-    protected static bool $shouldRegisterNavigation = false;
 
     public static function canAccess(): bool
     {

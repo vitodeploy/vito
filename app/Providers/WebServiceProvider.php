@@ -9,7 +9,9 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
@@ -19,6 +21,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Livewire\Livewire;
@@ -43,9 +46,12 @@ class WebServiceProvider extends ServiceProvider
             PanelsRenderHook::SIDEBAR_FOOTER,
             fn () => view('web.components.app-version')
         );
+        FilamentAsset::register([
+            Js::make('app', Vite::asset('resources/js/app.js'))->module(),
+        ]);
         FilamentColor::register([
             'slate' => Color::Slate,
-            'gray' => Color::Gray,
+            'gray' => Color::Zinc,
             'red' => Color::Red,
             'orange' => Color::Orange,
             'amber' => Color::Amber,
@@ -97,7 +103,6 @@ class WebServiceProvider extends ServiceProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->spa()
             ->login()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->sidebarCollapsibleOnDesktop()
