@@ -68,6 +68,12 @@ class View extends Page
             }
         }
 
+        if ($this->site->isReady()) {
+            if (in_array(SiteFeature::DEPLOYMENT, $this->site->type()->supportedFeatures())) {
+                $widgets[] = [Widgets\DeploymentsList::class, ['site' => $this->site]];
+            }
+        }
+
         return $widgets;
     }
 
@@ -118,6 +124,8 @@ class View extends Page
                         ->success()
                         ->title('Deployment started!')
                         ->send();
+
+                    $this->dispatch('$refresh');
                 });
             });
     }

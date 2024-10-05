@@ -4,6 +4,7 @@ namespace App\Web\Pages\Servers\Sites\Widgets;
 
 use App\Models\Server;
 use App\Models\Site;
+use App\Web\Pages\Servers\Sites\Settings;
 use App\Web\Pages\Servers\Sites\View;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -25,10 +26,15 @@ class SitesList extends Widget
     protected function getTableColumns(): array
     {
         return [
-            TextColumn::make('id')
+            TextColumn::make('domain')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('domain')
+            TextColumn::make('tags')
+                ->label('Tags')
+                ->badge()
+                ->icon('heroicon-o-tag')
+                ->formatStateUsing(fn ($state) => $state->name)
+                ->color(fn ($state) => $state->color)
                 ->searchable()
                 ->sortable(),
             TextColumn::make('created_at')
@@ -52,7 +58,7 @@ class SitesList extends Widget
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
                     ->authorize(fn (Site $record) => auth()->user()->can('update', [$record, $this->server]))
-                    ->url(fn (Site $record) => '/'),
+                    ->url(fn (Site $record) => Settings::getUrl(parameters: ['server' => $this->server, 'site' => $record])),
             ]);
     }
 }

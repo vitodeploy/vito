@@ -33,9 +33,6 @@ class DatabaseUsersList extends Widget
     protected function getTableColumns(): array
     {
         return [
-            TextColumn::make('id')
-                ->searchable()
-                ->sortable(),
             TextColumn::make('username')
                 ->searchable(),
             TextColumn::make('status')

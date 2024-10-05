@@ -57,8 +57,9 @@ class SourceControlsList extends Widget
             EditAction::make('edit')
                 ->label('Edit')
                 ->modalHeading('Edit Source Control')
-                ->mutateRecordDataUsing(function (array $data, SourceControl $record) {
+                ->fillForm(function (array $data, SourceControl $record) {
                     return [
+                        'provider' => $record->provider,
                         'name' => $record->profile,
                         'token' => $record->provider_data['token'] ?? null,
                         'username' => $record->provider_data['username'] ?? null,

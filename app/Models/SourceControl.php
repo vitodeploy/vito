@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $provider
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SourceControl extends AbstractModel
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'provider',
@@ -61,8 +63,9 @@ class SourceControl extends AbstractModel
     public static function getByProjectId(int $projectId): Builder
     {
         return self::query()
-            ->where('project_id', $projectId)
-            ->orWhereNull('project_id');
+            ->where(function (Builder $query) use ($projectId) {
+                $query->where('project_id', $projectId)->orWhereNull('project_id');
+            });
     }
 
     public function getImageUrlAttribute(): string

@@ -18,7 +18,7 @@
             "sites.partials.create.fields.source-control",
             [
                 "sourceControls" => \App\Models\SourceControl::query()
-                    ->where("provider", $site->sourceControl()?->provider)
+                    ->where("provider", $site->sourceControl?->provider)
                     ->get(),
             ]
         )

@@ -5,27 +5,28 @@ namespace App\Actions\Tag;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Tag;
-use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 use Illuminate\Validation\Rule;
 
-/**
- * @deprecated
- */
-class DetachTag
+class SyncTags
 {
-    public function detach(Tag $tag, array $input): void
+    public function sync(User $user, array $input): void
     {
-        $this->validate($input);
-
         /** @var Server|Site $taggable */
         $taggable = $input['taggable_type']::findOrFail($input['taggable_id']);
 
-        $taggable->tags()->detach($tag->id);
+        $tags = Tag::query()->whereIn('id', $input['tags'])->get();
+
+        $taggable->tags()->sync($tags->pluck('id'));
     }
 
-    private function validate(array $input): void
+    public static function rules(int $projectId): array
     {
-        Validator::make($input, [
+        return [
+            'tags.*' => [
+                'required',
+                Rule::exists('tags', 'id')->where('project_id', $projectId),
+            ],
             'taggable_id' => [
                 'required',
                 'integer',
@@ -34,6 +35,6 @@ class DetachTag
                 'required',
                 Rule::in(config('core.taggable_types')),
             ],
-        ])->validate();
+        ];
     }
 }

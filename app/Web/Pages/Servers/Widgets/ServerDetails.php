@@ -4,6 +4,7 @@ namespace App\Web\Pages\Servers\Widgets;
 
 use App\Actions\Server\Update;
 use App\Models\Server;
+use App\Web\Pages\Settings\Tags\Actions\EditTags;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\Actions\Action;
@@ -88,16 +89,15 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                         TextEntry::make('provider')
                             ->label('Provider')
                             ->inlineLabel(),
-                        TextEntry::make('tags')
-                            ->label('Tags')
+                        TextEntry::make('tags.*')
+                            ->default('No tags')
+                            ->formatStateUsing(fn ($state) => is_object($state) ? $state->name : $state)
                             ->inlineLabel()
-                            ->state(fn (Server $record) => view('web.components.tags', ['tags' => $record->tags]))
+                            ->badge()
+                            ->color(fn ($state) => is_object($state) ? $state->color : 'gray')
+                            ->icon(fn ($state) => is_object($state) ? 'heroicon-o-tag' : '')
                             ->suffixAction(
-                                Action::make('edit-tags')
-                                    ->icon('heroicon-o-pencil')
-                                    ->tooltip('Edit Tags')
-                                    ->action(fn (Server $record) => $this->dispatch('$editTags', $record))
-                                    ->tooltip('Edit Tags')
+                                EditTags::infolist($this->server)
                             ),
 
                     ]),

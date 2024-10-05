@@ -71,8 +71,7 @@ class ServerProvider extends AbstractModel
     {
         return self::query()
             ->where(function (Builder $query) use ($projectId) {
-                $query->where('project_id', $projectId)
-                    ->orWhereNull('project_id');
+                $query->where('project_id', $projectId)->orWhereNull('project_id');
             });
     }
 

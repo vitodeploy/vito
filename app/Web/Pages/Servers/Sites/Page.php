@@ -49,6 +49,16 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ]));
         }
 
+        if (Settings::canAccess()) {
+            $items[] = NavigationItem::make(Settings::getNavigationLabel())
+                ->icon('heroicon-o-wrench-screwdriver')
+                ->isActiveWhen(fn () => request()->routeIs(Settings::getRouteName()))
+                ->url(Settings::getUrl(parameters: [
+                    'server' => $this->server,
+                    'site' => $this->site,
+                ]));
+        }
+
         return [
             NavigationGroup::make()
                 ->items($items),

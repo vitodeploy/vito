@@ -29,9 +29,6 @@ class DatabasesList extends Widget
     protected function getTableColumns(): array
     {
         return [
-            TextColumn::make('id')
-                ->searchable()
-                ->sortable(),
             TextColumn::make('name')
                 ->searchable(),
             TextColumn::make('status')

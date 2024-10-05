@@ -6,7 +6,6 @@ use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Site;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -14,12 +13,10 @@ class UpdateSourceControl
 {
     public function update(Site $site, array $input): void
     {
-        $this->validate($input);
-
         $site->source_control_id = $input['source_control'];
         try {
-            if ($site->sourceControl()) {
-                $site->sourceControl()->getRepo($site->repository);
+            if ($site->sourceControl) {
+                $site->sourceControl?->getRepo($site->repository);
             }
         } catch (SourceControlIsNotConnected) {
             throw ValidationException::withMessages([
@@ -37,13 +34,13 @@ class UpdateSourceControl
         $site->save();
     }
 
-    private function validate(array $input): void
+    public static function rules(): array
     {
-        Validator::make($input, [
+        return [
             'source_control' => [
                 'required',
                 Rule::exists('source_controls', 'id'),
             ],
-        ])->validate();
+        ];
     }
 }

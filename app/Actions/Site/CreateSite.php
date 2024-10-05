@@ -40,8 +40,8 @@ class CreateSite
 
             // check has access to repository
             try {
-                if ($site->sourceControl()) {
-                    $site->sourceControl()->getRepo($site->repository);
+                if ($site->sourceControl) {
+                    $site->sourceControl?->getRepo($site->repository);
                 }
             } catch (SourceControlIsNotConnected) {
                 throw ValidationException::withMessages([

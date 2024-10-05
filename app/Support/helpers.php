@@ -66,7 +66,7 @@ function run_action(object $static, Closure $callback): void
         Notification::make()
             ->danger()
             ->title($e->getMessage())
-            ->body($e->getLog()?->getContent(10))
+            ->body($e->getLog()?->getContent(30))
             ->send();
 
         if (method_exists($static, 'halt')) {

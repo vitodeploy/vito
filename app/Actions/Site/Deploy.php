@@ -17,8 +17,8 @@ class Deploy
      */
     public function run(Site $site): Deployment
     {
-        if ($site->sourceControl()) {
-            $site->sourceControl()->getRepo($site->repository);
+        if ($site->sourceControl) {
+            $site->sourceControl->getRepo($site->repository);
         }
 
         if (! $site->deploymentScript?->content) {
@@ -30,7 +30,7 @@ class Deploy
             'deployment_script_id' => $site->deploymentScript->id,
             'status' => DeploymentStatus::DEPLOYING,
         ]);
-        $lastCommit = $site->sourceControl()?->provider()?->getLastCommit($site->repository, $site->branch);
+        $lastCommit = $site->sourceControl?->provider()?->getLastCommit($site->repository, $site->branch);
         if ($lastCommit) {
             $deployment->commit_id = $lastCommit['commit_id'];
             $deployment->commit_data = $lastCommit['commit_data'];

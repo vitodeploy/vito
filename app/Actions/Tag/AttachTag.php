@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
+/**
+ * @deprecated
+ */
 class AttachTag
 {
     public function attach(User $user, array $input): Tag

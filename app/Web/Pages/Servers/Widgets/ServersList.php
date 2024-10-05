@@ -7,7 +7,6 @@ use App\Web\Pages\Servers\Settings;
 use App\Web\Pages\Servers\View;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,16 +23,15 @@ class ServersList extends Widget
     protected function getTableColumns(): array
     {
         return [
-            TextColumn::make('id')
-                ->searchable()
-                ->sortable(),
             TextColumn::make('name')
                 ->searchable()
                 ->sortable(),
-            ViewColumn::make('tags.name')
+            TextColumn::make('tags')
                 ->label('Tags')
-                ->view('web.components.tags')
-                ->extraCellAttributes(['class' => 'px-3'])
+                ->badge()
+                ->icon('heroicon-o-tag')
+                ->formatStateUsing(fn ($state) => $state->name)
+                ->color(fn ($state) => $state->color)
                 ->searchable()
                 ->sortable(),
             TextColumn::make('status')
