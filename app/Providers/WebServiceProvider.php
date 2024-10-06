@@ -104,6 +104,7 @@ class WebServiceProvider extends ServiceProvider
                 Authenticate::class,
             ])
             ->login()
+            ->spa()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->sidebarCollapsibleOnDesktop()
             ->globalSearchFieldKeyBindingSuffix();

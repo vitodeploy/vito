@@ -18,7 +18,7 @@ class Index extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 10;
 
     public static function canAccess(): bool
     {

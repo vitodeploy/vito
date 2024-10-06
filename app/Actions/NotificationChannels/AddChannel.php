@@ -4,7 +4,7 @@ namespace App\Actions\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AddChannel
@@ -14,14 +14,12 @@ class AddChannel
      */
     public function add(User $user, array $input): void
     {
-        $this->validate($input);
         $channel = new NotificationChannel([
             'user_id' => $user->id,
             'provider' => $input['provider'],
             'label' => $input['label'],
             'project_id' => isset($input['global']) && $input['global'] ? null : $user->current_project_id,
         ]);
-        $this->validateType($channel, $input);
         $channel->data = $channel->provider()->createData($input);
         $channel->save();
 
@@ -43,23 +41,29 @@ class AddChannel
         $channel->save();
     }
 
-    /**
-     * @throws ValidationException
-     */
-    protected function validate(array $input): void
+    public static function rules(array $input): array
     {
-        Validator::make($input, [
-            'provider' => 'required|in:'.implode(',', config('core.notification_channels_providers')),
+        $rules = [
+            'provider' => [
+                'required',
+                Rule::in(config('core.notification_channels_providers')),
+            ],
             'label' => 'required',
-        ])->validate();
+        ];
+
+        return array_merge($rules, static::providerRules($input));
     }
 
-    /**
-     * @throws ValidationException
-     */
-    protected function validateType(NotificationChannel $channel, array $input): void
+    private static function providerRules(array $input): array
     {
-        Validator::make($input, $channel->provider()->createRules($input))
-            ->validate();
+        if (! isset($input['provider'])) {
+            return [];
+        }
+
+        $notificationChannel = new NotificationChannel([
+            'provider' => $input['provider'],
+        ]);
+
+        return $notificationChannel->provider()->createRules($input);
     }
 }

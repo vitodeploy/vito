@@ -4,7 +4,7 @@ namespace App\Web\Pages\Settings\Projects;
 
 use App\Actions\Projects\DeleteProject;
 use App\Models\Project;
-use App\Web\Pages\Servers\Page;
+use App\Web\Components\Page;
 use App\Web\Pages\Settings\Projects\Widgets\AddUser;
 use App\Web\Pages\Settings\Projects\Widgets\ProjectUsersList;
 use App\Web\Pages\Settings\Projects\Widgets\UpdateProject;
@@ -19,9 +19,11 @@ class Settings extends Page
 
     protected static ?string $title = 'Project Settings';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('update', request()->route('project')) ?? false;
+        return auth()->user()?->can('update', get_from_route(Project::class, 'project')) ?? false;
     }
 
     public Project $project;
@@ -62,7 +64,7 @@ class Settings extends Page
                     try {
                         app(DeleteProject::class)->delete(auth()->user(), $record);
 
-                        $this->redirectRoute('filament.app.resources.projects.index');
+                        $this->redirectRoute(Index::getUrl());
                     } catch (Exception $e) {
                         Notification::make()
                             ->title($e->getMessage())

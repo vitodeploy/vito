@@ -14,8 +14,12 @@ class Telegram extends AbstractNotificationChannel
     public function createRules(array $input): array
     {
         return [
-            'bot_token' => 'required|string',
-            'chat_id' => 'required',
+            'bot_token' => [
+                'required',
+            ],
+            'chat_id' => [
+                'required',
+            ],
         ];
     }
 

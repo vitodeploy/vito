@@ -3,26 +3,26 @@
 namespace App\Actions\Script;
 
 use App\Models\Script;
-use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 
 class EditScript
 {
-    public function edit(Script $script, array $input): Script
+    public function edit(Script $script, User $user, array $input): Script
     {
-        $this->validate($input);
-
         $script->name = $input['name'];
         $script->content = $input['content'];
+        $script->project_id = isset($input['global']) && $input['global'] ? null : $user->current_project_id;
+
         $script->save();
 
         return $script;
     }
 
-    private function validate(array $input): void
+    public static function rules(): array
     {
-        Validator::make($input, [
+        return [
             'name' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-        ])->validate();
+        ];
     }
 }

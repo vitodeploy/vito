@@ -18,7 +18,7 @@ class ScriptPolicy
 
     public function view(User $user, Script $script): bool
     {
-        return $user->id === $script->user_id;
+        return $user->id === $script->user_id || $script->project?->users?->contains($user);
     }
 
     public function create(User $user): bool

@@ -11,7 +11,10 @@ class Discord extends AbstractNotificationChannel
     public function createRules(array $input): array
     {
         return [
-            'webhook_url' => 'required|url',
+            'webhook_url' => [
+                'required',
+                'url',
+            ],
         ];
     }
 

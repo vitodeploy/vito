@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +19,9 @@ use Illuminate\Support\Collection;
  * @property Carbon $updated_at
  * @property Collection<ScriptExecution> $executions
  * @property ?ScriptExecution $lastExecution
+ * @property User $user
+ * @property int $project_id
+ * @property ?Project $project
  */
 class Script extends AbstractModel
 {
@@ -27,6 +31,12 @@ class Script extends AbstractModel
         'user_id',
         'name',
         'content',
+        'project_id',
+    ];
+
+    protected $casts = [
+        'user_id' => 'int',
+        'project_id' => 'int',
     ];
 
     public static function boot(): void
@@ -41,6 +51,11 @@ class Script extends AbstractModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     public function getVariables(): array
@@ -62,5 +77,15 @@ class Script extends AbstractModel
     public function lastExecution(): HasOne
     {
         return $this->hasOne(ScriptExecution::class)->latest();
+    }
+
+    public static function getByProjectId(int $projectId, int $userId): Builder
+    {
+        return self::query()
+            ->where(function (Builder $query) use ($projectId, $userId) {
+                $query->where('project_id', $projectId)
+                    ->orWhere('user_id', $userId)
+                    ->orWhereNull('project_id');
+            });
     }
 }

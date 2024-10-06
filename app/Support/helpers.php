@@ -4,6 +4,8 @@ use App\Exceptions\SSHError;
 use App\Helpers\HtmxResponse;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 function generate_public_key($privateKeyPath, $publicKeyPath): void
 {
@@ -145,4 +147,23 @@ function tail($filepath, $lines = 1, $adaptive = true): string
     fclose($f);
 
     return trim($output);
+}
+
+function get_from_route(string $modelName, string $routeKey): mixed
+{
+    $model = request()->route($routeKey);
+
+    if (! $model) {
+        $model = Route::getRoutes()->match(Request::create(url()->previous()))->parameter($routeKey);
+    }
+
+    if ($model instanceof $modelName) {
+        return $model;
+    }
+
+    if ($model) {
+        return $modelName::query()->find($model);
+    }
+
+    return null;
 }

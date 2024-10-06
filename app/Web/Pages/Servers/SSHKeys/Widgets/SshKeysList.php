@@ -7,7 +7,7 @@ use App\Models\Server;
 use App\Models\SshKey;
 use Exception;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -21,10 +21,11 @@ class SshKeysList extends TableWidget
 
     protected function getTableQuery(): Builder
     {
-        return SshKey::query()->whereHas(
-            'servers',
-            fn (Builder $query) => $query->where('server_id', $this->server->id)
-        );
+        return SshKey::withTrashed()
+            ->whereHas(
+                'servers',
+                fn (Builder $query) => $query->where('server_id', $this->server->id)
+            );
     }
 
     protected static ?string $heading = '';
@@ -47,14 +48,10 @@ class SshKeysList extends TableWidget
     {
         return $this->table
             ->actions([
-                Action::make('delete')
-                    ->icon('heroicon-o-trash')
-                    ->tooltip('Delete')
-                    ->color('danger')
+                DeleteAction::make('delete')
                     ->hiddenLabel()
-                    ->requiresConfirmation()
                     ->authorize(fn (SshKey $record) => auth()->user()->can('deleteServer', [SshKey::class, $this->server]))
-                    ->action(function (SshKey $record) {
+                    ->using(function (SshKey $record) {
                         try {
                             app(DeleteKeyFromServer::class)->delete($this->server, $record);
                         } catch (Exception $e) {

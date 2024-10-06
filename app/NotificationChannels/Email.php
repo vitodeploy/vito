@@ -13,7 +13,10 @@ class Email extends AbstractNotificationChannel
     public function createRules(array $input): array
     {
         return [
-            'email' => 'required|email',
+            'email' => [
+                'required',
+                'email',
+            ],
         ];
     }
 
