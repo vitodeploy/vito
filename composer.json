@@ -8,7 +8,6 @@
         "php": "^8.2",
         "ext-ftp": "*",
         "aws/aws-sdk-php": "^3.158",
-        "codeat3/blade-simple-icons": "^5.10",
         "filament/filament": "^3.2",
         "laravel/fortify": "^1.17",
         "laravel/framework": "^11.0",

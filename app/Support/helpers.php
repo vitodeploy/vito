@@ -2,6 +2,7 @@
 
 use App\Exceptions\SSHError;
 use App\Helpers\HtmxResponse;
+use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 
 function generate_public_key($privateKeyPath, $publicKeyPath): void
@@ -67,6 +68,13 @@ function run_action(object $static, Closure $callback): void
             ->danger()
             ->title($e->getMessage())
             ->body($e->getLog()?->getContent(30))
+            ->actions([
+                Action::make('View Logs')
+                    ->url(App\Web\Pages\Servers\Logs\Index::getUrl([
+                        'server' => $e->getLog()?->server_id,
+                    ]))
+                    ->openUrlInNewTab(),
+            ])
             ->send();
 
         if (method_exists($static, 'halt')) {

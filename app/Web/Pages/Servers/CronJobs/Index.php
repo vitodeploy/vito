@@ -56,7 +56,7 @@ class Index extends Page
                     Select::make('user')
                         ->rules(fn (callable $get) => CreateCronJob::rules($get())['user'])
                         ->options([
-                            'vito' => 'vito',
+                            'vito' => $this->server->ssh_user,
                             'root' => 'root',
                         ]),
                     Select::make('frequency')

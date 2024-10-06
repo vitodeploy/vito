@@ -7,6 +7,7 @@ use App\Models\Site;
 use App\Web\Pages\Servers\Sites\Settings;
 use App\Web\Pages\Servers\Sites\View;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
@@ -26,6 +27,10 @@ class SitesList extends Widget
     protected function getTableColumns(): array
     {
         return [
+            IconColumn::make('type')
+                ->icon(fn (Site $record) => 'icon-'.$record->type)
+                ->tooltip(fn (Site $record) => $record->type)
+                ->width(24),
             TextColumn::make('domain')
                 ->searchable()
                 ->sortable(),

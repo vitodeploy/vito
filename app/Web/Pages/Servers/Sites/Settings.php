@@ -2,6 +2,7 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
+use App\Actions\Site\DeleteSite;
 use App\SSH\Services\Webserver\Webserver;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
@@ -40,16 +41,23 @@ class Settings extends Page
     {
         return DeleteAction::make()
             ->icon('heroicon-o-trash')
-            ->record($this->server)
+            ->record($this->site)
             ->modalHeading('Delete Site')
-            ->modalDescription('Once your site is deleted, all of its resources and data will be permanently deleted and can\'t be restored');
+            ->modalDescription('Once your site is deleted, all of its resources and data will be permanently deleted and can\'t be restored')
+            ->using(function () {
+                run_action($this, function () {
+                    app(DeleteSite::class)->delete($this->site);
+
+                    $this->redirect(Index::getUrl(['server' => $this->server]));
+                });
+            });
     }
 
     private function vhostAction(): Action
     {
         return Action::make('vhost')
             ->color('gray')
-            ->icon('si-nginx')
+            ->icon('icon-nginx')
             ->label('VHost')
             ->modalSubmitActionLabel('Save')
             ->form([

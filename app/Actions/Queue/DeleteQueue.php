@@ -3,12 +3,15 @@
 namespace App\Actions\Queue;
 
 use App\Models\Queue;
+use App\SSH\Services\ProcessManager\ProcessManager;
 
 class DeleteQueue
 {
     public function delete(Queue $queue): void
     {
-        $queue->server->processManager()->handler()->delete($queue->id, $queue->site_id);
+        /** @var ProcessManager $processManager */
+        $processManager = $queue->server->processManager()->handler();
+        $processManager->delete($queue->id, $queue->site_id);
         $queue->delete();
     }
 }

@@ -5,31 +5,33 @@ namespace App\Actions\Queue;
 use App\Enums\QueueStatus;
 use App\Models\Queue;
 use App\Models\Server;
-use App\Models\Site;
+use App\SSH\Services\ProcessManager\ProcessManager;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class CreateQueue
+class EditQueue
 {
     /**
      * @throws ValidationException
      */
-    public function create(mixed $queueable, array $input): void
+    public function edit(Queue $queue, array $input): void
     {
-        $queue = new Queue([
-            'server_id' => $queueable instanceof Server ? $queueable->id : $queueable->server_id,
-            'site_id' => $queueable instanceof Site ? $queueable->id : null,
+        $queue->fill([
             'command' => $input['command'],
             'user' => $input['user'],
             'auto_start' => $input['auto_start'] ? 1 : 0,
             'auto_restart' => $input['auto_restart'] ? 1 : 0,
             'numprocs' => $input['numprocs'],
-            'status' => QueueStatus::CREATING,
+            'status' => QueueStatus::RESTARTING,
         ]);
         $queue->save();
 
         dispatch(function () use ($queue) {
-            $queue->server->processManager()->handler()->create(
+            /** @var ProcessManager $processManager */
+            $processManager = $queue->server->processManager()->handler();
+            $processManager->delete($queue->id, $queue->site_id);
+
+            $processManager->create(
                 $queue->id,
                 $queue->command,
                 $queue->user,
@@ -42,7 +44,8 @@ class CreateQueue
             $queue->status = QueueStatus::RUNNING;
             $queue->save();
         })->catch(function () use ($queue) {
-            $queue->delete();
+            $queue->status = QueueStatus::FAILED;
+            $queue->save();
         })->onConnection('ssh');
     }
 

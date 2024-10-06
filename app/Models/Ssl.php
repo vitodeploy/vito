@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SslStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,8 @@ use Illuminate\Support\Str;
  * @property Site $site
  * @property string $ca_path
  * @property ?array $domains
+ * @property int $log_id
+ * @property ?ServerLog $log
  */
 class Ssl extends AbstractModel
 {
@@ -32,6 +35,7 @@ class Ssl extends AbstractModel
         'expires_at',
         'status',
         'domains',
+        'log_id',
     ];
 
     protected $casts = [
@@ -41,6 +45,14 @@ class Ssl extends AbstractModel
         'ca' => 'encrypted',
         'expires_at' => 'datetime',
         'domains' => 'array',
+        'log_id' => 'integer',
+    ];
+
+    public static array $statusColors = [
+        SslStatus::CREATED => 'success',
+        SslStatus::CREATING => 'warning',
+        SslStatus::DELETING => 'warning',
+        SslStatus::FAILED => 'danger',
     ];
 
     public function site(): BelongsTo
@@ -125,5 +137,10 @@ class Ssl extends AbstractModel
         $this->save();
 
         return $this->domains;
+    }
+
+    public function log(): BelongsTo
+    {
+        return $this->belongsTo(ServerLog::class);
     }
 }

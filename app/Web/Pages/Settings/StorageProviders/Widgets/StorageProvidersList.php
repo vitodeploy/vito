@@ -8,7 +8,7 @@ use App\Web\Pages\Settings\StorageProviders\Actions\Edit;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
@@ -26,11 +26,12 @@ class StorageProvidersList extends Widget
     protected function getTableColumns(): array
     {
         return [
-            ImageColumn::make('image_url')
-                ->label('Provider')
-                ->size(24),
+            IconColumn::make('provider')
+                ->icon(fn (StorageProvider $record) => 'icon-'.$record->provider)
+                ->tooltip(fn (StorageProvider $record) => $record->provider)
+                ->width(24),
             TextColumn::make('name')
-                ->default(fn ($record) => $record->profile)
+                ->default(fn (StorageProvider $record) => $record->profile)
                 ->label('Name')
                 ->searchable()
                 ->sortable(),

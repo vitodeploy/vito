@@ -2,6 +2,7 @@
 
 namespace App\SSH\Services\Webserver;
 
+use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -113,7 +114,7 @@ class Nginx extends AbstractWebserver
     }
 
     /**
-     * @throws SSLCreationException
+     * @throws SSHError
      */
     public function setupSSL(Ssl $ssl): void
     {
@@ -136,7 +137,7 @@ class Nginx extends AbstractWebserver
                 'pk_path' => $ssl->getPkPath(),
             ]);
         }
-        $result = $this->service->server->ssh()->exec(
+        $result = $this->service->server->ssh()->setLog($ssl->log)->exec(
             $command,
             'create-ssl',
             $ssl->site_id

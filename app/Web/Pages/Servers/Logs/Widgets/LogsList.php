@@ -26,6 +26,8 @@ class LogsList extends Widget
 
     public ?string $label = '';
 
+    protected $listeners = ['$refresh'];
+
     protected function getTableQuery(): Builder
     {
         return ServerLog::query()

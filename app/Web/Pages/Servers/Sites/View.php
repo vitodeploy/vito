@@ -79,11 +79,19 @@ class View extends Page
 
     public function getHeaderActions(): array
     {
-        $actions = [];
+        $actions = [
+            Action::make('read-the-docs')
+                ->label('Read the Docs')
+                ->icon('heroicon-o-document-text')
+                ->color('gray')
+                ->url('https://vitodeploy.com/sites/application.html')
+                ->openUrlInNewTab(),
+        ];
         $actionsGroup = [];
 
         if (in_array(SiteFeature::DEPLOYMENT, $this->site->type()->supportedFeatures())) {
             $actions[] = $this->deployAction();
+            $actionsGroup[] = $this->autoDeploymentAction();
             $actionsGroup[] = $this->deploymentScriptAction();
         }
 
@@ -126,6 +134,27 @@ class View extends Page
                         ->send();
 
                     $this->dispatch('$refresh');
+                });
+            });
+    }
+
+    private function autoDeploymentAction(): Action
+    {
+        return Action::make('auto-deployment')
+            ->label(fn () => $this->site->isAutoDeployment() ? 'Disable Auto Deployment' : 'Enable Auto Deployment')
+            ->modalHeading(fn () => $this->site->isAutoDeployment() ? 'Disable Auto Deployment' : 'Enable Auto Deployment')
+            ->modalIconColor(fn () => $this->site->isAutoDeployment() ? 'red' : 'green')
+            ->requiresConfirmation()
+            ->action(function () {
+                run_action($this, function () {
+                    $this->site->isAutoDeployment()
+                        ? $this->site->disableAutoDeployment()
+                        : $this->site->enableAutoDeployment();
+
+                    Notification::make()
+                        ->success()
+                        ->title('Auto deployment '.($this->site->isAutoDeployment() ? 'disabled' : 'enabled').'!')
+                        ->send();
                 });
             });
     }

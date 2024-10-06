@@ -114,7 +114,7 @@ class ServerLog extends AbstractModel
         return '';
     }
 
-    public static function log(Server $server, string $type, string $content, ?Site $site = null): void
+    public static function log(Server $server, string $type, string $content, ?Site $site = null): static
     {
         $log = new static([
             'server_id' => $server->id,
@@ -125,6 +125,8 @@ class ServerLog extends AbstractModel
         ]);
         $log->save();
         $log->write($content);
+
+        return $log;
     }
 
     public static function make(Server $server, string $type): ServerLog

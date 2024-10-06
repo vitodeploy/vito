@@ -16,7 +16,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
-use Throwable;
 
 class Index extends Page
 {
@@ -228,21 +227,12 @@ class Index extends Page
                         ]),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function ($input) {
-                    $this->authorize('create', Server::class);
-
-                    $this->validate();
-
-                    try {
-                        $server = app(CreateServerAction::class)->create(auth()->user(), $input);
+                ->action(function (array $data) {
+                    run_action($this, function () use ($data) {
+                        $server = app(CreateServerAction::class)->create(auth()->user(), $data);
 
                         $this->redirect(View::getUrl(['server' => $server]));
-                    } catch (Throwable $e) {
-                        Notification::make()
-                            ->title($e->getMessage())
-                            ->danger()
-                            ->send();
-                    }
+                    });
                 }),
         ];
     }

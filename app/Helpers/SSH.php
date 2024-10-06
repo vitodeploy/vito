@@ -51,7 +51,7 @@ class SSH
         return $this;
     }
 
-    public function setLog(ServerLog $log): self
+    public function setLog(?ServerLog $log): self
     {
         $this->log = $log;
 
@@ -93,7 +93,6 @@ class SSH
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        ds($command);
         if (! $this->log && $log) {
             $this->log = ServerLog::make($this->server, $log);
             if ($siteId) {

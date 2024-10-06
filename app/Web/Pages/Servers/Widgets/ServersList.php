@@ -6,6 +6,7 @@ use App\Models\Server;
 use App\Web\Pages\Servers\Settings;
 use App\Web\Pages\Servers\View;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
@@ -23,6 +24,10 @@ class ServersList extends Widget
     protected function getTableColumns(): array
     {
         return [
+            IconColumn::make('provider')
+                ->icon(fn (Server $record) => 'icon-'.$record->provider)
+                ->tooltip(fn (Server $record) => $record->provider)
+                ->width(24),
             TextColumn::make('name')
                 ->searchable()
                 ->sortable(),

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\QueueStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -43,6 +44,17 @@ class Queue extends AbstractModel
         'auto_restart' => 'boolean',
         'numprocs' => 'integer',
         'redirect_stderr' => 'boolean',
+    ];
+
+    public static array $statusColors = [
+        QueueStatus::RUNNING => 'success',
+        QueueStatus::CREATING => 'warning',
+        QueueStatus::DELETING => 'warning',
+        QueueStatus::FAILED => 'danger',
+        QueueStatus::STARTING => 'warning',
+        QueueStatus::STOPPING => 'warning',
+        QueueStatus::RESTARTING => 'warning',
+        QueueStatus::STOPPED => 'gray',
     ];
 
     public function getServerIdAttribute(int $value): int

@@ -11,7 +11,7 @@ use Exception;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -33,9 +33,10 @@ class ServicesList extends TableWidget
     protected function getTableColumns(): array
     {
         return [
-            ImageColumn::make('image_url')
+            IconColumn::make('id')
                 ->label('Service')
-                ->size(24),
+                ->icon(fn (Service $record) => 'icon-'.$record->name)
+                ->width(24),
             TextColumn::make('name')
                 ->sortable(),
             TextColumn::make('version')
@@ -59,21 +60,22 @@ class ServicesList extends TableWidget
         return $this->table
             ->actions([
                 ActionGroup::make([
-                    $this->serviceAction('start'),
-                    $this->serviceAction('stop'),
-                    $this->serviceAction('restart'),
-                    $this->serviceAction('disable'),
-                    $this->serviceAction('enable'),
+                    $this->serviceAction('start', 'heroicon-o-play'),
+                    $this->serviceAction('stop', 'heroicon-o-stop'),
+                    $this->serviceAction('restart', 'heroicon-o-arrow-path'),
+                    $this->serviceAction('disable', 'heroicon-o-x-mark'),
+                    $this->serviceAction('enable', 'heroicon-o-check'),
                     $this->uninstallAction(),
                 ]),
             ]);
     }
 
-    private function serviceAction(string $type): Action
+    private function serviceAction(string $type, string $icon): Action
     {
         return Action::make($type)
-            ->authorize(fn (Service $service) => auth()->user()?->can($type, $service))
+            ->authorize(fn (Service $service) => auth()->user()?->can('update', $service))
             ->label(ucfirst($type).' Service')
+            ->icon($icon)
             ->action(function (Service $service) use ($type) {
                 try {
                     app(Manage::class)->$type($service);
@@ -95,6 +97,7 @@ class ServicesList extends TableWidget
         return Action::make('uninstall')
             ->authorize(fn (Service $service) => auth()->user()?->can('delete', $service))
             ->label('Uninstall Service')
+            ->icon('heroicon-o-trash')
             ->color('danger')
             ->requiresConfirmation()
             ->action(function (Service $service) {
