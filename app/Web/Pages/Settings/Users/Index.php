@@ -38,7 +38,7 @@ class Index extends Page
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
+            CreateAction::make('create')
                 ->label('Create User')
                 ->icon('heroicon-o-plus')
                 ->authorize('create', User::class)

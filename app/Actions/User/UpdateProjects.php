@@ -18,6 +18,8 @@ class UpdateProjects
             $user->save();
         }
 
+        $user->refresh();
+
         /** @var Project $firstProject */
         $firstProject = $user->projects->first();
         if (! $user->currentProject && $firstProject) {

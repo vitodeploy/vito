@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\UserRole;
 use App\Traits\HasTimezoneTimestamps;
 use Carbon\Carbon;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -39,7 +41,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasFactory;
     use HasTimezoneTimestamps;
@@ -156,5 +158,10 @@ class User extends Authenticatable
                 $query->where('user_id', $this->id);
             });
         });
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
     }
 }

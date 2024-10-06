@@ -87,13 +87,6 @@ class UsersList extends Widget
                     ->label('Projects')
                     ->icon('heroicon-o-rectangle-stack')
                     ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->action(function ($record, array $data) {
-                        app(UpdateProjects::class)->update($record, $data);
-                        Notification::make()
-                            ->title('Projects Updated')
-                            ->success()
-                            ->send();
-                    })
                     ->form(function (Form $form, $record) {
                         return $form
                             ->schema([
@@ -105,10 +98,17 @@ class UsersList extends Widget
                             ])
                             ->columns(1);
                     })
+                    ->action(function ($record, array $data) {
+                        app(UpdateProjects::class)->update($record, $data);
+                        Notification::make()
+                            ->title('Projects Updated')
+                            ->success()
+                            ->send();
+                    })
                     ->modalSubmitActionLabel('Save')
                     ->modalWidth(MaxWidth::Large),
-                DeleteAction::make()
-                    ->authorize(fn ($record) => auth()->user()->can('delete', $record)),
+                DeleteAction::make('delete')
+                    ->authorize(fn (User $record) => auth()->user()->can('delete', $record)),
             ]);
     }
 }

@@ -80,7 +80,7 @@ class WebServiceProvider extends ServiceProvider
         return $panel
             ->default()
             ->id('app')
-            ->path('app')
+            ->path('')
             ->passwordReset()
             ->colors([
                 'primary' => Color::Indigo,

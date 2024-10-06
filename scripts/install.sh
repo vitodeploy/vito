@@ -200,8 +200,9 @@ echo "* * * * * cd /home/${V_USERNAME}/vito && php artisan schedule:run >> /dev/
 # cleanup
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 
-# cache
-php artisan config:cache
+# optimize
+php artisan optimize
+php artisan icons:cache
 
 # start worker
 supervisorctl start worker:*
