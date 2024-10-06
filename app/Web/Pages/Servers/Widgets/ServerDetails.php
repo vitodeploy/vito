@@ -99,7 +99,12 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                             ->suffixAction(
                                 EditTags::infolist($this->server)
                             ),
-
+                        TextEntry::make('public_key')
+                            ->label('Public Key')
+                            ->limit(30)
+                            ->inlineLabel()
+                            ->copyable()
+                            ->tooltip('Copy public key to clipboard'),
                     ]),
             ])
             ->record($this->server);

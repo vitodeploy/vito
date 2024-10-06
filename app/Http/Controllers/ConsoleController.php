@@ -3,24 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Server;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ConsoleController extends Controller
 {
-    public function index(Server $server): View
-    {
-        $this->authorize('manage', $server);
-
-        return view('console.index', [
-            'server' => $server,
-        ]);
-    }
-
     public function run(Server $server, Request $request)
     {
-        $this->authorize('manage', $server);
+        $this->authorize('update', $server);
 
         $this->validate($request, [
             'user' => [
@@ -34,7 +24,11 @@ class ConsoleController extends Controller
             function () use ($server, $request) {
                 $ssh = $server->ssh($request->user);
                 $log = 'console-'.time();
-                $ssh->exec(command: $request->command, log: $log, stream: true);
+                $ssh->exec(command: $request->command, log: $log, stream: true, streamCallback: function ($output) {
+                    echo $output;
+                    ob_flush();
+                    flush();
+                });
             },
             200,
             [
