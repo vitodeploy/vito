@@ -15,7 +15,7 @@ class UpdateProject extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.components.form';
+    protected static string $view = 'components.form';
 
     public Project $project;
 

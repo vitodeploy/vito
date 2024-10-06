@@ -12,7 +12,7 @@ class Console extends Component
 
     public function render(): View
     {
-        return view('web.components.console', [
+        return view('components.console', [
             'server' => $this->server,
         ]);
     }

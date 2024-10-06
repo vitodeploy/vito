@@ -12,7 +12,7 @@ class Link extends Component implements Htmlable
 
     public function render(): View
     {
-        return view('web.components.link');
+        return view('components.link');
     }
 
     public function toHtml(): View|string

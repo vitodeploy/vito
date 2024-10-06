@@ -22,7 +22,7 @@ class SiteSummary extends Widget implements HasForms, HasInfolists
 
     protected static bool $isLazy = false;
 
-    protected static string $view = 'web.components.infolist';
+    protected static string $view = 'components.infolist';
 
     public Site $site;
 

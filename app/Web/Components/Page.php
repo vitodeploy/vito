@@ -7,7 +7,7 @@ use Illuminate\View\ComponentAttributeBag;
 
 abstract class Page extends BasePage
 {
-    protected static string $view = 'web.components.page';
+    protected static string $view = 'components.page';
 
     protected ?string $live = '5s';
 

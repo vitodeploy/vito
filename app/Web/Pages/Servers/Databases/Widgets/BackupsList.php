@@ -65,7 +65,7 @@ class BackupsList extends Widget
                     ->color('gray')
                     ->tooltip('Show backup files')
                     ->authorize(fn (Backup $record) => auth()->user()->can('viewAny', [BackupFile::class, $record]))
-                    ->modalContent(fn (Backup $record) => view('web.components.dynamic-widget', [
+                    ->modalContent(fn (Backup $record) => view('components.dynamic-widget', [
                         'widget' => BackupFilesList::class,
                         'params' => [
                             'backup' => $record,

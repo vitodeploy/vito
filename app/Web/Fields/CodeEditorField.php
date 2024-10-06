@@ -6,7 +6,7 @@ use Filament\Forms\Components\Field;
 
 class CodeEditorField extends Field
 {
-    protected string $view = 'web.fields.code-editor';
+    protected string $view = 'fields.code-editor';
 
     public string $lang = '';
 

@@ -26,7 +26,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     protected static bool $isLazy = false;
 
-    protected static string $view = 'web.components.infolist';
+    protected static string $view = 'components.infolist';
 
     public bool $enabled = false;
 
@@ -52,7 +52,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
                         ->visible(! $this->enabled),
                     ViewEntry::make('qr_code')
                         ->hiddenLabel()
-                        ->view('web.components.container', [
+                        ->view('components.container', [
                             'content' => $this->enabled ? auth()->user()->twoFactorQrCodeSvg() : null,
                         ])
                         ->visible($this->enabled && $this->showCodes),
@@ -69,7 +69,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
                     ViewEntry::make('recovery_codes')
                         ->hiddenLabel()
                         ->extraAttributes(['class' => 'rounded-lg border border-gray-100 p-2 dark:border-gray-700'])
-                        ->view('web.components.container', [
+                        ->view('components.container', [
                             'content' => $this->enabled ? implode('</br>', json_decode(decrypt(auth()->user()->two_factor_recovery_codes), true)) : null,
                         ])
                         ->visible($this->enabled),

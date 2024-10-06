@@ -44,7 +44,7 @@ class WebServiceProvider extends ServiceProvider
         );
         FilamentView::registerRenderHook(
             PanelsRenderHook::SIDEBAR_FOOTER,
-            fn () => view('web.components.app-version')
+            fn () => view('components.app-version')
         );
         FilamentAsset::register([
             Js::make('app', Vite::asset('resources/js/app.js'))->module(),
@@ -86,7 +86,7 @@ class WebServiceProvider extends ServiceProvider
                 'primary' => Color::Indigo,
             ])
             ->viteTheme('resources/css/filament/app/theme.css')
-            ->brandLogo(fn () => view('web.components.brand'))
+            ->brandLogo(fn () => view('components.brand'))
             ->brandLogoHeight('30px')
             ->discoverPages(in: app_path('Web/Pages'), for: 'App\\Web\\Pages')
             ->middleware([

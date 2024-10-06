@@ -6,7 +6,7 @@ use Filament\Forms\Components\Field;
 
 class AlertField extends Field
 {
-    protected string $view = 'web.fields.alert';
+    protected string $view = 'fields.alert';
 
     public string $color = 'blue';
 

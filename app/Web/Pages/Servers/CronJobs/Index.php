@@ -48,7 +48,7 @@ class Index extends Page
                 ->form([
                     TextInput::make('command')
                         ->rules(fn (callable $get) => CreateCronJob::rules($get())['command'])
-                        ->helperText(fn () => view('web.components.link', [
+                        ->helperText(fn () => view('components.link', [
                             'href' => 'https://vitodeploy.com/servers/cronjobs.html',
                             'external' => true,
                             'text' => 'How the command should look like?',

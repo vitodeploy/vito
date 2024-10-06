@@ -8,7 +8,5 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::middleware(['server-is-ready'])->group(function () {
-        Route::post('/{server}/console', [ConsoleController::class, 'run'])->name('servers.console.run');
-    });
+    Route::post('/{server}/console', [ConsoleController::class, 'run'])->name('servers.console.run');
 });

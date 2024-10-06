@@ -18,7 +18,7 @@ class FilterForm extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'web.components.form';
+    protected static string $view = 'components.form';
 
     public ?array $data = [
         'period' => '1h',
@@ -73,7 +73,7 @@ class FilterForm extends Widget implements HasForms
                     ]),
                 ViewField::make('data')
                     ->reactive()
-                    ->view('web.components.dynamic-widget', [
+                    ->view('components.dynamic-widget', [
                         'widget' => Metrics::class,
                         'params' => [
                             'server' => $this->server,

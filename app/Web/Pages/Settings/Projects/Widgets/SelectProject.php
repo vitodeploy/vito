@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 
 class SelectProject extends Widget
 {
-    protected static string $view = 'web.widgets.select-project';
+    protected static string $view = 'widgets.select-project';
 
     public ?Project $currentProject;
 
