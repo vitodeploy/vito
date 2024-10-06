@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Exceptions\SSHAuthenticationError;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHConnectionError;
+use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use Exception;
@@ -88,11 +89,11 @@ class SSH
     }
 
     /**
-     * @throws SSHCommandError
-     * @throws SSHConnectionError
+     * @throws SSHError
      */
-    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false): string
+    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
+        ds($command);
         if (! $this->log && $log) {
             $this->log = ServerLog::make($this->server, $log);
             if ($siteId) {
@@ -116,11 +117,10 @@ class SSH
 
             $this->connection->setTimeout(0);
             if ($stream) {
-                $this->connection->exec($command, function ($output) {
+                $this->connection->exec($command, function ($output) use ($streamCallback) {
                     $this->log?->write($output);
-                    echo $output;
-                    ob_flush();
-                    flush();
+
+                    return $streamCallback($output);
                 });
 
                 return '';
@@ -130,14 +130,19 @@ class SSH
                 $this->log?->write($output);
 
                 if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {
-                    throw new SSHCommandError('SSH command failed with an error', $this->connection->getExitStatus());
+                    throw new SSHCommandError(
+                        message: 'SSH command failed with an error',
+                        log: $this->log
+                    );
                 }
 
                 return $output;
             }
         } catch (Throwable $e) {
-            throw $e;
-            throw new SSHCommandError($e->getMessage());
+            throw new SSHCommandError(
+                message: $e->getMessage(),
+                log: $this->log
+            );
         }
     }
 

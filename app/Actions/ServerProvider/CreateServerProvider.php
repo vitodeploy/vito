@@ -6,7 +6,6 @@ use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\ServerProvider as ServerProviderContract;
 use Exception;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -17,11 +16,7 @@ class CreateServerProvider
      */
     public function create(User $user, array $input): ServerProvider
     {
-        $this->validateInput($input);
-
-        $provider = $this->getProvider($input['provider']);
-
-        $this->validateProvider($provider, $input);
+        $provider = static::getProvider($input['provider']);
 
         try {
             $provider->connect($input);
@@ -33,7 +28,7 @@ class CreateServerProvider
             ]);
         }
 
-        $serverProvider = new ServerProvider();
+        $serverProvider = new ServerProvider;
         $serverProvider->user_id = $user->id;
         $serverProvider->profile = $input['name'];
         $serverProvider->provider = $input['provider'];
@@ -44,19 +39,16 @@ class CreateServerProvider
         return $serverProvider;
     }
 
-    private function getProvider($name): ServerProviderContract
+    private static function getProvider($name): ServerProviderContract
     {
         $providerClass = config('core.server_providers_class.'.$name);
 
-        return new $providerClass();
+        return new $providerClass;
     }
 
-    /**
-     * @throws ValidationException
-     */
-    private function validateInput(array $input): void
+    public static function rules(): array
     {
-        Validator::make($input, [
+        return [
             'name' => [
                 'required',
             ],
@@ -65,14 +57,11 @@ class CreateServerProvider
                 Rule::in(config('core.server_providers')),
                 Rule::notIn('custom'),
             ],
-        ])->validate();
+        ];
     }
 
-    /**
-     * @throws ValidationException
-     */
-    private function validateProvider(ServerProviderContract $provider, array $input): void
+    public static function providerRules(array $input): array
     {
-        Validator::make($input, $provider->credentialValidationRules($input))->validate();
+        return static::getProvider($input['provider'])->credentialValidationRules($input);
     }
 }

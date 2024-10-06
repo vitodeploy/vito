@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 
 class UpdateUser
 {
-    public function update(User $user, array $input): void
+    public function update(User $user, array $input): User
     {
         $this->validate($user, $input);
 
@@ -18,18 +18,29 @@ class UpdateUser
         $user->timezone = $input['timezone'];
         $user->role = $input['role'];
 
-        if (isset($input['password']) && $input['password'] !== null) {
+        if (isset($input['password'])) {
             $user->password = bcrypt($input['password']);
         }
 
         $user->save();
+
+        return $user;
     }
 
     private function validate(User $user, array $input): void
     {
-        Validator::make($input, [
+        Validator::make($input, self::rules($user))->validate();
+    }
+
+    public static function rules(User $user): array
+    {
+        return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => [
+                'required',
+                'email', 'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
             'timezone' => [
                 'required',
                 Rule::in(timezone_identifiers_list()),
@@ -37,12 +48,7 @@ class UpdateUser
             'role' => [
                 'required',
                 Rule::in([UserRole::ADMIN, UserRole::USER]),
-                function ($attribute, $value, $fail) use ($user) {
-                    if ($user->is(auth()->user()) && $value !== $user->role) {
-                        $fail('You cannot change your own role');
-                    }
-                },
             ],
-        ])->validate();
+        ];
     }
 }

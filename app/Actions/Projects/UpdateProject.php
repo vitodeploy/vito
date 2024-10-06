@@ -23,15 +23,21 @@ class UpdateProject
         return $project;
     }
 
-    private function validate(Project $project, array $input): void
+    public static function rules(Project $project): array
     {
-        Validator::make($input, [
+        return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('projects')->where('user_id', $project->user_id)->ignore($project->id),
+                Rule::unique('projects', 'name')->ignore($project->id),
+                'lowercase:projects,name',
             ],
-        ])->validate();
+        ];
+    }
+
+    private function validate(Project $project, array $input): void
+    {
+        Validator::make($input, self::rules($project))->validate();
     }
 }

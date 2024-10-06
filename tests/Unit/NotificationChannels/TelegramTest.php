@@ -92,7 +92,7 @@ class TelegramTest extends TestCase
 
         Http::fake();
 
-        $provider->send($channel, new TestNotification());
+        $provider->send($channel, new TestNotification);
 
         Http::assertSent(function (Request $request) {
             if ($request->url() === 'https://api.telegram.org/botxxxxx/sendMessage') {

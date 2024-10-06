@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BackupFileStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,6 +60,16 @@ class BackupFile extends AbstractModel
             });
         });
     }
+
+    public static array $statusColors = [
+        BackupFileStatus::CREATED => 'success',
+        BackupFileStatus::CREATING => 'warning',
+        BackupFileStatus::FAILED => 'danger',
+        BackupFileStatus::DELETING => 'warning',
+        BackupFileStatus::RESTORING => 'warning',
+        BackupFileStatus::RESTORED => 'primary',
+        BackupFileStatus::RESTORE_FAILED => 'danger',
+    ];
 
     public function backup(): BelongsTo
     {

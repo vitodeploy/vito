@@ -17,9 +17,7 @@ class Vultr extends AbstractProvider
 
     public function createRules($input): array
     {
-        $rules = [
-            'os' => 'required|in:'.implode(',', config('core.operating_systems')),
-        ];
+        $rules = [];
         // plans
         $plans = [];
         foreach (config('serverproviders.vultr.plans') as $plan) {
@@ -71,14 +69,18 @@ class Vultr extends AbstractProvider
         return true;
     }
 
-    public function plans(): array
+    public function plans(?string $region): array
     {
-        return config('serverproviders.vultr.plans');
+        return collect(config('serverproviders.vultr.plans'))
+            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+            ->toArray();
     }
 
     public function regions(): array
     {
-        return config('serverproviders.vultr.regions');
+        return collect(config('serverproviders.vultr.regions'))
+            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+            ->toArray();
     }
 
     /**

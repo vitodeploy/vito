@@ -6,17 +6,14 @@ use App\Enums\SshKeyStatus;
 use App\Models\Server;
 use App\Models\SshKey;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class DeployKeyToServer
 {
-    public function deploy(User $user, Server $server, array $input): void
+    public function deploy(Server $server, array $input): void
     {
-        $this->validate($user, $input);
-
         /** @var SshKey $sshKey */
-        $sshKey = SshKey::findOrFail($input['key_id']);
+        $sshKey = SshKey::query()->findOrFail($input['key_id']);
         $server->sshKeys()->attach($sshKey, [
             'status' => SshKeyStatus::ADDING,
         ]);
@@ -26,13 +23,14 @@ class DeployKeyToServer
         ]);
     }
 
-    private function validate(User $user, array $input): void
+    public static function rules(User $user, Server $server): array
     {
-        Validator::make($input, [
+        return [
             'key_id' => [
                 'required',
                 Rule::exists('ssh_keys', 'id')->where('user_id', $user->id),
+                Rule::unique('server_ssh_keys', 'ssh_key_id')->where('server_id', $server->id),
             ],
-        ])->validate();
+        ];
     }
 }

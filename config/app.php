@@ -193,6 +193,7 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\Providers\WebServiceProvider::class,
     ],
 
     /*
@@ -210,4 +211,5 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
+    'version' => '2.0.0',
 ];

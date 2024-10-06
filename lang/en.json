@@ -1,0 +1,5 @@
+{
+    "servers.create.public_key_text": "mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys && echo ':public_key' >> /root/.ssh/authorized_keys",
+    "servers.create.public_key_warning": "Your server needs to have a new unused installation of supported operating systems and must have a root user. To get started, add our public key to /root/.ssh/authorized_keys file by running the bellow command on your server as root.",
+    "server_providers.plan": ":name - :cpu Cores(:architecture) - :memory - :disk Disk"
+}

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\SiteStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\SiteTypes\SiteType;
 use App\SSH\Services\Webserver\Webserver;
+use App\Traits\HasProjectThroughServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -40,10 +41,12 @@ use Illuminate\Support\Str;
  * @property Ssl[] $ssls
  * @property ?Ssl $activeSsl
  * @property string $ssh_key_name
+ * @property ?SourceControl $sourceControl
  */
 class Site extends AbstractModel
 {
     use HasFactory;
+    use HasProjectThroughServer;
 
     protected $fillable = [
         'server_id',
@@ -73,6 +76,13 @@ class Site extends AbstractModel
         'source_control_id' => 'integer',
     ];
 
+    public static array $statusColors = [
+        SiteStatus::READY => 'success',
+        SiteStatus::INSTALLING => 'warning',
+        SiteStatus::INSTALLATION_FAILED => 'danger',
+        SiteStatus::DELETING => 'danger',
+    ];
+
     public static function boot(): void
     {
         parent::boot();
@@ -90,6 +100,21 @@ class Site extends AbstractModel
                 'content' => '',
             ]);
         });
+    }
+
+    public function isReady(): bool
+    {
+        return $this->status === SiteStatus::READY;
+    }
+
+    public function isInstalling(): bool
+    {
+        return in_array($this->status, [SiteStatus::INSTALLING, SiteStatus::INSTALLATION_FAILED]);
+    }
+
+    public function isInstallationFailed(): bool
+    {
+        return $this->status === SiteStatus::INSTALLATION_FAILED;
     }
 
     public function server(): BelongsTo
@@ -132,38 +157,14 @@ class Site extends AbstractModel
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
-    /**
-     * @throws SourceControlIsNotConnected
-     */
-    public function sourceControl(): SourceControl|HasOne|null|Model
+    public function sourceControl(): BelongsTo
     {
-        $sourceControl = null;
-
-        if (! $this->source_control && ! $this->source_control_id) {
-            return null;
-        }
-
-        if ($this->source_control) {
-            $sourceControl = SourceControl::query()->where('provider', $this->source_control)->first();
-        }
-
-        if ($this->source_control_id) {
-            $sourceControl = SourceControl::query()->find($this->source_control_id);
-        }
-
-        if (! $sourceControl) {
-            throw new SourceControlIsNotConnected($this->source_control);
-        }
-
-        return $sourceControl;
+        return $this->belongsTo(SourceControl::class)->withTrashed();
     }
 
-    /**
-     * @throws SourceControlIsNotConnected
-     */
-    public function getFullRepositoryUrl()
+    public function getFullRepositoryUrl(): ?string
     {
-        return $this->sourceControl()->provider()->fullRepoUrl($this->repository, $this->getSshKeyName());
+        return $this->sourceControl?->provider()?->fullRepoUrl($this->repository, $this->getSshKeyName());
     }
 
     public function getAliasesString(): string
@@ -234,13 +235,13 @@ class Site extends AbstractModel
             return;
         }
 
-        if (! $this->sourceControl()?->getRepo($this->repository)) {
+        if (! $this->sourceControl?->getRepo($this->repository)) {
             throw new SourceControlIsNotConnected($this->source_control);
         }
 
         $gitHook = new GitHook([
             'site_id' => $this->id,
-            'source_control_id' => $this->sourceControl()->id,
+            'source_control_id' => $this->source_control_id,
             'secret' => Str::uuid()->toString(),
             'actions' => ['deploy'],
             'events' => ['push'],
@@ -254,7 +255,7 @@ class Site extends AbstractModel
      */
     public function disableAutoDeployment(): void
     {
-        if (! $this->sourceControl()?->getRepo($this->repository)) {
+        if (! $this->sourceControl?->getRepo($this->repository)) {
             throw new SourceControlIsNotConnected($this->source_control);
         }
 

@@ -8,6 +8,9 @@ use App\Models\Tag;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
+/**
+ * @deprecated
+ */
 class DetachTag
 {
     public function detach(Tag $tag, array $input): void

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DeploymentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -35,6 +36,12 @@ class Deployment extends AbstractModel
         'deployment_script_id' => 'integer',
         'log_id' => 'integer',
         'commit_data' => 'json',
+    ];
+
+    public static array $statusColors = [
+        DeploymentStatus::DEPLOYING => 'warning',
+        DeploymentStatus::FINISHED => 'success',
+        DeploymentStatus::FAILED => 'danger',
     ];
 
     public function site(): BelongsTo

@@ -6,6 +6,8 @@ use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
+use Exception;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
@@ -16,7 +18,6 @@ class Hetzner extends AbstractProvider
     public function createRules(array $input): array
     {
         return [
-            'os' => 'required|in:'.implode(',', config('core.operating_systems')),
             'plan' => 'required',
             'region' => 'required',
         ];
@@ -46,6 +47,7 @@ class Hetzner extends AbstractProvider
 
     /**
      * @throws CouldNotConnectToProvider
+     * @throws ConnectionException
      */
     public function connect(?array $credentials = null): bool
     {
@@ -57,18 +59,53 @@ class Hetzner extends AbstractProvider
         return true;
     }
 
-    public function plans(): array
+    public function plans(?string $region): array
     {
-        return config('serverproviders.hetzner.plans');
+        try {
+            $plans = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/server_types', ['per_page' => 50])
+                ->json();
+
+            return collect($plans['server_types'])->filter(function ($type) use ($region) {
+                return collect($type['prices'])->filter(function ($price) use ($region) {
+                    return $price['location'] === $region;
+                });
+            })
+                ->mapWithKeys(function ($value) {
+                    return [
+                        $value['name'] => __('server_providers.plan', [
+                            'name' => $value['name'],
+                            'cpu' => $value['cores'],
+                            'architecture' => $value['architecture'],
+                            'memory' => $value['memory'],
+                            'disk' => $value['disk'],
+                        ]),
+                    ];
+                })
+                ->toArray();
+        } catch (Exception) {
+            return [];
+        }
     }
 
     public function regions(): array
     {
-        return config('serverproviders.hetzner.regions');
+        try {
+            $regions = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/locations', ['per_page' => 50])
+                ->json();
+
+            return collect($regions['locations'])
+                ->mapWithKeys(fn ($value) => [$value['name'] => $value['city'].' - '.$value['country']])
+                ->toArray();
+        } catch (Exception) {
+            return [];
+        }
     }
 
     /**
      * @throws ServerProviderError
+     * @throws ConnectionException
      */
     public function create(): void
     {
@@ -106,6 +143,9 @@ class Hetzner extends AbstractProvider
         $this->server->save();
     }
 
+    /**
+     * @throws ConnectionException
+     */
     public function isRunning(): bool
     {
         $status = Http::withToken($this->server->serverProvider->credentials['token'])
@@ -118,6 +158,9 @@ class Hetzner extends AbstractProvider
         return $status->json()['server']['status'] == 'running';
     }
 
+    /**
+     * @throws ConnectionException
+     */
     public function delete(): void
     {
         if (isset($this->server->provider_data['hetzner_id'])) {

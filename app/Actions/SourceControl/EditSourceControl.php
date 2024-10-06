@@ -4,20 +4,16 @@ namespace App\Actions\SourceControl;
 
 use App\Models\SourceControl;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class EditSourceControl
 {
     public function edit(SourceControl $sourceControl, User $user, array $input): void
     {
-        $this->validate($input);
-
         $sourceControl->profile = $input['name'];
         $sourceControl->url = $input['url'] ?? null;
         $sourceControl->project_id = isset($input['global']) && $input['global'] ? null : $user->current_project_id;
-
-        $this->validateProvider($sourceControl, $input);
 
         $sourceControl->provider_data = $sourceControl->provider()->createData($input);
 
@@ -31,24 +27,34 @@ class EditSourceControl
         $sourceControl->save();
     }
 
-    /**
-     * @throws ValidationException
-     */
-    private function validate(array $input): void
+    public static function rules(array $input): array
     {
         $rules = [
             'name' => [
                 'required',
             ],
+            'provider' => [
+                'required',
+                Rule::in(config('core.source_control_providers')),
+            ],
         ];
-        Validator::make($input, $rules)->validate();
+
+        return array_merge($rules, static::providerRules($input));
     }
 
     /**
      * @throws ValidationException
      */
-    private function validateProvider(SourceControl $sourceControl, array $input): void
+    private static function providerRules(array $input): array
     {
-        Validator::make($input, $sourceControl->provider()->createRules($input))->validate();
+        if (! isset($input['provider'])) {
+            return [];
+        }
+
+        $sourceControl = new SourceControl([
+            'provider' => $input['provider'],
+        ]);
+
+        return $sourceControl->provider()->createRules($input);
     }
 }

@@ -5,14 +5,11 @@ namespace App\Actions\Database;
 use App\Enums\BackupFileStatus;
 use App\Models\BackupFile;
 use App\Models\Database;
-use Illuminate\Support\Facades\Validator;
 
 class RestoreBackup
 {
     public function restore(BackupFile $backupFile, array $input): void
     {
-        $this->validate($input);
-
         /** @var Database $database */
         $database = Database::query()->findOrFail($input['database']);
         $backupFile->status = BackupFileStatus::RESTORING;
@@ -20,7 +17,9 @@ class RestoreBackup
         $backupFile->save();
 
         dispatch(function () use ($backupFile, $database) {
-            $database->server->database()->handler()->restoreBackup($backupFile, $database->name);
+            /** @var \App\SSH\Services\Database\Database $databaseHandler */
+            $databaseHandler = $database->server->database()->handler();
+            $databaseHandler->restoreBackup($backupFile, $database->name);
             $backupFile->status = BackupFileStatus::RESTORED;
             $backupFile->restored_at = now();
             $backupFile->save();
@@ -30,10 +29,13 @@ class RestoreBackup
         })->onConnection('ssh');
     }
 
-    private function validate(array $input): void
+    public static function rules(): array
     {
-        Validator::make($input, [
-            'database' => 'required|exists:databases,id',
-        ])->validate();
+        return [
+            'database' => [
+                'required',
+                'exists:databases,id',
+            ],
+        ];
     }
 }

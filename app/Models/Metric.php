@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,9 +17,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float $disk_total
  * @property float $disk_used
  * @property float $disk_free
+ * @property-read float|int $memory_total_in_bytes
+ * @property-read float|int $memory_used_in_bytes
+ * @property-read float|int $memory_free_in_bytes
+ * @property-read float|int $disk_total_in_bytes
+ * @property-read float|int $disk_used_in_bytes
+ * @property-read float|int $disk_free_in_bytes
  * @property Server $server
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class Metric extends Model
 {
@@ -49,5 +56,35 @@ class Metric extends Model
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    public function getMemoryTotalInBytesAttribute(): float|int
+    {
+        return $this->memory_total * 1024;
+    }
+
+    public function getMemoryUsedInBytesAttribute(): float|int
+    {
+        return $this->memory_used * 1024;
+    }
+
+    public function getMemoryFreeInBytesAttribute(): float|int
+    {
+        return $this->memory_free * 1024;
+    }
+
+    public function getDiskTotalInBytesAttribute(): float|int
+    {
+        return $this->disk_total * (1024 * 1024);
+    }
+
+    public function getDiskUsedInBytesAttribute(): float|int
+    {
+        return $this->disk_used * (1024 * 1024);
+    }
+
+    public function getDiskFreeInBytesAttribute(): float|int
+    {
+        return $this->disk_free * (1024 * 1024);
     }
 }

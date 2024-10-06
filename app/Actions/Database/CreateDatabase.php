@@ -5,28 +5,28 @@ namespace App\Actions\Database;
 use App\Enums\DatabaseStatus;
 use App\Models\Database;
 use App\Models\Server;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class CreateDatabase
 {
-    /**
-     * @throws ValidationException
-     */
     public function create(Server $server, array $input): Database
     {
-        $this->validate($server, $input);
-
         $database = new Database([
             'server_id' => $server->id,
             'name' => $input['name'],
         ]);
-        /** @var \App\SSH\Services\Database\Database */
+        /** @var \App\SSH\Services\Database\Database $databaseHandler */
         $databaseHandler = $server->database()->handler();
         $databaseHandler->create($database->name);
         $database->status = DatabaseStatus::READY;
         $database->save();
+
+        if (isset($input['user']) && $input['user']) {
+            $databaseUser = app(CreateDatabaseUser::class)->create($server, $input, [$database->name]);
+
+            app(LinkUser::class)->link($databaseUser, ['databases' => [$database->name]]);
+        }
 
         return $database;
     }
@@ -34,7 +34,7 @@ class CreateDatabase
     /**
      * @throws ValidationException
      */
-    private function validate(Server $server, array $input): void
+    public static function rules(Server $server, array $input): array
     {
         $rules = [
             'name' => [
@@ -57,6 +57,7 @@ class CreateDatabase
         if (isset($input['remote']) && $input['remote']) {
             $rules['host'] = 'required';
         }
-        Validator::make($input, $rules)->validate();
+
+        return $rules;
     }
 }

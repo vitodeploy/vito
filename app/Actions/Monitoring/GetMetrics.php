@@ -5,13 +5,13 @@ namespace App\Actions\Monitoring;
 use App\Models\Server;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class GetMetrics
 {
-    public function filter(Server $server, array $input): array
+    public function filter(Server $server, array $input): Collection
     {
         if (isset($input['from']) && isset($input['to']) && $input['from'] === $input['to']) {
             $input['from'] = Carbon::parse($input['from'])->format('Y-m-d').' 00:00:00';
@@ -23,8 +23,6 @@ class GetMetrics
         ];
 
         $input = array_merge($defaultInput, $input);
-
-        $this->validate($input);
 
         return $this->metrics(
             server: $server,
@@ -39,8 +37,8 @@ class GetMetrics
         Carbon $fromDate,
         Carbon $toDate,
         ?Expression $interval = null
-    ): array {
-        $metrics = DB::table('metrics')
+    ): Collection {
+        return DB::table('metrics')
             ->where('server_id', $server->id)
             ->whereBetween('created_at', [$fromDate->format('Y-m-d H:i:s'), $toDate->format('Y-m-d H:i:s')])
             ->select(
@@ -64,10 +62,6 @@ class GetMetrics
 
                 return $item;
             });
-
-        return [
-            'metrics' => $metrics,
-        ];
     }
 
     private function getFromDate(array $input): Carbon
@@ -110,14 +104,12 @@ class GetMetrics
             return DB::raw("strftime('%Y-%m-%d %H:00:00', created_at) as date_interval");
         }
 
-        if ($periodInHours > 24) {
-            return DB::raw("strftime('%Y-%m-%d 00:00:00', created_at) as date_interval");
-        }
+        return DB::raw("strftime('%Y-%m-%d 00:00:00', created_at) as date_interval");
     }
 
-    private function validate(array $input): void
+    public static function rules(array $input): array
     {
-        Validator::make($input, [
+        $rules = [
             'period' => [
                 'required',
                 Rule::in([
@@ -130,21 +122,13 @@ class GetMetrics
                     'custom',
                 ]),
             ],
-        ])->validate();
+        ];
 
-        if ($input['period'] === 'custom') {
-            Validator::make($input, [
-                'from' => [
-                    'required',
-                    'date',
-                    'before:to',
-                ],
-                'to' => [
-                    'required',
-                    'date',
-                    'after:from',
-                ],
-            ])->validate();
+        if (isset($input['period']) && $input['period'] === 'custom') {
+            $rules['from'] = ['required', 'date', 'before:to'];
+            $rules['to'] = ['required', 'date', 'after:from'];
         }
+
+        return $rules;
     }
 }

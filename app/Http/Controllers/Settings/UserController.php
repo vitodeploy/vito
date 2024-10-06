@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Actions\User\CreateUser;
+use App\Actions\User\UpdateProjects;
 use App\Actions\User\UpdateUser;
 use App\Facades\Toast;
 use App\Helpers\HtmxResponse;
 use App\Http\Controllers\Controller;
-use App\Models\Project;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -48,26 +47,7 @@ class UserController extends Controller
 
     public function updateProjects(User $user, Request $request): HtmxResponse
     {
-        $this->validate($request, [
-            'projects.*' => [
-                'required',
-                Rule::exists('projects', 'id'),
-            ],
-        ]);
-
-        $user->projects()->sync($request->projects);
-
-        if ($user->currentProject && ! $user->projects->contains($user->currentProject)) {
-            $user->current_project_id = null;
-            $user->save();
-        }
-
-        /** @var Project $firstProject */
-        $firstProject = $user->projects->first();
-        if (! $user->currentProject && $firstProject) {
-            $user->current_project_id = $firstProject->id;
-            $user->save();
-        }
+        app(UpdateProjects::class)->update($user, $request->input());
 
         Toast::success('Projects updated successfully');
 

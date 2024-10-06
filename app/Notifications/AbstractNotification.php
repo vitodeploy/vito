@@ -21,7 +21,7 @@ abstract class AbstractNotification extends Notification implements Notification
 
     public function toEmail(object $notifiable): MailMessage
     {
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject('Notification')
             ->line($this->rawText());
     }

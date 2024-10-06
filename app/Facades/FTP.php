@@ -23,7 +23,7 @@ class FTP extends Facade
 
     public static function fake(): FTPFake
     {
-        static::swap($fake = new FTPFake());
+        static::swap($fake = new FTPFake);
 
         return $fake;
     }

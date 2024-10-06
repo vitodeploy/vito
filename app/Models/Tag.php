@@ -5,7 +5,6 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
@@ -17,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class Tag extends Model
+class Tag extends AbstractModel
 {
     use HasFactory;
 
@@ -49,7 +48,8 @@ class Tag extends Model
     public static function getByProjectId(int $projectId): Builder
     {
         return self::query()
-            ->where('project_id', $projectId)
-            ->orWhereNull('project_id');
+            ->where(function (Builder $query) use ($projectId) {
+                $query->where('project_id', $projectId)->orWhereNull('project_id');
+            });
     }
 }

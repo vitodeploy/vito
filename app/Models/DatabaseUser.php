@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DatabaseUserStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -41,4 +42,11 @@ class DatabaseUser extends AbstractModel
     {
         return $this->belongsTo(Server::class);
     }
+
+    public static array $statusColors = [
+        DatabaseUserStatus::READY => 'success',
+        DatabaseUserStatus::CREATING => 'warning',
+        DatabaseUserStatus::DELETING => 'warning',
+        DatabaseUserStatus::FAILED => 'danger',
+    ];
 }

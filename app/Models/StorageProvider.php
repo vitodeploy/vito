@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array $credentials
  * @property User $user
  * @property int $project_id
+ * @property string $image_url
  */
 class StorageProvider extends AbstractModel
 {
@@ -58,7 +59,13 @@ class StorageProvider extends AbstractModel
     public static function getByProjectId(int $projectId): Builder
     {
         return self::query()
-            ->where('project_id', $projectId)
-            ->orWhereNull('project_id');
+            ->where(function (Builder $query) use ($projectId) {
+                $query->where('project_id', $projectId)->orWhereNull('project_id');
+            });
+    }
+
+    public function getImageUrlAttribute(): string
+    {
+        return url('/static/images/'.$this->provider.'.svg');
     }
 }

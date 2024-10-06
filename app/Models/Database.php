@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\DatabaseStatus;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $server_id
@@ -12,10 +15,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $status
  * @property Server $server
  * @property Backup[] $backups
+ * @property Carbon $deleted_at
  */
 class Database extends AbstractModel
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'server_id',
@@ -40,11 +45,15 @@ class Database extends AbstractModel
                     $user->save();
                 }
             });
-            $database->backups()->each(function (Backup $backup) {
-                $backup->delete();
-            });
         });
     }
+
+    public static array $statusColors = [
+        DatabaseStatus::READY => 'success',
+        DatabaseStatus::CREATING => 'warning',
+        DatabaseStatus::DELETING => 'warning',
+        DatabaseStatus::FAILED => 'danger',
+    ];
 
     public function server(): BelongsTo
     {

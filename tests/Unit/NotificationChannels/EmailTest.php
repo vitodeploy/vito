@@ -76,7 +76,7 @@ class EmailTest extends TestCase
 
         Mail::fake();
 
-        $provider->send($channel, new TestNotification());
+        $provider->send($channel, new TestNotification);
 
         Mail::assertSent(NotificationMail::class);
     }

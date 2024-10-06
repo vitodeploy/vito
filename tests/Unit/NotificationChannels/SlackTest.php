@@ -78,7 +78,7 @@ class SlackTest extends TestCase
 
         Http::fake();
 
-        $provider->send($channel, new TestNotification());
+        $provider->send($channel, new TestNotification);
 
         Http::assertSent(function (Request $request) {
             return $request->body() === '{"text":"Hello"}';
