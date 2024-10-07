@@ -5,6 +5,7 @@ use App\Helpers\HtmxResponse;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 function generate_public_key($privateKeyPath, $publicKeyPath): void
@@ -56,6 +57,10 @@ function convert_time_format($string): string
 
 function get_public_key_content(): string
 {
+    if (! file_exists(storage_path(config('core.ssh_public_key_name')))) {
+        Artisan::call('ssh-key:generate --force');
+    }
+
     return str(file_get_contents(storage_path(config('core.ssh_public_key_name'))))
         ->replace("\n", '')
         ->toString();
