@@ -17,8 +17,12 @@ class TelegramTest extends TestCase
         ]));
 
         $this->assertSame([
-            'bot_token' => 'required|string',
-            'chat_id' => 'required',
+            'bot_token' => [
+                'required',
+            ],
+            'chat_id' => [
+                'required',
+            ],
         ], $provider->createRules([]));
     }
 

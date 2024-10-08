@@ -20,9 +20,9 @@ class Index extends Page implements HasSecondSubNav
 
     protected static ?string $title = 'Databases';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [Database::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [Database::class, $this->server]);
     }
 
     protected function getHeaderActions(): array

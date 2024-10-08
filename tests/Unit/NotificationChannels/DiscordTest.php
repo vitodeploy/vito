@@ -17,7 +17,10 @@ class DiscordTest extends TestCase
         ]));
 
         $this->assertSame([
-            'webhook_url' => 'required|url',
+            'webhook_url' => [
+                'required',
+                'url',
+            ],
         ], $provider->createRules([]));
     }
 

@@ -5,8 +5,11 @@ namespace Tests\Feature;
 use App\Enums\DeploymentStatus;
 use App\Facades\SSH;
 use App\Models\GitHook;
+use App\Web\Pages\Servers\Sites\View;
+use App\Web\Pages\Servers\Sites\Widgets\DeploymentsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ApplicationTest extends TestCase
@@ -18,28 +21,29 @@ class ApplicationTest extends TestCase
         $this->actingAs($this->user);
 
         $this->get(
-            route('servers.sites.show', [
+            View::getUrl([
                 'server' => $this->server,
                 'site' => $this->site,
             ])
         )
             ->assertSuccessful()
-            ->assertSee($this->site->domain);
+            ->assertSee($this->site->domain)
+            ->assertSee('Deployments')
+            ->assertSee('Actions');
     }
 
     public function test_update_deployment_script()
     {
         $this->actingAs($this->user);
 
-        $this->post(
-            route('servers.sites.application.deployment-script', [
-                'server' => $this->server,
-                'site' => $this->site,
-            ]),
-            [
+        Livewire::test(View::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callAction('deployment-script', [
                 'script' => 'some script',
-            ]
-        )->assertSessionDoesntHaveErrors();
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('deployment_scripts', [
             'site_id' => $this->site->id,
@@ -59,7 +63,7 @@ class ApplicationTest extends TestCase
                     'email' => 'test@example.com',
                     'url' => 'https://github.com/commit-url',
                 ],
-            ], 200),
+            ]),
         ]);
 
         $this->site->deploymentScript->update([
@@ -68,13 +72,13 @@ class ApplicationTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $response = $this->post(route('servers.sites.application.deploy', [
+        Livewire::test(View::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]))->assertSessionDoesntHaveErrors();
-
-        $response->assertSessionHas('toast.type', 'success');
-        $response->assertSessionHas('toast.message', 'Deployment started!');
+        ])
+            ->callAction('deploy')
+            ->assertSuccessful()
+            ->assertNotified('Deployment started!');
 
         $this->assertDatabaseHas('deployments', [
             'site_id' => $this->site->id,
@@ -84,22 +88,23 @@ class ApplicationTest extends TestCase
         SSH::assertExecutedContains('cd /home/vito/'.$this->site->domain);
         SSH::assertExecutedContains('git pull');
 
-        $this->get(route('servers.sites.show', [
-            'server' => $this->server,
-            'site' => $this->site,
-        ]))
+        $this->get(
+            View::getUrl([
+                'server' => $this->server,
+                'site' => $this->site,
+            ])
+        )
             ->assertSuccessful()
             ->assertSee('test commit message');
 
         $deployment = $this->site->deployments()->first();
 
-        $this->get(route('servers.sites.application.deployment.log', [
+        Livewire::test(DeploymentsList::class, [
             'server' => $this->server,
             'site' => $this->site,
-            'deployment' => $deployment,
-        ]))
-            ->assertRedirect()
-            ->assertSessionHas('content', 'fake output');
+        ])
+            ->callTableAction('view', $deployment->id)
+            ->assertSuccessful();
     }
 
     public function test_change_branch()
@@ -108,14 +113,15 @@ class ApplicationTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.sites.application.branch', [
+        Livewire::test(View::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]), [
-            'branch' => 'master',
         ])
-            ->assertSessionDoesntHaveErrors()
-            ->assertSessionHas('toast.type', 'success');
+            ->callAction('branch', [
+                'branch' => 'master',
+            ])
+            ->assertSuccessful()
+            ->assertNotified('Branch updated!');
 
         $this->site->refresh();
         $this->assertEquals('master', $this->site->branch);
@@ -128,15 +134,18 @@ class ApplicationTest extends TestCase
         Http::fake([
             'github.com/*' => Http::response([
                 'id' => '123',
-            ], 200),
+            ], 201),
         ]);
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.sites.application.auto-deployment', [
+        Livewire::test(View::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('auto-deployment')
+            ->assertSuccessful()
+            ->assertNotified('Auto deployment enabled!');
 
         $this->site->refresh();
 
@@ -154,15 +163,18 @@ class ApplicationTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $hook = GitHook::factory()->create([
+        GitHook::factory()->create([
             'site_id' => $this->site->id,
             'source_control_id' => $this->site->source_control_id,
         ]);
 
-        $this->delete(route('servers.sites.application.auto-deployment', [
+        Livewire::test(View::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('auto-deployment')
+            ->assertSuccessful()
+            ->assertNotified('Auto deployment disabled!');
 
         $this->site->refresh();
 
@@ -175,12 +187,15 @@ class ApplicationTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.sites.application.env', [
+        Livewire::test(View::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]), [
-            'env' => 'APP_ENV="production"',
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('dot-env', [
+                'env' => 'APP_ENV="production"',
+            ])
+            ->assertSuccessful()
+            ->assertNotified('.env updated!');
 
         SSH::assertFileUploaded('/home/vito/'.$this->site->domain.'/.env', 'APP_ENV="production"');
     }
@@ -200,7 +215,7 @@ class ApplicationTest extends TestCase
             ], 200),
         ]);
 
-        $hook = GitHook::factory()->create([
+        GitHook::factory()->create([
             'site_id' => $this->site->id,
             'source_control_id' => $this->site->source_control_id,
             'secret' => 'secret',
@@ -228,7 +243,7 @@ class ApplicationTest extends TestCase
         SSH::fake();
         Http::fake();
 
-        $hook = GitHook::factory()->create([
+        GitHook::factory()->create([
             'site_id' => $this->site->id,
             'source_control_id' => $this->site->source_control_id,
             'secret' => 'secret',

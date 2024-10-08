@@ -12,11 +12,11 @@ class Index extends Page
 
     protected static ?string $slug = 'servers/{server}/console';
 
-    protected static ?string $title = 'Console';
+    protected static ?string $title = 'Headless Console';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('update', static::getServerFromRoute()) ?? false;
+        $this->authorize('manage', $this->server);
     }
 
     public function getWidgets(): array

@@ -4,6 +4,7 @@ namespace App\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\Notifications\NotificationInterface;
+use App\Web\Pages\Settings\NotificationChannels\Index;
 use Illuminate\Support\Facades\Http;
 
 class Slack extends AbstractNotificationChannel
@@ -38,7 +39,7 @@ class Slack extends AbstractNotificationChannel
             __('Congratulations! 🎉'),
             __("You've connected your Slack to :app", ['app' => config('app.name')])."\n".
             __('Manage your notification channels')."\n".
-            route('settings.notification-channels')
+            Index::getUrl()
         );
 
         if (! $connect) {

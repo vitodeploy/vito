@@ -17,9 +17,9 @@ class Settings extends Page
 
     protected $listeners = ['$refresh'];
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('update', [static::getSiteFromRoute(), static::getServerFromRoute()]) ?? false;
+        $this->authorize('update', [$this->site, $this->server]);
     }
 
     public function getWidgets(): array

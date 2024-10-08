@@ -11,9 +11,9 @@ class Index extends Page
 
     protected static ?string $title = 'Metrics';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [Metric::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [Metric::class, $this->server]);
     }
 
     public function getWidgets(): array

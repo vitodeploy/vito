@@ -23,9 +23,9 @@ class Backups extends Page implements HasSecondSubNav
 
     protected static ?string $title = 'Backups';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [Backup::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [Backup::class, $this->server]);
     }
 
     protected function getHeaderActions(): array

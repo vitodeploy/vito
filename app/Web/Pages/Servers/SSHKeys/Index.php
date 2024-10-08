@@ -20,9 +20,9 @@ class Index extends Page
 
     protected static ?string $title = 'SSH Keys';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAnyServer', [SshKey::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [SshKey::class, $this->server]);
     }
 
     public function getWidgets(): array

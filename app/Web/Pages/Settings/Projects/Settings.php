@@ -21,12 +21,12 @@ class Settings extends Page
 
     protected static bool $shouldRegisterNavigation = false;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->can('update', get_from_route(Project::class, 'project')) ?? false;
-    }
-
     public Project $project;
+
+    public function mount(): void
+    {
+        $this->authorize('update', $this->project);
+    }
 
     public function getWidgets(): array
     {

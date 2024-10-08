@@ -20,9 +20,9 @@ class Index extends Page
 
     protected $listeners = ['$refresh'];
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [CronJob::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [CronJob::class, $this->server]);
     }
 
     public function getWidgets(): array

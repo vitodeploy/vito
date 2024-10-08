@@ -18,12 +18,8 @@ class View extends Page
 
     public function mount(): void
     {
+        $this->authorize('view', $this->server);
         $this->previousStatus = $this->server->status;
-    }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->can('view', static::getServerFromRoute()) ?? false;
     }
 
     #[On('$refresh')]

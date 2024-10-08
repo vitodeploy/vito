@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Sites\Pages\Queues;
 
 use App\Actions\Queue\CreateQueue;
+use App\Models\Queue;
 use App\Web\Pages\Servers\Sites\Page;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -18,9 +19,9 @@ class Index extends Page
 
     protected static ?string $title = 'Queues';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return true;
+        $this->authorize('viewAny', [Queue::class, $this->site, $this->server]);
     }
 
     public function getWidgets(): array

@@ -32,9 +32,9 @@ class Index extends Page
         return static::getRouteName().'*';
     }
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', Server::class) ?? false;
+        $this->authorize('viewAny', Server::class);
     }
 
     public function getWidgets(): array

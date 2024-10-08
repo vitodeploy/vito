@@ -16,9 +16,9 @@ class Index extends Page
 
     protected static ?string $title = 'PHP';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [Service::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [Service::class, $this->server]);
     }
 
     public function getWidgets(): array

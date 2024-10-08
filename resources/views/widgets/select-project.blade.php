@@ -18,7 +18,7 @@
             class="fi-tenant-menu-trigger group flex w-full items-center justify-center gap-x-3 rounded-lg p-2 text-sm font-medium outline-none transition duration-75 hover:bg-gray-100 focus-visible:bg-gray-100 dark:hover:bg-white/5 dark:focus-visible:bg-white/5"
         >
             <div
-                class="bg-primary-700-gradient text-md flex size-8 items-center justify-center rounded-lg capitalize text-white"
+                class="bg-primary-700-gradient text-md flex h-8 w-8 items-center justify-center rounded-lg capitalize text-white"
             >
                 {{ $currentProject->name[0] }}
             </div>

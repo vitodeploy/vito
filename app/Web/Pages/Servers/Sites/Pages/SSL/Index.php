@@ -20,9 +20,9 @@ class Index extends Page
 
     protected static ?string $title = 'SSL';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [Ssl::class, static::getSiteFromRoute(), static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [Ssl::class, $this->site, $this->server]);
     }
 
     public function getWidgets(): array

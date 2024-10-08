@@ -2,7 +2,9 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
+use App\Models\Queue;
 use App\Models\Site;
+use App\Models\Ssl;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page as BasePage;
 use App\Web\Pages\Servers\Sites\Widgets\SiteSummary;
@@ -17,9 +19,10 @@ abstract class Page extends BasePage implements HasSecondSubNav
 
     public function getSecondSubNavigation(): array
     {
+        $user = auth()->user();
         $items = [];
 
-        if (View::canAccess()) {
+        if ($user->can('view', [$this->site, $this->server])) {
             $items[] = NavigationItem::make(View::getNavigationLabel())
                 ->icon('heroicon-o-globe-alt')
                 ->isActiveWhen(fn () => request()->routeIs(View::getRouteName()))
@@ -29,7 +32,7 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ]));
         }
 
-        if (Pages\SSL\Index::canAccess()) {
+        if ($user->can('viewAny', [Ssl::class, $this->site, $this->server])) {
             $items[] = NavigationItem::make(Pages\SSL\Index::getNavigationLabel())
                 ->icon('heroicon-o-lock-closed')
                 ->isActiveWhen(fn () => request()->routeIs(Pages\SSL\Index::getRouteName()))
@@ -39,7 +42,7 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ]));
         }
 
-        if (Pages\Queues\Index::canAccess()) {
+        if ($user->can('viewAny', [Queue::class, $this->site, $this->server])) {
             $items[] = NavigationItem::make(Pages\Queues\Index::getNavigationLabel())
                 ->icon('heroicon-o-queue-list')
                 ->isActiveWhen(fn () => request()->routeIs(Pages\Queues\Index::getRouteName()))
@@ -49,7 +52,7 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ]));
         }
 
-        if (Settings::canAccess()) {
+        if ($user->can('update', [$this->site, $this->server])) {
             $items[] = NavigationItem::make(Settings::getNavigationLabel())
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->isActiveWhen(fn () => request()->routeIs(Settings::getRouteName()))

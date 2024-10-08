@@ -22,9 +22,9 @@ class Users extends Page implements HasSecondSubNav
 
     protected static ?string $title = 'Database Users';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [DatabaseUser::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [DatabaseUser::class, $this->server]);
     }
 
     protected function getHeaderActions(): array

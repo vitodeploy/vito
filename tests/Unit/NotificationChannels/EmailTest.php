@@ -17,7 +17,10 @@ class EmailTest extends TestCase
         ]));
 
         $this->assertSame([
-            'email' => 'required|email',
+            'email' => [
+                'required',
+                'email',
+            ],
         ], $provider->createRules([]));
     }
 

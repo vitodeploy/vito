@@ -12,9 +12,9 @@ class Index extends Page
 
     protected static ?string $title = 'Logs';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [ServerLog::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [ServerLog::class, $this->server]);
     }
 
     public function getWidgets(): array

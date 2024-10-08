@@ -34,6 +34,6 @@ class ServerPolicy
 
     public function manage(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
     }
 }

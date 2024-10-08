@@ -34,6 +34,15 @@ class CronJob extends AbstractModel
         'hidden' => 'boolean',
     ];
 
+    public static array $statusColors = [
+        CronjobStatus::CREATING => 'warning',
+        CronjobStatus::READY => 'success',
+        CronjobStatus::DELETING => 'danger',
+        CronjobStatus::ENABLING => 'warning',
+        CronjobStatus::DISABLING => 'warning',
+        CronjobStatus::DISABLED => 'gray',
+    ];
+
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
@@ -74,5 +83,15 @@ class CronJob extends AbstractModel
         }
 
         return $this->frequency;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->status === CronjobStatus::READY;
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->status === CronjobStatus::DISABLED;
     }
 }

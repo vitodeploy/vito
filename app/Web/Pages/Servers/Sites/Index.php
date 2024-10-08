@@ -24,9 +24,9 @@ class Index extends \App\Web\Pages\Servers\Page
 
     protected static ?string $title = 'Sites';
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [Site::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [Site::class, $this->server]);
     }
 
     public function getWidgets(): array

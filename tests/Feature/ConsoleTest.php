@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Facades\SSH;
+use App\Web\Pages\Servers\Console\Index;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,7 +15,7 @@ class ConsoleTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->get(route('servers.console', $this->server))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
             ->assertSeeText('Headless Console');
     }

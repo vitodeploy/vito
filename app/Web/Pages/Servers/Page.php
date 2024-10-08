@@ -2,7 +2,15 @@
 
 namespace App\Web\Pages\Servers;
 
+use App\Models\CronJob;
+use App\Models\Database;
+use App\Models\FirewallRule;
+use App\Models\Metric;
 use App\Models\Server;
+use App\Models\ServerLog;
+use App\Models\Service;
+use App\Models\Site;
+use App\Models\SshKey;
 use App\Web\Components\Page as BasePage;
 use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
@@ -18,8 +26,6 @@ use App\Web\Pages\Servers\SSHKeys\Index as SshKeysIndex;
 use App\Web\Pages\Servers\View as ServerView;
 use App\Web\Pages\Servers\Widgets\ServerSummary;
 use Filament\Navigation\NavigationItem;
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Route;
 
 abstract class Page extends BasePage
 {
@@ -31,84 +37,84 @@ abstract class Page extends BasePage
     {
         $items = [];
 
-        if (ServerView::canAccess()) {
+        if (auth()->user()->can('view', $this->server)) {
             $items[] = NavigationItem::make(ServerView::getNavigationLabel())
                 ->icon('heroicon-o-chart-pie')
                 ->isActiveWhen(fn () => request()->routeIs(ServerView::getRouteName()))
                 ->url(ServerView::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (SitesIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [Site::class, $this->server])) {
             $items[] = NavigationItem::make(SitesIndex::getNavigationLabel())
                 ->icon('heroicon-o-cursor-arrow-ripple')
                 ->isActiveWhen(fn () => request()->routeIs(SitesIndex::getRouteName().'*'))
                 ->url(SitesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (DatabasesIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [Database::class, $this->server])) {
             $items[] = NavigationItem::make(DatabasesIndex::getNavigationLabel())
                 ->icon('heroicon-o-circle-stack')
                 ->isActiveWhen(fn () => request()->routeIs(DatabasesIndex::getRouteName().'*'))
                 ->url(DatabasesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (PHPIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(PHPIndex::getNavigationLabel())
                 ->icon('heroicon-o-code-bracket')
                 ->isActiveWhen(fn () => request()->routeIs(PHPIndex::getRouteName().'*'))
                 ->url(PHPIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (FirewallIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [FirewallRule::class, $this->server])) {
             $items[] = NavigationItem::make(FirewallIndex::getNavigationLabel())
                 ->icon('heroicon-o-fire')
                 ->isActiveWhen(fn () => request()->routeIs(FirewallIndex::getRouteName().'*'))
                 ->url(FirewallIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (CronJobsIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [CronJob::class, $this->server])) {
             $items[] = NavigationItem::make(CronJobsIndex::getNavigationLabel())
                 ->icon('heroicon-o-clock')
                 ->isActiveWhen(fn () => request()->routeIs(CronJobsIndex::getRouteName().'*'))
                 ->url(CronJobsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (SshKeysIndex::canAccess()) {
+        if (auth()->user()->can('viewAnyServer', [SshKey::class, $this->server])) {
             $items[] = NavigationItem::make(SshKeysIndex::getNavigationLabel())
                 ->icon('heroicon-o-key')
                 ->isActiveWhen(fn () => request()->routeIs(SshKeysIndex::getRouteName().'*'))
                 ->url(SshKeysIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (ServicesIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(ServicesIndex::getNavigationLabel())
                 ->icon('heroicon-o-cog-6-tooth')
                 ->isActiveWhen(fn () => request()->routeIs(ServicesIndex::getRouteName().'*'))
                 ->url(ServicesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (MetricsIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [Metric::class, $this->server])) {
             $items[] = NavigationItem::make(MetricsIndex::getNavigationLabel())
                 ->icon('heroicon-o-chart-bar')
                 ->isActiveWhen(fn () => request()->routeIs(MetricsIndex::getRouteName().'*'))
                 ->url(MetricsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (ConsoleIndex::canAccess()) {
+        if (auth()->user()->can('manage', $this->server)) {
             $items[] = NavigationItem::make(ConsoleIndex::getNavigationLabel())
                 ->icon('heroicon-o-command-line')
                 ->isActiveWhen(fn () => request()->routeIs(ConsoleIndex::getRouteName().'*'))
                 ->url(ConsoleIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (LogsIndex::canAccess()) {
+        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
             $items[] = NavigationItem::make(LogsIndex::getNavigationLabel())
                 ->icon('heroicon-o-square-3-stack-3d')
                 ->isActiveWhen(fn () => request()->routeIs(LogsIndex::getRouteName().'*'))
                 ->url(LogsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (ServerSettings::canAccess()) {
+        if (auth()->user()->can('update', $this->server)) {
             $items[] = NavigationItem::make(ServerSettings::getNavigationLabel())
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->isActiveWhen(fn () => request()->routeIs(ServerSettings::getRouteName().'*'))
@@ -125,25 +131,6 @@ abstract class Page extends BasePage
                 'server' => $this->server,
             ]),
         ];
-    }
-
-    protected static function getServerFromRoute(): ?Server
-    {
-        $server = request()->route('server');
-
-        if (! $server) {
-            $server = Route::getRoutes()->match(Request::create(url()->previous()))->parameter('server');
-        }
-
-        if ($server instanceof Server) {
-            return $server;
-        }
-
-        if ($server) {
-            return Server::query()->find($server);
-        }
-
-        return null;
     }
 
     public function getHeaderWidgetsColumns(): int|string|array

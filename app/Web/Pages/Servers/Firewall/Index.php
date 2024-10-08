@@ -20,9 +20,9 @@ class Index extends Page
 
     protected $listeners = ['$refresh'];
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('viewAny', [FirewallRule::class, static::getServerFromRoute()]) ?? false;
+        $this->authorize('viewAny', [FirewallRule::class, $this->server]);
     }
 
     public function getWidgets(): array
