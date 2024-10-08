@@ -6,7 +6,10 @@ use App\Enums\DatabaseStatus;
 use App\Enums\DatabaseUserStatus;
 use App\Facades\SSH;
 use App\Models\Database;
+use App\Web\Pages\Servers\Databases\Index;
+use App\Web\Pages\Servers\Databases\Widgets\DatabasesList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DatabaseTest extends TestCase
@@ -19,9 +22,13 @@ class DatabaseTest extends TestCase
 
         SSH::fake();
 
-        $this->post(route('servers.databases.store', $this->server), [
-            'name' => 'database',
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('create', [
+                'name' => 'database',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('databases', [
             'name' => 'database',
@@ -35,14 +42,18 @@ class DatabaseTest extends TestCase
 
         SSH::fake();
 
-        $this->post(route('servers.databases.store', $this->server), [
-            'name' => 'database',
-            'user' => 'on',
-            'username' => 'user',
-            'password' => 'password',
-            'remote' => 'on',
-            'host' => '%',
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('create', [
+                'name' => 'database',
+                'user' => true,
+                'username' => 'user',
+                'password' => 'password',
+                'remote' => true,
+                'host' => '%',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('databases', [
             'name' => 'database',
@@ -65,7 +76,7 @@ class DatabaseTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $this->get(route('servers.databases', $this->server))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
             ->assertSee($database->name);
     }
@@ -80,10 +91,13 @@ class DatabaseTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $this->delete(route('servers.databases.destroy', [$this->server, $database]))
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(DatabasesList::class, [
+            'server' => $this->server,
+        ])
+            ->callTableAction('delete', $database->id)
+            ->assertSuccessful();
 
-        $this->assertDatabaseMissing('databases', [
+        $this->assertSoftDeleted('databases', [
             'id' => $database->id,
         ]);
     }

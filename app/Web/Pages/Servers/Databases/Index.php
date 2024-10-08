@@ -28,7 +28,8 @@ class Index extends Page implements HasSecondSubNav
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Create Database')
+            Action::make('create')
+                ->label('Create Database')
                 ->icon('heroicon-o-plus')
                 ->modalWidth(MaxWidth::Large)
                 ->authorize(fn () => auth()->user()?->can('create', [Database::class, $this->server]))
