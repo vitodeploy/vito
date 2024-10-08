@@ -14,6 +14,8 @@ class Index extends Page
 
     protected static ?string $title = 'Headless Console';
 
+    protected static ?string $navigationLabel = 'Console';
+
     public function mount(): void
     {
         $this->authorize('manage', $this->server);

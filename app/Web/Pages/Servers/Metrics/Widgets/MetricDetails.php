@@ -31,7 +31,7 @@ class MetricDetails extends Widget implements HasForms, HasInfolists
     public function infolist(Infolist $infolist): Infolist
     {
         return $infolist
-            ->record($this->server->metrics()->latest()->first())
+            ->record($this->server->metrics()->latest()->first() ?? new Metric)
             ->schema([
                 Grid::make()
                     ->schema([

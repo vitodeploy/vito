@@ -31,7 +31,7 @@ class Backups extends Page implements HasSecondSubNav
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Create backup')
+            Action::make('create')
                 ->icon('heroicon-o-plus')
                 ->modalWidth(MaxWidth::Large)
                 ->authorize(fn () => auth()->user()?->can('create', [Backup::class, $this->server]))

@@ -9,9 +9,13 @@ use App\Facades\SSH;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider;
+use App\Web\Pages\Servers\Databases\Backups;
+use App\Web\Pages\Servers\Databases\Widgets\BackupFilesList;
+use App\Web\Pages\Servers\Databases\Widgets\BackupsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DatabaseBackupTest extends TestCase
@@ -34,12 +38,14 @@ class DatabaseBackupTest extends TestCase
             'provider' => \App\Enums\StorageProvider::DROPBOX,
         ]);
 
-        $this->post(route('servers.databases.backups.store', $this->server), [
-            'backup_database' => $database->id,
-            'backup_storage' => $storage->id,
-            'backup_interval' => '0 * * * *',
-            'backup_keep' => '10',
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(Backups::class, ['server' => $this->server])
+            ->callAction('create', [
+                'database' => $database->id,
+                'storage' => $storage->id,
+                'interval' => '0 * * * *',
+                'keep' => '10',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('backups', [
             'status' => BackupStatus::RUNNING,
@@ -65,13 +71,15 @@ class DatabaseBackupTest extends TestCase
             'provider' => \App\Enums\StorageProvider::DROPBOX,
         ]);
 
-        $this->post(route('servers.databases.backups.store', $this->server), [
-            'backup_database' => $database->id,
-            'backup_storage' => $storage->id,
-            'backup_interval' => 'custom',
-            'backup_custom' => '* * * * *',
-            'backup_keep' => '10',
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(Backups::class, ['server' => $this->server])
+            ->callAction('create', [
+                'database' => $database->id,
+                'storage' => $storage->id,
+                'interval' => 'custom',
+                'custom_interval' => '* * * * *',
+                'keep' => '10',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('backups', [
             'status' => BackupStatus::RUNNING,
@@ -97,7 +105,12 @@ class DatabaseBackupTest extends TestCase
             'storage_id' => $storage->id,
         ]);
 
-        $this->get(route('servers.databases.backups', [$this->server, $backup]))
+        $this->get(
+            Backups::getUrl([
+                'server' => $this->server,
+                'backup' => $backup,
+            ])
+        )
             ->assertSuccessful()
             ->assertSee($backup->database->name);
     }
@@ -121,8 +134,11 @@ class DatabaseBackupTest extends TestCase
             'storage_id' => $storage->id,
         ]);
 
-        $this->delete(route('servers.databases.backups.destroy', [$this->server, $backup]))
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(BackupsList::class, [
+            'server' => $this->server,
+        ])
+            ->callTableAction('delete', $backup->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('backups', [
             'id' => $backup->id,
@@ -153,14 +169,14 @@ class DatabaseBackupTest extends TestCase
 
         $backupFile = app(RunBackup::class)->run($backup);
 
-        $this->post(route('servers.databases.backups.files.restore', [
+        Livewire::test(BackupFilesList::class, [
             'server' => $this->server,
             'backup' => $backup,
-            'backupFile' => $backupFile,
-        ]), [
-            'database' => $database->id,
         ])
-            ->assertSessionDoesntHaveErrors();
+            ->callTableAction('restore', $backupFile->id, [
+                'database' => $database->id,
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('backup_files', [
             'id' => $backupFile->id,
