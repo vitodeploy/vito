@@ -3,7 +3,6 @@
 namespace App\Actions\Server;
 
 use App\Models\Server;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class CreateServerLog
@@ -13,8 +12,6 @@ class CreateServerLog
      */
     public function create(Server $server, array $input): void
     {
-        $this->validate($input);
-
         $server->logs()->create([
             'is_remote' => true,
             'name' => $input['path'],
@@ -23,13 +20,10 @@ class CreateServerLog
         ]);
     }
 
-    /**
-     * @throws ValidationException
-     */
-    protected function validate(array $input): void
+    public static function rules(): array
     {
-        Validator::make($input, [
+        return [
             'path' => 'required',
-        ])->validate();
+        ];
     }
 }

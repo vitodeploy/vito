@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\ServerLog;
+use App\Web\Pages\Servers\Logs\Index;
+use App\Web\Pages\Servers\Logs\RemoteLogs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class LogsTest extends TestCase
@@ -19,37 +22,36 @@ class LogsTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->get(route('servers.logs', $this->server))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
-            ->assertSeeText($log->type);
+            ->assertSee($log->name);
     }
 
     public function test_see_logs_remote()
     {
         $this->actingAs($this->user);
 
-        /** @var ServerLog $log */
-        $log = ServerLog::factory()->create([
+        ServerLog::factory()->create([
             'server_id' => $this->server->id,
             'is_remote' => true,
             'type' => 'remote',
             'name' => 'see-remote-log',
         ]);
 
-        $this->get(route('servers.logs.remote', $this->server))
+        $this->get(RemoteLogs::getUrl(['server' => $this->server]))
             ->assertSuccessful()
-            ->assertSeeText('see-remote-log');
+            ->assertSee('see-remote-log');
     }
 
     public function test_create_remote_log()
     {
         $this->actingAs($this->user);
 
-        $this->post(route('servers.logs.remote.store', [
-            'server' => $this->server->id,
-        ]), [
-            'path' => 'test-path',
-        ])->assertOk();
+        Livewire::test(RemoteLogs::class, ['server' => $this->server])
+            ->callAction('create', [
+                'path' => 'test-path',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('server_logs', [
             'is_remote' => true,

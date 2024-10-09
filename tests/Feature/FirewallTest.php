@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Enums\FirewallRuleStatus;
 use App\Facades\SSH;
 use App\Models\FirewallRule;
+use App\Web\Pages\Servers\Firewall\Index;
+use App\Web\Pages\Servers\Firewall\Widgets\RulesList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class FirewallTest extends TestCase
@@ -18,13 +21,17 @@ class FirewallTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.firewall.store', $this->server), [
-            'type' => 'allow',
-            'protocol' => 'tcp',
-            'port' => '1234',
-            'source' => '0.0.0.0',
-            'mask' => '0',
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('create', [
+                'type' => 'allow',
+                'protocol' => 'tcp',
+                'port' => '1234',
+                'source' => '0.0.0.0',
+                'mask' => '0',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('firewall_rules', [
             'port' => '1234',
@@ -40,7 +47,7 @@ class FirewallTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->get(route('servers.firewall', $this->server))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
             ->assertSee($rule->source)
             ->assertSee($rule->port);
@@ -56,10 +63,11 @@ class FirewallTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->delete(route('servers.firewall.destroy', [
+        Livewire::test(RulesList::class, [
             'server' => $this->server,
-            'firewallRule' => $rule,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('delete', $rule->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('firewall_rules', [
             'id' => $rule->id,

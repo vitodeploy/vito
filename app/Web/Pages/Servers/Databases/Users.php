@@ -30,7 +30,7 @@ class Users extends Page implements HasSecondSubNav
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Create User')
+            Action::make('create')
                 ->icon('heroicon-o-plus')
                 ->modalWidth(MaxWidth::Large)
                 ->authorize(fn () => auth()->user()?->can('create', [DatabaseUser::class, $this->server]))

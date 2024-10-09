@@ -155,7 +155,22 @@ class SSH
         if (! $this->connection) {
             $this->connect(true);
         }
+
         $this->connection->put($remote, $local, SFTP::SOURCE_LOCAL_FILE);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function download(string $local, string $remote): void
+    {
+        $this->log = null;
+
+        if (! $this->connection) {
+            $this->connect(true);
+        }
+
+        $this->connection->get($remote, $local, SFTP::SOURCE_LOCAL_FILE);
     }
 
     /**

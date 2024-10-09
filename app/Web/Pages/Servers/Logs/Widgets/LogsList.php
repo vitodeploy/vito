@@ -26,6 +26,8 @@ class LogsList extends Widget
 
     public ?string $label = '';
 
+    public bool $remote = false;
+
     protected $listeners = ['$refresh'];
 
     protected function getTableQuery(): Builder
@@ -36,7 +38,8 @@ class LogsList extends Widget
                 if ($this->site) {
                     $query->where('site_id', $this->site->id);
                 }
-            });
+            })
+            ->where('is_remote', $this->remote);
     }
 
     protected function getTableColumns(): array

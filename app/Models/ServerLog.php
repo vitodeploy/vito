@@ -5,10 +5,12 @@ namespace App\Models;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 /**
  * @property int $server_id
@@ -44,12 +46,14 @@ class ServerLog extends AbstractModel
         parent::boot();
 
         static::deleting(function (ServerLog $log) {
-            try {
-                if (Storage::disk($log->disk)->exists($log->name)) {
-                    Storage::disk($log->disk)->delete($log->name);
+            if ($log->is_remote) {
+                try {
+                    if (Storage::disk($log->disk)->exists($log->name)) {
+                        Storage::disk($log->disk)->delete($log->name);
+                    }
+                } catch (Exception $e) {
+                    Log::error($e->getMessage(), ['exception' => $e]);
                 }
-            } catch (Exception $e) {
-                Log::error($e->getMessage(), ['exception' => $e]);
             }
         });
     }
@@ -69,8 +73,28 @@ class ServerLog extends AbstractModel
         return $this->belongsTo(Site::class);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function download(): StreamedResponse
     {
+        if ($this->is_remote) {
+            $tmpName = $this->server->id.'-'.strtotime('now').'-'.$this->type.'.log';
+            $tmpPath = Storage::disk('local')->path($tmpName);
+
+            $this->server->ssh()->download($tmpPath, $this->name);
+
+            dispatch(function () use ($tmpPath) {
+                if (File::exists($tmpPath)) {
+                    File::delete($tmpPath);
+                }
+            })
+                ->delay(now()->addMinutes(5))
+                ->onQueue('default');
+
+            return Storage::disk('local')->download($tmpName, str($this->name)->afterLast('/'));
+        }
+
         return Storage::disk($this->disk)->download($this->name);
     }
 
