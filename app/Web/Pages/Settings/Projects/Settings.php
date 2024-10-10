@@ -9,7 +9,7 @@ use App\Web\Pages\Settings\Projects\Widgets\AddUser;
 use App\Web\Pages\Settings\Projects\Widgets\ProjectUsersList;
 use App\Web\Pages\Settings\Projects\Widgets\UpdateProject;
 use Exception;
-use Filament\Actions\DeleteAction;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -54,17 +54,24 @@ class Settings extends Page
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()
+            Action::make('delete')
                 ->record($this->project)
+                ->color('danger')
                 ->label('Delete Project')
                 ->icon('heroicon-o-trash')
                 ->modalHeading('Delete Project')
                 ->modalDescription('Are you sure you want to delete this project? This action will delete all associated data and cannot be undone.')
-                ->using(function (Project $record) {
+                ->requiresConfirmation()
+                ->action(function (Project $record) {
                     try {
                         app(DeleteProject::class)->delete(auth()->user(), $record);
 
-                        $this->redirectRoute(Index::getUrl());
+                        Notification::make()
+                            ->success()
+                            ->title('Project deleted successfully.')
+                            ->send();
+
+                        $this->redirect(Index::getUrl());
                     } catch (Exception $e) {
                         Notification::make()
                             ->title($e->getMessage())

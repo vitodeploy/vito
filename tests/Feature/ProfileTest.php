@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Web\Pages\Settings\Profile\Index;
+use App\Web\Pages\Settings\Profile\Widgets\ProfileInformation;
+use App\Web\Pages\Settings\Profile\Widgets\UpdatePassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -15,7 +19,7 @@ class ProfileTest extends TestCase
         $this->actingAs($this->user);
 
         $this
-            ->get(route('profile'))
+            ->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee('Profile Information')
             ->assertSee('Update Password')
@@ -26,11 +30,13 @@ class ProfileTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('profile.info'), [
-            'name' => 'Test',
-            'email' => 'test@example.com',
-            'timezone' => 'Europe/Berlin',
-        ]);
+        Livewire::test(ProfileInformation::class)
+            ->fill([
+                'name' => 'Test',
+                'email' => 'test@example.com',
+                'timezone' => 'Europe/Berlin',
+            ])
+            ->call('submit');
 
         $this->user->refresh();
 
@@ -43,11 +49,13 @@ class ProfileTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('profile.password'), [
-            'current_password' => 'password',
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
-        ]);
+        Livewire::test(UpdatePassword::class)
+            ->fill([
+                'current_password' => 'password',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ])
+            ->call('submit');
 
         $this->assertTrue(Hash::check('new-password', $this->user->refresh()->password));
     }
@@ -56,10 +64,13 @@ class ProfileTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('profile.password'), [
-            'current_password' => 'wrong-password',
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
-        ])->assertSessionHasErrors('current_password');
+        Livewire::test(UpdatePassword::class)
+            ->fill([
+                'current_password' => 'wrong-password',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ])
+            ->call('submit')
+            ->assertHasErrors('current_password');
     }
 }

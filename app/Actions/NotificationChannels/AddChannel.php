@@ -4,6 +4,7 @@ namespace App\Actions\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\Models\User;
+use Exception;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -11,6 +12,7 @@ class AddChannel
 {
     /**
      * @throws ValidationException
+     * @throws Exception
      */
     public function add(User $user, array $input): void
     {
@@ -23,18 +25,24 @@ class AddChannel
         $channel->data = $channel->provider()->createData($input);
         $channel->save();
 
-        if (! $channel->provider()->connect()) {
-            $channel->delete();
+        try {
+            if (! $channel->provider()->connect()) {
+                $channel->delete();
 
-            if ($channel->provider === \App\Enums\NotificationChannel::EMAIL) {
+                if ($channel->provider === \App\Enums\NotificationChannel::EMAIL) {
+                    throw ValidationException::withMessages([
+                        'email' => __('Could not connect! Make sure you configured `.env` file correctly.'),
+                    ]);
+                }
+
                 throw ValidationException::withMessages([
-                    'email' => __('Could not connect! Make sure you configured `.env` file correctly.'),
+                    'provider' => __('Could not connect'),
                 ]);
             }
+        } catch (Exception $e) {
+            $channel->delete();
 
-            throw ValidationException::withMessages([
-                'provider' => __('Could not connect'),
-            ]);
+            throw $e;
         }
 
         $channel->connected = true;

@@ -5,7 +5,7 @@ namespace App\Web\Pages\Settings\Projects;
 use App\Actions\Projects\CreateProject;
 use App\Models\Project;
 use App\Web\Components\Page;
-use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Support\Enums\MaxWidth;
@@ -42,13 +42,11 @@ class Index extends Page
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
+            Action::make('create')
                 ->label('Create Project')
                 ->icon('heroicon-o-plus')
                 ->authorize('create', Project::class)
-                ->using(function (array $data) {
-                    return app(CreateProject::class)->create(auth()->user(), $data);
-                })
+                ->modalWidth(MaxWidth::Large)
                 ->form(function (Form $form) {
                     return $form->schema([
                         TextInput::make('name')
@@ -56,8 +54,11 @@ class Index extends Page
                             ->rules(CreateProject::rules()['name']),
                     ])->columns(1);
                 })
-                ->createAnother(false)
-                ->modalWidth(MaxWidth::Large),
+                ->action(function (array $data) {
+                    app(CreateProject::class)->create(auth()->user(), $data);
+
+                    $this->dispatch('$refresh');
+                }),
         ];
     }
 }

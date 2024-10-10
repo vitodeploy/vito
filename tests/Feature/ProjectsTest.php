@@ -3,7 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
+use App\Web\Pages\Settings\Projects\Index;
+use App\Web\Pages\Settings\Projects\Settings;
+use App\Web\Pages\Settings\Projects\Widgets\UpdateProject;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProjectsTest extends TestCase
@@ -14,9 +18,11 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('settings.projects.create'), [
-            'name' => 'test',
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class)
+            ->callAction('create', [
+                'name' => 'test',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('projects', [
             'name' => 'test',
@@ -31,7 +37,7 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        $this->get(route('settings.projects'))
+        $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($project->name);
     }
@@ -44,8 +50,11 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        $this->delete(route('settings.projects.delete', $project))
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(Settings::class, [
+            'project' => $project,
+        ])
+            ->callAction('delete')
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('projects', [
             'id' => $project->id,
@@ -60,9 +69,14 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        $this->post(route('settings.projects.update', $project), [
-            'name' => 'new-name',
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(UpdateProject::class, [
+            'project' => $project,
+        ])
+            ->fill([
+                'name' => 'new-name',
+            ])
+            ->call('submit')
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
@@ -74,11 +88,14 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->delete(route('settings.projects.delete', [
+        Livewire::test(Settings::class, [
             'project' => $this->user->currentProject,
-        ]))
-            ->assertSessionDoesntHaveErrors()
-            ->assertSessionHas('toast.type', 'error')
-            ->assertSessionHas('toast.message', 'Cannot delete the last project.');
+        ])
+            ->callAction('delete')
+            ->assertNotified('Cannot delete the last project.');
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $this->user->currentProject->id,
+        ]);
     }
 }

@@ -70,7 +70,7 @@ class NotificationChannelsList extends Widget
                     ->modalHeading('Delete Notification Channel')
                     ->authorize(fn (NotificationChannel $record) => auth()->user()->can('delete', $record))
                     ->using(function (array $data, NotificationChannel $record) {
-                        //
+                        $record->delete();
                     }),
             ]);
     }

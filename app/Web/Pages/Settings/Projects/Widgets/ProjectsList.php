@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ProjectsList extends Widget
 {
+    protected $listeners = ['$refresh'];
+
     protected function getTableQuery(): Builder
     {
         return Project::query();

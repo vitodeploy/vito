@@ -43,9 +43,13 @@ class Index extends Page
                 ->authorize('create', NotificationChannel::class)
                 ->modalWidth(MaxWidth::Large)
                 ->action(function (array $data) {
-                    Actions\Create::action($data);
+                    try {
+                        Actions\Create::action($data);
 
-                    $this->dispatch('$refresh');
+                        $this->dispatch('$refresh');
+                    } catch (\Exception) {
+                        $this->halt();
+                    }
                 }),
         ];
     }

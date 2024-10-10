@@ -7,8 +7,9 @@ use App\Models\Service;
 use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Servers\PHP\Widgets\PHPList;
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
-use Filament\Support\Enums\IconPosition;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
+use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
@@ -30,31 +31,35 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
-        $phps = [];
-        foreach (config('core.php_versions') as $version) {
-            if (! $this->server->service('php', $version) && $version !== 'none') {
-                $phps[] = Action::make($version)
-                    ->label($version)
-                    ->requiresConfirmation()
-                    ->modalHeading('Install PHP '.$version)
-                    ->modalSubmitActionLabel('Install')
-                    ->action(function () use ($version) {
-                        app(InstallNewPHP::class)->install($this->server, ['version' => $version]);
-
-                        $this->dispatch('$refresh');
-                    });
-            }
-        }
+        $installedPHPs = $this->server->installedPHPVersions();
 
         return [
-            ActionGroup::make($phps)
+            Action::make('install')
                 ->authorize(fn () => auth()->user()?->can('create', [Service::class, $this->server]))
                 ->label('Install PHP')
-                ->icon('heroicon-o-chevron-up-down')
-                ->iconPosition(IconPosition::After)
-                ->dropdownPlacement('bottom-end')
-                ->color('primary')
-                ->button(),
+                ->icon('heroicon-o-archive-box-arrow-down')
+                ->modalWidth(MaxWidth::Large)
+                ->form([
+                    Select::make('version')
+                        ->options(
+                            collect(config('core.php_versions'))
+                                ->filter(fn ($version) => ! in_array($version, $installedPHPs))
+                                ->mapWithKeys(fn ($version) => [$version => $version])
+                                ->toArray()
+                        )
+                        ->rules(InstallNewPHP::rules($this->server)['version']),
+                ])
+                ->modalSubmitActionLabel('Install')
+                ->action(function (array $data) {
+                    app(InstallNewPHP::class)->install($this->server, $data);
+
+                    Notification::make()
+                        ->success()
+                        ->title('Installing PHP...')
+                        ->send();
+
+                    $this->dispatch('$refresh');
+                }),
         ];
     }
 }

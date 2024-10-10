@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\ServiceStatus;
 use App\Models\Service;
+use App\Web\Pages\Servers\Metrics\Index;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class MetricsTest extends TestCase
@@ -23,7 +25,7 @@ class MetricsTest extends TestCase
             'status' => ServiceStatus::READY,
         ]);
 
-        $this->get(route('servers.metrics', ['server' => $this->server]))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
             ->assertSee('CPU Load')
             ->assertSee('Memory Usage')
@@ -34,8 +36,8 @@ class MetricsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->get(route('servers.metrics', ['server' => $this->server]))
-            ->assertNotFound();
+        $this->get(Index::getUrl(['server' => $this->server]))
+            ->assertForbidden();
     }
 
     public function test_update_data_retention(): void
@@ -50,14 +52,18 @@ class MetricsTest extends TestCase
             'status' => ServiceStatus::READY,
         ]);
 
-        $this->post(route('servers.metrics.settings', ['server' => $this->server]), [
-            'data_retention' => 30,
-        ])->assertSessionHas('toast.type', 'success');
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('data-retention', [
+                'data_retention' => 365,
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('services', [
             'server_id' => $this->server->id,
             'type' => 'monitoring',
-            'type_data->data_retention' => 30,
+            'type_data->data_retention' => 365,
         ]);
     }
 }

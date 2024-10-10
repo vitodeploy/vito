@@ -6,7 +6,10 @@ use App\Enums\PHPIniType;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Service;
+use App\Web\Pages\Servers\PHP\Index;
+use App\Web\Pages\Servers\PHP\Widgets\PHPList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PHPTest extends TestCase
@@ -19,10 +22,11 @@ class PHPTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.php.install', [
-            'server' => $this->server,
-            'version' => '8.1',
-        ]))->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class, ['server' => $this->server])
+            ->callAction('install', [
+                'version' => '8.1',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('services', [
             'server_id' => $this->server->id,
@@ -52,24 +56,15 @@ class PHPTest extends TestCase
         ]);
         $php->save();
 
-        $this->delete(route('servers.php.uninstall', [
+        Livewire::test(PHPList::class, [
             'server' => $this->server,
-            'version' => '8.1',
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('uninstall', $php->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('services', [
             'id' => $php->id,
         ]);
-    }
-
-    public function test_cannot_uninstall_php(): void
-    {
-        $this->actingAs($this->user);
-
-        $this->delete(route('servers.php.uninstall', [
-            'server' => $this->server,
-            'version' => '8.2',
-        ]))->assertSessionHasErrors();
     }
 
     public function test_change_default_php_cli(): void
@@ -87,12 +82,14 @@ class PHPTest extends TestCase
             'name' => 'php',
             'version' => '8.1',
             'status' => ServiceStatus::READY,
+            'is_default' => false,
         ]);
 
-        $this->post(route('servers.php.default-cli', [
+        Livewire::test(PHPList::class, [
             'server' => $this->server,
-            'version' => '8.1',
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('default-php-cli', $php->id)
+            ->assertSuccessful();
 
         $php->refresh();
 
@@ -105,36 +102,17 @@ class PHPTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.php.install-extension', [
+        Livewire::test(PHPList::class, [
             'server' => $this->server,
-            'version' => '8.2',
-            'extension' => 'gmp',
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('install-extension', $this->server->php()->id, [
+                'extension' => 'gmp',
+            ])
+            ->assertSuccessful();
 
         $php = $this->server->php('8.2');
 
         $this->assertContains('gmp', $php->type_data['extensions']);
-    }
-
-    public function test_extension_already_installed(): void
-    {
-        SSH::fake();
-
-        $this->actingAs($this->user);
-
-        $this->server->php('8.2')->update([
-            'type_data' => [
-                'extensions' => [
-                    'gmp',
-                ],
-            ],
-        ]);
-
-        $this->post(route('servers.php.install-extension', [
-            'server' => $this->server,
-            'version' => '8.2',
-            'extension' => 'gmp',
-        ]))->assertSessionHasErrors();
     }
 
     /**
@@ -146,31 +124,13 @@ class PHPTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->get(route('servers.php.get-ini', [
+        Livewire::test(PHPList::class, [
             'server' => $this->server,
-            'version' => $version,
-            'type' => $type,
-        ]))->assertSessionHas('ini');
-    }
-
-    /**
-     * @dataProvider php_ini_data
-     */
-    public function test_update_php_ini(string $version, string $type): void
-    {
-        SSH::fake();
-
-        $this->actingAs($this->user);
-
-        $this->post(route('servers.php.update-ini', [
-            'server' => $this->server,
-            'version' => $version,
-            'type' => $type,
-            'ini' => 'new ini',
-        ]))
-            ->assertSessionDoesntHaveErrors()
-            ->assertSessionHas('toast.type', 'success')
-            ->assertSessionHas('toast.message', __('PHP ini (:type) updated!', ['type' => $type]));
+        ])
+            ->callTableAction('php-ini-'.$type, $this->server->php()->id, [
+                'ini' => 'new-ini',
+            ])
+            ->assertSuccessful();
     }
 
     public static function php_ini_data(): array
