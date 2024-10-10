@@ -44,6 +44,7 @@ class Index extends Page
                 ->icon('heroicon-o-archive-box-arrow-down')
                 ->modalWidth(MaxWidth::Large)
                 ->authorize(fn () => auth()->user()?->can('create', [Service::class, $this->server]))
+                ->modalSubmitActionLabel('Install')
                 ->form([
                     Select::make('name')
                         ->searchable()

@@ -12,10 +12,12 @@ class Install
 {
     public function install(Server $server, array $input): Service
     {
+        $input['type'] = config('core.service_types')[$input['name']];
+
         $service = new Service([
             'server_id' => $server->id,
             'name' => $input['name'],
-            'type' => config('core.service_types')[$input['name']],
+            'type' => $input['type'],
             'version' => $input['version'],
             'status' => ServiceStatus::INSTALLING,
         ]);
