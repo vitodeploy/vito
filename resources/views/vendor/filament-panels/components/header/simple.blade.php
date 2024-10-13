@@ -1,10 +1,10 @@
 @props([
-    'heading' => null,
-    'logo' => true,
-    'subheading' => null,
+    "heading" => null,
+    "logo" => true,
+    "subheading" => null,
 ])
 
-<header class="fi-simple-header flex items-center justify-between h-8">
+<header class="fi-simple-header flex h-8 items-center justify-between">
     <div class="flex items-center gap-1">
         @if ($logo)
             <x-filament-panels::logo />
@@ -20,9 +20,7 @@
     </div>
 
     @if (filled($subheading))
-        <p
-            class="fi-simple-header-subheading text-center text-sm text-gray-500 dark:text-gray-400"
-        >
+        <p class="fi-simple-header-subheading text-center text-sm text-gray-500 dark:text-gray-400">
             {{ $subheading }}
         </p>
     @endif

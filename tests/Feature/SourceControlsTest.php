@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\SourceControl;
+use App\Web\Pages\Settings\SourceControls\Index;
+use App\Web\Pages\Settings\SourceControls\Widgets\SourceControlsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SourceControlsTest extends TestCase
@@ -28,8 +31,10 @@ class SourceControlsTest extends TestCase
         if ($customUrl !== null) {
             $input['url'] = $customUrl;
         }
-        $this->post(route('settings.source-controls.connect'), $input)
-            ->assertSessionDoesntHaveErrors();
+
+        Livewire::test(Index::class)
+            ->callAction('connect', $input)
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('source_controls', [
             'provider' => $provider,
@@ -64,10 +69,11 @@ class SourceControlsTest extends TestCase
             'profile' => 'test',
         ]);
 
-        $this->delete(route('settings.source-controls.delete', $sourceControl->id))
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(SourceControlsList::class)
+            ->callTableAction('delete', $sourceControl->id)
+            ->assertSuccessful();
 
-        $this->assertDatabaseMissing('source_controls', [
+        $this->assertSoftDeleted('source_controls', [
             'id' => $sourceControl->id,
         ]);
     }
@@ -89,12 +95,11 @@ class SourceControlsTest extends TestCase
             'source_control_id' => $sourceControl->id,
         ]);
 
-        $this->delete(route('settings.source-controls.delete', $sourceControl->id))
-            ->assertSessionDoesntHaveErrors()
-            ->assertSessionHas('toast.type', 'error')
-            ->assertSessionHas('toast.message', 'This source control is being used by a site.');
+        Livewire::test(SourceControlsList::class)
+            ->callTableAction('delete', $sourceControl->id)
+            ->assertNotified('This source control is being used by a site.');
 
-        $this->assertDatabaseHas('source_controls', [
+        $this->assertNotSoftDeleted('source_controls', [
             'id' => $sourceControl->id,
         ]);
     }
@@ -115,10 +120,15 @@ class SourceControlsTest extends TestCase
             'url' => $url,
         ]);
 
-        $this->post(route('settings.source-controls.update', $sourceControl->id), array_merge([
-            'name' => 'new-name',
-            'url' => $url,
-        ], $input))->assertSessionDoesntHaveErrors();
+        Livewire::test(SourceControlsList::class)
+            ->callTableAction('edit', $sourceControl->id, [
+                'name' => 'new-name',
+                'token' => 'test', // for GitHub and Gitlab
+                'username' => 'test', // for Bitbucket
+                'password' => 'test', // for Bitbucket
+                'url' => $url, // for Gitlab
+            ])
+            ->assertSuccessful();
 
         $sourceControl->refresh();
 

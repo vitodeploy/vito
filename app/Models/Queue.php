@@ -57,6 +57,15 @@ class Queue extends AbstractModel
         QueueStatus::STOPPED => 'gray',
     ];
 
+    public static function boot(): void
+    {
+        parent::boot();
+
+        static::deleting(function (Queue $queue) {
+            $queue->server->processManager()->handler()->delete($queue->id, $queue->site_id);
+        });
+    }
+
     public function getServerIdAttribute(int $value): int
     {
         if (! $value) {

@@ -60,9 +60,9 @@ class ScriptExecutionsList extends Widget
         return $this->table
             ->heading('')
             ->actions([
-                Action::make('view')
+                Action::make('logs')
                     ->hiddenLabel()
-                    ->tooltip('View')
+                    ->tooltip('Logs')
                     ->icon('heroicon-o-eye')
                     ->authorize(fn (ScriptExecution $record) => auth()->user()->can('view', $record->serverLog))
                     ->modalHeading('View Log')

@@ -26,9 +26,9 @@ class Executions extends Page
         return $this->script->name.' - Executions';
     }
 
-    public static function canAccess(): bool
+    public function mount(): void
     {
-        return auth()->user()?->can('view', get_from_route(Script::class, 'script')) ?? false;
+        $this->authorize('view', $this->script);
     }
 
     public function getWidgets(): array

@@ -5,6 +5,7 @@ namespace App\Web\Pages\Settings\StorageProviders\Widgets;
 use App\Actions\StorageProvider\DeleteStorageProvider;
 use App\Models\StorageProvider;
 use App\Web\Pages\Settings\StorageProviders\Actions\Edit;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
@@ -71,7 +72,14 @@ class StorageProvidersList extends Widget
                 ->modalHeading('Delete Storage Provider')
                 ->authorize(fn (StorageProvider $record) => auth()->user()->can('delete', $record))
                 ->using(function (array $data, StorageProvider $record) {
-                    app(DeleteStorageProvider::class)->delete($record);
+                    try {
+                        app(DeleteStorageProvider::class)->delete($record);
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title($e->getMessage())
+                            ->send();
+                    }
                 }),
         ]);
     }

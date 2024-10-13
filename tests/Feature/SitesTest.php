@@ -7,8 +7,13 @@ use App\Enums\SiteType;
 use App\Enums\SourceControl;
 use App\Facades\SSH;
 use App\Models\Site;
+use App\Web\Pages\Servers\Sites\Index;
+use App\Web\Pages\Servers\Sites\Settings;
+use App\Web\Pages\Servers\Sites\View;
+use App\Web\Pages\Servers\Sites\Widgets\SiteDetails;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SitesTest extends TestCase
@@ -36,12 +41,15 @@ class SitesTest extends TestCase
 
         $inputs['source_control'] = $sourceControl->id;
 
-        $this->post(route('servers.sites.create', [
+        Livewire::test(Index::class, [
             'server' => $this->server,
-        ]), $inputs)->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('create', $inputs)
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('sites', [
-            'domain' => 'example.com',
+            'domain' => $inputs['domain'],
             'aliases' => json_encode($inputs['aliases'] ?? []),
             'status' => SiteStatus::READY,
         ]);
@@ -79,9 +87,12 @@ class SitesTest extends TestCase
 
         $inputs['source_control'] = $sourceControl->id;
 
-        $this->post(route('servers.sites.create', [
+        Livewire::test(Index::class, [
             'server' => $this->server,
-        ]), $inputs)->assertSessionHasErrors();
+        ])
+            ->callAction('create', $inputs)
+            ->assertNotified()
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('sites', [
             'domain' => 'example.com',
@@ -97,9 +108,7 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->get(route('servers.sites', [
-            'server' => $this->server,
-        ]))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
             ->assertSee($site->domain);
     }
@@ -114,10 +123,13 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->delete(route('servers.sites.destroy', [
+        Livewire::test(Settings::class, [
             'server' => $this->server,
             'site' => $site,
-        ]))->assertRedirect();
+        ])
+            ->callAction('delete')
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('sites', [
             'id' => $site->id,
@@ -134,12 +146,14 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->post(route('servers.sites.settings.php', [
-            'server' => $this->server,
+        Livewire::test(SiteDetails::class, [
             'site' => $site,
-        ]), [
-            'version' => '8.2',
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->callInfolistAction('php_version', 'edit_php_version', [
+                'version' => '8.2',
+            ])
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
 
         $site->refresh();
 
@@ -162,12 +176,14 @@ class SitesTest extends TestCase
             'provider' => SourceControl::GITHUB,
         ]);
 
-        $this->post(route('servers.sites.settings.source-control', [
-            'server' => $this->server,
+        Livewire::test(SiteDetails::class, [
             'site' => $this->site,
-        ]), [
-            'source_control' => $sourceControl->id,
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->callInfolistAction('source_control_id', 'edit_source_control', [
+                'source_control' => $sourceControl->id,
+            ])
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
 
         $this->site->refresh();
 
@@ -190,12 +206,13 @@ class SitesTest extends TestCase
             'provider' => SourceControl::GITHUB,
         ]);
 
-        $this->post(route('servers.sites.settings.source-control', [
-            'server' => $this->server,
+        Livewire::test(SiteDetails::class, [
             'site' => $this->site,
-        ]), [
-            'source_control' => $sourceControl->id,
-        ])->assertSessionHasErrors();
+        ])
+            ->callInfolistAction('source_control_id', 'edit_source_control', [
+                'source_control' => $sourceControl->id,
+            ])
+            ->assertHasActionErrors();
     }
 
     public function test_update_v_host(): void
@@ -208,10 +225,26 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->get(route('servers.sites.settings.vhost', [
+        Livewire::test(Settings::class, [
             'server' => $this->server,
             'site' => $site,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('vhost', [
+                'vhost' => 'test',
+            ])
+            ->assertNotified('VHost updated!');
+    }
+
+    public function test_see_logs(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->get(View::getUrl([
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertSuccessful()
+            ->assertSee('Logs');
     }
 
     public static function create_data(): array
@@ -272,17 +305,5 @@ class SitesTest extends TestCase
             [403],
             [404],
         ];
-    }
-
-    public function test_see_logs(): void
-    {
-        $this->actingAs($this->user);
-
-        $this->get(route('servers.sites.logs', [
-            'server' => $this->server,
-            'site' => $this->site,
-        ]))
-            ->assertSuccessful()
-            ->assertSee('Vito Logs');
     }
 }

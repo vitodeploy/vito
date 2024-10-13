@@ -24,7 +24,7 @@ abstract class Page extends BasePage implements HasSecondSubNav
 
         if ($user->can('view', [$this->site, $this->server])) {
             $items[] = NavigationItem::make(View::getNavigationLabel())
-                ->icon('heroicon-o-globe-alt')
+                ->icon('icon-'.$this->site->type)
                 ->isActiveWhen(fn () => request()->routeIs(View::getRouteName()))
                 ->url(View::getUrl(parameters: [
                     'server' => $this->server,

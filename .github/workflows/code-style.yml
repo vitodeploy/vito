@@ -3,7 +3,9 @@ name: code-style
 on:
   push:
     branches:
+      - main
       - 1.x
+      - 2.x
   pull_request:
 
 jobs:
@@ -13,8 +15,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.2]
-        node-version: ["20.x"]
+        php: [ 8.2 ]
+        node-version: [ "20.x" ]
 
     steps:
       - uses: actions/checkout@v2

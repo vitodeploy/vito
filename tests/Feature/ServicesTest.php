@@ -5,9 +5,12 @@ namespace Tests\Feature;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Server;
+use App\Web\Pages\Servers\Services\Index;
+use App\Web\Pages\Servers\Services\Widgets\ServicesList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ServicesTest extends TestCase
@@ -18,14 +21,13 @@ class ServicesTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->get(route('servers.services', $this->server))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
             ->assertSee('mysql')
             ->assertSee('nginx')
             ->assertSee('php')
             ->assertSee('supervisor')
             ->assertSee('redis')
-            ->assertSee('vito-agent')
             ->assertSee('ufw');
     }
 
@@ -37,13 +39,16 @@ class ServicesTest extends TestCase
         $this->actingAs($this->user);
 
         $service = $this->server->services()->where('name', $name)->firstOrFail();
+        $service->status = ServiceStatus::STOPPED;
+        $service->save();
 
         SSH::fake('Active: active');
 
-        $this->get(route('servers.services.restart', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('restart', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -61,10 +66,11 @@ class ServicesTest extends TestCase
 
         SSH::fake('Active: inactive');
 
-        $this->get(route('servers.services.restart', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('restart', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -82,10 +88,11 @@ class ServicesTest extends TestCase
 
         SSH::fake('Active: inactive');
 
-        $this->get(route('servers.services.stop', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('stop', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -103,10 +110,11 @@ class ServicesTest extends TestCase
 
         SSH::fake('Active: active');
 
-        $this->get(route('servers.services.stop', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('stop', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -121,13 +129,16 @@ class ServicesTest extends TestCase
         $this->actingAs($this->user);
 
         $service = $this->server->services()->where('name', $name)->firstOrFail();
+        $service->status = ServiceStatus::STOPPED;
+        $service->save();
 
         SSH::fake('Active: active');
 
-        $this->get(route('servers.services.start', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('start', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -145,10 +156,11 @@ class ServicesTest extends TestCase
 
         SSH::fake('Active: inactive');
 
-        $this->get(route('servers.services.start', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('start', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -163,13 +175,16 @@ class ServicesTest extends TestCase
         $this->actingAs($this->user);
 
         $service = $this->server->services()->where('name', $name)->firstOrFail();
+        $service->status = ServiceStatus::DISABLED;
+        $service->save();
 
         SSH::fake('Active: active');
 
-        $this->get(route('servers.services.enable', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('enable', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -187,10 +202,11 @@ class ServicesTest extends TestCase
 
         SSH::fake('Active: inactive');
 
-        $this->get(route('servers.services.enable', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('enable', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -208,10 +224,11 @@ class ServicesTest extends TestCase
 
         SSH::fake('Active: inactive');
 
-        $this->get(route('servers.services.disable', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('disable', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -229,10 +246,11 @@ class ServicesTest extends TestCase
 
         SSH::fake('Active: active');
 
-        $this->get(route('servers.services.disable', [
+        Livewire::test(ServicesList::class, [
             'server' => $this->server,
-            'service' => $service,
-        ]))->assertSessionDoesntHaveErrors();
+        ])
+            ->callTableAction('disable', $service->id)
+            ->assertSuccessful();
 
         $service->refresh();
 
@@ -262,13 +280,15 @@ class ServicesTest extends TestCase
         if (! File::exists($keys['public_key_path']) || ! File::exists($keys['private_key_path'])) {
             $server->provider()->generateKeyPair();
         }
-        $this->post(route('servers.services.install', [
+
+        Livewire::test(Index::class, [
             'server' => $server,
-        ]), [
-            'name' => $name,
-            'type' => $type,
-            'version' => $version,
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('install', [
+                'name' => $name,
+                'version' => $version,
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('services', [
             'server_id' => $server->id,

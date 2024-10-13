@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\ServerProvider;
+use App\Web\Pages\Settings\ServerProviders\Index;
+use App\Web\Pages\Settings\ServerProviders\Widgets\ServerProvidersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ServerProvidersTest extends TestCase
@@ -27,7 +30,10 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        $this->post(route('settings.server-providers.connect'), $data)->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class)
+            ->callAction('create', $data)
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('server_providers', [
             'provider' => $provider,
@@ -54,7 +60,10 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        $this->post(route('settings.server-providers.connect'), $data)->assertSessionHasErrors();
+        Livewire::test(Index::class)
+            ->callAction('create', $data)
+            ->assertActionHalted('create')
+            ->assertNotified();
 
         $this->assertDatabaseMissing('server_providers', [
             'provider' => $provider,
@@ -70,7 +79,7 @@ class ServerProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->get(route('settings.server-providers'))
+        $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($provider->profile);
     }
@@ -87,8 +96,9 @@ class ServerProvidersTest extends TestCase
             'provider' => $provider,
         ]);
 
-        $this->delete(route('settings.server-providers.delete', $provider))
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(ServerProvidersList::class)
+            ->callTableAction('delete', $provider->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('server_providers', [
             'id' => $provider->id,
@@ -111,10 +121,9 @@ class ServerProvidersTest extends TestCase
             'provider_id' => $provider->id,
         ]);
 
-        $this->delete(route('settings.server-providers.delete', $provider))
-            ->assertSessionDoesntHaveErrors()
-            ->assertSessionHas('toast.type', 'error')
-            ->assertSessionHas('toast.message', 'This server provider is being used by a server.');
+        Livewire::test(ServerProvidersList::class)
+            ->callTableAction('delete', $provider->id)
+            ->assertNotified('This server provider is being used by a server.');
 
         $this->assertDatabaseHas('server_providers', [
             'id' => $provider->id,

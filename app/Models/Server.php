@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -117,26 +118,33 @@ class Server extends AbstractModel
         parent::boot();
 
         static::deleting(function (Server $server) {
-            $server->sites()->each(function (Site $site) {
-                $site->delete();
-            });
-            $server->provider()->delete();
-            $server->logs()->each(function (ServerLog $log) {
-                $log->delete();
-            });
-            $server->services()->delete();
-            $server->databases()->delete();
-            $server->databaseUsers()->delete();
-            $server->firewallRules()->delete();
-            $server->cronJobs()->delete();
-            $server->queues()->delete();
-            $server->daemons()->delete();
-            $server->sshKeys()->detach();
-            if (File::exists($server->sshKey()['public_key_path'])) {
-                File::delete($server->sshKey()['public_key_path']);
-            }
-            if (File::exists($server->sshKey()['private_key_path'])) {
-                File::delete($server->sshKey()['private_key_path']);
+            DB::beginTransaction();
+            try {
+                $server->sites()->each(function (Site $site) {
+                    $site->delete();
+                });
+                $server->logs()->each(function (ServerLog $log) {
+                    $log->delete();
+                });
+                $server->services()->delete();
+                $server->databases()->delete();
+                $server->databaseUsers()->delete();
+                $server->firewallRules()->delete();
+                $server->cronJobs()->delete();
+                $server->queues()->delete();
+                $server->daemons()->delete();
+                $server->sshKeys()->detach();
+                if (File::exists($server->sshKey()['public_key_path'])) {
+                    File::delete($server->sshKey()['public_key_path']);
+                }
+                if (File::exists($server->sshKey()['private_key_path'])) {
+                    File::delete($server->sshKey()['private_key_path']);
+                }
+                $server->provider()->delete();
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
             }
         });
     }

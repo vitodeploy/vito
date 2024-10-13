@@ -4,7 +4,7 @@ namespace App\Web\Pages\Settings\StorageProviders;
 
 use App\Enums\StorageProvider;
 use App\Web\Components\Page;
-use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
 use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
@@ -34,16 +34,19 @@ class Index extends Page
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
+            Action::make('connect')
                 ->label('Connect')
                 ->icon('heroicon-o-wifi')
                 ->modalHeading('Connect to a Storage Provider')
                 ->modalSubmitActionLabel('Connect')
-                ->createAnother(false)
                 ->form(Actions\Create::form())
                 ->authorize('create', StorageProvider::class)
                 ->modalWidth(MaxWidth::ExtraLarge)
-                ->using(fn (array $data) => Actions\Create::action($data)),
+                ->action(function (array $data) {
+                    Actions\Create::action($data);
+
+                    $this->dispatch('$refresh');
+                }),
         ];
     }
 }

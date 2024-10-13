@@ -5,8 +5,10 @@ namespace App\Web\Pages\Settings\SourceControls\Widgets;
 use App\Actions\SourceControl\DeleteSourceControl;
 use App\Models\SourceControl;
 use App\Web\Pages\Settings\SourceControls\Actions\Edit;
+use Exception;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -71,14 +73,24 @@ class SourceControlsList extends Widget
                 ->authorize(fn (SourceControl $record) => auth()->user()->can('update', $record))
                 ->using(fn (array $data, SourceControl $record) => Edit::action($record, $data))
                 ->modalWidth(MaxWidth::Medium),
-            DeleteAction::make('delete')
+            Action::make('delete')
                 ->label('Delete')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->requiresConfirmation()
                 ->modalHeading('Delete Source Control')
                 ->authorize(fn (SourceControl $record) => auth()->user()->can('delete', $record))
-                ->using(function (array $data, SourceControl $record) {
-                    app(DeleteSourceControl::class)->delete($record);
+                ->action(function (array $data, SourceControl $record) {
+                    try {
+                        app(DeleteSourceControl::class)->delete($record);
 
-                    $this->dispatch('$refresh');
+                        $this->dispatch('$refresh');
+                    } catch (Exception $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title($e->getMessage())
+                            ->send();
+                    }
                 }),
         ]);
     }

@@ -50,7 +50,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                         TextEntry::make('last_updated_check')
                             ->label('Last Updated Check')
                             ->inlineLabel()
-                            ->state(fn (Server $record) => $record->last_update_check?->ago())
+                            ->state(fn (Server $record) => $record->last_update_check ? $record->last_update_check->ago() : '-')
                             ->suffixAction(
                                 Action::make('check-update')
                                     ->icon('heroicon-o-arrow-path')
@@ -63,11 +63,11 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                         Notification::make()
                                             ->info()
                                             ->title('Available updates:')
-                                            ->body($record->available_updates)
+                                            ->body($record->updates)
                                             ->send();
                                     })
                             ),
-                        TextEntry::make('available_updates')
+                        TextEntry::make('updates')
                             ->label('Available Updates')
                             ->inlineLabel()
                             ->suffixAction(

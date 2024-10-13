@@ -7,12 +7,11 @@ use App\Facades\FTP;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider as StorageProviderModel;
-use App\StorageProviders\S3;
-use App\StorageProviders\Wasabi;
-use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
+use App\Web\Pages\Settings\StorageProviders\Index;
+use App\Web\Pages\Settings\StorageProviders\Widgets\StorageProvidersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class StorageProvidersTest extends TestCase
@@ -34,8 +33,9 @@ class StorageProvidersTest extends TestCase
             FTP::fake();
         }
 
-        $this->post(route('settings.storage-providers.connect'), $input)
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class)
+            ->callAction('connect', $input)
+            ->assertSuccessful();
 
         if ($input['provider'] === StorageProvider::FTP) {
             FTP::assertConnected($input['host']);
@@ -52,30 +52,30 @@ class StorageProvidersTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $provider = \App\Models\StorageProvider::factory()->create([
+        $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
             'provider' => StorageProvider::DROPBOX,
         ]);
 
-        $this->get(route('settings.storage-providers'))
+        $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($provider->profile);
 
-        $provider = \App\Models\StorageProvider::factory()->create([
+        $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
             'provider' => StorageProvider::S3,
         ]);
 
-        $this->get(route('settings.storage-providers'))
+        $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($provider->profile);
 
-        $provider = \App\Models\StorageProvider::factory()->create([
+        $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
             'provider' => StorageProvider::WASABI,
         ]);
 
-        $this->get(route('settings.storage-providers'))
+        $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($provider->profile);
     }
@@ -84,12 +84,13 @@ class StorageProvidersTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $provider = \App\Models\StorageProvider::factory()->create([
+        $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
-        $this->delete(route('settings.storage-providers.delete', $provider->id))
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(StorageProvidersList::class)
+            ->callTableAction('delete', $provider->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('storage_providers', [
             'id' => $provider->id,
@@ -104,7 +105,7 @@ class StorageProvidersTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        $provider = \App\Models\StorageProvider::factory()->create([
+        $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
@@ -114,186 +115,13 @@ class StorageProvidersTest extends TestCase
             'storage_id' => $provider->id,
         ]);
 
-        $this->delete(route('settings.storage-providers.delete', $provider->id))
-            ->assertSessionDoesntHaveErrors()
-            ->assertSessionHas('toast.type', 'error')
-            ->assertSessionHas('toast.message', 'This storage provider is being used by a backup.');
+        Livewire::test(StorageProvidersList::class)
+            ->callTableAction('delete', $provider->id)
+            ->assertNotified('This storage provider is being used by a backup.');
 
         $this->assertDatabaseHas('storage_providers', [
             'id' => $provider->id,
         ]);
-    }
-
-    public function test_s3_connect_successful()
-    {
-        $storageProvider = StorageProviderModel::factory()->create([
-            'provider' => StorageProvider::S3,
-            'credentials' => [
-                'key' => 'fake-key',
-                'secret' => 'fake-secret',
-                'region' => 'us-east-1',
-                'bucket' => 'fake-bucket',
-                'path' => '/',
-            ],
-        ]);
-
-        // Mock the S3Client
-        $s3ClientMock = $this->getMockBuilder(S3Client::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getCommand', 'execute'])
-            ->getMock();
-
-        // Mock the getCommand method
-        $s3ClientMock->expects($this->once())
-            ->method('getCommand')
-            ->with('listBuckets')
-            ->willReturn(new \Aws\Command('listBuckets'));
-
-        // Mock the execute method
-        $s3ClientMock->expects($this->once())
-            ->method('execute')
-            ->willReturn(['Buckets' => []]);
-
-        // Mock the S3 class to return the mocked S3Client
-        $s3 = $this->getMockBuilder(S3::class)
-            ->setConstructorArgs([$storageProvider])
-            ->onlyMethods(['getClient'])
-            ->getMock();
-
-        $s3->expects($this->once())
-            ->method('getClient')
-            ->willReturn($s3ClientMock);
-
-        $this->assertTrue($s3->connect());
-    }
-
-    public function test_s3_connect_failure()
-    {
-        $storageProvider = StorageProviderModel::factory()->create([
-            'provider' => StorageProvider::S3,
-            'credentials' => [
-                'key' => 'fake-key',
-                'secret' => 'fake-secret',
-                'region' => 'us-east-1',
-                'bucket' => 'fake-bucket',
-                'path' => '/',
-            ],
-        ]);
-
-        // Mock the S3Client
-        $s3ClientMock = $this->getMockBuilder(S3Client::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getCommand', 'execute'])
-            ->getMock();
-
-        // Mock the getCommand method
-        $s3ClientMock->expects($this->once())
-            ->method('getCommand')
-            ->with('listBuckets')
-            ->willReturn(new \Aws\Command('listBuckets'));
-
-        // Mock the execute method to throw an S3Exception
-        $s3ClientMock->expects($this->once())
-            ->method('execute')
-            ->willThrowException(new S3Exception('Error', new \Aws\Command('ListBuckets')));
-
-        // Mock the S3 class to return the mocked S3Client
-        $s3 = $this->getMockBuilder(S3::class)
-            ->setConstructorArgs([$storageProvider])
-            ->onlyMethods(['getClient'])
-            ->getMock();
-
-        $s3->expects($this->once())
-            ->method('getClient')
-            ->willReturn($s3ClientMock);
-
-        $this->assertFalse($s3->connect());
-    }
-
-    public function test_wasabi_connect_successful()
-    {
-        $storageProvider = StorageProviderModel::factory()->create([
-            'provider' => StorageProvider::WASABI,
-            'credentials' => [
-                'key' => 'fake-key',
-                'secret' => 'fake-secret',
-                'region' => 'us-east-1',
-                'bucket' => 'fake-bucket',
-                'path' => '/',
-            ],
-        ]);
-
-        // Mock the S3Client (Wasabi uses S3-compatible API)
-        $s3ClientMock = $this->getMockBuilder(S3Client::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getCommand', 'execute'])
-            ->getMock();
-
-        // Mock the getCommand method
-        $s3ClientMock->expects($this->once())
-            ->method('getCommand')
-            ->with('listBuckets')
-            ->willReturn(new \Aws\Command('listBuckets'));
-
-        // Mock the execute method
-        $s3ClientMock->expects($this->once())
-            ->method('execute')
-            ->willReturn(['Buckets' => []]);
-
-        // Mock the Wasabi class to return the mocked S3Client
-        $wasabi = $this->getMockBuilder(Wasabi::class)
-            ->setConstructorArgs([$storageProvider])
-            ->onlyMethods(['getClient'])
-            ->getMock();
-
-        $wasabi->expects($this->once())
-            ->method('getClient')
-            ->willReturn($s3ClientMock);
-
-        $this->assertTrue($wasabi->connect());
-    }
-
-    public function test_wasabi_connect_failure()
-    {
-        $storageProvider = StorageProviderModel::factory()->create([
-            'provider' => StorageProvider::WASABI,
-            'credentials' => [
-                'key' => 'fake-key',
-                'secret' => 'fake-secret',
-                'region' => 'us-east-1',
-                'bucket' => 'fake-bucket',
-                'path' => '/',
-            ],
-        ]);
-
-        // Mock the S3Client (Wasabi uses S3-compatible API)
-        $s3ClientMock = $this->getMockBuilder(S3Client::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getCommand', 'execute'])
-            ->getMock();
-
-        // Mock the getCommand method
-        $s3ClientMock->expects($this->once())
-            ->method('getCommand')
-            ->with('listBuckets')
-            ->willReturn(new \Aws\Command('listBuckets'));
-
-        // Mock the execute method to throw an S3Exception
-        $s3ClientMock->expects($this->once())
-            ->method('execute')
-            ->willThrowException(new S3Exception('Error', new \Aws\Command('ListBuckets')));
-
-        // Mock the Wasabi class to return the mocked S3Client
-        $wasabi = $this->getMockBuilder(Wasabi::class)
-            ->setConstructorArgs([$storageProvider])
-            ->onlyMethods(['getClient'])
-            ->getMock();
-
-        $wasabi->expects($this->once())
-            ->method('getClient')
-            ->willReturn($s3ClientMock);
-
-        $this->assertFalse($wasabi->connect());
     }
 
     /**

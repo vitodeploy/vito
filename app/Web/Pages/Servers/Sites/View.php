@@ -54,21 +54,22 @@ class View extends Page
 
         if ($this->site->isInstalling()) {
             $widgets[] = [Widgets\Installing::class, ['site' => $this->site]];
-            if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
-                $widgets[] = [
-                    LogsList::class, [
-                        'server' => $this->server,
-                        'site' => $this->site,
-                        'label' => 'Logs',
-                    ],
-                ];
-            }
         }
 
         if ($this->site->isReady()) {
             if (in_array(SiteFeature::DEPLOYMENT, $this->site->type()->supportedFeatures())) {
                 $widgets[] = [Widgets\DeploymentsList::class, ['site' => $this->site]];
             }
+        }
+
+        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
+            $widgets[] = [
+                LogsList::class, [
+                    'server' => $this->server,
+                    'site' => $this->site,
+                    'label' => 'Logs',
+                ],
+            ];
         }
 
         return $widgets;
@@ -96,7 +97,9 @@ class View extends Page
             $actionsGroup[] = $this->dotEnvAction();
         }
 
-        $actionsGroup[] = $this->branchAction();
+        if ($this->site->sourceControl) {
+            $actionsGroup[] = $this->branchAction();
+        }
 
         $actions[] = ActionGroup::make($actionsGroup)
             ->button()

@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Enums\SshKeyStatus;
 use App\Facades\SSH;
 use App\Models\SshKey;
+use App\Web\Pages\Servers\SSHKeys\Index;
+use App\Web\Pages\Servers\SSHKeys\Widgets\SshKeysList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ServerKeysTest extends TestCase
@@ -26,7 +29,7 @@ class ServerKeysTest extends TestCase
             'status' => SshKeyStatus::ADDED,
         ]);
 
-        $this->get(route('servers.ssh-keys', $this->server))
+        $this->get(Index::getUrl(['server' => $this->server]))
             ->assertSuccessful()
             ->assertSeeText('My first key');
     }
@@ -47,7 +50,11 @@ class ServerKeysTest extends TestCase
             'status' => SshKeyStatus::ADDED,
         ]);
 
-        $this->delete(route('servers.ssh-keys.destroy', [$this->server, $sshKey]));
+        Livewire::test(SshKeysList::class, [
+            'server' => $this->server,
+        ])
+            ->callTableAction('delete', $sshKey->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('server_ssh_keys', [
             'server_id' => $this->server->id,
@@ -61,10 +68,15 @@ class ServerKeysTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.ssh-keys.store', $this->server), [
-            'name' => 'My first key',
-            'public_key' => 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC3CCnyBbpCgOJ0AWUSfBZ+mYAsYzcQDegPkBx1kyE0bXT1yX4+6uYx1Jh6NxWgLyaU0BaP4nsClrK1u5FojQHd8J7ycc0N3H8B+v2NPzj1Q6bFnl40saastONVm+d4edbCg9BowGAafLcf9ALsognqqOWQbK/QOpAhg25IAe47eiY3IjDGMHlsvaZkMtkDhT4t1mK8ZLjxw5vjyVYgINJefR981bIxMFrXy+0xBCsYOZxMIoAJsgCkrAGlI4kQHKv0SQVccSyTE1eziIZa5b3QUlXj8ogxMfK/EOD7Aoqinw652k4S5CwFs/LLmjWcFqCKDM6CSggWpB78DZ729O6zFvQS9V99/9SsSV7Qc5ML7B0DKzJ/tbHkaAE8xdZnQnZFVUegUMtUmjvngMaGlYsxkAZrUKsFRoh7xfXVkDyRBaBSslRNe8LFsXw9f7Q+3jdZ5vhGhmp+TBXTlgxApwR023411+ABE9y0doCx8illya3m2olEiiMZkRclgqsWFSk=',
-        ]);
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('deploy', [
+                'type' => 'new',
+                'name' => 'My first key',
+                'public_key' => 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC3CCnyBbpCgOJ0AWUSfBZ+mYAsYzcQDegPkBx1kyE0bXT1yX4+6uYx1Jh6NxWgLyaU0BaP4nsClrK1u5FojQHd8J7ycc0N3H8B+v2NPzj1Q6bFnl40saastONVm+d4edbCg9BowGAafLcf9ALsognqqOWQbK/QOpAhg25IAe47eiY3IjDGMHlsvaZkMtkDhT4t1mK8ZLjxw5vjyVYgINJefR981bIxMFrXy+0xBCsYOZxMIoAJsgCkrAGlI4kQHKv0SQVccSyTE1eziIZa5b3QUlXj8ogxMfK/EOD7Aoqinw652k4S5CwFs/LLmjWcFqCKDM6CSggWpB78DZ729O6zFvQS9V99/9SsSV7Qc5ML7B0DKzJ/tbHkaAE8xdZnQnZFVUegUMtUmjvngMaGlYsxkAZrUKsFRoh7xfXVkDyRBaBSslRNe8LFsXw9f7Q+3jdZ5vhGhmp+TBXTlgxApwR023411+ABE9y0doCx8illya3m2olEiiMZkRclgqsWFSk=',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('server_ssh_keys', [
             'server_id' => $this->server->id,
@@ -84,9 +96,14 @@ class ServerKeysTest extends TestCase
             'public_key' => 'public-key-content',
         ]);
 
-        $this->post(route('servers.ssh-keys.deploy', $this->server), [
-            'key_id' => $sshKey->id,
-        ]);
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('deploy', [
+                'type' => 'existing',
+                'key_id' => $sshKey->id,
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('server_ssh_keys', [
             'server_id' => $this->server->id,
@@ -110,26 +127,35 @@ class ServerKeysTest extends TestCase
             'public_key' => 'public-key-content',
         ]);
 
-        $response = $this->post(route('servers.ssh-keys.store', $this->server), $postBody);
+        $postBody['type'] = 'new';
+        $response = Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('deploy', $postBody);
 
         if ($expectedToSucceed) {
-            $response->assertSessionDoesntHaveErrors();
+            $response->assertSuccessful();
+            $this->assertDatabaseHas('ssh_keys', [
+                'name' => $postBody['name'],
+            ]);
+            $this->assertDatabaseHas('server_ssh_keys', [
+                'server_id' => $this->server->id,
+                'status' => SshKeyStatus::ADDED,
+            ]);
         } else {
-            $response->assertSessionHasErrors('public_key', 'Invalid key');
+            $response->assertHasActionErrors([
+                'public_key',
+            ]);
+            $this->assertDatabaseMissing('server_ssh_keys', [
+                'server_id' => $this->server->id,
+                'status' => SshKeyStatus::ADDED,
+            ]);
         }
     }
 
     public static function ssh_key_data_provider(): array
     {
         return [
-            [
-                [
-                    'name' => 'My first key',
-                    // Key Already exists
-                    'public_key' => 'public-key-content',
-                ],
-                self::EXPECT_FAILURE,
-            ],
             [
                 [
                     'name' => 'My first key',

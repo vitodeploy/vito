@@ -48,7 +48,8 @@ class ServicesList extends TableWidget
                 ->sortable(),
             TextColumn::make('created_at')
                 ->label('Installed At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone),
+                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
+                ->sortable(),
         ];
     }
 

@@ -6,7 +6,12 @@ use App\Enums\ScriptExecutionStatus;
 use App\Facades\SSH;
 use App\Models\Script;
 use App\Models\ScriptExecution;
+use App\Web\Pages\Scripts\Executions;
+use App\Web\Pages\Scripts\Index;
+use App\Web\Pages\Scripts\Widgets\ScriptExecutionsList;
+use App\Web\Pages\Scripts\Widgets\ScriptsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ScriptTest extends TestCase
@@ -21,9 +26,7 @@ class ScriptTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->get(
-            route('scripts.index')
-        )
+        $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($script->name);
     }
@@ -32,15 +35,12 @@ class ScriptTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(
-            route('scripts.store'),
-            [
+        Livewire::test(Index::class)
+            ->callAction('create', [
                 'name' => 'Test Script',
                 'content' => 'echo "Hello, World!"',
-            ]
-        )
-            ->assertSessionDoesntHaveErrors()
-            ->assertHeader('HX-Redirect');
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('scripts', [
             'name' => 'Test Script',
@@ -56,12 +56,12 @@ class ScriptTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->post(route('scripts.edit', ['script' => $script]), [
-            'name' => 'New Name',
-            'content' => 'echo "Hello, new World!"',
-        ])
-            ->assertSuccessful()
-            ->assertHeader('HX-Redirect');
+        Livewire::test(ScriptsList::class)
+            ->callTableAction('edit', $script->id, [
+                'name' => 'New Name',
+                'content' => 'echo "Hello, new World!"',
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('scripts', [
             'id' => $script->id,
@@ -83,11 +83,9 @@ class ScriptTest extends TestCase
             'status' => ScriptExecutionStatus::EXECUTING,
         ]);
 
-        $this->delete(
-            route('scripts.delete', [
-                'script' => $script,
-            ])
-        )->assertRedirect();
+        Livewire::test(ScriptsList::class)
+            ->callTableAction('delete', $script->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('scripts', [
             'id' => $script->id,
@@ -108,17 +106,14 @@ class ScriptTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->post(
-            route('scripts.execute', [
-                'script' => $script,
-            ]),
-            [
+        Livewire::test(Executions::class, [
+            'script' => $script,
+        ])
+            ->callAction('execute', [
                 'server' => $this->server->id,
                 'user' => 'root',
-            ]
-        )
-            ->assertSessionDoesntHaveErrors()
-            ->assertHeader('HX-Redirect');
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('script_executions', [
             'script_id' => $script->id,
@@ -131,14 +126,11 @@ class ScriptTest extends TestCase
 
         $execution = $script->lastExecution;
 
-        $this->get(
-            route('scripts.log', [
-                'script' => $script,
-                'execution' => $execution,
-            ])
-        )
-            ->assertRedirect()
-            ->assertSessionHas('content', 'script output');
+        Livewire::test(ScriptExecutionsList::class, [
+            'script' => $script,
+        ])
+            ->callTableAction('logs', $execution->id)
+            ->assertSuccessful();
     }
 
     public function test_see_executions(): void
@@ -154,11 +146,7 @@ class ScriptTest extends TestCase
             'status' => ScriptExecutionStatus::EXECUTING,
         ]);
 
-        $this->get(
-            route('scripts.show', [
-                'script' => $script,
-            ])
-        )
+        $this->get(Executions::getUrl(['script' => $script]))
             ->assertSuccessful()
             ->assertSee($scriptExecution->status);
     }

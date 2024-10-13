@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\Server;
-use App\Models\Site;
 use App\Models\Tag;
+use App\Web\Pages\Servers\Sites\Widgets\SiteDetails;
+use App\Web\Pages\Servers\Widgets\ServerDetails;
+use App\Web\Pages\Settings\Tags\Index;
+use App\Web\Pages\Settings\Tags\Widgets\TagsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class TagsTest extends TestCase
@@ -16,10 +19,12 @@ class TagsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('settings.tags.create'), [
-            'name' => 'test',
-            'color' => config('core.tag_colors')[0],
-        ])->assertSessionDoesntHaveErrors();
+        Livewire::test(Index::class)
+            ->callAction('create', [
+                'name' => 'test',
+                'color' => config('core.tag_colors')[0],
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('tags', [
             'project_id' => $this->user->current_project_id,
@@ -36,7 +41,7 @@ class TagsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        $this->get(route('settings.tags'))
+        $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($tag->name);
     }
@@ -49,8 +54,9 @@ class TagsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        $this->delete(route('settings.tags.delete', $tag->id))
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(TagsList::class)
+            ->callTableAction('delete', $tag->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('tags', [
             'id' => $tag->id,
@@ -61,20 +67,24 @@ class TagsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->post(route('settings.tags.create'), [
-            'name' => 'test',
-            'color' => 'invalid-color',
-        ])->assertSessionHasErrors('color');
+        Livewire::test(Index::class)
+            ->callAction('create', [
+                'name' => 'test',
+                'color' => 'invalid-color',
+            ])
+            ->assertHasActionErrors();
     }
 
     public function test_create_tag_handles_invalid_name(): void
     {
         $this->actingAs($this->user);
 
-        $this->post(route('settings.tags.create'), [
-            'name' => '',
-            'color' => config('core.tag_colors')[0],
-        ])->assertSessionHasErrors('name');
+        Livewire::test(Index::class)
+            ->callAction('create', [
+                'name' => '',
+                'color' => config('core.tag_colors')[0],
+            ])
+            ->assertHasActionErrors();
     }
 
     public function test_edit_tag(): void
@@ -85,11 +95,12 @@ class TagsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        $this->post(route('settings.tags.update', ['tag' => $tag]), [
-            'name' => 'New Name',
-            'color' => config('core.tag_colors')[1],
-        ])
-            ->assertSessionDoesntHaveErrors();
+        Livewire::test(TagsList::class)
+            ->callTableAction('edit', $tag->id, [
+                'name' => 'New Name',
+                'color' => config('core.tag_colors')[1],
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('tags', [
             'id' => $tag->id,
@@ -98,104 +109,101 @@ class TagsTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider data
-     */
-    public function test_attach_existing_tag_to_taggable(array $input): void
+    public function test_attach_existing_tag_to_server(): void
     {
         $this->actingAs($this->user);
 
         $tag = Tag::factory()->create([
             'project_id' => $this->user->current_project_id,
-            'name' => $input['name'],
+            'name' => 'staging',
         ]);
 
-        $input['taggable_id'] = match ($input['taggable_type']) {
-            Server::class => $this->server->id,
-            Site::class => $this->site->id,
-            default => $this->fail('Unknown taggable type'),
-        };
-
-        $this->post(route('tags.attach'), $input)->assertSessionDoesntHaveErrors();
+        Livewire::test(ServerDetails::class, [
+            'server' => $this->server,
+        ])
+            ->callInfolistAction('tags.*', 'edit_tags', [
+                'tags' => [$tag->id],
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('taggables', [
-            'taggable_id' => $input['taggable_id'],
+            'taggable_id' => $this->server->id,
             'tag_id' => $tag->id,
         ]);
     }
 
-    /**
-     * @dataProvider data
-     */
-    public function test_attach_new_tag_to_taggable(array $input): void
-    {
-        $this->actingAs($this->user);
-
-        $input['taggable_id'] = match ($input['taggable_type']) {
-            Server::class => $this->server->id,
-            Site::class => $this->site->id,
-            default => $this->fail('Unknown taggable type'),
-        };
-
-        $this->post(route('tags.attach'), $input)->assertSessionDoesntHaveErrors();
-
-        $this->assertDatabaseHas('tags', [
-            'name' => $input['name'],
-        ]);
-
-        $tag = Tag::query()->where('name', $input['name'])->firstOrFail();
-
-        $this->assertDatabaseHas('taggables', [
-            'taggable_id' => $input['taggable_id'],
-            'tag_id' => $tag->id,
-        ]);
-    }
-
-    /**
-     * @dataProvider data
-     */
-    public function test_detach_tag(array $input): void
+    public function test_detach_tag_from_server(): void
     {
         $this->actingAs($this->user);
 
         $tag = Tag::factory()->create([
             'project_id' => $this->user->current_project_id,
-            'name' => $input['name'],
+            'name' => 'staging',
         ]);
 
-        $taggable = match ($input['taggable_type']) {
-            Server::class => $this->server,
-            Site::class => $this->site,
-            default => $this->fail('Unknown taggable type'),
-        };
+        $this->server->tags()->attach($tag);
 
-        $input['taggable_id'] = $taggable->id;
-
-        $taggable->tags()->attach($tag);
-
-        $this->post(route('tags.detach', $tag->id), $input)->assertSessionDoesntHaveErrors();
+        Livewire::test(ServerDetails::class, [
+            'server' => $this->server,
+        ])
+            ->callInfolistAction('tags.*', 'edit_tags', [
+                'tags' => [],
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('taggables', [
-            'taggable_id' => $input['taggable_id'],
+            'taggable_id' => $this->server->id,
             'tag_id' => $tag->id,
         ]);
     }
 
-    public static function data(): array
+    public function test_attach_existing_tag_to_site(): void
     {
-        return [
-            [
-                [
-                    'taggable_type' => Server::class,
-                    'name' => 'staging',
-                ],
-            ],
-            [
-                [
-                    'taggable_type' => Site::class,
-                    'name' => 'production',
-                ],
-            ],
-        ];
+        $this->actingAs($this->user);
+
+        $tag = Tag::factory()->create([
+            'project_id' => $this->user->current_project_id,
+            'name' => 'staging',
+        ]);
+
+        Livewire::test(SiteDetails::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callInfolistAction('tags.*', 'edit_tags', [
+                'tags' => [$tag->id],
+            ])
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('taggables', [
+            'taggable_id' => $this->site->id,
+            'tag_id' => $tag->id,
+        ]);
+    }
+
+    public function test_detach_tag_from_site(): void
+    {
+        $this->actingAs($this->user);
+
+        $tag = Tag::factory()->create([
+            'project_id' => $this->user->current_project_id,
+            'name' => 'staging',
+        ]);
+
+        $this->site->tags()->attach($tag);
+
+        Livewire::test(SiteDetails::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callInfolistAction('tags.*', 'edit_tags', [
+                'tags' => [],
+            ])
+            ->assertSuccessful();
+
+        $this->assertDatabaseMissing('taggables', [
+            'taggable_id' => $this->site->id,
+            'tag_id' => $tag->id,
+        ]);
     }
 }

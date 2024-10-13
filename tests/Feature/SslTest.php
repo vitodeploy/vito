@@ -6,7 +6,10 @@ use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Facades\SSH;
 use App\Models\Ssl;
+use App\Web\Pages\Servers\Sites\Pages\SSL\Index;
+use App\Web\Pages\Servers\Sites\Pages\SSL\Widgets\SslsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SslTest extends TestCase
@@ -21,24 +24,12 @@ class SslTest extends TestCase
             'site_id' => $this->site->id,
         ]);
 
-        $this->get(route('servers.sites.ssl', [
+        $this->get(Index::getUrl([
             'server' => $this->server,
             'site' => $this->site,
         ]))
             ->assertSuccessful()
             ->assertSee($ssl->type);
-    }
-
-    public function test_see_ssls_list_with_no_ssls()
-    {
-        $this->actingAs($this->user);
-
-        $this->get(route('servers.sites.ssl', [
-            'server' => $this->server,
-            'site' => $this->site,
-        ]))
-            ->assertSuccessful()
-            ->assertSeeText(__("You don't have any SSL certificates yet!"));
     }
 
     public function test_letsencrypt_ssl()
@@ -47,12 +38,14 @@ class SslTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.sites.ssl.store', [
+        Livewire::test(Index::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]), [
-            'type' => SslType::LETSENCRYPT,
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('create', [
+                'type' => SslType::LETSENCRYPT,
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('ssls', [
             'site_id' => $this->site->id,
@@ -68,13 +61,15 @@ class SslTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.sites.ssl.store', [
+        Livewire::test(Index::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]), [
-            'type' => SslType::LETSENCRYPT,
-            'aliases' => '1',
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('create', [
+                'type' => SslType::LETSENCRYPT,
+                'aliases' => true,
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('ssls', [
             'site_id' => $this->site->id,
@@ -90,15 +85,17 @@ class SslTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(route('servers.sites.ssl.store', [
+        Livewire::test(Index::class, [
             'server' => $this->server,
             'site' => $this->site,
-        ]), [
-            'type' => SslType::CUSTOM,
-            'certificate' => 'certificate',
-            'private' => 'private',
-            'expires_at' => now()->addYear()->format('Y-m-d'),
-        ])->assertSessionDoesntHaveErrors();
+        ])
+            ->callAction('create', [
+                'type' => SslType::CUSTOM,
+                'certificate' => 'certificate',
+                'private' => 'private',
+                'expires_at' => now()->addYear()->format('Y-m-d'),
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('ssls', [
             'site_id' => $this->site->id,
@@ -117,11 +114,11 @@ class SslTest extends TestCase
             'site_id' => $this->site->id,
         ]);
 
-        $this->delete(route('servers.sites.ssl.destroy', [
-            'server' => $this->server,
+        Livewire::test(SslsList::class, [
             'site' => $this->site,
-            'ssl' => $ssl,
-        ]))->assertRedirect();
+        ])
+            ->callTableAction('delete', $ssl->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('ssls', [
             'id' => $ssl->id,

@@ -35,7 +35,10 @@ class Wordpress extends AbstractSiteType
             'title' => 'required',
             'username' => 'required',
             'password' => 'required',
-            'email' => 'required|email',
+            'email' => [
+                'required',
+                'email',
+            ],
             'database' => [
                 'required',
                 Rule::unique('databases', 'name')->where(function ($query) {

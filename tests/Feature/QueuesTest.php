@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Enums\QueueStatus;
 use App\Facades\SSH;
 use App\Models\Queue;
+use App\Web\Pages\Servers\Sites\Pages\Queues\Index;
+use App\Web\Pages\Servers\Sites\Pages\Queues\Widgets\QueuesList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class QueuesTest extends TestCase
@@ -22,7 +25,7 @@ class QueuesTest extends TestCase
         ]);
 
         $this->get(
-            route('servers.sites.queues', [
+            Index::getUrl([
                 'server' => $this->server,
                 'site' => $this->site,
             ])
@@ -42,13 +45,12 @@ class QueuesTest extends TestCase
             'site_id' => $this->site->id,
         ]);
 
-        $this->delete(
-            route('servers.sites.queues.destroy', [
-                'server' => $this->server,
-                'site' => $this->site,
-                'queue' => $queue,
-            ])
-        )->assertRedirect();
+        Livewire::test(QueuesList::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callTableAction('delete', $queue->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseMissing('queues', [
             'id' => $queue->id,
@@ -61,19 +63,18 @@ class QueuesTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $this->post(
-            route('servers.sites.queues.store', [
-                'server' => $this->server,
-                'site' => $this->site,
-            ]),
-            [
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callAction('create', [
                 'command' => 'php artisan queue:work',
                 'user' => 'vito',
                 'auto_start' => 1,
                 'auto_restart' => 1,
                 'numprocs' => 1,
-            ]
-        )->assertSessionDoesntHaveErrors();
+            ])
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('queues', [
             'server_id' => $this->server->id,
@@ -99,14 +100,12 @@ class QueuesTest extends TestCase
             'status' => QueueStatus::STOPPED,
         ]);
 
-        $this->post(
-            route('servers.sites.queues.action', [
-                'action' => 'start',
-                'server' => $this->server,
-                'site' => $this->site,
-                'queue' => $queue,
-            ])
-        )->assertSessionDoesntHaveErrors();
+        Livewire::test(QueuesList::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callTableAction('start', $queue->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('queues', [
             'id' => $queue->id,
@@ -126,14 +125,12 @@ class QueuesTest extends TestCase
             'status' => QueueStatus::RUNNING,
         ]);
 
-        $this->post(
-            route('servers.sites.queues.action', [
-                'action' => 'stop',
-                'server' => $this->server,
-                'site' => $this->site,
-                'queue' => $queue,
-            ])
-        )->assertSessionDoesntHaveErrors();
+        Livewire::test(QueuesList::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callTableAction('stop', $queue->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('queues', [
             'id' => $queue->id,
@@ -153,14 +150,12 @@ class QueuesTest extends TestCase
             'status' => QueueStatus::RUNNING,
         ]);
 
-        $this->post(
-            route('servers.sites.queues.action', [
-                'action' => 'restart',
-                'server' => $this->server,
-                'site' => $this->site,
-                'queue' => $queue,
-            ])
-        )->assertSessionDoesntHaveErrors();
+        Livewire::test(QueuesList::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callTableAction('restart', $queue->id)
+            ->assertSuccessful();
 
         $this->assertDatabaseHas('queues', [
             'id' => $queue->id,
@@ -180,14 +175,11 @@ class QueuesTest extends TestCase
             'status' => QueueStatus::RUNNING,
         ]);
 
-        $this->get(
-            route('servers.sites.queues.logs', [
-                'server' => $this->server,
-                'site' => $this->site,
-                'queue' => $queue,
-            ])
-        )
-            ->assertSessionDoesntHaveErrors()
-            ->assertSessionHas('content', 'logs');
+        Livewire::test(QueuesList::class, [
+            'server' => $this->server,
+            'site' => $this->site,
+        ])
+            ->callTableAction('logs', $queue->id)
+            ->assertSuccessful();
     }
 }

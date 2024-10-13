@@ -32,6 +32,7 @@ class ServerSummary extends Widget implements HasForms, HasInfolists
     public function infolist(Infolist $infolist): Infolist
     {
         return $infolist
+            ->name('server-summary')
             ->schema([
                 Fieldset::make('info')
                     ->label('Server Summary')

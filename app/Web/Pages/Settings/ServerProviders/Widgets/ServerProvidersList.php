@@ -5,6 +5,8 @@ namespace App\Web\Pages\Settings\ServerProviders\Widgets;
 use App\Actions\ServerProvider\DeleteServerProvider;
 use App\Models\ServerProvider;
 use App\Web\Pages\Settings\ServerProviders\Actions\Edit;
+use Exception;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
@@ -70,7 +72,14 @@ class ServerProvidersList extends Widget
                 ->modalHeading('Delete Server Provider')
                 ->authorize(fn (ServerProvider $record) => auth()->user()->can('delete', $record))
                 ->using(function (array $data, ServerProvider $record) {
-                    app(DeleteServerProvider::class)->delete($record);
+                    try {
+                        app(DeleteServerProvider::class)->delete($record);
+                    } catch (Exception $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title($e->getMessage())
+                            ->send();
+                    }
                 }),
         ]);
     }

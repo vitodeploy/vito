@@ -7,7 +7,6 @@ use App\Models\Server;
 use App\Web\Pages\Servers\Widgets\ServerDetails;
 use App\Web\Pages\Servers\Widgets\UpdateServerInfo;
 use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 
 class Settings extends Page
@@ -40,11 +39,29 @@ class Settings extends Page
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()
+            Action::make('delete')
                 ->icon('heroicon-o-trash')
-                ->record($this->server)
+                ->color('danger')
+                ->requiresConfirmation()
                 ->modalHeading('Delete Server')
-                ->modalDescription('Once your server is deleted, all of its resources and data will be permanently deleted and can\'t be restored'),
+                ->modalDescription('Once your server is deleted, all of its resources and data will be permanently deleted and can\'t be restored')
+                ->action(function () {
+                    try {
+                        $this->server->delete();
+
+                        Notification::make()
+                            ->success()
+                            ->title('Server deleted')
+                            ->send();
+
+                        $this->redirect(Index::getUrl());
+                    } catch (\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title($e->getMessage())
+                            ->send();
+                    }
+                }),
             Action::make('reboot')
                 ->color('gray')
                 ->icon('heroicon-o-arrow-path')

@@ -43,7 +43,7 @@ class EditServer
     {
         return [
             'name' => [
-                'string',
+                'required',
                 'max:255',
                 Rule::unique('servers')->where('project_id', $server->project_id)->ignore($server->id),
             ],

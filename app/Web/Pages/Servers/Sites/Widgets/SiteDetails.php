@@ -56,6 +56,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel(),
                         TextEntry::make('type')
                             ->extraAttributes(['class' => 'capitalize'])
+                            ->icon(fn ($state) => 'icon-'.$state)
                             ->inlineLabel(),
                         TextEntry::make('tags.*')
                             ->default('No tags')
@@ -133,6 +134,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ),
                         TextEntry::make('source_control_id')
                             ->label('Source Control')
+                            ->visible(fn (Site $record) => $record->sourceControl)
                             ->formatStateUsing(fn (Site $record) => $record->sourceControl?->profile)
                             ->inlineLabel()
                             ->suffixAction(

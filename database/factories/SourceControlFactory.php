@@ -14,6 +14,8 @@ class SourceControlFactory extends Factory
     {
         return [
             'access_token' => Str::random(10),
+            'profile' => $this->faker->name,
+            'project_id' => null,
         ];
     }
 
