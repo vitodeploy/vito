@@ -29,7 +29,6 @@ jobs:
           docker buildx build . \
             -f docker/Dockerfile \
             -t vitodeploy/vito:2.x \
-            --build-arg="RELEASE=0" \
             --platform linux/amd64,linux/arm64 \
             --no-cache \
             --push

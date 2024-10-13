@@ -72,8 +72,13 @@ class User extends Authenticatable implements FilamentUser
         parent::boot();
 
         static::created(function (User $user) {
-            if (Project::count() === 0) {
+            if ($user->projects()->count() === 0) {
                 $user->createDefaultProject();
+                $user->refresh();
+            }
+            if (! $user->currentProject) {
+                $user->current_project_id = $user->projects()->first()->id;
+                $user->save();
             }
         });
     }

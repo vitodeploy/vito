@@ -2,11 +2,15 @@
     "name": "vitodeploy/vito",
     "type": "project",
     "description": "The ultimate server management tool",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "AGPL-3.0",
     "require": {
         "php": "^8.2",
         "ext-ftp": "*",
+        "ext-intl": "*",
         "aws/aws-sdk-php": "^3.158",
         "filament/filament": "^3.2",
         "laravel/fortify": "^1.17",
