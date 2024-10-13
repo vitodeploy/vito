@@ -2,7 +2,7 @@ name: Build and push Docker image
 
 on:
   release:
-    types: [created]
+    types: [ created ]
 
 jobs:
   build-and-push:
@@ -28,8 +28,17 @@ jobs:
           docker buildx build . \
             -f docker/Dockerfile \
             -t vitodeploy/vito:${{ github.event.release.tag_name }} \
-            -t vitodeploy/vito:latest \
             --build-arg="RELEASE=0" \
             --platform linux/amd64,linux/arm64 \
             --no-cache \
+            --push
+
+      - name: Build and push latest tag
+        if: startsWith(github.event.release.target_commitish, '1.x')
+        run: |
+          docker buildx build . \
+            -f docker/Dockerfile \
+            -t vitodeploy/vito:latest \
+            --build-arg="RELEASE=0" \
+            --platform linux/amd64,linux/arm64 \
             --push

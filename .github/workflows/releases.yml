@@ -1,0 +1,77 @@
+name: manual release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+
+    name: Release ${{ inputs.version }}
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      notes: ${{ steps.cleaned-notes.outputs.notes }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Remove optional "v" prefix
+        id: version
+        run: |
+          echo "version=${VERSION#v}" >> "$GITHUB_OUTPUT"
+        env:
+          VERSION: ${{ inputs.version }}
+
+      - name: Check if branch and version match
+        id: guard
+        run: |
+          MAJOR_VERSION="${NUMERIC_VERSION%%.*}"
+          BRANCH_MAJOR_VERSION="${BRANCH%%.*}"
+
+          if [ "$MAJOR_VERSION" != "$BRANCH_MAJOR_VERSION" ]; then
+            echo "Mismatched versions! Aborting."
+            VERSION_MISMATCH='true';
+          else
+            echo "Versions match! Proceeding."
+            VERSION_MISMATCH='false';
+          fi
+
+          echo "VERSION_MISMATCH=$(echo $VERSION_MISMATCH)" >> "$GITHUB_OUTPUT";
+        env:
+          BRANCH: ${{ github.ref_name }}
+          NUMERIC_VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Fail if branch and release tag do not match
+        if: ${{ steps.guard.outputs.VERSION_MISMATCH == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('Workflow failed. Release version does not match with selected target branch. Did you select the correct branch?')
+
+      - name: Update config/app.php
+        run: sed -i "s/'version' => '[^']*'/'version' => '${{ steps.version.outputs.version }}'/" config/app.php
+        
+      - name: Commit version change
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update version to ${{ steps.version.outputs.version }}"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
+          body: ${{ steps.cleaned-notes.outputs.notes }}
+          target_commitish: ${{ github.ref_name }}
+          make_latest: "${{ github.ref_name == github.event.repository.default_branch }}"
