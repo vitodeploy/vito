@@ -9,7 +9,7 @@
             :class="{ 'border-primary-600': state === '{{ $p }}', 'border-primary-200 dark:border-primary-600 dark:border-opacity-20': state !== '{{ $p }}' }"
         >
             <div class="flex w-full flex-col items-center justify-center text-center">
-                <img src="{{ asset("static/images/" . $p . ".svg") }}" class="h-7" alt="Server" />
+                <x-icon :name="$p" class="h-7" />
                 <span class="md:text-normal mt-2 hidden text-sm md:block">
                     {{ $p }}
                 </span>

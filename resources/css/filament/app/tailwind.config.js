@@ -22,8 +22,7 @@ export default {
     ],
     content: [
         "./app/Web/**/*.php",
-        "./resources/views/web/**/*.blade.php",
-        "./resources/views/components/**/*.blade.php",
+        "./resources/views/**/*.blade.php",
         "./vendor/filament/**/*.blade.php",
     ],
 };

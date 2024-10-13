@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Cache;
  * @property ?int $project_id
  * @property Server[] $servers
  * @property Project $project
- * @property string $image_url
  */
 class ServerProvider extends AbstractModel
 {
@@ -73,11 +72,6 @@ class ServerProvider extends AbstractModel
             ->where(function (Builder $query) use ($projectId) {
                 $query->where('project_id', $projectId)->orWhereNull('project_id');
             });
-    }
-
-    public function getImageUrlAttribute(): string
-    {
-        return url('/static/images/'.$this->provider.'.svg');
     }
 
     public static function regions(?int $id): array

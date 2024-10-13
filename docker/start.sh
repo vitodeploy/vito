@@ -61,12 +61,9 @@ service php8.2-fpm start
 service nginx start
 
 php /var/www/html/artisan migrate --force
-php /var/www/html/artisan config:clear
-php /var/www/html/artisan config:cache
-php /var/www/html/artisan route:clear
-php /var/www/html/artisan route:cache
-php /var/www/html/artisan view:clear
-php /var/www/html/artisan view:cache
+php /var/www/html/artisan optimize:clear
+php /var/www/html/artisan optimize
+php /var/www/html/artisan icons:cache
 
 php /var/www/html/artisan user:create "$NAME" "$EMAIL" "$PASSWORD"
 
