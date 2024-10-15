@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StorageProvidersList extends Widget
 {
+    protected $listeners = ['$refresh'];
+
     protected function getTableQuery(): Builder
     {
         return StorageProvider::getByProjectId(auth()->user()->current_project_id);

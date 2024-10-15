@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ServerProvidersList extends Widget
 {
+    protected $listeners = ['$refresh'];
+
     protected function getTableQuery(): Builder
     {
         return ServerProvider::getByProjectId(auth()->user()->current_project_id);
