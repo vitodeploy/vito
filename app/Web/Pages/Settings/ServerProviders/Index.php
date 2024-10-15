@@ -34,7 +34,7 @@ class Index extends Page
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
+            CreateAction::make('create')
                 ->label('Connect')
                 ->icon('heroicon-o-wifi')
                 ->modalHeading('Connect to a Server Provider')
@@ -43,7 +43,11 @@ class Index extends Page
                 ->form(Actions\Create::form())
                 ->authorize('create', ServerProvider::class)
                 ->modalWidth(MaxWidth::Medium)
-                ->using(fn (array $data) => Actions\Create::action($data)),
+                ->using(function (array $data) {
+                    Actions\Create::action($data);
+
+                    $this->dispatch('$refresh');
+                }),
         ];
     }
 }
