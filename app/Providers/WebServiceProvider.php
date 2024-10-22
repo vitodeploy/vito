@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\HasProjectMiddleware;
 use App\Web\Pages\Settings\Projects\Widgets\SelectProject;
 use Exception;
 use Filament\Facades\Filament;
@@ -102,6 +103,7 @@ class WebServiceProvider extends ServiceProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                HasProjectMiddleware::class,
             ])
             ->login()
             ->spa()

@@ -34,7 +34,7 @@ class Index extends Page
 
     public function mount(): void
     {
-        $this->authorize('viewAny', Server::class);
+        $this->authorize('viewAny', [Server::class, auth()->user()->currentProject]);
     }
 
     public function getWidgets(): array
@@ -50,6 +50,8 @@ class Index extends Page
             'public_key' => get_public_key_content(),
         ]);
 
+        $project = auth()->user()->currentProject;
+
         return [
             \Filament\Actions\Action::make('read-the-docs')
                 ->label('Read the Docs')
@@ -60,7 +62,7 @@ class Index extends Page
             \Filament\Actions\Action::make('create')
                 ->label('Create a Server')
                 ->icon('heroicon-o-plus')
-                ->authorize('create', Server::class)
+                ->authorize('create', [Server::class, auth()->user()->currentProject])
                 ->modalWidth(MaxWidth::FiveExtraLarge)
                 ->slideOver()
                 ->form([
@@ -74,7 +76,7 @@ class Index extends Page
                             $set('region', null);
                             $set('plan', null);
                         })
-                        ->rules(fn ($get) => CreateServerAction::rules($get())['provider']),
+                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['provider']),
                     AlertField::make('alert')
                         ->warning()
                         ->message(__('servers.create.public_key_warning'))
@@ -82,7 +84,7 @@ class Index extends Page
                     Select::make('server_provider')
                         ->visible(fn ($get) => $get('provider') !== ServerProvider::CUSTOM)
                         ->label('Server provider connection')
-                        ->rules(fn ($get) => CreateServerAction::rules($get())['server_provider'])
+                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['server_provider'])
                         ->options(function ($get) {
                             return \App\Models\ServerProvider::getByProjectId(auth()->user()->current_project_id)
                                 ->where('provider', $get('provider'))
@@ -109,7 +111,7 @@ class Index extends Page
                         ->schema([
                             Select::make('region')
                                 ->label('Region')
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['region'])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['region'])
                                 ->live()
                                 ->reactive()
                                 ->options(function ($get) {
@@ -125,7 +127,7 @@ class Index extends Page
                                 ->searchable(),
                             Select::make('plan')
                                 ->label('Plan')
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['plan'])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['plan'])
                                 ->reactive()
                                 ->options(function ($get) {
                                     if (! $get('server_provider') || ! $get('region')) {
@@ -162,15 +164,15 @@ class Index extends Page
                         ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
                     TextInput::make('name')
                         ->label('Name')
-                        ->rules(fn ($get) => CreateServerAction::rules($get())['name']),
+                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['name']),
                     Grid::make()
                         ->schema([
                             TextInput::make('ip')
                                 ->label('SSH IP Address')
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['ip']),
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['ip']),
                             TextInput::make('port')
                                 ->label('SSH Port')
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['port']),
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['port']),
                         ])
                         ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
                     Grid::make()
@@ -178,7 +180,7 @@ class Index extends Page
                             Select::make('os')
                                 ->label('OS')
                                 ->native(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['os'])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['os'])
                                 ->options(
                                     collect(config('core.operating_systems'))
                                         ->mapWithKeys(fn ($value) => [$value => $value])
@@ -187,7 +189,7 @@ class Index extends Page
                                 ->label('Server Type')
                                 ->native(false)
                                 ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['type'])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['type'])
                                 ->options(
                                     collect(config('core.server_types'))
                                         ->mapWithKeys(fn ($value) => [$value => $value])
@@ -200,7 +202,7 @@ class Index extends Page
                                 ->label('Webserver')
                                 ->native(false)
                                 ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['webserver'] ?? [])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['webserver'] ?? [])
                                 ->options(
                                     collect(config('core.webservers'))->mapWithKeys(fn ($value) => [$value => $value])
                                 ),
@@ -208,7 +210,7 @@ class Index extends Page
                                 ->label('Database')
                                 ->native(false)
                                 ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['database'] ?? [])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['database'] ?? [])
                                 ->options(
                                     collect(config('core.databases_name'))
                                         ->mapWithKeys(fn ($value, $key) => [
@@ -219,7 +221,7 @@ class Index extends Page
                                 ->label('PHP')
                                 ->native(false)
                                 ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($get())['php'] ?? [])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['php'] ?? [])
                                 ->options(
                                     collect(config('core.php_versions'))
                                         ->mapWithKeys(fn ($value) => [$value => $value])
@@ -229,7 +231,7 @@ class Index extends Page
                 ->modalSubmitActionLabel('Create')
                 ->action(function (array $data) {
                     run_action($this, function () use ($data) {
-                        $server = app(CreateServerAction::class)->create(auth()->user(), $data);
+                        $server = app(CreateServerAction::class)->create(auth()->user(), auth()->user()->currentProject, $data);
 
                         $this->redirect(View::getUrl(['server' => $server]));
                     });

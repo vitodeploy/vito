@@ -38,12 +38,7 @@ function htmx(): HtmxResponse
 
 function vito_version(): string
 {
-    $version = exec('git describe --tags');
-    if (str($version)->contains('-')) {
-        return str($version)->before('-').' (dev)';
-    }
-
-    return $version;
+    return config('app.version');
 }
 
 function convert_time_format($string): string

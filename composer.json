@@ -15,11 +15,13 @@
         "filament/filament": "^3.2",
         "laravel/fortify": "^1.17",
         "laravel/framework": "^11.0",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
         "phpseclib/phpseclib": "~3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
+        "knuckleswtf/scribe": "^4.37",
         "laradumps/laradumps": "^3.0",
         "laravel/pint": "^1.10",
         "laravel/sail": "^1.18",

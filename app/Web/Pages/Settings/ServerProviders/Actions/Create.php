@@ -8,6 +8,7 @@ use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 
 class Create
@@ -23,29 +24,22 @@ class Create
                 )
                 ->live()
                 ->reactive()
-                ->rules(CreateServerProvider::rules()['provider']),
+                ->rules(fn (Get $get) => CreateServerProvider::rules($get())['provider']),
             TextInput::make('name')
-                ->rules(CreateServerProvider::rules()['name']),
+                ->rules(fn (Get $get) => CreateServerProvider::rules($get())['name']),
             TextInput::make('token')
                 ->label('API Key')
                 ->validationAttribute('API Key')
-                ->visible(fn ($get) => in_array($get('provider'), [
-                    ServerProvider::DIGITALOCEAN,
-                    ServerProvider::LINODE,
-                    ServerProvider::VULTR,
-                    ServerProvider::HETZNER,
-                ]))
-                ->rules(fn ($get) => CreateServerProvider::providerRules($get())['token']),
+                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['token']))
+                ->rules(fn (Get $get) => CreateServerProvider::rules($get())['token']),
             TextInput::make('key')
                 ->label('Access Key')
-                ->visible(function ($get) {
-                    return $get('provider') == ServerProvider::AWS;
-                })
-                ->rules(fn ($get) => CreateServerProvider::providerRules($get())['key']),
+                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['key']))
+                ->rules(fn (Get $get) => CreateServerProvider::rules($get())['key']),
             TextInput::make('secret')
                 ->label('Secret')
-                ->visible(fn ($get) => $get('provider') == ServerProvider::AWS)
-                ->rules(fn ($get) => CreateServerProvider::providerRules($get())['secret']),
+                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['secret']))
+                ->rules(fn (Get $get) => CreateServerProvider::rules($get())['secret']),
             Checkbox::make('global')
                 ->label('Is Global (Accessible in all projects)'),
         ];
@@ -57,7 +51,7 @@ class Create
     public static function action(array $data): void
     {
         try {
-            app(CreateServerProvider::class)->create(auth()->user(), $data);
+            app(CreateServerProvider::class)->create(auth()->user(), auth()->user()->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

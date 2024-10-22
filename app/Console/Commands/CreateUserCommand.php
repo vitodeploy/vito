@@ -21,12 +21,14 @@ class CreateUserCommand extends Command
             return;
         }
 
-        User::query()->create([
+        $user = User::query()->create([
             'name' => $this->argument('name'),
             'email' => $this->argument('email'),
             'password' => bcrypt($this->argument('password')),
             'role' => $this->option('role'),
         ]);
+
+        $user->createDefaultProject();
 
         $this->info('User created!');
     }

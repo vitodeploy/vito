@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Helpers\FTP;
 use App\Helpers\Notifier;
 use App\Helpers\SSH;
+use App\Models\PersonalAccessToken;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,5 +35,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('ftp', function () {
             return new FTP;
         });
+
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
     }
 }

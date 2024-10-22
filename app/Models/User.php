@@ -16,6 +16,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property int $id
@@ -43,6 +44,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  */
 class User extends Authenticatable implements FilamentUser
 {
+    use HasApiTokens;
     use HasFactory;
     use HasTimezoneTimestamps;
     use Notifiable;
@@ -66,22 +68,6 @@ class User extends Authenticatable implements FilamentUser
 
     protected $appends = [
     ];
-
-    public static function boot(): void
-    {
-        parent::boot();
-
-        static::created(function (User $user) {
-            if ($user->projects()->count() === 0) {
-                $user->createDefaultProject();
-                $user->refresh();
-            }
-            if (! $user->currentProject) {
-                $user->current_project_id = $user->projects()->first()->id;
-                $user->save();
-            }
-        });
-    }
 
     public function servers(): HasMany
     {
@@ -118,9 +104,19 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(StorageProvider::class)->where('provider', $provider);
     }
 
+    public function allProjects(): Builder|BelongsToMany
+    {
+        if ($this->isAdmin()) {
+            return Project::query();
+        }
+
+        return $this->projects();
+    }
+
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class, 'user_project')->withTimestamps();
+        return $this->belongsToMany(Project::class, 'user_project')
+            ->withTimestamps();
     }
 
     public function currentProject(): HasOne
