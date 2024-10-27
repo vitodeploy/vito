@@ -2,8 +2,12 @@
 
 namespace App\Enums;
 
+use App\Traits\Enum;
+
 final class Database
 {
+    use Enum;
+
     const NONE = 'none';
 
     const MYSQL57 = 'mysql57';

@@ -21,11 +21,6 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
     {
         return [
             'token' => 'required',
-            'url' => [
-                'nullable',
-                'url:http,https',
-                'ends_with:/',
-            ],
         ];
     }
 
@@ -34,6 +29,16 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         return [
             'token' => $input['token'] ?? '',
         ];
+    }
+
+    public function editRules(array $input): array
+    {
+        return $this->createRules($input);
+    }
+
+    public function editData(array $input): array
+    {
+        return $this->createData($input);
     }
 
     public function data(): array

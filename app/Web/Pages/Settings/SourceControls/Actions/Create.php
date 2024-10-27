@@ -56,7 +56,7 @@ class Create
     public static function action(array $data): void
     {
         try {
-            app(ConnectSourceControl::class)->connect(auth()->user(), $data);
+            app(ConnectSourceControl::class)->connect(auth()->user(), auth()->user()->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

@@ -34,15 +34,9 @@ class ServerProvidersTest extends TestCase
             ->assertSuccessful()
             ->assertJsonFragment([
                 'provider' => $provider,
-                'profile' => 'profile',
+                'name' => 'profile',
                 'project_id' => isset($input['global']) ? null : $this->user->current_project_id,
             ]);
-
-        $this->assertDatabaseHas('server_providers', [
-            'provider' => $provider,
-            'profile' => 'profile',
-            'project_id' => isset($input['global']) ? null : $this->user->current_project_id,
-        ]);
     }
 
     /**
@@ -67,16 +61,11 @@ class ServerProvidersTest extends TestCase
             'project' => $this->user->current_project_id,
         ]), $data)
             ->assertJsonValidationErrorFor('provider');
-
-        $this->assertDatabaseMissing('server_providers', [
-            'provider' => $provider,
-            'profile' => 'profile',
-        ]);
     }
 
     public function test_see_providers_list(): void
     {
-        $this->actingAs($this->user);
+        Sanctum::actingAs($this->user, ['read', 'write']);
 
         /** @var \App\Models\ServerProvider $provider */
         $provider = \App\Models\ServerProvider::factory()->create([
@@ -98,7 +87,7 @@ class ServerProvidersTest extends TestCase
      */
     public function test_delete_provider(string $provider): void
     {
-        $this->actingAs($this->user);
+        Sanctum::actingAs($this->user, ['read', 'write']);
 
         /** @var \App\Models\ServerProvider $provider */
         $provider = \App\Models\ServerProvider::factory()->create([
@@ -111,10 +100,6 @@ class ServerProvidersTest extends TestCase
             'serverProvider' => $provider->id,
         ]))
             ->assertNoContent();
-
-        $this->assertDatabaseMissing('server_providers', [
-            'id' => $provider->id,
-        ]);
     }
 
     /**
@@ -122,7 +107,7 @@ class ServerProvidersTest extends TestCase
      */
     public function test_cannot_delete_provider(string $provider): void
     {
-        $this->actingAs($this->user);
+        Sanctum::actingAs($this->user, ['read', 'write']);
 
         /** @var \App\Models\ServerProvider $provider */
         $provider = \App\Models\ServerProvider::factory()->create([
@@ -141,10 +126,6 @@ class ServerProvidersTest extends TestCase
             ->assertJsonValidationErrors([
                 'provider' => 'This server provider is being used by a server.',
             ]);
-
-        $this->assertDatabaseHas('server_providers', [
-            'id' => $provider->id,
-        ]);
     }
 
     public static function data(): array

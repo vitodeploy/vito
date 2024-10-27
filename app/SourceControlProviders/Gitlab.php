@@ -14,6 +14,18 @@ class Gitlab extends AbstractSourceControlProvider
 
     protected string $apiVersion = 'api/v4';
 
+    public function createRules(array $input): array
+    {
+        return [
+            'token' => 'required',
+            'url' => [
+                'nullable',
+                'url:http,https',
+                'ends_with:/',
+            ],
+        ];
+    }
+
     public function connect(): bool
     {
         $res = Http::withToken($this->data()['token'])

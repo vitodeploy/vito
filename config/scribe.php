@@ -51,8 +51,6 @@ return [
     'theme' => 'default',
 
     'static' => [
-        'url' => '/api-docs/index.html',
-
         // HTML documentation, assets and Postman collection will be generated to this folder.
         // Source Markdown will still be in resources/docs.
         'output_path' => 'public/api-docs',

@@ -2,12 +2,12 @@
 
 namespace App\Http\Resources;
 
-use App\Models\ServerProvider;
+use App\Models\SourceControl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin ServerProvider */
-class ServerProviderResource extends JsonResource
+/** @mixin SourceControl */
+class SourceControlResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
