@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export VITO_VERSION="1.x"
+export VITO_VERSION="2.x"
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
