@@ -14,7 +14,7 @@ Vito is a self-hosted web application that helps you manage your servers and dep
 ## Quick Start
 
 ```sh
-bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/1.x/scripts/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/2.x/scripts/install.sh)
 ```
 
 ## Features
