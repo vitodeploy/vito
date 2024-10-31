@@ -19,9 +19,6 @@ use Illuminate\Validation\ValidationException;
 
 class CreateSite
 {
-    /**
-     * @throws SourceControlIsNotConnected
-     */
     public function create(Server $server, array $input): Site
     {
         DB::beginTransaction();
@@ -88,13 +85,12 @@ class CreateSite
             return $site;
         } catch (Exception $e) {
             DB::rollBack();
-            throw $e;
+            throw ValidationException::withMessages([
+                'type' => $e->getMessage(),
+            ]);
         }
     }
 
-    /**
-     * @throws ValidationException
-     */
     public static function rules(Server $server, array $input): array
     {
         $rules = [

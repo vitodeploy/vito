@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\API;
+namespace Tests\Feature\API;
 
 use App\Enums\ServerProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +28,7 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        $this->json('POST', route('api.server-providers.create', [
+        $this->json('POST', route('api.projects.server-providers.create', [
             'project' => $this->user->current_project_id,
         ]), $data)
             ->assertSuccessful()
@@ -57,7 +57,7 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        $this->json('POST', route('api.server-providers.create', [
+        $this->json('POST', route('api.projects.server-providers.create', [
             'project' => $this->user->current_project_id,
         ]), $data)
             ->assertJsonValidationErrorFor('provider');
@@ -72,7 +72,7 @@ class ServerProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->json('GET', route('api.server-providers', [
+        $this->json('GET', route('api.projects.server-providers', [
             'project' => $this->user->current_project_id,
         ]))
             ->assertSuccessful()
@@ -95,7 +95,7 @@ class ServerProvidersTest extends TestCase
             'provider' => $provider,
         ]);
 
-        $this->json('DELETE', route('api.server-providers.delete', [
+        $this->json('DELETE', route('api.projects.server-providers.delete', [
             'project' => $this->user->current_project_id,
             'serverProvider' => $provider->id,
         ]))
@@ -119,7 +119,7 @@ class ServerProvidersTest extends TestCase
             'provider_id' => $provider->id,
         ]);
 
-        $this->json('DELETE', route('api.server-providers.delete', [
+        $this->json('DELETE', route('api.projects.server-providers.delete', [
             'project' => $this->user->current_project_id,
             'serverProvider' => $provider->id,
         ]))

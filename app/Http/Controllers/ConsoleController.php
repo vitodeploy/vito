@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Server;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Post;
 
+#[Middleware('auth')]
 class ConsoleController extends Controller
 {
+    #[Post('/{server}/console', name: 'servers.console.run')]
     public function run(Server $server, Request $request)
     {
         $this->authorize('update', $server);

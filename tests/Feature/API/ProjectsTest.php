@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\API;
+namespace Tests\Feature\API;
 
 use App\Models\Project;
 use App\Web\Pages\Settings\Projects\Settings;

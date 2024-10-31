@@ -17,7 +17,8 @@
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
-        "phpseclib/phpseclib": "~3.0"
+        "phpseclib/phpseclib": "~3.0",
+        "spatie/laravel-route-attributes": "^1.24"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

@@ -18,7 +18,7 @@ class View extends Page
 
     public function mount(): void
     {
-        $this->authorize('view', $this->server);
+        $this->authorize('view', [$this->server, auth()->user()->currentProject]);
         $this->previousStatus = $this->server->status;
     }
 

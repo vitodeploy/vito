@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\API;
+namespace Tests\Feature\API;
 
 use App\Models\SourceControl;
 use App\Web\Pages\Settings\SourceControls\Widgets\SourceControlsList;
@@ -28,7 +28,7 @@ class SourceControlsTest extends TestCase
             'provider' => $provider,
         ], $input);
 
-        $this->json('POST', route('api.source-controls.create', [
+        $this->json('POST', route('api.projects.source-controls.create', [
             'project' => $this->user->current_project_id,
         ]), $input)
             ->assertSuccessful()
@@ -51,7 +51,7 @@ class SourceControlsTest extends TestCase
             'profile' => 'test',
         ]);
 
-        $this->json('DELETE', route('api.source-controls.delete', [
+        $this->json('DELETE', route('api.projects.source-controls.delete', [
             'project' => $this->user->current_project_id,
             'sourceControl' => $sourceControl->id,
         ]))
@@ -101,7 +101,7 @@ class SourceControlsTest extends TestCase
             'url' => $input['url'] ?? null,
         ]);
 
-        $this->json('PUT', route('api.source-controls.update', [
+        $this->json('PUT', route('api.projects.source-controls.update', [
             'project' => $this->user->current_project_id,
             'sourceControl' => $sourceControl->id,
         ]), array_merge([

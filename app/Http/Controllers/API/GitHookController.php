@@ -11,10 +11,12 @@ use App\Models\ServerLog;
 use App\Notifications\SourceControlDisconnected;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Spatie\RouteAttributes\Attributes\Any;
 use Throwable;
 
 class GitHookController extends Controller
 {
+    #[Any('api/git-hooks', name: 'api.git-hooks')]
     public function __invoke(Request $request)
     {
         if (! $request->input('secret')) {

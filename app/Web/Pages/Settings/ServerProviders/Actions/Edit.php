@@ -22,6 +22,6 @@ class Edit
 
     public static function action(ServerProvider $provider, array $data): void
     {
-        app(EditServerProvider::class)->edit($provider, auth()->user(), $data);
+        app(EditServerProvider::class)->edit($provider, auth()->user()->currentProject, $data);
     }
 }

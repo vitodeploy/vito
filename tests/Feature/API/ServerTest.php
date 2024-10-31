@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\API;
+namespace Tests\Feature\API;
 
 use App\Enums\Database;
 use App\Enums\OperatingSystem;
@@ -20,7 +20,7 @@ class ServerTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        $this->json('GET', route('api.servers', [
+        $this->json('GET', route('api.projects.servers', [
             'project' => $this->user->current_project_id,
         ]))
             ->assertSuccessful()
@@ -33,7 +33,7 @@ class ServerTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        $this->json('GET', route('api.servers.show', [
+        $this->json('GET', route('api.projects.servers.show', [
             'project' => $this->user->current_project_id,
             'server' => $this->server,
         ]))
@@ -52,7 +52,7 @@ class ServerTest extends TestCase
 
         SSH::fake('Active: active'); // fake output for service installations
 
-        $this->json('POST', route('api.servers.create', [
+        $this->json('POST', route('api.projects.servers.create', [
             'project' => $this->user->current_project_id,
         ]), [
             'type' => $type,
@@ -78,7 +78,7 @@ class ServerTest extends TestCase
 
         SSH::fake();
 
-        $this->json('DELETE', route('api.servers.delete', [
+        $this->json('DELETE', route('api.projects.servers.delete', [
             'project' => $this->server->project_id,
             'server' => $this->server->id,
         ]))
@@ -91,7 +91,7 @@ class ServerTest extends TestCase
 
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        $this->json('POST', route('api.servers.reboot', [
+        $this->json('POST', route('api.projects.servers.reboot', [
             'project' => $this->server->project_id,
             'server' => $this->server->id,
         ]))
@@ -104,7 +104,7 @@ class ServerTest extends TestCase
 
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        $this->json('POST', route('api.servers.upgrade', [
+        $this->json('POST', route('api.projects.servers.upgrade', [
             'project' => $this->server->project_id,
             'server' => $this->server->id,
         ]))

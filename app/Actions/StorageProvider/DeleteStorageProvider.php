@@ -3,14 +3,10 @@
 namespace App\Actions\StorageProvider;
 
 use App\Models\StorageProvider;
-use Exception;
 use Illuminate\Validation\ValidationException;
 
 class DeleteStorageProvider
 {
-    /**
-     * @throws Exception
-     */
     public function delete(StorageProvider $storageProvider): void
     {
         if ($storageProvider->backups()->exists()) {

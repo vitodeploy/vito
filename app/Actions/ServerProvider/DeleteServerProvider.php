@@ -3,14 +3,10 @@
 namespace App\Actions\ServerProvider;
 
 use App\Models\ServerProvider;
-use Exception;
 use Illuminate\Validation\ValidationException;
 
 class DeleteServerProvider
 {
-    /**
-     * @throws Exception
-     */
     public function delete(ServerProvider $serverProvider): void
     {
         if ($serverProvider->servers()->exists()) {

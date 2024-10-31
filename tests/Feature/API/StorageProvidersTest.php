@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\API;
+namespace Tests\Feature\API;
 
 use App\Enums\StorageProvider;
 use App\Facades\FTP;
@@ -31,7 +31,7 @@ class StorageProvidersTest extends TestCase
             FTP::fake();
         }
 
-        $this->json('POST', route('api.storage-providers.create', [
+        $this->json('POST', route('api.projects.storage-providers.create', [
             'project' => $this->user->current_project_id,
         ]), $input)
             ->assertSuccessful()
@@ -51,7 +51,7 @@ class StorageProvidersTest extends TestCase
             'provider' => StorageProvider::DROPBOX,
         ]);
 
-        $this->json('GET', route('api.storage-providers', [
+        $this->json('GET', route('api.projects.storage-providers', [
             'project' => $this->user->current_project_id,
         ]))
             ->assertSuccessful()
@@ -70,7 +70,7 @@ class StorageProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $this->json('DELETE', route('api.storage-providers.delete', [
+        $this->json('DELETE', route('api.projects.storage-providers.delete', [
             'project' => $this->user->current_project_id,
             'storageProvider' => $provider->id,
         ]))
@@ -98,7 +98,7 @@ class StorageProvidersTest extends TestCase
             'storage_id' => $provider->id,
         ]);
 
-        $this->json('DELETE', route('api.storage-providers.delete', [
+        $this->json('DELETE', route('api.projects.storage-providers.delete', [
             'project' => $this->user->current_project_id,
             'storageProvider' => $provider->id,
         ]))

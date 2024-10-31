@@ -19,13 +19,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class CreateServer
 {
-    /**
-     * @throws Throwable
-     */
     public function create(User $creator, Project $project, array $input): Server
     {
         $server = new Server([
@@ -78,7 +76,9 @@ class CreateServer
         } catch (Exception $e) {
             $server->provider()->delete();
             DB::rollBack();
-            throw $e;
+            throw ValidationException::withMessages([
+                'provider' => $e->getMessage(),
+            ]);
         }
     }
 

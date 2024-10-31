@@ -21,7 +21,7 @@ class Settings extends Page
 
     public function mount(): void
     {
-        $this->authorize('update', $this->server);
+        $this->authorize('update', [$this->server, auth()->user()->currentProject]);
     }
 
     public function getWidgets(): array
@@ -45,6 +45,7 @@ class Settings extends Page
                 ->requiresConfirmation()
                 ->modalHeading('Delete Server')
                 ->modalDescription('Once your server is deleted, all of its resources and data will be permanently deleted and can\'t be restored')
+                ->authorize('delete', $this->server)
                 ->action(function () {
                     try {
                         $this->server->delete();

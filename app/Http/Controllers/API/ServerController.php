@@ -21,11 +21,18 @@ use Knuckles\Scribe\Attributes\Endpoint;
 use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\Response;
 use Knuckles\Scribe\Attributes\ResponseFromApiResource;
-use Throwable;
+use Spatie\RouteAttributes\Attributes\Delete;
+use Spatie\RouteAttributes\Attributes\Get;
+use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Post;
+use Spatie\RouteAttributes\Attributes\Prefix;
 
+#[Prefix('api/projects/{project}/servers')]
+#[Middleware(['auth:sanctum', 'can-see-project'])]
 #[Group(name: 'servers')]
 class ServerController extends Controller
 {
+    #[Get('/', name: 'api.projects.servers', middleware: 'ability:read')]
     #[Endpoint(title: 'list', description: 'Get all servers in a project.')]
     #[ResponseFromApiResource(ServerResource::class, Server::class, collection: true, paginate: 25)]
     public function index(Project $project): ResourceCollection
@@ -35,18 +42,7 @@ class ServerController extends Controller
         return ServerResource::collection($project->servers()->simplePaginate(25));
     }
 
-    #[Endpoint(title: 'show', description: 'Get a server by ID.')]
-    #[ResponseFromApiResource(ServerResource::class, Server::class)]
-    public function show(Project $project, Server $server): ServerResource
-    {
-        $this->authorize('view', $server);
-
-        return new ServerResource($server);
-    }
-
-    /**
-     * @throws Throwable
-     */
+    #[Post('/', name: 'api.projects.servers.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create', description: 'Create a new server.')]
     #[BodyParam(name: 'provider', description: 'The server provider type', required: true)]
     #[BodyParam(name: 'server_provider', description: 'If the provider is not custom, the ID of the server provider profile', enum: [ServerProvider::CUSTOM, ServerProvider::HETZNER, ServerProvider::DIGITALOCEAN, ServerProvider::LINODE, ServerProvider::VULTR])]
@@ -67,41 +63,69 @@ class ServerController extends Controller
 
         $this->validate($request, CreateServer::rules($project, $request->input()));
 
-        $server = app(CreateServer::class)->create(auth()->user(), auth()->user()->currentProject, $request->all());
+        $server = app(CreateServer::class)->create(auth()->user(), $project, $request->all());
 
         return new ServerResource($server);
     }
 
+    #[Get('{server}', name: 'api.projects.servers.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'show', description: 'Get a server by ID.')]
+    #[ResponseFromApiResource(ServerResource::class, Server::class)]
+    public function show(Project $project, Server $server): ServerResource
+    {
+        $this->authorize('view', [$server, $project]);
+
+        $this->validateRoute($project, $server);
+
+        return new ServerResource($server);
+    }
+
+    #[Post('{server}/reboot', name: 'api.projects.servers.reboot', middleware: 'ability:write')]
     #[Endpoint(title: 'reboot', description: 'Reboot a server.')]
     #[Response(status: 204)]
-    public function reboot(Request $request, Project $project, Server $server)
+    public function reboot(Project $project, Server $server)
     {
-        $this->authorize('update', $server);
+        $this->authorize('update', [$server, $project]);
+
+        $this->validateRoute($project, $server);
 
         app(RebootServer::class)->reboot($server);
 
         return response()->noContent();
     }
 
+    #[Post('{server}/upgrade', name: 'api.projects.servers.upgrade', middleware: 'ability:write')]
     #[Endpoint(title: 'upgrade', description: 'Upgrade server.')]
     #[Response(status: 204)]
-    public function upgrade(Request $request, Project $project, Server $server)
+    public function upgrade(Project $project, Server $server)
     {
-        $this->authorize('update', $server);
+        $this->authorize('update', [$server, $project]);
+
+        $this->validateRoute($project, $server);
 
         app(Update::class)->update($server);
 
         return response()->noContent();
     }
 
+    #[Delete('{server}', name: 'api.projects.servers.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete server.')]
     #[Response(status: 204)]
     public function delete(Project $project, Server $server)
     {
-        $this->authorize('delete', $server);
+        $this->authorize('delete', [$server, $project]);
+
+        $this->validateRoute($project, $server);
 
         $server->delete();
 
         return response()->noContent();
+    }
+
+    private function validateRoute(Project $project, Server $server): void
+    {
+        if ($project->id !== $server->project_id) {
+            abort(404, 'Server not found in project');
+        }
     }
 }
