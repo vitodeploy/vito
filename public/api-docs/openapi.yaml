@@ -1,0 +1,5259 @@
+openapi: 3.0.3
+info:
+  title: 'API Documentation'
+  description: "VitoDeploy's API documentation."
+  version: 1.0.0
+servers:
+  -
+    url: 'https://your-vito-url'
+paths:
+  '/api/projects/{project_id}/servers/{server_id}/cron-jobs':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all cron jobs.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      server_id: null
+                      command: 'ls -la'
+                      user: root
+                      frequency: '* * * * *'
+                      status: ready
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      server_id: null
+                      command: 'ls -la'
+                      user: root
+                      frequency: '* * * * *'
+                      status: ready
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        server_id: null
+                        command: 'ls -la'
+                        user: root
+                        frequency: '* * * * *'
+                        status: ready
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        server_id: null
+                        command: 'ls -la'
+                        user: root
+                        frequency: '* * * * *'
+                        status: ready
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        server_id:
+                          type: string
+                          example: null
+                        command:
+                          type: string
+                          example: 'ls -la'
+                        user:
+                          type: string
+                          example: root
+                        frequency:
+                          type: string
+                          example: '* * * * *'
+                        status:
+                          type: string
+                          example: ready
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - cron-jobs
+    post:
+      summary: create
+      operationId: create
+      description: 'Create a new cron job.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  command: 'ls -la'
+                  user: root
+                  frequency: '* * * * *'
+                  status: ready
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  command:
+                    type: string
+                    example: 'ls -la'
+                  user:
+                    type: string
+                    example: root
+                  frequency:
+                    type: string
+                    example: '* * * * *'
+                  status:
+                    type: string
+                    example: ready
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - cron-jobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                command:
+                  type: string
+                  description: ''
+                  example: qui
+                  nullable: false
+                user:
+                  type: string
+                  description: ''
+                  example: root
+                  nullable: false
+                  enum:
+                    - root
+                    - vito
+                frequency:
+                  type: string
+                  description: 'Frequency of the cron job.'
+                  example: '* * * * *'
+                  nullable: false
+              required:
+                - command
+                - user
+                - frequency
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/cron-jobs/{cronJob_id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a cron job by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  command: 'ls -la'
+                  user: root
+                  frequency: '* * * * *'
+                  status: ready
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  command:
+                    type: string
+                    example: 'ls -la'
+                  user:
+                    type: string
+                    example: root
+                  frequency:
+                    type: string
+                    example: '* * * * *'
+                  status:
+                    type: string
+                    example: ready
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - cron-jobs
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete cron job.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - cron-jobs
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: cronJob_id
+        description: 'The ID of the cronJob.'
+        example: 5
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/database-users':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all database users.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      server_id: null
+                      username: nyasia68
+                      databases: []
+                      host: '%'
+                      status: null
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      server_id: null
+                      username: madyson20
+                      databases: []
+                      host: '%'
+                      status: null
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        server_id: null
+                        username: nyasia68
+                        databases: []
+                        host: '%'
+                        status: null
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        server_id: null
+                        username: madyson20
+                        databases: []
+                        host: '%'
+                        status: null
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        server_id:
+                          type: string
+                          example: null
+                        username:
+                          type: string
+                          example: nyasia68
+                        databases:
+                          type: array
+                          example: []
+                        host:
+                          type: string
+                          example: '%'
+                        status:
+                          type: string
+                          example: null
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - database-users
+    post:
+      summary: create
+      operationId: create
+      description: 'Create a new database user.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  username: amya.nitzsche
+                  databases: []
+                  host: '%'
+                  status: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  username:
+                    type: string
+                    example: amya.nitzsche
+                  databases:
+                    type: array
+                    example: []
+                  host:
+                    type: string
+                    example: '%'
+                  status:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - database-users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: ''
+                  example: dignissimos
+                  nullable: false
+                password:
+                  type: string
+                  description: ''
+                  example: OK+XEG2)
+                  nullable: false
+                host:
+                  type: string
+                  description: 'Host, if it is a remote user.'
+                  example: '%'
+                  nullable: false
+              required:
+                - username
+                - password
+                - host
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/database-users/{databaseUser_id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a database user by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  username: bergstrom.ericka
+                  databases: []
+                  host: '%'
+                  status: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  username:
+                    type: string
+                    example: bergstrom.ericka
+                  databases:
+                    type: array
+                    example: []
+                  host:
+                    type: string
+                    example: '%'
+                  status:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - database-users
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete database user.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - database-users
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: databaseUser_id
+        description: 'The ID of the databaseUser.'
+        example: 4
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/database-users/{databaseUser_id}/link':
+    post:
+      summary: link
+      operationId: link
+      description: 'Link to databases'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  username: fmurray
+                  databases: []
+                  host: '%'
+                  status: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  username:
+                    type: string
+                    example: fmurray
+                  databases:
+                    type: array
+                    example: []
+                  host:
+                    type: string
+                    example: '%'
+                  status:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - database-users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                databases:
+                  type: string
+                  description: 'Array of database names to link to the user.'
+                  example: accusantium
+                  nullable: false
+              required:
+                - databases
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: databaseUser_id
+        description: 'The ID of the databaseUser.'
+        example: 4
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/databases':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all databases.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      server_id: null
+                      name: clockman
+                      status: ready
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      server_id: null
+                      name: wvonrueden
+                      status: ready
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        server_id: null
+                        name: clockman
+                        status: ready
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        server_id: null
+                        name: wvonrueden
+                        status: ready
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        server_id:
+                          type: string
+                          example: null
+                        name:
+                          type: string
+                          example: clockman
+                        status:
+                          type: string
+                          example: ready
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - databases
+    post:
+      summary: create
+      operationId: create
+      description: 'Create a new database.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  name: johanna76
+                  status: ready
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  name:
+                    type: string
+                    example: johanna76
+                  status:
+                    type: string
+                    example: ready
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - databases
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: ''
+                  example: nesciunt
+                  nullable: false
+              required:
+                - name
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/databases/{id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a database by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  name: chloe.huel
+                  status: ready
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  name:
+                    type: string
+                    example: chloe.huel
+                  status:
+                    type: string
+                    example: ready
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - databases
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: id
+        description: 'The ID of the database.'
+        example: 6
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/databases/{database_id}':
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete database.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - databases
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: database_id
+        description: 'The ID of the database.'
+        example: 6
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/firewall-rules':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all firewall rules.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      server_id: null
+                      type: allow
+                      protocol: tcp
+                      port: 18074
+                      source: 189.27.156.82
+                      mask: 24
+                      note: test
+                      status: null
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      server_id: null
+                      type: allow
+                      protocol: tcp
+                      port: 41088
+                      source: 86.177.121.87
+                      mask: 24
+                      note: test
+                      status: null
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        server_id: null
+                        type: allow
+                        protocol: tcp
+                        port: 18074
+                        source: 189.27.156.82
+                        mask: 24
+                        note: test
+                        status: null
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        server_id: null
+                        type: allow
+                        protocol: tcp
+                        port: 41088
+                        source: 86.177.121.87
+                        mask: 24
+                        note: test
+                        status: null
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        server_id:
+                          type: string
+                          example: null
+                        type:
+                          type: string
+                          example: allow
+                        protocol:
+                          type: string
+                          example: tcp
+                        port:
+                          type: integer
+                          example: 18074
+                        source:
+                          type: string
+                          example: 189.27.156.82
+                        mask:
+                          type: integer
+                          example: 24
+                        note:
+                          type: string
+                          example: test
+                        status:
+                          type: string
+                          example: null
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - firewall-rules
+    post:
+      summary: create
+      operationId: create
+      description: 'Create a new firewall rule.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  type: allow
+                  protocol: tcp
+                  port: 61992
+                  source: 47.222.76.48
+                  mask: 24
+                  note: test
+                  status: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  type:
+                    type: string
+                    example: allow
+                  protocol:
+                    type: string
+                    example: tcp
+                  port:
+                    type: integer
+                    example: 61992
+                  source:
+                    type: string
+                    example: 47.222.76.48
+                  mask:
+                    type: integer
+                    example: 24
+                  note:
+                    type: string
+                    example: test
+                  status:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - firewall-rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: ''
+                  example: allow
+                  nullable: false
+                  enum:
+                    - allow
+                    - deny
+                protocol:
+                  type: string
+                  description: ''
+                  example: udp
+                  nullable: false
+                  enum:
+                    - tcp
+                    - udp
+                port:
+                  type: string
+                  description: ''
+                  example: voluptates
+                  nullable: false
+                source:
+                  type: string
+                  description: ''
+                  example: saepe
+                  nullable: false
+                mask:
+                  type: string
+                  description: 'Mask for source IP.'
+                  example: '0'
+                  nullable: false
+              required:
+                - type
+                - protocol
+                - port
+                - source
+                - mask
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/firewall-rules/{firewallRule_id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a firewall rule by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  type: allow
+                  protocol: tcp
+                  port: 43107
+                  source: 135.73.216.16
+                  mask: 24
+                  note: test
+                  status: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  type:
+                    type: string
+                    example: allow
+                  protocol:
+                    type: string
+                    example: tcp
+                  port:
+                    type: integer
+                    example: 43107
+                  source:
+                    type: string
+                    example: 135.73.216.16
+                  mask:
+                    type: integer
+                    example: 24
+                  note:
+                    type: string
+                    example: test
+                  status:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - firewall-rules
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete firewall rule.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - firewall-rules
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: firewallRule_id
+        description: 'The ID of the firewallRule.'
+        example: 7
+        required: true
+        schema:
+          type: integer
+  /api/health:
+    get:
+      summary: health-check
+      operationId: healthCheck
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  version: 2.0.0
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  version:
+                    type: string
+                    example: 2.0.0
+      tags:
+        - general
+      security: []
+  /api/projects:
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all projects.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: 29
+                      name: 'Zachary Lueilwitz'
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                    -
+                      id: 30
+                      name: 'Mrs. Kiarra Heller IV'
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 29
+                        name: 'Zachary Lueilwitz'
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                      -
+                        id: 30
+                        name: 'Mrs. Kiarra Heller IV'
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 29
+                        name:
+                          type: string
+                          example: 'Zachary Lueilwitz'
+                        created_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                        updated_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - projects
+    post:
+      summary: create
+      operationId: create
+      description: 'Create a new project.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 29
+                  name: 'Hershel Spinka'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 29
+                  name:
+                    type: string
+                    example: 'Hershel Spinka'
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the project.'
+                  example: quos
+                  nullable: false
+              required:
+                - name
+  '/api/projects/{id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a project by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 29
+                  name: 'Emery Kiehn'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 29
+                  name:
+                    type: string
+                    example: 'Emery Kiehn'
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - projects
+    put:
+      summary: update
+      operationId: update
+      description: 'Update project.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 29
+                  name: 'Mable Prohaska'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 29
+                  name:
+                    type: string
+                    example: 'Mable Prohaska'
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the project.'
+                  example: ut
+                  nullable: false
+              required:
+                - name
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}':
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete project.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - projects
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/server-providers':
+    get:
+      summary: list
+      operationId: list
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: 2
+                      project_id: null
+                      global: true
+                      name: dolor
+                      provider: digitalocean
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                    -
+                      id: 3
+                      project_id: null
+                      global: true
+                      name: enim
+                      provider: digitalocean
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 2
+                        project_id: null
+                        global: true
+                        name: dolor
+                        provider: digitalocean
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                      -
+                        id: 3
+                        project_id: null
+                        global: true
+                        name: enim
+                        provider: digitalocean
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 2
+                        project_id:
+                          type: string
+                          example: null
+                        global:
+                          type: boolean
+                          example: true
+                        name:
+                          type: string
+                          example: dolor
+                        provider:
+                          type: string
+                          example: digitalocean
+                        created_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                        updated_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - server-providers
+    post:
+      summary: create
+      operationId: create
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 2
+                  project_id: null
+                  global: true
+                  name: eligendi
+                  provider: aws
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 2
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: eligendi
+                  provider:
+                    type: string
+                    example: aws
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - server-providers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
+                  example: autem
+                  nullable: false
+                name:
+                  type: string
+                  description: 'The name of the server provider.'
+                  example: enim
+                  nullable: false
+                token:
+                  type: string
+                  description: 'The token if provider requires api token'
+                  example: culpa
+                  nullable: false
+                key:
+                  type: string
+                  description: 'The key if provider requires key'
+                  example: sit
+                  nullable: false
+                secret:
+                  type: string
+                  description: 'The secret if provider requires key'
+                  example: voluptates
+                  nullable: false
+              required:
+                - provider
+                - name
+                - token
+                - key
+                - secret
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/server-providers/{serverProvider_id}':
+    get:
+      summary: show
+      operationId: show
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 2
+                  project_id: null
+                  global: true
+                  name: architecto
+                  provider: digitalocean
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 2
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: architecto
+                  provider:
+                    type: string
+                    example: digitalocean
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - server-providers
+    put:
+      summary: update
+      operationId: update
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 2
+                  project_id: null
+                  global: true
+                  name: reiciendis
+                  provider: hetzner
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 2
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: reiciendis
+                  provider:
+                    type: string
+                    example: hetzner
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - server-providers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the server provider.'
+                  example: minus
+                  nullable: false
+                global:
+                  type: string
+                  description: 'Accessible in all projects'
+                  example: false
+                  nullable: false
+                  enum:
+                    - true
+                    - false
+              required:
+                - name
+                - global
+    delete:
+      summary: delete
+      operationId: delete
+      description: ''
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - server-providers
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: serverProvider_id
+        description: 'The ID of the serverProvider.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all servers in a project.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      project_id: null
+                      user_id: null
+                      provider_id: null
+                      name: 'Dorthy Toy'
+                      ssh_user: vito
+                      ip: 172.132.95.155
+                      local_ip: 118.57.197.65
+                      port: 22
+                      os: ubuntu_22
+                      type: regular
+                      type_data: null
+                      provider: custom
+                      provider_data: null
+                      public_key: test
+                      status: ready
+                      auto_update: null
+                      available_updates: 0
+                      security_updates: null
+                      progress: 100
+                      progress_step: null
+                      updates: null
+                      last_update_check: null
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      project_id: null
+                      user_id: null
+                      provider_id: null
+                      name: 'Carrie Sporer'
+                      ssh_user: vito
+                      ip: 184.242.162.173
+                      local_ip: 135.244.50.22
+                      port: 22
+                      os: ubuntu_22
+                      type: regular
+                      type_data: null
+                      provider: custom
+                      provider_data: null
+                      public_key: test
+                      status: ready
+                      auto_update: null
+                      available_updates: 0
+                      security_updates: null
+                      progress: 100
+                      progress_step: null
+                      updates: null
+                      last_update_check: null
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        project_id: null
+                        user_id: null
+                        provider_id: null
+                        name: 'Dorthy Toy'
+                        ssh_user: vito
+                        ip: 172.132.95.155
+                        local_ip: 118.57.197.65
+                        port: 22
+                        os: ubuntu_22
+                        type: regular
+                        type_data: null
+                        provider: custom
+                        provider_data: null
+                        public_key: test
+                        status: ready
+                        auto_update: null
+                        available_updates: 0
+                        security_updates: null
+                        progress: 100
+                        progress_step: null
+                        updates: null
+                        last_update_check: null
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        project_id: null
+                        user_id: null
+                        provider_id: null
+                        name: 'Carrie Sporer'
+                        ssh_user: vito
+                        ip: 184.242.162.173
+                        local_ip: 135.244.50.22
+                        port: 22
+                        os: ubuntu_22
+                        type: regular
+                        type_data: null
+                        provider: custom
+                        provider_data: null
+                        public_key: test
+                        status: ready
+                        auto_update: null
+                        available_updates: 0
+                        security_updates: null
+                        progress: 100
+                        progress_step: null
+                        updates: null
+                        last_update_check: null
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        project_id:
+                          type: string
+                          example: null
+                        user_id:
+                          type: string
+                          example: null
+                        provider_id:
+                          type: string
+                          example: null
+                        name:
+                          type: string
+                          example: 'Dorthy Toy'
+                        ssh_user:
+                          type: string
+                          example: vito
+                        ip:
+                          type: string
+                          example: 172.132.95.155
+                        local_ip:
+                          type: string
+                          example: 118.57.197.65
+                        port:
+                          type: integer
+                          example: 22
+                        os:
+                          type: string
+                          example: ubuntu_22
+                        type:
+                          type: string
+                          example: regular
+                        type_data:
+                          type: string
+                          example: null
+                        provider:
+                          type: string
+                          example: custom
+                        provider_data:
+                          type: string
+                          example: null
+                        public_key:
+                          type: string
+                          example: test
+                        status:
+                          type: string
+                          example: ready
+                        auto_update:
+                          type: string
+                          example: null
+                        available_updates:
+                          type: integer
+                          example: 0
+                        security_updates:
+                          type: string
+                          example: null
+                        progress:
+                          type: integer
+                          example: 100
+                        progress_step:
+                          type: string
+                          example: null
+                        updates:
+                          type: string
+                          example: null
+                        last_update_check:
+                          type: string
+                          example: null
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - servers
+    post:
+      summary: create
+      operationId: create
+      description: 'Create a new server.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  project_id: null
+                  user_id: null
+                  provider_id: null
+                  name: 'Flo Beer PhD'
+                  ssh_user: vito
+                  ip: 168.238.14.230
+                  local_ip: 40.232.73.41
+                  port: 22
+                  os: ubuntu_22
+                  type: regular
+                  type_data: null
+                  provider: custom
+                  provider_data: null
+                  public_key: test
+                  status: ready
+                  auto_update: null
+                  available_updates: 0
+                  security_updates: null
+                  progress: 100
+                  progress_step: null
+                  updates: null
+                  last_update_check: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  project_id:
+                    type: string
+                    example: null
+                  user_id:
+                    type: string
+                    example: null
+                  provider_id:
+                    type: string
+                    example: null
+                  name:
+                    type: string
+                    example: 'Flo Beer PhD'
+                  ssh_user:
+                    type: string
+                    example: vito
+                  ip:
+                    type: string
+                    example: 168.238.14.230
+                  local_ip:
+                    type: string
+                    example: 40.232.73.41
+                  port:
+                    type: integer
+                    example: 22
+                  os:
+                    type: string
+                    example: ubuntu_22
+                  type:
+                    type: string
+                    example: regular
+                  type_data:
+                    type: string
+                    example: null
+                  provider:
+                    type: string
+                    example: custom
+                  provider_data:
+                    type: string
+                    example: null
+                  public_key:
+                    type: string
+                    example: test
+                  status:
+                    type: string
+                    example: ready
+                  auto_update:
+                    type: string
+                    example: null
+                  available_updates:
+                    type: integer
+                    example: 0
+                  security_updates:
+                    type: string
+                    example: null
+                  progress:
+                    type: integer
+                    example: 100
+                  progress_step:
+                    type: string
+                    example: null
+                  updates:
+                    type: string
+                    example: null
+                  last_update_check:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - servers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  description: 'The server provider type'
+                  example: et
+                  nullable: false
+                server_provider:
+                  type: string
+                  description: 'If the provider is not custom, the ID of the server provider profile'
+                  example: digitalocean
+                  nullable: false
+                  enum:
+                    - custom
+                    - hetzner
+                    - digitalocean
+                    - linode
+                    - vultr
+                region:
+                  type: string
+                  description: 'Provider region if the provider is not custom'
+                  example: inventore
+                  nullable: false
+                plan:
+                  type: string
+                  description: 'Provider plan if the provider is not custom'
+                  example: atque
+                  nullable: false
+                ip:
+                  type: string
+                  description: 'SSH IP address if the provider is custom'
+                  example: quam
+                  nullable: false
+                port:
+                  type: string
+                  description: 'SSH Port if the provider is custom'
+                  example: nemo
+                  nullable: false
+                name:
+                  type: string
+                  description: 'The name of the server.'
+                  example: perspiciatis
+                  nullable: false
+                os:
+                  type: string
+                  description: 'The os of the server'
+                  example: similique
+                  nullable: false
+                type:
+                  type: string
+                  description: 'Server type'
+                  example: regular
+                  nullable: false
+                  enum:
+                    - regular
+                    - database
+                webserver:
+                  type: string
+                  description: 'Web server'
+                  example: none
+                  nullable: false
+                  enum:
+                    - none
+                    - nginx
+                database:
+                  type: string
+                  description: Database
+                  example: none
+                  nullable: false
+                  enum:
+                    - none
+                    - mysql57
+                    - mysql80
+                    - mariadb103
+                    - mariadb104
+                    - mariadb103
+                    - postgresql12
+                    - postgresql13
+                    - postgresql14
+                    - postgresql15
+                    - postgresql16
+                php:
+                  type: string
+                  description: 'PHP version'
+                  example: '8.1'
+                  nullable: false
+                  enum:
+                    - '7.0'
+                    - '7.1'
+                    - '7.2'
+                    - '7.3'
+                    - '7.4'
+                    - '8.0'
+                    - '8.1'
+                    - '8.2'
+                    - '8.3'
+              required:
+                - provider
+                - server_provider
+                - region
+                - plan
+                - ip
+                - port
+                - name
+                - os
+                - type
+                - webserver
+                - database
+                - php
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a server by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  project_id: null
+                  user_id: null
+                  provider_id: null
+                  name: 'Stephany Ankunding'
+                  ssh_user: vito
+                  ip: 145.28.94.46
+                  local_ip: 69.133.44.100
+                  port: 22
+                  os: ubuntu_22
+                  type: regular
+                  type_data: null
+                  provider: custom
+                  provider_data: null
+                  public_key: test
+                  status: ready
+                  auto_update: null
+                  available_updates: 0
+                  security_updates: null
+                  progress: 100
+                  progress_step: null
+                  updates: null
+                  last_update_check: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  project_id:
+                    type: string
+                    example: null
+                  user_id:
+                    type: string
+                    example: null
+                  provider_id:
+                    type: string
+                    example: null
+                  name:
+                    type: string
+                    example: 'Stephany Ankunding'
+                  ssh_user:
+                    type: string
+                    example: vito
+                  ip:
+                    type: string
+                    example: 145.28.94.46
+                  local_ip:
+                    type: string
+                    example: 69.133.44.100
+                  port:
+                    type: integer
+                    example: 22
+                  os:
+                    type: string
+                    example: ubuntu_22
+                  type:
+                    type: string
+                    example: regular
+                  type_data:
+                    type: string
+                    example: null
+                  provider:
+                    type: string
+                    example: custom
+                  provider_data:
+                    type: string
+                    example: null
+                  public_key:
+                    type: string
+                    example: test
+                  status:
+                    type: string
+                    example: ready
+                  auto_update:
+                    type: string
+                    example: null
+                  available_updates:
+                    type: integer
+                    example: 0
+                  security_updates:
+                    type: string
+                    example: null
+                  progress:
+                    type: integer
+                    example: 100
+                  progress_step:
+                    type: string
+                    example: null
+                  updates:
+                    type: string
+                    example: null
+                  last_update_check:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - servers
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/reboot':
+    post:
+      summary: reboot
+      operationId: reboot
+      description: 'Reboot a server.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - servers
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/upgrade':
+    post:
+      summary: upgrade
+      operationId: upgrade
+      description: 'Upgrade server.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - servers
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}':
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete server.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - servers
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all services.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      server_id: null
+                      type: null
+                      type_data: null
+                      name: null
+                      version: null
+                      unit: null
+                      status: null
+                      is_default: null
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      server_id: null
+                      type: null
+                      type_data: null
+                      name: null
+                      version: null
+                      unit: null
+                      status: null
+                      is_default: null
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        server_id: null
+                        type: null
+                        type_data: null
+                        name: null
+                        version: null
+                        unit: null
+                        status: null
+                        is_default: null
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        server_id: null
+                        type: null
+                        type_data: null
+                        name: null
+                        version: null
+                        unit: null
+                        status: null
+                        is_default: null
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        server_id:
+                          type: string
+                          example: null
+                        type:
+                          type: string
+                          example: null
+                        type_data:
+                          type: string
+                          example: null
+                        name:
+                          type: string
+                          example: null
+                        version:
+                          type: string
+                          example: null
+                        unit:
+                          type: string
+                          example: null
+                        status:
+                          type: string
+                          example: null
+                        is_default:
+                          type: string
+                          example: null
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services/{id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a service by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  type: null
+                  type_data: null
+                  name: null
+                  version: null
+                  unit: null
+                  status: null
+                  is_default: null
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  type:
+                    type: string
+                    example: null
+                  type_data:
+                    type: string
+                    example: null
+                  name:
+                    type: string
+                    example: null
+                  version:
+                    type: string
+                    example: null
+                  unit:
+                    type: string
+                    example: null
+                  status:
+                    type: string
+                    example: null
+                  is_default:
+                    type: string
+                    example: null
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: id
+        description: 'The ID of the service.'
+        example: 27
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services/{service_id}/start':
+    post:
+      summary: start
+      operationId: start
+      description: 'Start service.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: service_id
+        description: 'The ID of the service.'
+        example: 27
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services/{service_id}/stop':
+    post:
+      summary: stop
+      operationId: stop
+      description: 'Stop service.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: service_id
+        description: 'The ID of the service.'
+        example: 27
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services/{service_id}/restart':
+    post:
+      summary: restart
+      operationId: restart
+      description: 'Restart service.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: service_id
+        description: 'The ID of the service.'
+        example: 27
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services/{service_id}/enable':
+    post:
+      summary: enable
+      operationId: enable
+      description: 'Enable service.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: service_id
+        description: 'The ID of the service.'
+        example: 27
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services/{service_id}/disable':
+    post:
+      summary: disable
+      operationId: disable
+      description: 'Disable service.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: service_id
+        description: 'The ID of the service.'
+        example: 27
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/services/{service_id}':
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete service.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - services
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: service_id
+        description: 'The ID of the service.'
+        example: 27
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/sites':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all sites.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      server_id: null
+                      source_control_id: null
+                      type: laravel
+                      type_data: null
+                      domain: test.com
+                      aliases: null
+                      web_directory: /
+                      path: /home
+                      php_version: '8.2'
+                      repository: null
+                      branch: main
+                      status: ready
+                      port: null
+                      progress: 100
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      server_id: null
+                      source_control_id: null
+                      type: laravel
+                      type_data: null
+                      domain: test.com
+                      aliases: null
+                      web_directory: /
+                      path: /home
+                      php_version: '8.2'
+                      repository: null
+                      branch: main
+                      status: ready
+                      port: null
+                      progress: 100
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        server_id: null
+                        source_control_id: null
+                        type: laravel
+                        type_data: null
+                        domain: test.com
+                        aliases: null
+                        web_directory: /
+                        path: /home
+                        php_version: '8.2'
+                        repository: null
+                        branch: main
+                        status: ready
+                        port: null
+                        progress: 100
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        server_id: null
+                        source_control_id: null
+                        type: laravel
+                        type_data: null
+                        domain: test.com
+                        aliases: null
+                        web_directory: /
+                        path: /home
+                        php_version: '8.2'
+                        repository: null
+                        branch: main
+                        status: ready
+                        port: null
+                        progress: 100
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        server_id:
+                          type: string
+                          example: null
+                        source_control_id:
+                          type: string
+                          example: null
+                        type:
+                          type: string
+                          example: laravel
+                        type_data:
+                          type: string
+                          example: null
+                        domain:
+                          type: string
+                          example: test.com
+                        aliases:
+                          type: string
+                          example: null
+                        web_directory:
+                          type: string
+                          example: /
+                        path:
+                          type: string
+                          example: /home
+                        php_version:
+                          type: string
+                          example: '8.2'
+                        repository:
+                          type: string
+                          example: null
+                        branch:
+                          type: string
+                          example: main
+                        status:
+                          type: string
+                          example: ready
+                        port:
+                          type: string
+                          example: null
+                        progress:
+                          type: integer
+                          example: 100
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - sites
+    post:
+      summary: create
+      operationId: create
+      description: 'Create a new site.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  source_control_id: null
+                  type: laravel
+                  type_data: null
+                  domain: test.com
+                  aliases: null
+                  web_directory: /
+                  path: /home
+                  php_version: '8.2'
+                  repository: null
+                  branch: main
+                  status: ready
+                  port: null
+                  progress: 100
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  source_control_id:
+                    type: string
+                    example: null
+                  type:
+                    type: string
+                    example: laravel
+                  type_data:
+                    type: string
+                    example: null
+                  domain:
+                    type: string
+                    example: test.com
+                  aliases:
+                    type: string
+                    example: null
+                  web_directory:
+                    type: string
+                    example: /
+                  path:
+                    type: string
+                    example: /home
+                  php_version:
+                    type: string
+                    example: '8.2'
+                  repository:
+                    type: string
+                    example: null
+                  branch:
+                    type: string
+                    example: main
+                  status:
+                    type: string
+                    example: ready
+                  port:
+                    type: string
+                    example: null
+                  progress:
+                    type: integer
+                    example: 100
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - sites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: ''
+                  example: wordpress
+                  nullable: false
+                  enum:
+                    - php
+                    - php-blank
+                    - phpmyadmin
+                    - laravel
+                    - wordpress
+                domain:
+                  type: string
+                  description: ''
+                  example: quo
+                  nullable: false
+                aliases:
+                  type: array
+                  description: ''
+                  example:
+                    - dolorum
+                  items:
+                    type: string
+                php_version:
+                  type: string
+                  description: 'One of the installed PHP Versions'
+                  example: '7.4'
+                  nullable: false
+                web_directory:
+                  type: string
+                  description: 'Required for PHP and Laravel sites'
+                  example: public
+                  nullable: false
+                source_control:
+                  type: string
+                  description: 'Source control ID, Required for Sites which support source control'
+                  example: explicabo
+                  nullable: false
+                repository:
+                  type: string
+                  description: 'Repository, Required for Sites which support source control'
+                  example: organization/repository
+                  nullable: false
+                branch:
+                  type: string
+                  description: 'Branch, Required for Sites which support source control'
+                  example: main
+                  nullable: false
+                composer:
+                  type: boolean
+                  description: 'Run composer if site supports composer'
+                  example: true
+                  nullable: false
+                version:
+                  type: string
+                  description: 'Version, if the site type requires a version like PHPMyAdmin'
+                  example: 5.2.1
+                  nullable: false
+              required:
+                - type
+                - domain
+                - aliases
+                - php_version
+                - web_directory
+                - source_control
+                - repository
+                - branch
+                - composer
+                - version
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/sites/{id}':
+    get:
+      summary: show
+      operationId: show
+      description: 'Get a site by ID.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  server_id: null
+                  source_control_id: null
+                  type: laravel
+                  type_data: null
+                  domain: test.com
+                  aliases: null
+                  web_directory: /
+                  path: /home
+                  php_version: '8.2'
+                  repository: null
+                  branch: main
+                  status: ready
+                  port: null
+                  progress: 100
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  server_id:
+                    type: string
+                    example: null
+                  source_control_id:
+                    type: string
+                    example: null
+                  type:
+                    type: string
+                    example: laravel
+                  type_data:
+                    type: string
+                    example: null
+                  domain:
+                    type: string
+                    example: test.com
+                  aliases:
+                    type: string
+                    example: null
+                  web_directory:
+                    type: string
+                    example: /
+                  path:
+                    type: string
+                    example: /home
+                  php_version:
+                    type: string
+                    example: '8.2'
+                  repository:
+                    type: string
+                    example: null
+                  branch:
+                    type: string
+                    example: main
+                  status:
+                    type: string
+                    example: ready
+                  port:
+                    type: string
+                    example: null
+                  progress:
+                    type: integer
+                    example: 100
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - sites
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: id
+        description: 'The ID of the site.'
+        example: 8
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/sites/{site_id}':
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete site.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - sites
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: site_id
+        description: 'The ID of the site.'
+        example: 8
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/source-controls':
+    get:
+      summary: list
+      operationId: list
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: 5
+                      project_id: null
+                      global: true
+                      name: 'Jaiden Kling'
+                      provider: github
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                    -
+                      id: 6
+                      project_id: null
+                      global: true
+                      name: 'Ms. Brianne Bosco'
+                      provider: github
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 5
+                        project_id: null
+                        global: true
+                        name: 'Jaiden Kling'
+                        provider: github
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                      -
+                        id: 6
+                        project_id: null
+                        global: true
+                        name: 'Ms. Brianne Bosco'
+                        provider: github
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 5
+                        project_id:
+                          type: string
+                          example: null
+                        global:
+                          type: boolean
+                          example: true
+                        name:
+                          type: string
+                          example: 'Jaiden Kling'
+                        provider:
+                          type: string
+                          example: github
+                        created_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                        updated_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - source-controls
+    post:
+      summary: create
+      operationId: create
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 5
+                  project_id: null
+                  global: true
+                  name: 'Toby Parker'
+                  provider: github
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: 'Toby Parker'
+                  provider:
+                    type: string
+                    example: github
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - source-controls
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  description: 'The provider'
+                  example: bitbucket
+                  nullable: false
+                  enum:
+                    - gitlab
+                    - github
+                    - bitbucket
+                name:
+                  type: string
+                  description: 'The name of the storage provider.'
+                  example: eos
+                  nullable: false
+                token:
+                  type: string
+                  description: 'The token if provider requires api token'
+                  example: et
+                  nullable: false
+                url:
+                  type: string
+                  description: 'The URL if the provider is Gitlab and it is self-hosted'
+                  example: 'https://lueilwitz.com/nostrum-et-porro-atque-sint.html'
+                  nullable: false
+                username:
+                  type: string
+                  description: 'The username if the provider is Bitbucket'
+                  example: consectetur
+                  nullable: false
+                password:
+                  type: string
+                  description: 'The password if the provider is Bitbucket'
+                  example: 'PL.P?{06\ECi0'
+                  nullable: false
+              required:
+                - provider
+                - name
+                - token
+                - url
+                - username
+                - password
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/source-controls/{sourceControl_id}':
+    get:
+      summary: show
+      operationId: show
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 5
+                  project_id: null
+                  global: true
+                  name: 'Prof. Bartholome Graham IV'
+                  provider: github
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: 'Prof. Bartholome Graham IV'
+                  provider:
+                    type: string
+                    example: github
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - source-controls
+    put:
+      summary: update
+      operationId: update
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 5
+                  project_id: null
+                  global: true
+                  name: 'Cicero Smitham'
+                  provider: github
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: 'Cicero Smitham'
+                  provider:
+                    type: string
+                    example: github
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - source-controls
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the storage provider.'
+                  example: quaerat
+                  nullable: false
+                token:
+                  type: string
+                  description: 'The token if provider requires api token'
+                  example: consectetur
+                  nullable: false
+                url:
+                  type: string
+                  description: 'The URL if the provider is Gitlab and it is self-hosted'
+                  example: 'http://www.hudson.biz/rerum-voluptatem-debitis-accusamus'
+                  nullable: false
+                username:
+                  type: string
+                  description: 'The username if the provider is Bitbucket'
+                  example: voluptatem
+                  nullable: false
+                password:
+                  type: string
+                  description: 'The password if the provider is Bitbucket'
+                  example: '\p/el>)3#~E?kI'
+                  nullable: false
+                global:
+                  type: string
+                  description: 'Accessible in all projects'
+                  example: false
+                  nullable: false
+                  enum:
+                    - true
+                    - false
+              required:
+                - name
+                - token
+                - url
+                - username
+                - password
+                - global
+    delete:
+      summary: delete
+      operationId: delete
+      description: ''
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - source-controls
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: sourceControl_id
+        description: 'The ID of the sourceControl.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/ssh-keys':
+    get:
+      summary: list
+      operationId: list
+      description: 'Get all ssh keys.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: null
+                      user: null
+                      name: 'Dr. Reanna Braun'
+                      created_at: null
+                      updated_at: null
+                    -
+                      id: null
+                      user: null
+                      name: 'Norene Fritsch'
+                      created_at: null
+                      updated_at: null
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: null
+                        user: null
+                        name: 'Dr. Reanna Braun'
+                        created_at: null
+                        updated_at: null
+                      -
+                        id: null
+                        user: null
+                        name: 'Norene Fritsch'
+                        created_at: null
+                        updated_at: null
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: null
+                        user:
+                          type: string
+                          example: null
+                        name:
+                          type: string
+                          example: 'Dr. Reanna Braun'
+                        created_at:
+                          type: string
+                          example: null
+                        updated_at:
+                          type: string
+                          example: null
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - ssh-keys
+    post:
+      summary: create
+      operationId: create
+      description: 'Deploy ssh key to server.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: null
+                  user: null
+                  name: "Sophia D'Amore"
+                  created_at: null
+                  updated_at: null
+                properties:
+                  id:
+                    type: string
+                    example: null
+                  user:
+                    type: string
+                    example: null
+                  name:
+                    type: string
+                    example: "Sophia D'Amore"
+                  created_at:
+                    type: string
+                    example: null
+                  updated_at:
+                    type: string
+                    example: null
+      tags:
+        - ssh-keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key_id:
+                  type: string
+                  description: 'The ID of the key.'
+                  example: vero
+                  nullable: false
+                name:
+                  type: string
+                  description: 'Key name, required if key_id is not provided.'
+                  example: voluptates
+                  nullable: false
+                public_key:
+                  type: string
+                  description: 'Public Key, required if key_id is not provided.'
+                  example: dolor
+                  nullable: false
+              required:
+                - key_id
+                - name
+                - public_key
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/servers/{server_id}/ssh-keys/{sshKey_id}':
+    delete:
+      summary: delete
+      operationId: delete
+      description: 'Delete ssh key from server.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - ssh-keys
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: server_id
+        description: 'The ID of the server.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: sshKey_id
+        description: 'The ID of the sshKey.'
+        example: 4
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/storage-providers':
+    get:
+      summary: list
+      operationId: list
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: 3
+                      project_id: null
+                      global: true
+                      name: et
+                      provider: local
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                    -
+                      id: 4
+                      project_id: null
+                      global: true
+                      name: sed
+                      provider: local
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    first: '/?page=1'
+                    last: '/?page=1'
+                    prev: null
+                    next: null
+                  meta:
+                    current_page: 1
+                    from: 1
+                    last_page: 1
+                    links:
+                      -
+                        url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      -
+                        url: '/?page=1'
+                        label: '1'
+                        active: true
+                      -
+                        url: null
+                        label: 'Next &raquo;'
+                        active: false
+                    path: /
+                    per_page: 25
+                    to: 2
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 3
+                        project_id: null
+                        global: true
+                        name: et
+                        provider: local
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                      -
+                        id: 4
+                        project_id: null
+                        global: true
+                        name: sed
+                        provider: local
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 3
+                        project_id:
+                          type: string
+                          example: null
+                        global:
+                          type: boolean
+                          example: true
+                        name:
+                          type: string
+                          example: et
+                        provider:
+                          type: string
+                          example: local
+                        created_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                        updated_at:
+                          type: string
+                          example: '2024-11-01T15:40:48.000000Z'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type: string
+                        example: '/?page=1'
+                      last:
+                        type: string
+                        example: '/?page=1'
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      links:
+                        type: array
+                        example:
+                          -
+                            url: null
+                            label: '&laquo; Previous'
+                            active: false
+                          -
+                            url: '/?page=1'
+                            label: '1'
+                            active: true
+                          -
+                            url: null
+                            label: 'Next &raquo;'
+                            active: false
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: null
+                            label:
+                              type: string
+                              example: '&laquo; Previous'
+                            active:
+                              type: boolean
+                              example: false
+                      path:
+                        type: string
+                        example: /
+                      per_page:
+                        type: integer
+                        example: 25
+                      to:
+                        type: integer
+                        example: 2
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - storage-providers
+    post:
+      summary: create
+      operationId: create
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 3
+                  project_id: null
+                  global: true
+                  name: est
+                  provider: dropbox
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: est
+                  provider:
+                    type: string
+                    example: dropbox
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - storage-providers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
+                  example: quod
+                  nullable: false
+                name:
+                  type: string
+                  description: 'The name of the storage provider.'
+                  example: commodi
+                  nullable: false
+                token:
+                  type: string
+                  description: 'The token if provider requires api token'
+                  example: ipsum
+                  nullable: false
+                key:
+                  type: string
+                  description: 'The key if provider requires key'
+                  example: ratione
+                  nullable: false
+                secret:
+                  type: string
+                  description: 'The secret if provider requires key'
+                  example: iste
+                  nullable: false
+              required:
+                - provider
+                - name
+                - token
+                - key
+                - secret
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/projects/{project_id}/storage-providers/{storageProvider_id}':
+    get:
+      summary: show
+      operationId: show
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 3
+                  project_id: null
+                  global: true
+                  name: officia
+                  provider: ftp
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: officia
+                  provider:
+                    type: string
+                    example: ftp
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - storage-providers
+    put:
+      summary: update
+      operationId: update
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: 3
+                  project_id: null
+                  global: true
+                  name: rerum
+                  provider: ftp
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  project_id:
+                    type: string
+                    example: null
+                  global:
+                    type: boolean
+                    example: true
+                  name:
+                    type: string
+                    example: rerum
+                  provider:
+                    type: string
+                    example: ftp
+                  created_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+                  updated_at:
+                    type: string
+                    example: '2024-11-01T15:40:48.000000Z'
+      tags:
+        - storage-providers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the storage provider.'
+                  example: iusto
+                  nullable: false
+                global:
+                  type: string
+                  description: 'Accessible in all projects'
+                  example: true
+                  nullable: false
+                  enum:
+                    - true
+                    - false
+              required:
+                - name
+                - global
+    delete:
+      summary: delete
+      operationId: delete
+      description: ''
+      parameters: []
+      responses:
+        204:
+          description: ''
+      tags:
+        - storage-providers
+    parameters:
+      -
+        in: path
+        name: project_id
+        description: 'The ID of the project.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+      -
+        in: path
+        name: storageProvider_id
+        description: 'The ID of the storageProvider.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+tags:
+  -
+    name: cron-jobs
+    description: ''
+  -
+    name: database-users
+    description: ''
+  -
+    name: databases
+    description: ''
+  -
+    name: firewall-rules
+    description: ''
+  -
+    name: general
+    description: ''
+  -
+    name: projects
+    description: ''
+  -
+    name: server-providers
+    description: ''
+  -
+    name: servers
+    description: ''
+  -
+    name: services
+    description: ''
+  -
+    name: sites
+    description: ''
+  -
+    name: source-controls
+    description: ''
+  -
+    name: ssh-keys
+    description: ''
+  -
+    name: storage-providers
+    description: ''
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'You can retrieve your token by visiting <a href="/settings/api-keys" target="_blank">here</a>'
+security:
+  -
+    default: []

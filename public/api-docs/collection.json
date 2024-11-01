@@ -1,0 +1,2898 @@
+{
+    "variable": [
+        {
+            "id": "baseUrl",
+            "key": "baseUrl",
+            "type": "string",
+            "name": "string",
+            "value": "https:\/\/your-vito-url"
+        }
+    ],
+    "info": {
+        "name": "API Documentation",
+        "_postman_id": "a41cda01-38ef-4ec3-8538-037284060387",
+        "description": "VitoDeploy's API documentation.",
+        "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
+    },
+    "item": [
+        {
+            "name": "cron-jobs",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/cron-jobs",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/cron-jobs",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all cron jobs."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/cron-jobs",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/cron-jobs",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"command\":\"qui\",\"user\":\"root\",\"frequency\":\"* * * * *\"}"
+                        },
+                        "description": "Create a new cron job."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/cron-jobs\/:cronJob_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/cron-jobs\/:cronJob_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "cronJob_id",
+                                    "key": "cronJob_id",
+                                    "value": "5",
+                                    "description": "The ID of the cronJob."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a cron job by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/cron-jobs\/:cronJob_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/cron-jobs\/:cronJob_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "cronJob_id",
+                                    "key": "cronJob_id",
+                                    "value": "5",
+                                    "description": "The ID of the cronJob."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete cron job."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "database-users",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/database-users",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/database-users",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all database users."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"username\":\"nyasia68\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"username\":\"madyson20\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/database-users",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/database-users",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"username\":\"dignissimos\",\"password\":\"OK+XEG2)\",\"host\":\"%\"}"
+                        },
+                        "description": "Create a new database user."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"amya.nitzsche\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/database-users\/:databaseUser_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/database-users\/:databaseUser_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "databaseUser_id",
+                                    "key": "databaseUser_id",
+                                    "value": "4",
+                                    "description": "The ID of the databaseUser."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a database user by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"bergstrom.ericka\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "link",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/database-users\/:databaseUser_id\/link",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/database-users\/:databaseUser_id\/link",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "databaseUser_id",
+                                    "key": "databaseUser_id",
+                                    "value": "4",
+                                    "description": "The ID of the databaseUser."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"databases\":\"accusantium\"}"
+                        },
+                        "description": "Link to databases"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"fmurray\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/database-users\/:databaseUser_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/database-users\/:databaseUser_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "databaseUser_id",
+                                    "key": "databaseUser_id",
+                                    "value": "4",
+                                    "description": "The ID of the databaseUser."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete database user."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "databases",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/databases",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/databases",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all databases."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"name\":\"clockman\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"name\":\"wvonrueden\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/databases",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/databases",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"nesciunt\"}"
+                        },
+                        "description": "Create a new database."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"johanna76\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/databases\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/databases\/:id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "6",
+                                    "description": "The ID of the database."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a database by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"chloe.huel\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/databases\/:database_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/databases\/:database_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "database_id",
+                                    "key": "database_id",
+                                    "value": "6",
+                                    "description": "The ID of the database."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete database."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "firewall-rules",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/firewall-rules",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/firewall-rules",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all firewall rules."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":18074,\"source\":\"189.27.156.82\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":41088,\"source\":\"86.177.121.87\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/firewall-rules",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/firewall-rules",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"type\":\"allow\",\"protocol\":\"udp\",\"port\":\"voluptates\",\"source\":\"saepe\",\"mask\":\"0\"}"
+                        },
+                        "description": "Create a new firewall rule."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":61992,\"source\":\"47.222.76.48\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/firewall-rules\/:firewallRule_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/firewall-rules\/:firewallRule_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "firewallRule_id",
+                                    "key": "firewallRule_id",
+                                    "value": "7",
+                                    "description": "The ID of the firewallRule."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a firewall rule by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":43107,\"source\":\"135.73.216.16\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/firewall-rules\/:firewallRule_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/firewall-rules\/:firewallRule_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "firewallRule_id",
+                                    "key": "firewallRule_id",
+                                    "value": "7",
+                                    "description": "The ID of the firewallRule."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete firewall rule."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "general",
+            "description": "",
+            "item": [
+                {
+                    "name": "health-check",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/health",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/health"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "x-ratelimit-limit",
+                                    "value": "60"
+                                },
+                                {
+                                    "key": "x-ratelimit-remaining",
+                                    "value": "59"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"success\":true,\"version\":\"2.0.0\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "projects",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all projects."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":29,\"name\":\"Zachary Lueilwitz\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":30,\"name\":\"Mrs. Kiarra Heller IV\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"quos\"}"
+                        },
+                        "description": "Create a new project."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":29,\"name\":\"Hershel Spinka\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a project by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":29,\"name\":\"Emery Kiehn\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "update",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"ut\"}"
+                        },
+                        "description": "Update project."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":29,\"name\":\"Mable Prohaska\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete project."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "server-providers",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/server-providers",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/server-providers",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"dolor\",\"provider\":\"digitalocean\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"enim\",\"provider\":\"digitalocean\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/server-providers",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/server-providers",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"provider\":\"autem\",\"name\":\"enim\",\"token\":\"culpa\",\"key\":\"sit\",\"secret\":\"voluptates\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"eligendi\",\"provider\":\"aws\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/server-providers\/:serverProvider_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/server-providers\/:serverProvider_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "serverProvider_id",
+                                    "key": "serverProvider_id",
+                                    "value": "1",
+                                    "description": "The ID of the serverProvider."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"architecto\",\"provider\":\"digitalocean\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "update",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/server-providers\/:serverProvider_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/server-providers\/:serverProvider_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "serverProvider_id",
+                                    "key": "serverProvider_id",
+                                    "value": "1",
+                                    "description": "The ID of the serverProvider."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"minus\",\"global\":false}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"reiciendis\",\"provider\":\"hetzner\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/server-providers\/:serverProvider_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/server-providers\/:serverProvider_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "serverProvider_id",
+                                    "key": "serverProvider_id",
+                                    "value": "1",
+                                    "description": "The ID of the serverProvider."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "servers",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all servers in a project."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Dorthy Toy\",\"ssh_user\":\"vito\",\"ip\":\"172.132.95.155\",\"local_ip\":\"118.57.197.65\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Carrie Sporer\",\"ssh_user\":\"vito\",\"ip\":\"184.242.162.173\",\"local_ip\":\"135.244.50.22\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"provider\":\"et\",\"server_provider\":\"digitalocean\",\"region\":\"inventore\",\"plan\":\"atque\",\"ip\":\"quam\",\"port\":\"nemo\",\"name\":\"perspiciatis\",\"os\":\"similique\",\"type\":\"regular\",\"webserver\":\"none\",\"database\":\"none\",\"php\":\"8.1\"}"
+                        },
+                        "description": "Create a new server."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Flo Beer PhD\",\"ssh_user\":\"vito\",\"ip\":\"168.238.14.230\",\"local_ip\":\"40.232.73.41\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a server by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Stephany Ankunding\",\"ssh_user\":\"vito\",\"ip\":\"145.28.94.46\",\"local_ip\":\"69.133.44.100\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "reboot",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/reboot",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/reboot",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Reboot a server."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "upgrade",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/upgrade",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/upgrade",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Upgrade server."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete server."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "services",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all services."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"type\":null,\"type_data\":null,\"name\":null,\"version\":null,\"unit\":null,\"status\":null,\"is_default\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"type\":null,\"type_data\":null,\"name\":null,\"version\":null,\"unit\":null,\"status\":null,\"is_default\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services\/:id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "27",
+                                    "description": "The ID of the service."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a service by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"type\":null,\"type_data\":null,\"name\":null,\"version\":null,\"unit\":null,\"status\":null,\"is_default\":null,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "start",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/start",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/start",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "service_id",
+                                    "key": "service_id",
+                                    "value": "27",
+                                    "description": "The ID of the service."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Start service."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "stop",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/stop",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/stop",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "service_id",
+                                    "key": "service_id",
+                                    "value": "27",
+                                    "description": "The ID of the service."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Stop service."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "restart",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/restart",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/restart",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "service_id",
+                                    "key": "service_id",
+                                    "value": "27",
+                                    "description": "The ID of the service."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Restart service."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "enable",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/enable",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/enable",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "service_id",
+                                    "key": "service_id",
+                                    "value": "27",
+                                    "description": "The ID of the service."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Enable service."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "disable",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/disable",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id\/disable",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "service_id",
+                                    "key": "service_id",
+                                    "value": "27",
+                                    "description": "The ID of the service."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Disable service."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/services\/:service_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "service_id",
+                                    "key": "service_id",
+                                    "value": "27",
+                                    "description": "The ID of the service."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete service."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "sites",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all sites."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"type\":\"wordpress\",\"domain\":\"quo\",\"aliases\":[\"dolorum\"],\"php_version\":\"7.4\",\"web_directory\":\"public\",\"source_control\":\"explicabo\",\"repository\":\"organization\\\/repository\",\"branch\":\"main\",\"composer\":true,\"version\":\"5.2.1\"}"
+                        },
+                        "description": "Create a new site."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "8",
+                                    "description": "The ID of the site."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get a site by ID."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "site_id",
+                                    "key": "site_id",
+                                    "value": "8",
+                                    "description": "The ID of the site."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete site."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "source-controls",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/source-controls",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/source-controls",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Jaiden Kling\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"Ms. Brianne Bosco\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/source-controls",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/source-controls",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"provider\":\"bitbucket\",\"name\":\"eos\",\"token\":\"et\",\"url\":\"https:\\\/\\\/lueilwitz.com\\\/nostrum-et-porro-atque-sint.html\",\"username\":\"consectetur\",\"password\":\"PL.P?{06\\\\ECi0\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Toby Parker\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/source-controls\/:sourceControl_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/source-controls\/:sourceControl_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "sourceControl_id",
+                                    "key": "sourceControl_id",
+                                    "value": "3",
+                                    "description": "The ID of the sourceControl."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Prof. Bartholome Graham IV\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "update",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/source-controls\/:sourceControl_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/source-controls\/:sourceControl_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "sourceControl_id",
+                                    "key": "sourceControl_id",
+                                    "value": "3",
+                                    "description": "The ID of the sourceControl."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"quaerat\",\"token\":\"consectetur\",\"url\":\"http:\\\/\\\/www.hudson.biz\\\/rerum-voluptatem-debitis-accusamus\",\"username\":\"voluptatem\",\"password\":\"\\\\p\\\/el>)3#~E?kI\",\"global\":false}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Cicero Smitham\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/source-controls\/:sourceControl_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/source-controls\/:sourceControl_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "sourceControl_id",
+                                    "key": "sourceControl_id",
+                                    "value": "3",
+                                    "description": "The ID of the sourceControl."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ssh-keys",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/ssh-keys",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/ssh-keys",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all ssh keys."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"user\":null,\"name\":\"Dr. Reanna Braun\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"user\":null,\"name\":\"Norene Fritsch\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/ssh-keys",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/ssh-keys",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"key_id\":\"vero\",\"name\":\"voluptates\",\"public_key\":\"dolor\"}"
+                        },
+                        "description": "Deploy ssh key to server."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":null,\"user\":null,\"name\":\"Sophia D'Amore\",\"created_at\":null,\"updated_at\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/ssh-keys\/:sshKey_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/ssh-keys\/:sshKey_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "3",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "sshKey_id",
+                                    "key": "sshKey_id",
+                                    "value": "4",
+                                    "description": "The ID of the sshKey."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete ssh key from server."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "storage-providers",
+            "description": "",
+            "item": [
+                {
+                    "name": "list",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/storage-providers",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/storage-providers",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"local\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"sed\",\"provider\":\"local\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/storage-providers",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/storage-providers",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"provider\":\"quod\",\"name\":\"commodi\",\"token\":\"ipsum\",\"key\":\"ratione\",\"secret\":\"iste\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"est\",\"provider\":\"dropbox\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "show",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/storage-providers\/:storageProvider_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/storage-providers\/:storageProvider_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "storageProvider_id",
+                                    "key": "storageProvider_id",
+                                    "value": "1",
+                                    "description": "The ID of the storageProvider."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"officia\",\"provider\":\"ftp\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "update",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/storage-providers\/:storageProvider_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/storage-providers\/:storageProvider_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "storageProvider_id",
+                                    "key": "storageProvider_id",
+                                    "value": "1",
+                                    "description": "The ID of the storageProvider."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"iusto\",\"global\":true}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"rerum\",\"provider\":\"ftp\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/storage-providers\/:storageProvider_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/storage-providers\/:storageProvider_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "storageProvider_id",
+                                    "key": "storageProvider_id",
+                                    "value": "1",
+                                    "description": "The ID of the storageProvider."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "null",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "key",
+                "type": "string"
+            }
+        ]
+    }
+}
