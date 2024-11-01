@@ -9,7 +9,7 @@ use App\ValidationRules\CronRule;
 
 class CreateCronJob
 {
-    public function create(Server $server, array $input): void
+    public function create(Server $server, array $input): CronJob
     {
         $cronJob = new CronJob([
             'server_id' => $server->id,
@@ -23,6 +23,8 @@ class CreateCronJob
         $server->cron()->update($cronJob->user, CronJob::crontab($server, $cronJob->user));
         $cronJob->status = CronjobStatus::READY;
         $cronJob->save();
+
+        return $cronJob;
     }
 
     public static function rules(array $input): array
