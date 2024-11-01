@@ -2,6 +2,7 @@
 
 namespace App\Actions\ServerProvider;
 
+use App\Models\Project;
 use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\ServerProvider as ServerProviderContract;
@@ -14,7 +15,7 @@ class CreateServerProvider
     /**
      * @throws ValidationException
      */
-    public function create(User $user, array $input): ServerProvider
+    public function create(User $user, Project $project, array $input): ServerProvider
     {
         $provider = static::getProvider($input['provider']);
 
@@ -33,7 +34,7 @@ class CreateServerProvider
         $serverProvider->profile = $input['name'];
         $serverProvider->provider = $input['provider'];
         $serverProvider->credentials = $provider->credentialData($input);
-        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $user->current_project_id;
+        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $project->id;
         $serverProvider->save();
 
         return $serverProvider;
@@ -46,9 +47,9 @@ class CreateServerProvider
         return new $providerClass;
     }
 
-    public static function rules(): array
+    public static function rules(array $input): array
     {
-        return [
+        $rules = [
             'name' => [
                 'required',
             ],
@@ -58,10 +59,16 @@ class CreateServerProvider
                 Rule::notIn('custom'),
             ],
         ];
+
+        return array_merge($rules, static::providerRules($input));
     }
 
-    public static function providerRules(array $input): array
+    private static function providerRules(array $input): array
     {
+        if (! isset($input['provider'])) {
+            return [];
+        }
+
         return static::getProvider($input['provider'])->credentialValidationRules($input);
     }
 }

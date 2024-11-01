@@ -8,7 +8,6 @@ use App\Models\Site;
 use Exception;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -115,12 +114,10 @@ class LogsList extends Widget
                     ->color('danger')
                     ->authorize(fn ($record) => auth()->user()->can('delete', $record)),
             ])
-            ->bulkActions(
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->requiresConfirmation()
-                        ->authorize(auth()->user()->can('deleteMany', [ServerLog::class, $this->server])),
-                ])
-            );
+            ->bulkActions([
+                DeleteBulkAction::make()
+                    ->requiresConfirmation()
+                    ->authorize(auth()->user()->can('deleteMany', [ServerLog::class, $this->server])),
+            ]);
     }
 }

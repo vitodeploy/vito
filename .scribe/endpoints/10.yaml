@@ -1,0 +1,390 @@
+name: sites
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: list
+      description: 'Get all sites.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 3
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":[{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gaeE86fd1aZP53Vvc6Dhbk4'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: create
+      description: 'Create a new site.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 3
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      type:
+        name: type
+        description: ''
+        required: true
+        example: wordpress
+        type: string
+        enumValues:
+          - php
+          - php-blank
+          - phpmyadmin
+          - laravel
+          - wordpress
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      domain:
+        name: domain
+        description: ''
+        required: true
+        example: quo
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      aliases:
+        name: aliases
+        description: ''
+        required: true
+        example:
+          - dolorum
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      php_version:
+        name: php_version
+        description: 'One of the installed PHP Versions'
+        required: true
+        example: '7.4'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      web_directory:
+        name: web_directory
+        description: 'Required for PHP and Laravel sites'
+        required: true
+        example: public
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      source_control:
+        name: source_control
+        description: 'Source control ID, Required for Sites which support source control'
+        required: true
+        example: explicabo
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      repository:
+        name: repository
+        description: 'Repository, Required for Sites which support source control'
+        required: true
+        example: organization/repository
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      branch:
+        name: branch
+        description: 'Branch, Required for Sites which support source control'
+        required: true
+        example: main
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      composer:
+        name: composer
+        description: 'Run composer if site supports composer'
+        required: true
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      version:
+        name: version
+        description: 'Version, if the site type requires a version like PHPMyAdmin'
+        required: true
+        example: 5.2.1
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      type: wordpress
+      domain: quo
+      aliases:
+        - dolorum
+      php_version: '7.4'
+      web_directory: public
+      source_control: explicabo
+      repository: organization/repository
+      branch: main
+      composer: true
+      version: 5.2.1
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer efDd36cab6vZEaV4hkP851g'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{id}'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: show
+      description: 'Get a site by ID.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      id:
+        name: id
+        description: 'The ID of the site.'
+        required: true
+        example: 8
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 3
+      id: 8
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer bVkf841ava5gE6DPch36Zde'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: delete
+      description: 'Delete site.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 8
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 3
+      site_id: 8
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: 'null'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gfVZbEP5Ddah6k13ae6c8v4'
+    controller: null
+    method: null
+    route: null
+    custom: []

@@ -1,0 +1,428 @@
+name: source-controls
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/source-controls'
+    metadata:
+      groupName: source-controls
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: list
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Jaiden Kling","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Ms. Brianne Bosco","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer PfaEg1eZh66cd5V4v8bD3ak'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/source-controls'
+    metadata:
+      groupName: source-controls
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: create
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      provider:
+        name: provider
+        description: 'The provider'
+        required: true
+        example: bitbucket
+        type: string
+        enumValues:
+          - gitlab
+          - github
+          - bitbucket
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      name:
+        name: name
+        description: 'The name of the storage provider.'
+        required: true
+        example: eos
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      token:
+        name: token
+        description: 'The token if provider requires api token'
+        required: true
+        example: et
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      url:
+        name: url
+        description: 'The URL if the provider is Gitlab and it is self-hosted'
+        required: true
+        example: 'https://lueilwitz.com/nostrum-et-porro-atque-sint.html'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      username:
+        name: username
+        description: 'The username if the provider is Bitbucket'
+        required: true
+        example: consectetur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      password:
+        name: password
+        description: 'The password if the provider is Bitbucket'
+        required: true
+        example: 'PL.P?{06\ECi0'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      provider: bitbucket
+      name: eos
+      token: et
+      url: 'https://lueilwitz.com/nostrum-et-porro-atque-sint.html'
+      username: consectetur
+      password: 'PL.P?{06\ECi0'
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":5,"project_id":null,"global":true,"name":"Toby Parker","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer V5Zf3a1ve6d6kP4cbgha8DE'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/source-controls/{sourceControl_id}'
+    metadata:
+      groupName: source-controls
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: show
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      sourceControl_id:
+        name: sourceControl_id
+        description: 'The ID of the sourceControl.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      sourceControl_id: 3
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":5,"project_id":null,"global":true,"name":"Prof. Bartholome Graham IV","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer k1b5hac6veZ36P8gDV4fadE'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{project_id}/source-controls/{sourceControl_id}'
+    metadata:
+      groupName: source-controls
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: update
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      sourceControl_id:
+        name: sourceControl_id
+        description: 'The ID of the sourceControl.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      sourceControl_id: 3
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'The name of the storage provider.'
+        required: true
+        example: quaerat
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      token:
+        name: token
+        description: 'The token if provider requires api token'
+        required: true
+        example: consectetur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      url:
+        name: url
+        description: 'The URL if the provider is Gitlab and it is self-hosted'
+        required: true
+        example: 'http://www.hudson.biz/rerum-voluptatem-debitis-accusamus'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      username:
+        name: username
+        description: 'The username if the provider is Bitbucket'
+        required: true
+        example: voluptatem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      password:
+        name: password
+        description: 'The password if the provider is Bitbucket'
+        required: true
+        example: '\p/el>)3#~E?kI'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      global:
+        name: global
+        description: 'Accessible in all projects'
+        required: true
+        example: false
+        type: string
+        enumValues:
+          - true
+          - false
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: quaerat
+      token: consectetur
+      url: 'http://www.hudson.biz/rerum-voluptatem-debitis-accusamus'
+      username: voluptatem
+      password: '\p/el>)3#~E?kI'
+      global: false
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":5,"project_id":null,"global":true,"name":"Cicero Smitham","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6dkE6h8a5eg3f14acVvbPDZ'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/projects/{project_id}/source-controls/{sourceControl_id}'
+    metadata:
+      groupName: source-controls
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: delete
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      sourceControl_id:
+        name: sourceControl_id
+        description: 'The ID of the sourceControl.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      sourceControl_id: 3
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: 'null'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer fb6Zk4EP318eva5hDdcV6ga'
+    controller: null
+    method: null
+    route: null
+    custom: []

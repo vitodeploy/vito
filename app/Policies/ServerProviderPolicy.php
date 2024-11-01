@@ -12,26 +12,29 @@ class ServerProviderPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function view(User $user, ServerProvider $serverProvider): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() ||
+            $user->id === $serverProvider->user_id ||
+            $serverProvider->project_id === null ||
+            $serverProvider->project?->users()->where('user_id', $user->id)->exists();
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function update(User $user, ServerProvider $serverProvider): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->id === $serverProvider->user_id;
     }
 
     public function delete(User $user, ServerProvider $serverProvider): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->id === $serverProvider->user_id;
     }
 }

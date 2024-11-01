@@ -1,0 +1,258 @@
+name: projects
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/projects
+    metadata:
+      groupName: projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: list
+      description: 'Get all projects.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":[{"id":29,"name":"Zachary Lueilwitz","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"},{"id":30,"name":"Mrs. Kiarra Heller IV","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer eb14DEPv6cdah65VfZgka38'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/projects
+    metadata:
+      groupName: projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: create
+      description: 'Create a new project.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'The name of the project.'
+        required: true
+        example: quos
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: quos
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":29,"name":"Hershel Spinka","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer V1E3566Pf4gkvh8dDZabeca'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{id}'
+    metadata:
+      groupName: projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: show
+      description: 'Get a project by ID.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":29,"name":"Emery Kiehn","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer haD6e36VZbkf4P8aEcvd15g'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{id}'
+    metadata:
+      groupName: projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: update
+      description: 'Update project.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'The name of the project.'
+        required: true
+        example: ut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: ut
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":29,"name":"Mable Prohaska","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer V14kPa5deva8Ebgc36f6hDZ'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/projects/{project_id}'
+    metadata:
+      groupName: projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: delete
+      description: 'Delete project.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: 'null'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer k1D68d5ePavVZag6h4fb3cE'
+    controller: null
+    method: null
+    route: null
+    custom: []

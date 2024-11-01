@@ -7,9 +7,11 @@ use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Spatie\RouteAttributes\Attributes\Post;
 
 class AgentController extends Controller
 {
+    #[Post('api/servers/{server}/agent/{id}', name: 'api.servers.agent')]
     public function __invoke(Request $request, Server $server, int $id): JsonResponse
     {
         $validated = $this->validate($request, [

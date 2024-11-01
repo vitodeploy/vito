@@ -6,28 +6,28 @@ use App\Enums\FirewallRuleStatus;
 use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
 use App\Facades\Notifier;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\User;
 use App\Notifications\ServerInstallationFailed;
 use App\Notifications\ServerInstallationSucceed;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class CreateServer
 {
-    /**
-     * @throws Throwable
-     */
-    public function create(User $creator, array $input): Server
+    public function create(User $creator, Project $project, array $input): Server
     {
         $server = new Server([
-            'project_id' => $creator->currentProject->id,
+            'project_id' => $project->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
             'ssh_user' => config('core.server_providers_default_user')[$input['provider']][$input['os']],
@@ -76,7 +76,9 @@ class CreateServer
         } catch (Exception $e) {
             $server->provider()->delete();
             DB::rollBack();
-            throw $e;
+            throw ValidationException::withMessages([
+                'provider' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -112,7 +114,7 @@ class CreateServer
         $bus->onConnection('ssh')->dispatch();
     }
 
-    public static function rules(array $input): array
+    public static function rules(Project $project, array $input): array
     {
         $rules = [
             'provider' => [
@@ -132,15 +134,18 @@ class CreateServer
             ],
             'server_provider' => [
                 Rule::when(function () use ($input) {
-                    return $input['provider'] != ServerProvider::CUSTOM;
+                    return isset($input['provider']) && $input['provider'] != ServerProvider::CUSTOM;
                 }, [
                     'required',
-                    'exists:server_providers,id,user_id,'.auth()->user()->id,
+                    Rule::exists('server_providers', 'id')->where(function (Builder $query) use ($project) {
+                        $query->where('project_id', $project->id)
+                            ->orWhereNull('project_id');
+                    }),
                 ]),
             ],
             'ip' => [
                 Rule::when(function () use ($input) {
-                    return $input['provider'] == ServerProvider::CUSTOM;
+                    return isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM;
                 }, [
                     'required',
                     new RestrictedIPAddressesRule,
@@ -148,7 +153,7 @@ class CreateServer
             ],
             'port' => [
                 Rule::when(function () use ($input) {
-                    return $input['provider'] == ServerProvider::CUSTOM;
+                    return isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM;
                 }, [
                     'required',
                     'numeric',
@@ -176,6 +181,7 @@ class CreateServer
     {
         if (
             ! isset($input['provider']) ||
+            ! isset($input['server_provider']) ||
             ! in_array($input['provider'], config('core.server_providers')) ||
             $input['provider'] == ServerProvider::CUSTOM
         ) {

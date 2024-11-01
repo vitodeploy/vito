@@ -69,7 +69,7 @@ class SourceControlsList extends Widget
                         'global' => $record->project_id === null,
                     ];
                 })
-                ->form(Edit::form())
+                ->form(fn (SourceControl $record) => Edit::form($record))
                 ->authorize(fn (SourceControl $record) => auth()->user()->can('update', $record))
                 ->using(fn (array $data, SourceControl $record) => Edit::action($record, $data))
                 ->modalWidth(MaxWidth::Medium),

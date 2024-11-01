@@ -126,7 +126,7 @@ class Create
     public static function action(array $data): void
     {
         try {
-            app(CreateStorageProvider::class)->create(auth()->user(), $data);
+            app(CreateStorageProvider::class)->create(auth()->user(), auth()->user()->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

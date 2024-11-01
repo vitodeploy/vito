@@ -15,9 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class NotificationChannelsList extends Widget
 {
-    protected $listeners = [
-        '$refresh' => 'refreshTable',
-    ];
+    protected $listeners = ['$refresh'];
 
     protected function getTableQuery(): Builder
     {

@@ -8,6 +8,10 @@ interface SourceControlProvider
 
     public function createData(array $input): array;
 
+    public function editRules(array $input): array;
+
+    public function editData(array $input): array;
+
     public function data(): array;
 
     public function connect(): bool;
