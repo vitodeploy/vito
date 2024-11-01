@@ -78,7 +78,7 @@ class SiteController extends Controller
         return new ServerResource($server);
     }
 
-    #[Delete('{site}', name: 'api.projects.servers.sites.delete', middleware: 'ability:delete')]
+    #[Delete('{site}', name: 'api.projects.servers.sites.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete site.')]
     #[Response(status: 204)]
     public function delete(Project $project, Server $server, Site $site)
