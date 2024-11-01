@@ -1,7 +1,3 @@
-wget -c https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
-
-sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.22-1_all.deb
-
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get install mysql-server -y
