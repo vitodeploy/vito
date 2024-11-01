@@ -13,7 +13,7 @@ class LinkUser
     /**
      * @throws ValidationException
      */
-    public function link(DatabaseUser $databaseUser, array $input): void
+    public function link(DatabaseUser $databaseUser, array $input): DatabaseUser
     {
         if (! isset($input['databases']) || ! is_array($input['databases'])) {
             $input['databases'] = [];
@@ -43,6 +43,10 @@ class LinkUser
         );
 
         $databaseUser->save();
+
+        $databaseUser->refresh();
+
+        return $databaseUser;
     }
 
     public static function rules(Server $server, array $input): array

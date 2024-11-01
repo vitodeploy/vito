@@ -5,7 +5,6 @@ namespace App\Http\Controllers\API;
 use App\Actions\Database\CreateDatabase;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DatabaseResource;
-use App\Http\Resources\ServerResource;
 use App\Models\Database;
 use App\Models\Project;
 use App\Models\Server;
@@ -59,13 +58,13 @@ class DatabaseController extends Controller
     #[Get('{database}', name: 'api.projects.servers.databases.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show', description: 'Get a database by ID.')]
     #[ResponseFromApiResource(DatabaseResource::class, Database::class)]
-    public function show(Project $project, Server $server, Database $database): ServerResource
+    public function show(Project $project, Server $server, Database $database): DatabaseResource
     {
         $this->authorize('view', [$database, $server]);
 
         $this->validateRoute($project, $server, $database);
 
-        return new ServerResource($server);
+        return new DatabaseResource($database);
     }
 
     #[Delete('{database}', name: 'api.projects.servers.databases.delete', middleware: 'ability:write')]

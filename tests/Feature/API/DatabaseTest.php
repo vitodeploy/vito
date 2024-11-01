@@ -32,6 +32,26 @@ class DatabaseTest extends TestCase
             ]);
     }
 
+    public function test_show_database(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Database $database */
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.databases.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'database' => $database,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'name' => $database->name,
+            ]);
+    }
+
     public function test_see_databases_list(): void
     {
         Sanctum::actingAs($this->user, ['read', 'write']);

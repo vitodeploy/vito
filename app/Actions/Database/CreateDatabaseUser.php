@@ -20,7 +20,7 @@ class CreateDatabaseUser
             'server_id' => $server->id,
             'username' => $input['username'],
             'password' => $input['password'],
-            'host' => isset($input['remote']) && $input['remote'] ? $input['host'] : 'localhost',
+            'host' => (isset($input['remote']) && $input['remote']) || isset($input['host']) ? $input['host'] : 'localhost',
             'databases' => $links,
         ]);
         /** @var Database $databaseHandler */
