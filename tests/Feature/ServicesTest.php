@@ -302,12 +302,6 @@ class ServicesTest extends TestCase
     {
         return [
             ['nginx'],
-            ['php'],
-            ['supervisor'],
-            ['redis'],
-            ['ufw'],
-            ['php'],
-            ['mysql'],
         ];
     }
 

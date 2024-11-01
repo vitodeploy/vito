@@ -2,22 +2,19 @@
 
 namespace App\Http\Resources;
 
-use App\Models\CronJob;
+use App\Models\SshKey;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin CronJob */
-class CronJobResource extends JsonResource
+/** @mixin SshKey */
+class SshKeyResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'server_id' => $this->server_id,
-            'command' => $this->command,
-            'user' => $this->user,
-            'frequency' => $this->frequency,
-            'status' => $this->status,
+            'user' => $this->user_id ? new UserResource($this->user) : null,
+            'name' => $this->name,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
