@@ -2,6 +2,8 @@
 
 namespace App\ServerTypes;
 
+use Illuminate\Validation\Rule;
+
 class Regular extends AbstractType
 {
     public function createRules(array $input): array
@@ -13,7 +15,7 @@ class Regular extends AbstractType
             ],
             'php' => [
                 'required',
-                'in:none,'.implode(',', config('core.php_versions')),
+                Rule::in(config('core.php_versions')),
             ],
             'database' => [
                 'required',

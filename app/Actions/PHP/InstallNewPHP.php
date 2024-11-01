@@ -2,6 +2,7 @@
 
 namespace App\Actions\PHP;
 
+use App\Enums\PHP;
 use App\Enums\ServiceStatus;
 use App\Models\Server;
 use App\Models\Service;
@@ -40,7 +41,7 @@ class InstallNewPHP
             'version' => [
                 'required',
                 Rule::in(config('core.php_versions')),
-                Rule::notIn($server->installedPHPVersions()),
+                Rule::notIn(array_merge($server->installedPHPVersions(), [PHP::NONE])),
             ],
         ];
     }

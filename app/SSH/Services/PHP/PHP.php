@@ -19,6 +19,7 @@ class PHP extends AbstractService
             'version' => [
                 'required',
                 Rule::in(config('core.php_versions')),
+                Rule::notIn([\App\Enums\PHP::NONE]),
                 Rule::unique('services', 'version')
                     ->where('type', 'php')
                     ->where('server_id', $this->service->server_id),

@@ -18,6 +18,12 @@ final class Database
 
     const MARIADB104 = 'mariadb104';
 
+    const MARIADB106 = 'mariadb1006';
+
+    const MARIADB1011 = 'mariadb1011';
+
+    const MARIADB114 = 'mariadb114';
+
     const POSTGRESQL12 = 'postgresql12';
 
     const POSTGRESQL13 = 'postgresql13';

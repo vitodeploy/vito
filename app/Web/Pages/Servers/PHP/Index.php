@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\PHP;
 
 use App\Actions\PHP\InstallNewPHP;
+use App\Enums\PHP;
 use App\Models\Service;
 use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Servers\PHP\Widgets\PHPList;
@@ -43,7 +44,7 @@ class Index extends Page
                     Select::make('version')
                         ->options(
                             collect(config('core.php_versions'))
-                                ->filter(fn ($version) => ! in_array($version, $installedPHPs))
+                                ->filter(fn ($version) => ! in_array($version, array_merge($installedPHPs, [PHP::NONE])))
                                 ->mapWithKeys(fn ($version) => [$version => $version])
                                 ->toArray()
                         )
