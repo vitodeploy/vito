@@ -6,7 +6,7 @@ use ReflectionClass;
 
 trait HasScripts
 {
-    private function getScript(string $name, array $vars = []): string
+    protected function getScript(string $name, array $vars = []): string
     {
         $reflector = new ReflectionClass($this);
         $scriptsDir = dirname($reflector->getFileName()).'/scripts';

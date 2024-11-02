@@ -5,7 +5,6 @@ namespace App\Web\Pages\Servers\CronJobs;
 use App\Actions\CronJob\CreateCronJob;
 use App\Models\CronJob;
 use App\Web\Pages\Servers\Page;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -70,18 +69,16 @@ class Index extends Page
                         ->placeholder('0 * * * *'),
                 ])
                 ->action(function (array $data) {
-                    try {
+                    run_action($this, function () use ($data) {
                         app(CreateCronJob::class)->create($this->server, $data);
-                    } catch (Exception $e) {
+
+                        $this->dispatch('$refresh');
+
                         Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
+                            ->success()
+                            ->title('Cron Job created!')
                             ->send();
-
-                        throw $e;
-                    }
-
-                    $this->dispatch('$refresh');
+                    });
                 }),
         ];
     }

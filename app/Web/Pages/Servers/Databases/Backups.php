@@ -8,7 +8,6 @@ use App\Models\StorageProvider;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Settings\StorageProviders\Actions\Create;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -73,7 +72,7 @@ class Backups extends Page implements HasSecondSubNav
                 ])
                 ->modalSubmitActionLabel('Create')
                 ->action(function (array $data) {
-                    try {
+                    run_action($this, function () use ($data) {
                         app(CreateBackup::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');
@@ -82,14 +81,7 @@ class Backups extends Page implements HasSecondSubNav
                             ->success()
                             ->title('Backup created!')
                             ->send();
-                    } catch (Exception $e) {
-                        Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
-                            ->send();
-
-                        throw $e;
-                    }
+                    });
                 }),
         ];
     }
