@@ -6,8 +6,6 @@ use App\Actions\Database\RunBackup;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Server;
-use Exception;
-use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -95,18 +93,10 @@ class BackupsList extends Widget
                     ->authorize(fn (Backup $record) => auth()->user()->can('delete', $record))
                     ->requiresConfirmation()
                     ->action(function (Backup $record) {
-                        try {
+                        run_action($this, function () use ($record) {
                             $record->delete();
-                        } catch (Exception $e) {
-                            Notification::make()
-                                ->danger()
-                                ->title($e->getMessage())
-                                ->send();
-
-                            throw $e;
-                        }
-
-                        $this->dispatch('$refresh');
+                            $this->dispatch('$refresh');
+                        });
                     }),
             ]);
     }

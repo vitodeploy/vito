@@ -53,7 +53,7 @@ class LinkUser
     {
         return [
             'databases.*' => [
-                'required',
+                'nullable',
                 Rule::exists('databases', 'name')->where('server_id', $server->id),
             ],
         ];

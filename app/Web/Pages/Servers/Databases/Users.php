@@ -7,7 +7,6 @@ use App\Actions\Database\CreateDatabaseUser;
 use App\Models\DatabaseUser;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
@@ -52,7 +51,7 @@ class Users extends Page implements HasSecondSubNav
                 ])
                 ->modalSubmitActionLabel('Create')
                 ->action(function (array $data) {
-                    try {
+                    run_action($this, function () use ($data) {
                         app(CreateDatabaseUser::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');
@@ -61,14 +60,7 @@ class Users extends Page implements HasSecondSubNav
                             ->success()
                             ->title('Database user created!')
                             ->send();
-                    } catch (Exception $e) {
-                        Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
-                            ->send();
-
-                        throw $e;
-                    }
+                    });
                 }),
         ];
     }

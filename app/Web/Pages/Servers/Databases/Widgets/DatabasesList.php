@@ -5,8 +5,6 @@ namespace App\Web\Pages\Servers\Databases\Widgets;
 use App\Actions\Database\DeleteDatabase;
 use App\Models\Database;
 use App\Models\Server;
-use Exception;
-use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -56,18 +54,10 @@ class DatabasesList extends Widget
                     ->authorize(fn ($record) => auth()->user()->can('delete', $record))
                     ->requiresConfirmation()
                     ->action(function (Database $record) {
-                        try {
+                        run_action($this, function () use ($record) {
                             app(DeleteDatabase::class)->delete($this->server, $record);
-                        } catch (Exception $e) {
-                            Notification::make()
-                                ->danger()
-                                ->title($e->getMessage())
-                                ->send();
-
-                            throw $e;
-                        }
-
-                        $this->dispatch('$refresh');
+                            $this->dispatch('$refresh');
+                        });
                     }),
             ]);
     }

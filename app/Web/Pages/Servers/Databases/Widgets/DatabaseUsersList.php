@@ -6,7 +6,6 @@ use App\Actions\Database\DeleteDatabaseUser;
 use App\Actions\Database\LinkUser;
 use App\Models\DatabaseUser;
 use App\Models\Server;
-use Exception;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -98,21 +97,14 @@ class DatabaseUsersList extends Widget
                     ->default(fn (DatabaseUser $record) => $record->databases),
             ])
             ->action(function (DatabaseUser $record, array $data) {
-                try {
+                run_action($this, function () use ($record, $data) {
                     app(LinkUser::class)->link($record, $data);
 
                     Notification::make()
                         ->success()
                         ->title('User linked to databases!')
                         ->send();
-                } catch (Exception $e) {
-                    Notification::make()
-                        ->danger()
-                        ->title($e->getMessage())
-                        ->send();
-
-                    throw $e;
-                }
+                });
             });
     }
 
@@ -127,18 +119,10 @@ class DatabaseUsersList extends Widget
             ->authorize(fn ($record) => auth()->user()->can('delete', $record))
             ->requiresConfirmation()
             ->action(function (DatabaseUser $record) {
-                try {
+                run_action($this, function () use ($record) {
                     app(DeleteDatabaseUser::class)->delete($this->server, $record);
-                } catch (Exception $e) {
-                    Notification::make()
-                        ->danger()
-                        ->title($e->getMessage())
-                        ->send();
-
-                    throw $e;
-                }
-
-                $this->dispatch('$refresh');
+                    $this->dispatch('$refresh');
+                });
             });
     }
 }

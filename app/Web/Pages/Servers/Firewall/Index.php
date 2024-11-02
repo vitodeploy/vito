@@ -5,7 +5,6 @@ namespace App\Web\Pages\Servers\Firewall;
 use App\Actions\FirewallRule\CreateRule;
 use App\Models\FirewallRule;
 use App\Web\Pages\Servers\Page;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -69,18 +68,16 @@ class Index extends Page
                         ->rules(CreateRule::rules()['mask']),
                 ])
                 ->action(function (array $data) {
-                    try {
+                    run_action($this, function () use ($data) {
                         app(CreateRule::class)->create($this->server, $data);
-                    } catch (Exception $e) {
+
+                        $this->dispatch('$refresh');
+
                         Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
+                            ->success()
+                            ->title('Firewall rule created!')
                             ->send();
-
-                        throw $e;
-                    }
-
-                    $this->dispatch('$refresh');
+                    });
                 }),
         ];
     }
