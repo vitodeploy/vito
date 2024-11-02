@@ -1,5 +1,5 @@
 export DEBIAN_FRONTEND=noninteractive
-echo "__key__" | sudo tee -a /home/root/.ssh/authorized_keys
+echo "__key__" | sudo tee -a /root/.ssh/authorized_keys
 sudo useradd -p $(openssl passwd -1 __password__) __user__
 sudo usermod -aG sudo __user__
 echo "__user__ ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
