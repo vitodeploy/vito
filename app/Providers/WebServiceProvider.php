@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Http\Middleware\HasProjectMiddleware;
+use App\Web\Pages\Settings\Profile;
 use App\Web\Pages\Settings\Projects\Widgets\SelectProject;
 use Exception;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
@@ -104,6 +106,10 @@ class WebServiceProvider extends ServiceProvider
             ->authMiddleware([
                 Authenticate::class,
                 HasProjectMiddleware::class,
+            ])
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->url(fn (): string => Profile\Index::getUrl()),
             ])
             ->login()
             ->spa()
