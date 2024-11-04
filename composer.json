@@ -17,6 +17,7 @@
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
+        "mobiledetect/mobiledetectlib": "^4.8",
         "phpseclib/phpseclib": "~3.0",
         "spatie/laravel-route-attributes": "^1.24"
     },
