@@ -23,6 +23,7 @@ class ProfileTest extends TestCase
             ->assertSuccessful()
             ->assertSee('Profile Information')
             ->assertSee('Update Password')
+            ->assertSee('Browser Sessions')
             ->assertSee('Two Factor Authentication');
     }
 
