@@ -56,10 +56,9 @@ class AgentTest extends TestCase
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2',
     ];
 
-
     public function test_operating_systems()
     {
-        $agent = new Agent();
+        $agent = new Agent;
 
         foreach ($this->operatingSystems as $ua => $platform) {
             $agent->setUserAgent($ua);
@@ -69,7 +68,7 @@ class AgentTest extends TestCase
 
     public function test_browsers()
     {
-        $agent = new Agent();
+        $agent = new Agent;
 
         foreach ($this->browsers as $ua => $browser) {
             $agent->setUserAgent($ua);
@@ -79,7 +78,7 @@ class AgentTest extends TestCase
 
     public function test_desktop_devices()
     {
-        $agent = new Agent();
+        $agent = new Agent;
 
         foreach ($this->desktops as $ua) {
             $agent->setUserAgent($ua);
@@ -89,7 +88,7 @@ class AgentTest extends TestCase
 
     public function test_mobile_devices()
     {
-        $agent = new Agent();
+        $agent = new Agent;
 
         foreach ($this->mobileDevices as $ua) {
             $agent->setUserAgent($ua);
