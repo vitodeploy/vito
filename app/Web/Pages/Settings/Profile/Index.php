@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\Profile;
 
 use App\Web\Components\Page;
+use App\Web\Pages\Settings\Profile\Widgets\BrowserSession;
 use App\Web\Pages\Settings\Profile\Widgets\ProfileInformation;
 use App\Web\Pages\Settings\Profile\Widgets\TwoFactor;
 use App\Web\Pages\Settings\Profile\Widgets\UpdatePassword;
@@ -24,6 +25,7 @@ class Index extends Page
         return [
             [ProfileInformation::class],
             [UpdatePassword::class],
+            [BrowserSession::class],
             [TwoFactor::class],
         ];
     }
