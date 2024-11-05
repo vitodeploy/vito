@@ -54,8 +54,10 @@ if [ ! -f "$INIT_FLAG" ]; then
     touch "$INIT_FLAG"
 fi
 
-chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+mkdir -p /var/www/html/storage/framework/{sessions,views,cache} &&
+    chown -R www-data:www-data /var/www/html &&
+    chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+
 service php8.2-fpm start
 
 service nginx start
