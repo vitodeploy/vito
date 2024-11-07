@@ -117,6 +117,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     public function link(string $username, string $host, array $databases): void
     {
         $ssh = $this->service->server->ssh();
+        $version = $this->service->version;
 
         foreach ($databases as $database) {
             $ssh->exec(
@@ -124,6 +125,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
                     'username' => $username,
                     'host' => $host,
                     'database' => $database,
+                    'version' => $version,
                 ]),
                 'link-user-to-database'
             );
@@ -132,10 +134,13 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     public function unlink(string $username, string $host): void
     {
+        $version = $this->service->version;
+
         $this->service->server->ssh()->exec(
             $this->getScript($this->getScriptsDir().'/unlink.sh', [
                 'username' => $username,
                 'host' => $host,
+                'version' => $version,
             ]),
             'unlink-user-from-databases'
         );
