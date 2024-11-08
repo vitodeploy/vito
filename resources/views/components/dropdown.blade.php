@@ -57,7 +57,7 @@
         style="display: none"
         @if ($closeOnClick) @click="open = false" @endif
     >
-        <div class="{{ $contentClasses }} rounded-md">
+        <div class="{{ $contentClasses }} max-h-80 overflow-y-auto rounded-md">
             {{ $content }}
         </div>
     </div>
