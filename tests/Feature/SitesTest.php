@@ -212,7 +212,7 @@ class SitesTest extends TestCase
             ->callInfolistAction('source_control_id', 'edit_source_control', [
                 'source_control' => $sourceControl->id,
             ])
-            ->assertHasActionErrors();
+            ->assertNotified('Repository not found');
     }
 
     public function test_update_v_host(): void
