@@ -9,6 +9,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 
@@ -27,24 +28,25 @@ class AddUser extends Widget implements HasForms
         $this->project = $project;
     }
 
-    public function getFormSchema(): array
+    public function form(Form $form): Form
     {
-        return [
-            Section::make()
-                ->heading('Add User')
-                ->schema([
-                    Select::make('user')
-                        ->name('user')
-                        ->options(fn () => User::query()->pluck('name', 'id'))
-                        ->searchable()
-                        ->rules(\App\Actions\Projects\AddUser::rules($this->project)['user']),
-                ])
-                ->footerActions([
-                    Action::make('add')
-                        ->label('Add')
-                        ->action(fn () => $this->submit()),
-                ]),
-        ];
+        return $form
+            ->schema([
+                Section::make()
+                    ->heading('Add User')
+                    ->schema([
+                        Select::make('user')
+                            ->name('user')
+                            ->options(fn () => User::query()->pluck('name', 'id'))
+                            ->searchable()
+                            ->rules(\App\Actions\Projects\AddUser::rules($this->project)['user']),
+                    ])
+                    ->footerActions([
+                        Action::make('add')
+                            ->label('Add')
+                            ->action(fn () => $this->submit()),
+                    ]),
+            ]);
     }
 
     public function submit(): void
