@@ -429,6 +429,7 @@ return [
         \App\Enums\StorageProvider::LOCAL,
         \App\Enums\StorageProvider::S3,
         \App\Enums\StorageProvider::WASABI,
+        \App\Enums\StorageProvider::MINIO,
     ],
     'storage_providers_class' => [
         \App\Enums\StorageProvider::DROPBOX => \App\StorageProviders\Dropbox::class,
@@ -436,6 +437,7 @@ return [
         \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
         \App\Enums\StorageProvider::S3 => \App\StorageProviders\S3::class,
         \App\Enums\StorageProvider::WASABI => \App\StorageProviders\Wasabi::class,
+        \App\Enums\StorageProvider::MINIO => \App\StorageProviders\Minio::class,
 
     ],
 

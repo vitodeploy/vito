@@ -78,6 +78,15 @@ class StorageProvidersTest extends TestCase
         $this->get(route('settings.storage-providers'))
             ->assertSuccessful()
             ->assertSee($provider->profile);
+
+        $provider = \App\Models\StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => StorageProvider::MINIO,
+        ]);
+
+        $this->get(route('settings.storage-providers'))
+            ->assertSuccessful()
+            ->assertSee($provider->profile);
     }
 
     public function test_delete_provider(): void

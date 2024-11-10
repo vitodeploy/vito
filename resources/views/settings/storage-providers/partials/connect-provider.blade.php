@@ -6,6 +6,7 @@
         StorageProvider::LOCAL,
         StorageProvider::S3,
         StorageProvider::WASABI,
+        StorageProvider::MINIO,
     ];
 @endphp
 

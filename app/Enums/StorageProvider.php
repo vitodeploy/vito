@@ -13,4 +13,6 @@ final class StorageProvider
     const S3 = 's3';
 
     const WASABI = 'wasabi';
+
+    const MINIO = 'minio';
 }
