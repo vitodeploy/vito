@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\FailedToDestroyGitHook;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -55,6 +56,9 @@ class GitHook extends AbstractModel
         );
     }
 
+    /**
+     * @throws FailedToDestroyGitHook
+     */
     public function destroyHook(): void
     {
         $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);

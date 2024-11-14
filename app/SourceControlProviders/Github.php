@@ -14,10 +14,14 @@ class Github extends AbstractSourceControlProvider
 
     public function connect(): bool
     {
-        $res = Http::withHeaders([
-            'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->data()['token'],
-        ])->get($this->apiUrl.'/user/repos');
+        try {
+            $res = Http::withHeaders([
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => 'Bearer '.$this->data()['token'],
+            ])->get($this->apiUrl.'/user/repos');
+        } catch (Exception) {
+            return false;
+        }
 
         return $res->successful();
     }
@@ -52,21 +56,25 @@ class Github extends AbstractSourceControlProvider
      */
     public function deployHook(string $repo, array $events, string $secret): array
     {
-        $response = Http::withHeaders([
-            'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->data()['token'],
-        ])->post($this->apiUrl."/repos/$repo/hooks", [
-            'name' => 'web',
-            'events' => $events,
-            'config' => [
-                'url' => url('/api/git-hooks?secret='.$secret),
-                'content_type' => 'json',
-            ],
-            'active' => true,
-        ]);
+        try {
+            $response = Http::withHeaders([
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => 'Bearer '.$this->data()['token'],
+            ])->post($this->apiUrl."/repos/$repo/hooks", [
+                'name' => 'web',
+                'events' => $events,
+                'config' => [
+                    'url' => url('/api/git-hooks?secret='.$secret),
+                    'content_type' => 'json',
+                ],
+                'active' => true,
+            ]);
+        } catch (Exception $e) {
+            throw new FailedToDeployGitHook($e->getMessage());
+        }
 
         if ($response->status() != 201) {
-            throw new FailedToDeployGitHook(json_decode($response->body())->message);
+            throw new FailedToDeployGitHook($response->body());
         }
 
         return [
@@ -80,13 +88,17 @@ class Github extends AbstractSourceControlProvider
      */
     public function destroyHook(string $repo, string $hookId): void
     {
-        $response = Http::withHeaders([
-            'Accept' => 'application/vnd.github.v3+json',
-            'Authorization' => 'Bearer '.$this->data()['token'],
-        ])->delete($this->apiUrl."/repos/$repo/hooks/$hookId");
+        try {
+            $response = Http::withHeaders([
+                'Accept' => 'application/vnd.github.v3+json',
+                'Authorization' => 'Bearer '.$this->data()['token'],
+            ])->delete($this->apiUrl."/repos/$repo/hooks/$hookId");
+        } catch (Exception $e) {
+            throw new FailedToDestroyGitHook($e->getMessage());
+        }
 
         if ($response->status() != 204) {
-            throw new FailedToDestroyGitHook(json_decode($response->body())->message);
+            throw new FailedToDestroyGitHook($response->body());
         }
     }
 
@@ -124,17 +136,21 @@ class Github extends AbstractSourceControlProvider
      */
     public function deployKey(string $title, string $repo, string $key): void
     {
-        $response = Http::withToken($this->data()['token'])->post(
-            $this->apiUrl.'/repos/'.$repo.'/keys',
-            [
-                'title' => $title,
-                'key' => $key,
-                'read_only' => false,
-            ]
-        );
+        try {
+            $response = Http::withToken($this->data()['token'])->post(
+                $this->apiUrl.'/repos/'.$repo.'/keys',
+                [
+                    'title' => $title,
+                    'key' => $key,
+                    'read_only' => false,
+                ]
+            );
+        } catch (Exception $e) {
+            throw new FailedToDeployGitKey($e->getMessage());
+        }
 
         if ($response->status() != 201) {
-            throw new FailedToDeployGitKey(json_decode($response->body())->message);
+            throw new FailedToDeployGitKey($response->body());
         }
     }
 }

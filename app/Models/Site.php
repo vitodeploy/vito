@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\SiteStatus;
+use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\SiteTypes\SiteType;
@@ -252,6 +253,7 @@ class Site extends AbstractModel
 
     /**
      * @throws SourceControlIsNotConnected
+     * @throws FailedToDestroyGitHook
      */
     public function disableAutoDeployment(): void
     {

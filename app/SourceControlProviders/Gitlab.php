@@ -28,8 +28,12 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function connect(): bool
     {
-        $res = Http::withToken($this->data()['token'])
-            ->get($this->getApiUrl().'/projects');
+        try {
+            $res = Http::withToken($this->data()['token'])
+                ->get($this->getApiUrl().'/projects');
+        } catch (Exception) {
+            return false;
+        }
 
         return $res->successful();
     }
@@ -61,27 +65,31 @@ class Gitlab extends AbstractSourceControlProvider
     public function deployHook(string $repo, array $events, string $secret): array
     {
         $repository = urlencode($repo);
-        $response = Http::withToken($this->data()['token'])->post(
-            $this->getApiUrl().'/projects/'.$repository.'/hooks',
-            [
-                'description' => 'deploy',
-                'url' => url('/api/git-hooks?secret='.$secret),
-                'push_events' => in_array('push', $events),
-                'issues_events' => false,
-                'job_events' => false,
-                'merge_requests_events' => false,
-                'note_events' => false,
-                'pipeline_events' => false,
-                'tag_push_events' => false,
-                'wiki_page_events' => false,
-                'deployment_events' => false,
-                'confidential_note_events' => false,
-                'confidential_issues_events' => false,
-            ]
-        );
+        try {
+            $response = Http::withToken($this->data()['token'])->post(
+                $this->getApiUrl().'/projects/'.$repository.'/hooks',
+                [
+                    'description' => 'deploy',
+                    'url' => url('/api/git-hooks?secret='.$secret),
+                    'push_events' => in_array('push', $events),
+                    'issues_events' => false,
+                    'job_events' => false,
+                    'merge_requests_events' => false,
+                    'note_events' => false,
+                    'pipeline_events' => false,
+                    'tag_push_events' => false,
+                    'wiki_page_events' => false,
+                    'deployment_events' => false,
+                    'confidential_note_events' => false,
+                    'confidential_issues_events' => false,
+                ]
+            );
+        } catch (Exception $e) {
+            throw new FailedToDeployGitHook($e->getMessage());
+        }
 
         if ($response->status() != 201) {
-            throw new FailedToDeployGitHook(json_decode($response->body())->message);
+            throw new FailedToDeployGitHook($response->body());
         }
 
         return [
@@ -96,12 +104,16 @@ class Gitlab extends AbstractSourceControlProvider
     public function destroyHook(string $repo, string $hookId): void
     {
         $repository = urlencode($repo);
-        $response = Http::withToken($this->data()['token'])->delete(
-            $this->getApiUrl().'/projects/'.$repository.'/hooks/'.$hookId
-        );
+        try {
+            $response = Http::withToken($this->data()['token'])->delete(
+                $this->getApiUrl().'/projects/'.$repository.'/hooks/'.$hookId
+            );
+        } catch (Exception $e) {
+            throw new FailedToDestroyGitHook($e->getMessage());
+        }
 
         if ($response->status() != 204) {
-            throw new FailedToDestroyGitHook(json_decode($response->body())->message);
+            throw new FailedToDestroyGitHook($response->body());
         }
     }
 
@@ -138,17 +150,21 @@ class Gitlab extends AbstractSourceControlProvider
     public function deployKey(string $title, string $repo, string $key): void
     {
         $repository = urlencode($repo);
-        $response = Http::withToken($this->data()['token'])->post(
-            $this->getApiUrl().'/projects/'.$repository.'/deploy_keys',
-            [
-                'title' => $title,
-                'key' => $key,
-                'can_push' => true,
-            ]
-        );
+        try {
+            $response = Http::withToken($this->data()['token'])->post(
+                $this->getApiUrl().'/projects/'.$repository.'/deploy_keys',
+                [
+                    'title' => $title,
+                    'key' => $key,
+                    'can_push' => true,
+                ]
+            );
+        } catch (Exception $e) {
+            throw new FailedToDeployGitKey($e->getMessage());
+        }
 
         if ($response->status() != 201) {
-            throw new FailedToDeployGitKey(json_decode($response->body())->message);
+            throw new FailedToDeployGitKey($response->body());
         }
     }
 

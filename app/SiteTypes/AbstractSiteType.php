@@ -2,7 +2,7 @@
 
 namespace App\SiteTypes;
 
-use App\Exceptions\SourceControlIsNotConnected;
+use App\Exceptions\FailedToDeployGitKey;
 use App\Models\Site;
 
 abstract class AbstractSiteType implements SiteType
@@ -21,7 +21,7 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * @throws SourceControlIsNotConnected
+     * @throws FailedToDeployGitKey
      */
     protected function deployKey(): void
     {
