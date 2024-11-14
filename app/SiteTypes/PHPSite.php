@@ -3,7 +3,7 @@
 namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
-use App\Exceptions\SourceControlIsNotConnected;
+use App\Exceptions\FailedToDeployGitKey;
 use App\SSH\Composer\Composer;
 use App\SSH\Git\Git;
 use App\SSH\Services\Webserver\Webserver;
@@ -72,7 +72,7 @@ class PHPSite extends AbstractSiteType
     }
 
     /**
-     * @throws SourceControlIsNotConnected
+     * @throws FailedToDeployGitKey
      */
     public function install(): void
     {
