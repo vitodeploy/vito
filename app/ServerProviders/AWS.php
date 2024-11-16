@@ -20,21 +20,10 @@ class AWS extends AbstractProvider
 
     public function createRules(array $input): array
     {
-        $rules = [];
-        // plans
-        $plans = [];
-        foreach (config('serverproviders.aws.plans') as $plan) {
-            $plans[] = $plan['value'];
-        }
-        $rules['plan'] = 'required|in:'.implode(',', $plans);
-        // regions
-        $regions = [];
-        foreach (config('serverproviders.aws.regions') as $region) {
-            $regions[] = $region['value'];
-        }
-        $rules['region'] = 'required|in:'.implode(',', $regions);
-
-        return $rules;
+        return [
+            'plan' => ['required'],
+            'region' => ['required'],
+        ];
     }
 
     public function credentialValidationRules(array $input): array
@@ -78,18 +67,65 @@ class AWS extends AbstractProvider
 
     public function plans(?string $region): array
     {
-        return collect(config('serverproviders.aws.plans'))
-            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+        $this->connectToEc2Client($region);
+
+        $nextToken = null;
+        $plans = [];
+
+        do {
+            $params = [
+                'Filters' => [
+                    [
+                        'Name' => 'processor-info.supported-architecture',
+                        'Values' => ['x86_64', 'arm64'], // Include both x86_64 and ARM64
+                    ],
+                    [
+                        'Name' => 'current-generation',
+                        'Values' => ['true'],
+                    ],
+                    [
+                        'Name' => 'supported-virtualization-type',
+                        'Values' => ['hvm'], // Ubuntu AMIs require HVM
+                    ],
+                    [
+                        'Name' => 'bare-metal',
+                        'Values' => ['false'], // Skip bare-metal unless explicitly needed
+                    ],
+                ],
+            ];
+
+            if ($nextToken) {
+                $params['NextToken'] = $nextToken;
+            }
+
+            $result = $this->ec2Client->describeInstanceTypes($params);
+
+            $plans = array_merge($plans, $result->get('InstanceTypes'));
+
+            $nextToken = $result->get('NextToken');
+        } while ($nextToken);
+
+        return collect($plans)
+            ->mapWithKeys(fn ($value) => [
+                $value['InstanceType'] => $value['InstanceType'].' - '.$value['VCpuInfo']['DefaultVCpus'].' vCPUs, '.$value['MemoryInfo']['SizeInMiB'].' MB RAM',
+            ])
             ->toArray();
     }
 
     public function regions(): array
     {
-        return collect(config('serverproviders.aws.regions'))
-            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
+        $this->connectToEc2Client();
+
+        $regions = $this->ec2Client->describeRegions();
+
+        return collect($regions->toArray()['Regions'] ?? [])
+            ->mapWithKeys(fn ($value) => [$value['RegionName'] => $value['RegionName']])
             ->toArray();
     }
 
+    /**
+     * @throws Exception
+     */
     public function create(): void
     {
         $this->connectToEc2Client();
@@ -136,12 +172,16 @@ class AWS extends AbstractProvider
         }
     }
 
-    private function connectToEc2Client(): void
+    private function connectToEc2Client(?string $region = null): void
     {
-        $credentials = $this->server->serverProvider->getCredentials();
+        $credentials = $this->serverProvider->getCredentials();
+
+        if (! $region) {
+            $region = $this->server?->provider_data['region'];
+        }
 
         $this->ec2Client = new Ec2Client([
-            'region' => $this->server->provider_data['region'],
+            'region' => $region ?? config('serverproviders.aws.regions')[0]['value'],
             'version' => '2016-11-15',
             'credentials' => [
                 'key' => $credentials['key'],
@@ -202,11 +242,14 @@ class AWS extends AbstractProvider
         ]);
     }
 
+    /**
+     * @throws Exception
+     */
     private function runInstance(): void
     {
         $keyName = $groupName = $this->server->name.'-'.$this->server->id;
         $result = $this->ec2Client->runInstances([
-            'ImageId' => config('serverproviders.aws.images.'.$this->server->provider_data['region'].'.'.$this->server->os),
+            'ImageId' => $this->getImageId($this->server->os),
             'MinCount' => 1,
             'MaxCount' => 1,
             'InstanceType' => $this->server->provider_data['plan'],
@@ -219,5 +262,51 @@ class AWS extends AbstractProvider
         $providerData['zone'] = $result['Instances'][0]['Placement']['AvailabilityZone'];
         $this->server->provider_data = $providerData;
         $this->server->save();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getImageId(string $os): string
+    {
+        $this->connectToEc2Client();
+
+        $version = config('core.operating_system_versions.'.$os);
+
+        ds($version);
+
+        $result = $this->ec2Client->describeImages([
+            'Filters' => [
+                [
+                    'Name' => 'name',
+                    'Values' => ['ubuntu/images/*-'.$version.'-amd64-server-*'],
+                ],
+                [
+                    'Name' => 'state',
+                    'Values' => ['available'],
+                ],
+                [
+                    'Name' => 'virtualization-type',
+                    'Values' => ['hvm'],
+                ],
+            ],
+            'Owners' => ['099720109477'],
+        ]);
+
+        // Extract and display image information
+        $images = $result->get('Images');
+
+        ds($images);
+
+        if (! empty($images)) {
+            // Sort images by creation date to get the latest one
+            usort($images, function ($a, $b) {
+                return strtotime($b['CreationDate']) - strtotime($a['CreationDate']);
+            });
+
+            return $images[0]['ImageId'];
+        }
+
+        throw new Exception('Could not find image ID');
     }
 }
