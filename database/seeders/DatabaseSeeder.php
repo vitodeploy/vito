@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'user@example.com',
-            'current_project_id' => Project::factory()->create()
+            'current_project_id' => Project::factory()->create(),
         ]);
 
         $this->createResources($user);
