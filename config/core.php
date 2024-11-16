@@ -18,6 +18,11 @@ return [
         \App\Enums\OperatingSystem::UBUNTU22,
         \App\Enums\OperatingSystem::UBUNTU24,
     ],
+    'operating_system_versions' => [
+        \App\Enums\OperatingSystem::UBUNTU20 => '20.04',
+        \App\Enums\OperatingSystem::UBUNTU22 => '22.04',
+        \App\Enums\OperatingSystem::UBUNTU24 => '24.04',
+    ],
     'webservers' => [
         \App\Enums\Webserver::NONE,
         \App\Enums\Webserver::NGINX,
