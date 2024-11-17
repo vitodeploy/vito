@@ -6,7 +6,6 @@ use App\Exceptions\CouldNotConnectToProvider;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;
-use Aws\EC2InstanceConnect\EC2InstanceConnectClient;
 use Exception;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
@@ -15,8 +14,6 @@ use Throwable;
 class AWS extends AbstractProvider
 {
     protected Ec2Client $ec2Client;
-
-    protected EC2InstanceConnectClient $ec2InstanceConnectClient;
 
     public function createRules(array $input): array
     {
@@ -272,13 +269,11 @@ class AWS extends AbstractProvider
     /**
      * @throws Exception
      */
-    public function getImageId(string $os): string
+    private function getImageId(string $os): string
     {
         $this->connectToEc2Client();
 
         $version = config('core.operating_system_versions.'.$os);
-
-        ds($version);
 
         $result = $this->ec2Client->describeImages([
             'Filters' => [
@@ -300,8 +295,6 @@ class AWS extends AbstractProvider
 
         // Extract and display image information
         $images = $result->get('Images');
-
-        ds($images);
 
         if (! empty($images)) {
             // Sort images by creation date to get the latest one

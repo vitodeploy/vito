@@ -7,6 +7,7 @@ use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Exception;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,23 +16,12 @@ class Vultr extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.vultr.com/v2';
 
-    public function createRules($input): array
+    public function createRules(array $input): array
     {
-        $rules = [];
-        // plans
-        $plans = [];
-        foreach (config('serverproviders.vultr.plans') as $plan) {
-            $plans[] = $plan['value'];
-        }
-        $rules['plan'] = 'required|in:'.implode(',', $plans);
-        // regions
-        $regions = [];
-        foreach (config('serverproviders.vultr.regions') as $region) {
-            $regions[] = $region['value'];
-        }
-        $rules['region'] = 'required|in:'.implode(',', $regions);
-
-        return $rules;
+        return [
+            'plan' => 'required',
+            'region' => 'required',
+        ];
     }
 
     public function credentialValidationRules($input): array
@@ -61,7 +51,12 @@ class Vultr extends AbstractProvider
      */
     public function connect(?array $credentials = null): bool
     {
-        $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
+        try {
+            $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
+        } catch (Exception) {
+            throw new CouldNotConnectToProvider('Vultr');
+        }
+
         if (! $connect->ok()) {
             throw new CouldNotConnectToProvider('Vultr');
         }
@@ -71,16 +66,43 @@ class Vultr extends AbstractProvider
 
     public function plans(?string $region): array
     {
-        return collect(config('serverproviders.vultr.plans'))
-            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
-            ->toArray();
+        try {
+            $plans = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/plans', ['per_page' => 500])
+                ->json();
+
+            return collect($plans['plans'])->filter(function ($plan) use ($region) {
+                return in_array($region, $plan['locations']);
+            })
+                ->mapWithKeys(function ($value) {
+                    return [
+                        $value['id'] => __('server_providers.plan', [
+                            'name' => $value['type'],
+                            'cpu' => $value['vcpu_count'],
+                            'memory' => $value['ram'],
+                            'disk' => $value['disk'],
+                        ]),
+                    ];
+                })
+                ->toArray();
+        } catch (Exception) {
+            return [];
+        }
     }
 
     public function regions(): array
     {
-        return collect(config('serverproviders.vultr.regions'))
-            ->mapWithKeys(fn ($value) => [$value['value'] => $value['title']])
-            ->toArray();
+        try {
+            $regions = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/regions', ['per_page' => 500])
+                ->json();
+
+            return collect($regions['regions'])
+                ->mapWithKeys(fn ($value) => [$value['id'] => $value['country'].' - '.$value['city']])
+                ->toArray();
+        } catch (Exception) {
+            return [];
+        }
     }
 
     /**
@@ -89,32 +111,41 @@ class Vultr extends AbstractProvider
     public function create(): void
     {
         // generate key pair
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
         generate_key_pair($storageDisk->path((string) $this->server->id));
 
-        $createSshKey = Http::withToken($this->server->serverProvider->credentials['token'])
-            ->post($this->apiUrl.'/ssh-keys', [
-                'ssh_key' => $this->server->sshKey()['public_key'],
-                'name' => $this->server->name.'_'.$this->server->id,
-            ]);
+        try {
+            $createSshKey = Http::withToken($this->server->serverProvider->credentials['token'])
+                ->post($this->apiUrl.'/ssh-keys', [
+                    'ssh_key' => $this->server->sshKey()['public_key'],
+                    'name' => $this->server->name.'_'.$this->server->id,
+                ]);
+        } catch (Exception) {
+            throw new ServerProviderError('Error creating SSH Key on Vultr');
+        }
+
         if ($createSshKey->status() != 201) {
             throw new ServerProviderError('Error creating SSH Key on Vultr');
         }
 
-        $create = Http::withToken($this->server->serverProvider->credentials['token'])
-            ->post($this->apiUrl.'/instances', [
-                'label' => $this->server->name,
-                'region' => $this->server->provider_data['region'],
-                'plan' => $this->server->provider_data['plan'],
-                'os_id' => config('serverproviders.vultr.images')[$this->server->os],
-                'enable_ipv6' => false,
-                'sshkey_id' => [$createSshKey->json()['ssh_key']['id']],
-            ]);
+        try {
+            $create = Http::withToken($this->server->serverProvider->credentials['token'])
+                ->post($this->apiUrl.'/instances', [
+                    'label' => $this->server->name,
+                    'region' => $this->server->provider_data['region'],
+                    'plan' => $this->server->provider_data['plan'],
+                    'os_id' => $this->getImageId($this->server->os),
+                    'enable_ipv6' => false,
+                    'sshkey_id' => [$createSshKey->json()['ssh_key']['id']],
+                ]);
+        } catch (Exception) {
+            throw new ServerProviderError('Failed to create server on Vultr');
+        }
+
         if ($create->status() != 202) {
-            $msg = __('Failed to create server on Vultr');
             Log::error('Failed to create server on Vultr', $create->json());
-            throw new ServerProviderError($msg);
+            throw new ServerProviderError('Failed: '.$create->body());
         }
         $providerData = $this->server->provider_data;
         $providerData['instance_id'] = $create->json()['instance']['id'];
@@ -124,8 +155,12 @@ class Vultr extends AbstractProvider
 
     public function isRunning(): bool
     {
-        $status = Http::withToken($this->server->serverProvider->credentials['token'])
-            ->get($this->apiUrl.'/instances/'.$this->server->provider_data['instance_id']);
+        try {
+            $status = Http::withToken($this->server->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/instances/'.$this->server->provider_data['instance_id']);
+        } catch (Exception) {
+            return false;
+        }
 
         if (! $status->ok()) {
             return false;
@@ -145,12 +180,44 @@ class Vultr extends AbstractProvider
     public function delete(): void
     {
         if (isset($this->server->provider_data['instance_id'])) {
-            $delete = Http::withToken($this->server->serverProvider->credentials['token'])
-                ->delete($this->apiUrl.'/instances/'.$this->server->provider_data['instance_id']);
+            try {
+                $delete = Http::withToken($this->server->serverProvider->credentials['token'])
+                    ->delete($this->apiUrl.'/instances/'.$this->server->provider_data['instance_id']);
+            } catch (Exception) {
+                Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
+
+                return;
+            }
 
             if (! $delete->ok()) {
                 Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
             }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getImageId(string $os): int
+    {
+        $version = config('core.operating_system_versions.'.$os);
+
+        try {
+            $result = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/os', ['per_page' => 500])
+                ->json();
+
+            $image = collect($result['os'])
+                ->filter(function ($os) use ($version) {
+                    return str_contains($os['name'], $version);
+                })
+                ->where('family', 'ubuntu')
+                ->where('arch', 'x64')
+                ->first();
+
+            return $image['id'];
+        } catch (Exception) {
+            throw new Exception('Could not find image ID');
         }
     }
 }
