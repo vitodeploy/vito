@@ -105,13 +105,6 @@ class ServerProvider extends AbstractModel
             return [];
         }
 
-        if (Cache::get('plans-'.$id.'-'.$region)) {
-            return Cache::get('plans-'.$id.'-'.$region);
-        }
-
-        $plans = $profile->provider()->plans($region);
-        Cache::put('plans-'.$id.'-'.$region, $plans, 60);
-
-        return $plans;
+        return $profile->provider()->plans($region);
     }
 }
