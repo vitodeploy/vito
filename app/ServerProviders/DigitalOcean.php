@@ -69,8 +69,6 @@ class DigitalOcean extends AbstractProvider
                 ->get($this->apiUrl.'/sizes', ['per_page' => 200])
                 ->json();
 
-            ds($region);
-
             return collect($plans['sizes'])->filter(function ($size) use ($region) {
                 return in_array($region, $size['regions']);
             })
@@ -133,7 +131,7 @@ class DigitalOcean extends AbstractProvider
                     'name' => str($this->server->name)->slug(),
                     'region' => $this->server->provider_data['region'],
                     'size' => $this->server->provider_data['plan'],
-                    'image' => config('serverproviders.digitalocean.images')[$this->server->os],
+                    'image' => $this->getImageId($this->server->os, $this->server->provider_data['region']),
                     'backups' => false,
                     'ipv6' => false,
                     'monitoring' => false,
@@ -193,6 +191,35 @@ class DigitalOcean extends AbstractProvider
             if (! $delete->ok()) {
                 Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
             }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getImageId(string $os, string $region): int
+    {
+        $version = config('core.operating_system_versions.'.$os);
+
+        try {
+            $result = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/images', [
+                    'per_page' => 200,
+                    'type' => 'distribution',
+                ])
+                ->json();
+
+            $image = collect($result['images'])
+                ->filter(function ($image) use ($region, $version) {
+                    return in_array($region, $image['regions']) && str_contains($image['name'], $version);
+                })
+                ->where('distribution', 'Ubuntu')
+                ->where('status', 'available')
+                ->first();
+
+            return $image['id'];
+        } catch (Exception) {
+            throw new Exception('Could not find image ID');
         }
     }
 }
