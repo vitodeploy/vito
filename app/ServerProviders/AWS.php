@@ -107,7 +107,12 @@ class AWS extends AbstractProvider
 
         return collect($plans)
             ->mapWithKeys(fn ($value) => [
-                $value['InstanceType'] => $value['InstanceType'].' - '.$value['VCpuInfo']['DefaultVCpus'].' vCPUs, '.$value['MemoryInfo']['SizeInMiB'].' MB RAM',
+                $value['InstanceType'] => __('server_providers.plan', [
+                    'name' => $value['InstanceType'],
+                    'cpu' => $value['VCpuInfo']['DefaultVCpus'] ?? 'N/A',
+                    'memory' => $value['MemoryInfo']['SizeInMiB'] ?? 'N/A',
+                    'disk' => $value['InstanceStorageInfo']['TotalSizeInGB'] ?? 'N/A',
+                ]),
             ])
             ->toArray();
     }
