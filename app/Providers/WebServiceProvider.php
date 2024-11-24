@@ -14,6 +14,7 @@ use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Facades\FilamentView;
@@ -85,8 +86,9 @@ class WebServiceProvider extends ServiceProvider
             ->id('app')
             ->path('')
             ->passwordReset()
+            ->maxContentWidth(MaxWidth::Full)
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Emerald,
             ])
             ->viteTheme('resources/css/filament/app/theme.css')
             ->brandLogo(fn () => view('components.brand'))

@@ -1,6 +1,6 @@
 echo "Updating Vito..."
 
-cd /home/vito/vito
+cd /home/backend/backend
 
 echo "Pulling changes..."
 git fetch --all
