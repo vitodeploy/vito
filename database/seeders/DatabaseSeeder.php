@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ServiceStatus;
 use App\Enums\SiteType;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
