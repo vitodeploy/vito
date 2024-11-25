@@ -17,4 +17,3 @@ fi
 if ! sudo supervisorctl update; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
-
