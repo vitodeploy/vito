@@ -5,31 +5,31 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
 if [[ -z "${V_USERNAME}" ]]; then
-  export V_USERNAME=vito
+    export V_USERNAME=vito
 fi
 
 if [[ -z "${V_PASSWORD}" ]]; then
-  export V_PASSWORD=$(openssl rand -base64 12)
+    export V_PASSWORD=$(openssl rand -base64 12)
 fi
 
 if [[ -z "${V_ADMIN_EMAIL}" ]]; then
-  echo "Enter your email address:"
-  read V_ADMIN_EMAIL
+    echo "Enter your email address:"
+    read V_ADMIN_EMAIL
 fi
 
 if [[ -z "${V_ADMIN_EMAIL}" ]]; then
-  echo "Error: V_ADMIN_EMAIL environment variable is not set."
-  exit 1
+    echo "Error: V_ADMIN_EMAIL environment variable is not set."
+    exit 1
 fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
-  echo "Enter a password for Vito's dashboard:"
-  read V_ADMIN_PASSWORD
+    echo "Enter a password for Vito's dashboard:"
+    read V_ADMIN_PASSWORD
 fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
-  echo "Error: V_ADMIN_PASSWORD environment variable is not set."
-  exit 1
+    echo "Error: V_ADMIN_PASSWORD environment variable is not set."
+    exit 1
 fi
 
 apt remove needrestart -y
@@ -41,7 +41,7 @@ mkdir /home/${V_USERNAME}
 mkdir /home/${V_USERNAME}/.ssh
 chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
 chsh -s /bin/bash "${V_USERNAME}"
-su - "${V_USERNAME}" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
+su - "${V_USERNAME}" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<< y
 
 # upgrade
 apt clean

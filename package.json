@@ -3,8 +3,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "lint": "prettier --check ./resources/views",
-        "lint:fix": "prettier --write ./resources/views"
+        "lint": "prettier --check .",
+        "lint:fix": "prettier --write ."
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.9",

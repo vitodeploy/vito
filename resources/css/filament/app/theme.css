@@ -1,4 +1,4 @@
-@import '/vendor/filament/filament/resources/css/theme.css';
+@import "/vendor/filament/filament/resources/css/theme.css";
 
 @config 'tailwind.config.js';
 
@@ -14,7 +14,8 @@
     @apply bg-gray-100 dark:bg-gray-900 !important;
 }
 
-.fi-sidebar-item a, .fi-tenant-menu-trigger {
+.fi-sidebar-item a,
+.fi-tenant-menu-trigger {
     @apply hover:bg-gray-200/50 hover:dark:bg-gray-800 !important;
 }
 
@@ -22,13 +23,24 @@
     @apply bg-gray-200/50 dark:bg-gray-800 !important;
 }
 
-
 .fi-btn-color-primary {
-    background-image: linear-gradient(to bottom right, rgba(var(--primary-500), 1), rgba(var(--primary-900), 1));
-    box-shadow: 0 4px 6px -1px #0000001a, 0 2px 4px -2px #0000001a;
+    background-image: linear-gradient(
+        to bottom right,
+        rgba(var(--primary-500), 1),
+        rgba(var(--primary-900), 1)
+    );
+    box-shadow:
+        0 4px 6px -1px #0000001a,
+        0 2px 4px -2px #0000001a;
 }
 
 .bg-primary-700-gradient {
-    background-image: linear-gradient(to bottom right, rgba(var(--primary-300), 1), rgba(var(--primary-700), 1));
-    box-shadow: 0 4px 6px -1px #0000001a, 0 2px 4px -2px #0000001a;
+    background-image: linear-gradient(
+        to bottom right,
+        rgba(var(--primary-300), 1),
+        rgba(var(--primary-700), 1)
+    );
+    box-shadow:
+        0 4px 6px -1px #0000001a,
+        0 2px 4px -2px #0000001a;
 }
