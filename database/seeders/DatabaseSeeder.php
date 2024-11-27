@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ServiceStatus;
 use App\Enums\SiteType;
+use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
@@ -22,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'user@example.com',
+            'current_project_id' => Project::factory()->create(),
         ]);
 
         $this->createResources($user);

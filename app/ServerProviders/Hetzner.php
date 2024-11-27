@@ -76,7 +76,6 @@ class Hetzner extends AbstractProvider
                         $value['name'] => __('server_providers.plan', [
                             'name' => $value['name'],
                             'cpu' => $value['cores'],
-                            'architecture' => $value['architecture'],
                             'memory' => $value['memory'],
                             'disk' => $value['disk'],
                         ]),

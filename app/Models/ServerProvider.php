@@ -79,6 +79,7 @@ class ServerProvider extends AbstractModel
         if (! $id) {
             return [];
         }
+        /** @var ?ServerProvider $profile */
         $profile = self::find($id);
         if (! $profile) {
             return [];
@@ -104,13 +105,6 @@ class ServerProvider extends AbstractModel
             return [];
         }
 
-        if (Cache::get('plans-'.$id.'-'.$region)) {
-            return Cache::get('plans-'.$id.'-'.$region);
-        }
-
-        $plans = $profile->provider()->plans($region);
-        Cache::put('plans-'.$id.'-'.$region, $plans, 600);
-
-        return $plans;
+        return $profile->provider()->plans($region);
     }
 }

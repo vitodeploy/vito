@@ -15,7 +15,6 @@ use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -45,7 +44,6 @@ class CreateServer
             'progress_step' => 'Initializing',
         ]);
 
-        DB::beginTransaction();
         try {
             if ($server->provider != 'custom') {
                 $server->provider_id = $input['server_provider'];
@@ -70,12 +68,10 @@ class CreateServer
             // install server
             $this->install($server);
 
-            DB::commit();
-
             return $server;
         } catch (Exception $e) {
-            $server->provider()->delete();
-            DB::rollBack();
+            $server->delete();
+
             throw ValidationException::withMessages([
                 'provider' => $e->getMessage(),
             ]);

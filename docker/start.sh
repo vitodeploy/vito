@@ -23,7 +23,7 @@ fi
 # Check if APP_KEY starts with 'base64:'
 if [[ $APP_KEY == base64:* ]]; then
     # Remove 'base64:' prefix and decode the base64 string
-    decoded_key=$(echo "${APP_KEY:7}" | base64 --decode 2>/dev/null)
+    decoded_key=$(echo "${APP_KEY:7}" | base64 --decode 2> /dev/null)
 
     # Check if decoding was successful
     if [ $? -ne 0 ]; then

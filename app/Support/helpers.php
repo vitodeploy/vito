@@ -7,6 +7,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 
 function generate_public_key($privateKeyPath, $publicKeyPath): void
 {
@@ -77,6 +78,16 @@ function run_action(object $static, Closure $callback): void
                     ]))
                     ->openUrlInNewTab(),
             ])
+            ->send();
+
+        if (method_exists($static, 'halt')) {
+            $reflectionMethod = new ReflectionMethod($static, 'halt');
+            $reflectionMethod->invoke($static);
+        }
+    } catch (ValidationException $e) {
+        Notification::make()
+            ->danger()
+            ->title($e->getMessage())
             ->send();
 
         if (method_exists($static, 'halt')) {

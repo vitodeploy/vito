@@ -3,6 +3,7 @@
 namespace App\ServerProviders;
 
 use App\ValidationRules\RestrictedIPAddressesRule;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -58,7 +59,7 @@ class Custom extends AbstractProvider
 
     public function create(): void
     {
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $storageDisk */
+        /** @var FilesystemAdapter $storageDisk */
         $storageDisk = Storage::disk(config('core.key_pairs_disk'));
         File::copy(
             storage_path(config('core.ssh_private_key_name')),

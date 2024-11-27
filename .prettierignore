@@ -1,0 +1,14 @@
+.git/
+.scribe/
+node_modules/
+public/
+storage/
+vendor/
+composer.lock
+.env
+.env.example
+sail
+*.md
+*.yml
+!*.blade.php
+!*.sh

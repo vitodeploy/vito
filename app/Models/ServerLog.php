@@ -132,10 +132,12 @@ class ServerLog extends AbstractModel
                 return tail(Storage::disk($this->disk)->path($this->name), $lines);
             }
 
-            return Storage::disk($this->disk)->get($this->name);
+            $content = Storage::disk($this->disk)->get($this->name);
+
+            return $content ?? 'Empty log file!';
         }
 
-        return '';
+        return "Log file doesn't exist!";
     }
 
     public static function log(Server $server, string $type, string $content, ?Site $site = null): static

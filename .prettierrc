@@ -1,5 +1,9 @@
 {
-    "plugins": ["prettier-plugin-blade", "prettier-plugin-tailwindcss"],
+    "plugins": [
+        "prettier-plugin-blade",
+        "prettier-plugin-tailwindcss",
+        "prettier-plugin-sh"
+    ],
     "overrides": [
         {
             "files": ["*.blade.php"],
@@ -10,6 +14,12 @@
                 "tabWidth": 4,
                 "quoteProps": "consistent",
                 "trailingComma": "none"
+            }
+        },
+        {
+            "files": ["*.sh"],
+            "options": {
+                "parser": "sh"
             }
         }
     ]
