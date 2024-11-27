@@ -27,4 +27,6 @@ final class PHP
     const V82 = '8.2';
 
     const V83 = '8.3';
+
+    const V84 = '8.4';
 }
