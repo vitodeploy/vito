@@ -38,6 +38,7 @@ return [
         \App\Enums\PHP::V81,
         \App\Enums\PHP::V82,
         \App\Enums\PHP::V83,
+        \App\Enums\PHP::V84,
     ],
     'databases' => [
         \App\Enums\Database::NONE,
@@ -214,6 +215,7 @@ return [
             '8.1',
             '8.2',
             '8.3',
+            '8.4',
         ],
         'ufw' => [
             'latest',
@@ -311,6 +313,7 @@ return [
                 '8.0' => 'php8.0-fpm',
                 '8.1' => 'php8.1-fpm',
                 '8.3' => 'php8.3-fpm',
+                '8.4' => 'php8.4-fpm',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 '5.6' => 'php5.6-fpm',
@@ -323,6 +326,7 @@ return [
                 '8.1' => 'php8.1-fpm',
                 '8.2' => 'php8.2-fpm',
                 '8.3' => 'php8.3-fpm',
+                '8.4' => 'php8.4-fpm',
             ],
             \App\Enums\OperatingSystem::UBUNTU24 => [
                 '5.6' => 'php5.6-fpm',
@@ -335,6 +339,7 @@ return [
                 '8.1' => 'php8.1-fpm',
                 '8.2' => 'php8.2-fpm',
                 '8.3' => 'php8.3-fpm',
+                '8.4' => 'php8.4-fpm',
             ],
         ],
         'redis' => [
