@@ -18,8 +18,6 @@ class SshKeysList extends TableWidget
         return SshKey::query()->where('user_id', auth()->id());
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -35,9 +33,12 @@ class SshKeysList extends TableWidget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 DeleteAction::make('delete')
                     ->requiresConfirmation()

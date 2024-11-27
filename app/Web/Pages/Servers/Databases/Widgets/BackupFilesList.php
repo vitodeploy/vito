@@ -26,8 +26,6 @@ class BackupFilesList extends Widget
         return BackupFile::query()->where('backup_id', $this->backup->id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -54,9 +52,12 @@ class BackupFilesList extends Widget
         return $query->latest('created_at');
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 Action::make('restore')
                     ->hiddenLabel()

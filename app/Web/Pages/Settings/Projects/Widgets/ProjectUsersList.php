@@ -36,18 +36,23 @@ class ProjectUsersList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table->actions([
-            Tables\Actions\DeleteAction::make()
-                ->label('Remove')
-                ->modalHeading('Remove user from project')
-                ->visible(function ($record) {
-                    return $this->authorize('update', $this->project)->allowed() && $record->id !== auth()->id();
-                })
-                ->using(function ($record) {
-                    $this->project->users()->detach($record);
-                }),
-        ])->paginated(false);
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
+            ->actions([
+                Tables\Actions\DeleteAction::make()
+                    ->label('Remove')
+                    ->modalHeading('Remove user from project')
+                    ->visible(function ($record) {
+                        return $this->authorize('update', $this->project)->allowed() && $record->id !== auth()->id();
+                    })
+                    ->using(function ($record) {
+                        $this->project->users()->detach($record);
+                    }),
+            ])
+            ->paginated(false);
     }
 }

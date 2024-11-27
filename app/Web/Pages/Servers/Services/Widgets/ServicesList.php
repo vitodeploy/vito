@@ -28,8 +28,6 @@ class ServicesList extends TableWidget
         return Service::query()->where('server_id', $this->server->id);
     }
 
-    protected static ?string $heading = 'Installed Services';
-
     protected function getTableColumns(): array
     {
         return [
@@ -56,9 +54,12 @@ class ServicesList extends TableWidget
     /**
      * @throws Exception
      */
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading('Installed Services')
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 ActionGroup::make([
                     $this->serviceAction('start', 'heroicon-o-play'),
