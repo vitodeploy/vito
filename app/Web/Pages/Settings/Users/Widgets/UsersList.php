@@ -29,8 +29,6 @@ class UsersList extends Widget
         return User::query();
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -50,9 +48,12 @@ class UsersList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 EditAction::make('edit')
                     ->authorize(fn ($record) => auth()->user()->can('update', $record))

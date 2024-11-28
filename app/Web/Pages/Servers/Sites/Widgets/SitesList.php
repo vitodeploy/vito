@@ -22,8 +22,6 @@ class SitesList extends Widget
         return Site::query()->where('server_id', $this->server->id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -54,9 +52,12 @@ class SitesList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->recordUrl(fn (Site $record) => View::getUrl(parameters: ['server' => $this->server, 'site' => $record]))
             ->actions([
                 Action::make('settings')

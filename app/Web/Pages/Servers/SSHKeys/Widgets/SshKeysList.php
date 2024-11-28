@@ -28,8 +28,6 @@ class SshKeysList extends TableWidget
             );
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -44,9 +42,12 @@ class SshKeysList extends TableWidget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 DeleteAction::make('delete')
                     ->hiddenLabel()

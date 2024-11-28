@@ -24,8 +24,6 @@ class SslsList extends Widget
         return Ssl::query()->where('site_id', $this->site->id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -47,9 +45,12 @@ class SslsList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 Action::make('logs')
                     ->hiddenLabel()

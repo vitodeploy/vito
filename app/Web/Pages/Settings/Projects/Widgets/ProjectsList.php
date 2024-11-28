@@ -19,8 +19,6 @@ class ProjectsList extends Widget
         return Project::query();
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -35,9 +33,12 @@ class ProjectsList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->recordUrl(fn (Project $record) => Settings::getUrl(['project' => $record]))
             ->actions([
                 Action::make('settings')

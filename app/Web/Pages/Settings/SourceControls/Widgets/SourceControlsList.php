@@ -25,8 +25,6 @@ class SourceControlsList extends Widget
         return SourceControl::getByProjectId(auth()->user()->current_project_id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -53,45 +51,49 @@ class SourceControlsList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table->actions([
-            EditAction::make('edit')
-                ->label('Edit')
-                ->modalHeading('Edit Source Control')
-                ->fillForm(function (array $data, SourceControl $record) {
-                    return [
-                        'provider' => $record->provider,
-                        'name' => $record->profile,
-                        'token' => $record->provider_data['token'] ?? null,
-                        'username' => $record->provider_data['username'] ?? null,
-                        'password' => $record->provider_data['password'] ?? null,
-                        'global' => $record->project_id === null,
-                    ];
-                })
-                ->form(fn (SourceControl $record) => Edit::form($record))
-                ->authorize(fn (SourceControl $record) => auth()->user()->can('update', $record))
-                ->using(fn (array $data, SourceControl $record) => Edit::action($record, $data))
-                ->modalWidth(MaxWidth::Medium),
-            Action::make('delete')
-                ->label('Delete')
-                ->icon('heroicon-o-trash')
-                ->color('danger')
-                ->requiresConfirmation()
-                ->modalHeading('Delete Source Control')
-                ->authorize(fn (SourceControl $record) => auth()->user()->can('delete', $record))
-                ->action(function (array $data, SourceControl $record) {
-                    try {
-                        app(DeleteSourceControl::class)->delete($record);
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
+            ->actions([
+                EditAction::make('edit')
+                    ->label('Edit')
+                    ->modalHeading('Edit Source Control')
+                    ->fillForm(function (array $data, SourceControl $record) {
+                        return [
+                            'provider' => $record->provider,
+                            'name' => $record->profile,
+                            'token' => $record->provider_data['token'] ?? null,
+                            'username' => $record->provider_data['username'] ?? null,
+                            'password' => $record->provider_data['password'] ?? null,
+                            'global' => $record->project_id === null,
+                        ];
+                    })
+                    ->form(fn (SourceControl $record) => Edit::form($record))
+                    ->authorize(fn (SourceControl $record) => auth()->user()->can('update', $record))
+                    ->using(fn (array $data, SourceControl $record) => Edit::action($record, $data))
+                    ->modalWidth(MaxWidth::Medium),
+                Action::make('delete')
+                    ->label('Delete')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Delete Source Control')
+                    ->authorize(fn (SourceControl $record) => auth()->user()->can('delete', $record))
+                    ->action(function (array $data, SourceControl $record) {
+                        try {
+                            app(DeleteSourceControl::class)->delete($record);
 
-                        $this->dispatch('$refresh');
-                    } catch (Exception $e) {
-                        Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
-                            ->send();
-                    }
-                }),
-        ]);
+                            $this->dispatch('$refresh');
+                        } catch (Exception $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title($e->getMessage())
+                                ->send();
+                        }
+                    }),
+            ]);
     }
 }

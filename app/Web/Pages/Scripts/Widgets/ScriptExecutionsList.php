@@ -55,10 +55,12 @@ class ScriptExecutionsList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
-            ->heading('')
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 Action::make('logs')
                     ->hiddenLabel()

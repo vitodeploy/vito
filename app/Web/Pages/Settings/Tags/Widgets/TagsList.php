@@ -42,7 +42,7 @@ class TagsList extends Widget
     public function table(Table $table): Table
     {
         return $table
-            ->heading('')
+            ->heading(null)
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
             ->actions([

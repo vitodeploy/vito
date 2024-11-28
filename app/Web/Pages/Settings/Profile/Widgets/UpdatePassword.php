@@ -8,6 +8,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 
@@ -25,34 +26,35 @@ class UpdatePassword extends Widget implements HasForms
 
     public string $password_confirmation = '';
 
-    public function getFormSchema(): array
+    public function form(Form $form): Form
     {
         $rules = UpdateUserPassword::rules();
 
-        return [
-            Section::make()
-                ->heading('Update Password')
-                ->description('Ensure your account is using a long, random password to stay secure.')
-                ->schema([
-                    TextInput::make('current_password')
-                        ->label('Current Password')
-                        ->password()
-                        ->rules($rules['current_password']),
-                    TextInput::make('password')
-                        ->label('New Password')
-                        ->password()
-                        ->rules($rules['password']),
-                    TextInput::make('password_confirmation')
-                        ->label('Confirm Password')
-                        ->password()
-                        ->rules($rules['password_confirmation']),
-                ])
-                ->footerActions([
-                    Action::make('save')
-                        ->label('Save')
-                        ->action(fn () => $this->submit()),
-                ]),
-        ];
+        return $form
+            ->schema([
+                Section::make()
+                    ->heading('Update Password')
+                    ->description('Ensure your account is using a long, random password to stay secure.')
+                    ->schema([
+                        TextInput::make('current_password')
+                            ->label('Current Password')
+                            ->password()
+                            ->rules($rules['current_password']),
+                        TextInput::make('password')
+                            ->label('New Password')
+                            ->password()
+                            ->rules($rules['password']),
+                        TextInput::make('password_confirmation')
+                            ->label('Confirm Password')
+                            ->password()
+                            ->rules($rules['password_confirmation']),
+                    ])
+                    ->footerActions([
+                        Action::make('save')
+                            ->label('Save')
+                            ->action(fn () => $this->submit()),
+                    ]),
+            ]);
     }
 
     public function submit(): void

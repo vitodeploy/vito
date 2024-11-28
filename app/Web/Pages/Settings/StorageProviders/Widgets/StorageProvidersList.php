@@ -24,8 +24,6 @@ class StorageProvidersList extends Widget
         return StorageProvider::getByProjectId(auth()->user()->current_project_id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -53,36 +51,40 @@ class StorageProvidersList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table->actions([
-            EditAction::make('edit')
-                ->label('Edit')
-                ->modalHeading('Edit Storage Provider')
-                ->mutateRecordDataUsing(function (array $data, StorageProvider $record) {
-                    return [
-                        'name' => $record->profile,
-                        'global' => $record->project_id === null,
-                    ];
-                })
-                ->form(Edit::form())
-                ->authorize(fn (StorageProvider $record) => auth()->user()->can('update', $record))
-                ->using(fn (array $data, StorageProvider $record) => Edit::action($record, $data))
-                ->modalWidth(MaxWidth::Medium),
-            DeleteAction::make('delete')
-                ->label('Delete')
-                ->modalHeading('Delete Storage Provider')
-                ->authorize(fn (StorageProvider $record) => auth()->user()->can('delete', $record))
-                ->using(function (array $data, StorageProvider $record) {
-                    try {
-                        app(DeleteStorageProvider::class)->delete($record);
-                    } catch (\Exception $e) {
-                        Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
-                            ->send();
-                    }
-                }),
-        ]);
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
+            ->actions([
+                EditAction::make('edit')
+                    ->label('Edit')
+                    ->modalHeading('Edit Storage Provider')
+                    ->mutateRecordDataUsing(function (array $data, StorageProvider $record) {
+                        return [
+                            'name' => $record->profile,
+                            'global' => $record->project_id === null,
+                        ];
+                    })
+                    ->form(Edit::form())
+                    ->authorize(fn (StorageProvider $record) => auth()->user()->can('update', $record))
+                    ->using(fn (array $data, StorageProvider $record) => Edit::action($record, $data))
+                    ->modalWidth(MaxWidth::Medium),
+                DeleteAction::make('delete')
+                    ->label('Delete')
+                    ->modalHeading('Delete Storage Provider')
+                    ->authorize(fn (StorageProvider $record) => auth()->user()->can('delete', $record))
+                    ->using(function (array $data, StorageProvider $record) {
+                        try {
+                            app(DeleteStorageProvider::class)->delete($record);
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title($e->getMessage())
+                                ->send();
+                        }
+                    }),
+            ]);
     }
 }

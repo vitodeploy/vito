@@ -23,8 +23,6 @@ class LogsList extends Widget
 
     public ?Site $site = null;
 
-    public ?string $label = '';
-
     public bool $remote = false;
 
     protected $listeners = ['$refresh'];
@@ -63,9 +61,12 @@ class LogsList extends Widget
     /**
      * @throws Exception
      */
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->filters([
                 Filter::make('created_at')
                     ->form([
@@ -84,7 +85,6 @@ class LogsList extends Widget
                             );
                     }),
             ])
-            ->heading($this->label)
             ->actions([
                 Action::make('view')
                     ->hiddenLabel()

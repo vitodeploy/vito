@@ -47,10 +47,12 @@ class NotificationChannelsList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
-            ->heading('')
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 EditAction::make('edit')
                     ->modalHeading('Edit Notification Channel')

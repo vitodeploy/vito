@@ -27,8 +27,6 @@ class DatabaseUsersList extends Widget
         return DatabaseUser::query()->where('server_id', $this->server->id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -46,9 +44,12 @@ class DatabaseUsersList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 $this->passwordAction(),
                 $this->linkAction(),

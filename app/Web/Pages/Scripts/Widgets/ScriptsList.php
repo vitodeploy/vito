@@ -46,10 +46,12 @@ class ScriptsList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
-            ->heading('')
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->recordUrl(fn (Script $record) => Executions::getUrl(['script' => $record]))
             ->actions([
                 EditAction::make('edit')

@@ -34,8 +34,6 @@ class QueuesList extends Widget
         return Queue::query()->where('site_id', $this->site->id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -57,9 +55,12 @@ class QueuesList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 ActionGroup::make([
                     $this->editAction(),

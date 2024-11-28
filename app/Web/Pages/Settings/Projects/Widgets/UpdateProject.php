@@ -8,6 +8,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 
@@ -27,24 +28,25 @@ class UpdateProject extends Widget implements HasForms
         $this->name = $project->name;
     }
 
-    public function getFormSchema(): array
+    public function form(Form $form): Form
     {
-        return [
-            Section::make()
-                ->heading('Project Information')
-                ->schema([
-                    TextInput::make('name')
-                        ->name('name')
-                        ->label('Name')
-                        ->rules(\App\Actions\Projects\UpdateProject::rules($this->project)['name'])
-                        ->placeholder('Enter the project name'),
-                ])
-                ->footerActions([
-                    Action::make('save')
-                        ->label('Save')
-                        ->action(fn () => $this->submit()),
-                ]),
-        ];
+        return $form
+            ->schema([
+                Section::make()
+                    ->heading('Project Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->name('name')
+                            ->label('Name')
+                            ->rules(\App\Actions\Projects\UpdateProject::rules($this->project)['name'])
+                            ->placeholder('Enter the project name'),
+                    ])
+                    ->footerActions([
+                        Action::make('save')
+                            ->label('Save')
+                            ->action(fn () => $this->submit()),
+                    ]),
+            ]);
     }
 
     public function submit(): void

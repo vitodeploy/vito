@@ -19,8 +19,6 @@ class ServersList extends Widget
         return Server::query()->where('project_id', auth()->user()->current_project_id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -53,9 +51,12 @@ class ServersList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->recordUrl(fn (Server $record) => View::getUrl(parameters: ['server' => $record]))
             ->actions([
                 Action::make('settings')

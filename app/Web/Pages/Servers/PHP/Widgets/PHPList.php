@@ -35,8 +35,6 @@ class PHPList extends Widget
         return Service::query()->where('type', 'php')->where('server_id', $this->server->id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -62,9 +60,12 @@ class PHPList extends Widget
     /**
      * @throws Exception
      */
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
             ->actions([
                 ActionGroup::make([
                     $this->installExtensionAction(),

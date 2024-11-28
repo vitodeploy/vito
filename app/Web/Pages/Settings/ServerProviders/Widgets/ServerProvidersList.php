@@ -25,8 +25,6 @@ class ServerProvidersList extends Widget
         return ServerProvider::getByProjectId(auth()->user()->current_project_id);
     }
 
-    protected static ?string $heading = '';
-
     protected function getTableColumns(): array
     {
         return [
@@ -53,36 +51,40 @@ class ServerProvidersList extends Widget
         ];
     }
 
-    public function getTable(): Table
+    public function table(Table $table): Table
     {
-        return $this->table->actions([
-            EditAction::make('edit')
-                ->label('Edit')
-                ->modalHeading('Edit Server Provider')
-                ->mutateRecordDataUsing(function (array $data, ServerProvider $record) {
-                    return [
-                        'name' => $record->profile,
-                        'global' => $record->project_id === null,
-                    ];
-                })
-                ->form(Edit::form())
-                ->authorize(fn (ServerProvider $record) => auth()->user()->can('update', $record))
-                ->using(fn (array $data, ServerProvider $record) => Edit::action($record, $data))
-                ->modalWidth(MaxWidth::Medium),
-            DeleteAction::make('delete')
-                ->label('Delete')
-                ->modalHeading('Delete Server Provider')
-                ->authorize(fn (ServerProvider $record) => auth()->user()->can('delete', $record))
-                ->using(function (array $data, ServerProvider $record) {
-                    try {
-                        app(DeleteServerProvider::class)->delete($record);
-                    } catch (Exception $e) {
-                        Notification::make()
-                            ->danger()
-                            ->title($e->getMessage())
-                            ->send();
-                    }
-                }),
-        ]);
+        return $table
+            ->heading(null)
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumns())
+            ->actions([
+                EditAction::make('edit')
+                    ->label('Edit')
+                    ->modalHeading('Edit Server Provider')
+                    ->mutateRecordDataUsing(function (array $data, ServerProvider $record) {
+                        return [
+                            'name' => $record->profile,
+                            'global' => $record->project_id === null,
+                        ];
+                    })
+                    ->form(Edit::form())
+                    ->authorize(fn (ServerProvider $record) => auth()->user()->can('update', $record))
+                    ->using(fn (array $data, ServerProvider $record) => Edit::action($record, $data))
+                    ->modalWidth(MaxWidth::Medium),
+                DeleteAction::make('delete')
+                    ->label('Delete')
+                    ->modalHeading('Delete Server Provider')
+                    ->authorize(fn (ServerProvider $record) => auth()->user()->can('delete', $record))
+                    ->using(function (array $data, ServerProvider $record) {
+                        try {
+                            app(DeleteServerProvider::class)->delete($record);
+                        } catch (Exception $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title($e->getMessage())
+                                ->send();
+                        }
+                    }),
+            ]);
     }
 }
