@@ -21,8 +21,6 @@ class TwoFactor extends SimplePage implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
     protected static string $view = 'components.simple-page';
 
     public ?array $data = [];
