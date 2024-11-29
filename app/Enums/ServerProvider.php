@@ -8,6 +8,8 @@ final class ServerProvider
 
     const AWS = 'aws';
 
+    const LIGHTSAIL = 'lightsail';
+
     const LINODE = 'linode';
 
     const DIGITALOCEAN = 'digitalocean';

@@ -106,6 +106,7 @@ return [
     'server_providers' => [
         \App\Enums\ServerProvider::CUSTOM,
         \App\Enums\ServerProvider::AWS,
+        \App\Enums\ServerProvider::LIGHTSAIL,
         \App\Enums\ServerProvider::LINODE,
         \App\Enums\ServerProvider::DIGITALOCEAN,
         \App\Enums\ServerProvider::VULTR,
@@ -114,6 +115,7 @@ return [
     'server_providers_class' => [
         \App\Enums\ServerProvider::CUSTOM => \App\ServerProviders\Custom::class,
         \App\Enums\ServerProvider::AWS => \App\ServerProviders\AWS::class,
+        \App\Enums\ServerProvider::LIGHTSAIL => \App\ServerProviders\Lightsail::class,
         \App\Enums\ServerProvider::LINODE => \App\ServerProviders\Linode::class,
         \App\Enums\ServerProvider::DIGITALOCEAN => \App\ServerProviders\DigitalOcean::class,
         \App\Enums\ServerProvider::VULTR => \App\ServerProviders\Vultr::class,
@@ -126,6 +128,11 @@ return [
             \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
         'aws' => [
+            \App\Enums\OperatingSystem::UBUNTU20 => 'ubuntu',
+            \App\Enums\OperatingSystem::UBUNTU22 => 'ubuntu',
+            \App\Enums\OperatingSystem::UBUNTU24 => 'ubuntu',
+        ],
+        'lightsail' => [
             \App\Enums\OperatingSystem::UBUNTU20 => 'ubuntu',
             \App\Enums\OperatingSystem::UBUNTU22 => 'ubuntu',
             \App\Enums\OperatingSystem::UBUNTU24 => 'ubuntu',
