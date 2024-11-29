@@ -27,7 +27,7 @@ abstract class AbstractType implements ServerType
         $progressPerService = (100 - $currentProgress) / count($services);
         foreach ($services as $service) {
             $currentProgress += $progressPerService;
-            $this->progress($currentProgress, 'installing- '.$service->name);
+            $this->progress($currentProgress, 'installing-'.$service->name);
             $service->handler()->install();
             $service->update(['status' => ServiceStatus::READY]);
             if ($service->type == 'php') {
