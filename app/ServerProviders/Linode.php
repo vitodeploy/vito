@@ -7,6 +7,7 @@ use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -17,8 +18,9 @@ class Linode extends AbstractProvider
     public function createRules(array $input): array
     {
         return [
-            'plan' => 'required',
-            'region' => 'required',
+            'plan' => ['required'],
+            'region' => ['required'],
+            'os' => ['required'],
         ];
     }
 
@@ -41,6 +43,7 @@ class Linode extends AbstractProvider
         return [
             'plan' => $input['plan'],
             'region' => $input['region'],
+            'os' => $input['os'],
         ];
     }
 
@@ -62,7 +65,7 @@ class Linode extends AbstractProvider
         return true;
     }
 
-    public function plans(?string $region): array
+    public function plans(?string $region, ?string $zone = null): array
     {
         try {
             $plans = Http::withToken($this->serverProvider->credentials['token'])
@@ -75,8 +78,8 @@ class Linode extends AbstractProvider
                         $value['id'] => __('server_providers.plan', [
                             'name' => $value['label'],
                             'cpu' => $value['vcpus'],
-                            'memory' => $value['memory'],
-                            'disk' => $value['disk'],
+                            'memory' => round($value['memory'] / 1024, 2),
+                            'disk' => round($value['disk'] / 1024, 2),
                         ]),
                     ];
                 })
@@ -94,6 +97,7 @@ class Linode extends AbstractProvider
                 ->json();
 
             return collect($regions['data'])
+                ->sortByDesc('country')
                 ->mapWithKeys(fn ($value) => [$value['id'] => $value['label']])
                 ->toArray();
         } catch (Exception) {
@@ -112,7 +116,7 @@ class Linode extends AbstractProvider
             $create = Http::withToken($this->server->serverProvider->credentials['token'])
                 ->post($this->apiUrl.'/linode/instances', [
                     'backups_enabled' => false,
-                    'image' => config('serverproviders.linode.images')[$this->server->os],
+                    'image' => $this->getImageId($this->server->os),
                     'root_pass' => $this->server->authentication['root_pass'],
                     'authorized_keys' => [
                         $this->server->sshKey()['public_key'],
@@ -127,18 +131,17 @@ class Linode extends AbstractProvider
         }
 
         if (! $create->ok()) {
-            $msg = __('Failed to create server on Linode');
+            $message = __('Failed to create server on Linode');
             $errors = $create->json('errors');
             if (count($errors) > 0) {
-                $msg = $errors[0]['reason'];
+                $message = $message.': '.$errors[0]['reason'];
             }
-            Log::error('Linode error', $errors);
-            throw new ServerProviderError($msg);
+            Log::error('Failed to create server on Linode', $errors[0]);
+            throw new ServerProviderError($message);
         }
+
+        $this->server->jsonUpdate('provider_data', 'linode_id', $create->json()['id'], false);
         $this->server->ip = $create->json()['ipv4'][0];
-        $providerData = $this->server->provider_data;
-        $providerData['linode_id'] = $create->json()['id'];
-        $this->server->provider_data = $providerData;
         $this->server->save();
     }
 
@@ -173,6 +176,42 @@ class Linode extends AbstractProvider
             if (! $delete->ok()) {
                 Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
             }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getImageId(string $os): string
+    {
+        $version = config('core.operating_system_versions.'.$os);
+
+        if (Cache::get('linode-image-'.$os.'-'.$version)) {
+            return Cache::get('linode-image-'.$os.'-'.$version);
+        }
+
+        try {
+            $result = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/images')
+                ->json();
+
+            $image = collect($result['data'])
+                ->filter(function ($data) use ($version) {
+                    return str_contains($data['id'], $version) && str_contains($data['label'], $version);
+                })
+                ->where('vendor', 'Ubuntu')
+                ->where('status', 'available')
+                ->sortByDesc('updated')
+                ->first();
+
+            if (! empty($image)) {
+                Cache::put('linode-image-'.$os.'-'.$version, $image['id'], 600);
+                return $image['id'];
+            }
+
+            throw new ServerProviderError('Could not find image ID for '.$os);
+        } catch (Exception $e) {
+            throw new ServerProviderError($e->getMessage());
         }
     }
 }

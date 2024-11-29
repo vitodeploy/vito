@@ -9,6 +9,7 @@ use App\Notifications\FailedToDeleteServerFromProvider;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class Hetzner extends AbstractProvider
@@ -18,8 +19,9 @@ class Hetzner extends AbstractProvider
     public function createRules(array $input): array
     {
         return [
-            'plan' => 'required',
-            'region' => 'required',
+            'plan' => ['required'],
+            'region' => ['required'],
+            'os' => ['required'],
         ];
     }
 
@@ -42,6 +44,7 @@ class Hetzner extends AbstractProvider
         return [
             'plan' => $input['plan'],
             'region' => $input['region'],
+            'os' => $input['os'],
         ];
     }
 
@@ -59,7 +62,7 @@ class Hetzner extends AbstractProvider
         return true;
     }
 
-    public function plans(?string $region): array
+    public function plans(?string $region, ?string $zone = null): array
     {
         try {
             $plans = Http::withToken($this->serverProvider->credentials['token'])
@@ -95,6 +98,7 @@ class Hetzner extends AbstractProvider
                 ->json();
 
             return collect($regions['locations'])
+                ->sortByDesc('country')
                 ->mapWithKeys(fn ($value) => [$value['name'] => $value['city'].' - '.$value['country']])
                 ->toArray();
         } catch (Exception) {
@@ -112,7 +116,7 @@ class Hetzner extends AbstractProvider
 
         $sshKey = Http::withToken($this->server->serverProvider->credentials['token'])
             ->post($this->apiUrl.'/ssh_keys', [
-                'name' => 'server-'.$this->server->id.'-key',
+                'name' => str($this->server->name)->slug().'-'.$this->server->id.'-key',
                 'public_key' => $this->server->sshKey()['public_key'],
             ]);
 
@@ -125,18 +129,20 @@ class Hetzner extends AbstractProvider
         $create = Http::withToken($this->server->serverProvider->credentials['token'])
             ->post($this->apiUrl.'/servers', [
                 'automount' => false,
-                'image' => config('serverproviders.hetzner.images')[$this->server->os],
+                'image' => $this->getImageId($this->server->os),
                 // 'root_password' => $this->server->authentication['root_pass'],
                 'ssh_keys' => [
                     $sshKey->json()['ssh_key']['id'],
                 ],
-                'name' => str($this->server->name)->slug(),
+                'name' => str($this->server->name)->slug().'-'.$this->server->id,
                 'location' => $this->server->provider_data['region'],
                 'server_type' => $this->server->provider_data['plan'],
             ]);
+
         if ($create->status() != 201) {
             $this->providerError($create);
         }
+
         $this->server->jsonUpdate('provider_data', 'hetzner_id', $create->json()['server']['id'], false);
         $this->server->ip = $create->json()['server']['public_net']['ipv4']['ip'];
         $this->server->save();
@@ -171,10 +177,46 @@ class Hetzner extends AbstractProvider
             }
         }
 
-        // delete key
+        // Delete SSH key
         if (isset($this->server->provider_data['ssh_key_id'])) {
             Http::withToken($this->server->serverProvider->credentials['token'])
                 ->delete($this->apiUrl.'/ssh_keys/'.$this->server->provider_data['ssh_key_id']);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getImageId(string $os): string
+    {
+        $version = config('core.operating_system_versions.'.$os);
+
+        if (Cache::get('hetzner-image-'.$os.'-'.$version)) {
+            return Cache::get('hetzner-image-'.$os.'-'.$version);
+        }
+
+        try {
+            $result = Http::withToken($this->serverProvider->credentials['token'])
+                ->get($this->apiUrl.'/images', [
+                    'name' => 'ubuntu-'.$version,
+                    'per_page' => 100,
+                ])
+                ->json();
+
+            $image = collect($result['images'])
+                ->where('architecture', 'x86')
+                ->where('status', 'available')
+                ->sortByDesc('created')
+                ->first();
+
+            if (! empty($image)) {
+                Cache::put('hetzner-image-'.$os.'-'.$version, $image['id'], 600);
+                return $image['id'];
+            }
+
+            throw new ServerProviderError('Could not find image ID for '.$os);
+        } catch (Exception $e) {
+            throw new ServerProviderError($e->getMessage());
         }
     }
 
