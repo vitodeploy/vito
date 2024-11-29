@@ -19,7 +19,13 @@ php artisan migrate --force
 
 echo "Optimizing..."
 php artisan optimize:clear
+php artisan icons:clear
+php artisan filament:optimize-clear
+php artisan filament:clear-cached-components
 php artisan optimize
+php artisan icons:cache
+php artisan filament:optimize
+php artisan filament:cache-components
 
 echo "Restarting workers..."
 sudo supervisorctl restart worker:*
