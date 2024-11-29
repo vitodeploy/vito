@@ -16,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
+use Throwable;
 
 class Index extends Page
 {
@@ -75,6 +76,7 @@ class Index extends Page
                             $set('server_provider', null);
                             $set('region', null);
                             $set('plan', null);
+                            $set('zone', null);
                         })
                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['provider']),
                     AlertField::make('alert')
@@ -114,6 +116,10 @@ class Index extends Page
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['region'])
                                 ->live()
                                 ->reactive()
+                                ->afterStateUpdated(function (callable $set) {
+                                    $set('zone', null);
+                                    $set('plan', null);
+                                })
                                 ->options(function ($get) {
                                     if (! $get('server_provider')) {
                                         return [];
@@ -125,9 +131,30 @@ class Index extends Page
                                 ->disabled(fn ($get) => ! $get('server_provider'))
                                 ->placeholder(fn ($get) => $get('server_provider') ? 'Select region' : 'Select connection first')
                                 ->searchable(),
+                            Select::make('zone')
+                                ->label('Zone')
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['zone'])
+                                ->live()
+                                ->reactive()
+                                ->afterStateUpdated(function (callable $set) {
+                                    $set('plan', null);
+                                })
+                                ->options(function ($get) {
+                                    if (! $get('server_provider') || ! $get('region')) {
+                                        return [];
+                                    }
+
+                                    return \App\Models\ServerProvider::zones($get('server_provider'), $get('region'));
+                                })
+                                ->loadingMessage('Loading zones...')
+                                ->disabled(fn ($get) => ! $get('region'))
+                                ->placeholder(fn ($get) => $get('region') ? 'Select zone' : 'Select region first')
+                                ->searchable()
+                                ->visible(fn ($get) => ($get('provider') === ServerProvider::AWS || $get('provider') === ServerProvider::LIGHTSAIL)),
                             Select::make('plan')
                                 ->label('Plan')
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['plan'])
+                                ->live()
                                 ->reactive()
                                 ->options(function ($get) {
                                     if (! $get('server_provider') || ! $get('region')) {
@@ -138,10 +165,28 @@ class Index extends Page
                                 })
                                 ->loadingMessage('Loading plans...')
                                 ->disabled(fn ($get) => ! $get('region'))
-                                ->placeholder(fn ($get) => $get('region') ? 'Select plan' : 'Select plan first')
-                                ->searchable(),
+                                ->placeholder(fn ($get) => $get('region') ? 'Select plan' : 'Select region first')
+                                ->searchable()
+                                ->visible(fn ($get) => ($get('provider') !== ServerProvider::AWS && $get('provider') !== ServerProvider::LIGHTSAIL)),
                         ])
                         ->visible(fn ($get) => $get('provider') !== ServerProvider::CUSTOM),
+                    Select::make('plan')
+                        ->label('Plan')
+                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['plan'])
+                        ->live()
+                        ->reactive()
+                        ->options(function ($get) {
+                            if (! $get('server_provider') || ! $get('region') || ! $get('zone')) {
+                                return [];
+                            }
+
+                            return \App\Models\ServerProvider::plans($get('server_provider'), $get('region'), $get('zone'));
+                        })
+                        ->loadingMessage('Loading plans...')
+                        ->disabled(fn ($get) => (! $get('region') || ! $get('zone')))
+                        ->placeholder(fn ($get) => ($get('region') && $get('zone')) ? 'Select plan' : 'Select zone first')
+                        ->searchable()
+                        ->visible(fn ($get) => ($get('provider') === ServerProvider::AWS || $get('provider') === ServerProvider::LIGHTSAIL)),
                     TextInput::make('public_key')
                         ->label('Public Key')
                         ->default($publicKey)
@@ -162,9 +207,6 @@ class Index extends Page
                         ->helperText('Run this command on your server as root user')
                         ->disabled()
                         ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
-                    TextInput::make('name')
-                        ->label('Name')
-                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['name']),
                     Grid::make()
                         ->schema([
                             TextInput::make('ip')
@@ -175,8 +217,11 @@ class Index extends Page
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['port']),
                         ])
                         ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
-                    Grid::make()
+                    Grid::make(3)
                         ->schema([
+                            TextInput::make('name')
+                                ->label('Name')
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['name']),
                             Select::make('os')
                                 ->label('OS')
                                 ->native(false)
@@ -231,9 +276,15 @@ class Index extends Page
                 ->modalSubmitActionLabel('Create')
                 ->action(function (array $data) {
                     run_action($this, function () use ($data) {
-                        $server = app(CreateServerAction::class)->create(auth()->user(), auth()->user()->currentProject, $data);
-
-                        $this->redirect(View::getUrl(['server' => $server]));
+                        try {
+                            $server = app(CreateServerAction::class)->create(auth()->user(), auth()->user()->currentProject, $data);
+                            $this->redirect(View::getUrl(['server' => $server]));
+                        } catch (Throwable $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title($e->getMessage())
+                                ->send();
+                        }
                     });
                 }),
         ];
