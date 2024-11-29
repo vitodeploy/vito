@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use App\Http\Middleware\HasProjectMiddleware;
+use App\Http\Middleware\TwoFactorMiddleware;
+use App\Web\Pages\Login;
 use App\Web\Pages\Settings\Profile;
 use App\Web\Pages\Settings\Projects\Widgets\SelectProject;
+use App\Web\Pages\TwoFactor;
 use Exception;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -24,6 +27,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -105,13 +109,17 @@ class WebServiceProvider extends ServiceProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                TwoFactorMiddleware::class,
                 HasProjectMiddleware::class,
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->url(fn (): string => Profile\Index::getUrl()),
             ])
-            ->login()
+            ->login(Login::class)
+            ->routes(fn () => [
+                Route::get('/two-factor', TwoFactor::class)->name('two-factor')->middleware(['filament-auth', 'two-factor']),
+            ])
             ->spa()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->sidebarCollapsibleOnDesktop()
