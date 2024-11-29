@@ -15,7 +15,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 1
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 1
+      server_id: 3
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer E6e6418bkh5gvaZdDfPaV3c'
+      - 'Bearer 6ed1gv5ak6hEPcaV8D3Z4bf'
     controller: null
     method: null
     route: null
@@ -77,7 +77,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -95,7 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 7
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +103,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 7
+      server_id: 3
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +111,7 @@ endpoints:
         name: command
         description: ''
         required: true
-        example: voluptate
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -140,7 +140,7 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      command: voluptate
+      command: qui
       user: root
       frequency: '* * * * *'
     fileParameters: []
@@ -155,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aZ4aEh6ekgP6D13vV5d8cbf'
+      - 'Bearer VEfc5h3gva68PkZ46Deabd1'
     controller: null
     method: null
     route: null
@@ -174,7 +174,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -192,7 +192,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 2
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -202,7 +202,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 17
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -210,8 +210,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 2
-      cronJob_id: 17
+      server_id: 3
+      cronJob_id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -228,7 +228,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 31eah48VEb56vPgf6cZkadD'
+      - 'Bearer 614DaP5vZ6edcaVEgfhk83b'
     controller: null
     method: null
     route: null
@@ -247,7 +247,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -275,7 +275,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 3
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -284,7 +284,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 3
-      cronJob_id: 3
+      cronJob_id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -301,7 +301,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ZEagvVef6D6h834akdc1Pb5'
+      - 'Bearer gDV6bZ1dEckvf45P86eaha3'
     controller: null
     method: null
     route: null

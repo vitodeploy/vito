@@ -17,7 +17,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -30,7 +30,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":2,"name":"Nova Murazik","created_at":"2024-11-29T16:20:04.000000Z","updated_at":"2024-11-29T16:20:04.000000Z"},{"id":3,"name":"Zaria Blanda","created_at":"2024-11-29T16:20:04.000000Z","updated_at":"2024-11-29T16:20:04.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":29,"name":"Zachary Lueilwitz","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"},{"id":30,"name":"Mrs. Kiarra Heller IV","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -38,7 +38,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer h4PkeacVb63agEvd1fD865Z'
+      - 'Bearer eb14DEPv6cdah65VfZgka38'
     controller: null
     method: null
     route: null
@@ -57,7 +57,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -69,19 +69,19 @@ endpoints:
         name: name
         description: 'The name of the project.'
         required: true
-        example: exercitationem
+        example: quos
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: exercitationem
+      name: quos
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":2,"name":"Gerald Welch II","created_at":"2024-11-29T16:20:04.000000Z","updated_at":"2024-11-29T16:20:04.000000Z"}'
+        content: '{"id":29,"name":"Hershel Spinka","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -89,7 +89,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aafkE6dc4DhPbeZgv6V8351'
+      - 'Bearer V1E3566Pf4gkvh8dDZabeca'
     controller: null
     method: null
     route: null
@@ -108,7 +108,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -132,7 +132,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":2,"name":"Narciso Cormier DVM","created_at":"2024-11-29T16:20:04.000000Z","updated_at":"2024-11-29T16:20:04.000000Z"}'
+        content: '{"id":29,"name":"Emery Kiehn","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -140,7 +140,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 83vEbda6VacDPfghk456Z1e'
+      - 'Bearer haD6e36VZbkf4P8aEcvd15g'
     controller: null
     method: null
     route: null
@@ -159,7 +159,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -182,19 +182,19 @@ endpoints:
         name: name
         description: 'The name of the project.'
         required: true
-        example: quis
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: quis
+      name: ut
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":2,"name":"Veda Vandervort I","created_at":"2024-11-29T16:20:04.000000Z","updated_at":"2024-11-29T16:20:04.000000Z"}'
+        content: '{"id":29,"name":"Mable Prohaska","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -202,7 +202,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 4Zakvb66dPh85eEVcgaD13f'
+      - 'Bearer V14kPa5deva8Ebgc36f6hDZ'
     controller: null
     method: null
     route: null
@@ -221,7 +221,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -253,7 +253,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3ZdD1Pa5k6v4bc8fe6VahgE'
+      - 'Bearer k1D68d5ePavVZag6h4fb3cE'
     controller: null
     method: null
     route: null

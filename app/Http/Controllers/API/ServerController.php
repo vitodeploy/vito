@@ -6,7 +6,6 @@ use App\Actions\Server\CreateServer;
 use App\Actions\Server\RebootServer;
 use App\Actions\Server\Update;
 use App\Enums\Database;
-use App\Enums\OperatingSystem;
 use App\Enums\PHP;
 use App\Enums\ServerProvider;
 use App\Enums\ServerType;
@@ -46,18 +45,17 @@ class ServerController extends Controller
     #[Post('/', name: 'api.projects.servers.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create', description: 'Create a new server.')]
     #[BodyParam(name: 'provider', description: 'The server provider type', required: true)]
-    #[BodyParam(name: 'server_provider', description: 'If the provider is not custom, the ID of the server provider profile', enum: [ServerProvider::CUSTOM, ServerProvider::AWS, ServerProvider::LIGHTSAIL, ServerProvider::HETZNER, ServerProvider::DIGITALOCEAN, ServerProvider::LINODE, ServerProvider::VULTR])]
+    #[BodyParam(name: 'server_provider', description: 'If the provider is not custom, the ID of the server provider profile', enum: [ServerProvider::CUSTOM, ServerProvider::HETZNER, ServerProvider::DIGITALOCEAN, ServerProvider::LINODE, ServerProvider::VULTR])]
     #[BodyParam(name: 'region', description: 'Provider region if the provider is not custom')]
-    #[BodyParam(name: 'zone', description: 'Provider region zone if the provider is AWS or Lightsail')]
     #[BodyParam(name: 'plan', description: 'Provider plan if the provider is not custom')]
     #[BodyParam(name: 'ip', description: 'SSH IP address if the provider is custom')]
     #[BodyParam(name: 'port', description: 'SSH Port if the provider is custom')]
     #[BodyParam(name: 'name', description: 'The name of the server.', required: true)]
-    #[BodyParam(name: 'os', description: 'The os of the server', required: true, enum: [OperatingSystem::UBUNTU20, OperatingSystem::UBUNTU22, OperatingSystem::UBUNTU24])]
+    #[BodyParam(name: 'os', description: 'The os of the server', required: true)]
     #[BodyParam(name: 'type', description: 'Server type', required: true, enum: [ServerType::REGULAR, ServerType::DATABASE])]
     #[BodyParam(name: 'webserver', description: 'Web server', required: true, enum: [Webserver::NONE, Webserver::NGINX])]
     #[BodyParam(name: 'database', description: 'Database', required: true, enum: [Database::NONE, Database::MYSQL57, Database::MYSQL80, Database::MARIADB103, Database::MARIADB104, Database::MARIADB103, Database::POSTGRESQL12, Database::POSTGRESQL13, Database::POSTGRESQL14, Database::POSTGRESQL15, Database::POSTGRESQL16], )]
-    #[BodyParam(name: 'php', description: 'PHP version', required: true, enum: [PHP::V70, PHP::V71, PHP::V72, PHP::V73, PHP::V74, PHP::V80, PHP::V81, PHP::V82, PHP::V83, PHP::V84])]
+    #[BodyParam(name: 'php', description: 'PHP version', required: true, enum: [PHP::V70, PHP::V71, PHP::V72, PHP::V73, PHP::V74, PHP::V80, PHP::V81, PHP::V82, PHP::V83])]
     #[ResponseFromApiResource(ServerResource::class, Server::class)]
     public function create(Request $request, Project $project): ServerResource
     {

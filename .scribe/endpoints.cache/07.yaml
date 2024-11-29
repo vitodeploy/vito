@@ -17,7 +17,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -41,7 +41,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":21,"project_id":null,"global":true,"name":"deserunt","provider":"linode","created_at":"2024-11-29T16:20:05.000000Z","updated_at":"2024-11-29T16:20:05.000000Z"},{"id":22,"project_id":null,"global":true,"name":"adipisci","provider":"vultr","created_at":"2024-11-29T16:20:05.000000Z","updated_at":"2024-11-29T16:20:05.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":2,"project_id":null,"global":true,"name":"dolor","provider":"digitalocean","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"},{"id":3,"project_id":null,"global":true,"name":"enim","provider":"digitalocean","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -49,7 +49,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 4a1d56E8bDgak6cVhPfe3Zv'
+      - 'Bearer 1a6kb58vEP3fZdVhcea64gD'
     controller: null
     method: null
     route: null
@@ -68,7 +68,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -89,18 +89,11 @@ endpoints:
     bodyParameters:
       provider:
         name: provider
-        description: 'The server provider'
+        description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
         required: true
-        example: linode
+        example: autem
         type: string
-        enumValues:
-          - custom
-          - aws
-          - lightsail
-          - hetzner
-          - digitalocean
-          - linode
-          - vultr
+        enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
@@ -108,7 +101,7 @@ endpoints:
         name: name
         description: 'The name of the server provider.'
         required: true
-        example: molestiae
+        example: enim
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -118,7 +111,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: et
+        example: culpa
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -138,23 +131,23 @@ endpoints:
         name: secret
         description: 'The secret if provider requires key'
         required: true
-        example: ratione
+        example: voluptates
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: linode
-      name: molestiae
-      token: et
+      provider: autem
+      name: enim
+      token: culpa
       key: sit
-      secret: ratione
+      secret: voluptates
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":21,"project_id":null,"global":true,"name":"a","provider":"vultr","created_at":"2024-11-29T16:20:05.000000Z","updated_at":"2024-11-29T16:20:05.000000Z"}'
+        content: '{"id":2,"project_id":null,"global":true,"name":"eligendi","provider":"aws","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -162,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8PaeEZ4V6hD3dfag5kbc16v'
+      - 'Bearer PD3ZcaVdvgfa5k4be8E6h16'
     controller: null
     method: null
     route: null
@@ -181,7 +174,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -199,7 +192,7 @@ endpoints:
         name: serverProvider_id
         description: 'The ID of the serverProvider.'
         required: true
-        example: 15
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -207,7 +200,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      serverProvider_id: 15
+      serverProvider_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -216,7 +209,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":21,"project_id":null,"global":true,"name":"consequuntur","provider":"linode","created_at":"2024-11-29T16:20:05.000000Z","updated_at":"2024-11-29T16:20:05.000000Z"}'
+        content: '{"id":2,"project_id":null,"global":true,"name":"architecto","provider":"digitalocean","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -224,7 +217,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer a1Dk3bdVPavcZE6fg4h5e68'
+      - 'Bearer DP45bg1aEadh8Z6Vke63fcv'
     controller: null
     method: null
     route: null
@@ -243,7 +236,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -261,7 +254,7 @@ endpoints:
         name: serverProvider_id
         description: 'The ID of the serverProvider.'
         required: true
-        example: 15
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -269,7 +262,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      serverProvider_id: 15
+      serverProvider_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -277,7 +270,7 @@ endpoints:
         name: name
         description: 'The name of the server provider.'
         required: true
-        example: consectetur
+        example: minus
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -287,7 +280,7 @@ endpoints:
         name: global
         description: 'Accessible in all projects'
         required: true
-        example: true
+        example: false
         type: string
         enumValues:
           - true
@@ -296,13 +289,13 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: consectetur
-      global: true
+      name: minus
+      global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":21,"project_id":null,"global":true,"name":"temporibus","provider":"linode","created_at":"2024-11-29T16:20:05.000000Z","updated_at":"2024-11-29T16:20:05.000000Z"}'
+        content: '{"id":2,"project_id":null,"global":true,"name":"reiciendis","provider":"hetzner","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -310,7 +303,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fE1ba8Ph65cvk63dgD4VeZa'
+      - 'Bearer bv1kdegh6fP8V56ZE4acaD3'
     controller: null
     method: null
     route: null
@@ -329,7 +322,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR_API_KEY'
+      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -347,7 +340,7 @@ endpoints:
         name: serverProvider_id
         description: 'The ID of the serverProvider.'
         required: true
-        example: 15
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -355,7 +348,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      serverProvider_id: 15
+      serverProvider_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -372,7 +365,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1a3v4V8ZkE5ebf66dhDPcag'
+      - 'Bearer k6hb43Vf5Z1dv8aaeEDcg6P'
     controller: null
     method: null
     route: null

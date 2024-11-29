@@ -241,7 +241,7 @@ paths:
                 command:
                   type: string
                   description: ''
-                  example: voluptate
+                  example: qui
                   nullable: false
                 user:
                   type: string
@@ -273,7 +273,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 1
+        example: 3
         required: true
         schema:
           type: integer
@@ -349,7 +349,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 2
+        example: 3
         required: true
         schema:
           type: integer
@@ -357,7 +357,7 @@ paths:
         in: path
         name: cronJob_id
         description: 'The ID of the cronJob.'
-        example: 17
+        example: 5
         required: true
         schema:
           type: integer
@@ -379,7 +379,7 @@ paths:
                     -
                       id: null
                       server_id: null
-                      username: mosciski.justine
+                      username: nyasia68
                       databases: []
                       host: '%'
                       status: null
@@ -388,7 +388,7 @@ paths:
                     -
                       id: null
                       server_id: null
-                      username: allie.ward
+                      username: madyson20
                       databases: []
                       host: '%'
                       status: null
@@ -427,7 +427,7 @@ paths:
                       -
                         id: null
                         server_id: null
-                        username: mosciski.justine
+                        username: nyasia68
                         databases: []
                         host: '%'
                         status: null
@@ -436,7 +436,7 @@ paths:
                       -
                         id: null
                         server_id: null
-                        username: allie.ward
+                        username: madyson20
                         databases: []
                         host: '%'
                         status: null
@@ -453,7 +453,7 @@ paths:
                           example: null
                         username:
                           type: string
-                          example: mosciski.justine
+                          example: nyasia68
                         databases:
                           type: array
                           example: []
@@ -552,7 +552,7 @@ paths:
                 example:
                   id: null
                   server_id: null
-                  username: slakin
+                  username: amya.nitzsche
                   databases: []
                   host: '%'
                   status: null
@@ -567,7 +567,7 @@ paths:
                     example: null
                   username:
                     type: string
-                    example: slakin
+                    example: amya.nitzsche
                   databases:
                     type: array
                     example: []
@@ -595,12 +595,12 @@ paths:
                 username:
                   type: string
                   description: ''
-                  example: voluptatum
+                  example: dignissimos
                   nullable: false
                 password:
                   type: string
                   description: ''
-                  example: 'e@e4_uk[/r+z'
+                  example: OK+XEG2)
                   nullable: false
                 host:
                   type: string
@@ -624,7 +624,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 18
+        example: 3
         required: true
         schema:
           type: integer
@@ -644,7 +644,7 @@ paths:
                 example:
                   id: null
                   server_id: null
-                  username: sonny19
+                  username: bergstrom.ericka
                   databases: []
                   host: '%'
                   status: null
@@ -659,7 +659,7 @@ paths:
                     example: null
                   username:
                     type: string
-                    example: sonny19
+                    example: bergstrom.ericka
                   databases:
                     type: array
                     example: []
@@ -700,7 +700,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 16
+        example: 3
         required: true
         schema:
           type: integer
@@ -708,7 +708,7 @@ paths:
         in: path
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
-        example: 12
+        example: 4
         required: true
         schema:
           type: integer
@@ -728,7 +728,7 @@ paths:
                 example:
                   id: null
                   server_id: null
-                  username: zgerhold
+                  username: fmurray
                   databases: []
                   host: '%'
                   status: null
@@ -743,7 +743,7 @@ paths:
                     example: null
                   username:
                     type: string
-                    example: zgerhold
+                    example: fmurray
                   databases:
                     type: array
                     example: []
@@ -771,7 +771,7 @@ paths:
                 databases:
                   type: string
                   description: 'Array of database names to link to the user.'
-                  example: nam
+                  example: accusantium
                   nullable: false
               required:
                 - databases
@@ -788,7 +788,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 15
+        example: 3
         required: true
         schema:
           type: integer
@@ -796,7 +796,7 @@ paths:
         in: path
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
-        example: 3
+        example: 4
         required: true
         schema:
           type: integer
@@ -818,14 +818,14 @@ paths:
                     -
                       id: null
                       server_id: null
-                      name: candace37
+                      name: clockman
                       status: ready
                       created_at: null
                       updated_at: null
                     -
                       id: null
                       server_id: null
-                      name: ova55
+                      name: wvonrueden
                       status: ready
                       created_at: null
                       updated_at: null
@@ -862,14 +862,14 @@ paths:
                       -
                         id: null
                         server_id: null
-                        name: candace37
+                        name: clockman
                         status: ready
                         created_at: null
                         updated_at: null
                       -
                         id: null
                         server_id: null
-                        name: ova55
+                        name: wvonrueden
                         status: ready
                         created_at: null
                         updated_at: null
@@ -884,7 +884,7 @@ paths:
                           example: null
                         name:
                           type: string
-                          example: candace37
+                          example: clockman
                         status:
                           type: string
                           example: ready
@@ -977,7 +977,7 @@ paths:
                 example:
                   id: null
                   server_id: null
-                  name: jeffry58
+                  name: johanna76
                   status: ready
                   created_at: null
                   updated_at: null
@@ -990,7 +990,7 @@ paths:
                     example: null
                   name:
                     type: string
-                    example: jeffry58
+                    example: johanna76
                   status:
                     type: string
                     example: ready
@@ -1012,7 +1012,7 @@ paths:
                 name:
                   type: string
                   description: ''
-                  example: voluptas
+                  example: nesciunt
                   nullable: false
               required:
                 - name
@@ -1029,7 +1029,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 7
+        example: 3
         required: true
         schema:
           type: integer
@@ -1049,7 +1049,7 @@ paths:
                 example:
                   id: null
                   server_id: null
-                  name: nikolaus.dayne
+                  name: chloe.huel
                   status: ready
                   created_at: null
                   updated_at: null
@@ -1062,7 +1062,7 @@ paths:
                     example: null
                   name:
                     type: string
-                    example: nikolaus.dayne
+                    example: chloe.huel
                   status:
                     type: string
                     example: ready
@@ -1087,7 +1087,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 2
+        example: 3
         required: true
         schema:
           type: integer
@@ -1123,7 +1123,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 1
+        example: 3
         required: true
         schema:
           type: integer
@@ -1131,7 +1131,7 @@ paths:
         in: path
         name: database_id
         description: 'The ID of the database.'
-        example: 16
+        example: 6
         required: true
         schema:
           type: integer
@@ -1155,8 +1155,8 @@ paths:
                       server_id: null
                       type: allow
                       protocol: tcp
-                      port: 18772
-                      source: 142.178.175.239
+                      port: 18074
+                      source: 189.27.156.82
                       mask: 24
                       note: test
                       status: null
@@ -1167,8 +1167,8 @@ paths:
                       server_id: null
                       type: allow
                       protocol: tcp
-                      port: 52970
-                      source: 194.121.251.204
+                      port: 41088
+                      source: 86.177.121.87
                       mask: 24
                       note: test
                       status: null
@@ -1209,8 +1209,8 @@ paths:
                         server_id: null
                         type: allow
                         protocol: tcp
-                        port: 18772
-                        source: 142.178.175.239
+                        port: 18074
+                        source: 189.27.156.82
                         mask: 24
                         note: test
                         status: null
@@ -1221,8 +1221,8 @@ paths:
                         server_id: null
                         type: allow
                         protocol: tcp
-                        port: 52970
-                        source: 194.121.251.204
+                        port: 41088
+                        source: 86.177.121.87
                         mask: 24
                         note: test
                         status: null
@@ -1245,10 +1245,10 @@ paths:
                           example: tcp
                         port:
                           type: integer
-                          example: 18772
+                          example: 18074
                         source:
                           type: string
-                          example: 142.178.175.239
+                          example: 189.27.156.82
                         mask:
                           type: integer
                           example: 24
@@ -1349,8 +1349,8 @@ paths:
                   server_id: null
                   type: allow
                   protocol: tcp
-                  port: 42496
-                  source: 212.206.30.56
+                  port: 61992
+                  source: 47.222.76.48
                   mask: 24
                   note: test
                   status: null
@@ -1371,10 +1371,10 @@ paths:
                     example: tcp
                   port:
                     type: integer
-                    example: 42496
+                    example: 61992
                   source:
                     type: string
-                    example: 212.206.30.56
+                    example: 47.222.76.48
                   mask:
                     type: integer
                     example: 24
@@ -1402,7 +1402,7 @@ paths:
                 type:
                   type: string
                   description: ''
-                  example: deny
+                  example: allow
                   nullable: false
                   enum:
                     - allow
@@ -1418,12 +1418,12 @@ paths:
                 port:
                   type: string
                   description: ''
-                  example: omnis
+                  example: voluptates
                   nullable: false
                 source:
                   type: string
                   description: ''
-                  example: sequi
+                  example: saepe
                   nullable: false
                 mask:
                   type: string
@@ -1449,7 +1449,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 2
+        example: 3
         required: true
         schema:
           type: integer
@@ -1471,8 +1471,8 @@ paths:
                   server_id: null
                   type: allow
                   protocol: tcp
-                  port: 26773
-                  source: 140.224.47.200
+                  port: 43107
+                  source: 135.73.216.16
                   mask: 24
                   note: test
                   status: null
@@ -1493,10 +1493,10 @@ paths:
                     example: tcp
                   port:
                     type: integer
-                    example: 26773
+                    example: 43107
                   source:
                     type: string
-                    example: 140.224.47.200
+                    example: 135.73.216.16
                   mask:
                     type: integer
                     example: 24
@@ -1537,7 +1537,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 2
+        example: 3
         required: true
         schema:
           type: integer
@@ -1545,7 +1545,7 @@ paths:
         in: path
         name: firewallRule_id
         description: 'The ID of the firewallRule.'
-        example: 10
+        example: 7
         required: true
         schema:
           type: integer
@@ -1591,15 +1591,15 @@ paths:
                 example:
                   data:
                     -
-                      id: 2
-                      name: 'Nova Murazik'
-                      created_at: '2024-11-29T16:20:04.000000Z'
-                      updated_at: '2024-11-29T16:20:04.000000Z'
+                      id: 29
+                      name: 'Zachary Lueilwitz'
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
                     -
-                      id: 3
-                      name: 'Zaria Blanda'
-                      created_at: '2024-11-29T16:20:04.000000Z'
-                      updated_at: '2024-11-29T16:20:04.000000Z'
+                      id: 30
+                      name: 'Mrs. Kiarra Heller IV'
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -1631,30 +1631,30 @@ paths:
                     type: array
                     example:
                       -
-                        id: 2
-                        name: 'Nova Murazik'
-                        created_at: '2024-11-29T16:20:04.000000Z'
-                        updated_at: '2024-11-29T16:20:04.000000Z'
+                        id: 29
+                        name: 'Zachary Lueilwitz'
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
                       -
-                        id: 3
-                        name: 'Zaria Blanda'
-                        created_at: '2024-11-29T16:20:04.000000Z'
-                        updated_at: '2024-11-29T16:20:04.000000Z'
+                        id: 30
+                        name: 'Mrs. Kiarra Heller IV'
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: integer
-                          example: 2
+                          example: 29
                         name:
                           type: string
-                          example: 'Nova Murazik'
+                          example: 'Zachary Lueilwitz'
                         created_at:
                           type: string
-                          example: '2024-11-29T16:20:04.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                         updated_at:
                           type: string
-                          example: '2024-11-29T16:20:04.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                   links:
                     type: object
                     properties:
@@ -1736,23 +1736,23 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 2
-                  name: 'Gerald Welch II'
-                  created_at: '2024-11-29T16:20:04.000000Z'
-                  updated_at: '2024-11-29T16:20:04.000000Z'
+                  id: 29
+                  name: 'Hershel Spinka'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 2
+                    example: 29
                   name:
                     type: string
-                    example: 'Gerald Welch II'
+                    example: 'Hershel Spinka'
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:04.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:04.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - projects
       requestBody:
@@ -1765,7 +1765,7 @@ paths:
                 name:
                   type: string
                   description: 'The name of the project.'
-                  example: exercitationem
+                  example: quos
                   nullable: false
               required:
                 - name
@@ -1783,23 +1783,23 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 2
-                  name: 'Narciso Cormier DVM'
-                  created_at: '2024-11-29T16:20:04.000000Z'
-                  updated_at: '2024-11-29T16:20:04.000000Z'
+                  id: 29
+                  name: 'Emery Kiehn'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 2
+                    example: 29
                   name:
                     type: string
-                    example: 'Narciso Cormier DVM'
+                    example: 'Emery Kiehn'
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:04.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:04.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - projects
     put:
@@ -1815,23 +1815,23 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 2
-                  name: 'Veda Vandervort I'
-                  created_at: '2024-11-29T16:20:04.000000Z'
-                  updated_at: '2024-11-29T16:20:04.000000Z'
+                  id: 29
+                  name: 'Mable Prohaska'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 2
+                    example: 29
                   name:
                     type: string
-                    example: 'Veda Vandervort I'
+                    example: 'Mable Prohaska'
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:04.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:04.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - projects
       requestBody:
@@ -1844,7 +1844,7 @@ paths:
                 name:
                   type: string
                   description: 'The name of the project.'
-                  example: quis
+                  example: ut
                   nullable: false
               required:
                 - name
@@ -1893,21 +1893,21 @@ paths:
                 example:
                   data:
                     -
-                      id: 21
+                      id: 2
                       project_id: null
                       global: true
-                      name: deserunt
-                      provider: linode
-                      created_at: '2024-11-29T16:20:05.000000Z'
-                      updated_at: '2024-11-29T16:20:05.000000Z'
+                      name: dolor
+                      provider: digitalocean
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
                     -
-                      id: 22
+                      id: 3
                       project_id: null
                       global: true
-                      name: adipisci
-                      provider: vultr
-                      created_at: '2024-11-29T16:20:05.000000Z'
-                      updated_at: '2024-11-29T16:20:05.000000Z'
+                      name: enim
+                      provider: digitalocean
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -1939,27 +1939,27 @@ paths:
                     type: array
                     example:
                       -
-                        id: 21
+                        id: 2
                         project_id: null
                         global: true
-                        name: deserunt
-                        provider: linode
-                        created_at: '2024-11-29T16:20:05.000000Z'
-                        updated_at: '2024-11-29T16:20:05.000000Z'
+                        name: dolor
+                        provider: digitalocean
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
                       -
-                        id: 22
+                        id: 3
                         project_id: null
                         global: true
-                        name: adipisci
-                        provider: vultr
-                        created_at: '2024-11-29T16:20:05.000000Z'
-                        updated_at: '2024-11-29T16:20:05.000000Z'
+                        name: enim
+                        provider: digitalocean
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: integer
-                          example: 21
+                          example: 2
                         project_id:
                           type: string
                           example: null
@@ -1968,16 +1968,16 @@ paths:
                           example: true
                         name:
                           type: string
-                          example: deserunt
+                          example: dolor
                         provider:
                           type: string
-                          example: linode
+                          example: digitalocean
                         created_at:
                           type: string
-                          example: '2024-11-29T16:20:05.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                         updated_at:
                           type: string
-                          example: '2024-11-29T16:20:05.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                   links:
                     type: object
                     properties:
@@ -2059,17 +2059,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 21
+                  id: 2
                   project_id: null
                   global: true
-                  name: a
-                  provider: vultr
-                  created_at: '2024-11-29T16:20:05.000000Z'
-                  updated_at: '2024-11-29T16:20:05.000000Z'
+                  name: eligendi
+                  provider: aws
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 21
+                    example: 2
                   project_id:
                     type: string
                     example: null
@@ -2078,16 +2078,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: a
+                    example: eligendi
                   provider:
                     type: string
-                    example: vultr
+                    example: aws
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:05.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:05.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - server-providers
       requestBody:
@@ -2099,26 +2099,18 @@ paths:
               properties:
                 provider:
                   type: string
-                  description: 'The server provider'
-                  example: linode
+                  description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
+                  example: autem
                   nullable: false
-                  enum:
-                    - custom
-                    - aws
-                    - lightsail
-                    - hetzner
-                    - digitalocean
-                    - linode
-                    - vultr
                 name:
                   type: string
                   description: 'The name of the server provider.'
-                  example: molestiae
+                  example: enim
                   nullable: false
                 token:
                   type: string
                   description: 'The token if provider requires api token'
-                  example: et
+                  example: culpa
                   nullable: false
                 key:
                   type: string
@@ -2128,7 +2120,7 @@ paths:
                 secret:
                   type: string
                   description: 'The secret if provider requires key'
-                  example: ratione
+                  example: voluptates
                   nullable: false
               required:
                 - provider
@@ -2159,17 +2151,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 21
+                  id: 2
                   project_id: null
                   global: true
-                  name: consequuntur
-                  provider: linode
-                  created_at: '2024-11-29T16:20:05.000000Z'
-                  updated_at: '2024-11-29T16:20:05.000000Z'
+                  name: architecto
+                  provider: digitalocean
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 21
+                    example: 2
                   project_id:
                     type: string
                     example: null
@@ -2178,16 +2170,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: consequuntur
+                    example: architecto
                   provider:
                     type: string
-                    example: linode
+                    example: digitalocean
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:05.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:05.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - server-providers
     put:
@@ -2203,17 +2195,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 21
+                  id: 2
                   project_id: null
                   global: true
-                  name: temporibus
-                  provider: linode
-                  created_at: '2024-11-29T16:20:05.000000Z'
-                  updated_at: '2024-11-29T16:20:05.000000Z'
+                  name: reiciendis
+                  provider: hetzner
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 21
+                    example: 2
                   project_id:
                     type: string
                     example: null
@@ -2222,16 +2214,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: temporibus
+                    example: reiciendis
                   provider:
                     type: string
-                    example: linode
+                    example: hetzner
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:05.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:05.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - server-providers
       requestBody:
@@ -2244,12 +2236,12 @@ paths:
                 name:
                   type: string
                   description: 'The name of the server provider.'
-                  example: consectetur
+                  example: minus
                   nullable: false
                 global:
                   type: string
                   description: 'Accessible in all projects'
-                  example: true
+                  example: false
                   nullable: false
                   enum:
                     - true
@@ -2280,7 +2272,7 @@ paths:
         in: path
         name: serverProvider_id
         description: 'The ID of the serverProvider.'
-        example: 15
+        example: 1
         required: true
         schema:
           type: integer
@@ -2304,10 +2296,10 @@ paths:
                       project_id: null
                       user_id: null
                       provider_id: null
-                      name: "Mrs. Dayana O'Conner MD"
+                      name: 'Dorthy Toy'
                       ssh_user: vito
-                      ip: 142.177.40.110
-                      local_ip: 244.120.14.51
+                      ip: 172.132.95.155
+                      local_ip: 118.57.197.65
                       port: 22
                       os: ubuntu_22
                       type: regular
@@ -2330,10 +2322,10 @@ paths:
                       project_id: null
                       user_id: null
                       provider_id: null
-                      name: 'Prof. Rory Hagenes DVM'
+                      name: 'Carrie Sporer'
                       ssh_user: vito
-                      ip: 55.7.141.112
-                      local_ip: 147.79.225.223
+                      ip: 184.242.162.173
+                      local_ip: 135.244.50.22
                       port: 22
                       os: ubuntu_22
                       type: regular
@@ -2386,10 +2378,10 @@ paths:
                         project_id: null
                         user_id: null
                         provider_id: null
-                        name: "Mrs. Dayana O'Conner MD"
+                        name: 'Dorthy Toy'
                         ssh_user: vito
-                        ip: 142.177.40.110
-                        local_ip: 244.120.14.51
+                        ip: 172.132.95.155
+                        local_ip: 118.57.197.65
                         port: 22
                         os: ubuntu_22
                         type: regular
@@ -2412,10 +2404,10 @@ paths:
                         project_id: null
                         user_id: null
                         provider_id: null
-                        name: 'Prof. Rory Hagenes DVM'
+                        name: 'Carrie Sporer'
                         ssh_user: vito
-                        ip: 55.7.141.112
-                        local_ip: 147.79.225.223
+                        ip: 184.242.162.173
+                        local_ip: 135.244.50.22
                         port: 22
                         os: ubuntu_22
                         type: regular
@@ -2450,16 +2442,16 @@ paths:
                           example: null
                         name:
                           type: string
-                          example: "Mrs. Dayana O'Conner MD"
+                          example: 'Dorthy Toy'
                         ssh_user:
                           type: string
                           example: vito
                         ip:
                           type: string
-                          example: 142.177.40.110
+                          example: 172.132.95.155
                         local_ip:
                           type: string
-                          example: 244.120.14.51
+                          example: 118.57.197.65
                         port:
                           type: integer
                           example: 22
@@ -2596,10 +2588,10 @@ paths:
                   project_id: null
                   user_id: null
                   provider_id: null
-                  name: 'Bertrand Little DDS'
+                  name: 'Flo Beer PhD'
                   ssh_user: vito
-                  ip: 148.112.157.69
-                  local_ip: 118.119.165.102
+                  ip: 168.238.14.230
+                  local_ip: 40.232.73.41
                   port: 22
                   os: ubuntu_22
                   type: regular
@@ -2632,16 +2624,16 @@ paths:
                     example: null
                   name:
                     type: string
-                    example: 'Bertrand Little DDS'
+                    example: 'Flo Beer PhD'
                   ssh_user:
                     type: string
                     example: vito
                   ip:
                     type: string
-                    example: 148.112.157.69
+                    example: 168.238.14.230
                   local_ip:
                     type: string
-                    example: 118.119.165.102
+                    example: 40.232.73.41
                   port:
                     type: integer
                     example: 22
@@ -2705,17 +2697,15 @@ paths:
                 provider:
                   type: string
                   description: 'The server provider type'
-                  example: perferendis
+                  example: et
                   nullable: false
                 server_provider:
                   type: string
                   description: 'If the provider is not custom, the ID of the server provider profile'
-                  example: hetzner
+                  example: digitalocean
                   nullable: false
                   enum:
                     - custom
-                    - aws
-                    - lightsail
                     - hetzner
                     - digitalocean
                     - linode
@@ -2723,46 +2713,37 @@ paths:
                 region:
                   type: string
                   description: 'Provider region if the provider is not custom'
-                  example: tempore
-                  nullable: false
-                zone:
-                  type: string
-                  description: 'Provider region zone if the provider is AWS or Lightsail'
-                  example: est
+                  example: inventore
                   nullable: false
                 plan:
                   type: string
                   description: 'Provider plan if the provider is not custom'
-                  example: vel
+                  example: atque
                   nullable: false
                 ip:
                   type: string
                   description: 'SSH IP address if the provider is custom'
-                  example: delectus
+                  example: quam
                   nullable: false
                 port:
                   type: string
                   description: 'SSH Port if the provider is custom'
-                  example: distinctio
+                  example: nemo
                   nullable: false
                 name:
                   type: string
                   description: 'The name of the server.'
-                  example: enim
+                  example: perspiciatis
                   nullable: false
                 os:
                   type: string
                   description: 'The os of the server'
-                  example: ubuntu_20
+                  example: similique
                   nullable: false
-                  enum:
-                    - ubuntu_20
-                    - ubuntu_22
-                    - ubuntu_24
                 type:
                   type: string
                   description: 'Server type'
-                  example: database
+                  example: regular
                   nullable: false
                   enum:
                     - regular
@@ -2770,7 +2751,7 @@ paths:
                 webserver:
                   type: string
                   description: 'Web server'
-                  example: nginx
+                  example: none
                   nullable: false
                   enum:
                     - none
@@ -2795,7 +2776,7 @@ paths:
                 php:
                   type: string
                   description: 'PHP version'
-                  example: '7.2'
+                  example: '8.1'
                   nullable: false
                   enum:
                     - '7.0'
@@ -2807,12 +2788,10 @@ paths:
                     - '8.1'
                     - '8.2'
                     - '8.3'
-                    - '8.4'
               required:
                 - provider
                 - server_provider
                 - region
-                - zone
                 - plan
                 - ip
                 - port
@@ -2849,10 +2828,10 @@ paths:
                   project_id: null
                   user_id: null
                   provider_id: null
-                  name: 'Lexus Heller'
+                  name: 'Stephany Ankunding'
                   ssh_user: vito
-                  ip: 3.199.12.212
-                  local_ip: 109.103.113.200
+                  ip: 145.28.94.46
+                  local_ip: 69.133.44.100
                   port: 22
                   os: ubuntu_22
                   type: regular
@@ -2885,16 +2864,16 @@ paths:
                     example: null
                   name:
                     type: string
-                    example: 'Lexus Heller'
+                    example: 'Stephany Ankunding'
                   ssh_user:
                     type: string
                     example: vito
                   ip:
                     type: string
-                    example: 3.199.12.212
+                    example: 145.28.94.46
                   local_ip:
                     type: string
-                    example: 109.103.113.200
+                    example: 69.133.44.100
                   port:
                     type: integer
                     example: 22
@@ -2961,7 +2940,7 @@ paths:
         in: path
         name: id
         description: 'The ID of the server.'
-        example: 11
+        example: 3
         required: true
         schema:
           type: integer
@@ -2989,7 +2968,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 13
+        example: 3
         required: true
         schema:
           type: integer
@@ -3017,7 +2996,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 6
+        example: 3
         required: true
         schema:
           type: integer
@@ -3045,7 +3024,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 13
+        example: 3
         required: true
         schema:
           type: integer
@@ -3259,7 +3238,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 13
+        example: 3
         required: true
         schema:
           type: integer
@@ -3337,7 +3316,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 16
+        example: 3
         required: true
         schema:
           type: integer
@@ -3345,7 +3324,7 @@ paths:
         in: path
         name: id
         description: 'The ID of the service.'
-        example: 9
+        example: 27
         required: true
         schema:
           type: integer
@@ -3373,7 +3352,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 8
+        example: 3
         required: true
         schema:
           type: integer
@@ -3381,7 +3360,7 @@ paths:
         in: path
         name: service_id
         description: 'The ID of the service.'
-        example: 17
+        example: 27
         required: true
         schema:
           type: integer
@@ -3409,7 +3388,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 7
+        example: 3
         required: true
         schema:
           type: integer
@@ -3417,7 +3396,7 @@ paths:
         in: path
         name: service_id
         description: 'The ID of the service.'
-        example: 13
+        example: 27
         required: true
         schema:
           type: integer
@@ -3445,7 +3424,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 15
+        example: 3
         required: true
         schema:
           type: integer
@@ -3453,7 +3432,7 @@ paths:
         in: path
         name: service_id
         description: 'The ID of the service.'
-        example: 20
+        example: 27
         required: true
         schema:
           type: integer
@@ -3481,7 +3460,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 1
+        example: 3
         required: true
         schema:
           type: integer
@@ -3489,7 +3468,7 @@ paths:
         in: path
         name: service_id
         description: 'The ID of the service.'
-        example: 11
+        example: 27
         required: true
         schema:
           type: integer
@@ -3517,7 +3496,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 13
+        example: 3
         required: true
         schema:
           type: integer
@@ -3525,7 +3504,7 @@ paths:
         in: path
         name: service_id
         description: 'The ID of the service.'
-        example: 14
+        example: 27
         required: true
         schema:
           type: integer
@@ -3553,7 +3532,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 20
+        example: 3
         required: true
         schema:
           type: integer
@@ -3561,7 +3540,7 @@ paths:
         in: path
         name: service_id
         description: 'The ID of the service.'
-        example: 15
+        example: 27
         required: true
         schema:
           type: integer
@@ -3898,7 +3877,7 @@ paths:
                 type:
                   type: string
                   description: ''
-                  example: phpmyadmin
+                  example: wordpress
                   nullable: false
                   enum:
                     - php
@@ -3909,13 +3888,13 @@ paths:
                 domain:
                   type: string
                   description: ''
-                  example: unde
+                  example: quo
                   nullable: false
                 aliases:
                   type: array
                   description: ''
                   example:
-                    - architecto
+                    - dolorum
                   items:
                     type: string
                 php_version:
@@ -3931,7 +3910,7 @@ paths:
                 source_control:
                   type: string
                   description: 'Source control ID, Required for Sites which support source control'
-                  example: quisquam
+                  example: explicabo
                   nullable: false
                 repository:
                   type: string
@@ -3977,7 +3956,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 12
+        example: 3
         required: true
         schema:
           type: integer
@@ -4079,7 +4058,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 7
+        example: 3
         required: true
         schema:
           type: integer
@@ -4087,7 +4066,7 @@ paths:
         in: path
         name: id
         description: 'The ID of the site.'
-        example: 7
+        example: 8
         required: true
         schema:
           type: integer
@@ -4115,7 +4094,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 6
+        example: 3
         required: true
         schema:
           type: integer
@@ -4123,7 +4102,7 @@ paths:
         in: path
         name: site_id
         description: 'The ID of the site.'
-        example: 1
+        example: 8
         required: true
         schema:
           type: integer
@@ -4143,21 +4122,21 @@ paths:
                 example:
                   data:
                     -
-                      id: 4
-                      project_id: null
-                      global: true
-                      name: 'Lucienne Larson'
-                      provider: github
-                      created_at: '2024-11-29T16:20:06.000000Z'
-                      updated_at: '2024-11-29T16:20:06.000000Z'
-                    -
                       id: 5
                       project_id: null
                       global: true
-                      name: 'Prof. Dandre Marks'
+                      name: 'Jaiden Kling'
                       provider: github
-                      created_at: '2024-11-29T16:20:06.000000Z'
-                      updated_at: '2024-11-29T16:20:06.000000Z'
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
+                    -
+                      id: 6
+                      project_id: null
+                      global: true
+                      name: 'Ms. Brianne Bosco'
+                      provider: github
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -4189,27 +4168,27 @@ paths:
                     type: array
                     example:
                       -
-                        id: 4
-                        project_id: null
-                        global: true
-                        name: 'Lucienne Larson'
-                        provider: github
-                        created_at: '2024-11-29T16:20:06.000000Z'
-                        updated_at: '2024-11-29T16:20:06.000000Z'
-                      -
                         id: 5
                         project_id: null
                         global: true
-                        name: 'Prof. Dandre Marks'
+                        name: 'Jaiden Kling'
                         provider: github
-                        created_at: '2024-11-29T16:20:06.000000Z'
-                        updated_at: '2024-11-29T16:20:06.000000Z'
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
+                      -
+                        id: 6
+                        project_id: null
+                        global: true
+                        name: 'Ms. Brianne Bosco'
+                        provider: github
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: integer
-                          example: 4
+                          example: 5
                         project_id:
                           type: string
                           example: null
@@ -4218,16 +4197,16 @@ paths:
                           example: true
                         name:
                           type: string
-                          example: 'Lucienne Larson'
+                          example: 'Jaiden Kling'
                         provider:
                           type: string
                           example: github
                         created_at:
                           type: string
-                          example: '2024-11-29T16:20:06.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                         updated_at:
                           type: string
-                          example: '2024-11-29T16:20:06.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                   links:
                     type: object
                     properties:
@@ -4309,17 +4288,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 4
+                  id: 5
                   project_id: null
                   global: true
-                  name: 'Rodrigo Daugherty'
+                  name: 'Toby Parker'
                   provider: github
-                  created_at: '2024-11-29T16:20:06.000000Z'
-                  updated_at: '2024-11-29T16:20:06.000000Z'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 4
+                    example: 5
                   project_id:
                     type: string
                     example: null
@@ -4328,16 +4307,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: 'Rodrigo Daugherty'
+                    example: 'Toby Parker'
                   provider:
                     type: string
                     example: github
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:06.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:06.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - source-controls
       requestBody:
@@ -4359,27 +4338,27 @@ paths:
                 name:
                   type: string
                   description: 'The name of the storage provider.'
-                  example: rerum
+                  example: eos
                   nullable: false
                 token:
                   type: string
                   description: 'The token if provider requires api token'
-                  example: esse
+                  example: et
                   nullable: false
                 url:
                   type: string
                   description: 'The URL if the provider is Gitlab and it is self-hosted'
-                  example: 'http://www.botsford.net/repudiandae-mollitia-aperiam-et-culpa-facilis'
+                  example: 'https://lueilwitz.com/nostrum-et-porro-atque-sint.html'
                   nullable: false
                 username:
                   type: string
                   description: 'The username if the provider is Bitbucket'
-                  example: doloremque
+                  example: consectetur
                   nullable: false
                 password:
                   type: string
                   description: 'The password if the provider is Bitbucket'
-                  example: "'^d+5POc"
+                  example: 'PL.P?{06\ECi0'
                   nullable: false
               required:
                 - provider
@@ -4411,17 +4390,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 4
+                  id: 5
                   project_id: null
                   global: true
-                  name: 'Dr. Therese Hills DVM'
+                  name: 'Prof. Bartholome Graham IV'
                   provider: github
-                  created_at: '2024-11-29T16:20:06.000000Z'
-                  updated_at: '2024-11-29T16:20:06.000000Z'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 4
+                    example: 5
                   project_id:
                     type: string
                     example: null
@@ -4430,16 +4409,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: 'Dr. Therese Hills DVM'
+                    example: 'Prof. Bartholome Graham IV'
                   provider:
                     type: string
                     example: github
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:06.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:06.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - source-controls
     put:
@@ -4455,17 +4434,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 4
+                  id: 5
                   project_id: null
                   global: true
-                  name: 'Shawna Steuber'
+                  name: 'Cicero Smitham'
                   provider: github
-                  created_at: '2024-11-29T16:20:06.000000Z'
-                  updated_at: '2024-11-29T16:20:06.000000Z'
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 4
+                    example: 5
                   project_id:
                     type: string
                     example: null
@@ -4474,16 +4453,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: 'Shawna Steuber'
+                    example: 'Cicero Smitham'
                   provider:
                     type: string
                     example: github
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:06.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:06.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - source-controls
       requestBody:
@@ -4496,32 +4475,32 @@ paths:
                 name:
                   type: string
                   description: 'The name of the storage provider.'
-                  example: ex
+                  example: quaerat
                   nullable: false
                 token:
                   type: string
                   description: 'The token if provider requires api token'
-                  example: nisi
+                  example: consectetur
                   nullable: false
                 url:
                   type: string
                   description: 'The URL if the provider is Gitlab and it is self-hosted'
-                  example: 'http://www.roob.com/et-sit-omnis-non-possimus-soluta'
+                  example: 'http://www.hudson.biz/rerum-voluptatem-debitis-accusamus'
                   nullable: false
                 username:
                   type: string
                   description: 'The username if the provider is Bitbucket'
-                  example: voluptate
+                  example: voluptatem
                   nullable: false
                 password:
                   type: string
                   description: 'The password if the provider is Bitbucket'
-                  example: '\KM9J~w''$"m.z\fIji'
+                  example: '\p/el>)3#~E?kI'
                   nullable: false
                 global:
                   type: string
                   description: 'Accessible in all projects'
-                  example: true
+                  example: false
                   nullable: false
                   enum:
                     - true
@@ -4578,13 +4557,13 @@ paths:
                     -
                       id: null
                       user: null
-                      name: 'Dr. America Beier'
+                      name: 'Dr. Reanna Braun'
                       created_at: null
                       updated_at: null
                     -
                       id: null
                       user: null
-                      name: 'Miss Naomi Hoppe V'
+                      name: 'Norene Fritsch'
                       created_at: null
                       updated_at: null
                   links:
@@ -4620,13 +4599,13 @@ paths:
                       -
                         id: null
                         user: null
-                        name: 'Dr. America Beier'
+                        name: 'Dr. Reanna Braun'
                         created_at: null
                         updated_at: null
                       -
                         id: null
                         user: null
-                        name: 'Miss Naomi Hoppe V'
+                        name: 'Norene Fritsch'
                         created_at: null
                         updated_at: null
                     items:
@@ -4640,7 +4619,7 @@ paths:
                           example: null
                         name:
                           type: string
-                          example: 'Dr. America Beier'
+                          example: 'Dr. Reanna Braun'
                         created_at:
                           type: string
                           example: null
@@ -4730,7 +4709,7 @@ paths:
                 example:
                   id: null
                   user: null
-                  name: 'Catherine Schroeder'
+                  name: "Sophia D'Amore"
                   created_at: null
                   updated_at: null
                 properties:
@@ -4742,7 +4721,7 @@ paths:
                     example: null
                   name:
                     type: string
-                    example: 'Catherine Schroeder'
+                    example: "Sophia D'Amore"
                   created_at:
                     type: string
                     example: null
@@ -4761,17 +4740,17 @@ paths:
                 key_id:
                   type: string
                   description: 'The ID of the key.'
-                  example: sit
+                  example: vero
                   nullable: false
                 name:
                   type: string
                   description: 'Key name, required if key_id is not provided.'
-                  example: voluptate
+                  example: voluptates
                   nullable: false
                 public_key:
                   type: string
                   description: 'Public Key, required if key_id is not provided.'
-                  example: dignissimos
+                  example: dolor
                   nullable: false
               required:
                 - key_id
@@ -4790,7 +4769,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 4
+        example: 3
         required: true
         schema:
           type: integer
@@ -4818,7 +4797,7 @@ paths:
         in: path
         name: server_id
         description: 'The ID of the server.'
-        example: 6
+        example: 3
         required: true
         schema:
           type: integer
@@ -4826,7 +4805,7 @@ paths:
         in: path
         name: sshKey_id
         description: 'The ID of the sshKey.'
-        example: 1
+        example: 4
         required: true
         schema:
           type: integer
@@ -4846,21 +4825,21 @@ paths:
                 example:
                   data:
                     -
-                      id: 6
+                      id: 3
                       project_id: null
                       global: true
-                      name: aut
-                      provider: dropbox
-                      created_at: '2024-11-29T16:20:07.000000Z'
-                      updated_at: '2024-11-29T16:20:07.000000Z'
+                      name: et
+                      provider: local
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
                     -
-                      id: 7
+                      id: 4
                       project_id: null
                       global: true
-                      name: qui
-                      provider: s3
-                      created_at: '2024-11-29T16:20:07.000000Z'
-                      updated_at: '2024-11-29T16:20:07.000000Z'
+                      name: sed
+                      provider: local
+                      created_at: '2024-11-01T15:40:48.000000Z'
+                      updated_at: '2024-11-01T15:40:48.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -4892,27 +4871,27 @@ paths:
                     type: array
                     example:
                       -
-                        id: 6
+                        id: 3
                         project_id: null
                         global: true
-                        name: aut
-                        provider: dropbox
-                        created_at: '2024-11-29T16:20:07.000000Z'
-                        updated_at: '2024-11-29T16:20:07.000000Z'
+                        name: et
+                        provider: local
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
                       -
-                        id: 7
+                        id: 4
                         project_id: null
                         global: true
-                        name: qui
-                        provider: s3
-                        created_at: '2024-11-29T16:20:07.000000Z'
-                        updated_at: '2024-11-29T16:20:07.000000Z'
+                        name: sed
+                        provider: local
+                        created_at: '2024-11-01T15:40:48.000000Z'
+                        updated_at: '2024-11-01T15:40:48.000000Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: integer
-                          example: 6
+                          example: 3
                         project_id:
                           type: string
                           example: null
@@ -4921,16 +4900,16 @@ paths:
                           example: true
                         name:
                           type: string
-                          example: aut
+                          example: et
                         provider:
                           type: string
-                          example: dropbox
+                          example: local
                         created_at:
                           type: string
-                          example: '2024-11-29T16:20:07.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                         updated_at:
                           type: string
-                          example: '2024-11-29T16:20:07.000000Z'
+                          example: '2024-11-01T15:40:48.000000Z'
                   links:
                     type: object
                     properties:
@@ -5012,17 +4991,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 6
+                  id: 3
                   project_id: null
                   global: true
-                  name: accusamus
-                  provider: ftp
-                  created_at: '2024-11-29T16:20:07.000000Z'
-                  updated_at: '2024-11-29T16:20:07.000000Z'
+                  name: est
+                  provider: dropbox
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 6
+                    example: 3
                   project_id:
                     type: string
                     example: null
@@ -5031,16 +5010,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: accusamus
+                    example: est
                   provider:
                     type: string
-                    example: ftp
+                    example: dropbox
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:07.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:07.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - storage-providers
       requestBody:
@@ -5053,27 +5032,27 @@ paths:
                 provider:
                   type: string
                   description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
-                  example: porro
+                  example: quod
                   nullable: false
                 name:
                   type: string
                   description: 'The name of the storage provider.'
-                  example: porro
+                  example: commodi
                   nullable: false
                 token:
                   type: string
                   description: 'The token if provider requires api token'
-                  example: vel
+                  example: ipsum
                   nullable: false
                 key:
                   type: string
                   description: 'The key if provider requires key'
-                  example: odio
+                  example: ratione
                   nullable: false
                 secret:
                   type: string
                   description: 'The secret if provider requires key'
-                  example: impedit
+                  example: iste
                   nullable: false
               required:
                 - provider
@@ -5104,17 +5083,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 6
+                  id: 3
                   project_id: null
                   global: true
-                  name: totam
-                  provider: s3
-                  created_at: '2024-11-29T16:20:07.000000Z'
-                  updated_at: '2024-11-29T16:20:07.000000Z'
+                  name: officia
+                  provider: ftp
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 6
+                    example: 3
                   project_id:
                     type: string
                     example: null
@@ -5123,16 +5102,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: totam
+                    example: officia
                   provider:
                     type: string
-                    example: s3
+                    example: ftp
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:07.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:07.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - storage-providers
     put:
@@ -5148,17 +5127,17 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 6
+                  id: 3
                   project_id: null
                   global: true
-                  name: libero
-                  provider: s3
-                  created_at: '2024-11-29T16:20:07.000000Z'
-                  updated_at: '2024-11-29T16:20:07.000000Z'
+                  name: rerum
+                  provider: ftp
+                  created_at: '2024-11-01T15:40:48.000000Z'
+                  updated_at: '2024-11-01T15:40:48.000000Z'
                 properties:
                   id:
                     type: integer
-                    example: 6
+                    example: 3
                   project_id:
                     type: string
                     example: null
@@ -5167,16 +5146,16 @@ paths:
                     example: true
                   name:
                     type: string
-                    example: libero
+                    example: rerum
                   provider:
                     type: string
-                    example: s3
+                    example: ftp
                   created_at:
                     type: string
-                    example: '2024-11-29T16:20:07.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
                   updated_at:
                     type: string
-                    example: '2024-11-29T16:20:07.000000Z'
+                    example: '2024-11-01T15:40:48.000000Z'
       tags:
         - storage-providers
       requestBody:
@@ -5189,12 +5168,12 @@ paths:
                 name:
                   type: string
                   description: 'The name of the storage provider.'
-                  example: alias
+                  example: iusto
                   nullable: false
                 global:
                   type: string
                   description: 'Accessible in all projects'
-                  example: false
+                  example: true
                   nullable: false
                   enum:
                     - true
@@ -5225,7 +5204,7 @@ paths:
         in: path
         name: storageProvider_id
         description: 'The ID of the storageProvider.'
-        example: 5
+        example: 1
         required: true
         schema:
           type: integer
