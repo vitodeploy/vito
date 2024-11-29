@@ -47,7 +47,7 @@ class Custom extends AbstractProvider
         return true;
     }
 
-    public function plans(?string $region): array
+    public function plans(?string $region, ?string $zone = null): array
     {
         return [];
     }
