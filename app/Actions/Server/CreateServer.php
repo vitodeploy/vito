@@ -129,8 +129,7 @@ class CreateServer
             ],
             'zone' => [
                 Rule::when(function () use ($input) {
-                    return isset($input['provider']) 
-                        && ($input['provider'] === ServerProvider::AWS || $input['provider'] === ServerProvider::LIGHTSAIL);
+                    return isset($input['provider']) && ($input['provider'] === ServerProvider::AWS || $input['provider'] === ServerProvider::LIGHTSAIL);
                 }, [
                     'required',
                 ]),

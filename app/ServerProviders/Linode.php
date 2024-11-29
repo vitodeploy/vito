@@ -206,6 +206,7 @@ class Linode extends AbstractProvider
 
             if (! empty($image)) {
                 Cache::put('linode-image-'.$os.'-'.$version, $image['id'], 600);
+
                 return $image['id'];
             }
 

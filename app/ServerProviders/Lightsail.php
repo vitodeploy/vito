@@ -5,17 +5,13 @@ namespace App\ServerProviders;
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
+use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Lightsail\Exception\LightsailException;
 use Aws\Lightsail\LightsailClient;
-use App\Notifications\FailedToDeleteServerFromProvider;
 use Exception;
-use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-use Throwable;
 
 class Lightsail extends AbstractProvider
 {
@@ -82,7 +78,7 @@ class Lightsail extends AbstractProvider
             ])->toArray();
 
             $plans = collect($bundles['bundles'])
-                ->filter(fn ($bundle) => ($bundle['supportedPlatforms'][0] == 'LINUX_UNIX' && $bundle['publicIpv4AddressCount'] > 0))
+                ->filter(fn ($bundle) => (($bundle['supportedPlatforms'][0] == 'LINUX_UNIX') && $bundle['publicIpv4AddressCount'] > 0))
                 ->values();
 
             return collect($plans)
@@ -97,8 +93,8 @@ class Lightsail extends AbstractProvider
                     ];
                 })
                 ->toArray();
-        } catch (LightsailException) {  
-            return []; 
+        } catch (LightsailException) {
+            return [];
         }
     }
 
@@ -112,15 +108,15 @@ class Lightsail extends AbstractProvider
             ])->toArray();
 
             $zones = collect($regions['regions'])->filter(function ($zone) use ($region) {
-                    return $zone['name'] == $region;
-                })->values();
+                return $zone['name'] == $region;
+            })->values();
 
             return collect($zones[0]['availabilityZones'])
                 ->filter(fn ($availableZone) => $availableZone['state'] == 'available')
                 ->mapWithKeys(fn ($value) => [$value['zoneName'] => $value['zoneName']])
                 ->toArray();
-        } catch (LightsailException) {  
-            return []; 
+        } catch (LightsailException) {
+            return [];
         }
     }
 
@@ -135,8 +131,8 @@ class Lightsail extends AbstractProvider
                 ->sortByDesc('continentCode')
                 ->mapWithKeys(fn ($region) => [$region['name'] => $region['displayName'].', '.$region['continentCode'].' ('.$region['name'].')'])
                 ->toArray();
-        } catch (LightsailException) {  
-            return []; 
+        } catch (LightsailException) {
+            return [];
         }
     }
 
@@ -237,6 +233,7 @@ class Lightsail extends AbstractProvider
 
             if (! empty($image)) {
                 Cache::put('lightsail-image-'.$os.'-'.$version, $image['blueprintId'], 600);
+
                 return $image['blueprintId'];
             }
 
@@ -323,7 +320,7 @@ class Lightsail extends AbstractProvider
                     'forceDeleteAddOns' => true,
                     'instanceName' => $this->server->provider_data['instance_id'],
                 ])->toArray();
-                
+
                 if ($delete['operations'][0]['status'] != 'Succeeded') {
                     Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
 

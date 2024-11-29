@@ -11,6 +11,7 @@ use Aws\Ec2\Exception\Ec2Exception;
 use Exception;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -120,7 +121,7 @@ class AWS extends AbstractProvider
                 'i4g.*',
                 'i4i.*',
             ];
-    
+
             $instanceTypeSizes = [
                 '*.nano',
                 '*.micro',
@@ -368,21 +369,28 @@ class AWS extends AbstractProvider
      */
     private function runInstance(): void
     {
-        $keyName = $groupName = $this->server->name.'-'.$this->server->id;
-        $result = $this->ec2Client->runInstances([
-            'ImageId' => $this->getImageId($this->server->os),
-            'MinCount' => 1,
-            'MaxCount' => 1,
-            'InstanceType' => $this->server->provider_data['plan'],
-            'KeyName' => $keyName,
-            'SecurityGroupIds' => [$groupName],
-        ]);
-        $this->server->local_ip = $result['Instances'][0]['PrivateIpAddress'];
-        $providerData = $this->server->provider_data;
-        $providerData['instance_id'] = $result['Instances'][0]['InstanceId'];
-        $providerData['zone'] = $result['Instances'][0]['Placement']['AvailabilityZone'];
-        $this->server->provider_data = $providerData;
-        $this->server->save();
+        try {
+            $keyName = $groupName = $this->server->name.'-'.$this->server->id;
+            $result = $this->ec2Client->runInstances([
+                'ImageId' => $this->getImageId($this->server->os),
+                'MinCount' => 1,
+                'MaxCount' => 1,
+                'InstanceType' => $this->server->provider_data['plan'],
+                'KeyName' => $keyName,
+                'SecurityGroupIds' => [$groupName],
+            ]);
+            $this->server->local_ip = $result['Instances'][0]['PrivateIpAddress'];
+            $providerData = $this->server->provider_data;
+            $providerData['instance_id'] = $result['Instances'][0]['InstanceId'];
+            $providerData['zone'] = $result['Instances'][0]['Placement']['AvailabilityZone'];
+            $this->server->provider_data = $providerData;
+            $this->server->save();
+        } catch (Ec2Exception $e) {
+            $message = __('Failed to create instance on AWS');
+            Log::error($message, $e->toArray());
+
+            throw new ServerProviderError($message.': '.$e->getAwsErrorMessage());
+        }
     }
 
     /**
@@ -426,6 +434,7 @@ class AWS extends AbstractProvider
             });
 
             Cache::put('aws-image-'.$os.'-'.$version, $images[0]['ImageId'], 600);
+
             return $images[0]['ImageId'];
         }
 

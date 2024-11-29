@@ -211,6 +211,7 @@ class Hetzner extends AbstractProvider
 
             if (! empty($image)) {
                 Cache::put('hetzner-image-'.$os.'-'.$version, $image['id'], 600);
+
                 return $image['id'];
             }
 
