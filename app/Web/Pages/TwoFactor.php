@@ -21,7 +21,7 @@ class TwoFactor extends SimplePage implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'components.simple-page';
+    protected static string $view = 'components.two-factor';
 
     public ?array $data = [];
 
