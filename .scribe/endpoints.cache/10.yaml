@@ -17,7 +17,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -35,7 +35,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 12
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +43,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 12
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer gaeE86fd1aZP53Vvc6Dhbk4'
+      - 'Bearer caZa8D43E56hgP1d6ebVkfv'
     controller: null
     method: null
     route: null
@@ -79,7 +79,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -97,7 +97,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -105,7 +105,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 13
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -113,7 +113,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: wordpress
+        example: phpmyadmin
         type: string
         enumValues:
           - php
@@ -128,7 +128,7 @@ endpoints:
         name: domain
         description: ''
         required: true
-        example: quo
+        example: unde
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -139,7 +139,7 @@ endpoints:
         description: ''
         required: true
         example:
-          - dolorum
+          - architecto
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -169,7 +169,7 @@ endpoints:
         name: source_control
         description: 'Source control ID, Required for Sites which support source control'
         required: true
-        example: explicabo
+        example: quisquam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -216,13 +216,13 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      type: wordpress
-      domain: quo
+      type: phpmyadmin
+      domain: unde
       aliases:
-        - dolorum
+        - architecto
       php_version: '7.4'
       web_directory: public
-      source_control: explicabo
+      source_control: quisquam
       repository: organization/repository
       branch: main
       composer: true
@@ -239,7 +239,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer efDd36cab6vZEaV4hkP851g'
+      - 'Bearer Pba4EV6vhcD58ead63g1Zfk'
     controller: null
     method: null
     route: null
@@ -258,7 +258,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -276,7 +276,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 7
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -286,7 +286,7 @@ endpoints:
         name: id
         description: 'The ID of the site.'
         required: true
-        example: 8
+        example: 7
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -294,8 +294,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      id: 8
+      server_id: 7
+      id: 7
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -312,7 +312,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer bVkf841ava5gE6DPch36Zde'
+      - 'Bearer eP53h4kDa8c6fv1Vab6ZgEd'
     controller: null
     method: null
     route: null
@@ -331,7 +331,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -349,7 +349,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 6
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -359,7 +359,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 8
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -367,8 +367,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      site_id: 8
+      server_id: 6
+      site_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -385,7 +385,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer gfVZbEP5Ddah6k13ae6c8v4'
+      - 'Bearer fZ6agbe3akhv5c1d8DPE46V'
     controller: null
     method: null
     route: null

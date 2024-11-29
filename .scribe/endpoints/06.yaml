@@ -15,7 +15,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -39,7 +39,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Dorthy Toy","ssh_user":"vito","ip":"172.132.95.155","local_ip":"118.57.197.65","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null},{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Carrie Sporer","ssh_user":"vito","ip":"184.242.162.173","local_ip":"135.244.50.22","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Mrs. Dayana O''Conner MD","ssh_user":"vito","ip":"142.177.40.110","local_ip":"244.120.14.51","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null},{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Prof. Rory Hagenes DVM","ssh_user":"vito","ip":"55.7.141.112","local_ip":"147.79.225.223","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -47,7 +47,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8VE41PdZcvb6kgafD635ahe'
+      - 'Bearer fc8EPheDk4v163V6ba5Zdga'
     controller: null
     method: null
     route: null
@@ -66,7 +66,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -89,7 +89,7 @@ endpoints:
         name: provider
         description: 'The server provider type'
         required: true
-        example: et
+        example: perferendis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -99,10 +99,12 @@ endpoints:
         name: server_provider
         description: 'If the provider is not custom, the ID of the server provider profile'
         required: true
-        example: digitalocean
+        example: hetzner
         type: string
         enumValues:
           - custom
+          - aws
+          - lightsail
           - hetzner
           - digitalocean
           - linode
@@ -114,7 +116,17 @@ endpoints:
         name: region
         description: 'Provider region if the provider is not custom'
         required: true
-        example: inventore
+        example: tempore
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      zone:
+        name: zone
+        description: 'Provider region zone if the provider is AWS or Lightsail'
+        required: true
+        example: est
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -124,7 +136,7 @@ endpoints:
         name: plan
         description: 'Provider plan if the provider is not custom'
         required: true
-        example: atque
+        example: vel
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -134,7 +146,7 @@ endpoints:
         name: ip
         description: 'SSH IP address if the provider is custom'
         required: true
-        example: quam
+        example: delectus
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -144,7 +156,7 @@ endpoints:
         name: port
         description: 'SSH Port if the provider is custom'
         required: true
-        example: nemo
+        example: distinctio
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -154,7 +166,7 @@ endpoints:
         name: name
         description: 'The name of the server.'
         required: true
-        example: perspiciatis
+        example: enim
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -164,9 +176,12 @@ endpoints:
         name: os
         description: 'The os of the server'
         required: true
-        example: similique
+        example: ubuntu_20
         type: string
-        enumValues: []
+        enumValues:
+          - ubuntu_20
+          - ubuntu_22
+          - ubuntu_24
         exampleWasSpecified: false
         nullable: false
         custom: []
@@ -174,7 +189,7 @@ endpoints:
         name: type
         description: 'Server type'
         required: true
-        example: regular
+        example: database
         type: string
         enumValues:
           - regular
@@ -186,7 +201,7 @@ endpoints:
         name: webserver
         description: 'Web server'
         required: true
-        example: none
+        example: nginx
         type: string
         enumValues:
           - none
@@ -219,7 +234,7 @@ endpoints:
         name: php
         description: 'PHP version'
         required: true
-        example: '8.1'
+        example: '7.2'
         type: string
         enumValues:
           - '7.0'
@@ -231,27 +246,29 @@ endpoints:
           - '8.1'
           - '8.2'
           - '8.3'
+          - '8.4'
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: et
-      server_provider: digitalocean
-      region: inventore
-      plan: atque
-      ip: quam
-      port: nemo
-      name: perspiciatis
-      os: similique
-      type: regular
-      webserver: none
+      provider: perferendis
+      server_provider: hetzner
+      region: tempore
+      zone: est
+      plan: vel
+      ip: delectus
+      port: distinctio
+      name: enim
+      os: ubuntu_20
+      type: database
+      webserver: nginx
       database: none
-      php: '8.1'
+      php: '7.2'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Flo Beer PhD","ssh_user":"vito","ip":"168.238.14.230","local_ip":"40.232.73.41","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Bertrand Little DDS","ssh_user":"vito","ip":"148.112.157.69","local_ip":"118.119.165.102","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -259,7 +276,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Z8g36aaV4E1bdcPfehDv65k'
+      - 'Bearer a3ahkbdZfDcE84g1e6Pv5V6'
     controller: null
     method: null
     route: null
@@ -278,7 +295,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -296,7 +313,7 @@ endpoints:
         name: id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 11
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -304,7 +321,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      id: 3
+      id: 11
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -313,7 +330,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Stephany Ankunding","ssh_user":"vito","ip":"145.28.94.46","local_ip":"69.133.44.100","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Lexus Heller","ssh_user":"vito","ip":"3.199.12.212","local_ip":"109.103.113.200","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -321,7 +338,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer adD3EfP5hZ4vgbkV861eca6'
+      - 'Bearer a6cveZ3k5b684fdhVgaEPD1'
     controller: null
     method: null
     route: null
@@ -340,7 +357,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -358,7 +375,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -366,7 +383,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 13
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -383,7 +400,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer P3ec6aagD4hbdV5fEk168vZ'
+      - 'Bearer D46fdPebvhEV1aac5368Zgk'
     controller: null
     method: null
     route: null
@@ -402,7 +419,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -420,7 +437,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 6
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -428,7 +445,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 6
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -445,7 +462,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer P34ZV6D1bEegdvac8f5kh6a'
+      - 'Bearer V6b8Pk63EDdca41ghafZve5'
     controller: null
     method: null
     route: null
@@ -464,7 +481,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -482,7 +499,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -490,7 +507,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 13
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -507,7 +524,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ha6v5V41afkdPgcZbDEe386'
+      - 'Bearer kEacPa6Df8ZV1b5v34gd6eh'
     controller: null
     method: null
     route: null

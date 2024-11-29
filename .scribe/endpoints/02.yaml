@@ -15,7 +15,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 18
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 18
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -50,7 +50,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"username":"nyasia68","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"username":"madyson20","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":null,"username":"mosciski.justine","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"username":"allie.ward","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer egc5VaDdvabfP6843k61hZE'
+      - 'Bearer 6b6e8Z31akdfPcD54gEVavh'
     controller: null
     method: null
     route: null
@@ -77,7 +77,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -95,7 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +103,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +111,7 @@ endpoints:
         name: username
         description: ''
         required: true
-        example: dignissimos
+        example: voluptatum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: password
         description: ''
         required: true
-        example: OK+XEG2)
+        example: 'e@e4_uk[/r+z'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -138,14 +138,14 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      username: dignissimos
-      password: OK+XEG2)
+      username: voluptatum
+      password: 'e@e4_uk[/r+z'
       host: '%'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"amya.nitzsche","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"username":"slakin","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -153,7 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 31hgfcvEb6Pkaa48D6dZ5Ve'
+      - 'Bearer E6a58evVZfdackghD16Pb34'
     controller: null
     method: null
     route: null
@@ -172,7 +172,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -190,7 +190,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -200,7 +200,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 4
+        example: 12
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -208,8 +208,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      databaseUser_id: 4
+      server_id: 16
+      databaseUser_id: 12
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -218,7 +218,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"bergstrom.ericka","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"username":"sonny19","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -226,7 +226,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aDv48631h5af6EdkcVbPZeg'
+      - 'Bearer cbh4daVZ65P8aD3gE1evf6k'
     controller: null
     method: null
     route: null
@@ -245,7 +245,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -263,7 +263,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 15
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -273,7 +273,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 4
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -281,8 +281,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      databaseUser_id: 4
+      server_id: 15
+      databaseUser_id: 3
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -290,19 +290,19 @@ endpoints:
         name: databases
         description: 'Array of database names to link to the user.'
         required: true
-        example: accusantium
+        example: nam
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      databases: accusantium
+      databases: nam
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"fmurray","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"username":"zgerhold","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -310,7 +310,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer cf8ZPhV1k3d5DaEva46beg6'
+      - 'Bearer 4DZaP5v86akcV1hgEbfde63'
     controller: null
     method: null
     route: null
@@ -329,7 +329,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -347,7 +347,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -357,7 +357,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 4
+        example: 18
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -365,8 +365,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      databaseUser_id: 4
+      server_id: 14
+      databaseUser_id: 18
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -383,7 +383,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer hdEvkbaPVf4cZ65a8631eDg'
+      - 'Bearer b1ge3E4V8d5aavZDPfhkc66'
     controller: null
     method: null
     route: null

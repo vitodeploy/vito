@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Actions\ServerProvider\CreateServerProvider;
 use App\Actions\ServerProvider\DeleteServerProvider;
 use App\Actions\ServerProvider\EditServerProvider;
+use App\Enums\ServerProvider as ServerProviderEnums;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\Project;
@@ -42,7 +43,7 @@ class ServerProviderController extends Controller
 
     #[Post('/', name: 'api.projects.server-providers.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create')]
-    #[BodyParam(name: 'provider', description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)', required: true)]
+    #[BodyParam(name: 'provider', description: 'The server provider', required: true, enum: [ServerProviderEnums::CUSTOM, ServerProviderEnums::AWS, ServerProviderEnums::LIGHTSAIL, ServerProviderEnums::HETZNER, ServerProviderEnums::DIGITALOCEAN, ServerProviderEnums::LINODE, ServerProviderEnums::VULTR])]
     #[BodyParam(name: 'name', description: 'The name of the server provider.', required: true)]
     #[BodyParam(name: 'token', description: 'The token if provider requires api token')]
     #[BodyParam(name: 'key', description: 'The key if provider requires key')]

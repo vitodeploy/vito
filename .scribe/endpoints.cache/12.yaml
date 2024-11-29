@@ -17,7 +17,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -41,7 +41,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":3,"project_id":null,"global":true,"name":"et","provider":"local","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"},{"id":4,"project_id":null,"global":true,"name":"sed","provider":"local","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":6,"project_id":null,"global":true,"name":"aut","provider":"dropbox","created_at":"2024-11-29T16:20:07.000000Z","updated_at":"2024-11-29T16:20:07.000000Z"},{"id":7,"project_id":null,"global":true,"name":"qui","provider":"s3","created_at":"2024-11-29T16:20:07.000000Z","updated_at":"2024-11-29T16:20:07.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -49,7 +49,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1dbV3vkh6EPD5g48cafeZ6a'
+      - 'Bearer af8Pv5c6eZak16E4bgdVhD3'
     controller: null
     method: null
     route: null
@@ -68,7 +68,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -91,7 +91,7 @@ endpoints:
         name: provider
         description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
         required: true
-        example: quod
+        example: porro
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -101,7 +101,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: commodi
+        example: porro
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -111,7 +111,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: ipsum
+        example: vel
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: key
         description: 'The key if provider requires key'
         required: true
-        example: ratione
+        example: odio
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -131,23 +131,23 @@ endpoints:
         name: secret
         description: 'The secret if provider requires key'
         required: true
-        example: iste
+        example: impedit
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: quod
-      name: commodi
-      token: ipsum
-      key: ratione
-      secret: iste
+      provider: porro
+      name: porro
+      token: vel
+      key: odio
+      secret: impedit
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"est","provider":"dropbox","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":6,"project_id":null,"global":true,"name":"accusamus","provider":"ftp","created_at":"2024-11-29T16:20:07.000000Z","updated_at":"2024-11-29T16:20:07.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -155,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer abehv36kP4D658VafgdZE1c'
+      - 'Bearer v6h3d5e1c4PVg8EkDZfba6a'
     controller: null
     method: null
     route: null
@@ -174,7 +174,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -192,7 +192,7 @@ endpoints:
         name: storageProvider_id
         description: 'The ID of the storageProvider.'
         required: true
-        example: 1
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -200,7 +200,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 1
+      storageProvider_id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -209,7 +209,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"officia","provider":"ftp","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":6,"project_id":null,"global":true,"name":"totam","provider":"s3","created_at":"2024-11-29T16:20:07.000000Z","updated_at":"2024-11-29T16:20:07.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -217,7 +217,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer bda64P5c1gEDe8V3Z6vhkaf'
+      - 'Bearer af4D18cgv6Z6a3khbdP5EVe'
     controller: null
     method: null
     route: null
@@ -236,7 +236,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -254,7 +254,7 @@ endpoints:
         name: storageProvider_id
         description: 'The ID of the storageProvider.'
         required: true
-        example: 1
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -262,7 +262,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 1
+      storageProvider_id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -270,7 +270,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: iusto
+        example: alias
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -280,7 +280,7 @@ endpoints:
         name: global
         description: 'Accessible in all projects'
         required: true
-        example: true
+        example: false
         type: string
         enumValues:
           - true
@@ -289,13 +289,13 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: iusto
-      global: true
+      name: alias
+      global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"rerum","provider":"ftp","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":6,"project_id":null,"global":true,"name":"libero","provider":"s3","created_at":"2024-11-29T16:20:07.000000Z","updated_at":"2024-11-29T16:20:07.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -303,7 +303,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aEP35hVakDdf814eZvg66cb'
+      - 'Bearer 1cVZPvDEkh5ga3fbae84d66'
     controller: null
     method: null
     route: null
@@ -322,7 +322,7 @@ endpoints:
       authenticated: true
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
+      Authorization: 'Bearer YOUR_API_KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -340,7 +340,7 @@ endpoints:
         name: storageProvider_id
         description: 'The ID of the storageProvider.'
         required: true
-        example: 1
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -348,7 +348,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 1
+      storageProvider_id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -365,7 +365,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Dah3PgE5d64fcbe8a16VkvZ'
+      - 'Bearer 3Z1kg4c6PVhvEfDd6e58baa'
     controller: null
     method: null
     route: null
