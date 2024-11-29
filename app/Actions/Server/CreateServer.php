@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Models\Server;
 use App\Models\User;
 use App\Notifications\ServerInstallationFailed;
+use App\Notifications\ServerInstallationStarted;
 use App\Notifications\ServerInstallationSucceed;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
@@ -80,6 +81,8 @@ class CreateServer
 
     private function install(Server $server): void
     {
+        Notifier::send($server, new ServerInstallationStarted($server));
+
         $bus = Bus::chain([
             function () use ($server) {
                 if (! $server->provider()->isRunning()) {
@@ -116,6 +119,28 @@ class CreateServer
             'provider' => [
                 'required',
                 Rule::in(config('core.server_providers')),
+            ],
+            'region' => [
+                Rule::when(function () use ($input) {
+                    return isset($input['provider']) && $input['provider'] != ServerProvider::CUSTOM;
+                }, [
+                    'required',
+                ]),
+            ],
+            'zone' => [
+                Rule::when(function () use ($input) {
+                    return isset($input['provider']) 
+                        && ($input['provider'] === ServerProvider::AWS || $input['provider'] === ServerProvider::LIGHTSAIL);
+                }, [
+                    'required',
+                ]),
+            ],
+            'plan' => [
+                Rule::when(function () use ($input) {
+                    return isset($input['provider']) && $input['provider'] != ServerProvider::CUSTOM;
+                }, [
+                    'required',
+                ]),
             ],
             'name' => [
                 'required',
