@@ -75,7 +75,7 @@ class TwoFactor extends SimplePage implements HasForms
             Session::put('two_factor_approved', true);
             Notification::make()
                 ->success()
-                ->title('Two-Factor Authentication has been approved!')
+                ->title('Two factor authentication has been approved!')
                 ->send();
 
             return redirect()->route('filament.app.pages.servers');
@@ -84,7 +84,7 @@ class TwoFactor extends SimplePage implements HasForms
             Session::put('two_factor_approved', true);
             Notification::make()
                 ->success()
-                ->title('Two-Factor Authentication has been approved!')
+                ->title('Two factor authentication has been approved!')
                 ->send();
 
             return redirect()->route('filament.app.pages.servers');
