@@ -126,8 +126,8 @@ class Linode extends AbstractProvider
                     'type' => $this->server->provider_data['plan'],
                     'region' => $this->server->provider_data['region'],
                 ]);
-        } catch (Exception) {
-            throw new ServerProviderError('Failed to create server on Linode');
+        } catch (Exception $e) {
+            throw new ServerProviderError('Failed to create server on Linode: '.$e->getMessage());
         }
 
         if (! $create->ok()) {
