@@ -95,7 +95,28 @@ class ServerProvider extends AbstractModel
         return $regions;
     }
 
-    public static function plans(?int $id, ?string $region): array
+    public static function zones(?int $id, ?string $region): array
+    {
+        if (! $id) {
+            return [];
+        }
+
+        $profile = self::find($id);
+        if (! $profile) {
+            return [];
+        }
+
+        if (Cache::get('zones-'.$region.'-'.$id)) {
+            return Cache::get('zones-'.$region.'-'.$id);
+        }
+
+        $zones = $profile->provider()->zones($region);
+        Cache::put('zones-'.$region.'-'.$id, $zones, 600);
+
+        return $zones;
+    }
+
+    public static function plans(?int $id, ?string $region, ?string $zone = null): array
     {
         if (! $id) {
             return [];
@@ -105,6 +126,13 @@ class ServerProvider extends AbstractModel
             return [];
         }
 
-        return $profile->provider()->plans($region);
+        if (Cache::get('plans-'.$region.$zone.'-'.$id)) {
+            return Cache::get('plans-'.$region.$zone.'-'.$id);
+        }
+
+        $plans = $profile->provider()->plans($region, $zone);
+        Cache::put('plans-'.$region.$zone.'-'.$id, $plans, 600);
+
+        return $plans;
     }
 }
