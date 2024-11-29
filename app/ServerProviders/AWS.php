@@ -3,11 +3,14 @@
 namespace App\ServerProviders;
 
 use App\Exceptions\CouldNotConnectToProvider;
+use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
 use Aws\Ec2\Ec2Client;
+use Aws\Ec2\Exception\Ec2Exception;
 use Exception;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -20,6 +23,8 @@ class AWS extends AbstractProvider
         return [
             'plan' => ['required'],
             'region' => ['required'],
+            'zone' => ['required'],
+            'os' => ['required'],
         ];
     }
 
@@ -44,6 +49,8 @@ class AWS extends AbstractProvider
         return [
             'plan' => $input['plan'],
             'region' => $input['region'],
+            'zone' => $input['zone'],
+            'os' => $input['os'],
         ];
     }
 
@@ -62,15 +69,101 @@ class AWS extends AbstractProvider
         }
     }
 
-    public function plans(?string $region): array
+    public function plans(?string $region, ?string $zone = null): array
     {
-        $this->connectToEc2Client($region);
+        try {
+            $this->connectToEc2Client($region);
 
-        $nextToken = null;
-        $plans = [];
+            $instanceTypes = [
+                // General purpose:
+                'm1.*',
+                'm2.*',
+                'm3.*',
+                'm4.*',
+                'm5.*',
+                'm5a.*',
+                'm5ad.*',
+                'm5d.*',
+                'm5dn.*',
+                'm5n.*',
+                'm5zn.*',
+                't1.*',
+                't2.*',
+                't3.*',
+                't3a.*',
+                't4g.*',
+                // Compute optimized:
+                'c1.*',
+                'c3.*',
+                'c4.*',
+                'c5.*',
+                'c5a.*',
+                'c5ad.*',
+                'c5d.*',
+                'c5n.*',
+                'c6a.*',
+                'c6g.*',
+                // Memory optimized:
+                'r3.*',
+                'r4.*',
+                'r5.*',
+                'r5a.*',
+                'x1.*',
+                // Storage optimized:
+                'd2.*',
+                'd3.*',
+                'd3en.*',
+                'h1.*',
+                'i2.*',
+                'i3.*',
+                'i3en.*',
+                'i4g.*',
+                'i4i.*',
+            ];
+    
+            $instanceTypeSizes = [
+                '*.nano',
+                '*.micro',
+                '*.small',
+                '*.medium',
+                '*.large',
+                '*.2xlarge',
+                '*.3xlarge',
+                '*.4xlarge',
+                '*.5xlarge',
+                '*.6xlarge',
+                '*.7xlarge',
+                '*.8xlarge',
+                '*.9xlarge',
+            ];
 
-        do {
-            $params = [
+            // Get all available instance types on region's zone
+            $instanceTypeOfferingsPaginator = $this->ec2Client->getPaginator('DescribeInstanceTypeOfferings', [
+                'Filters' => [
+                    [
+                        'Name' => 'location',
+                        'Values' => [$zone],
+                    ],
+                    [
+                        'Name' => 'instance-type',
+                        'Values' => $instanceTypes,
+                    ],
+                    [
+                        'Name' => 'instance-type',
+                        'Values' => $instanceTypeSizes,
+                    ],
+                ],
+                'LocationType' => 'availability-zone',
+                'MaxResults' => 100,
+            ]);
+
+            // Iterate through each page of results
+            $instanceTypeOfferings = collect($instanceTypeOfferingsPaginator)
+                ->flatMap(fn ($page) => $page['InstanceTypeOfferings'])
+                ->pluck('InstanceType')
+                ->all();
+
+            $instanceTypesPaginator = $this->ec2Client->getPaginator('DescribeInstanceTypes', [
                 'Filters' => [
                     [
                         'Name' => 'processor-info.supported-architecture',
@@ -88,41 +181,67 @@ class AWS extends AbstractProvider
                         'Name' => 'bare-metal',
                         'Values' => ['false'], // Skip bare-metal unless explicitly needed
                     ],
+                    [
+                        'Name' => 'instance-type',
+                        'Values' => $instanceTypeOfferings, // Include only region's zone available instance type
+                    ],
                 ],
-            ];
+                'MaxResults' => 100,
+            ]);
 
-            if ($nextToken) {
-                $params['NextToken'] = $nextToken;
-            }
+            // Iterate through each page of results
+            $plans = collect($instanceTypesPaginator)
+                ->flatMap(fn ($page) => $page['InstanceTypes'])
+                ->all();
 
-            $result = $this->ec2Client->describeInstanceTypes($params);
+            return collect($plans)
+                ->sortBy('MemoryInfo.SizeInMiB')
+                ->mapWithKeys(fn ($value) => [
+                    $value['InstanceType'] => __('server_providers.plan', [
+                        'name' => $value['InstanceType'],
+                        'cpu' => $value['VCpuInfo']['DefaultVCpus'] ?? 'N/A',
+                        'memory' => isset($value['MemoryInfo']) ? round($value['MemoryInfo']['SizeInMiB'] / 1024, 2) : 'N/A',
+                        'disk' => isset($value['InstanceStorageInfo']) ? $value['InstanceStorageInfo']['TotalSizeInGB'] : 'N/A',
+                    ]),
+                ])
+                ->toArray();
+        } catch (Ec2Exception) {
+            return [];
+        }
+    }
 
-            $plans = array_merge($plans, $result->get('InstanceTypes'));
+    public function zones(?string $region): array
+    {
+        try {
+            $this->connectToEc2Client($region);
 
-            $nextToken = $result->get('NextToken');
-        } while ($nextToken);
+            $zones = $this->ec2Client->describeAvailabilityZones([
+                'RegionName' => $region ?? 'us-east-1',
+                'State' => 'available',
+            ])->toArray();
 
-        return collect($plans)
-            ->mapWithKeys(fn ($value) => [
-                $value['InstanceType'] => __('server_providers.plan', [
-                    'name' => $value['InstanceType'],
-                    'cpu' => $value['VCpuInfo']['DefaultVCpus'] ?? 'N/A',
-                    'memory' => $value['MemoryInfo']['SizeInMiB'] ?? 'N/A',
-                    'disk' => $value['InstanceStorageInfo']['TotalSizeInGB'] ?? 'N/A',
-                ]),
-            ])
-            ->toArray();
+            return collect($zones['AvailabilityZones'] ?? [])
+                ->mapWithKeys(fn ($value) => [$value['ZoneName'] => $value['ZoneName']])
+                ->toArray();
+        } catch (Ec2Exception) {
+            return [];
+        }
     }
 
     public function regions(): array
     {
-        $this->connectToEc2Client();
+        try {
+            $this->connectToEc2Client();
 
-        $regions = $this->ec2Client->describeRegions();
+            $regions = $this->ec2Client->describeRegions()->toArray();
 
-        return collect($regions->toArray()['Regions'] ?? [])
-            ->mapWithKeys(fn ($value) => [$value['RegionName'] => $value['RegionName']])
-            ->toArray();
+            return collect($regions['Regions'] ?? [])
+                ->sortBy('RegionName')
+                ->mapWithKeys(fn ($value) => [$value['RegionName'] => $value['RegionName']])
+                ->toArray();
+        } catch (Ec2Exception) {
+            return [];
+        }
     }
 
     /**
@@ -183,7 +302,7 @@ class AWS extends AbstractProvider
         }
 
         $this->ec2Client = new Ec2Client([
-            'region' => $region ?? config('serverproviders.aws.regions')[0]['value'],
+            'region' => $region ?? 'us-east-1',
             'version' => '2016-11-15',
             'credentials' => [
                 'key' => $credentials['key'],
@@ -271,9 +390,13 @@ class AWS extends AbstractProvider
      */
     private function getImageId(string $os): string
     {
-        $this->connectToEc2Client();
-
         $version = config('core.operating_system_versions.'.$os);
+
+        if (Cache::get('aws-image-'.$os.'-'.$version)) {
+            return Cache::get('aws-image-'.$os.'-'.$version);
+        }
+
+        $this->connectToEc2Client();
 
         $result = $this->ec2Client->describeImages([
             'Filters' => [
@@ -302,9 +425,10 @@ class AWS extends AbstractProvider
                 return strtotime($b['CreationDate']) - strtotime($a['CreationDate']);
             });
 
+            Cache::put('aws-image-'.$os.'-'.$version, $images[0]['ImageId'], 600);
             return $images[0]['ImageId'];
         }
 
-        throw new Exception('Could not find image ID');
+        throw new Exception('Could not find image ID for '.$os);
     }
 }
