@@ -19,8 +19,9 @@ class Vultr extends AbstractProvider
     public function createRules(array $input): array
     {
         return [
-            'plan' => 'required',
-            'region' => 'required',
+            'plan' => ['required'],
+            'region' => ['required'],
+            'os' => ['required'],
         ];
     }
 
@@ -43,6 +44,7 @@ class Vultr extends AbstractProvider
         return [
             'plan' => $input['plan'],
             'region' => $input['region'],
+            'os' => $input['os'],
         ];
     }
 
@@ -64,7 +66,7 @@ class Vultr extends AbstractProvider
         return true;
     }
 
-    public function plans(?string $region): array
+    public function plans(?string $region, ?string $zone = null): array
     {
         try {
             $plans = Http::withToken($this->serverProvider->credentials['token'])
@@ -79,7 +81,7 @@ class Vultr extends AbstractProvider
                         $value['id'] => __('server_providers.plan', [
                             'name' => $value['type'],
                             'cpu' => $value['vcpu_count'],
-                            'memory' => $value['ram'],
+                            'memory' => round($value['ram'] / 1024, 2),
                             'disk' => $value['disk'],
                         ]),
                     ];
@@ -98,6 +100,7 @@ class Vultr extends AbstractProvider
                 ->json();
 
             return collect($regions['regions'])
+                ->sortByDesc('country')
                 ->mapWithKeys(fn ($value) => [$value['id'] => $value['country'].' - '.$value['city']])
                 ->toArray();
         } catch (Exception) {
@@ -129,6 +132,8 @@ class Vultr extends AbstractProvider
             throw new ServerProviderError('Error creating SSH Key on Vultr');
         }
 
+        $this->server->jsonUpdate('provider_data', 'ssh_key_id', $createSshKey->json()['ssh_key']['id']);
+
         try {
             $create = Http::withToken($this->server->serverProvider->credentials['token'])
                 ->post($this->apiUrl.'/instances', [
@@ -139,18 +144,16 @@ class Vultr extends AbstractProvider
                     'enable_ipv6' => false,
                     'sshkey_id' => [$createSshKey->json()['ssh_key']['id']],
                 ]);
-        } catch (Exception) {
-            throw new ServerProviderError('Failed to create server on Vultr');
+        } catch (Exception $e) {
+            throw new ServerProviderError('Failed to create server on Vultr: '.$e->getMessage());
         }
 
         if ($create->status() != 202) {
             Log::error('Failed to create server on Vultr', $create->json());
-            throw new ServerProviderError('Failed: '.$create->body());
+            throw new ServerProviderError('Failed to create server on Vultr: '.$create->json()['error']);
         }
-        $providerData = $this->server->provider_data;
-        $providerData['instance_id'] = $create->json()['instance']['id'];
-        $this->server->provider_data = $providerData;
-        $this->server->save();
+
+        $this->server->jsonUpdate('provider_data', 'instance_id', $create->json()['instance']['id']);
     }
 
     public function isRunning(): bool
@@ -192,6 +195,12 @@ class Vultr extends AbstractProvider
             if (! $delete->ok()) {
                 Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
             }
+        }
+
+        // Delete SSH key
+        if (isset($this->server->provider_data['ssh_key_id'])) {
+            Http::withToken($this->server->serverProvider->credentials['token'])
+                ->delete($this->apiUrl.'/ssh-keys/'.$this->server->provider_data['ssh_key_id']);
         }
     }
 

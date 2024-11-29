@@ -17,8 +17,9 @@ class DigitalOcean extends AbstractProvider
     public function createRules(array $input): array
     {
         return [
-            'plan' => 'required',
-            'region' => 'required',
+            'plan' => ['required'],
+            'region' => ['required'],
+            'os' => ['required'],
         ];
     }
 
@@ -41,6 +42,7 @@ class DigitalOcean extends AbstractProvider
         return [
             'plan' => $input['plan'],
             'region' => $input['region'],
+            'os' => $input['os'],
         ];
     }
 
@@ -62,7 +64,7 @@ class DigitalOcean extends AbstractProvider
         return true;
     }
 
-    public function plans(?string $region): array
+    public function plans(?string $region, ?string $zone = null): array
     {
         try {
             $plans = Http::withToken($this->serverProvider->credentials['token'])
@@ -77,7 +79,7 @@ class DigitalOcean extends AbstractProvider
                         $value['slug'] => __('server_providers.plan', [
                             'name' => $value['description'],
                             'cpu' => $value['vcpus'],
-                            'memory' => $value['memory'],
+                            'memory' => round($value['memory'] / 1024, 2),
                             'disk' => $value['disk'],
                         ]),
                     ];
@@ -125,6 +127,8 @@ class DigitalOcean extends AbstractProvider
             throw new ServerProviderError('DigitalOcean SSH Key');
         }
 
+        $this->server->jsonUpdate('provider_data', 'ssh_key_id', $createSshKey->json()['ssh_key']['id']);
+
         try {
             $create = Http::withToken($this->server->serverProvider->credentials['token'])
                 ->post($this->apiUrl.'/droplets', [
@@ -137,19 +141,17 @@ class DigitalOcean extends AbstractProvider
                     'monitoring' => false,
                     'ssh_keys' => [$createSshKey->json()['ssh_key']['id']],
                 ]);
-        } catch (Exception) {
-            throw new ServerProviderError('DigitalOcean');
+        } catch (Exception $e) {
+            throw new ServerProviderError('Failed to create server on DigitalOcean: '.$e->getMessage());
         }
 
         if ($create->status() != 202) {
-            $msg = __('Failed to create server on DigitalOcean');
-            Log::error('Failed to create server on DigitalOcean', $create->json());
-            throw new ServerProviderError($msg);
+            $message = __('Failed to create server on DigitalOcean');
+            Log::error($message, $create->json());
+            throw new ServerProviderError($message.': '.$create->json()['message']);
         }
-        $providerData = $this->server->provider_data;
-        $providerData['droplet_id'] = $create->json()['droplet']['id'];
-        $this->server->provider_data = $providerData;
-        $this->server->save();
+
+        $this->server->jsonUpdate('provider_data', 'droplet_id', $create->json()['droplet']['id']);
     }
 
     public function isRunning(): bool
@@ -191,6 +193,12 @@ class DigitalOcean extends AbstractProvider
             if (! $delete->ok()) {
                 Notifier::send($this->server, new FailedToDeleteServerFromProvider($this->server));
             }
+        }
+
+        // Delete SSH key
+        if (isset($this->server->provider_data['ssh_key_id'])) {
+            Http::withToken($this->server->serverProvider->credentials['token'])
+                ->delete($this->apiUrl.'/account/keys/'.$this->server->provider_data['ssh_key_id']);
         }
     }
 
