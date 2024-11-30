@@ -21,21 +21,7 @@ class Login extends \Filament\Pages\Auth\Login
             redirect()->intended(Filament::getUrl());
         }
 
-        if (request()->session()->has('login.id')) {
-            $this->data = [
-                'id' => request()->session()->get('login.id'),
-                'remember' => true,
-            ];
-
-            FilamentView::registerRenderHook(
-                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn (): string => Blade::render(
-                    <<<BLADE
-                        <x-slot name="subheading">{$this->logoutAction()->render()}</x-slot>
-                    BLADE
-                ),
-            );
-        }
+        $this->initTwoFactor();
 
         $this->form->fill();
     }
@@ -44,6 +30,7 @@ class Login extends \Filament\Pages\Auth\Login
     {
         return Action::make('logout')
             ->label('Logout')
+            ->color('danger')
             ->link()
             ->action(function () {
                 Filament::auth()->logout();
@@ -115,7 +102,10 @@ class Login extends \Filament\Pages\Auth\Login
         if ($code = $request->validRecoveryCode()) {
             $user->replaceRecoveryCode($code);
         } elseif (! $request->hasValidCode()) {
-            $field = $request->input('code') ? 'code' : 'recovery_code';
+            $field = $request->input('recovery_code') ? 'recovery_code' : 'code';
+
+            $this->initTwoFactor();
+
             throw ValidationException::withMessages([
                 'data.'.$field => 'Invalid code!',
             ]);
@@ -135,5 +125,19 @@ class Login extends \Filament\Pages\Auth\Login
         }
 
         return parent::getAuthenticateFormAction();
+    }
+
+    private function initTwoFactor(): void
+    {
+        if (request()->session()->has('login.id')) {
+            FilamentView::registerRenderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn (): string => Blade::render(
+                    <<<BLADE
+                        <x-slot name="subheading">{$this->logoutAction()->render()}</x-slot>
+                    BLADE
+                ),
+            );
+        }
     }
 }
