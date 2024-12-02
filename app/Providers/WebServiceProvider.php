@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Middleware\HasProjectMiddleware;
+use App\Web\Pages\Login;
 use App\Web\Pages\Settings\Profile;
 use App\Web\Pages\Settings\Projects\Widgets\SelectProject;
 use Exception;
@@ -111,7 +112,7 @@ class WebServiceProvider extends ServiceProvider
                 'profile' => MenuItem::make()
                     ->url(fn (): string => Profile\Index::getUrl()),
             ])
-            ->login()
+            ->login(Login::class)
             ->spa()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->sidebarCollapsibleOnDesktop()
