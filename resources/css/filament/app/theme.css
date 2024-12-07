@@ -29,8 +29,9 @@
         rgba(var(--primary-500), 1),
         rgba(var(--primary-900), 1)
     );
-    box-shadow: 0 4px 6px -1px #0000001a,
-    0 2px 4px -2px #0000001a;
+    box-shadow:
+        0 4px 6px -1px #0000001a,
+        0 2px 4px -2px #0000001a;
 }
 
 .bg-primary-700-gradient {
