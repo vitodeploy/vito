@@ -34,7 +34,7 @@ jobs:
             --push
 
       - name: Build and push latest tag
-        if: startsWith(github.event.release.target_commitish, '1.x')
+        if: startsWith(github.event.release.target_commitish, '2.x')
         run: |
           docker buildx build . \
             -f docker/Dockerfile \
