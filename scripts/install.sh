@@ -1,12 +1,8 @@
 #!/bin/bash
 
-export VITO_VERSION="1.x"
+export VITO_VERSION="2.x"
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
-
-if [[ -z "${V_USERNAME}" ]]; then
-    export V_USERNAME=vito
-fi
 
 if [[ -z "${V_PASSWORD}" ]]; then
     export V_PASSWORD=$(openssl rand -base64 12)
@@ -34,14 +30,14 @@ fi
 
 apt remove needrestart -y
 
-useradd -p $(openssl passwd -1 ${V_PASSWORD}) ${V_USERNAME}
-usermod -aG ${V_USERNAME}
-echo "${V_USERNAME} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
-mkdir /home/${V_USERNAME}
-mkdir /home/${V_USERNAME}/.ssh
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
-chsh -s /bin/bash "${V_USERNAME}"
-su - "${V_USERNAME}" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<< y
+useradd -p $(openssl passwd -1 ${V_PASSWORD}) vito
+usermod -aG vito
+echo "vito ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+mkdir /home/vito
+mkdir /home/vito/.ssh
+chown -R vito:vito /home/vito
+chsh -s /bin/bash "vito"
+su - "vito" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<< y
 
 # upgrade
 apt clean
@@ -57,7 +53,7 @@ apt install certbot python3-certbot-nginx -y
 
 # nginx
 export V_NGINX_CONFIG="
-    user ${V_USERNAME};
+    user vito;
     worker_processes auto;
     pid /run/nginx.pid;
     include /etc/nginx/modules-enabled/*.conf;
@@ -92,7 +88,7 @@ export V_PHP_VERSION="8.2"
 add-apt-repository ppa:ondrej/php -y
 apt update
 apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-intl
-if ! sed -i "s/www-data/${V_USERNAME}/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
+if ! sed -i "s/www-data/vito/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
     echo 'Error installing PHP' && exit 1
 fi
 service php${V_PHP_VERSION}-fpm enable
@@ -112,7 +108,7 @@ server {
     listen 80;
     listen [::]:80;
     server_name _;
-    root /home/${V_USERNAME}/vito/public;
+    root /home/vito/vito/public;
 
     add_header X-Frame-Options \"SAMEORIGIN\";
     add_header X-Content-Type-Options \"nosniff\";
@@ -142,63 +138,63 @@ server {
     }
 }
 "
-rm -rf /home/${V_USERNAME}/vito
-mkdir /home/${V_USERNAME}/vito
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/vito
-chmod -R 755 /home/${V_USERNAME}/vito
+rm -rf /home/vito/vito
+mkdir /home/vito/vito
+chown -R vito:vito /home/vito/vito
+chmod -R 755 /home/vito/vito
 rm /etc/nginx/sites-available/default
 rm /etc/nginx/sites-enabled/default
 echo "${V_VHOST_CONFIG}" | tee /etc/nginx/sites-available/vito
 ln -s /etc/nginx/sites-available/vito /etc/nginx/sites-enabled/
 service nginx restart
-rm -rf /home/${V_USERNAME}/vito
+rm -rf /home/vito/vito
 git config --global core.fileMode false
-git clone -b ${VITO_VERSION} ${V_REPO} /home/${V_USERNAME}/vito
-find /home/${V_USERNAME}/vito -type d -exec chmod 755 {} \;
-find /home/${V_USERNAME}/vito -type f -exec chmod 644 {} \;
-cd /home/${V_USERNAME}/vito && git config core.fileMode false
-cd /home/${V_USERNAME}/vito
+git clone -b ${VITO_VERSION} ${V_REPO} /home/vito/vito
+find /home/vito/vito -type d -exec chmod 755 {} \;
+find /home/vito/vito -type f -exec chmod 644 {} \;
+cd /home/vito/vito && git config core.fileMode false
+cd /home/vito/vito
 git checkout $(git tag -l --merged ${VITO_VERSION} --sort=-v:refname | head -n 1)
 composer install --no-dev
 cp .env.prod .env
-touch /home/${V_USERNAME}/vito/storage/database.sqlite
+touch /home/vito/vito/storage/database.sqlite
 php artisan key:generate
 php artisan storage:link
 php artisan migrate --force
 php artisan user:create Vito ${V_ADMIN_EMAIL} ${V_ADMIN_PASSWORD}
-openssl genpkey -algorithm RSA -out /home/${V_USERNAME}/vito/storage/ssh-private.pem
-chmod 600 /home/${V_USERNAME}/vito/storage/ssh-private.pem
-ssh-keygen -y -f /home/${V_USERNAME}/vito/storage/ssh-private.pem > /home/${V_USERNAME}/vito/storage/ssh-public.key
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/vito/storage/ssh-private.pem
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}/vito/storage/ssh-public.key
+openssl genpkey -algorithm RSA -out /home/vito/vito/storage/ssh-private.pem
+chmod 600 /home/vito/vito/storage/ssh-private.pem
+ssh-keygen -y -f /home/vito/vito/storage/ssh-private.pem > /home/vito/vito/storage/ssh-public.key
+chown -R vito:vito /home/vito/vito/storage/ssh-private.pem
+chown -R vito:vito /home/vito/vito/storage/ssh-public.key
 
 # setup supervisor
 export V_WORKER_CONFIG="
 [program:worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /home/${V_USERNAME}/vito/artisan queue:work --sleep=3 --backoff=0 --queue=default,ssh,ssh-long --timeout=3600 --tries=1
+command=php /home/vito/vito/artisan queue:work --sleep=3 --backoff=0 --queue=default,ssh,ssh-long --timeout=3600 --tries=1
 autostart=1
 autorestart=1
 user=vito
 redirect_stderr=true
-stdout_logfile=/home/${V_USERNAME}/.logs/workers/worker.log
+stdout_logfile=/home/vito/.logs/workers/worker.log
 stopwaitsecs=3600
 "
 apt-get install supervisor -y
 service supervisor enable
 service supervisor start
-mkdir -p /home/${V_USERNAME}/.logs
-mkdir -p /home/${V_USERNAME}/.logs/workers
-touch /home/${V_USERNAME}/.logs/workers/worker.log
+mkdir -p /home/vito/.logs
+mkdir -p /home/vito/.logs/workers
+touch /home/vito/.logs/workers/worker.log
 echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
 supervisorctl reread
 supervisorctl update
 
 # setup cronjobs
-echo "* * * * * cd /home/${V_USERNAME}/vito && php artisan schedule:run >> /dev/null 2>&1" | sudo -u ${V_USERNAME} crontab -
+echo "* * * * * cd /home/vito/vito && php artisan schedule:run >> /dev/null 2>&1" | sudo -u vito crontab -
 
 # cleanup
-chown -R ${V_USERNAME}:${V_USERNAME} /home/${V_USERNAME}
+chown -R vito:vito /home/vito
 
 # optimize
 php artisan optimize
@@ -209,7 +205,7 @@ supervisorctl start worker:*
 
 # print info
 echo "🎉 Congratulations!"
-echo "✅ SSH User: ${V_USERNAME}"
+echo "✅ SSH User: vito"
 echo "✅ SSH Password: ${V_PASSWORD}"
 echo "✅ Admin Email: ${V_ADMIN_EMAIL}"
 echo "✅ Admin Password: ${V_ADMIN_PASSWORD}"
