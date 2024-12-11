@@ -6,11 +6,9 @@ use App\Enums\Database;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
-use App\Enums\ServerType;
 use App\Enums\ServiceStatus;
 use App\Enums\Webserver;
 use App\Facades\SSH;
-use App\Models\Server;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Web\Pages\Servers\Index;
 use App\Web\Pages\Servers\Settings;
@@ -36,7 +34,6 @@ class ServerTest extends TestCase
 
         Livewire::test(Index::class)
             ->callAction('create', [
-                'type' => ServerType::REGULAR,
                 'provider' => ServerProvider::CUSTOM,
                 'name' => 'test',
                 'ip' => '1.1.1.1',
@@ -79,64 +76,6 @@ class ServerTest extends TestCase
 
         $this->assertDatabaseHas('services', [
             'server_id' => 1,
-            'type' => 'firewall',
-            'name' => 'ufw',
-            'version' => 'latest',
-            'status' => ServiceStatus::READY,
-        ]);
-    }
-
-    public function test_create_database_server(): void
-    {
-        $this->actingAs($this->user);
-
-        SSH::fake('Active: active'); // fake output for service installations
-
-        Livewire::test(Index::class)
-            ->callAction('create', [
-                'type' => ServerType::DATABASE,
-                'provider' => ServerProvider::CUSTOM,
-                'name' => 'test',
-                'ip' => '2.2.2.2',
-                'port' => '22',
-                'os' => OperatingSystem::UBUNTU22,
-                'database' => Database::MYSQL80,
-            ])
-            ->assertSuccessful();
-
-        $server = Server::query()->where('ip', '2.2.2.2')->first();
-
-        $this->assertDatabaseHas('servers', [
-            'name' => 'test',
-            'ip' => '2.2.2.2',
-            'status' => ServerStatus::READY,
-        ]);
-
-        $this->assertDatabaseMissing('services', [
-            'server_id' => $server->id,
-            'type' => 'php',
-            'version' => '8.2',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseMissing('services', [
-            'server_id' => $server->id,
-            'type' => 'webserver',
-            'name' => 'nginx',
-            'version' => 'latest',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => $server->id,
-            'type' => 'database',
-            'name' => 'mysql',
-            'version' => '8.0',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => $server->id,
             'type' => 'firewall',
             'name' => 'ufw',
             'version' => 'latest',

@@ -5,6 +5,7 @@ namespace App\Actions\Server;
 use App\Enums\FirewallRuleStatus;
 use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
+use App\Enums\ServerType;
 use App\Facades\Notifier;
 use App\Models\Project;
 use App\Models\Server;
@@ -33,7 +34,7 @@ class CreateServer
             'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],
-            'type' => $input['type'],
+            'type' => ServerType::REGULAR,
             'provider' => $input['provider'],
             'authentication' => [
                 'user' => config('core.ssh_user'),
@@ -123,10 +124,6 @@ class CreateServer
             'os' => [
                 'required',
                 Rule::in(config('core.operating_systems')),
-            ],
-            'type' => [
-                'required',
-                Rule::in(config('core.server_types')),
             ],
             'server_provider' => [
                 Rule::when(function () use ($input) {

@@ -18,7 +18,7 @@ class HealthController extends Controller
     {
         return response()->json([
             'success' => true,
-            'version' => vito_version(),
+            'version' => config('app.version'),
         ]);
     }
 }

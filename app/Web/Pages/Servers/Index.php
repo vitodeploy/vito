@@ -3,14 +3,17 @@
 namespace App\Web\Pages\Servers;
 
 use App\Actions\Server\CreateServer as CreateServerAction;
+use App\Enums\Database;
+use App\Enums\PHP;
 use App\Enums\ServerProvider;
-use App\Enums\ServerType;
+use App\Enums\Webserver;
 use App\Models\Server;
 use App\Web\Components\Page;
 use App\Web\Fields\AlertField;
 use App\Web\Fields\ProviderField;
 use App\Web\Pages\Settings\ServerProviders\Actions\Create;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -57,7 +60,7 @@ class Index extends Page
                 ->label('Read the Docs')
                 ->icon('heroicon-o-document-text')
                 ->color('gray')
-                ->url('https://vitodeploy.com/servers/create-server.html')
+                ->url('https://vitodeploy.com')
                 ->openUrlInNewTab(),
             \Filament\Actions\Action::make('create')
                 ->label('Create a Server')
@@ -162,9 +165,20 @@ class Index extends Page
                         ->helperText('Run this command on your server as root user')
                         ->disabled()
                         ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
-                    TextInput::make('name')
-                        ->label('Name')
-                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['name']),
+                    Grid::make()
+                        ->schema([
+                            TextInput::make('name')
+                                ->label('Name')
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['name']),
+                            Select::make('os')
+                                ->label('OS')
+                                ->native(false)
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['os'])
+                                ->options(
+                                    collect(config('core.operating_systems'))
+                                        ->mapWithKeys(fn ($value) => [$value => $value])
+                                ),
+                        ]),
                     Grid::make()
                         ->schema([
                             TextInput::make('ip')
@@ -175,57 +189,46 @@ class Index extends Page
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['port']),
                         ])
                         ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
-                    Grid::make()
+                    Fieldset::make('Services')
+                        ->columns(1)
                         ->schema([
-                            Select::make('os')
-                                ->label('OS')
-                                ->native(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['os'])
-                                ->options(
-                                    collect(config('core.operating_systems'))
-                                        ->mapWithKeys(fn ($value) => [$value => $value])
-                                ),
-                            Select::make('type')
-                                ->label('Server Type')
-                                ->native(false)
-                                ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['type'])
-                                ->options(
-                                    collect(config('core.server_types'))
-                                        ->mapWithKeys(fn ($value) => [$value => $value])
-                                )
-                                ->default(ServerType::REGULAR),
-                        ]),
-                    Grid::make(3)
-                        ->schema([
-                            Select::make('webserver')
-                                ->label('Webserver')
-                                ->native(false)
-                                ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['webserver'] ?? [])
-                                ->options(
-                                    collect(config('core.webservers'))->mapWithKeys(fn ($value) => [$value => $value])
-                                ),
-                            Select::make('database')
-                                ->label('Database')
-                                ->native(false)
-                                ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['database'] ?? [])
-                                ->options(
-                                    collect(config('core.databases_name'))
-                                        ->mapWithKeys(fn ($value, $key) => [
-                                            $key => $value.' '.config('core.databases_version')[$key],
-                                        ])
-                                ),
-                            Select::make('php')
-                                ->label('PHP')
-                                ->native(false)
-                                ->selectablePlaceholder(false)
-                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['php'] ?? [])
-                                ->options(
-                                    collect(config('core.php_versions'))
-                                        ->mapWithKeys(fn ($value) => [$value => $value])
-                                ),
+                            AlertField::make('alert')
+                                ->info()
+                                ->message('You can install/uninstall services later'),
+                            Grid::make(3)
+                                ->schema([
+                                    Select::make('webserver')
+                                        ->label('Webserver')
+                                        ->native(false)
+                                        ->selectablePlaceholder(false)
+                                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['webserver'] ?? [])
+                                        ->default(Webserver::NONE)
+                                        ->options(
+                                            collect(config('core.webservers'))->mapWithKeys(fn ($value) => [$value => $value])
+                                        ),
+                                    Select::make('database')
+                                        ->label('Database')
+                                        ->native(false)
+                                        ->selectablePlaceholder(false)
+                                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['database'] ?? [])
+                                        ->default(Database::NONE)
+                                        ->options(
+                                            collect(config('core.databases_name'))
+                                                ->mapWithKeys(fn ($value, $key) => [
+                                                    $key => $value.' '.config('core.databases_version')[$key],
+                                                ])
+                                        ),
+                                    Select::make('php')
+                                        ->label('PHP')
+                                        ->native(false)
+                                        ->selectablePlaceholder(false)
+                                        ->rules(fn ($get) => CreateServerAction::rules($project, $get())['php'] ?? [])
+                                        ->default(PHP::NONE)
+                                        ->options(
+                                            collect(config('core.php_versions'))
+                                                ->mapWithKeys(fn ($value) => [$value => $value])
+                                        ),
+                                ]),
                         ]),
                 ])
                 ->modalSubmitActionLabel('Create')
