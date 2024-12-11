@@ -38,7 +38,7 @@ class Index extends Page
                 ->label('Read the Docs')
                 ->icon('heroicon-o-document-text')
                 ->color('gray')
-                ->url('https://vitodeploy.com/servers/firewall.html')
+                ->url('https://vitodeploy.com/servers/firewall')
                 ->openUrlInNewTab(),
             Action::make('create')
                 ->authorize(fn () => auth()->user()?->can('create', [FirewallRule::class, $this->server]))

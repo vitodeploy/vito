@@ -45,7 +45,7 @@ class Index extends \App\Web\Pages\Servers\Page
                 ->label('Read the Docs')
                 ->icon('heroicon-o-document-text')
                 ->color('gray')
-                ->url('https://vitodeploy.com/sites/create-site.html')
+                ->url('https://vitodeploy.com/sites/site-types')
                 ->openUrlInNewTab(),
             Action::make('create')
                 ->label('Create a Site')
