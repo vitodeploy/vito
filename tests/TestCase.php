@@ -28,7 +28,7 @@ abstract class TestCase extends BaseTestCase
 
     public const EXPECT_FAILURE = false;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -55,7 +55,7 @@ abstract class TestCase extends BaseTestCase
         $this->setupKeys();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
 

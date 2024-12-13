@@ -43,10 +43,7 @@ class ServerTest extends TestCase
             ]);
     }
 
-    /**
-     * @dataProvider createData
-     */
-    public function test_create_server(string $type): void
+    public function test_create_server(): void
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
@@ -55,7 +52,6 @@ class ServerTest extends TestCase
         $this->json('POST', route('api.projects.servers.create', [
             'project' => $this->user->current_project_id,
         ]), [
-            'type' => $type,
             'provider' => ServerProvider::CUSTOM,
             'name' => 'test',
             'ip' => '1.1.1.1',
@@ -68,7 +64,7 @@ class ServerTest extends TestCase
             ->assertSuccessful()
             ->assertJsonFragment([
                 'name' => 'test',
-                'type' => $type,
+                'type' => ServerType::REGULAR,
             ]);
     }
 
@@ -109,13 +105,5 @@ class ServerTest extends TestCase
             'server' => $this->server->id,
         ]))
             ->assertNoContent();
-    }
-
-    public static function createData(): array
-    {
-        return [
-            [ServerType::REGULAR],
-            [ServerType::DATABASE],
-        ];
     }
 }

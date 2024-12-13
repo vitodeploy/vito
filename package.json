@@ -13,10 +13,6 @@
         "apexcharts": "^3.44.2",
         "autoprefixer": "^10.4.20",
         "brace": "^0.11.1",
-        "flowbite": "^2.3.0",
-        "flowbite-datepicker": "^1.2.6",
-        "htmx.org": "^1.9.10",
-        "laravel-echo": "^1.15.0",
         "laravel-vite-plugin": "^0.7.2",
         "postcss": "^8.4.45",
         "postcss-nesting": "^13.0.0",
@@ -25,7 +21,6 @@
         "prettier-plugin-sh": "^0.14.0",
         "prettier-plugin-tailwindcss": "^0.5.11",
         "tailwindcss": "^3.4.10",
-        "tippy.js": "^6.3.7",
         "vite": "^4.5.5"
     }
 }

@@ -11,7 +11,8 @@ class Regular extends AbstractType
         return [
             'webserver' => [
                 'required',
-                'in:'.implode(',', config('core.webservers')),
+                Rule::in(config('core.webservers')),
+
             ],
             'php' => [
                 'required',
@@ -19,7 +20,7 @@ class Regular extends AbstractType
             ],
             'database' => [
                 'required',
-                'in:'.implode(',', config('core.databases')),
+                Rule::in(config('core.databases')),
             ],
         ];
     }

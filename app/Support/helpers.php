@@ -1,7 +1,6 @@
 <?php
 
 use App\Exceptions\SSHError;
-use App\Helpers\HtmxResponse;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
@@ -32,14 +31,15 @@ function date_with_timezone($date, $timezone): string
     return $dt->format('Y-m-d H:i:s');
 }
 
-function htmx(): HtmxResponse
+function show_vito_version(): string
 {
-    return new HtmxResponse;
-}
+    $version = config('app.version');
 
-function vito_version(): string
-{
-    return config('app.version');
+    if (str($version)->contains('-beta')) {
+        return str($version)->before('-beta')->toString();
+    }
+
+    return $version;
 }
 
 function convert_time_format($string): string
