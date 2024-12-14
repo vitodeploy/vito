@@ -4,6 +4,7 @@ namespace App\Support\Testing;
 
 use App\Exceptions\SSHConnectionError;
 use App\Helpers\SSH;
+use App\Models\Server;
 use Illuminate\Support\Traits\ReflectsClosures;
 use PHPUnit\Framework\Assert;
 
@@ -26,6 +27,21 @@ class SSHFake extends SSH
     public function __construct(?string $output = null)
     {
         $this->output = $output;
+    }
+
+    public function init(Server $server, ?string $asUser = null): self
+    {
+        $this->connection = null;
+        $this->log = null;
+        $this->asUser = null;
+        $this->server = $server->refresh();
+        $this->user = $server->getSshUser();
+        if ($asUser && $asUser != $server->getSshUser()) {
+            $this->user = $asUser;
+            $this->asUser = $asUser;
+        }
+
+        return $this;
     }
 
     public function connectionWillFail(): void
