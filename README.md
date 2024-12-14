@@ -1,4 +1,3 @@
-
 <p align="center">
     <img src="https://github.com/user-attachments/assets/57f77bd5-bd3f-4367-84c0-aff6ecd392b4" alt="VitoDeploy>
     <p align="center">
@@ -7,9 +6,11 @@
 </p>
 
 ------
+
 ## About Vito
 
-Vito is a self-hosted web application that helps you manage your servers and deploy your PHP applications into production servers without a hassle.
+Vito is a self-hosted web application that helps you manage your servers and deploy your PHP applications into
+production servers without a hassle.
 
 ## Quick Start
 
@@ -33,10 +34,10 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/2.x/scripts/in
 ## Useful Links
 
 - [Documentation](https://vitodeploy.com)
+- [Demo Website](https://demo.vitodeploy.com)
 - [Install on Server](https://vitodeploy.com/getting-started/installation.html#install-on-vps)
 - [Install via Docker](https://vitodeploy.com/getting-started/installation.html#install-via-docker)
 - [Roadmap](https://github.com/orgs/vitodeploy/projects/5)
-- [Video Demo](https://youtu.be/AbmUOBDOc28)
 - [Discord](https://discord.gg/uZeeHZZnm5)
 - [Contribution](https://vitodeploy.com/prologue/contribution-guide.html)
 - [Security](/SECURITY.md)
