@@ -24,6 +24,13 @@ class Login extends \Filament\Pages\Auth\Login
         $this->initTwoFactor();
 
         $this->form->fill();
+
+        if (config('app.demo')) {
+            $this->form->fill([
+                'email' => 'demo@vitodeploy.com',
+                'password' => 'password',
+            ]);
+        }
     }
 
     public function logoutAction(): Action

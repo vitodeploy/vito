@@ -189,7 +189,7 @@ class CreateServer
         return $server->provider()->createRules($input);
     }
 
-    private function createFirewallRules(Server $server): void
+    public function createFirewallRules(Server $server): void
     {
         $server->firewallRules()->createMany([
             [
