@@ -61,14 +61,14 @@ abstract class Page extends BasePage
 
         if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(PHPIndex::getNavigationLabel())
-                ->icon('heroicon-o-code-bracket')
+                ->icon('icon-php-alt')
                 ->isActiveWhen(fn () => request()->routeIs(PHPIndex::getRouteName().'*'))
                 ->url(PHPIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(NodeJsIndex::getNavigationLabel())
-                ->icon('heroicon-o-code-bracket')
+                ->icon('icon-nodejs-alt')
                 ->isActiveWhen(fn () => request()->routeIs(NodeJsIndex::getRouteName().'*'))
                 ->url(NodeJsIndex::getUrl(parameters: ['server' => $this->server]));
         }
