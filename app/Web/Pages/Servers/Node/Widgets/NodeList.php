@@ -2,7 +2,7 @@
 
 namespace App\Web\Pages\Servers\Node\Widgets;
 
-use App\Actions\Node\ChangeDefaultCli;
+use App\Actions\NodeJS\ChangeDefaultCli;
 use App\Actions\Service\Uninstall;
 use App\Models\Server;
 use App\Models\Service;

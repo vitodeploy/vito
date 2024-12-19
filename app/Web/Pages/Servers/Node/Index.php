@@ -2,8 +2,8 @@
 
 namespace App\Web\Pages\Servers\Node;
 
-use App\Actions\Node\InstallNewNode;
-use App\Enums\Node;
+use App\Actions\NodeJS\InstallNewNode;
+use App\Enums\NodeJS;
 use App\Models\Service;
 use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Servers\Node\Widgets\NodeList;
@@ -32,7 +32,7 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
-        $installedNodeVersions = $this->server->installedNodeVersions();
+        $installedNodeVersions = $this->server->installedNodejsVersions();
 
         return [
             Action::make('install')
@@ -43,8 +43,8 @@ class Index extends Page
                 ->form([
                     Select::make('version')
                         ->options(
-                            collect(config('core.node_versions'))
-                                ->filter(fn ($version) => ! in_array($version, array_merge($installedNodeVersions, [Node::NONE])))
+                            collect(config('core.nodejs_versions'))
+                                ->filter(fn ($version) => ! in_array($version, array_merge($installedNodeVersions, [NodeJS::NONE])))
                                 ->mapWithKeys(fn ($version) => [$version => $version])
                                 ->toArray()
                         )

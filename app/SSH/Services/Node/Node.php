@@ -17,7 +17,7 @@ class Node extends AbstractService
             'version' => [
                 'required',
                 Rule::in(config('core.php_versions')),
-                Rule::notIn([\App\Enums\Node::NONE]),
+                Rule::notIn([\App\Enums\NodeJS::NONE]),
                 Rule::unique('services', 'version')
                     ->where('type', 'node')
                     ->where('server_id', $this->service->server_id),

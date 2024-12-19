@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Node;
+namespace App\Actions\NodeJS;
 
 use App\Enums\ServiceStatus;
 use App\Models\Server;
@@ -15,7 +15,7 @@ class UninstallNode
         $this->validate($server, $input);
 
         /** @var Service $node */
-        $node = $server->node($input['version']);
+        $node = $server->nodejs($input['version']);
         $node->status = ServiceStatus::UNINSTALLING;
         $node->save();
 
@@ -37,7 +37,7 @@ class UninstallNode
             'version' => 'required|string',
         ])->validate();
 
-        if (! in_array($input['version'], $server->installedNodeVersions())) {
+        if (! in_array($input['version'], $server->installedNodejsVersions())) {
             throw ValidationException::withMessages(
                 ['version' => __('This version is not installed')]
             );

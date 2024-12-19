@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use App\Traits\Enum;
 
-final class Node
+final class NodeJS
 {
     use Enum;
 

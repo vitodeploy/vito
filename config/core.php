@@ -40,18 +40,18 @@ return [
         \App\Enums\PHP::V83,
         \App\Enums\PHP::V84,
     ],
-    'node_versions' => [
-        \App\Enums\Node::NONE,
-        \App\Enums\Node::V4,
-        \App\Enums\Node::V6,
-        \App\Enums\Node::V8,
-        \App\Enums\Node::V10,
-        \App\Enums\Node::V12,
-        \App\Enums\Node::V14,
-        \App\Enums\Node::V16,
-        \App\Enums\Node::V18,
-        \App\Enums\Node::V20,
-        \App\Enums\Node::V22,
+    'nodejs_versions' => [
+        \App\Enums\NodeJS::NONE,
+        \App\Enums\NodeJS::V4,
+        \App\Enums\NodeJS::V6,
+        \App\Enums\NodeJS::V8,
+        \App\Enums\NodeJS::V10,
+        \App\Enums\NodeJS::V12,
+        \App\Enums\NodeJS::V14,
+        \App\Enums\NodeJS::V16,
+        \App\Enums\NodeJS::V18,
+        \App\Enums\NodeJS::V20,
+        \App\Enums\NodeJS::V22,
     ],
     'databases' => [
         \App\Enums\Database::NONE,
@@ -219,7 +219,7 @@ return [
         'redis' => [
             'latest',
         ],
-        'node' => [
+        'nodejs' => [
             '4',
             '6',
             '8',

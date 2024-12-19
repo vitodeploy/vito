@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Actions\Node;
+namespace App\Actions\NodeJS;
 
-use App\Enums\Node;
+use App\Enums\NodeJS;
 use App\Enums\ServiceStatus;
 use App\Models\Server;
 use App\Models\Service;
@@ -14,9 +14,9 @@ class InstallNewNode
     {
         $node = new Service([
             'server_id' => $server->id,
-            'type' => 'node',
+            'type' => 'nodejs',
             'type_data' => [],
-            'name' => 'node',
+            'name' => 'nodejs',
             'version' => $input['version'],
             'status' => ServiceStatus::INSTALLING,
             'is_default' => false,
@@ -37,8 +37,8 @@ class InstallNewNode
         return [
             'version' => [
                 'required',
-                Rule::in(config('core.node_versions')),
-                Rule::notIn(array_merge($server->installedNodeVersions(), [Node::NONE])),
+                Rule::in(config('core.nodejs_versions')),
+                Rule::notIn(array_merge($server->installedNodejsVersions(), [NodeJS::NONE])),
             ],
         ];
     }
