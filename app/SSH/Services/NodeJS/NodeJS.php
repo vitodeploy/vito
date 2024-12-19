@@ -1,13 +1,13 @@
 <?php
 
-namespace App\SSH\Services\Node;
+namespace App\SSH\Services\NodeJS;
 
 use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
 use Closure;
 use Illuminate\Validation\Rule;
 
-class Node extends AbstractService
+class NodeJS extends AbstractService
 {
     use HasScripts;
 
@@ -16,10 +16,10 @@ class Node extends AbstractService
         return [
             'version' => [
                 'required',
-                Rule::in(config('core.php_versions')),
+                Rule::in(config('core.nodejs_versions')),
                 Rule::notIn([\App\Enums\NodeJS::NONE]),
                 Rule::unique('services', 'version')
-                    ->where('type', 'node')
+                    ->where('type', 'nodejs')
                     ->where('server_id', $this->service->server_id),
             ],
         ];
@@ -31,10 +31,10 @@ class Node extends AbstractService
             'service' => [
                 function (string $attribute, mixed $value, Closure $fail) {
                     $hasSite = $this->service->server->sites()
-                        ->where('node_version', $this->service->version)
+                        ->where('nodejs_version', $this->service->version)
                         ->exists();
                     if ($hasSite) {
-                        $fail('Some sites are using this Node version.');
+                        $fail('Some sites are using this NodeJS version.');
                     }
                 },
             ],
@@ -45,11 +45,11 @@ class Node extends AbstractService
     {
         $server = $this->service->server;
         $server->ssh()->exec(
-            $this->getScript('install-node.sh', [
+            $this->getScript('install-nodejs.sh', [
                 'version' => $this->service->version,
                 'user' => $server->getSshUser(),
             ]),
-            'install-node-'.$this->service->version
+            'install-nodejs-'.$this->service->version
         );
         $this->service->server->os()->cleanup();
     }
@@ -57,10 +57,10 @@ class Node extends AbstractService
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('uninstall-node.sh', [
+            $this->getScript('uninstall-nodejs.sh', [
                 'version' => $this->service->version,
             ]),
-            'uninstall-node-'.$this->service->version
+            'uninstall-nodejs-'.$this->service->version
         );
         $this->service->server->os()->cleanup();
     }
@@ -68,10 +68,10 @@ class Node extends AbstractService
     public function setDefaultCli(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('change-default-node.sh', [
+            $this->getScript('change-default-nodejs.sh', [
                 'version' => $this->service->version,
             ]),
-            'change-default-node'
+            'change-default-nodejs'
         );
     }
 }

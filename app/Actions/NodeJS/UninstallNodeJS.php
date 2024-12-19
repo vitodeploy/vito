@@ -8,23 +8,23 @@ use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-class UninstallNode
+class UninstallNodeJS
 {
     public function uninstall(Server $server, array $input): void
     {
         $this->validate($server, $input);
 
-        /** @var Service $node */
-        $node = $server->nodejs($input['version']);
-        $node->status = ServiceStatus::UNINSTALLING;
-        $node->save();
+        /** @var Service $nodejs */
+        $nodejs = $server->nodejs($input['version']);
+        $nodejs->status = ServiceStatus::UNINSTALLING;
+        $nodejs->save();
 
-        dispatch(function () use ($node) {
-            $node->handler()->uninstall();
-            $node->delete();
-        })->catch(function () use ($node) {
-            $node->status = ServiceStatus::FAILED;
-            $node->save();
+        dispatch(function () use ($nodejs) {
+            $nodejs->handler()->uninstall();
+            $nodejs->delete();
+        })->catch(function () use ($nodejs) {
+            $nodejs->status = ServiceStatus::FAILED;
+            $nodejs->save();
         })->onConnection('ssh');
     }
 
@@ -43,7 +43,7 @@ class UninstallNode
             );
         }
 
-        $hasSite = $server->sites()->where('node_version', $input['version'])->first();
+        $hasSite = $server->sites()->where('nodejs_version', $input['version'])->first();
         if ($hasSite) {
             throw ValidationException::withMessages(
                 ['version' => __('Cannot uninstall this version because some sites are using it!')]

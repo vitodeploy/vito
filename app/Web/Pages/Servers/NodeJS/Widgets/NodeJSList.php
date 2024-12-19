@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Web\Pages\Servers\Node\Widgets;
+namespace App\Web\Pages\Servers\NodeJS\Widgets;
 
 use App\Actions\NodeJS\ChangeDefaultCli;
 use App\Actions\Service\Uninstall;
@@ -15,7 +15,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
 
-class NodeList extends Widget
+class NodeJSList extends Widget
 {
     public Server $server;
 
@@ -23,7 +23,7 @@ class NodeList extends Widget
 
     protected function getTableQuery(): Builder
     {
-        return Service::query()->where('type', 'node')->where('server_id', $this->server->id);
+        return Service::query()->where('type', 'nodejs')->where('server_id', $this->server->id);
     }
 
     protected function getTableColumns(): array
@@ -59,16 +59,16 @@ class NodeList extends Widget
             ->columns($this->getTableColumns())
             ->actions([
                 ActionGroup::make([
-                    $this->defaultNodeCliAction(),
+                    $this->defaultNodeJsCliAction(),
                     $this->uninstallAction(),
                 ]),
             ]);
     }
 
-    private function defaultNodeCliAction(): Action
+    private function defaultNodeJsCliAction(): Action
     {
-        return Action::make('default-node-cli')
-            ->authorize(fn (Service $node) => auth()->user()?->can('update', $node))
+        return Action::make('default-nodejs-cli')
+            ->authorize(fn (Service $nodejs) => auth()->user()?->can('update', $nodejs))
             ->label('Make Default CLI')
             ->hidden(fn (Service $service) => $service->is_default)
             ->action(function (Service $service) {
@@ -77,7 +77,7 @@ class NodeList extends Widget
 
                     Notification::make()
                         ->success()
-                        ->title('Default Node CLI changed!')
+                        ->title('Default NodeJS CLI changed!')
                         ->send();
                 } catch (Exception $e) {
                     Notification::make()
@@ -95,7 +95,7 @@ class NodeList extends Widget
     private function uninstallAction(): Action
     {
         return Action::make('uninstall')
-            ->authorize(fn (Service $node) => auth()->user()?->can('update', $node))
+            ->authorize(fn (Service $nodejs) => auth()->user()?->can('update', $nodejs))
             ->label('Uninstall')
             ->color('danger')
             ->requiresConfirmation()

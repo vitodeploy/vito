@@ -8,11 +8,11 @@ use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Validation\Rule;
 
-class InstallNewNode
+class InstallNewNodeJsVersion
 {
     public function install(Server $server, array $input): void
     {
-        $node = new Service([
+        $nodejs = new Service([
             'server_id' => $server->id,
             'type' => 'nodejs',
             'type_data' => [],
@@ -21,14 +21,14 @@ class InstallNewNode
             'status' => ServiceStatus::INSTALLING,
             'is_default' => false,
         ]);
-        $node->save();
+        $nodejs->save();
 
-        dispatch(function () use ($node) {
-            $node->handler()->install();
-            $node->status = ServiceStatus::READY;
-            $node->save();
-        })->catch(function () use ($node) {
-            $node->delete();
+        dispatch(function () use ($nodejs) {
+            $nodejs->handler()->install();
+            $nodejs->status = ServiceStatus::READY;
+            $nodejs->save();
+        })->catch(function () use ($nodejs) {
+            $nodejs->delete();
         })->onConnection('ssh');
     }
 

@@ -18,7 +18,7 @@ use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
 use App\Web\Pages\Servers\Firewall\Index as FirewallIndex;
 use App\Web\Pages\Servers\Logs\Index as LogsIndex;
 use App\Web\Pages\Servers\Metrics\Index as MetricsIndex;
-use App\Web\Pages\Servers\Node\Index as NodeIndex;
+use App\Web\Pages\Servers\NodeJS\Index as NodeJsIndex;
 use App\Web\Pages\Servers\PHP\Index as PHPIndex;
 use App\Web\Pages\Servers\Services\Index as ServicesIndex;
 use App\Web\Pages\Servers\Settings as ServerSettings;
@@ -67,10 +67,10 @@ abstract class Page extends BasePage
         }
 
         if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
-            $items[] = NavigationItem::make(NodeIndex::getNavigationLabel())
+            $items[] = NavigationItem::make(NodeJsIndex::getNavigationLabel())
                 ->icon('heroicon-o-code-bracket')
-                ->isActiveWhen(fn () => request()->routeIs(NodeIndex::getRouteName().'*'))
-                ->url(NodeIndex::getUrl(parameters: ['server' => $this->server]));
+                ->isActiveWhen(fn () => request()->routeIs(NodeJsIndex::getRouteName().'*'))
+                ->url(NodeJsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (auth()->user()->can('viewAny', [FirewallRule::class, $this->server])) {

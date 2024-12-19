@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Web\Pages\Servers\Node;
+namespace App\Web\Pages\Servers\NodeJS;
 
-use App\Actions\NodeJS\InstallNewNode;
+use App\Actions\NodeJS\InstallNewNodeJsVersion;
 use App\Enums\NodeJS;
 use App\Models\Service;
 use App\Web\Pages\Servers\Page;
-use App\Web\Pages\Servers\Node\Widgets\NodeList;
+use App\Web\Pages\Servers\NodeJS\Widgets\NodeJSList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
@@ -14,9 +14,9 @@ use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
 {
-    protected static ?string $slug = 'servers/{server}/node';
+    protected static ?string $slug = 'servers/{server}/nodejs';
 
-    protected static ?string $title = 'Node';
+    protected static ?string $title = 'NodeJS';
 
     public function mount(): void
     {
@@ -26,7 +26,7 @@ class Index extends Page
     public function getWidgets(): array
     {
         return [
-            [NodeList::class, ['server' => $this->server]],
+            [NodeJSList::class, ['server' => $this->server]],
         ];
     }
 
@@ -48,11 +48,11 @@ class Index extends Page
                                 ->mapWithKeys(fn ($version) => [$version => $version])
                                 ->toArray()
                         )
-                        ->rules(InstallNewNode::rules($this->server)['version']),
+                        ->rules(InstallNewNodeJsVersion::rules($this->server)['version']),
                 ])
                 ->modalSubmitActionLabel('Install')
                 ->action(function (array $data) {
-                    app(InstallNewNode::class)->install($this->server, $data);
+                    app(InstallNewNodeJsVersion::class)->install($this->server, $data);
 
                     Notification::make()
                         ->success()
