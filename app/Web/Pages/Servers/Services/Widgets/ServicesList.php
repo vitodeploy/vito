@@ -75,7 +75,7 @@ class ServicesList extends TableWidget
     private function serviceAction(string $type, string $icon): Action
     {
         return Action::make($type)
-            ->authorize(fn (Service $service) => auth()->user()?->can('update', $service))
+            ->authorize(fn (Service $service) => auth()->user()?->can($type, $service))
             ->label(ucfirst($type).' Service')
             ->icon($icon)
             ->action(function (Service $service) use ($type) {
