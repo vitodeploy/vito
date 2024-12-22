@@ -11,6 +11,4 @@ final class StorageProvider
     const LOCAL = 'local';
 
     const S3 = 's3';
-
-    const WASABI = 'wasabi';
 }
