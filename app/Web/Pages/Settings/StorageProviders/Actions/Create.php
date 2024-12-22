@@ -55,10 +55,14 @@ class Create
                         ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
                         ->rules(fn ($get) => CreateStorageProvider::rules($get())['passive']),
                 ]),
+            TextInput::make('api_url')
+                ->label('API URL')
+                ->visible(fn ($get) => $get('provider') == StorageProvider::S3)
+                ->rules(fn ($get) => CreateStorageProvider::rules($get())['api_url'])
+                ->helperText('Required if you are using an S3 compatible provider like Cloudflare R2'),
             TextInput::make('path')
                 ->visible(fn ($get) => in_array($get('provider'), [
                     StorageProvider::S3,
-                    StorageProvider::WASABI,
                     StorageProvider::FTP,
                     StorageProvider::LOCAL,
                 ]))
@@ -70,16 +74,9 @@ class Create
                     };
                 }),
             Grid::make()
-                ->visible(fn ($get) => in_array($get('provider'), [
-                    StorageProvider::S3,
-                    StorageProvider::WASABI,
-                ]))
+                ->visible(fn ($get) => $get('provider') == StorageProvider::S3)
                 ->schema([
                     TextInput::make('key')
-                        ->visible(fn ($get) => in_array($get('provider'), [
-                            StorageProvider::S3,
-                            StorageProvider::WASABI,
-                        ]))
                         ->rules(fn ($get) => CreateStorageProvider::rules($get())['key'])
                         ->helperText(function ($get) {
                             return match ($get('provider')) {
@@ -88,31 +85,14 @@ class Create
                                     text: 'How to generate?',
                                     external: true
                                 ),
-                                StorageProvider::WASABI => new Link(
-                                    href: 'https://docs.wasabi.com/docs/creating-a-user-account-and-access-key',
-                                    text: 'How to generate?',
-                                    external: true
-                                ),
                                 default => '',
                             };
                         }),
                     TextInput::make('secret')
-                        ->visible(fn ($get) => in_array($get('provider'), [
-                            StorageProvider::S3,
-                            StorageProvider::WASABI,
-                        ]))
                         ->rules(fn ($get) => CreateStorageProvider::rules($get())['secret']),
                     TextInput::make('region')
-                        ->visible(fn ($get) => in_array($get('provider'), [
-                            StorageProvider::S3,
-                            StorageProvider::WASABI,
-                        ]))
                         ->rules(fn ($get) => CreateStorageProvider::rules($get())['region']),
                     TextInput::make('bucket')
-                        ->visible(fn ($get) => in_array($get('provider'), [
-                            StorageProvider::S3,
-                            StorageProvider::WASABI,
-                        ]))
                         ->rules(fn ($get) => CreateStorageProvider::rules($get())['bucket']),
                 ]),
             Checkbox::make('global')
