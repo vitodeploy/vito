@@ -28,17 +28,24 @@ jobs:
           docker buildx build . \
             -f docker/Dockerfile \
             -t vitodeploy/vito:${{ github.event.release.tag_name }} \
-            --build-arg="RELEASE=0" \
             --platform linux/amd64,linux/arm64 \
             --no-cache \
             --push
 
-      - name: Build and push to the latest tag
+      - name: Build and push to the 1.x tag
+        if: startsWith(github.event.release.target_commitish, '1.x')
+        run: |
+          docker buildx build . \
+            -f docker/Dockerfile \
+            -t vitodeploy/vito:1.x \
+            --platform linux/amd64,linux/arm64 \
+            --push
+
+      - name: Build and push to the 2.x tag
         if: startsWith(github.event.release.target_commitish, '2.x')
         run: |
           docker buildx build . \
             -f docker/Dockerfile \
-            -t vitodeploy/vito:latest \
-            --build-arg="RELEASE=0" \
+            -t vitodeploy/vito:2.x \
             --platform linux/amd64,linux/arm64 \
             --push
