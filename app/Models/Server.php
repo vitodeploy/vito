@@ -318,6 +318,17 @@ class Server extends AbstractModel
         return $versions;
     }
 
+    public function installedNodejsVersions(): array
+    {
+        $versions = [];
+        $nodes = $this->services()->where('type', 'nodejs')->get(['version']);
+        foreach ($nodes as $node) {
+            $versions[] = $node->version;
+        }
+
+        return $versions;
+    }
+
     public function type(): ServerType
     {
         $typeClass = config('core.server_types_class')[$this->type];
@@ -375,6 +386,15 @@ class Server extends AbstractModel
         }
 
         return $this->service('php', $version);
+    }
+
+    public function nodejs(?string $version = null): ?Service
+    {
+        if (! $version) {
+            return $this->defaultService('nodejs');
+        }
+
+        return $this->service('nodejs', $version);
     }
 
     public function memoryDatabase(?string $version = null): ?Service

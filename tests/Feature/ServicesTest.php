@@ -319,6 +319,11 @@ class ServicesTest extends TestCase
                 '7.4',
             ],
             [
+                'nodejs',
+                'nodejs',
+                '16',
+            ],
+            [
                 'supervisor',
                 'process_manager',
                 'latest',

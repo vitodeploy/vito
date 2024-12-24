@@ -18,6 +18,7 @@ use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
 use App\Web\Pages\Servers\Firewall\Index as FirewallIndex;
 use App\Web\Pages\Servers\Logs\Index as LogsIndex;
 use App\Web\Pages\Servers\Metrics\Index as MetricsIndex;
+use App\Web\Pages\Servers\NodeJS\Index as NodeJsIndex;
 use App\Web\Pages\Servers\PHP\Index as PHPIndex;
 use App\Web\Pages\Servers\Services\Index as ServicesIndex;
 use App\Web\Pages\Servers\Settings as ServerSettings;
@@ -60,9 +61,16 @@ abstract class Page extends BasePage
 
         if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(PHPIndex::getNavigationLabel())
-                ->icon('heroicon-o-code-bracket')
+                ->icon('icon-php-alt')
                 ->isActiveWhen(fn () => request()->routeIs(PHPIndex::getRouteName().'*'))
                 ->url(PHPIndex::getUrl(parameters: ['server' => $this->server]));
+        }
+
+        if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
+            $items[] = NavigationItem::make(NodeJsIndex::getNavigationLabel())
+                ->icon('icon-nodejs-alt')
+                ->isActiveWhen(fn () => request()->routeIs(NodeJsIndex::getRouteName().'*'))
+                ->url(NodeJsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (auth()->user()->can('viewAny', [FirewallRule::class, $this->server])) {

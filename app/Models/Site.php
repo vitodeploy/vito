@@ -43,6 +43,8 @@ use Illuminate\Support\Str;
  * @property ?Ssl $activeSsl
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
+ *
+ * @TODO: Add nodejs_version column
  */
 class Site extends AbstractModel
 {

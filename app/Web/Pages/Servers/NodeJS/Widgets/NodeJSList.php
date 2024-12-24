@@ -1,23 +1,21 @@
 <?php
 
-namespace App\Web\Pages\Servers\Services\Widgets;
+namespace App\Web\Pages\Servers\NodeJS\Widgets;
 
-use App\Actions\Service\Manage;
+use App\Actions\NodeJS\ChangeDefaultCli;
 use App\Actions\Service\Uninstall;
 use App\Models\Server;
 use App\Models\Service;
-use App\Web\Pages\Servers\Services\Index;
 use Exception;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Widgets\TableWidget;
+use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
 
-class ServicesList extends TableWidget
+class NodeJSList extends Widget
 {
     public Server $server;
 
@@ -25,18 +23,12 @@ class ServicesList extends TableWidget
 
     protected function getTableQuery(): Builder
     {
-        return Service::query()->where('server_id', $this->server->id);
+        return Service::query()->where('type', 'nodejs')->where('server_id', $this->server->id);
     }
 
     protected function getTableColumns(): array
     {
         return [
-            IconColumn::make('id')
-                ->label('Service')
-                ->icon(fn (Service $record) => 'icon-'.$record->name)
-                ->width(24),
-            TextColumn::make('name')
-                ->sortable(),
             TextColumn::make('version')
                 ->sortable(),
             TextColumn::make('status')
@@ -44,10 +36,15 @@ class ServicesList extends TableWidget
                 ->badge()
                 ->color(fn (Service $service) => Service::$statusColors[$service->status])
                 ->sortable(),
+            TextColumn::make('is_default')
+                ->label('Default Cli')
+                ->badge()
+                ->color(fn (Service $service) => $service->is_default ? 'primary' : 'gray')
+                ->state(fn (Service $service) => $service->is_default ? 'Yes' : 'No')
+                ->sortable(),
             TextColumn::make('created_at')
                 ->label('Installed At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
-                ->sortable(),
+                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone),
         ];
     }
 
@@ -57,30 +54,31 @@ class ServicesList extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->heading('Installed Services')
+            ->heading(null)
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
             ->actions([
                 ActionGroup::make([
-                    $this->serviceAction('start', 'heroicon-o-play'),
-                    $this->serviceAction('stop', 'heroicon-o-stop'),
-                    $this->serviceAction('restart', 'heroicon-o-arrow-path'),
-                    $this->serviceAction('disable', 'heroicon-o-x-mark'),
-                    $this->serviceAction('enable', 'heroicon-o-check'),
+                    $this->defaultNodeJsCliAction(),
                     $this->uninstallAction(),
                 ]),
             ]);
     }
 
-    private function serviceAction(string $type, string $icon): Action
+    private function defaultNodeJsCliAction(): Action
     {
-        return Action::make($type)
-            ->authorize(fn (Service $service) => auth()->user()?->can($type, $service))
-            ->label(ucfirst($type).' Service')
-            ->icon($icon)
-            ->action(function (Service $service) use ($type) {
+        return Action::make('default-nodejs-cli')
+            ->authorize(fn (Service $nodejs) => auth()->user()?->can('update', $nodejs))
+            ->label('Make Default CLI')
+            ->hidden(fn (Service $service) => $service->is_default)
+            ->action(function (Service $service) {
                 try {
-                    app(Manage::class)->$type($service);
+                    app(ChangeDefaultCli::class)->change($this->server, ['version' => $service->version]);
+
+                    Notification::make()
+                        ->success()
+                        ->title('Default NodeJS CLI changed!')
+                        ->send();
                 } catch (Exception $e) {
                     Notification::make()
                         ->danger()
@@ -97,16 +95,13 @@ class ServicesList extends TableWidget
     private function uninstallAction(): Action
     {
         return Action::make('uninstall')
-            ->authorize(fn (Service $service) => auth()->user()?->can('delete', $service))
-            ->label('Uninstall Service')
-            ->icon('heroicon-o-trash')
+            ->authorize(fn (Service $nodejs) => auth()->user()?->can('update', $nodejs))
+            ->label('Uninstall')
             ->color('danger')
             ->requiresConfirmation()
             ->action(function (Service $service) {
                 try {
                     app(Uninstall::class)->uninstall($service);
-
-                    $this->redirect(Index::getUrl(['server' => $this->server]));
                 } catch (Exception $e) {
                     Notification::make()
                         ->danger()
