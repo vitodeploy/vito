@@ -14,6 +14,8 @@ final class Database
 
     const MYSQL80 = 'mysql80';
 
+    const MYSQL84 = 'mysql84';
+
     const MARIADB103 = 'mariadb103';
 
     const MARIADB104 = 'mariadb104';

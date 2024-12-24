@@ -93,7 +93,11 @@ class SSH
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        if (! $this->log && $log) {
+        if (! $log) {
+            $log = 'run-command';
+        }
+
+        if (! $this->log) {
             $this->log = ServerLog::make($this->server, $log);
             if ($siteId) {
                 $this->log->forSite($siteId);
@@ -117,16 +121,18 @@ class SSH
             $this->connection->setTimeout(0);
             if ($stream) {
                 $this->connection->exec($command, function ($output) use ($streamCallback) {
-                    $this->log?->write($output);
+                    $this->log->write($output);
 
                     return $streamCallback($output);
                 });
 
                 return '';
             } else {
-                $output = $this->connection->exec($command);
-
-                $this->log?->write($output);
+                $output = '';
+                $this->connection->exec($command, function ($out) use (&$output) {
+                    $this->log->write($out);
+                    $output .= $out;
+                });
 
                 if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {
                     throw new SSHCommandError(
