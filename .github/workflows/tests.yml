@@ -42,3 +42,6 @@ jobs:
 
       - name: Run test suite
         run: php artisan test
+
+      - name: Run Phpstan
+        run: ./vendor/bin/phpstan analyze --no-progress
