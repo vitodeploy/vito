@@ -40,7 +40,7 @@ class Supervisor extends AbstractProcessManager
         string $logFile,
         ?int $siteId = null
     ): void {
-        $this->service->server->ssh($user)->exec(
+        $this->service->server->ssh()->exec(
             $this->getScript('supervisor/create-worker.sh', [
                 'id' => $id,
                 'config' => $this->generateConfigFile(
