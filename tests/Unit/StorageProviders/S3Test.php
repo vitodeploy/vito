@@ -20,6 +20,7 @@ class S3Test extends TestCase
         $storageProvider = StorageProviderModel::factory()->create([
             'provider' => StorageProvider::S3,
             'credentials' => [
+                'api_url' => 'https://fake-bucket.s3.us-east-1.s3-compatible.com',
                 'key' => 'fake-key',
                 'secret' => 'fake-secret',
                 'region' => 'us-east-1',

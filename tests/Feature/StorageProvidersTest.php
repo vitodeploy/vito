@@ -52,6 +52,7 @@ class StorageProvidersTest extends TestCase
     {
         $this->actingAs($this->user);
 
+        /** @var StorageProviderModel $provider */
         $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
             'provider' => StorageProvider::DROPBOX,
@@ -61,6 +62,7 @@ class StorageProvidersTest extends TestCase
             ->assertSuccessful()
             ->assertSee($provider->profile);
 
+        /** @var StorageProviderModel $provider */
         $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
             'provider' => StorageProvider::S3,
@@ -69,11 +71,6 @@ class StorageProvidersTest extends TestCase
         $this->get(Index::getUrl())
             ->assertSuccessful()
             ->assertSee($provider->profile);
-
-        $provider = StorageProviderModel::factory()->create([
-            'user_id' => $this->user->id,
-            'provider' => StorageProvider::WASABI,
-        ]);
 
         $this->get(Index::getUrl())
             ->assertSuccessful()

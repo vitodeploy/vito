@@ -14,21 +14,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
+        $seeders = [
             ProjectsSeeder::class,
             UsersSeeder::class,
-            TagsSeeder::class,
-            ServerProvidersSeeder::class,
-            StorageProvidersSeeder::class,
-            SourceControlsSeeder::class,
-            NotificationChannelsSeeder::class,
-            ServersSeeder::class,
-            SitesSeeder::class,
-            DatabasesSeeder::class,
-            CronJobsSeeder::class,
-            SshKeysSeeder::class,
-            MetricsSeeder::class,
-            ServerLogsSeeder::class,
-        ]);
+        ];
+
+        if (config('app.demo')) {
+            $seeders = array_merge($seeders, [
+                TagsSeeder::class,
+                ServerProvidersSeeder::class,
+                StorageProvidersSeeder::class,
+                SourceControlsSeeder::class,
+                NotificationChannelsSeeder::class,
+                ServersSeeder::class,
+                SitesSeeder::class,
+                DatabasesSeeder::class,
+                CronJobsSeeder::class,
+                SshKeysSeeder::class,
+                MetricsSeeder::class,
+                ServerLogsSeeder::class,
+            ]);
+        }
+
+        $this->call($seeders);
     }
 }
