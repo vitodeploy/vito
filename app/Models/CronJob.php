@@ -6,16 +6,6 @@ use App\Enums\CronjobStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $server_id
- * @property string $command
- * @property string $user
- * @property string $frequency
- * @property bool $hidden
- * @property string $status
- * @property string $crontab
- * @property Server $server
- */
 class CronJob extends AbstractModel
 {
     use HasFactory;
@@ -43,6 +33,9 @@ class CronJob extends AbstractModel
         CronjobStatus::DISABLED => 'gray',
     ];
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

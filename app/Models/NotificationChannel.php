@@ -8,14 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 
-/**
- * @property int $id
- * @property string provider
- * @property array data
- * @property string label
- * @property bool connected
- * @property int $project_id
- */
 class NotificationChannel extends AbstractModel
 {
     use HasFactory;
@@ -52,6 +44,9 @@ class NotificationChannel extends AbstractModel
         }
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

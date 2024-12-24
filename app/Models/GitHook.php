@@ -6,17 +6,6 @@ use App\Exceptions\FailedToDestroyGitHook;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $site_id
- * @property int $source_control_id
- * @property string $secret
- * @property array $events
- * @property array $actions
- * @property string $hook_id
- * @property array $hook_response
- * @property Site $site
- * @property SourceControl $sourceControl
- */
 class GitHook extends AbstractModel
 {
     use HasFactory;
@@ -39,11 +28,17 @@ class GitHook extends AbstractModel
         'hook_response' => 'json',
     ];
 
+    /**
+     * @return BelongsTo<Site, $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
     }
 
+    /**
+     * @return BelongsTo<SourceControl, $this>
+     */
     public function sourceControl(): BelongsTo
     {
         return $this->belongsTo(SourceControl::class);

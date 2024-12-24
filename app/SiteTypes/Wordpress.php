@@ -8,6 +8,7 @@ use App\Actions\Database\LinkUser;
 use App\Enums\SiteFeature;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\SSH\Services\Webserver\Webserver;
 use Closure;
 use Illuminate\Validation\Rule;
 

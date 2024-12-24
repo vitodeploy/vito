@@ -7,20 +7,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $id
- * @property int $script_id
- * @property int $server_log_id
- * @property ?int $server_id
- * @property string $user
- * @property array $variables
- * @property string $status
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property Script $script
- * @property ?ServerLog $serverLog
- * @property ?Server $server
- */
 class ScriptExecution extends AbstractModel
 {
     use HasFactory;
@@ -47,6 +33,9 @@ class ScriptExecution extends AbstractModel
         ScriptExecutionStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Script, $this>
+     */
     public function script(): BelongsTo
     {
         return $this->belongsTo(Script::class);
@@ -64,11 +53,17 @@ class ScriptExecution extends AbstractModel
         return $content;
     }
 
+    /**
+     * @return BelongsTo<ServerLog, $this>
+     */
     public function serverLog(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class);
     }
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

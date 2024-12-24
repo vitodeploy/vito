@@ -6,18 +6,6 @@ use App\Enums\DeploymentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $site_id
- * @property int $deployment_script_id
- * @property int $log_id
- * @property string $commit_id
- * @property string $commit_id_short
- * @property array $commit_data
- * @property string $status
- * @property Site $site
- * @property DeploymentScript $deploymentScript
- * @property ServerLog $log
- */
 class Deployment extends AbstractModel
 {
     use HasFactory;
@@ -44,16 +32,25 @@ class Deployment extends AbstractModel
         DeploymentStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Site, $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
     }
 
+    /**
+     * @return BelongsTo<DeploymentScript, $this>
+     */
     public function deploymentScript(): BelongsTo
     {
         return $this->belongsTo(DeploymentScript::class);
     }
 
+    /**
+     * @return BelongsTo<ServerLog, $this>
+     */
     public function log(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class, 'log_id');

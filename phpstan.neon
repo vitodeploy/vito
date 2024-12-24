@@ -1,0 +1,10 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+parameters:
+    level: 2
+    paths:
+        - app/
+    # checkExplicitMixed: true
+    # checkImplicitMixed: true
+    ignoreErrors:
+        - identifier: larastan.noModelMake

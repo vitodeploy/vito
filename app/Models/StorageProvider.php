@@ -7,14 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @property int $user_id
- * @property string $profile
- * @property string $provider
- * @property array $credentials
- * @property User $user
- * @property int $project_id
- */
 class StorageProvider extends AbstractModel
 {
     use HasFactory;
@@ -33,6 +25,9 @@ class StorageProvider extends AbstractModel
         'project_id' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -45,11 +40,17 @@ class StorageProvider extends AbstractModel
         return new $providerClass($this);
     }
 
+    /**
+     * @return HasMany<Backup, $this>
+     */
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class, 'storage_id');
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

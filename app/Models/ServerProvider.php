@@ -8,17 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * @property int $user_id
- * @property string $profile
- * @property string $provider
- * @property array $credentials
- * @property bool $connected
- * @property User $user
- * @property ?int $project_id
- * @property Server[] $servers
- * @property Project $project
- */
 class ServerProvider extends AbstractModel
 {
     use HasFactory;
@@ -39,6 +28,9 @@ class ServerProvider extends AbstractModel
         'project_id' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -49,6 +41,9 @@ class ServerProvider extends AbstractModel
         return $this->credentials;
     }
 
+    /**
+     * @return HasMany<Server, $this>
+     */
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class, 'provider_id');
@@ -61,6 +56,9 @@ class ServerProvider extends AbstractModel
         return new $providerClass($this);
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

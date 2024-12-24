@@ -7,15 +7,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $backup_id
- * @property string $name
- * @property int $size
- * @property string $status
- * @property string $restored_to
- * @property Carbon $restored_at
- * @property Backup $backup
- */
 class BackupFile extends AbstractModel
 {
     use HasFactory;
@@ -39,7 +30,7 @@ class BackupFile extends AbstractModel
         static::created(function (BackupFile $backupFile) {
             $keep = $backupFile->backup->keep_backups;
             if ($backupFile->backup->files()->count() > $keep) {
-                /* @var BackupFile $lastFileToKeep */
+                /** @var BackupFile $lastFileToKeep */
                 $lastFileToKeep = $backupFile->backup->files()->orderByDesc('id')->skip($keep)->first();
                 if ($lastFileToKeep) {
                     $files = $backupFile->backup->files()
@@ -71,6 +62,9 @@ class BackupFile extends AbstractModel
         BackupFileStatus::RESTORE_FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Backup, $this>
+     */
     public function backup(): BelongsTo
     {
         return $this->belongsTo(Backup::class);

@@ -26,8 +26,8 @@ class EditTags
             ->modalSubmitActionLabel('Save')
             ->modalHeading('Edit Tags')
             ->modalWidth(MaxWidth::Medium)
-            ->form(static::form($taggable))
-            ->action(static::action($taggable));
+            ->form(self::form($taggable))
+            ->action(self::action($taggable));
     }
 
     /**
@@ -42,8 +42,8 @@ class EditTags
             ->modalSubmitActionLabel('Save')
             ->modalHeading('Edit Tags')
             ->modalWidth(MaxWidth::Medium)
-            ->form(static::form($taggable))
-            ->action(static::action($taggable));
+            ->form(self::form($taggable))
+            ->action(self::action($taggable));
     }
 
     /**

@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 trait HasProjectThroughServer
 {
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough<\App\Models\Project, \App\Models\Server, $this>
+     */
     public function project(): HasOneThrough
     {
         return $this->hasOneThrough(

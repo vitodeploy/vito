@@ -8,19 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-/**
- * @property string $type
- * @property int $server_id
- * @property int $storage_id
- * @property int $database_id
- * @property string $interval
- * @property int $keep_backups
- * @property string $status
- * @property Server $server
- * @property StorageProvider $storage
- * @property Database $database
- * @property BackupFile[] $files
- */
 class Backup extends AbstractModel
 {
     use HasFactory;
@@ -58,26 +45,41 @@ class Backup extends AbstractModel
         BackupStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<StorageProvider, $this>
+     */
     public function storage(): BelongsTo
     {
         return $this->belongsTo(StorageProvider::class, 'storage_id');
     }
 
+    /**
+     * @return BelongsTo<Database, $this>
+     */
     public function database(): BelongsTo
     {
         return $this->belongsTo(Database::class)->withTrashed();
     }
 
+    /**
+     * @return HasMany<BackupFile, $this>
+     */
     public function files(): HasMany
     {
         return $this->hasMany(BackupFile::class, 'backup_id');
     }
 
+    /**
+     * @return HasOne<BackupFile, $this>
+     */
     public function lastFile(): HasOne
     {
         return $this->hasOne(BackupFile::class, 'backup_id')->latest();

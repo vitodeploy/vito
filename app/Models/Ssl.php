@@ -8,20 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
-/**
- * @property int $site_id
- * @property string $type
- * @property string $certificate
- * @property string $pk
- * @property string $ca
- * @property Carbon $expires_at
- * @property string $status
- * @property Site $site
- * @property string $ca_path
- * @property ?array $domains
- * @property int $log_id
- * @property ?ServerLog $log
- */
 class Ssl extends AbstractModel
 {
     use HasFactory;
@@ -55,6 +41,9 @@ class Ssl extends AbstractModel
         SslStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Site, $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
@@ -139,6 +128,9 @@ class Ssl extends AbstractModel
         return $this->domains;
     }
 
+    /**
+     * @return BelongsTo<ServerLog, $this>
+     */
     public function log(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class);

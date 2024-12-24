@@ -9,14 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @property int $server_id
- * @property string $name
- * @property string $status
- * @property Server $server
- * @property Backup[] $backups
- * @property Carbon $deleted_at
- */
 class Database extends AbstractModel
 {
     use HasFactory;
@@ -55,11 +47,17 @@ class Database extends AbstractModel
         DatabaseStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return HasMany<Backup, $this>
+     */
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class)->where('type', 'database');

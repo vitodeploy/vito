@@ -4,8 +4,9 @@ namespace App\SSH\Services\Webserver;
 
 use App\Models\Site;
 use App\Models\Ssl;
+use App\SSH\Services\ServiceInterface;
 
-interface Webserver
+interface Webserver extends ServiceInterface
 {
     public function createVHost(Site $site): void;
 

@@ -12,17 +12,7 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
-/**
- * @property int $server_id
- * @property ?int $site_id
- * @property string $type
- * @property string $name
- * @property string $disk
- * @property Server $server
- * @property ?Site $site
- * @property bool $is_remote
- */
-class ServerLog extends AbstractModel
+final class ServerLog extends AbstractModel
 {
     use HasFactory;
 
@@ -63,11 +53,17 @@ class ServerLog extends AbstractModel
         return 'log';
     }
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<Site, $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
@@ -140,7 +136,7 @@ class ServerLog extends AbstractModel
         return "Log file doesn't exist!";
     }
 
-    public static function log(Server $server, string $type, string $content, ?Site $site = null): static
+    public static function log(Server $server, string $type, string $content, ?Site $site = null): ServerLog
     {
         $log = new static([
             'server_id' => $server->id,

@@ -7,26 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $id
- * @property int $server_id
- * @property float $load
- * @property float $memory_total
- * @property float $memory_used
- * @property float $memory_free
- * @property float $disk_total
- * @property float $disk_used
- * @property float $disk_free
- * @property-read float|int $memory_total_in_bytes
- * @property-read float|int $memory_used_in_bytes
- * @property-read float|int $memory_free_in_bytes
- * @property-read float|int $disk_total_in_bytes
- * @property-read float|int $disk_used_in_bytes
- * @property-read float|int $disk_free_in_bytes
- * @property Server $server
- * @property Carbon $created_at
- * @property Carbon $updated_at
- */
 class Metric extends Model
 {
     use HasFactory;
@@ -53,6 +33,9 @@ class Metric extends Model
         'disk_free' => 'float',
     ];
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

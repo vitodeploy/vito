@@ -10,19 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 
-/**
- * @property int $id
- * @property int $user_id
- * @property string $name
- * @property string $content
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property Collection<ScriptExecution> $executions
- * @property ?ScriptExecution $lastExecution
- * @property User $user
- * @property int $project_id
- * @property ?Project $project
- */
 class Script extends AbstractModel
 {
     use HasFactory;
@@ -48,11 +35,17 @@ class Script extends AbstractModel
         });
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
@@ -69,11 +62,17 @@ class Script extends AbstractModel
         return array_unique($variables);
     }
 
+    /**
+     * @return HasMany<ScriptExecution, $this>
+     */
     public function executions(): HasMany
     {
         return $this->hasMany(ScriptExecution::class);
     }
 
+    /**
+     * @return HasOne<ScriptExecution, $this>
+     */
     public function lastExecution(): HasOne
     {
         return $this->hasOne(ScriptExecution::class)->latest();

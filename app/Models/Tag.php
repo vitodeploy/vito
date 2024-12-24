@@ -8,14 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
-/**
- * @property int $id
- * @property int $project_id
- * @property string $name
- * @property string $color
- * @property Carbon $created_at
- * @property Carbon $updated_at
- */
 class Tag extends AbstractModel
 {
     use HasFactory;
@@ -30,16 +22,25 @@ class Tag extends AbstractModel
         'project_id' => 'int',
     ];
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return MorphToMany<Server, $this>
+     */
     public function servers(): MorphToMany
     {
         return $this->morphedByMany(Server::class, 'taggable');
     }
 
+    /**
+     * @return MorphToMany<Site, $this>
+     */
     public function sites(): MorphToMany
     {
         return $this->morphedByMany(Site::class, 'taggable');

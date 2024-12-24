@@ -9,6 +9,10 @@ use App\Facades\SSH;
 use App\ServerTypes\ServerType;
 use App\SSH\Cron\Cron;
 use App\SSH\OS\OS;
+use App\SSH\Services\Database\Database as DatabaseService;
+use App\SSH\Services\Firewall\Firewall as FirewallService;
+use App\SSH\Services\PHP\PHP as PHPService;
+use App\SSH\Services\ProcessManager\ProcessManager as ProcessManagerService;
 use App\SSH\Systemd\Systemd;
 use App\Support\Testing\SSHFake;
 use Carbon\Carbon;
@@ -23,47 +27,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/**
- * @property int $project_id
- * @property int $user_id
- * @property string $name
- * @property string $ssh_user
- * @property string $ip
- * @property string $local_ip
- * @property int $port
- * @property string $os
- * @property string $type
- * @property array $type_data
- * @property string $provider
- * @property int $provider_id
- * @property array $provider_data
- * @property array $authentication
- * @property string $public_key
- * @property string $status
- * @property bool $auto_update
- * @property int $available_updates
- * @property int $security_updates
- * @property int $progress
- * @property string $progress_step
- * @property Project $project
- * @property User $creator
- * @property ServerProvider $serverProvider
- * @property ServerLog[] $logs
- * @property Site[] $sites
- * @property Service[] $services
- * @property Database[] $databases
- * @property DatabaseUser[] $databaseUsers
- * @property FirewallRule[] $firewallRules
- * @property CronJob[] $cronJobs
- * @property Queue[] $queues
- * @property Backup[] $backups
- * @property Queue[] $daemons
- * @property SshKey[] $sshKeys
- * @property Tag[] $tags
- * @property string $hostname
- * @property int $updates
- * @property Carbon $last_update_check
- */
 class Server extends AbstractModel
 {
     use HasFactory;
@@ -172,76 +135,121 @@ class Server extends AbstractModel
         return $this->status === ServerStatus::INSTALLATION_FAILED;
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * @return BelongsTo<ServerProvider, $this>
+     */
     public function serverProvider(): BelongsTo
     {
         return $this->belongsTo(ServerProvider::class, 'provider_id');
     }
 
+    /**
+     * @return HasMany<ServerLog, $this>
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(ServerLog::class);
     }
 
+    /**
+     * @return HasMany<Site, $this>
+     */
     public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
     }
 
+    /**
+     * @return HasMany<Service, $this>
+     */
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
     }
 
+    /**
+     * @return HasMany<Database, $this>
+     */
     public function databases(): HasMany
     {
         return $this->hasMany(Database::class);
     }
 
+    /**
+     * @return HasMany<DatabaseUser, $this>
+     */
     public function databaseUsers(): HasMany
     {
         return $this->hasMany(DatabaseUser::class);
     }
 
+    /**
+     * @return HasMany<FirewallRule, $this>
+     */
     public function firewallRules(): HasMany
     {
         return $this->hasMany(FirewallRule::class);
     }
 
+    /**
+     * @return HasMany<CronJob, $this>
+     */
     public function cronJobs(): HasMany
     {
         return $this->hasMany(CronJob::class);
     }
 
+    /**
+     * @return HasMany<Queue, $this>
+     */
     public function queues(): HasMany
     {
         return $this->hasMany(Queue::class);
     }
 
+    /**
+     * @return HasMany<Backup, $this>
+     */
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class);
     }
 
+    /**
+     * @return HasMany<Queue, $this>
+     */
     public function daemons(): HasMany
     {
         return $this->queues()->whereNull('site_id');
     }
 
+    /**
+     * @return HasMany<Metric, $this>
+     */
     public function metrics(): HasMany
     {
         return $this->hasMany(Metric::class);
     }
 
+    /**
+     * @return BelongsToMany<SshKey, $this>
+     */
     public function sshKeys(): BelongsToMany
     {
         return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
@@ -249,6 +257,9 @@ class Server extends AbstractModel
             ->withTimestamps();
     }
 
+    /**
+     * @return MorphToMany<Tag, $this>
+     */
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
@@ -265,7 +276,7 @@ class Server extends AbstractModel
 
     public function service($type, $version = null): ?Service
     {
-        /* @var Service $service */
+        /** @var Service $service */
         $service = $this->services()
             ->where(function ($query) use ($type, $version) {
                 $query->where('type', $type);
@@ -280,7 +291,7 @@ class Server extends AbstractModel
 
     public function defaultService($type): ?Service
     {
-        /* @var Service $service */
+        /** @var ?Service $service */
         $service = $this->services()
             ->where('type', $type)
             ->where('is_default', 1)
@@ -288,7 +299,7 @@ class Server extends AbstractModel
 
         // If no default service found, get the first service with status ready or stopped
         if (! $service) {
-            /** @var Service $service */
+            /** @ var ?Service $service */
             $service = $this->services()
                 ->where('type', $type)
                 ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])
@@ -352,6 +363,9 @@ class Server extends AbstractModel
         return $this->service('webserver', $version);
     }
 
+    /**
+     * @return Service<DatabaseService>
+     */
     public function database(?string $version = null): ?Service
     {
         if (! $version) {
@@ -361,6 +375,9 @@ class Server extends AbstractModel
         return $this->service('database', $version);
     }
 
+    /**
+     * @return Service<FirewallService>
+     */
     public function firewall(?string $version = null): ?Service
     {
         if (! $version) {
@@ -370,6 +387,9 @@ class Server extends AbstractModel
         return $this->service('firewall', $version);
     }
 
+    /**
+     * @return Service<ProcessManagerService>
+     */
     public function processManager(?string $version = null): ?Service
     {
         if (! $version) {

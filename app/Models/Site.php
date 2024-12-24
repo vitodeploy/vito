@@ -17,33 +17,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Str;
 
 /**
- * @property int $server_id
- * @property string $type
- * @property array $type_data
- * @property string $domain
- * @property array $aliases
- * @property string $web_directory
- * @property string $path
- * @property string $php_version
- * @property string $source_control
- * @property int $source_control_id
- * @property string $repository
- * @property string $ssh_key
- * @property string $branch
- * @property string $status
- * @property int $port
- * @property int $progress
- * @property Server $server
- * @property ServerLog[] $logs
- * @property Deployment[] $deployments
- * @property ?GitHook $gitHook
- * @property DeploymentScript $deploymentScript
- * @property Queue[] $queues
- * @property Ssl[] $ssls
- * @property ?Ssl $activeSsl
- * @property string $ssh_key_name
- * @property ?SourceControl $sourceControl
- *
  * @TODO: Add nodejs_version column
  */
 class Site extends AbstractModel
@@ -120,46 +93,73 @@ class Site extends AbstractModel
         return $this->status === SiteStatus::INSTALLATION_FAILED;
     }
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return HasMany<ServerLog, $this>
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(ServerLog::class);
     }
 
+    /**
+     * @return HasMany<Deployment, $this>
+     */
     public function deployments(): HasMany
     {
         return $this->hasMany(Deployment::class);
     }
 
+    /**
+     * @return HasOne<GitHook, $this>
+     */
     public function gitHook(): HasOne
     {
         return $this->hasOne(GitHook::class);
     }
 
+    /**
+     * @return HasOne<DeploymentScript, $this>
+     */
     public function deploymentScript(): HasOne
     {
         return $this->hasOne(DeploymentScript::class);
     }
 
+    /**
+     * @return HasMany<Queue, $this>
+     */
     public function queues(): HasMany
     {
         return $this->hasMany(Queue::class);
     }
 
+    /**
+     * @return HasMany<Ssl, $this>
+     */
     public function ssls(): HasMany
     {
         return $this->hasMany(Ssl::class);
     }
 
+    /**
+     * @return MorphToMany<Tag, $this>
+     */
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
+    /**
+     * @return BelongsTo<SourceControl, $this>
+     */
     public function sourceControl(): BelongsTo
     {
         return $this->belongsTo(SourceControl::class)->withTrashed();
@@ -204,6 +204,9 @@ class Site extends AbstractModel
         $this->save();
     }
 
+    /**
+     * @return HasOne<Ssl, $this>
+     */
     public function activeSsl(): HasOne
     {
         return $this->hasOne(Ssl::class)

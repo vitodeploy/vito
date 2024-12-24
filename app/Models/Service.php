@@ -9,22 +9,13 @@ use App\SSH\Services\Database\Database as DatabaseAlias;
 use App\SSH\Services\PHP\PHP as PHPAlias;
 use App\SSH\Services\ProcessManager\ProcessManager;
 use App\SSH\Services\ServiceInterface;
-use App\SSH\Services\WebServer\WebServer as WebServerAlias;
+use App\SSH\Services\Webserver\Webserver as WebServerAlias;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 /**
- * @property int $server_id
- * @property string $type
- * @property array $type_data
- * @property string $name
- * @property string $version
- * @property string $unit
- * @property string $logs
- * @property string $status
- * @property bool $is_default
- * @property Server $server
+ * @template TService of ServiceInterface = ServiceInterface
  */
 class Service extends AbstractModel
 {
@@ -74,6 +65,9 @@ class Service extends AbstractModel
         ServiceStatus::DISABLED => 'gray',
     ];
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
@@ -81,6 +75,7 @@ class Service extends AbstractModel
 
     /**
      * @return ProcessManager|DatabaseAlias|PHPAlias|WebServerAlias
+     * @phpstan-return TService
      */
     public function handler(): ServiceInterface
     {

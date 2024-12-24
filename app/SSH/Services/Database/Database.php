@@ -3,8 +3,9 @@
 namespace App\SSH\Services\Database;
 
 use App\Models\BackupFile;
+use App\SSH\Services\ServiceInterface;
 
-interface Database
+interface Database extends ServiceInterface
 {
     public function create(string $name): void;
 

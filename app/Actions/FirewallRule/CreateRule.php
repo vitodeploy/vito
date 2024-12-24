@@ -21,7 +21,6 @@ class CreateRule
             'mask' => $input['mask'] ?? null,
         ]);
 
-        /** @var Firewall $firewallHandler */
         $firewallHandler = $server->firewall()->handler();
         $firewallHandler->addRule(
             $rule->type,

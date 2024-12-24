@@ -18,30 +18,6 @@ use Illuminate\Support\Collection;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
-/**
- * @property int $id
- * @property string $name
- * @property string $email
- * @property string $password
- * @property string $profile_photo_path
- * @property string $two_factor_recovery_codes
- * @property string $two_factor_secret
- * @property SshKey[] $sshKeys
- * @property SourceControl[] $sourceControls
- * @property ServerProvider[] $serverProviders
- * @property Script[] $scripts
- * @property StorageProvider[] $storageProviders
- * @property StorageProvider[] $connectedStorageProviders
- * @property Collection $tokens
- * @property string $profile_photo_url
- * @property string $timezone
- * @property int $current_project_id
- * @property Project $currentProject
- * @property Collection<Project> $projects
- * @property string $role
- * @property Carbon $created_at
- * @property Carbon $updated_at
- */
 class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens;
@@ -69,36 +45,57 @@ class User extends Authenticatable implements FilamentUser
     protected $appends = [
     ];
 
+    /**
+     * @return HasMany<Server, $this>
+     */
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class);
     }
 
+    /**
+     * @return HasMany<SshKey, $this>
+     */
     public function sshKeys(): HasMany
     {
         return $this->hasMany(SshKey::class);
     }
 
+    /**
+     * @return HasMany<SourceControl, $this>
+     */
     public function sourceControls(): HasMany
     {
         return $this->hasMany(SourceControl::class);
     }
 
+    /**
+     * @return HasMany<ServerProvider, $this>
+     */
     public function serverProviders(): HasMany
     {
         return $this->hasMany(ServerProvider::class);
     }
 
+    /**
+     * @return HasOne<SourceControl, $this>
+     */
     public function sourceControl(string $provider): HasOne
     {
         return $this->hasOne(SourceControl::class)->where('provider', $provider);
     }
 
+    /**
+     * @return HasMany<StorageProvider, $this>
+     */
     public function storageProviders(): HasMany
     {
         return $this->hasMany(StorageProvider::class);
     }
 
+    /**
+     * @return HasOne<StorageProvider, $this>
+     */
     public function storageProvider(string $provider): HasOne
     {
         return $this->hasOne(StorageProvider::class)->where('provider', $provider);
@@ -113,15 +110,21 @@ class User extends Authenticatable implements FilamentUser
         return $this->projects();
     }
 
+    /**
+     * @return BelongsToMany<Project, $this>
+     */
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(Project::class, 'user_project')
             ->withTimestamps();
     }
 
+    /**
+     * @return HasOne<Project, $this>
+     */
     public function currentProject(): HasOne
     {
-        return $this->HasOne(Project::class, 'id', 'current_project_id');
+        return $this->hasOne(Project::class, 'id', 'current_project_id');
     }
 
     public function createDefaultProject(): Project
@@ -147,6 +150,9 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === UserRole::ADMIN;
     }
 
+    /**
+     * @return HasMany<Script, $this>
+     */
     public function scripts(): HasMany
     {
         return $this->hasMany(Script::class);

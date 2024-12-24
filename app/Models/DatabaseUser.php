@@ -6,15 +6,6 @@ use App\Enums\DatabaseUserStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $server_id
- * @property string $username
- * @property string $password
- * @property array $databases
- * @property string $host
- * @property string $status
- * @property Server $server
- */
 class DatabaseUser extends AbstractModel
 {
     use HasFactory;
@@ -38,6 +29,9 @@ class DatabaseUser extends AbstractModel
         'password',
     ];
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

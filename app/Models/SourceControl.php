@@ -9,14 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @property string $provider
- * @property array $provider_data
- * @property ?string $profile
- * @property ?string $url
- * @property string $access_token
- * @property ?int $project_id
- */
 class SourceControl extends AbstractModel
 {
     use HasFactory;
@@ -49,11 +41,17 @@ class SourceControl extends AbstractModel
         return $this->provider()->getRepo($repo);
     }
 
+    /**
+     * @return HasMany<Site, $this>
+     */
     public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
     }
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

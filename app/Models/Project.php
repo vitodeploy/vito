@@ -11,18 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @property int $id
- * @property int $user_id
- * @property string $name
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property User $user
- * @property Collection<Server> $servers
- * @property Collection<User> $users
- * @property Collection<NotificationChannel> $notificationChannels
- * @property Collection<SourceControl> $sourceControls
- */
 class Project extends Model
 {
     use HasFactory;
@@ -44,31 +32,49 @@ class Project extends Model
         });
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return HasMany<Server, $this>
+     */
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class);
     }
 
+    /**
+     * @return HasMany<NotificationChannel, $this>
+     */
     public function notificationChannels(): HasMany
     {
         return $this->hasMany(NotificationChannel::class);
     }
 
+    /**
+     * @return BelongsToMany<User, $this>
+     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_project')->withTimestamps();
     }
 
+    /**
+     * @return HasMany<SourceControl, $this>
+     */
     public function sourceControls(): HasMany
     {
         return $this->hasMany(SourceControl::class);
     }
 
+    /**
+     * @return HasMany<Tag, $this>
+     */
     public function tags(): HasMany
     {
         return $this->hasMany(Tag::class);
