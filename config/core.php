@@ -57,6 +57,7 @@ return [
         \App\Enums\Database::NONE,
         \App\Enums\Database::MYSQL57,
         \App\Enums\Database::MYSQL80,
+        \App\Enums\Database::MYSQL84,
         \App\Enums\Database::MARIADB103,
         \App\Enums\Database::MARIADB104,
         \App\Enums\Database::MARIADB106,
@@ -72,6 +73,7 @@ return [
         \App\Enums\Database::NONE => 'none',
         \App\Enums\Database::MYSQL57 => 'mysql',
         \App\Enums\Database::MYSQL80 => 'mysql',
+        \App\Enums\Database::MYSQL84 => 'mysql',
         \App\Enums\Database::MARIADB103 => 'mariadb',
         \App\Enums\Database::MARIADB104 => 'mariadb',
         \App\Enums\Database::MARIADB106 => 'mariadb',
@@ -87,6 +89,7 @@ return [
         \App\Enums\Database::NONE => '',
         \App\Enums\Database::MYSQL57 => '5.7',
         \App\Enums\Database::MYSQL80 => '8.0',
+        \App\Enums\Database::MYSQL84 => '8.4',
         \App\Enums\Database::MARIADB103 => '10.3',
         \App\Enums\Database::MARIADB104 => '10.4',
         \App\Enums\Database::MARIADB106 => '10.6',
@@ -201,6 +204,7 @@ return [
         'mysql' => [
             '5.7',
             '8.0',
+            '8.4',
         ],
         'mariadb' => [
             '10.3',
@@ -273,14 +277,17 @@ return [
             \App\Enums\OperatingSystem::UBUNTU20 => [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
+                '8.4' => 'mysql',
             ],
             \App\Enums\OperatingSystem::UBUNTU22 => [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
+                '8.4' => 'mysql',
             ],
             \App\Enums\OperatingSystem::UBUNTU24 => [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
+                '8.4' => 'mysql',
             ],
         ],
         'mariadb' => [
