@@ -8,6 +8,7 @@ use App\Web\Pages\Servers\Page;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 
@@ -50,9 +51,9 @@ class Index extends Page
                         ->searchable()
                         ->options($availableServices)
                         ->reactive()
-                        ->rules(fn ($get) => Install::rules($get())['name']),
+                        ->rules(fn (Get $get) => Install::rules($get())['name']),
                     Select::make('version')
-                        ->options(function (callable $get) {
+                        ->options(function (Get $get) {
                             if (! $get('name')) {
                                 return [];
                             }
@@ -60,7 +61,7 @@ class Index extends Page
                             return collect(config("core.service_versions.{$get('name')}"))
                                 ->mapWithKeys(fn ($version) => [$version => $version]);
                         })
-                        ->rules(fn ($get) => Install::rules($get())['version'])
+                        ->rules(fn (Get $get) => Install::rules($get())['version'])
                         ->reactive(),
                 ])
                 ->action(function (array $data) {

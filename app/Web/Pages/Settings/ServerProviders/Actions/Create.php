@@ -30,15 +30,15 @@ class Create
             TextInput::make('token')
                 ->label('API Key')
                 ->validationAttribute('API Key')
-                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['token']))
+                ->visible(fn (Get $get) => isset(CreateServerProvider::rules($get())['token']))
                 ->rules(fn (Get $get) => CreateServerProvider::rules($get())['token']),
             TextInput::make('key')
                 ->label('Access Key')
-                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['key']))
+                ->visible(fn (Get $get) => isset(CreateServerProvider::rules($get())['key']))
                 ->rules(fn (Get $get) => CreateServerProvider::rules($get())['key']),
             TextInput::make('secret')
                 ->label('Secret')
-                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['secret']))
+                ->visible(fn (Get $get) => isset(CreateServerProvider::rules($get())['secret']))
                 ->rules(fn (Get $get) => CreateServerProvider::rules($get())['secret']),
             Checkbox::make('global')
                 ->label('Is Global (Accessible in all projects)'),

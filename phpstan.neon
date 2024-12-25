@@ -4,7 +4,8 @@ parameters:
     level: 2
     paths:
         - app/
-    # checkExplicitMixed: true
-    # checkImplicitMixed: true
+    checkExplicitMixed: true
+    checkImplicitMixed: true
     ignoreErrors:
         - identifier: larastan.noModelMake
+        - identifier: encapsedStringPart.nonString

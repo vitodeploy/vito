@@ -39,13 +39,13 @@ class StorageProvidersList extends Widget
             TextColumn::make('id')
                 ->label('Global')
                 ->badge()
-                ->color(fn ($record) => $record->project_id ? 'gray' : 'success')
+                ->color(fn (StorageProvider $record) => $record->project_id ? 'gray' : 'success')
                 ->formatStateUsing(function (StorageProvider $record) {
                     return $record->project_id ? 'No' : 'Yes';
                 }),
             TextColumn::make('created_at')
                 ->label('Created At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
+                ->formatStateUsing(fn (StorageProvider $record) => $record->created_at_by_timezone)
                 ->searchable()
                 ->sortable(),
         ];

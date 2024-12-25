@@ -27,7 +27,7 @@ class ProjectsList extends Widget
                 ->sortable(),
             TextColumn::make('created_at')
                 ->label('Created At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
+                ->formatStateUsing(fn (Project $record) => $record->created_at_by_timezone)
                 ->searchable()
                 ->sortable(),
         ];

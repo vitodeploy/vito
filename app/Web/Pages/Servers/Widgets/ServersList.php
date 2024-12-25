@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Widgets;
 
 use App\Models\Server;
+use App\Models\Tag;
 use App\Web\Pages\Servers\Settings;
 use App\Web\Pages\Servers\View;
 use Filament\Tables\Actions\Action;
@@ -33,7 +34,7 @@ class ServersList extends Widget
                 ->label('Tags')
                 ->badge()
                 ->icon('heroicon-o-tag')
-                ->formatStateUsing(fn ($state) => $state->name)
+                ->formatStateUsing(fn ($state) => $state->name) // ? What is $state ? Server doesn't have color, Tag does, but how is it a Tag?
                 ->color(fn ($state) => $state->color)
                 ->searchable()
                 ->sortable(),
@@ -45,7 +46,7 @@ class ServersList extends Widget
                 ->sortable(),
             TextColumn::make('created_at')
                 ->label('Created At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
+                ->formatStateUsing(fn (Server $record) => $record->created_at_by_timezone)
                 ->searchable()
                 ->sortable(),
         ];

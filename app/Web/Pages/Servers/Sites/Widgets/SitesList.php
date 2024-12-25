@@ -36,7 +36,7 @@ class SitesList extends Widget
                 ->label('Tags')
                 ->badge()
                 ->icon('heroicon-o-tag')
-                ->formatStateUsing(fn ($state) => $state->name)
+                ->formatStateUsing(fn ($state) => $state->name) // ? What is $state ? Site doesn't have color, Tag does, but how is it a Tag?
                 ->color(fn ($state) => $state->color)
                 ->searchable()
                 ->sortable(),

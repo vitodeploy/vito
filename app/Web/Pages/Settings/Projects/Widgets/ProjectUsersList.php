@@ -46,7 +46,7 @@ class ProjectUsersList extends Widget
                 Tables\Actions\DeleteAction::make()
                     ->label('Remove')
                     ->modalHeading('Remove user from project')
-                    ->visible(function ($record) {
+                    ->visible(function (User $record) {
                         return $this->authorize('update', $this->project)->allowed() && $record->id !== auth()->id();
                     })
                     ->using(function ($record) {

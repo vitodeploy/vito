@@ -10,6 +10,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 
 class Create
@@ -25,60 +26,60 @@ class Create
                 ->live()
                 ->reactive()
                 ->native(false)
-                ->rules(fn ($get) => CreateStorageProvider::rules($get())['provider']),
+                ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['provider']),
             TextInput::make('name')
-                ->rules(fn ($get) => CreateStorageProvider::rules($get())['name']),
+                ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['name']),
             TextInput::make('token')
                 ->label('API Token')
                 ->validationAttribute('API Token')
-                ->visible(fn ($get) => $get('provider') == StorageProvider::DROPBOX)
-                ->rules(fn ($get) => CreateStorageProvider::rules($get())['token']),
+                ->visible(fn (Get $get) => $get('provider') == StorageProvider::DROPBOX)
+                ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['token']),
             Grid::make()
-                ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
+                ->visible(fn (Get $get) => $get('provider') == StorageProvider::FTP)
                 ->schema([
                     TextInput::make('host')
-                        ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['host']),
+                        ->visible(fn (Get $get) => $get('provider') == StorageProvider::FTP)
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['host']),
                     TextInput::make('port')
-                        ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['port']),
+                        ->visible(fn (Get $get) => $get('provider') == StorageProvider::FTP)
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['port']),
                     TextInput::make('username')
-                        ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['username']),
+                        ->visible(fn (Get $get) => $get('provider') == StorageProvider::FTP)
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['username']),
                     TextInput::make('password')
-                        ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['password']),
+                        ->visible(fn (Get $get) => $get('provider') == StorageProvider::FTP)
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['password']),
                     Checkbox::make('ssl')
-                        ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['ssl']),
+                        ->visible(fn (Get $get) => $get('provider') == StorageProvider::FTP)
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['ssl']),
                     Checkbox::make('passive')
-                        ->visible(fn ($get) => $get('provider') == StorageProvider::FTP)
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['passive']),
+                        ->visible(fn (Get $get) => $get('provider') == StorageProvider::FTP)
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['passive']),
                 ]),
             TextInput::make('api_url')
                 ->label('API URL')
-                ->visible(fn ($get) => $get('provider') == StorageProvider::S3)
-                ->rules(fn ($get) => CreateStorageProvider::rules($get())['api_url'])
+                ->visible(fn (Get $get) => $get('provider') == StorageProvider::S3)
+                ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['api_url'])
                 ->helperText('Required if you are using an S3 compatible provider like Cloudflare R2'),
             TextInput::make('path')
-                ->visible(fn ($get) => in_array($get('provider'), [
+                ->visible(fn (Get $get) => in_array($get('provider'), [
                     StorageProvider::S3,
                     StorageProvider::FTP,
                     StorageProvider::LOCAL,
                 ]))
-                ->rules(fn ($get) => CreateStorageProvider::rules($get())['path'])
-                ->helperText(function ($get) {
+                ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['path'])
+                ->helperText(function (Get $get) {
                     return match ($get('provider')) {
                         StorageProvider::LOCAL => 'The absolute path on your server that the database exists. like `/home/vito/db-backups`',
                         default => '',
                     };
                 }),
             Grid::make()
-                ->visible(fn ($get) => $get('provider') == StorageProvider::S3)
+                ->visible(fn (Get $get) => $get('provider') == StorageProvider::S3)
                 ->schema([
                     TextInput::make('key')
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['key'])
-                        ->helperText(function ($get) {
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['key'])
+                        ->helperText(function (Get $get) {
                             return match ($get('provider')) {
                                 StorageProvider::S3 => new Link(
                                     href: 'https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html',
@@ -89,11 +90,11 @@ class Create
                             };
                         }),
                     TextInput::make('secret')
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['secret']),
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['secret']),
                     TextInput::make('region')
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['region']),
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['region']),
                     TextInput::make('bucket')
-                        ->rules(fn ($get) => CreateStorageProvider::rules($get())['bucket']),
+                        ->rules(fn (Get $get) => CreateStorageProvider::rules($get())['bucket']),
                 ]),
             Checkbox::make('global')
                 ->label('Is Global (Accessible in all projects)'),

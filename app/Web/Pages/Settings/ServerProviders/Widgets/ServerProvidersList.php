@@ -32,20 +32,20 @@ class ServerProvidersList extends Widget
                 ->icon(fn (ServerProvider $record) => 'icon-'.$record->provider)
                 ->width(24),
             TextColumn::make('name')
-                ->default(fn ($record) => $record->profile)
+                ->default(fn (ServerProvider $record) => $record->profile)
                 ->label('Name')
                 ->searchable()
                 ->sortable(),
             TextColumn::make('id')
                 ->label('Global')
                 ->badge()
-                ->color(fn ($record) => $record->project_id ? 'gray' : 'success')
+                ->color(fn (ServerProvider $record) => $record->project_id ? 'gray' : 'success')
                 ->formatStateUsing(function (ServerProvider $record) {
                     return $record->project_id ? 'No' : 'Yes';
                 }),
             TextColumn::make('created_at')
                 ->label('Created At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
+                ->formatStateUsing(fn (ServerProvider $record) => $record->created_at_by_timezone)
                 ->searchable()
                 ->sortable(),
         ];

@@ -11,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 
@@ -51,15 +52,15 @@ class Index extends Page
                     Select::make('key_id')
                         ->label('Key')
                         ->options(auth()->user()->sshKeys()->pluck('name', 'id')->toArray())
-                        ->visible(fn ($get) => $get('type') === 'existing')
+                        ->visible(fn (Get $get) => $get('type') === 'existing')
                         ->rules(DeployKeyToServer::rules(auth()->user(), $this->server)['key_id']),
                     TextInput::make('name')
                         ->label('Name')
-                        ->visible(fn ($get) => $get('type') === 'new')
+                        ->visible(fn (Get $get) => $get('type') === 'new')
                         ->rules(CreateSshKey::rules()['name']),
                     Textarea::make('public_key')
                         ->label('Public Key')
-                        ->visible(fn ($get) => $get('type') === 'new')
+                        ->visible(fn (Get $get) => $get('type') === 'new')
                         ->rules(CreateSshKey::rules()['public_key']),
                 ])
                 ->modalSubmitActionLabel('Deploy')

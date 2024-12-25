@@ -45,7 +45,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                             ->hintIconTooltip('Server unique identifier to use in the API'),
                         TextEntry::make('created_at')
                             ->label('Created At')
-                            ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
+                            ->formatStateUsing(fn (Server $record) => $record->created_at_by_timezone)
                             ->inlineLabel(),
                         TextEntry::make('last_updated_check')
                             ->label('Last Updated Check')

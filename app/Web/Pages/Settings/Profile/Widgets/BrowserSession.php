@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use stdClass;
 
 class BrowserSession extends Widget implements HasForms, HasInfolists
 {
@@ -92,6 +93,9 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         return $sections;
     }
 
+    /**
+     * @return list<stdClass>
+     */
     private function getSessions(): array
     {
         if (config(key: 'session.driver') !== 'database') {
@@ -103,7 +107,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
                 ->where(column: 'user_id', operator: Auth::user()->getAuthIdentifier())
                 ->latest(column: 'last_activity')
                 ->get()
-        )->map(callback: function ($session): object {
+        )->map(callback: function (stdClass $session): stdClass {
             $agent = $this->createAgent($session);
 
             return (object) [
@@ -121,7 +125,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         })->toArray();
     }
 
-    private function createAgent(mixed $session)
+    private function createAgent(stdClass $session): Agent
     {
         return tap(
             value: new Agent,

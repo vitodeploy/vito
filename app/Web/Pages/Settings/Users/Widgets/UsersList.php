@@ -41,7 +41,7 @@ class UsersList extends Widget
             TextColumn::make('timezone'),
             TextColumn::make('created_at')
                 ->label('Created At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
+                ->formatStateUsing(fn (User $record) => $record->created_at_by_timezone)
                 ->searchable()
                 ->sortable(),
             TextColumn::make('role'),
@@ -56,8 +56,8 @@ class UsersList extends Widget
             ->columns($this->getTableColumns())
             ->actions([
                 EditAction::make('edit')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->using(function ($record, array $data) {
+                    ->authorize(fn (User $record) => auth()->user()->can('update', $record))
+                    ->using(function (User $record, array $data) {
                         app(UpdateUser::class)->update($record, $data);
                     })
                     ->form(function (Form $form, $record) {
@@ -87,8 +87,8 @@ class UsersList extends Widget
                 Action::make('update-projects')
                     ->label('Projects')
                     ->icon('heroicon-o-rectangle-stack')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->form(function (Form $form, $record) {
+                    ->authorize(fn (User $record) => auth()->user()->can('update', $record))
+                    ->form(function (Form $form, User $record) {
                         return $form
                             ->schema([
                                 CheckboxList::make('projects')
