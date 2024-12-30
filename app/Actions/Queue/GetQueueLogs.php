@@ -8,6 +8,6 @@ class GetQueueLogs
 {
     public function getLogs(Queue $queue): string
     {
-        return $queue->server->processManager()->handler()->getLogs($queue->getLogFile());
+        return $queue->server->processManager()->handler()->getLogs($queue->user, $queue->getLogFile());
     }
 }
