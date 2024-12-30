@@ -9,7 +9,9 @@ use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use Exception;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use phpseclib3\Crypt\Common\PrivateKey;
 use phpseclib3\Crypt\PublicKeyLoader;
@@ -106,7 +108,7 @@ class SSH
         }
 
         try {
-            if (! $this->connection) {
+            if (! $this->connection instanceof SSH2) {
                 $this->connect();
             }
         } catch (Throwable $e) {
@@ -158,7 +160,7 @@ class SSH
     {
         $this->log = null;
 
-        if (! $this->connection) {
+        if (! $this->connection instanceof SFTP) {
             $this->connect(true);
         }
 
@@ -172,11 +174,41 @@ class SSH
     {
         $this->log = null;
 
-        if (! $this->connection) {
+        if (! $this->connection instanceof SFTP) {
             $this->connect(true);
         }
 
         $this->connection->get($remote, $local, SFTP::SOURCE_LOCAL_FILE);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function write(string $remotePath, string $content, bool $sudo = false): void
+    {
+        $tmpName = Str::random(10).strtotime('now');
+
+        try {
+            /** @var FilesystemAdapter $storageDisk */
+            $storageDisk = Storage::disk('local');
+
+            $storageDisk->put($tmpName, $content);
+
+            if ($sudo) {
+                $this->upload($storageDisk->path($tmpName), sprintf('/home/%s/%s', $this->server->ssh_user, $tmpName));
+                $this->exec(sprintf('sudo mv /home/%s/%s %s', $this->server->ssh_user, $tmpName, $remotePath));
+            } else {
+                $this->upload($storageDisk->path($tmpName), $remotePath);
+            }
+        } catch (Throwable $e) {
+            throw new SSHCommandError(
+                message: $e->getMessage()
+            );
+        } finally {
+            if (Storage::disk('local')->exists($tmpName)) {
+                Storage::disk('local')->delete($tmpName);
+            }
+        }
     }
 
     /**

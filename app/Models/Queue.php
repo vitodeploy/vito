@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\QueueStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * @property int $server_id
@@ -62,7 +64,11 @@ class Queue extends AbstractModel
         parent::boot();
 
         static::deleting(function (Queue $queue) {
-            $queue->server->processManager()->handler()->delete($queue->id, $queue->site_id);
+            try {
+                $queue->server->processManager()->handler()->delete($queue->id, $queue->site_id);
+            } catch (Throwable $e) {
+                Log::error($e);
+            }
         });
     }
 
@@ -89,6 +95,10 @@ class Queue extends AbstractModel
 
     public function getLogDirectory(): string
     {
+        if ($this->user === 'root') {
+            return '/root/.logs/workers';
+        }
+
         return '/home/'.$this->user.'/.logs/workers';
     }
 

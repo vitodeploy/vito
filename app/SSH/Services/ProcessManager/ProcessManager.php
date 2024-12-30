@@ -23,5 +23,5 @@ interface ProcessManager
 
     public function start(int $id, ?int $siteId = null): void;
 
-    public function getLogs(string $logPath): string;
+    public function getLogs(string $user, string $logPath): string;
 }

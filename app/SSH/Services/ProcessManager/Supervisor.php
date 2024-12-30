@@ -40,18 +40,22 @@ class Supervisor extends AbstractProcessManager
         string $logFile,
         ?int $siteId = null
     ): void {
+        $this->service->server->ssh()->write(
+            "/etc/supervisor/conf.d/$id.conf",
+            $this->generateConfigFile(
+                $id,
+                $command,
+                $user,
+                $autoStart,
+                $autoRestart,
+                $numprocs,
+                $logFile
+            ),
+            true
+        );
         $this->service->server->ssh($user)->exec(
             $this->getScript('supervisor/create-worker.sh', [
                 'id' => $id,
-                'config' => $this->generateConfigFile(
-                    $id,
-                    $command,
-                    $user,
-                    $autoStart,
-                    $autoRestart,
-                    $numprocs,
-                    $logFile
-                ),
             ]),
             'create-worker',
             $siteId
@@ -117,9 +121,9 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws Throwable
      */
-    public function getLogs(string $logPath): string
+    public function getLogs(string $user, string $logPath): string
     {
-        return $this->service->server->ssh()->exec(
+        return $this->service->server->ssh($user)->exec(
             "tail -100 $logPath"
         );
     }
