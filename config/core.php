@@ -10,6 +10,12 @@ return [
     'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs'), // should be FilesystemAdapter storage
     'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs'), // should be FilesystemAdapter storage
 
+    /**
+     * Add the public ip of your Vito server to add this to
+     * the firwall as port 22 for each created server.
+     */
+    'vito_public_up' => env('PUBLIC_IP', null),
+
     /*
      * General
      */

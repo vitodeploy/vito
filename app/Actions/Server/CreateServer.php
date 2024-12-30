@@ -191,7 +191,7 @@ class CreateServer
 
     public function createFirewallRules(Server $server): void
     {
-        $server->firewallRules()->createMany([
+        $defaultRules = [
             [
                 'type' => 'allow',
                 'protocol' => 'ssh',
@@ -216,6 +216,19 @@ class CreateServer
                 'mask' => 0,
                 'status' => FirewallRuleStatus::READY,
             ],
-        ]);
+        ];
+
+        if (config('core.vito_public_up', false)) {
+            $defaultRules[] = [
+                'type' => 'allow',
+                'protocol' => 'tcp',
+                'port' => 22,
+                'source' => config('core.vito_public_up'),
+                'mask' => 0,
+                'status' => FirewallRuleStatus::READY,
+            ];
+        }
+
+        $server->firewallRules()->createMany($defaultRules);
     }
 }

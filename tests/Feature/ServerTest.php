@@ -9,6 +9,7 @@ use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\Webserver;
 use App\Facades\SSH;
+use App\Models\Server;
 use App\NotificationChannels\Email\NotificationMail;
 use App\Web\Pages\Servers\Index;
 use App\Web\Pages\Servers\Settings;
@@ -17,6 +18,7 @@ use App\Web\Pages\Servers\Widgets\ServerSummary;
 use App\Web\Pages\Servers\Widgets\UpdateServerInfo;
 use Filament\Notifications\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
@@ -81,6 +83,54 @@ class ServerTest extends TestCase
             'version' => 'latest',
             'status' => ServiceStatus::READY,
         ]);
+
+        $this->assertDatabaseMissing('firewall_rules', [
+            'server_id' => 1,
+            'type' => 'allow',
+            'protocol' => 'tcp',
+            'port' => 22,
+            'source' => config('core.vito_public_up'),
+            'status' => ServiceStatus::READY,
+        ]);
+    }
+
+    public function test_create_regular_server_with_default_vito_public_ip_firewall_rule(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake('Active: active'); // fake output for service installations
+
+        Config::set('core.vito_public_up', '133.0.0.7');
+
+        Livewire::test(Index::class)
+            ->callAction('create', [
+                'provider' => ServerProvider::CUSTOM,
+                'name' => 'default vito public ip firewall test',
+                'ip' => '2.1.1.1',
+                'port' => '22',
+                'os' => OperatingSystem::UBUNTU22,
+                'webserver' => Webserver::NGINX,
+                'database' => Database::MYSQL80,
+                'php' => '8.2',
+            ])
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('firewall_rules', [
+            'server_id' => 2,
+            'type' => 'allow',
+            'protocol' => 'tcp',
+            'port' => 22,
+            'source' => '133.0.0.7',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        Config::set('core.vito_public_up', null);
+
+        Livewire::test(Settings::class, [
+            'server' => Server::find(2),
+        ])->callAction('delete')
+            ->assertSuccessful()
+            ->assertRedirect(Index::getUrl());
     }
 
     public function test_delete_server(): void
