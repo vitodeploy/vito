@@ -121,8 +121,12 @@ class Server extends AbstractModel
             DB::beginTransaction();
             try {
                 $server->sites()->each(function (Site $site) {
-                    $site->delete();
+                    $site->queues()->delete();
+                    $site->ssls()->delete();
+                    $site->deployments()->delete();
+                    $site->deploymentScript()->delete();
                 });
+                $server->sites()->delete();
                 $server->logs()->each(function (ServerLog $log) {
                     $log->delete();
                 });

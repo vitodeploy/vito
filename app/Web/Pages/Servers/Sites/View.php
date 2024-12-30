@@ -111,15 +111,6 @@ class View extends Page
         return $actions;
     }
 
-    public function getSecondSubNavigation(): array
-    {
-        if ($this->site->isInstalling()) {
-            return [];
-        }
-
-        return parent::getSecondSubNavigation();
-    }
-
     private function deployAction(): Action
     {
         return Action::make('deploy')

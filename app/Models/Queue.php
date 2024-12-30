@@ -89,6 +89,10 @@ class Queue extends AbstractModel
 
     public function getLogDirectory(): string
     {
+        if ($this->user === 'root') {
+            return '/root/.logs/workers';
+        }
+
         return '/home/'.$this->user.'/.logs/workers';
     }
 
