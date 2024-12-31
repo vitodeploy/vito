@@ -218,12 +218,12 @@ class CreateServer
             ],
         ];
 
-        if (config('core.vito_public_up', false)) {
+        if (config('core.vito_public_ip', false)) {
             $defaultRules[] = [
                 'type' => 'allow',
                 'protocol' => 'tcp',
                 'port' => 22,
-                'source' => config('core.vito_public_up'),
+                'source' => config('core.vito_public_ip'),
                 'mask' => 0,
                 'status' => FirewallRuleStatus::READY,
             ];

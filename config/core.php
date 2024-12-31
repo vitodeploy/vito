@@ -14,7 +14,7 @@ return [
      * Add the public ip of your Vito server to add this to
      * the firwall as port 22 for each created server.
      */
-    'vito_public_up' => env('PUBLIC_IP', null),
+    'vito_public_ip' => env('VITO_PUBLIC_IP', null),
 
     /*
      * General

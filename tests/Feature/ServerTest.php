@@ -89,7 +89,7 @@ class ServerTest extends TestCase
             'type' => 'allow',
             'protocol' => 'tcp',
             'port' => 22,
-            'source' => config('core.vito_public_up'),
+            'source' => config('core.vito_public_ip'),
             'status' => ServiceStatus::READY,
         ]);
     }
@@ -100,7 +100,7 @@ class ServerTest extends TestCase
 
         SSH::fake('Active: active'); // fake output for service installations
 
-        Config::set('core.vito_public_up', '133.0.0.7');
+        Config::set('core.vito_public_ip', '133.0.0.7');
 
         Livewire::test(Index::class)
             ->callAction('create', [
@@ -124,7 +124,7 @@ class ServerTest extends TestCase
             'status' => ServiceStatus::READY,
         ]);
 
-        Config::set('core.vito_public_up', null);
+        Config::set('core.vito_public_ip', null);
 
         Livewire::test(Settings::class, [
             'server' => Server::find(2),
