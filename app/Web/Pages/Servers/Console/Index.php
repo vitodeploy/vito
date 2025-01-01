@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Console;
 
 use App\Web\Pages\Servers\Page;
+use Filament\Actions\Action;
 
 class Index extends Page
 {
@@ -25,6 +26,18 @@ class Index extends Page
     {
         return [
             [Widgets\Console::class, ['server' => $this->server]],
+        ];
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('read-the-docs')
+                ->label('Read the Docs')
+                ->icon('heroicon-o-document-text')
+                ->color('gray')
+                ->url('https://vitodeploy.com/servers/console.html')
+                ->openUrlInNewTab(),
         ];
     }
 }
