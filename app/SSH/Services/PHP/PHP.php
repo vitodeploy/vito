@@ -53,6 +53,7 @@ class PHP extends AbstractService
             ]),
             'install-php-'.$this->service->version
         );
+        $this->installComposer();
         $this->service->server->os()->cleanup();
     }
 
