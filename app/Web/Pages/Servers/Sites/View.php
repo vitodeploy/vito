@@ -116,6 +116,14 @@ class View extends Page
         return Action::make('deploy')
             ->icon('heroicon-o-rocket-launch')
             ->action(function () {
+                if (! $this->site->deploymentScript?->content) {
+                    Notification::make()
+                        ->danger()
+                        ->title('Deployment script is not set!')
+                        ->send();
+
+                    return;
+                }
                 run_action($this, function () {
                     app(Deploy::class)->run($this->site);
 
