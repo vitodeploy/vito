@@ -59,7 +59,7 @@ class CreateRule
                 'ip',
             ],
             'mask' => [
-                'required',
+                'nullable',
                 'numeric',
             ],
         ];

@@ -224,7 +224,7 @@ class CreateServer
                 'protocol' => 'tcp',
                 'port' => 22,
                 'source' => config('core.vito_public_ip'),
-                'mask' => 0,
+                'mask' => null,
                 'status' => FirewallRuleStatus::READY,
             ];
         }

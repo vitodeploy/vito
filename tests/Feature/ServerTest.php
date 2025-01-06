@@ -120,6 +120,7 @@ class ServerTest extends TestCase
             'type' => 'allow',
             'protocol' => 'tcp',
             'port' => 22,
+            'mask' => null,
             'source' => '133.0.0.7',
             'status' => ServiceStatus::READY,
         ]);
