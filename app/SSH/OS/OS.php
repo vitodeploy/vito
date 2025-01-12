@@ -58,6 +58,26 @@ class OS
         );
     }
 
+    public function createIsolatedUser(string $user, string $password, int $site_id): void {
+        $this->server->ssh()->exec(
+            $this->getScript('create-isolated-user.sh', [
+                'user' => $user,
+                'password' => $password,
+            ]),
+            'create-isolated-user',
+            $site_id
+        );
+    }
+
+    public function deleteIsolatedUser(string $user): void {
+        $this->server->ssh()->exec(
+            $this->getScript('delete-isolated-user.sh', [
+                'user' => $user,
+            ]),
+            'delete-isolated-user'
+        );
+    }
+
     public function getPublicKey(string $user): string
     {
         return $this->server->ssh()->exec(

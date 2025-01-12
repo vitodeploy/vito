@@ -14,8 +14,11 @@ use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Nette\Utils\FileSystem;
 
 class CreateSite
 {
@@ -23,12 +26,19 @@ class CreateSite
     {
         DB::beginTransaction();
         try {
+            $is_isolated = $input['is_isolated'] ?? false;
+            $isolated_username = $is_isolated
+                ? $input['isolated_username']
+                : $server->getSshUser();
+
             $site = new Site([
                 'server_id' => $server->id,
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'aliases' => $input['aliases'] ?? [],
-                'path' => '/home/'.$server->getSshUser().'/'.$input['domain'],
+                'is_isolated' => $is_isolated,
+                'isolated_username' => $isolated_username,
+                'path' => '/home/'.$isolated_username.'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
             ]);
 
@@ -108,6 +118,18 @@ class CreateSite
             'aliases.*' => [
                 new DomainRule,
             ],
+            'is_isolated' => [
+                'boolean',
+            ],
+            'isolated_username' => [
+                Rule::requiredIf(function () use ($input) {
+                    return $input['is_isolated'] === true;
+                }),
+                'max:15',
+                'min:5',
+                'alpha',
+                'unique:sites,isolated_username'
+            ]
         ];
 
         return array_merge($rules, self::typeRules($server, $input));

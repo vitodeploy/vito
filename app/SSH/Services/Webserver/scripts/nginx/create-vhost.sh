@@ -1,15 +1,3 @@
-if ! rm -rf __path__; then
-    echo 'VITO_SSH_ERROR' && exit 1
-fi
-
-if ! mkdir __path__; then
-    echo 'VITO_SSH_ERROR' && exit 1
-fi
-
-if ! sudo chown -R 755 __path__; then
-    echo 'VITO_SSH_ERROR' && exit 1
-fi
-
 if ! echo '' | sudo tee /etc/nginx/conf.d/__domain___redirects; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi

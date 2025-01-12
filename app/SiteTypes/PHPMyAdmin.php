@@ -3,7 +3,9 @@
 namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
+use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\Webserver\Webserver;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PHPMyAdmin extends PHPSite
@@ -43,6 +45,11 @@ class PHPMyAdmin extends PHPSite
 
     public function install(): void
     {
+        if ($this->site->is_isolated)
+        {
+            $this->site->isolate();
+        }
+
         /** @var Webserver $webserver */
         $webserver = $this->site->server->webserver()->handler();
         $webserver->createVHost($this->site);

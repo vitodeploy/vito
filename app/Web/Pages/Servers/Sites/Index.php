@@ -133,6 +133,14 @@ class Index extends \App\Web\Pages\Servers\Page
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['version']),
                     // WordPress
                     $this->wordpressFields(),
+                    Checkbox::make("is_isolated")
+                        ->label("Isolate site under another user")
+                        ->default(false)
+                        ->reactive(),
+                    TextInput::make('isolated_username')
+                        ->label('Username to isolate the site under (path will be /home/{username}/domain)')
+                        ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['isolated_username'])
+                        ->visible(fn (Get $get) => $get('is_isolated') === true),
                 ])
                 ->action(function (array $data) {
                     $this->authorize('create', [Site::class, $this->server]);
