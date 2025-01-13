@@ -62,6 +62,7 @@ class OS
         $this->server->ssh()->exec(
             $this->getScript('create-isolated-user.sh', [
                 'user' => $user,
+                'server_user' => $this->server->getSshUser(),
                 'password' => $password,
             ]),
             'create-isolated-user',
