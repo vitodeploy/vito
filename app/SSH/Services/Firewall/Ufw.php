@@ -30,7 +30,7 @@ class Ufw extends AbstractFirewall
                 'protocol' => $protocol,
                 'port' => $port,
                 'source' => $source,
-                'mask' => $mask || $mask == 0 ? '/'.$mask : '',
+                'mask' => $mask || $mask === 0 ? '/'.$mask : '',
             ]),
             'add-firewall-rule'
         );
@@ -44,7 +44,7 @@ class Ufw extends AbstractFirewall
                 'protocol' => $protocol,
                 'port' => $port,
                 'source' => $source,
-                'mask' => $mask || $mask == 0 ? '/'.$mask : '',
+                'mask' => $mask || $mask === 0 ? '/'.$mask : '',
             ]),
             'remove-firewall-rule'
         );
