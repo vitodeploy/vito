@@ -5,6 +5,7 @@ namespace App\Web\Pages\Scripts;
 use App\Actions\Script\ExecuteScript;
 use App\Models\Script;
 use App\Models\Server;
+use App\Models\Site;
 use App\Web\Components\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -59,6 +60,11 @@ class Executions extends Page
                     $server = Server::query()->find($get('server'));
                     if ($server) {
                         $options[$server->ssh_user] = $server->ssh_user;
+
+                        $isolatedSites = Site::query()->whereIsIsolated(true)->whereServerId($server->id)->get();
+                        foreach ($isolatedSites as $site) {
+                            $options[$site->isolated_username] = $site->isolated_username;
+                        }
                     }
 
                     return $options;

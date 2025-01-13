@@ -11,10 +11,15 @@ class Wordpress
 
     public function install(Site $site): void
     {
-        $site->server->ssh()->exec(
+        $ssh = $site->server->ssh();
+        if ($site->is_isolated) { $ssh->asUser($site->isolated_username); }
+
+        $ssh->exec(
             $this->getScript('install.sh', [
                 'path' => $site->path,
                 'domain' => $site->domain,
+                'is_isolated' => $site->is_isolated ? 'true' : 'false',
+                'isolated_username' => $site->isolated_username,
                 'db_name' => $site->type_data['database'],
                 'db_user' => $site->type_data['database_user'],
                 'db_pass' => $site->type_data['database_password'],
@@ -25,7 +30,8 @@ class Wordpress
                 'email' => $site->type_data['email'],
                 'title' => $site->type_data['title'],
             ]),
-            'install-wordpress'
+            'install-wordpress',
+            $site->id
         );
     }
 }

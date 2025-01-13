@@ -7,6 +7,7 @@ use App\Models\Script;
 use App\Models\ScriptExecution;
 use App\Models\Server;
 use App\Models\ServerLog;
+use App\Models\Site;
 use Illuminate\Validation\Rule;
 
 class ExecuteScript
@@ -22,13 +23,21 @@ class ExecuteScript
         ]);
         $execution->save();
 
-        dispatch(function () use ($execution, $script) {
+        $server = Server::query()->find($input['server']);
+        $user = in_array($input['user'], ['root', $server->ssh_user])
+            ? $input['user']
+            : $server->ssh_user;
+        $runAsUser = ! in_array($input['user'], ['root', $server->ssh_user])
+            ? $input['user']
+            : null;
+
+        dispatch(function () use ($execution, $script, $user, $runAsUser) {
             $content = $execution->getContent();
             $log = ServerLog::make($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
             $log->save();
             $execution->server_log_id = $log->id;
             $execution->save();
-            $execution->server->os()->runScript('~/', $content, $log, $execution->user);
+            $execution->server->os()->runScript('~/', $content, $log, $user, $runAsUser);
             $execution->status = ScriptExecutionStatus::COMPLETED;
             $execution->save();
         })->catch(function () use ($execution) {
@@ -53,10 +62,15 @@ class ExecuteScript
             ],
             'user' => [
                 'required',
-                Rule::in([
-                    'root',
-                    isset($server) ? $server?->ssh_user : null,
-                ]),
+                Rule::in(array_merge(
+                    ['root'],
+                    isset($server) ? [$server->ssh_user] : [],
+                    isset($server) ? Site::query()
+                        ->whereIsIsolated(true)
+                        ->whereServerId($server->id)
+                        ->pluck('isolated_username')
+                        ->toArray() : []
+                )),
             ],
             'variables' => 'array',
             'variables.*' => [
