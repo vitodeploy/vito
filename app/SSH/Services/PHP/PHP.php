@@ -111,7 +111,7 @@ class PHP extends AbstractService
         );
     }
 
-    public function createFPMPool(string $user, string $version, $site_id): void
+    public function createFpmPool(string $user, string $version, $site_id): void
     {
         $this->service->server->ssh()->exec(
             $this->getScript('create-fpm-pool.sh', [
@@ -127,7 +127,7 @@ class PHP extends AbstractService
         );
     }
 
-    public function removeFPMPool(string $user, string $version, $site_id): void
+    public function removeFpmPool(string $user, string $version, $site_id): void
     {
         $this->service->server->ssh()->exec(
             $this->getScript('remove-fpm-pool.sh', [

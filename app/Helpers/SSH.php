@@ -117,7 +117,10 @@ class SSH
 
         try {
             if ($this->asUser) {
-                $command = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($command).'"';
+                $command = sprintf("sudo su - '%s' -c '%s'",
+                    $this->escape_shell_arg($this->asUser),
+                    $this->escape_shell_arg($command)
+                );
             }
 
             $this->connection->setTimeout(0);
@@ -146,11 +149,20 @@ class SSH
                 return $output;
             }
         } catch (Throwable $e) {
+            Log::error('Error executing command', [
+                'msg' => $e->getMessage(),
+                'log' => $this->log,
+            ]);
             throw new SSHCommandError(
                 message: $e->getMessage(),
                 log: $this->log
             );
         }
+    }
+
+    private function escape_shell_arg(string $command): string
+    {
+        return str_replace("'", "\\''", $command);
     }
 
     /**
@@ -220,6 +232,12 @@ class SSH
             $this->connection->disconnect();
             $this->connection = null;
         }
+    }
+
+    public function asUser(string $user): self
+    {
+        $this->asUser = $user;
+        return $this;
     }
 
     /**
