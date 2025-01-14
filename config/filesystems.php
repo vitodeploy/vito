@@ -39,7 +39,7 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app\public'),
+            'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
@@ -59,24 +59,24 @@ return [
 
         'key-pairs' => [
             'driver' => 'local',
-            'root' => storage_path('app\key-pairs'),
+            'root' => storage_path('app/key-pairs'),
         ],
 
         // @deprecated
         'key-pairs-local' => [
             'driver' => 'local',
-            'root' => storage_path('app\key-pairs'),
+            'root' => storage_path('app/key-pairs'),
         ],
 
         'server-logs' => [
             'driver' => 'local',
-            'root' => storage_path('app\server-logs'),
+            'root' => storage_path('app/server-logs'),
         ],
 
         // @deprecated
         'server-logs-local' => [
             'driver' => 'local',
-            'root' => storage_path('app\server-logs'),
+            'root' => storage_path('app/server-logs'),
         ],
     ],
 
@@ -92,7 +92,7 @@ return [
     */
 
     'links' => [
-        public_path('storage') => storage_path('app\public'),
+        public_path('storage') => storage_path('app/public'),
     ],
 
 ];

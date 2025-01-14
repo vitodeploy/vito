@@ -26,6 +26,7 @@ class SiteResource extends JsonResource
             'branch' => $this->branch,
             'status' => $this->status,
             'port' => $this->port,
+            'user' => $this->user,
             'progress' => $this->progress,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

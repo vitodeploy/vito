@@ -61,9 +61,13 @@ class Executions extends Page
                     if ($server) {
                         $options[$server->ssh_user] = $server->ssh_user;
 
-                        $isolatedSites = Site::query()->whereIsIsolated(true)->whereServerId($server->id)->get();
+                        $isolatedSites = Site::query()
+                            ->whereNot("user", value: $server->getSshUser())
+                            ->whereServerId($server->id)
+                            ->get();
+
                         foreach ($isolatedSites as $site) {
-                            $options[$site->isolated_username] = $site->isolated_username;
+                            $options[$site->user] = $site->user;
                         }
                     }
 

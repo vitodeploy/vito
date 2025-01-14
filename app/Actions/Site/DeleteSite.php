@@ -15,13 +15,13 @@ class DeleteSite
         $webserverHandler = $site->server->webserver()->handler();
         $webserverHandler->deleteSite($site);
 
-        if ($site->is_isolated) {
+        if ($site->isIsolated()) {
             /** @var PHP $php */
-            $php = $site->server->php();
-            $php->removeFpmPool($site->isolated_username, $site->php_version, $site->id);
+            $php = $site->server->php()->handler();
+            $php->removeFpmPool($site->user, $site->php_version, $site->id);
 
             $os = $site->server->os();
-            $os->deleteIsolatedUser($site->isolated_username);
+            $os->deleteIsolatedUser($site->user);
         }
 
         $site->delete();

@@ -12,7 +12,7 @@ class PHPMyAdmin
     public function install(Site $site): void
     {
         $ssh = $site->server->ssh();
-        if ($site->is_isolated) { $ssh->asUser($site->isolated_username); }
+        if ($site->isIsolated()) { $ssh->asUser($site->user); }
 
         $ssh->exec(
             $this->getScript('install.sh', [

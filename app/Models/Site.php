@@ -69,8 +69,7 @@ class Site extends AbstractModel
         'status',
         'port',
         'progress',
-        'is_isolated',
-        'isolated_username',
+        'user',
     ];
 
     protected $casts = [
@@ -80,7 +79,6 @@ class Site extends AbstractModel
         'progress' => 'integer',
         'aliases' => 'array',
         'source_control_id' => 'integer',
-        'is_isolated' => 'boolean',
     ];
 
     public static array $statusColors = [
@@ -205,11 +203,11 @@ class Site extends AbstractModel
         $handler = $this->server->webserver()->handler();
         $handler->changePHPVersion($this, $version);
 
-        if ($this->is_isolated) {
+        if ($this->isIsolated()) {
             /** @var PHP $php */
             $php = $this->server->php()->handler();
-            $php->removeFpmPool($this->isolated_username, $this->php_version, $this->id);
-            $php->createFpmPool($this->isolated_username, $version, $this->id);
+            $php->removeFpmPool($this->user, $this->php_version, $this->id);
+            $php->createFpmPool($this->user, $version, $this->id);
         }
 
         $this->php_version = $version;
@@ -322,8 +320,12 @@ class Site extends AbstractModel
 
     public function isolate(): void
     {
+        if (!$this->isIsolated()) {
+            return;
+        }
+
         $this->server->os()->createIsolatedUser(
-            $this->isolated_username,
+            $this->user,
             Str::random(15),
             $this->id
         );
@@ -332,9 +334,15 @@ class Site extends AbstractModel
         /** @var PHP $php */
         $php = $this->php()->handler();
         $php->createFpmPool(
-            $this->isolated_username,
+            $this->user,
             $this->php_version,
             $this->id
         );
+    }
+
+
+    public function isIsolated(): bool
+    {
+        return $this->user != $this->server->getSshUser();
     }
 }

@@ -66,9 +66,9 @@ class ExecuteScript
                     ['root'],
                     isset($server) ? [$server->ssh_user] : [],
                     isset($server) ? Site::query()
-                        ->whereIsIsolated(true)
+                        ->whereNot("user", value: $server->ssh_user)
                         ->whereServerId($server->id)
-                        ->pluck('isolated_username')
+                        ->pluck('user')
                         ->toArray() : []
                 )),
             ],

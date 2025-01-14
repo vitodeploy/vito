@@ -26,19 +26,14 @@ class CreateSite
     {
         DB::beginTransaction();
         try {
-            $is_isolated = $input['is_isolated'] ?? false;
-            $isolated_username = $is_isolated
-                ? $input['isolated_username']
-                : $server->getSshUser();
-
+            $user = $input['user'] ?? $server->getSshUser();
             $site = new Site([
                 'server_id' => $server->id,
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'aliases' => $input['aliases'] ?? [],
-                'is_isolated' => $is_isolated,
-                'isolated_username' => $isolated_username,
-                'path' => '/home/'.$isolated_username.'/'.$input['domain'],
+                'user' => $user,
+                'path' => '/home/'.$user.'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
             ]);
 
@@ -118,17 +113,12 @@ class CreateSite
             'aliases.*' => [
                 new DomainRule,
             ],
-            'is_isolated' => [
-                'boolean',
-            ],
-            'isolated_username' => [
-                Rule::requiredIf(function () use ($input) {
-                    return $input['is_isolated'] === true;
-                }),
-                'max:15',
-                'min:5',
-                'alpha',
-                'unique:sites,isolated_username'
+            'user' => [
+                'regex:/^[a-z_][a-z0-9_-]*[a-z0-9]$/',
+                'min:3',
+                'max:32',
+                'unique:sites,isolated_username',
+                'not_in:root,' . $server->getSshUser(),
             ]
         ];
 

@@ -76,10 +76,7 @@ class PHPSite extends AbstractSiteType
      */
     public function install(): void
     {
-        if ($this->site->is_isolated)
-        {
-            $this->site->isolate();
-        }
+        $this->site->isolate();
 
         /** @var Webserver $webserver */
         $webserver = $this->site->server->webserver()->handler();

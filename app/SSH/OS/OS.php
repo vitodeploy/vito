@@ -5,6 +5,7 @@ namespace App\SSH\OS;
 use App\Exceptions\SSHUploadFailed;
 use App\Models\Server;
 use App\Models\ServerLog;
+use App\Models\Site;
 use App\SSH\HasScripts;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
@@ -74,6 +75,7 @@ class OS
         $this->server->ssh()->exec(
             $this->getScript('delete-isolated-user.sh', [
                 'user' => $user,
+                'server_user' => $this->server->getSshUser(),
             ]),
             'delete-isolated-user'
         );
@@ -109,19 +111,26 @@ class OS
         );
     }
 
-    public function generateSSHKey(string $name): void
+    public function generateSSHKey(string $name, ?Site $site = null): void
     {
-        $this->server->ssh()->exec(
+        $ssh = $site->server->ssh();
+        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+
+        $ssh->exec(
             $this->getScript('generate-ssh-key.sh', [
                 'name' => $name,
             ]),
-            'generate-ssh-key'
+            'generate-ssh-key',
+            $site?->id
         );
     }
 
-    public function readSSHKey(string $name): string
+    public function readSSHKey(string $name, ?Site $site = null): string
     {
-        return $this->server->ssh()->exec(
+        $ssh = $site->server->ssh();
+        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+
+        return $ssh->exec(
             $this->getScript('read-ssh-key.sh', [
                 'name' => $name,
             ]),
