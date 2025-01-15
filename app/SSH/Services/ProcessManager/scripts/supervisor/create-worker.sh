@@ -1,8 +1,10 @@
-mkdir -p ~/.logs
+if ! sudo mkdir -p "$(dirname __log_file__)"; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
 
-mkdir -p ~/.logs/workers
-
-touch ~/.logs/workers/__id__.log
+if ! sudo touch __log_file__; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
 
 if ! sudo supervisorctl reread; then
     echo 'VITO_SSH_ERROR' && exit 1

@@ -95,7 +95,7 @@ class QueuesList extends Widget
             ->modalHeading('View Log')
             ->modalContent(function (Queue $record) {
                 return view('components.console-view', [
-                    'slot' => app(GetQueueLogs::class)->getLogs($record),
+                    'slot' => app(GetQueueLogs::class)->getLogs($record, $this->site),
                     'attributes' => new ComponentAttributeBag,
                 ]);
             })

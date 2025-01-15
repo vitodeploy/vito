@@ -3,11 +3,12 @@
 namespace App\Actions\Queue;
 
 use App\Models\Queue;
+use App\Models\Site;
 
 class GetQueueLogs
 {
-    public function getLogs(Queue $queue): string
+    public function getLogs(Queue $queue, Site $site): string
     {
-        return $queue->server->processManager()->handler()->getLogs($queue->user, $queue->getLogFile());
+        return $queue->server->processManager()->handler()->getLogs($site, $queue->getLogFile());
     }
 }

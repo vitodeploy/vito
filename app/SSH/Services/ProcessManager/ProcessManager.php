@@ -2,6 +2,8 @@
 
 namespace App\SSH\Services\ProcessManager;
 
+use App\Models\Site;
+
 interface ProcessManager
 {
     public function create(
@@ -23,5 +25,5 @@ interface ProcessManager
 
     public function start(int $id, ?int $siteId = null): void;
 
-    public function getLogs(string $user, string $logPath): string;
+    public function getLogs(Site $site, string $logPath): string;
 }

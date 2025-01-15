@@ -47,17 +47,23 @@ class Index extends Page
                 ->label('New Queue')
                 ->form([
                     TextInput::make('command')
-                        ->rules(CreateQueue::rules($this->server)['command'])
+                        ->default(
+                            $this->site->type === 'laravel'
+                                ? "php{$this->site->php_version} {$this->site->path}/artisan queue:work"
+                                : ""
+                        )
+                        ->rules(CreateQueue::rules($this->site)['command'])
                         ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
                     Select::make('user')
-                        ->rules(fn (callable $get) => CreateQueue::rules($this->server)['user'])
-                        ->options([
-                            'vito' => $this->server->ssh_user,
-                            'root' => 'root',
-                        ]),
+                        ->rules(fn (callable $get) => CreateQueue::rules($this->site)['user'])
+                        ->options(array_merge(
+                            $this->site->isIsolated() ? [ $this->site->user => $this->site->user ] : [],
+                            [ $this->server->ssh_user => $this->server->ssh_user ],
+                            ['root' => 'root' ],
+                        )),
                     TextInput::make('numprocs')
                         ->default(1)
-                        ->rules(CreateQueue::rules($this->server)['numprocs'])
+                        ->rules(CreateQueue::rules($this->site)['numprocs'])
                         ->helperText('Number of processes'),
                     Grid::make()
                         ->schema([
