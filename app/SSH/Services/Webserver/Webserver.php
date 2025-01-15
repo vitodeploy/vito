@@ -9,9 +9,9 @@ interface Webserver
 {
     public function createVHost(Site $site): void;
 
-    public function updateVHost(Site $site, bool $noSSL = false, ?string $vhost = null): void;
+    public function updateVHost(Site $site, ?string $vhost = null): void;
 
-    public function getVHost(Site $site): string;
+    public function getVHostTemplate(Site $site): string;
 
     public function deleteSite(Site $site): void;
 
