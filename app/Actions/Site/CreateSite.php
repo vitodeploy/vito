@@ -117,7 +117,7 @@ class CreateSite
                 'regex:/^[a-z_][a-z0-9_-]*[a-z0-9]$/',
                 'min:3',
                 'max:32',
-                'unique:sites,isolated_username',
+                'unique:sites,user',
                 'not_in:root,' . $server->getSshUser(),
             ]
         ];
