@@ -52,7 +52,7 @@ class Index extends Page
                         ->default(
                             $this->site->type === 'laravel'
                                 ? "php{$this->site->php_version} {$this->site->path}/artisan queue:work"
-                                : ""
+                                : ''
                         ),
                     Select::make('user')
                         ->rules(fn (callable $get) => CreateQueue::rules($this->server)['user'])
