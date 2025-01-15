@@ -20,7 +20,6 @@ use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Filament\Infolists\Contracts\HasInfolists;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
-use Filament\Support\Enums\IconPosition;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Widgets\Widget;
 
@@ -51,7 +50,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel()
                             ->hintIcon('heroicon-o-information-circle')
                             ->hintIconTooltip('Site unique identifier to use in the API'),
-                        TextEntry::make("user")
+                        TextEntry::make('user')
                             ->label('Site User')
                             ->inlineLabel(),
                         TextEntry::make('created_at')

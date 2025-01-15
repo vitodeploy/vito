@@ -320,7 +320,7 @@ class Site extends AbstractModel
 
     public function isolate(): void
     {
-        if (!$this->isIsolated()) {
+        if (! $this->isIsolated()) {
             return;
         }
 
@@ -339,7 +339,6 @@ class Site extends AbstractModel
             $this->id
         );
     }
-
 
     public function isIsolated(): bool
     {

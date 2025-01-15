@@ -60,7 +60,9 @@ class Nginx extends AbstractWebserver
         // We need to get the isolated user first, if the site is isolated
         // otherwise, use the default ssh user
         $ssh = $this->service->server->ssh();
-        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+        if ($site->isIsolated()) {
+            $ssh->asUser($site->user);
+        }
 
         $ssh->exec(
             $this->getScript('nginx/create-path.sh', [
@@ -205,7 +207,7 @@ class Nginx extends AbstractWebserver
             $vhost = Str::replace('__port__', (string) $site->port, $vhost);
         }
 
-        $php_socket = "unix:/var/run/php/php-fpm.sock";
+        $php_socket = 'unix:/var/run/php/php-fpm.sock';
         if ($site->isIsolated()) {
             $php_socket = "unix:/run/php/php{$site->php_version}-fpm-{$site->user}.sock";
         }

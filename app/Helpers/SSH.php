@@ -237,6 +237,7 @@ class SSH
     public function asUser(string $user): self
     {
         $this->asUser = $user;
+
         return $this;
     }
 

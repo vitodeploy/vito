@@ -66,7 +66,7 @@ class ExecuteScript
                     ['root'],
                     isset($server) ? [$server->ssh_user] : [],
                     isset($server) ? Site::query()
-                        ->whereNot("user", value: $server->ssh_user)
+                        ->whereNot('user', value: $server->ssh_user)
                         ->whereServerId($server->id)
                         ->pluck('user')
                         ->toArray() : []

@@ -57,7 +57,7 @@ class Index extends Page
                         ->options(array_merge(
                             [
                                 'vito' => $this->server->ssh_user,
-                                'root' => 'root'
+                                'root' => 'root',
                             ],
                             array_combine(
                                 $this->server->sites->pluck('user')->toArray(),

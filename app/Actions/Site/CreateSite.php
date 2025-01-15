@@ -14,11 +14,8 @@ use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Nette\Utils\FileSystem;
 
 class CreateSite
 {
@@ -118,8 +115,8 @@ class CreateSite
                 'min:3',
                 'max:32',
                 'unique:sites,user',
-                'not_in:root,' . $server->getSshUser(),
-            ]
+                'not_in:root,'.$server->getSshUser(),
+            ],
         ];
 
         return array_merge($rules, self::typeRules($server, $input));

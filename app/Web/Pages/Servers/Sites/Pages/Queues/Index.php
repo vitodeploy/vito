@@ -52,9 +52,9 @@ class Index extends Page
                     Select::make('user')
                         ->rules(fn (callable $get) => CreateQueue::rules($this->site)['user'])
                         ->options(array_merge(
-                            $this->site->isIsolated() ? [ $this->site->user => $this->site->user ] : [],
-                            [ $this->server->ssh_user => $this->server->ssh_user ],
-                            ['root' => 'root' ],
+                            $this->site->isIsolated() ? [$this->site->user => $this->site->user] : [],
+                            [$this->server->ssh_user => $this->server->ssh_user],
+                            ['root' => 'root'],
                         )),
                     TextInput::make('numprocs')
                         ->default(1)

@@ -38,7 +38,7 @@ class CreateCronJob
             'user' => [
                 'required',
                 Rule::in(array_merge(
-                    [ 'root', $server->getSshUser() ],
+                    ['root', $server->getSshUser()],
                     Site::query()->whereServerId($server->id)->pluck('user')->toArray()
                 )),
             ],

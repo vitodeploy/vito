@@ -3,10 +3,7 @@
 namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
-use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\Webserver\Webserver;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PHPBlank extends PHPSite

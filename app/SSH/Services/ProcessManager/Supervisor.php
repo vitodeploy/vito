@@ -126,7 +126,9 @@ class Supervisor extends AbstractProcessManager
     public function getLogs(Site $site, string $logPath): string
     {
         $ssh = $this->service->server->ssh();
-        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+        if ($site->isIsolated()) {
+            $ssh->asUser($site->user);
+        }
 
         return $ssh->exec(
             "tail -100 $logPath"

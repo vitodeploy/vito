@@ -136,7 +136,7 @@ class ScriptTest extends TestCase
             ->assertSuccessful();
     }
 
-    public function test_execute_script_as_isolated_user() : void
+    public function test_execute_script_as_isolated_user(): void
     {
         SSH::fake('script output');
 
@@ -167,7 +167,7 @@ class ScriptTest extends TestCase
         ]);
     }
 
-    public function test_cannot_execute_script_as_non_existing_user() : void
+    public function test_cannot_execute_script_as_non_existing_user(): void
     {
         $this->actingAs($this->user);
 
@@ -190,7 +190,7 @@ class ScriptTest extends TestCase
         ]);
     }
 
-    public function test_cannot_execute_script_as_user_not_on_server() : void
+    public function test_cannot_execute_script_as_user_not_on_server(): void
     {
         $this->actingAs($this->user);
 
@@ -199,7 +199,7 @@ class ScriptTest extends TestCase
         ]);
 
         Site::factory()->create([
-            'server_id' => Server::factory()->create(["user_id" => 1])->id,
+            'server_id' => Server::factory()->create(['user_id' => 1])->id,
             'user' => 'example',
         ]);
 

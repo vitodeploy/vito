@@ -12,7 +12,9 @@ class Git
     public function clone(Site $site): void
     {
         $ssh = $site->server->ssh();
-        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+        if ($site->isIsolated()) {
+            $ssh->asUser($site->user);
+        }
 
         $ssh->exec(
             $this->getScript('clone.sh', [
@@ -30,7 +32,9 @@ class Git
     public function checkout(Site $site): void
     {
         $ssh = $site->server->ssh();
-        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+        if ($site->isIsolated()) {
+            $ssh->asUser($site->user);
+        }
 
         $ssh->exec(
             $this->getScript('checkout.sh', [

@@ -62,7 +62,7 @@ class Executions extends Page
                         $options[$server->ssh_user] = $server->ssh_user;
 
                         $isolatedSites = Site::query()
-                            ->whereNot("user", value: $server->getSshUser())
+                            ->whereNot('user', value: $server->getSshUser())
                             ->whereServerId($server->id)
                             ->get();
 

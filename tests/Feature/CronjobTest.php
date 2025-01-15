@@ -90,7 +90,7 @@ class CronjobTest extends TestCase
         SSH::fake();
         $this->actingAs($this->user);
 
-        $this->site->user = "example";
+        $this->site->user = 'example';
         $this->site->save();
 
         Livewire::test(Index::class, [
@@ -139,7 +139,7 @@ class CronjobTest extends TestCase
         $this->actingAs($this->user);
 
         Site::factory()->create([
-            'server_id' => Server::factory()->create(["user_id" => 1])->id,
+            'server_id' => Server::factory()->create(['user_id' => 1])->id,
             'user' => 'example',
         ]);
 

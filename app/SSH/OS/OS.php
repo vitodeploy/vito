@@ -59,7 +59,8 @@ class OS
         );
     }
 
-    public function createIsolatedUser(string $user, string $password, int $site_id): void {
+    public function createIsolatedUser(string $user, string $password, int $site_id): void
+    {
         $this->server->ssh()->exec(
             $this->getScript('create-isolated-user.sh', [
                 'user' => $user,
@@ -71,7 +72,8 @@ class OS
         );
     }
 
-    public function deleteIsolatedUser(string $user): void {
+    public function deleteIsolatedUser(string $user): void
+    {
         $this->server->ssh()->exec(
             $this->getScript('delete-isolated-user.sh', [
                 'user' => $user,
@@ -114,7 +116,9 @@ class OS
     public function generateSSHKey(string $name, ?Site $site = null): void
     {
         $ssh = $site->server->ssh();
-        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+        if ($site->isIsolated()) {
+            $ssh->asUser($site->user);
+        }
 
         $ssh->exec(
             $this->getScript('generate-ssh-key.sh', [
@@ -128,7 +132,9 @@ class OS
     public function readSSHKey(string $name, ?Site $site = null): string
     {
         $ssh = $site->server->ssh();
-        if ($site->isIsolated()) { $ssh->asUser($site->user); }
+        if ($site->isIsolated()) {
+            $ssh->asUser($site->user);
+        }
 
         return $ssh->exec(
             $this->getScript('read-ssh-key.sh', [
@@ -191,7 +197,9 @@ class OS
             $ssh->setLog($serverLog);
         }
 
-        if ($runUser) { $ssh->asUser($runUser); }
+        if ($runUser) {
+            $ssh->asUser($runUser);
+        }
 
         $command = '';
         foreach ($variables as $key => $variable) {

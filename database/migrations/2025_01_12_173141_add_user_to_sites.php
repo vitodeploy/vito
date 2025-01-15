@@ -13,12 +13,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sites', function (Blueprint $table) {
-            $table->string("user");
+            $table->string('user');
         });
 
-        Site::with("server")->get()->each(function ($site) {
+        Site::with('server')->get()->each(function ($site) {
             $site->update([
-                'user' => $site->server->getSshUser()
+                'user' => $site->server->getSshUser(),
             ]);
         });
     }
