@@ -48,7 +48,12 @@ class Index extends Page
                 ->form([
                     TextInput::make('command')
                         ->rules(CreateQueue::rules($this->server)['command'])
-                        ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
+                        ->helperText('Example: php /home/vito/your-site/artisan queue:work')
+                        ->default(
+                            $this->site->type === 'laravel'
+                                ? "php{$this->site->php_version} {$this->site->path}/artisan queue:work"
+                                : ""
+                        ),
                     Select::make('user')
                         ->rules(fn (callable $get) => CreateQueue::rules($this->server)['user'])
                         ->options([
