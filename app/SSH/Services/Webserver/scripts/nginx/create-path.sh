@@ -1,16 +1,16 @@
 export DEBIAN_FRONTEND=noninteractive
 
 if ! rm -rf __path__; then
-    echo 'VITO_SSH_ERROR_1'
+    echo 'VITO_SSH_ERROR'
     exit 1
 fi
 
 if ! mkdir __path__; then
-    echo 'VITO_SSH_ERROR_2'
+    echo 'VITO_SSH_ERROR'
     exit 1
 fi
 
 if ! chmod -R 755 __path__; then
-    echo 'VITO_SSH_ERROR_3'
+    echo 'VITO_SSH_ERROR'
     exit 1
 fi
