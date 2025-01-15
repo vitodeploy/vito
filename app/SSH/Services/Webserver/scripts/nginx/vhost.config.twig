@@ -1,4 +1,4 @@
-{% if https_mode == 'force' %}
+{% if http_mode == 'force' %}
 server {
     listen 80;
     server_name {{ domain_name }} {{ aliases }};
@@ -7,10 +7,10 @@ server {
 {% endif %}
 
 server {
-    {% if not https_mode == 'force' %}
+    {% if not http_mode == 'force' %}
         listen 80;
     {% endif %}
-    {% if https_mode in ['https', 'force'] %}
+    {% if http_mode in ['https', 'force'] %}
         listen 443 ssl;
 
         ssl_certificate {{ certificate }};

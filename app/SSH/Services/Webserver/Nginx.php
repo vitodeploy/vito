@@ -206,47 +206,6 @@ class Nginx extends AbstractWebserver
         $this->service->server->systemd()->restart('nginx');
     }
 
-    //    protected function generateVhost(Site $site, bool $noSSL = false): string
-    //    {
-    //        $ssl = $site->activeSsl;
-    //        if ($noSSL) {
-    //            $ssl = null;
-    //        }
-    //        $vhost = $this->getScript('nginx/vhost.conf');
-    //        if ($ssl) {
-    //            $vhost = $this->getScript('nginx/vhost-ssl.conf');
-    //        }
-    //        if ($site->type()->language() === 'php') {
-    //            $vhost = $this->getScript('nginx/php-vhost.conf');
-    //            if ($ssl) {
-    //                $vhost = $this->getScript('nginx/php-vhost-ssl.conf');
-    //            }
-    //        }
-    //        if ($site->port) {
-    //            $vhost = $this->getScript('nginx/reverse-vhost.conf');
-    //            if ($ssl) {
-    //                $vhost = $this->getScript('nginx/reverse-vhost-ssl.conf');
-    //            }
-    //            $vhost = Str::replace('__port__', (string) $site->port, $vhost);
-    //        }
-    //
-    //        $vhost = Str::replace('__domain__', $site->domain, $vhost);
-    //        $vhost = Str::replace('__aliases__', $site->getAliasesString(), $vhost);
-    //        $vhost = Str::replace('__path__', $site->path, $vhost);
-    //        $vhost = Str::replace('__web_directory__', $site->web_directory, $vhost);
-    //
-    //        if ($ssl) {
-    //            $vhost = Str::replace('__certificate__', $ssl->getCertificatePath(), $vhost);
-    //            $vhost = Str::replace('__private_key__', $ssl->getPkPath(), $vhost);
-    //        }
-    //
-    //        if ($site->php_version) {
-    //            $vhost = Str::replace('__php_version__', $site->php_version, $vhost);
-    //        }
-    //
-    //        return $vhost;
-    //    }
-
     public function renderTemplate(string $template, Site $site): string
     {
         $templateName = 'vhost_template_'.md5($template);
@@ -254,7 +213,7 @@ class Nginx extends AbstractWebserver
 
         $ssl = $site->activeSsl;
         $configs = [
-            'https_mode' => 'http',
+            'http_mode' => $ssl == null ? 'http' : 'https',
             'domain_name' => $site->domain,
             'aliases' => $site->getAliasesString(),
             'path' => $site->path,
