@@ -12,9 +12,9 @@ class UpdateDeploymentScript
      */
     public function update(Site $site, array $input): void
     {
-        $site->deploymentScript()->update([
-            'content' => $input['script'],
-        ]);
+        $script = $site->deploymentScript;
+        $script->content = $input['script'];
+        $script->save();
     }
 
     /**

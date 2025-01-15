@@ -7,6 +7,7 @@ use App\Models\Server;
 use App\Models\ServerLog;
 use App\SSH\HasScripts;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
@@ -162,12 +163,13 @@ class OS
         }
         $command = '';
         foreach ($variables as $key => $variable) {
-            $command .= "$key=$variable".PHP_EOL;
+            $command .= "$key=$variable\n";
         }
         $command .= $this->getScript('run-script.sh', [
             'path' => $path,
             'script' => $script,
         ]);
+        Log::info($command);
         $ssh->exec($command, 'run-script');
 
         info($command);
