@@ -5,7 +5,9 @@ namespace App\Actions\CronJob;
 use App\Enums\CronjobStatus;
 use App\Models\CronJob;
 use App\Models\Server;
+use App\Models\Site;
 use App\ValidationRules\CronRule;
+use Illuminate\Validation\Rule;
 
 class CreateCronJob
 {
@@ -27,7 +29,7 @@ class CreateCronJob
         return $cronJob;
     }
 
-    public static function rules(array $input): array
+    public static function rules(array $input, Server $server): array
     {
         $rules = [
             'command' => [
@@ -35,7 +37,10 @@ class CreateCronJob
             ],
             'user' => [
                 'required',
-                'in:root,'.config('core.ssh_user'),
+                Rule::in(array_merge(
+                    [ 'root', $server->getSshUser() ],
+                    Site::query()->whereServerId($server->id)->pluck('user')->toArray()
+                )),
             ],
             'frequency' => [
                 'required',

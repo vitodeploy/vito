@@ -51,7 +51,7 @@ class CronJobController extends Controller
 
         $this->validateRoute($project, $server);
 
-        $this->validate($request, CreateCronJob::rules($request->all()));
+        $this->validate($request, CreateCronJob::rules($request->all(), $server));
 
         $cronJob = app(CreateCronJob::class)->create($server, $request->all());
 

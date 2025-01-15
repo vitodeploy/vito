@@ -46,25 +46,31 @@ class Index extends Page
                 ->modalWidth(MaxWidth::ExtraLarge)
                 ->form([
                     TextInput::make('command')
-                        ->rules(fn (callable $get) => CreateCronJob::rules($get())['command'])
+                        ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['command'])
                         ->helperText(fn () => view('components.link', [
                             'href' => 'https://vitodeploy.com/servers/cronjobs',
                             'external' => true,
                             'text' => 'How the command should look like?',
                         ])),
                     Select::make('user')
-                        ->rules(fn (callable $get) => CreateCronJob::rules($get())['user'])
-                        ->options([
-                            'vito' => $this->server->ssh_user,
-                            'root' => 'root',
-                        ]),
+                        ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['user'])
+                        ->options(array_merge(
+                            [
+                                'vito' => $this->server->ssh_user,
+                                'root' => 'root'
+                            ],
+                            array_combine(
+                                $this->server->sites->pluck('user')->toArray(),
+                                $this->server->sites->pluck('user')->toArray()
+                            )
+                        )),
                     Select::make('frequency')
                         ->options(config('core.cronjob_intervals'))
                         ->reactive()
-                        ->rules(fn (callable $get) => CreateCronJob::rules($get())['frequency']),
+                        ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['frequency']),
                     TextInput::make('custom')
                         ->label('Custom Frequency (Cron)')
-                        ->rules(fn (callable $get) => CreateCronJob::rules($get())['custom'])
+                        ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['custom'])
                         ->visible(fn (callable $get) => $get('frequency') === 'custom')
                         ->placeholder('0 * * * *'),
                 ])
