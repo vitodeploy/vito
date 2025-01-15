@@ -47,11 +47,6 @@ class Index extends Page
                 ->label('New Queue')
                 ->form([
                     TextInput::make('command')
-                        ->default(
-                            $this->site->type === 'laravel'
-                                ? "php{$this->site->php_version} {$this->site->path}/artisan queue:work"
-                                : ""
-                        )
                         ->rules(CreateQueue::rules($this->site)['command'])
                         ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
                     Select::make('user')
