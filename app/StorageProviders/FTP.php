@@ -57,7 +57,7 @@ class FTP extends AbstractStorageProvider
         return new \App\SSH\Storage\FTP($server, $this->storageProvider);
     }
 
-    public function delete(array $paths): void
+    public function delete(array $paths, ?Server $server = null): void
     {
         $connection = $this->connection();
 

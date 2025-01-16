@@ -10,13 +10,12 @@ class Local extends AbstractStorage
 
     public function upload(string $src, string $dest): array
     {
-        $destDir = dirname($this->storageProvider->credentials['path'].$dest);
-        $destFile = basename($this->storageProvider->credentials['path'].$dest);
+        $destDir = dirname($dest);
         $this->server->ssh()->exec(
             $this->getScript('local/upload.sh', [
                 'src' => $src,
                 'dest_dir' => $destDir,
-                'dest_file' => $destFile,
+                'dest_file' => $dest,
             ]),
             'upload-to-local'
         );
@@ -30,20 +29,10 @@ class Local extends AbstractStorage
     {
         $this->server->ssh()->exec(
             $this->getScript('local/download.sh', [
-                'src' => $this->storageProvider->credentials['path'].$src,
+                'src' => $src,
                 'dest' => $dest,
             ]),
             'download-from-local'
-        );
-    }
-
-    public function delete(string $path): void
-    {
-        $this->server->ssh()->exec(
-            $this->getScript('local/delete.sh', [
-                'path' => $this->storageProvider->credentials['path'].$path,
-            ]),
-            'delete-from-local'
         );
     }
 }

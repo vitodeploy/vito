@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Actions\Database\ManageBackupFile;
 use App\Enums\BackupFileStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property int $backup_id
@@ -46,18 +48,12 @@ class BackupFile extends AbstractModel
                         ->where('id', '<=', $lastFileToKeep->id)
                         ->get();
                     foreach ($files as $file) {
-                        $file->delete();
+                        dispatch(function () use ($file) {
+                            app(ManageBackupFile::class)->delete($file);
+                        });
                     }
                 }
             }
-        });
-
-        static::deleting(function (BackupFile $backupFile) {
-            $provider = $backupFile->backup->storage->provider();
-            $path = $backupFile->storagePath();
-            dispatch(function () use ($provider, $path) {
-                $provider->delete([$path]);
-            });
         });
     }
 
@@ -89,13 +85,29 @@ class BackupFile extends AbstractModel
         return $this->belongsTo(Backup::class);
     }
 
-    public function path(): string
+    public function tempPath(): string
     {
         return '/home/'.$this->backup->server->getSshUser().'/'.$this->name.'.zip';
     }
 
-    public function storagePath(): string
+    public function path(): string
     {
-        return '/'.$this->backup->database->name.'/'.$this->name.'.zip';
+        $storage = $this->backup->storage;
+        $databaseName = $this->backup->database->name;
+
+        switch ($storage->provider) {
+            case 'dropbox':
+                return '/'.$databaseName.'/'.$this->name.'.zip';
+            case 's3':
+            case 'ftp':
+            case 'local':
+                return implode('/', [
+                    rtrim($storage->credentials['path'], '/'),
+                    $databaseName,
+                    $this->name.'.zip',
+                ]);
+            default:
+                return "";
+        }
     }
 }

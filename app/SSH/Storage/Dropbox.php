@@ -4,6 +4,7 @@ namespace App\SSH\Storage;
 
 use App\Exceptions\SSHCommandError;
 use App\SSH\HasScripts;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class Dropbox extends AbstractStorage
@@ -43,13 +44,5 @@ class Dropbox extends AbstractStorage
             ]),
             'download-from-dropbox'
         );
-    }
-
-    /**
-     * @TODO Implement delete method
-     */
-    public function delete(string $path): void
-    {
-        //
     }
 }

@@ -39,7 +39,7 @@ class Dropbox extends AbstractStorageProvider
         return new \App\SSH\Storage\Dropbox($server, $this->storageProvider);
     }
 
-    public function delete(array $paths): void
+    public function delete(array $paths, ?Server $server = null): void
     {
         $data = [];
         foreach ($paths as $path) {

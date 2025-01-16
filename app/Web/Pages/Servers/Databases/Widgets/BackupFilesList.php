@@ -66,7 +66,7 @@ class BackupFilesList extends Widget
                     ->visible(fn (BackupFile $record) => $record->isAvailable() && $record->isLocal())
                     ->tooltip('Download')
                     ->action(function (BackupFile $record) {
-                        return app(ManageBackupFile::class)->download($record->backup->server, $record);
+                        return app(ManageBackupFile::class)->download($record);
                     })
                     ->authorize(fn (BackupFile $record) => auth()->user()->can('view', $record)),
                 Action::make('restore')
@@ -74,8 +74,7 @@ class BackupFilesList extends Widget
                     ->icon('heroicon-o-arrow-path')
                     ->modalHeading('Restore Backup')
                     ->tooltip('Restore Backup')
-                    ->disabled(fn (BackupFile $record) => ! $record->isAvailable()
-                    )
+                    ->disabled(fn (BackupFile $record) => ! $record->isAvailable())
                     ->authorize(fn (BackupFile $record) => auth()->user()->can('update', $record->backup))
                     ->form([
                         Select::make('database')
@@ -107,16 +106,15 @@ class BackupFilesList extends Widget
                 Action::make('delete')
                     ->hiddenLabel()
                     ->icon('heroicon-o-trash')
-                    ->modalHeading('Delete Database')
+                    ->modalHeading('Delete Backup File')
                     ->color('danger')
+                    ->disabled(fn (BackupFile $record) => ! $record->isAvailable())
                     ->tooltip('Delete')
                     ->authorize(fn (BackupFile $record) => auth()->user()->can('delete', $record))
                     ->requiresConfirmation()
                     ->action(function (BackupFile $record) {
-                        run_action($this, function () use ($record) {
-                            $record->delete();
-                            $this->dispatch('$refresh');
-                        });
+                        app(ManageBackupFile::class)->delete($record);
+                        $this->dispatch('$refresh');
                     }),
             ]);
     }

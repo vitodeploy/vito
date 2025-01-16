@@ -2,27 +2,21 @@
 
 namespace App\Actions\Database;
 
+use App\Enums\BackupFileStatus;
 use App\Models\BackupFile;
-use App\Models\Server;
 use Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ManageBackupFile
 {
-    public function download(Server $server, BackupFile $file): StreamedResponse
+    public function download(BackupFile $file): StreamedResponse
     {
         $localFilename = "backup_{$file->id}_{$file->name}.zip";
 
         if (! Storage::disk('backups')->exists($localFilename)) {
-            $provider = $file->backup->storage;
-            $databaseName = $file->backup->database->name;
-            $storagePath = rtrim($provider->credentials['path'], '/');
-            $remotePath = $storagePath.'/'.$databaseName.'/'.$file->name.'.zip';
-
-            $sftp = $server->sftp();
-            $sftp->download(
+            $file->backup->server->sftp()->download(
                 Storage::disk('backups')->path($localFilename),
-                $remotePath
+                $file->path()
             );
         }
 
@@ -39,5 +33,21 @@ class ManageBackupFile
                 'Content-Disposition' => 'attachment; filename="'.$file->name.'.zip"',
             ]
         );
+    }
+
+    public function delete(BackupFile $file): void
+    {
+        $file->status = BackupFileStatus::DELETING;
+        $file->save();
+
+        dispatch(function () use ($file) {
+            try {
+                $storage = $file->backup->storage->provider();
+                $storage->delete([$file->path()], $file->backup->server);
+            }
+            finally {
+                $file->delete();
+            }
+        });
     }
 }

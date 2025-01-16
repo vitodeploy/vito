@@ -13,7 +13,7 @@ class FTP extends AbstractStorage
         $this->server->ssh()->exec(
             $this->getScript('ftp/upload.sh', [
                 'src' => $src,
-                'dest' => $this->storageProvider->credentials['path'].'/'.$dest,
+                'dest' => $dest,
                 'host' => $this->storageProvider->credentials['host'],
                 'port' => $this->storageProvider->credentials['port'],
                 'username' => $this->storageProvider->credentials['username'],
@@ -33,7 +33,7 @@ class FTP extends AbstractStorage
     {
         $this->server->ssh()->exec(
             $this->getScript('ftp/download.sh', [
-                'src' => $this->storageProvider->credentials['path'].'/'.$src,
+                'src' => $src,
                 'dest' => $dest,
                 'host' => $this->storageProvider->credentials['host'],
                 'port' => $this->storageProvider->credentials['port'],
@@ -44,13 +44,5 @@ class FTP extends AbstractStorage
             ]),
             'download-from-ftp'
         );
-    }
-
-    /**
-     * @TODO Implement delete method
-     */
-    public function delete(string $path): void
-    {
-        //
     }
 }
