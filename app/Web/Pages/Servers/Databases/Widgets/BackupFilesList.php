@@ -2,9 +2,8 @@
 
 namespace App\Web\Pages\Servers\Databases\Widgets;
 
-use App\Actions\Database\ManageBackup;
+use App\Actions\Database\ManageBackupFile;
 use App\Actions\Database\RestoreBackup;
-use App\Enums\BackupFileStatus;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Database;
@@ -64,18 +63,18 @@ class BackupFilesList extends Widget
                 Action::make('download')
                     ->hiddenLabel()
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->visible(fn (BackupFile $record) =>
-                        $record->isAvailable() && $record->isLocal()
-                    )
+                    ->visible(fn (BackupFile $record) => $record->isAvailable() && $record->isLocal())
                     ->tooltip('Download')
+                    ->action(function (BackupFile $record) {
+                        return app(ManageBackupFile::class)->download($record->backup->server, $record);
+                    })
                     ->authorize(fn (BackupFile $record) => auth()->user()->can('view', $record)),
                 Action::make('restore')
                     ->hiddenLabel()
                     ->icon('heroicon-o-arrow-path')
                     ->modalHeading('Restore Backup')
                     ->tooltip('Restore Backup')
-                    ->disabled(fn (BackupFile $record) =>
-                        !$record->isAvailable()
+                    ->disabled(fn (BackupFile $record) => ! $record->isAvailable()
                     )
                     ->authorize(fn (BackupFile $record) => auth()->user()->can('update', $record->backup))
                     ->form([

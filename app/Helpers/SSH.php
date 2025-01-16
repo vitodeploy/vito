@@ -178,7 +178,7 @@ class SSH
             $this->connect(true);
         }
 
-        $this->connection->get($remote, $local, SFTP::SOURCE_LOCAL_FILE);
+        $this->connection->get($remote, $local);
     }
 
     /**

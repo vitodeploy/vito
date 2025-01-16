@@ -73,7 +73,7 @@ class BackupFile extends AbstractModel
 
     public function isAvailable(): bool
     {
-        return !in_array(
+        return ! in_array(
             $this->status,
             [BackupFileStatus::CREATING, BackupFileStatus::FAILED, BackupFileStatus::DELETING]
         );
