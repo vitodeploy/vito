@@ -162,7 +162,7 @@ class OS
         }
         $command = '';
         foreach ($variables as $key => $variable) {
-            $command .= "$key=$variable".PHP_EOL;
+            $command .= "$key=$variable\n";
         }
         $command .= $this->getScript('run-script.sh', [
             'path' => $path,

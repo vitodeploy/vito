@@ -15,6 +15,15 @@ class DeploymentScript extends AbstractModel
 {
     use HasFactory;
 
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function ($deploymentScript) {
+            $deploymentScript->content = str_replace("\r\n", "\n", $deploymentScript->content);
+        });
+    }
+
     protected $fillable = [
         'site_id',
         'name',
