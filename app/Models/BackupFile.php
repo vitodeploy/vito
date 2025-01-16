@@ -71,6 +71,19 @@ class BackupFile extends AbstractModel
         BackupFileStatus::RESTORE_FAILED => 'danger',
     ];
 
+    public function isAvailable(): bool
+    {
+        return !in_array(
+            $this->status,
+            [BackupFileStatus::CREATING, BackupFileStatus::FAILED, BackupFileStatus::DELETING]
+        );
+    }
+
+    public function isLocal(): bool
+    {
+        return $this->backup->storage->provider === 'local';
+    }
+
     public function backup(): BelongsTo
     {
         return $this->belongsTo(Backup::class);

@@ -62,6 +62,11 @@ return [
             'root' => storage_path('app/key-pairs'),
         ],
 
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('app/backups'),
+        ],
+
         // @deprecated
         'key-pairs-local' => [
             'driver' => 'local',

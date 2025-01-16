@@ -2,7 +2,9 @@
 
 namespace App\Web\Pages\Servers\Databases\Widgets;
 
+use App\Actions\Database\ManageBackup;
 use App\Actions\Database\RestoreBackup;
+use App\Enums\BackupFileStatus;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Database;
@@ -59,11 +61,22 @@ class BackupFilesList extends Widget
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
             ->actions([
+                Action::make('download')
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->visible(fn (BackupFile $record) =>
+                        $record->isAvailable() && $record->isLocal()
+                    )
+                    ->tooltip('Download')
+                    ->authorize(fn (BackupFile $record) => auth()->user()->can('view', $record)),
                 Action::make('restore')
                     ->hiddenLabel()
                     ->icon('heroicon-o-arrow-path')
                     ->modalHeading('Restore Backup')
                     ->tooltip('Restore Backup')
+                    ->disabled(fn (BackupFile $record) =>
+                        !$record->isAvailable()
+                    )
                     ->authorize(fn (BackupFile $record) => auth()->user()->can('update', $record->backup))
                     ->form([
                         Select::make('database')
