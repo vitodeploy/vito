@@ -3,7 +3,7 @@
 namespace App\Web\Pages\Servers\Databases\Widgets;
 
 use App\Actions\Database\ManageBackup;
-use App\Actions\Database\RunBackup;;
+use App\Actions\Database\RunBackup;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Server;
@@ -63,7 +63,7 @@ class BackupsList extends Widget
             ->actions([
                 Action::make('edit')
                     ->hiddenLabel()
-                    ->icon("heroicon-o-pencil")
+                    ->icon('heroicon-o-pencil')
                     ->tooltip('Edit Configuration')
                     ->disabled(fn (Backup $record) => $record->status !== 'running')
                     ->authorize(fn (Backup $record) => auth()->user()->can('update', $record))

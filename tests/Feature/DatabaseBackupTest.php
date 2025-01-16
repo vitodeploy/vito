@@ -133,7 +133,7 @@ class DatabaseBackupTest extends TestCase
             'database_id' => $database->id,
             'storage_id' => $storage->id,
             'interval' => '0 * * * *',
-            'keep_backups' => 5
+            'keep_backups' => 5,
         ]);
 
         Livewire::test(BackupsList::class, [

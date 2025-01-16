@@ -61,9 +61,9 @@ class Backup extends AbstractModel
     public function isCustomInterval(): bool
     {
         $intervals = array_keys(config('core.cronjob_intervals'));
-        $intervals = array_filter($intervals, fn($interval) => $interval !== 'custom');
+        $intervals = array_filter($intervals, fn ($interval) => $interval !== 'custom');
 
-        return !in_array($this->interval, $intervals);
+        return ! in_array($this->interval, $intervals);
     }
 
     public function server(): BelongsTo
