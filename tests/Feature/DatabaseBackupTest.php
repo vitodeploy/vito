@@ -115,6 +115,43 @@ class DatabaseBackupTest extends TestCase
             ->assertSee($backup->database->name);
     }
 
+    public function test_update_backup(): void
+    {
+        $this->actingAs($this->user);
+
+        $database = Database::factory()->create([
+            'server_id' => $this->server,
+        ]);
+
+        $storage = StorageProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => \App\Enums\StorageProvider::DROPBOX,
+        ]);
+
+        $backup = Backup::factory()->create([
+            'server_id' => $this->server->id,
+            'database_id' => $database->id,
+            'storage_id' => $storage->id,
+            'interval' => '0 * * * *',
+            'keep_backups' => 5
+        ]);
+
+        Livewire::test(BackupsList::class, [
+            'server' => $this->server,
+        ])
+            ->callTableAction('edit', $backup->id, [
+                'interval' => '0 0 * * *',
+                'keep' => '10',
+            ])
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('backups', [
+            'id' => $backup->id,
+            'interval' => '0 0 * * *',
+            'keep_backups' => 10,
+        ]);
+    }
+
     public function test_delete_backup(): void
     {
         $this->actingAs($this->user);

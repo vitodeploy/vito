@@ -10,7 +10,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class CreateBackup
+class ManageBackup
 {
     /**
      * @throws AuthorizationException
@@ -32,6 +32,13 @@ class CreateBackup
         app(RunBackup::class)->run($backup);
 
         return $backup;
+    }
+
+    public function update(Backup $backup, array $input): void
+    {
+        $backup->interval = $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'];
+        $backup->keep_backups = $input['keep'];
+        $backup->save();
     }
 
     public static function rules(Server $server, array $input): array
