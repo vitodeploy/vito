@@ -6,7 +6,8 @@ command_exists() {
 
 install_aws_cli() {
     echo "Installing AWS CLI"
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "aws.zip"
+    ARCH=$(uname -m)
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH.zip" -o "aws.zip"
     unzip -q aws.zip
     sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
     rm -rf aws.zip aws
