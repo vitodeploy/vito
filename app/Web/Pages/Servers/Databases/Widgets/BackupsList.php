@@ -65,7 +65,7 @@ class BackupsList extends Widget
                     ->hiddenLabel()
                     ->icon('heroicon-o-pencil')
                     ->tooltip('Edit Configuration')
-                    ->disabled(fn (Backup $record) => in_array($record->status, ['running', 'deleting']))
+                    ->disabled(fn (Backup $record) => ! in_array($record->status, ['running', 'failed']))
                     ->authorize(fn (Backup $record) => auth()->user()->can('update', $record))
                     ->modelLabel('Edit Backup')
                     ->modalWidth(MaxWidth::Large)
