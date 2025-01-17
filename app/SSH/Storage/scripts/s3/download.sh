@@ -1,32 +1,31 @@
 #!/bin/bash
 
-# Configure AWS CLI with provided credentials
-/usr/local/bin/aws configure set aws_access_key_id "__key__"
-/usr/local/bin/aws configure set aws_secret_access_key "__secret__"
-/usr/local/bin/aws configure set default.region "__region__"
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
 
-# Use the provided endpoint in the correct format
-ENDPOINT="__endpoint__"
-BUCKET="__bucket__"
-REGION="__region__"
+install_aws_cli() {
+    echo "Installing AWS CLI"
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "aws.zip"
+    unzip -q aws.zip
+    sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+    rm -rf aws.zip aws
+}
 
-# Ensure that DEST does not have a trailing slash
-SRC="__src__"
-DEST="__dest__"
+if ! command_exists aws; then
+    install_aws_cli
+fi
 
-# Download the file from S3
-echo "Downloading s3://__bucket__/__src__ to __dest__"
-download_output=$(/usr/local/bin/aws s3 cp "s3://$BUCKET/$SRC" "$DEST" --endpoint-url="$ENDPOINT" --region "$REGION" 2>&1)
-download_exit_code=$?
-
-# Log output and exit code
-echo "Download command output: $download_output"
-echo "Download command exit code: $download_exit_code"
-
-# Check if the download was successful
-if [ $download_exit_code -eq 0 ]; then
-    echo "Download successful"
-else
-    echo "Download failed"
+if ! command_exists aws; then
+    echo "Error: AWS CLI installation failed"
     exit 1
+fi
+
+export AWS_ACCESS_KEY_ID=__key__
+export AWS_SECRET_ACCESS_KEY=__secret__
+export AWS_DEFAULT_REGION=__region__
+export AWS_ENDPOINT_URL=__endpoint__
+
+if aws s3 cp s3://__bucket__/__src__ __dest__; then
+    echo "Download successful"
 fi
