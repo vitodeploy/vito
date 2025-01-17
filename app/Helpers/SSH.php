@@ -116,10 +116,7 @@ class SSH
 
         try {
             if ($this->asUser) {
-                $command = sprintf("sudo su - '%s' -c '%s'",
-                    escape_shell_arg($this->asUser),
-                    escape_shell_arg($command)
-                );
+                $command = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($command).'"';
             }
 
             $this->connection->setTimeout(0);
