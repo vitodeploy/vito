@@ -96,8 +96,5 @@ class S3 extends AbstractStorageProvider
         return new S3Storage($server, $this->storageProvider);
     }
 
-    public function delete(array $paths, ?Server $server = null): void
-    {
-
-    }
+    public function delete(array $paths, ?Server $server = null): void {}
 }

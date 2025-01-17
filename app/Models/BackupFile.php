@@ -7,7 +7,6 @@ use App\Enums\BackupFileStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @property int $backup_id
@@ -107,7 +106,7 @@ class BackupFile extends AbstractModel
                     $this->name.'.zip',
                 ]);
             default:
-                return "";
+                return '';
         }
     }
 }

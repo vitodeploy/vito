@@ -4,7 +4,6 @@ namespace App\SSH\Storage;
 
 use App\Exceptions\SSHCommandError;
 use App\SSH\HasScripts;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class Dropbox extends AbstractStorage

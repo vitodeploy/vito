@@ -44,8 +44,7 @@ class ManageBackupFile
             try {
                 $storage = $file->backup->storage->provider();
                 $storage->delete([$file->path()], $file->backup->server);
-            }
-            finally {
+            } finally {
                 $file->delete();
             }
         });
