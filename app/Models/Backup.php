@@ -56,6 +56,7 @@ class Backup extends AbstractModel
     public static array $statusColors = [
         BackupStatus::RUNNING => 'success',
         BackupStatus::FAILED => 'danger',
+        BackupStatus::DELETING => 'warning',
     ];
 
     public function isCustomInterval(): bool

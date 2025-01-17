@@ -65,7 +65,7 @@ class BackupsList extends Widget
                     ->hiddenLabel()
                     ->icon('heroicon-o-pencil')
                     ->tooltip('Edit Configuration')
-                    ->disabled(fn (Backup $record) => $record->status !== 'running')
+                    ->disabled(fn (Backup $record) => in_array($record->status, ['running', 'deleting']))
                     ->authorize(fn (Backup $record) => auth()->user()->can('update', $record))
                     ->modelLabel('Edit Backup')
                     ->modalWidth(MaxWidth::Large)
@@ -107,6 +107,7 @@ class BackupsList extends Widget
                     ->modalHeading('Backup Files')
                     ->color('gray')
                     ->tooltip('Show backup files')
+                    ->disabled(fn (Backup $record) => ! in_array($record->status, ['running', 'failed']))
                     ->authorize(fn (Backup $record) => auth()->user()->can('viewAny', [BackupFile::class, $record]))
                     ->modalContent(fn (Backup $record) => view('components.dynamic-widget', [
                         'widget' => BackupFilesList::class,
@@ -132,16 +133,16 @@ class BackupsList extends Widget
                 Action::make('delete')
                     ->hiddenLabel()
                     ->icon('heroicon-o-trash')
-                    ->modalHeading('Delete Database')
+                    ->modalHeading('Delete Backup & Files')
+                    ->disabled(fn (Backup $record) => ! in_array($record->status, ['running', 'failed']))
                     ->color('danger')
                     ->tooltip('Delete')
                     ->authorize(fn (Backup $record) => auth()->user()->can('delete', $record))
                     ->requiresConfirmation()
                     ->action(function (Backup $record) {
-                        run_action($this, function () use ($record) {
-                            $record->delete();
-                            $this->dispatch('$refresh');
-                        });
+                        app(ManageBackup::class)->delete($record);
+
+                        $this->dispatch('$refresh');
                     }),
             ]);
     }

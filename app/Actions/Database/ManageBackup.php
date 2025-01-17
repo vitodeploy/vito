@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Enums\DatabaseStatus;
 use App\Models\Backup;
@@ -39,6 +40,24 @@ class ManageBackup
         $backup->interval = $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'];
         $backup->keep_backups = $input['keep'];
         $backup->save();
+    }
+
+    public function delete(Backup $backup): void
+    {
+        $backup->status = BackupStatus::DELETING;
+        $backup->save();
+
+        dispatch(function () use ($backup) {
+            $files = $backup->files;
+            foreach ($files as $file) {
+                $file->status = BackupFileStatus::DELETING;
+                $file->save();
+
+                $file->deleteFile();
+            }
+
+            $backup->delete();
+        });
     }
 
     public static function rules(Server $server, array $input): array

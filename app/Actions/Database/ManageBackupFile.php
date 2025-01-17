@@ -41,12 +41,7 @@ class ManageBackupFile
         $file->save();
 
         dispatch(function () use ($file) {
-            try {
-                $storage = $file->backup->storage->provider()->ssh($file->backup->server);
-                $storage->delete($file->path());
-            } finally {
-                $file->delete();
-            }
+            $file->deleteFile();
         });
     }
 }

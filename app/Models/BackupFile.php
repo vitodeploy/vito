@@ -109,4 +109,14 @@ class BackupFile extends AbstractModel
                 return '';
         }
     }
+
+    public function deleteFile(): void
+    {
+        try {
+            $storage = $this->backup->storage->provider()->ssh($this->backup->server);
+            $storage->delete($this->path());
+        } finally {
+            $this->delete();
+        }
+    }
 }
