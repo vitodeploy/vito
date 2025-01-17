@@ -35,4 +35,9 @@ class Local extends AbstractStorage
             'download-from-local'
         );
     }
+
+    public function delete(string $src): void
+    {
+        $this->server->os()->deleteFile($src);
+    }
 }

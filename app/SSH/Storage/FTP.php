@@ -45,4 +45,20 @@ class FTP extends AbstractStorage
             'download-from-ftp'
         );
     }
+
+    public function delete(string $src): void
+    {
+        $this->server->ssh()->exec(
+            $this->getScript('ftp/delete-file.sh', [
+                'src' => $src,
+                'host' => $this->storageProvider->credentials['host'],
+                'port' => $this->storageProvider->credentials['port'],
+                'username' => $this->storageProvider->credentials['username'],
+                'password' => $this->storageProvider->credentials['password'],
+                'ssl' => $this->storageProvider->credentials['ssl'],
+                'passive' => $this->storageProvider->credentials['passive'],
+            ]),
+            'delete-from-ftp'
+        );
+    }
 }

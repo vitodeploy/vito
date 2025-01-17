@@ -70,4 +70,22 @@ class S3 extends AbstractStorage
             throw new SSHCommandError('Failed to download from S3: '.$download);
         }
     }
+
+    public function delete(string $src): void
+    {
+        /** @var \App\StorageProviders\S3 $provider */
+        $provider = $this->storageProvider->provider();
+
+        $this->server->ssh()->exec(
+            $this->getScript('s3/delete-file.sh', [
+                'src' => $this->prepareS3Path($src),
+                'bucket' => $this->storageProvider->credentials['bucket'],
+                'key' => $this->storageProvider->credentials['key'],
+                'secret' => $this->storageProvider->credentials['secret'],
+                'region' => $this->storageProvider->credentials['region'],
+                'endpoint' => $provider->getApiUrl(),
+            ]),
+            'delete-from-s3'
+        );
+    }
 }
