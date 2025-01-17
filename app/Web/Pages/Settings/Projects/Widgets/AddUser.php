@@ -37,7 +37,15 @@ class AddUser extends Widget implements HasForms
                     ->schema([
                         Select::make('user')
                             ->name('user')
-                            ->options(fn () => User::query()->pluck('name', 'id'))
+                            ->options(fn () => User::query()
+                                ->whereNotExists(function ($query) {
+                                    $query->select('user_id')
+                                        ->from('user_project')
+                                        ->whereColumn('users.id', 'user_project.user_id')
+                                        ->where('user_project.project_id', $this->project->id);
+                                })
+                                ->pluck('name', 'id')
+                            )
                             ->searchable()
                             ->rules(\App\Actions\Projects\AddUser::rules($this->project)['user']),
                     ])
