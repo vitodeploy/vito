@@ -11,12 +11,7 @@ class Wordpress
 
     public function install(Site $site): void
     {
-        $ssh = $site->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
-
-        $ssh->exec(
+        $site->server->ssh($site->user)->exec(
             $this->getScript('install.sh', [
                 'path' => $site->path,
                 'domain' => $site->domain,

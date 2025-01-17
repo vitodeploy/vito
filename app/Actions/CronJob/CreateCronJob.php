@@ -5,7 +5,6 @@ namespace App\Actions\CronJob;
 use App\Enums\CronjobStatus;
 use App\Models\CronJob;
 use App\Models\Server;
-use App\Models\Site;
 use App\ValidationRules\CronRule;
 use Illuminate\Validation\Rule;
 
@@ -37,10 +36,7 @@ class CreateCronJob
             ],
             'user' => [
                 'required',
-                Rule::in(array_merge(
-                    ['root', $server->getSshUser()],
-                    Site::query()->whereServerId($server->id)->pluck('user')->toArray()
-                )),
+                Rule::in($server->getSshUsers()),
             ],
             'frequency' => [
                 'required',

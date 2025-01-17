@@ -5,7 +5,6 @@ namespace App\Web\Pages\Scripts;
 use App\Actions\Script\ExecuteScript;
 use App\Models\Script;
 use App\Models\Server;
-use App\Models\Site;
 use App\Web\Components\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -53,25 +52,14 @@ class Executions extends Page
                 ->rules(fn (Get $get) => ExecuteScript::rules($get())['user'])
                 ->native(false)
                 ->options(function (Get $get) {
-                    $options = [
-                        'root' => 'root',
-                    ];
+                    $users = ['root'];
 
                     $server = Server::query()->find($get('server'));
                     if ($server) {
-                        $options[$server->ssh_user] = $server->ssh_user;
-
-                        $isolatedSites = Site::query()
-                            ->whereNot('user', value: $server->getSshUser())
-                            ->whereServerId($server->id)
-                            ->get();
-
-                        foreach ($isolatedSites as $site) {
-                            $options[$site->user] = $site->user;
-                        }
+                        $users = $server->getSshUsers();
                     }
 
-                    return $options;
+                    return array_combine($users, $users);
                 }),
         ];
 

@@ -7,7 +7,6 @@ use App\Models\Script;
 use App\Models\ScriptExecution;
 use App\Models\Server;
 use App\Models\ServerLog;
-use App\Models\Site;
 use Illuminate\Validation\Rule;
 
 class ExecuteScript
@@ -23,21 +22,13 @@ class ExecuteScript
         ]);
         $execution->save();
 
-        $server = Server::query()->find($input['server']);
-        $user = in_array($input['user'], ['root', $server->ssh_user])
-            ? $input['user']
-            : $server->ssh_user;
-        $runAsUser = ! in_array($input['user'], ['root', $server->ssh_user])
-            ? $input['user']
-            : null;
-
-        dispatch(function () use ($execution, $script, $user, $runAsUser) {
+        dispatch(function () use ($execution, $script) {
             $content = $execution->getContent();
             $log = ServerLog::make($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
             $log->save();
             $execution->server_log_id = $log->id;
             $execution->save();
-            $execution->server->os()->runScript('~/', $content, $log, $user, $runAsUser);
+            $execution->server->os()->runScript('~/', $content, $log, $execution->user);
             $execution->status = ScriptExecutionStatus::COMPLETED;
             $execution->save();
         })->catch(function () use ($execution) {
@@ -50,9 +41,11 @@ class ExecuteScript
 
     public static function rules(array $input): array
     {
+        $users = ['root'];
         if (isset($input['server'])) {
             /** @var ?Server $server */
             $server = Server::query()->find($input['server']);
+            $users = $server->getSshUsers();
         }
 
         return [
@@ -62,15 +55,7 @@ class ExecuteScript
             ],
             'user' => [
                 'required',
-                Rule::in(array_merge(
-                    ['root'],
-                    isset($server) ? [$server->ssh_user] : [],
-                    isset($server) ? Site::query()
-                        ->whereNot('user', value: $server->ssh_user)
-                        ->whereServerId($server->id)
-                        ->pluck('user')
-                        ->toArray() : []
-                )),
+                Rule::in($users),
             ],
             'variables' => 'array',
             'variables.*' => [

@@ -59,10 +59,7 @@ class Nginx extends AbstractWebserver
     {
         // We need to get the isolated user first, if the site is isolated
         // otherwise, use the default ssh user
-        $ssh = $this->service->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
+        $ssh = $this->service->server->ssh($site->user);
 
         $ssh->exec(
             $this->getScript('nginx/create-path.sh', [

@@ -48,7 +48,7 @@ class Deploy
                 path: $site->path,
                 script: $site->deploymentScript->content,
                 serverLog: $log,
-                runUser: $site->isIsolated() ? $site->user : null,
+                user: $site->user,
                 variables: $site->environmentVariables($deployment),
             );
             $deployment->status = DeploymentStatus::FINISHED;

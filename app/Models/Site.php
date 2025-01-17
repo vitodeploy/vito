@@ -34,6 +34,7 @@ use Illuminate\Support\Str;
  * @property string $status
  * @property int $port
  * @property int $progress
+ * @property string $user
  * @property Server $server
  * @property ServerLog[] $logs
  * @property Deployment[] $deployments

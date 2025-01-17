@@ -178,3 +178,8 @@ function get_from_route(string $modelName, string $routeKey): mixed
 
     return null;
 }
+
+function escape_shell_arg(string $command): string
+{
+    return str_replace("'", "\\''", $command);
+}

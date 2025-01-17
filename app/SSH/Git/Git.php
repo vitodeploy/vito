@@ -11,12 +11,7 @@ class Git
 
     public function clone(Site $site): void
     {
-        $ssh = $site->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
-
-        $ssh->exec(
+        $site->server->ssh($site->user)->exec(
             $this->getScript('clone.sh', [
                 'host' => str($site->getFullRepositoryUrl())->after('@')->before('-'),
                 'repo' => $site->getFullRepositoryUrl(),
@@ -31,12 +26,7 @@ class Git
 
     public function checkout(Site $site): void
     {
-        $ssh = $site->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
-
-        $ssh->exec(
+        $site->server->ssh($site->user)->exec(
             $this->getScript('checkout.sh', [
                 'path' => $site->path,
                 'branch' => $site->branch,

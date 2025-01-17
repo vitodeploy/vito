@@ -51,11 +51,10 @@ class Index extends Page
                         ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
                     Select::make('user')
                         ->rules(fn (callable $get) => CreateQueue::rules($this->site)['user'])
-                        ->options(array_merge(
-                            $this->site->isIsolated() ? [$this->site->user => $this->site->user] : [],
-                            [$this->server->ssh_user => $this->server->ssh_user],
-                            ['root' => 'root'],
-                        )),
+                        ->options([
+                            'root' => 'root',
+                            $this->site->user => $this->site->user,
+                        ]),
                     TextInput::make('numprocs')
                         ->default(1)
                         ->rules(CreateQueue::rules($this->site)['numprocs'])

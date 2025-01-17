@@ -2,7 +2,6 @@
 
 namespace App\SSH\Services\ProcessManager;
 
-use App\Models\Site;
 use App\SSH\HasScripts;
 use Throwable;
 
@@ -54,7 +53,7 @@ class Supervisor extends AbstractProcessManager
             ),
             true
         );
-        $this->service->server->ssh()->exec(
+        $this->service->server->ssh($user)->exec(
             $this->getScript('supervisor/create-worker.sh', [
                 'id' => $id,
                 'log_file' => $logFile,
@@ -123,14 +122,9 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws Throwable
      */
-    public function getLogs(Site $site, string $logPath): string
+    public function getLogs(string $user, string $logPath): string
     {
-        $ssh = $this->service->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
-
-        return $ssh->exec(
+        return $this->service->server->ssh($user)->exec(
             "tail -100 $logPath"
         );
     }

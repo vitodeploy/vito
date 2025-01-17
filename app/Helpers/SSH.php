@@ -43,7 +43,6 @@ class SSH
         $this->server = $server->refresh();
         $this->user = $server->getSshUser();
         if ($asUser && $asUser != $server->getSshUser()) {
-            $this->user = $asUser;
             $this->asUser = $asUser;
         }
         $this->privateKey = PublicKeyLoader::loadPrivateKey(
@@ -118,8 +117,8 @@ class SSH
         try {
             if ($this->asUser) {
                 $command = sprintf("sudo su - '%s' -c '%s'",
-                    $this->escape_shell_arg($this->asUser),
-                    $this->escape_shell_arg($command)
+                    escape_shell_arg($this->asUser),
+                    escape_shell_arg($command)
                 );
             }
 
@@ -158,11 +157,6 @@ class SSH
                 log: $this->log
             );
         }
-    }
-
-    private function escape_shell_arg(string $command): string
-    {
-        return str_replace("'", "\\''", $command);
     }
 
     /**
@@ -232,13 +226,6 @@ class SSH
             $this->connection->disconnect();
             $this->connection = null;
         }
-    }
-
-    public function asUser(string $user): self
-    {
-        $this->asUser = $user;
-
-        return $this;
     }
 
     /**

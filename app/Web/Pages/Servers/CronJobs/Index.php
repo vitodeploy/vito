@@ -33,6 +33,8 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
+        $users = $this->server->getSshUsers();
+
         return [
             Action::make('read-the-docs')
                 ->label('Read the Docs')
@@ -54,16 +56,7 @@ class Index extends Page
                         ])),
                     Select::make('user')
                         ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['user'])
-                        ->options(array_merge(
-                            [
-                                'vito' => $this->server->ssh_user,
-                                'root' => 'root',
-                            ],
-                            array_combine(
-                                $this->server->sites->pluck('user')->toArray(),
-                                $this->server->sites->pluck('user')->toArray()
-                            )
-                        )),
+                        ->options(array_combine($users, $users)),
                     Select::make('frequency')
                         ->options(config('core.cronjob_intervals'))
                         ->reactive()

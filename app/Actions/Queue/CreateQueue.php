@@ -57,7 +57,6 @@ class CreateQueue
                 Rule::in([
                     'root',
                     $site->user,
-                    $site->server->ssh_user,
                 ]),
             ],
             'numprocs' => [

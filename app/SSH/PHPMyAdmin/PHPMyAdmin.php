@@ -11,12 +11,7 @@ class PHPMyAdmin
 
     public function install(Site $site): void
     {
-        $ssh = $site->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
-
-        $ssh->exec(
+        $site->server->ssh($site->user)->exec(
             $this->getScript('install.sh', [
                 'version' => $site->type_data['version'],
                 'path' => $site->path,

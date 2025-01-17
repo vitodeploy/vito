@@ -115,12 +115,7 @@ class OS
 
     public function generateSSHKey(string $name, ?Site $site = null): void
     {
-        $ssh = $site->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
-
-        $ssh->exec(
+        $site->server->ssh($site->user)->exec(
             $this->getScript('generate-ssh-key.sh', [
                 'name' => $name,
             ]),
@@ -131,12 +126,7 @@ class OS
 
     public function readSSHKey(string $name, ?Site $site = null): string
     {
-        $ssh = $site->server->ssh();
-        if ($site->isIsolated()) {
-            $ssh->asUser($site->user);
-        }
-
-        return $ssh->exec(
+        return $site->server->ssh($site->user)->exec(
             $this->getScript('read-ssh-key.sh', [
                 'name' => $name,
             ]),
@@ -190,17 +180,12 @@ class OS
         );
     }
 
-    public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null, ?string $runUser = null, ?array $variables = []): ServerLog
+    public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null, ?array $variables = []): ServerLog
     {
         $ssh = $this->server->ssh($user);
         if ($serverLog) {
             $ssh->setLog($serverLog);
         }
-
-        if ($runUser) {
-            $ssh->asUser($runUser);
-        }
-
         $command = '';
         foreach ($variables as $key => $variable) {
             $command .= "$key=$variable".PHP_EOL;

@@ -115,7 +115,7 @@ class CreateSite
                 'min:3',
                 'max:32',
                 'unique:sites,user',
-                'not_in:root,'.$server->getSshUser(),
+                Rule::notIn($server->getSshUsers()),
             ],
         ];
 
