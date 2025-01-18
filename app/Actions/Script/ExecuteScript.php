@@ -41,9 +41,11 @@ class ExecuteScript
 
     public static function rules(array $input): array
     {
+        $users = ['root'];
         if (isset($input['server'])) {
             /** @var ?Server $server */
             $server = Server::query()->find($input['server']);
+            $users = $server->getSshUsers();
         }
 
         return [
@@ -53,10 +55,7 @@ class ExecuteScript
             ],
             'user' => [
                 'required',
-                Rule::in([
-                    'root',
-                    isset($server) ? $server?->ssh_user : null,
-                ]),
+                Rule::in($users),
             ],
             'variables' => 'array',
             'variables.*' => [

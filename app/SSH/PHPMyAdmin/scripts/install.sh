@@ -1,6 +1,10 @@
-sudo rm -rf phpmyadmin
+if ! rm -rf phpmyadmin; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
 
-sudo rm -rf __path__
+if ! rm -rf __path__; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
 
 if ! wget https://files.phpmyadmin.net/phpMyAdmin/__version__/phpMyAdmin-__version__-all-languages.zip; then
     echo 'VITO_SSH_ERROR' && exit 1

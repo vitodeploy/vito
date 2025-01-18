@@ -110,4 +110,32 @@ class PHP extends AbstractService
             sprintf('/etc/php/%s/%s/php.ini', $this->service->version, $type)
         );
     }
+
+    public function createFpmPool(string $user, string $version, $site_id): void
+    {
+        $this->service->server->ssh()->exec(
+            $this->getScript('create-fpm-pool.sh', [
+                'user' => $user,
+                'version' => $version,
+                'config' => $this->getScript('fpm-pool.conf', [
+                    'user' => $user,
+                    'version' => $version,
+                ]),
+            ]),
+            "create-{$version}fpm-pool-{$user}",
+            $site_id
+        );
+    }
+
+    public function removeFpmPool(string $user, string $version, $site_id): void
+    {
+        $this->service->server->ssh()->exec(
+            $this->getScript('remove-fpm-pool.sh', [
+                'user' => $user,
+                'version' => $version,
+            ]),
+            "remove-{$version}fpm-pool-{$user}",
+            $site_id
+        );
+    }
 }

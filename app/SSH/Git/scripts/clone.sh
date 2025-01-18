@@ -2,6 +2,8 @@ echo "Host __host__-__key__
         Hostname __host__
         IdentityFile=~/.ssh/__key__" >> ~/.ssh/config
 
+chmod 600 ~/.ssh/config
+
 ssh-keyscan -H __host__ >> ~/.ssh/known_hosts
 
 rm -rf __path__

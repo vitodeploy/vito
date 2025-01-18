@@ -47,17 +47,17 @@ class Index extends Page
                 ->label('New Queue')
                 ->form([
                     TextInput::make('command')
-                        ->rules(CreateQueue::rules($this->server)['command'])
+                        ->rules(CreateQueue::rules($this->site)['command'])
                         ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
                     Select::make('user')
-                        ->rules(fn (callable $get) => CreateQueue::rules($this->server)['user'])
+                        ->rules(fn (callable $get) => CreateQueue::rules($this->site)['user'])
                         ->options([
-                            'vito' => $this->server->ssh_user,
                             'root' => 'root',
+                            $this->site->user => $this->site->user,
                         ]),
                     TextInput::make('numprocs')
                         ->default(1)
-                        ->rules(CreateQueue::rules($this->server)['numprocs'])
+                        ->rules(CreateQueue::rules($this->site)['numprocs'])
                         ->helperText('Number of processes'),
                     Grid::make()
                         ->schema([

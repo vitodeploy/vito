@@ -48,11 +48,29 @@ class SitesTest extends TestCase
             ->assertHasNoActionErrors()
             ->assertSuccessful();
 
+        $expectedUser = empty($inputs['user']) ? $this->server->getSshUser() : $inputs['user'];
         $this->assertDatabaseHas('sites', [
             'domain' => $inputs['domain'],
             'aliases' => json_encode($inputs['aliases'] ?? []),
             'status' => SiteStatus::READY,
+            'user' => $expectedUser,
+            'path' => '/home/'.$expectedUser.'/'.$inputs['domain'],
         ]);
+    }
+
+    /**
+     * @dataProvider failure_create_data
+     */
+    public function test_isolated_user_failure(array $inputs): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        Livewire::test(Index::class, [
+            'server' => $this->server,
+        ])
+            ->callAction('create', $inputs)
+            ->assertHasActionErrors();
     }
 
     /**
@@ -247,6 +265,62 @@ class SitesTest extends TestCase
             ->assertSee('Logs');
     }
 
+    public static function failure_create_data(): array
+    {
+        return [
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'a',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'root',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'vito',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => '123',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'qwertyuiopasdfghjklzxcvbnmqwertyu',
+                ],
+            ],
+        ];
+    }
+
     public static function create_data(): array
     {
         return [
@@ -260,6 +334,19 @@ class SitesTest extends TestCase
                     'repository' => 'test/test',
                     'branch' => 'main',
                     'composer' => true,
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::LARAVEL,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com', 'www2.example.com'],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'repository' => 'test/test',
+                    'branch' => 'main',
+                    'composer' => true,
+                    'user' => 'example',
                 ],
             ],
             [
@@ -279,6 +366,22 @@ class SitesTest extends TestCase
             ],
             [
                 [
+                    'type' => SiteType::WORDPRESS,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'title' => 'Example',
+                    'username' => 'example',
+                    'email' => 'email@example.com',
+                    'password' => 'password',
+                    'database' => 'example',
+                    'database_user' => 'example',
+                    'database_password' => 'password',
+                    'user' => 'example',
+                ],
+            ],
+            [
+                [
                     'type' => SiteType::PHP_BLANK,
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
@@ -288,11 +391,31 @@ class SitesTest extends TestCase
             ],
             [
                 [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'example',
+                ],
+            ],
+            [
+                [
                     'type' => SiteType::PHPMYADMIN,
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
                     'version' => '5.1.2',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHPMYADMIN,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'php_version' => '8.2',
+                    'version' => '5.1.2',
+                    'user' => 'example',
                 ],
             ],
         ];

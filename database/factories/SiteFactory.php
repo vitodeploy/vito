@@ -21,6 +21,7 @@ class SiteFactory extends Factory
             'progress' => '100',
             'php_version' => '8.2',
             'branch' => 'main',
+            'user' => 'vito',
         ];
     }
 }

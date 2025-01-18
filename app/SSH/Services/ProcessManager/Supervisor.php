@@ -53,9 +53,11 @@ class Supervisor extends AbstractProcessManager
             ),
             true
         );
-        $this->service->server->ssh($user)->exec(
+        $this->service->server->ssh()->exec(
             $this->getScript('supervisor/create-worker.sh', [
                 'id' => $id,
+                'log_file' => $logFile,
+                'user' => $user,
             ]),
             'create-worker',
             $siteId

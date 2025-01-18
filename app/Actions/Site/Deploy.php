@@ -48,7 +48,8 @@ class Deploy
                 path: $site->path,
                 script: $site->deploymentScript->content,
                 serverLog: $log,
-                variables: $site->environmentVariables($deployment)
+                user: $site->user,
+                variables: $site->environmentVariables($deployment),
             );
             $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();

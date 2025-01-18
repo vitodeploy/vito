@@ -37,7 +37,6 @@ class SSHFake extends SSH
         $this->server = $server->refresh();
         $this->user = $server->getSshUser();
         if ($asUser && $asUser != $server->getSshUser()) {
-            $this->user = $asUser;
             $this->asUser = $asUser;
         }
 

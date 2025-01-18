@@ -52,16 +52,14 @@ class Executions extends Page
                 ->rules(fn (Get $get) => ExecuteScript::rules($get())['user'])
                 ->native(false)
                 ->options(function (Get $get) {
-                    $options = [
-                        'root' => 'root',
-                    ];
+                    $users = ['root'];
 
                     $server = Server::query()->find($get('server'));
                     if ($server) {
-                        $options[$server->ssh_user] = $server->ssh_user;
+                        $users = $server->getSshUsers();
                     }
 
-                    return $options;
+                    return array_combine($users, $users);
                 }),
         ];
 

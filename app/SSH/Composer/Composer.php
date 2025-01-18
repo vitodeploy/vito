@@ -11,7 +11,7 @@ class Composer
 
     public function installDependencies(Site $site): void
     {
-        $site->server->ssh()->exec(
+        $site->server->ssh($site->user)->exec(
             $this->getScript('composer-install.sh', [
                 'path' => $site->path,
                 'php_version' => $site->php_version,

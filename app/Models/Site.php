@@ -7,6 +7,7 @@ use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\SiteTypes\SiteType;
+use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\Webserver\Webserver;
 use App\Traits\HasProjectThroughServer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +34,7 @@ use Illuminate\Support\Str;
  * @property string $status
  * @property int $port
  * @property int $progress
+ * @property string $user
  * @property Server $server
  * @property ServerLog[] $logs
  * @property Deployment[] $deployments
@@ -68,6 +70,7 @@ class Site extends AbstractModel
         'status',
         'port',
         'progress',
+        'user',
     ];
 
     protected $casts = [
@@ -200,6 +203,14 @@ class Site extends AbstractModel
         /** @var Webserver $handler */
         $handler = $this->server->webserver()->handler();
         $handler->changePHPVersion($this, $version);
+
+        if ($this->isIsolated()) {
+            /** @var PHP $php */
+            $php = $this->server->php()->handler();
+            $php->removeFpmPool($this->user, $this->php_version, $this->id);
+            $php->createFpmPool($this->user, $version, $this->id);
+        }
+
         $this->php_version = $version;
         $this->save();
     }
@@ -306,5 +317,32 @@ class Site extends AbstractModel
             'PHP_VERSION' => $this->php_version,
             'PHP_PATH' => '/usr/bin/php'.$this->php_version,
         ];
+    }
+
+    public function isolate(): void
+    {
+        if (! $this->isIsolated()) {
+            return;
+        }
+
+        $this->server->os()->createIsolatedUser(
+            $this->user,
+            Str::random(15),
+            $this->id
+        );
+
+        // Generate the FPM pool
+        /** @var PHP $php */
+        $php = $this->php()->handler();
+        $php->createFpmPool(
+            $this->user,
+            $this->php_version,
+            $this->id
+        );
+    }
+
+    public function isIsolated(): bool
+    {
+        return $this->user != $this->server->getSshUser();
     }
 }

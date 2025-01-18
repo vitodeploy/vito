@@ -52,8 +52,23 @@ class Nginx extends AbstractWebserver
         $this->service->server->os()->cleanup();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function createVHost(Site $site): void
     {
+        // We need to get the isolated user first, if the site is isolated
+        // otherwise, use the default ssh user
+        $ssh = $this->service->server->ssh($site->user);
+
+        $ssh->exec(
+            $this->getScript('nginx/create-path.sh', [
+                'path' => $site->path,
+            ]),
+            'create-path',
+            $site->id
+        );
+
         $this->service->server->ssh()->exec(
             $this->getScript('nginx/create-vhost.sh', [
                 'domain' => $site->domain,
@@ -189,10 +204,16 @@ class Nginx extends AbstractWebserver
             $vhost = Str::replace('__port__', (string) $site->port, $vhost);
         }
 
+        $php_socket = 'unix:/var/run/php/php-fpm.sock';
+        if ($site->isIsolated()) {
+            $php_socket = "unix:/run/php/php{$site->php_version}-fpm-{$site->user}.sock";
+        }
+
         $vhost = Str::replace('__domain__', $site->domain, $vhost);
         $vhost = Str::replace('__aliases__', $site->getAliasesString(), $vhost);
         $vhost = Str::replace('__path__', $site->path, $vhost);
         $vhost = Str::replace('__web_directory__', $site->web_directory, $vhost);
+        $vhost = Str::replace('__php_socket__', $php_socket, $vhost);
 
         if ($ssl) {
             $vhost = Str::replace('__certificate__', $ssl->getCertificatePath(), $vhost);

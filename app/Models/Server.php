@@ -267,6 +267,15 @@ class Server extends AbstractModel
         return config('core.ssh_user');
     }
 
+    public function getSshUsers(): array
+    {
+        $users = ['root', $this->getSshUser()];
+        $isolatedSites = $this->sites()->pluck('user')->toArray();
+        $users = array_merge($users, $isolatedSites);
+
+        return array_unique($users);
+    }
+
     public function service($type, $version = null): ?Service
     {
         /* @var Service $service */

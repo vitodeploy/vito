@@ -43,7 +43,6 @@ class SSH
         $this->server = $server->refresh();
         $this->user = $server->getSshUser();
         if ($asUser && $asUser != $server->getSshUser()) {
-            $this->user = $asUser;
             $this->asUser = $asUser;
         }
         $this->privateKey = PublicKeyLoader::loadPrivateKey(
@@ -146,6 +145,10 @@ class SSH
                 return $output;
             }
         } catch (Throwable $e) {
+            Log::error('Error executing command', [
+                'msg' => $e->getMessage(),
+                'log' => $this->log,
+            ]);
             throw new SSHCommandError(
                 message: $e->getMessage(),
                 log: $this->log

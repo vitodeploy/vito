@@ -6,6 +6,8 @@ use App\Enums\ScriptExecutionStatus;
 use App\Facades\SSH;
 use App\Models\Script;
 use App\Models\ScriptExecution;
+use App\Models\Server;
+use App\Models\Site;
 use App\Web\Pages\Scripts\Executions;
 use App\Web\Pages\Scripts\Index;
 use App\Web\Pages\Scripts\Widgets\ScriptExecutionsList;
@@ -118,6 +120,7 @@ class ScriptTest extends TestCase
         $this->assertDatabaseHas('script_executions', [
             'script_id' => $script->id,
             'status' => ScriptExecutionStatus::COMPLETED,
+            'user' => 'root',
         ]);
 
         $this->assertDatabaseHas('server_logs', [
@@ -131,6 +134,88 @@ class ScriptTest extends TestCase
         ])
             ->callTableAction('logs', $execution->id)
             ->assertSuccessful();
+    }
+
+    public function test_execute_script_as_isolated_user(): void
+    {
+        SSH::fake('script output');
+
+        $this->actingAs($this->user);
+
+        $script = Script::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'example',
+        ]);
+
+        Livewire::test(Executions::class, [
+            'script' => $script,
+        ])
+            ->callAction('execute', [
+                'server' => $this->server->id,
+                'user' => 'example',
+            ])
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('script_executions', [
+            'script_id' => $script->id,
+            'status' => ScriptExecutionStatus::COMPLETED,
+            'user' => 'example',
+        ]);
+    }
+
+    public function test_cannot_execute_script_as_non_existing_user(): void
+    {
+        $this->actingAs($this->user);
+
+        $script = Script::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        Livewire::test(Executions::class, [
+            'script' => $script,
+        ])
+            ->callAction('execute', [
+                'server' => $this->server->id,
+                'user' => 'example',
+            ])
+            ->assertHasActionErrors();
+
+        $this->assertDatabaseMissing('script_executions', [
+            'script_id' => $script->id,
+            'user' => 'example',
+        ]);
+    }
+
+    public function test_cannot_execute_script_as_user_not_on_server(): void
+    {
+        $this->actingAs($this->user);
+
+        $script = Script::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        Site::factory()->create([
+            'server_id' => Server::factory()->create(['user_id' => 1])->id,
+            'user' => 'example',
+        ]);
+
+        Livewire::test(Executions::class, [
+            'script' => $script,
+        ])
+            ->callAction('execute', [
+                'server' => $this->server->id,
+                'user' => 'example',
+            ])
+            ->assertHasActionErrors();
+
+        $this->assertDatabaseMissing('script_executions', [
+            'script_id' => $script->id,
+            'user' => 'example',
+        ]);
     }
 
     public function test_see_executions(): void

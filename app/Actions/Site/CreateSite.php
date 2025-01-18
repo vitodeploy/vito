@@ -23,12 +23,14 @@ class CreateSite
     {
         DB::beginTransaction();
         try {
+            $user = $input['user'] ?? $server->getSshUser();
             $site = new Site([
                 'server_id' => $server->id,
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'aliases' => $input['aliases'] ?? [],
-                'path' => '/home/'.$server->getSshUser().'/'.$input['domain'],
+                'user' => $user,
+                'path' => '/home/'.$user.'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
             ]);
 
@@ -107,6 +109,13 @@ class CreateSite
             ],
             'aliases.*' => [
                 new DomainRule,
+            ],
+            'user' => [
+                'regex:/^[a-z_][a-z0-9_-]*[a-z0-9]$/',
+                'min:3',
+                'max:32',
+                'unique:sites,user',
+                Rule::notIn($server->getSshUsers()),
             ],
         ];
 

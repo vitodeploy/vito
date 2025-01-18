@@ -50,6 +50,9 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel()
                             ->hintIcon('heroicon-o-information-circle')
                             ->hintIconTooltip('Site unique identifier to use in the API'),
+                        TextEntry::make('user')
+                            ->label('Site User')
+                            ->inlineLabel(),
                         TextEntry::make('created_at')
                             ->label('Created At')
                             ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)

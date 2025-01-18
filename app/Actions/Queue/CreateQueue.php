@@ -46,7 +46,7 @@ class CreateQueue
         })->onConnection('ssh');
     }
 
-    public static function rules(Server $server): array
+    public static function rules(Site $site): array
     {
         return [
             'command' => [
@@ -56,7 +56,7 @@ class CreateQueue
                 'required',
                 Rule::in([
                     'root',
-                    $server->ssh_user,
+                    $site->user,
                 ]),
             ],
             'numprocs' => [
