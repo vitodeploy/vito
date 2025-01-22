@@ -9,6 +9,7 @@ sudo mkdir /home/__user__/tmp
 sudo mkdir /home/__user__/bin
 sudo mkdir /home/__user__/.ssh
 echo 'export PATH="/home/__user__/bin:$PATH"' | sudo tee -a /home/__user__/.bashrc
+echo 'export PATH="/home/__user__/bin:$PATH"' | sudo tee -a /home/__user__/.profile
 sudo usermod -a -G __user__ __server_user__
 sudo chown -R __user__:__user__ /home/__user__
 sudo chmod -R 755 /home/__user__

@@ -15,7 +15,7 @@ class Wordpress
             $this->getScript('install.sh', [
                 'path' => $site->path,
                 'domain' => $site->domain,
-                'is_isolated' => $site->isIsolated(),
+                'is_isolated' => $site->isIsolated() ? 'true' : 'false',
                 'isolated_username' => $site->user,
                 'db_name' => $site->type_data['database'],
                 'db_user' => $site->type_data['database_user'],
