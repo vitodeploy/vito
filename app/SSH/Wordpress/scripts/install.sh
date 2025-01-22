@@ -7,9 +7,8 @@ if ! chmod +x wp-cli.phar; then
 fi
 
 if [ "__is_isolated__" == "true" ]; then
-    if ! mv wp-cli.phar /home/__isolated_username__/bin/wp; then
-        echo 'VITO_SSH_ERROR' && exit 1
-    fi
+    mv wp-cli.phar /home/__isolated_username__/bin/
+    ln -s /home/__isolated_username__/bin/wp-cli.phar /home/__isolated_username__/bin/wp
 else
     if ! mv wp-cli.phar /usr/local/bin/wp; then
         echo 'VITO_SSH_ERROR' && exit 1
