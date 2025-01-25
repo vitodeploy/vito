@@ -311,14 +311,6 @@ class Server extends AbstractModel
         return SSH::init($this, $user);
     }
 
-    public function sftp(?string $user = null): \App\Helpers\SSH|SSHFake
-    {
-        $sftp = SSH::init($this, $user);
-        $sftp->connect(true);
-
-        return $sftp;
-    }
-
     public function installedPHPVersions(): array
     {
         $versions = [];

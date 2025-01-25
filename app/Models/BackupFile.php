@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\Database\ManageBackupFile;
 use App\Enums\BackupFileStatus;
+use App\Enums\StorageProvider as StorageProviderAlias;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -47,9 +48,7 @@ class BackupFile extends AbstractModel
                         ->where('id', '<=', $lastFileToKeep->id)
                         ->get();
                     foreach ($files as $file) {
-                        dispatch(function () use ($file) {
-                            app(ManageBackupFile::class)->delete($file);
-                        });
+                        app(ManageBackupFile::class)->delete($file);
                     }
                 }
             }
@@ -76,7 +75,7 @@ class BackupFile extends AbstractModel
 
     public function isLocal(): bool
     {
-        return $this->backup->storage->provider === 'local';
+        return $this->backup->storage->provider === StorageProviderAlias::LOCAL;
     }
 
     public function backup(): BelongsTo
@@ -94,20 +93,15 @@ class BackupFile extends AbstractModel
         $storage = $this->backup->storage;
         $databaseName = $this->backup->database->name;
 
-        switch ($storage->provider) {
-            case 'dropbox':
-                return '/'.$databaseName.'/'.$this->name.'.zip';
-            case 's3':
-            case 'ftp':
-            case 'local':
-                return implode('/', [
-                    rtrim($storage->credentials['path'], '/'),
-                    $databaseName,
-                    $this->name.'.zip',
-                ]);
-            default:
-                return '';
-        }
+        return match ($storage->provider) {
+            StorageProviderAlias::DROPBOX => '/'.$databaseName.'/'.$this->name.'.zip',
+            StorageProviderAlias::S3, StorageProviderAlias::FTP, StorageProviderAlias::LOCAL => implode('/', [
+                rtrim($storage->credentials['path'], '/'),
+                $databaseName,
+                $this->name.'.zip',
+            ]),
+            default => '',
+        };
     }
 
     public function deleteFile(): void
