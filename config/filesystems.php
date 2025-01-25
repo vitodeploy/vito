@@ -64,7 +64,7 @@ return [
 
         'backups' => [
             'driver' => 'local',
-            'root' => storage_path('app/backups'),
+            'root' => sys_get_temp_dir(),
         ],
 
         // @deprecated
