@@ -2,7 +2,7 @@
 
 namespace App\Web\Pages\Servers\Databases;
 
-use App\Actions\Database\CreateBackup;
+use App\Actions\Database\ManageBackup;
 use App\Models\Backup;
 use App\Models\StorageProvider;
 use App\Web\Contracts\HasSecondSubNav;
@@ -38,12 +38,12 @@ class Backups extends Page implements HasSecondSubNav
                     Select::make('database')
                         ->label('Database')
                         ->options($this->server->databases()->pluck('name', 'id')->toArray())
-                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['database'])
+                        ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['database'])
                         ->searchable(),
                     Select::make('storage')
                         ->label('Storage')
                         ->options(StorageProvider::getByProjectId($this->server->project_id)->pluck('profile', 'id')->toArray())
-                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['storage'])
+                        ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['storage'])
                         ->suffixAction(
                             \Filament\Forms\Components\Actions\Action::make('connect')
                                 ->form(Create::form())
@@ -59,21 +59,21 @@ class Backups extends Page implements HasSecondSubNav
                         ->label('Interval')
                         ->options(config('core.cronjob_intervals'))
                         ->reactive()
-                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['interval']),
+                        ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['interval']),
                     TextInput::make('custom_interval')
                         ->label('Custom Interval (Cron)')
-                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['custom_interval'])
+                        ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['custom_interval'])
                         ->visible(fn (callable $get) => $get('interval') === 'custom')
                         ->placeholder('0 * * * *'),
                     TextInput::make('keep')
                         ->label('Backups to Keep')
-                        ->rules(fn (callable $get) => CreateBackup::rules($this->server, $get())['keep'])
+                        ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['keep'])
                         ->helperText('How many backups to keep before deleting the oldest one'),
                 ])
                 ->modalSubmitActionLabel('Create')
                 ->action(function (array $data) {
                     run_action($this, function () use ($data) {
-                        app(CreateBackup::class)->create($this->server, $data);
+                        app(ManageBackup::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');
 

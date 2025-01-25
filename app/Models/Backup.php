@@ -56,7 +56,16 @@ class Backup extends AbstractModel
     public static array $statusColors = [
         BackupStatus::RUNNING => 'success',
         BackupStatus::FAILED => 'danger',
+        BackupStatus::DELETING => 'warning',
     ];
+
+    public function isCustomInterval(): bool
+    {
+        $intervals = array_keys(config('core.cronjob_intervals'));
+        $intervals = array_filter($intervals, fn ($interval) => $interval !== 'custom');
+
+        return ! in_array($this->interval, $intervals);
+    }
 
     public function server(): BelongsTo
     {

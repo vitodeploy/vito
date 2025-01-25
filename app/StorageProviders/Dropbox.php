@@ -38,19 +38,4 @@ class Dropbox extends AbstractStorageProvider
     {
         return new \App\SSH\Storage\Dropbox($server, $this->storageProvider);
     }
-
-    public function delete(array $paths): void
-    {
-        $data = [];
-        foreach ($paths as $path) {
-            $data[] = ['path' => $path];
-        }
-        Http::withToken($this->storageProvider->credentials['token'])
-            ->withHeaders([
-                'Content-Type:application/json',
-            ])
-            ->post($this->apiUrl.'/files/delete_batch', [
-                'entries' => $data,
-            ]);
-    }
 }

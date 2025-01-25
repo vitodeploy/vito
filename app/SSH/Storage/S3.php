@@ -23,7 +23,7 @@ class S3 extends AbstractStorage
         $uploadCommand = $this->getScript('s3/upload.sh', [
             'src' => $src,
             'bucket' => $this->storageProvider->credentials['bucket'],
-            'dest' => $this->prepareS3Path($this->storageProvider->credentials['path'].'/'.$dest),
+            'dest' => $this->prepareS3Path($dest),
             'key' => $this->storageProvider->credentials['key'],
             'secret' => $this->storageProvider->credentials['secret'],
             'region' => $this->storageProvider->credentials['region'],
@@ -52,7 +52,7 @@ class S3 extends AbstractStorage
         $provider = $this->storageProvider->provider();
 
         $downloadCommand = $this->getScript('s3/download.sh', [
-            'src' => $this->prepareS3Path($this->storageProvider->credentials['path'].'/'.$src),
+            'src' => $this->prepareS3Path($src),
             'dest' => $dest,
             'bucket' => $this->storageProvider->credentials['bucket'],
             'key' => $this->storageProvider->credentials['key'],
@@ -71,8 +71,21 @@ class S3 extends AbstractStorage
         }
     }
 
-    /**
-     * @TODO Implement delete method
-     */
-    public function delete(string $path): void {}
+    public function delete(string $src): void
+    {
+        /** @var \App\StorageProviders\S3 $provider */
+        $provider = $this->storageProvider->provider();
+
+        $this->server->ssh()->exec(
+            $this->getScript('s3/delete-file.sh', [
+                'src' => $this->prepareS3Path($src),
+                'bucket' => $this->storageProvider->credentials['bucket'],
+                'key' => $this->storageProvider->credentials['key'],
+                'secret' => $this->storageProvider->credentials['secret'],
+                'region' => $this->storageProvider->credentials['region'],
+                'endpoint' => $provider->getApiUrl(),
+            ]),
+            'delete-from-s3'
+        );
+    }
 }

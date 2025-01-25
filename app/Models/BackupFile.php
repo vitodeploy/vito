@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Actions\Database\ManageBackupFile;
 use App\Enums\BackupFileStatus;
+use App\Enums\StorageProvider as StorageProviderAlias;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,18 +48,10 @@ class BackupFile extends AbstractModel
                         ->where('id', '<=', $lastFileToKeep->id)
                         ->get();
                     foreach ($files as $file) {
-                        $file->delete();
+                        app(ManageBackupFile::class)->delete($file);
                     }
                 }
             }
-        });
-
-        static::deleting(function (BackupFile $backupFile) {
-            $provider = $backupFile->backup->storage->provider();
-            $path = $backupFile->storagePath();
-            dispatch(function () use ($provider, $path) {
-                $provider->delete([$path]);
-            });
         });
     }
 
@@ -71,18 +65,52 @@ class BackupFile extends AbstractModel
         BackupFileStatus::RESTORE_FAILED => 'danger',
     ];
 
+    public function isAvailable(): bool
+    {
+        return ! in_array(
+            $this->status,
+            [BackupFileStatus::CREATING, BackupFileStatus::FAILED, BackupFileStatus::DELETING]
+        );
+    }
+
+    public function isLocal(): bool
+    {
+        return $this->backup->storage->provider === StorageProviderAlias::LOCAL;
+    }
+
     public function backup(): BelongsTo
     {
         return $this->belongsTo(Backup::class);
     }
 
-    public function path(): string
+    public function tempPath(): string
     {
         return '/home/'.$this->backup->server->getSshUser().'/'.$this->name.'.zip';
     }
 
-    public function storagePath(): string
+    public function path(): string
     {
-        return '/'.$this->backup->database->name.'/'.$this->name.'.zip';
+        $storage = $this->backup->storage;
+        $databaseName = $this->backup->database->name;
+
+        return match ($storage->provider) {
+            StorageProviderAlias::DROPBOX => '/'.$databaseName.'/'.$this->name.'.zip',
+            StorageProviderAlias::S3, StorageProviderAlias::FTP, StorageProviderAlias::LOCAL => implode('/', [
+                rtrim($storage->credentials['path'], '/'),
+                $databaseName,
+                $this->name.'.zip',
+            ]),
+            default => '',
+        };
+    }
+
+    public function deleteFile(): void
+    {
+        try {
+            $storage = $this->backup->storage->provider()->ssh($this->backup->server);
+            $storage->delete($this->path());
+        } finally {
+            $this->delete();
+        }
     }
 }

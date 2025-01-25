@@ -57,23 +57,6 @@ class FTP extends AbstractStorageProvider
         return new \App\SSH\Storage\FTP($server, $this->storageProvider);
     }
 
-    public function delete(array $paths): void
-    {
-        $connection = $this->connection();
-
-        if ($connection && $this->login($connection)) {
-            if ($this->storageProvider->credentials['passive']) {
-                \App\Facades\FTP::passive($connection, true);
-            }
-
-            foreach ($paths as $path) {
-                \App\Facades\FTP::delete($connection, $this->storageProvider->credentials['path'].'/'.$path);
-            }
-        }
-
-        \App\Facades\FTP::close($connection);
-    }
-
     private function connection(): bool|Connection
     {
         $credentials = $this->storageProvider->credentials;

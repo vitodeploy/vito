@@ -14,6 +14,4 @@ interface StorageProvider
     public function connect(): bool;
 
     public function ssh(Server $server): Storage;
-
-    public function delete(array $paths): void;
 }

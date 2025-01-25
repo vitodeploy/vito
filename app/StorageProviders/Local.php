@@ -30,9 +30,4 @@ class Local extends AbstractStorageProvider
     {
         return new \App\SSH\Storage\Local($server, $this->storageProvider);
     }
-
-    public function delete(array $paths): void
-    {
-        //
-    }
 }

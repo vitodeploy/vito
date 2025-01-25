@@ -243,6 +243,16 @@ class OS
         ];
     }
 
+    public function deleteFile(string $path): void
+    {
+        $this->server->ssh()->exec(
+            $this->getScript('delete-file.sh', [
+                'path' => $path,
+            ]),
+            'delete-file'
+        );
+    }
+
     private function deleteTempFile(string $name): void
     {
         if (Storage::disk('local')->exists($name)) {

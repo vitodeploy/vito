@@ -8,5 +8,5 @@ interface Storage
 
     public function download(string $src, string $dest): void;
 
-    public function delete(string $path): void;
+    public function delete(string $src): void;
 }

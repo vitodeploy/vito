@@ -13,7 +13,7 @@ class FTP extends AbstractStorage
         $this->server->ssh()->exec(
             $this->getScript('ftp/upload.sh', [
                 'src' => $src,
-                'dest' => $this->storageProvider->credentials['path'].'/'.$dest,
+                'dest' => $dest,
                 'host' => $this->storageProvider->credentials['host'],
                 'port' => $this->storageProvider->credentials['port'],
                 'username' => $this->storageProvider->credentials['username'],
@@ -33,7 +33,7 @@ class FTP extends AbstractStorage
     {
         $this->server->ssh()->exec(
             $this->getScript('ftp/download.sh', [
-                'src' => $this->storageProvider->credentials['path'].'/'.$src,
+                'src' => $src,
                 'dest' => $dest,
                 'host' => $this->storageProvider->credentials['host'],
                 'port' => $this->storageProvider->credentials['port'],
@@ -46,11 +46,19 @@ class FTP extends AbstractStorage
         );
     }
 
-    /**
-     * @TODO Implement delete method
-     */
-    public function delete(string $path): void
+    public function delete(string $src): void
     {
-        //
+        $this->server->ssh()->exec(
+            $this->getScript('ftp/delete-file.sh', [
+                'src' => $src,
+                'host' => $this->storageProvider->credentials['host'],
+                'port' => $this->storageProvider->credentials['port'],
+                'username' => $this->storageProvider->credentials['username'],
+                'password' => $this->storageProvider->credentials['password'],
+                'ssl' => $this->storageProvider->credentials['ssl'],
+                'passive' => $this->storageProvider->credentials['passive'],
+            ]),
+            'delete-from-ftp'
+        );
     }
 }

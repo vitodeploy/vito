@@ -45,11 +45,14 @@ class Dropbox extends AbstractStorage
         );
     }
 
-    /**
-     * @TODO Implement delete method
-     */
-    public function delete(string $path): void
+    public function delete(string $src): void
     {
-        //
+        $this->server->ssh()->exec(
+            $this->getScript('dropbox/delete-file.sh', [
+                'src' => $src,
+                'token' => $this->storageProvider->credentials['token'],
+            ]),
+            'delete-from-dropbox'
+        );
     }
 }

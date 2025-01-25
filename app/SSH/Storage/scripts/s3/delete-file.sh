@@ -27,6 +27,4 @@ export AWS_SECRET_ACCESS_KEY=__secret__
 export AWS_DEFAULT_REGION=__region__
 export AWS_ENDPOINT_URL=__endpoint__
 
-if aws s3 cp __src__ s3://__bucket__/__dest__; then
-    echo "Upload successful"
-fi
+aws s3 rm s3://__bucket__/__src__
