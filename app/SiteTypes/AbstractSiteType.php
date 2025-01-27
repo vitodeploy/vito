@@ -45,6 +45,7 @@ abstract class AbstractSiteType implements SiteType
 
     /**
      * @throws FailedToDeployGitKey
+     * @throws SSHError
      */
     protected function deployKey(): void
     {

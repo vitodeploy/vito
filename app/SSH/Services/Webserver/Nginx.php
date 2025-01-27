@@ -189,8 +189,6 @@ class Nginx extends AbstractWebserver
         if (! $ssl->validateSetup($result)) {
             throw new SSLCreationException;
         }
-
-        $this->updateVHost($ssl->site);
     }
 
     /**
