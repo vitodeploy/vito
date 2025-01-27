@@ -2,33 +2,37 @@
 
 namespace App\SSH\Services\ProcessManager;
 
-use App\SSH\HasScripts;
+use App\Exceptions\SSHError;
 use Throwable;
 
 class Supervisor extends AbstractProcessManager
 {
-    use HasScripts;
-
+    /**
+     * @throws SSHError
+     */
     public function install(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('supervisor/install-supervisor.sh'),
+            view('ssh.services.process-manager.supervisor.install-supervisor'),
             'install-supervisor'
         );
         $this->service->server->os()->cleanup();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('supervisor/uninstall-supervisor.sh'),
+            view('ssh.services.process-manager.supervisor.uninstall-supervisor'),
             'uninstall-supervisor'
         );
         $this->service->server->os()->cleanup();
     }
 
     /**
-     * @throws Throwable
+     * @throws SSHError
      */
     public function create(
         int $id,
@@ -42,21 +46,22 @@ class Supervisor extends AbstractProcessManager
     ): void {
         $this->service->server->ssh()->write(
             "/etc/supervisor/conf.d/$id.conf",
-            $this->generateConfigFile(
-                $id,
-                $command,
-                $user,
-                $autoStart,
-                $autoRestart,
-                $numprocs,
-                $logFile
-            ),
+            view('ssh.services.process-manager.supervisor.worker', [
+                'name' => (string) $id,
+                'command' => $command,
+                'user' => $user,
+                'autoStart' => var_export($autoStart, true),
+                'autoRestart' => var_export($autoRestart, true),
+                'numprocs' => (string) $numprocs,
+                'logFile' => $logFile,
+            ]),
             true
         );
+
         $this->service->server->ssh()->exec(
-            $this->getScript('supervisor/create-worker.sh', [
+            view('ssh.services.process-manager.supervisor.create-worker', [
                 'id' => $id,
-                'log_file' => $logFile,
+                'logFile' => $logFile,
                 'user' => $user,
             ]),
             'create-worker',
@@ -70,7 +75,7 @@ class Supervisor extends AbstractProcessManager
     public function delete(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('supervisor/delete-worker.sh', [
+            view('ssh.services.process-manager.supervisor.delete-worker', [
                 'id' => $id,
             ]),
             'delete-worker',
@@ -84,7 +89,7 @@ class Supervisor extends AbstractProcessManager
     public function restart(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('supervisor/restart-worker.sh', [
+            view('ssh.services.process-manager.supervisor.restart-worker', [
                 'id' => $id,
             ]),
             'restart-worker',
@@ -98,7 +103,7 @@ class Supervisor extends AbstractProcessManager
     public function stop(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('supervisor/stop-worker.sh', [
+            view('ssh.services.process-manager.supervisor.stop-worker', [
                 'id' => $id,
             ]),
             'stop-worker',
@@ -112,7 +117,7 @@ class Supervisor extends AbstractProcessManager
     public function start(int $id, ?int $siteId = null): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('supervisor/start-worker.sh', [
+            view('ssh.services.process-manager.supervisor.start-worker', [
                 'id' => $id,
             ]),
             'start-worker',
@@ -128,25 +133,5 @@ class Supervisor extends AbstractProcessManager
         return $this->service->server->ssh($user)->exec(
             "tail -100 $logPath"
         );
-    }
-
-    private function generateConfigFile(
-        int $id,
-        string $command,
-        string $user,
-        bool $autoStart,
-        bool $autoRestart,
-        int $numprocs,
-        string $logFile
-    ): string {
-        return $this->getScript('supervisor/worker.conf', [
-            'name' => (string) $id,
-            'command' => $command,
-            'user' => $user,
-            'auto_start' => var_export($autoStart, true),
-            'auto_restart' => var_export($autoRestart, true),
-            'numprocs' => (string) $numprocs,
-            'log_file' => $logFile,
-        ]);
     }
 }

@@ -2,20 +2,21 @@
 
 namespace App\SSH\Storage;
 
-use App\SSH\HasScripts;
+use App\Exceptions\SSHError;
 
 class Local extends AbstractStorage
 {
-    use HasScripts;
-
+    /**
+     * @throws SSHError
+     */
     public function upload(string $src, string $dest): array
     {
         $destDir = dirname($dest);
         $this->server->ssh()->exec(
-            $this->getScript('local/upload.sh', [
+            view('ssh.storage.local.upload', [
                 'src' => $src,
-                'dest_dir' => $destDir,
-                'dest_file' => $dest,
+                'destDir' => $destDir,
+                'destFile' => $dest,
             ]),
             'upload-to-local'
         );
@@ -25,10 +26,13 @@ class Local extends AbstractStorage
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function download(string $src, string $dest): void
     {
         $this->server->ssh()->exec(
-            $this->getScript('local/download.sh', [
+            view('ssh.storage.local.download', [
                 'src' => $src,
                 'dest' => $dest,
             ]),
@@ -36,6 +40,9 @@ class Local extends AbstractStorage
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function delete(string $src): void
     {
         $this->server->os()->deleteFile($src);

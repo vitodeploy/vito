@@ -2,26 +2,27 @@
 
 namespace App\SSH\Wordpress;
 
+use App\Exceptions\SSHError;
 use App\Models\Site;
-use App\SSH\HasScripts;
 
 class Wordpress
 {
-    use HasScripts;
-
+    /**
+     * @throws SSHError
+     */
     public function install(Site $site): void
     {
         $site->server->ssh($site->user)->exec(
-            $this->getScript('install.sh', [
+            view('ssh.wordpress.install', [
                 'path' => $site->path,
                 'domain' => $site->domain,
-                'is_isolated' => $site->isIsolated() ? 'true' : 'false',
-                'isolated_username' => $site->user,
-                'db_name' => $site->type_data['database'],
-                'db_user' => $site->type_data['database_user'],
-                'db_pass' => $site->type_data['database_password'],
-                'db_host' => 'localhost',
-                'db_prefix' => 'wp_',
+                'isIsolated' => $site->isIsolated() ? 'true' : 'false',
+                'isolatedUsername' => $site->user,
+                'dbName' => $site->type_data['database'],
+                'dbUser' => $site->type_data['database_user'],
+                'dbPass' => $site->type_data['database_password'],
+                'dbHost' => 'localhost',
+                'dbPrefix' => 'wp_',
                 'username' => $site->type_data['username'],
                 'password' => $site->type_data['password'],
                 'email' => $site->type_data['email'],

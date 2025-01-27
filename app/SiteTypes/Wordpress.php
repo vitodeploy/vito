@@ -6,8 +6,10 @@ use App\Actions\Database\CreateDatabase;
 use App\Actions\Database\CreateDatabaseUser;
 use App\Actions\Database\LinkUser;
 use App\Enums\SiteFeature;
+use App\Exceptions\SSHError;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\SSH\Services\Webserver\Webserver;
 use Closure;
 use Illuminate\Validation\Rule;
 
@@ -82,9 +84,12 @@ class Wordpress extends AbstractSiteType
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function install(): void
     {
-        $this->site->isolate();
+        $this->isolate();
 
         /** @var Webserver $webserver */
         $webserver = $this->site->server->webserver()->handler();

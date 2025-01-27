@@ -2,12 +2,16 @@
 
 namespace App\Actions\Site;
 
+use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\Webserver\Webserver;
 
 class DeleteSite
 {
+    /**
+     * @throws SSHError
+     */
     public function delete(Site $site): void
     {
         /** @var Webserver $webserverHandler */

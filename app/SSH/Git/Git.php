@@ -2,17 +2,18 @@
 
 namespace App\SSH\Git;
 
+use App\Exceptions\SSHError;
 use App\Models\Site;
-use App\SSH\HasScripts;
 
 class Git
 {
-    use HasScripts;
-
+    /**
+     * @throws SSHError
+     */
     public function clone(Site $site): void
     {
         $site->server->ssh($site->user)->exec(
-            $this->getScript('clone.sh', [
+            view('ssh.git.clone', [
                 'host' => str($site->getFullRepositoryUrl())->after('@')->before('-'),
                 'repo' => $site->getFullRepositoryUrl(),
                 'path' => $site->path,
@@ -24,10 +25,13 @@ class Git
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function checkout(Site $site): void
     {
         $site->server->ssh($site->user)->exec(
-            $this->getScript('checkout.sh', [
+            view('ssh.git.checkout', [
                 'path' => $site->path,
                 'branch' => $site->branch,
             ]),

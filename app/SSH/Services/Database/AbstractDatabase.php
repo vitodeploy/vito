@@ -3,16 +3,18 @@
 namespace App\SSH\Services\Database;
 
 use App\Enums\BackupStatus;
+use App\Exceptions\ServiceInstallationFailed;
+use App\Exceptions\SSHError;
 use App\Models\BackupFile;
-use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
 use Closure;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
-    use HasScripts;
-
-    abstract protected function getScriptsDir(): string;
+    protected function getScriptView(string $script): string
+    {
+        return 'ssh.services.database.'.$this->service->name.'.'.$script;
+    }
 
     public function creationRules(array $input): array
     {
@@ -29,10 +31,14 @@ abstract class AbstractDatabase extends AbstractService implements Database
         ];
     }
 
+    /**
+     * @throws ServiceInstallationFailed
+     * @throws SSHError
+     */
     public function install(): void
     {
-        $version = $this->service->version;
-        $command = $this->getScript($this->service->name.'/install-'.$version.'.sh');
+        $version = str_replace('.', '', $this->service->version);
+        $command = view($this->getScriptView('install-'.$version));
         $this->service->server->ssh()->exec($command, 'install-'.$this->service->name.'-'.$version);
         $status = $this->service->server->systemd()->status($this->service->unit);
         $this->service->validateInstall($status);
@@ -63,38 +69,50 @@ abstract class AbstractDatabase extends AbstractService implements Database
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function uninstall(): void
     {
         $version = $this->service->version;
-        $command = $this->getScript($this->service->name.'/uninstall.sh');
+        $command = view($this->getScriptView('uninstall'));
         $this->service->server->ssh()->exec($command, 'uninstall-'.$this->service->name.'-'.$version);
         $this->service->server->os()->cleanup();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function create(string $name): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript($this->getScriptsDir().'/create.sh', [
+            view($this->getScriptView('create'), [
                 'name' => $name,
             ]),
             'create-database'
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function delete(string $name): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript($this->getScriptsDir().'/delete.sh', [
+            view($this->getScriptView('delete'), [
                 'name' => $name,
             ]),
             'delete-database'
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function createUser(string $username, string $password, string $host): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript($this->getScriptsDir().'/create-user.sh', [
+            view($this->getScriptView('create-user'), [
                 'username' => $username,
                 'password' => $password,
                 'host' => $host,
@@ -103,10 +121,13 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function deleteUser(string $username, string $host): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript($this->getScriptsDir().'/delete-user.sh', [
+            view($this->getScriptView('delete-user'), [
                 'username' => $username,
                 'host' => $host,
             ]),
@@ -114,6 +135,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function link(string $username, string $host, array $databases): void
     {
         $ssh = $this->service->server->ssh();
@@ -121,7 +145,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         foreach ($databases as $database) {
             $ssh->exec(
-                $this->getScript($this->getScriptsDir().'/link.sh', [
+                view($this->getScriptView('link'), [
                     'username' => $username,
                     'host' => $host,
                     'database' => $database,
@@ -132,12 +156,15 @@ abstract class AbstractDatabase extends AbstractService implements Database
         }
     }
 
+    /**
+     * @throws SSHError
+     */
     public function unlink(string $username, string $host): void
     {
         $version = $this->service->version;
 
         $this->service->server->ssh()->exec(
-            $this->getScript($this->getScriptsDir().'/unlink.sh', [
+            view($this->getScriptView('unlink'), [
                 'username' => $username,
                 'host' => $host,
                 'version' => $version,
@@ -146,11 +173,14 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function runBackup(BackupFile $backupFile): void
     {
         // backup
         $this->service->server->ssh()->exec(
-            $this->getScript($this->getScriptsDir().'/backup.sh', [
+            view($this->getScriptView('backup'), [
                 'file' => $backupFile->name,
                 'database' => $backupFile->backup->database->name,
             ]),
@@ -170,6 +200,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $backupFile->save();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function restoreBackup(BackupFile $backupFile, string $database): void
     {
         // download
@@ -179,7 +212,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
 
         $this->service->server->ssh()->exec(
-            $this->getScript($this->getScriptsDir().'/restore.sh', [
+            view($this->getScriptView('restore'), [
                 'database' => $database,
                 'file' => rtrim($backupFile->tempPath(), '.zip'),
             ]),

@@ -3,6 +3,7 @@
 namespace App\ServerTypes;
 
 use App\Enums\ServiceStatus;
+use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\SSH\Services\PHP\PHP;
 
@@ -15,6 +16,9 @@ abstract class AbstractType implements ServerType
         $this->server = $server;
     }
 
+    /**
+     * @throws SSHError
+     */
     public function install(): void
     {
         $this->createUser();

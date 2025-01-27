@@ -2,15 +2,13 @@
 
 namespace App\SSH\Services\NodeJS;
 
-use App\SSH\HasScripts;
+use App\Exceptions\SSHError;
 use App\SSH\Services\AbstractService;
 use Closure;
 use Illuminate\Validation\Rule;
 
 class NodeJS extends AbstractService
 {
-    use HasScripts;
-
     public function creationRules(array $input): array
     {
         return [
@@ -41,34 +39,43 @@ class NodeJS extends AbstractService
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function install(): void
     {
         $server = $this->service->server;
         $server->ssh()->exec(
-            $this->getScript('install-nodejs.sh', [
+            view('ssh.services.nodejs.install-nodejs', [
                 'version' => $this->service->version,
-                'user' => $server->getSshUser(),
             ]),
             'install-nodejs-'.$this->service->version
         );
         $this->service->server->os()->cleanup();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('uninstall-nodejs.sh', [
+            view('ssh.services.nodejs.uninstall-nodejs', [
                 'version' => $this->service->version,
+                'default' => $this->service->is_default,
             ]),
             'uninstall-nodejs-'.$this->service->version
         );
         $this->service->server->os()->cleanup();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function setDefaultCli(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('change-default-nodejs.sh', [
+            view('ssh.services.nodejs.change-default-nodejs', [
                 'version' => $this->service->version,
             ]),
             'change-default-nodejs'

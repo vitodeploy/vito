@@ -4,7 +4,7 @@ namespace App\Actions\Site;
 
 use App\Enums\DeploymentStatus;
 use App\Exceptions\DeploymentScriptIsEmptyException;
-use App\Exceptions\SourceControlIsNotConnected;
+use App\Exceptions\SSHError;
 use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Models\Site;
@@ -12,8 +12,8 @@ use App\Models\Site;
 class Deploy
 {
     /**
-     * @throws SourceControlIsNotConnected
      * @throws DeploymentScriptIsEmptyException
+     * @throws SSHError
      */
     public function run(Site $site): Deployment
     {

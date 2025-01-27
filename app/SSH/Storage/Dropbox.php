@@ -3,17 +3,18 @@
 namespace App\SSH\Storage;
 
 use App\Exceptions\SSHCommandError;
-use App\SSH\HasScripts;
+use App\Exceptions\SSHError;
 use Illuminate\Support\Facades\Log;
 
 class Dropbox extends AbstractStorage
 {
-    use HasScripts;
-
+    /**
+     * @throws SSHError
+     */
     public function upload(string $src, string $dest): array
     {
         $upload = $this->server->ssh()->exec(
-            $this->getScript('dropbox/upload.sh', [
+            view('ssh.storage.dropbox.upload', [
                 'src' => $src,
                 'dest' => $dest,
                 'token' => $this->storageProvider->credentials['token'],
@@ -33,10 +34,13 @@ class Dropbox extends AbstractStorage
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function download(string $src, string $dest): void
     {
         $this->server->ssh()->exec(
-            $this->getScript('dropbox/download.sh', [
+            view('ssh.storage.dropbox.download', [
                 'src' => $src,
                 'dest' => $dest,
                 'token' => $this->storageProvider->credentials['token'],
@@ -45,10 +49,13 @@ class Dropbox extends AbstractStorage
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function delete(string $src): void
     {
         $this->server->ssh()->exec(
-            $this->getScript('dropbox/delete-file.sh', [
+            view('ssh.storage.dropbox.delete-file', [
                 'src' => $src,
                 'token' => $this->storageProvider->credentials['token'],
             ]),

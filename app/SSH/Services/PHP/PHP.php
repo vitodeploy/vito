@@ -3,7 +3,7 @@
 namespace App\SSH\Services\PHP;
 
 use App\Exceptions\SSHCommandError;
-use App\SSH\HasScripts;
+use App\Exceptions\SSHError;
 use App\SSH\Services\AbstractService;
 use Closure;
 use Illuminate\Support\Str;
@@ -11,8 +11,6 @@ use Illuminate\Validation\Rule;
 
 class PHP extends AbstractService
 {
-    use HasScripts;
-
     public function creationRules(array $input): array
     {
         return [
@@ -43,11 +41,14 @@ class PHP extends AbstractService
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function install(): void
     {
         $server = $this->service->server;
         $server->ssh()->exec(
-            $this->getScript('install-php.sh', [
+            view('ssh.services.php.install-php', [
                 'version' => $this->service->version,
                 'user' => $server->getSshUser(),
             ]),
@@ -57,10 +58,13 @@ class PHP extends AbstractService
         $this->service->server->os()->cleanup();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('uninstall-php.sh', [
+            view('ssh.services.php.uninstall-php', [
                 'version' => $this->service->version,
             ]),
             'uninstall-php-'.$this->service->version
@@ -68,10 +72,13 @@ class PHP extends AbstractService
         $this->service->server->os()->cleanup();
     }
 
+    /**
+     * @throws SSHError
+     */
     public function setDefaultCli(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('change-default-php.sh', [
+            view('ssh.services.php.change-default-php', [
                 'version' => $this->service->version,
             ]),
             'change-default-php'
@@ -79,12 +86,12 @@ class PHP extends AbstractService
     }
 
     /**
-     * @throws SSHCommandError
+     * @throws SSHError
      */
     public function installExtension($name): void
     {
         $result = $this->service->server->ssh()->exec(
-            $this->getScript('install-php-extension.sh', [
+            view('ssh.services.php.install-php-extension', [
                 'version' => $this->service->version,
                 'name' => $name,
             ]),
@@ -96,14 +103,20 @@ class PHP extends AbstractService
         }
     }
 
+    /**
+     * @throws SSHError
+     */
     public function installComposer(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('install-composer.sh'),
+            view('ssh.services.php.install-composer'),
             'install-composer'
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function getPHPIni(string $type): string
     {
         return $this->service->server->os()->readFile(
@@ -111,26 +124,30 @@ class PHP extends AbstractService
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function createFpmPool(string $user, string $version, $site_id): void
     {
-        $this->service->server->ssh()->exec(
-            $this->getScript('create-fpm-pool.sh', [
+        $this->service->server->ssh()->write(
+            "/etc/php/{$version}/fpm/pool.d/{$user}.conf",
+            view('ssh.services.php.fpm-pool', [
                 'user' => $user,
                 'version' => $version,
-                'config' => $this->getScript('fpm-pool.conf', [
-                    'user' => $user,
-                    'version' => $version,
-                ]),
             ]),
-            "create-{$version}fpm-pool-{$user}",
-            $site_id
+            true
         );
+
+        $this->service->server->systemd()->restart($this->service->unit);
     }
 
+    /**
+     * @throws SSHError
+     */
     public function removeFpmPool(string $user, string $version, $site_id): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('remove-fpm-pool.sh', [
+            view('ssh.services.php.remove-fpm-pool', [
                 'user' => $user,
                 'version' => $version,
             ]),

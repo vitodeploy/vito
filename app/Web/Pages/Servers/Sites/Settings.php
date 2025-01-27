@@ -74,7 +74,7 @@ class Settings extends Page
                 run_action($this, function () use ($data) {
                     /** @var Webserver $handler */
                     $handler = $this->server->webserver()->handler();
-                    $handler->updateVHost($this->site, false, $data['vhost']);
+                    $handler->updateVHost($this->site, $data['vhost']);
                     Notification::make()
                         ->success()
                         ->title('VHost updated!')

@@ -4,6 +4,7 @@ namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
 use App\Exceptions\FailedToDeployGitKey;
+use App\Exceptions\SSHError;
 use App\SSH\Composer\Composer;
 use App\SSH\Git\Git;
 use App\SSH\Services\Webserver\Webserver;
@@ -73,10 +74,11 @@ class PHPSite extends AbstractSiteType
 
     /**
      * @throws FailedToDeployGitKey
+     * @throws SSHError
      */
     public function install(): void
     {
-        $this->site->isolate();
+        $this->isolate();
 
         /** @var Webserver $webserver */
         $webserver = $this->site->server->webserver()->handler();

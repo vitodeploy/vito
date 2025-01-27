@@ -2,12 +2,16 @@
 
 namespace App\SSH\Systemd;
 
+use App\Exceptions\SSHError;
 use App\Models\Server;
 
 class Systemd
 {
     public function __construct(protected Server $server) {}
 
+    /**
+     * @throws SSHError
+     */
     public function status(string $unit): string
     {
         $command = <<<EOD
@@ -17,6 +21,9 @@ class Systemd
         return $this->server->ssh()->exec($command, sprintf('status-%s', $unit));
     }
 
+    /**
+     * @throws SSHError
+     */
     public function start(string $unit): string
     {
         $command = <<<EOD
@@ -27,6 +34,9 @@ class Systemd
         return $this->server->ssh()->exec($command, sprintf('start-%s', $unit));
     }
 
+    /**
+     * @throws SSHError
+     */
     public function stop(string $unit): string
     {
         $command = <<<EOD
@@ -37,6 +47,9 @@ class Systemd
         return $this->server->ssh()->exec($command, sprintf('stop-%s', $unit));
     }
 
+    /**
+     * @throws SSHError
+     */
     public function restart(string $unit): string
     {
         $command = <<<EOD
@@ -47,6 +60,9 @@ class Systemd
         return $this->server->ssh()->exec($command, sprintf('restart-%s', $unit));
     }
 
+    /**
+     * @throws SSHError
+     */
     public function enable(string $unit): string
     {
         $command = <<<EOD
@@ -58,6 +74,9 @@ class Systemd
         return $this->server->ssh()->exec($command, sprintf('enable-%s', $unit));
     }
 
+    /**
+     * @throws SSHError
+     */
     public function disable(string $unit): string
     {
         $command = <<<EOD
