@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Exceptions\SSHError;
 use App\Models\Site;
 use Illuminate\Validation\Rule;
 
@@ -19,6 +20,9 @@ class UpdatePHPVersion
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function update(Site $site, array $input): void
     {
         $site->changePHPVersion($input['version']);

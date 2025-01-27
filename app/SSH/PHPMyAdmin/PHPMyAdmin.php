@@ -2,17 +2,18 @@
 
 namespace App\SSH\PHPMyAdmin;
 
+use App\Exceptions\SSHError;
 use App\Models\Site;
-use App\SSH\HasScripts;
 
 class PHPMyAdmin
 {
-    use HasScripts;
-
+    /**
+     * @throws SSHError
+     */
     public function install(Site $site): void
     {
         $site->server->ssh($site->user)->exec(
-            $this->getScript('install.sh', [
+            view('ssh.phpmyadmin.install', [
                 'version' => $site->type_data['version'],
                 'path' => $site->path,
             ]),

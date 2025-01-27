@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\SiteStatus;
+use App\Enums\SslStatus;
 use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
@@ -35,6 +36,7 @@ use Illuminate\Support\Str;
  * @property int $port
  * @property int $progress
  * @property string $user
+ * @property bool $force_ssl
  * @property Server $server
  * @property ServerLog[] $logs
  * @property Deployment[] $deployments
@@ -198,6 +200,9 @@ class Site extends AbstractModel
         return null;
     }
 
+    /**
+     * @throws SSHError
+     */
     public function changePHPVersion($version): void
     {
         /** @var Webserver $handler */
@@ -219,6 +224,7 @@ class Site extends AbstractModel
     {
         return $this->hasOne(Ssl::class)
             ->where('expires_at', '>=', now())
+            ->where('status', SslStatus::CREATED)
             ->orderByDesc('id');
     }
 
@@ -301,11 +307,6 @@ class Site extends AbstractModel
         }
     }
 
-    public function hasSSL(): bool
-    {
-        return $this->ssls->isNotEmpty();
-    }
-
     public function environmentVariables(?Deployment $deployment = null): array
     {
         return [
@@ -319,30 +320,16 @@ class Site extends AbstractModel
         ];
     }
 
-    public function isolate(): void
-    {
-        if (! $this->isIsolated()) {
-            return;
-        }
-
-        $this->server->os()->createIsolatedUser(
-            $this->user,
-            Str::random(15),
-            $this->id
-        );
-
-        // Generate the FPM pool
-        /** @var PHP $php */
-        $php = $this->php()->handler();
-        $php->createFpmPool(
-            $this->user,
-            $this->php_version,
-            $this->id
-        );
-    }
-
     public function isIsolated(): bool
     {
         return $this->user != $this->server->getSshUser();
+    }
+
+    public function webserver(): Webserver
+    {
+        /** @var Webserver $webserver */
+        $webserver = $this->server->webserver()->handler();
+
+        return $webserver;
     }
 }

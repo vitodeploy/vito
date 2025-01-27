@@ -11,6 +11,7 @@ use App\Actions\Service\Uninstall;
 use App\Enums\PHPIniType;
 use App\Models\Server;
 use App\Models\Service;
+use App\Web\Pages\Servers\Logs\Index;
 use Exception;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -102,6 +103,16 @@ class PHPList extends Widget
 
                 try {
                     app(InstallPHPExtension::class)->install($this->server, $data);
+
+                    Notification::make()
+                        ->success()
+                        ->title('PHP Extension is being installed!')
+                        ->body('You can check the logs for more information.')
+                        ->actions([
+                            \Filament\Notifications\Actions\Action::make('View Logs')
+                                ->url(Index::getUrl(parameters: ['server' => $this->server->id])),
+                        ])
+                        ->send();
                 } catch (Exception $e) {
                     Notification::make()
                         ->danger()

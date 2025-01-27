@@ -2,16 +2,17 @@
 
 namespace App\SSH\Storage;
 
-use App\SSH\HasScripts;
+use App\Exceptions\SSHError;
 
 class FTP extends AbstractStorage
 {
-    use HasScripts;
-
+    /**
+     * @throws SSHError
+     */
     public function upload(string $src, string $dest): array
     {
         $this->server->ssh()->exec(
-            $this->getScript('ftp/upload.sh', [
+            view('ssh.storage.ftp.upload', [
                 'src' => $src,
                 'dest' => $dest,
                 'host' => $this->storageProvider->credentials['host'],
@@ -29,10 +30,13 @@ class FTP extends AbstractStorage
         ];
     }
 
+    /**
+     * @throws SSHError
+     */
     public function download(string $src, string $dest): void
     {
         $this->server->ssh()->exec(
-            $this->getScript('ftp/download.sh', [
+            view('ssh.storage.ftp.download', [
                 'src' => $src,
                 'dest' => $dest,
                 'host' => $this->storageProvider->credentials['host'],
@@ -46,10 +50,13 @@ class FTP extends AbstractStorage
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function delete(string $src): void
     {
         $this->server->ssh()->exec(
-            $this->getScript('ftp/delete-file.sh', [
+            view('ssh.storage.ftp.delete-file', [
                 'src' => $src,
                 'host' => $this->storageProvider->credentials['host'],
                 'port' => $this->storageProvider->credentials['port'],

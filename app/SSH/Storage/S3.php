@@ -5,12 +5,11 @@ namespace App\SSH\Storage;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\SSH\HasS3Storage;
-use App\SSH\HasScripts;
 use Illuminate\Support\Facades\Log;
 
 class S3 extends AbstractStorage
 {
-    use HasS3Storage, HasScripts;
+    use HasS3Storage;
 
     /**
      * @throws SSHError
@@ -20,7 +19,7 @@ class S3 extends AbstractStorage
         /** @var \App\StorageProviders\S3 $provider */
         $provider = $this->storageProvider->provider();
 
-        $uploadCommand = $this->getScript('s3/upload.sh', [
+        $uploadCommand = view('ssh.storage.s3.upload', [
             'src' => $src,
             'bucket' => $this->storageProvider->credentials['bucket'],
             'dest' => $this->prepareS3Path($dest),
@@ -40,7 +39,6 @@ class S3 extends AbstractStorage
         return [
             'size' => null, // You can parse the size from the output if needed
         ];
-
     }
 
     /**
@@ -51,7 +49,7 @@ class S3 extends AbstractStorage
         /** @var \App\StorageProviders\S3 $provider */
         $provider = $this->storageProvider->provider();
 
-        $downloadCommand = $this->getScript('s3/download.sh', [
+        $downloadCommand = view('ssh.storage.s3.download', [
             'src' => $this->prepareS3Path($src),
             'dest' => $dest,
             'bucket' => $this->storageProvider->credentials['bucket'],
@@ -71,13 +69,16 @@ class S3 extends AbstractStorage
         }
     }
 
+    /**
+     * @throws SSHError
+     */
     public function delete(string $src): void
     {
         /** @var \App\StorageProviders\S3 $provider */
         $provider = $this->storageProvider->provider();
 
         $this->server->ssh()->exec(
-            $this->getScript('s3/delete-file.sh', [
+            view('ssh.storage.s3.delete-file', [
                 'src' => $this->prepareS3Path($src),
                 'bucket' => $this->storageProvider->credentials['bucket'],
                 'key' => $this->storageProvider->credentials['key'],

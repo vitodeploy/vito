@@ -2,26 +2,24 @@
 
 namespace App\SSH\Cron;
 
+use App\Exceptions\SSHError;
 use App\Models\Server;
 
 class Cron
 {
     public function __construct(protected Server $server) {}
 
+    /**
+     * @throws SSHError
+     */
     public function update(string $user, string $cron): void
     {
-        $command = <<<EOD
-            if ! echo '$cron' | sudo -u $user crontab -; then
-                echo 'VITO_SSH_ERROR' && exit 1
-            fi
-
-            if ! sudo -u $user crontab -l; then
-                echo 'VITO_SSH_ERROR' && exit 1
-            fi
-
-            echo 'cron updated!'
-        EOD;
-
-        $this->server->ssh()->exec($command, 'update-cron');
+        $this->server->ssh()->exec(
+            view('ssh.cron.update', [
+                'cron' => $cron,
+                'user' => $user,
+            ]),
+            'update-cron'
+        );
     }
 }

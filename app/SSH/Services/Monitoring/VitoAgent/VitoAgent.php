@@ -2,8 +2,9 @@
 
 namespace App\SSH\Services\Monitoring\VitoAgent;
 
+use App\Exceptions\ServiceInstallationFailed;
+use App\Exceptions\SSHError;
 use App\Models\Metric;
-use App\SSH\HasScripts;
 use App\SSH\Services\AbstractService;
 use Closure;
 use Illuminate\Support\Facades\Http;
@@ -12,8 +13,6 @@ use Ramsey\Uuid\Uuid;
 
 class VitoAgent extends AbstractService
 {
-    use HasScripts;
-
     const TAGS_URL = 'https://api.github.com/repos/vitodeploy/agent/tags';
 
     const DOWNLOAD_URL = 'https://github.com/vitodeploy/agent/releases/download/%s';
@@ -54,11 +53,15 @@ class VitoAgent extends AbstractService
         ];
     }
 
+    /**
+     * @throws SSHError
+     * @throws ServiceInstallationFailed
+     */
     public function install(): void
     {
         $tags = Http::get(self::TAGS_URL)->json();
         if (empty($tags)) {
-            throw new \Exception('Failed to fetch tags');
+            throw new ServiceInstallationFailed('Failed to fetch tags');
         }
         $this->service->version = $tags[0]['name'];
         $this->service->save();
@@ -71,10 +74,10 @@ class VitoAgent extends AbstractService
         $this->service->refresh();
 
         $this->service->server->ssh()->exec(
-            $this->getScript('install.sh', [
-                'download_url' => $downloadUrl,
-                'config_url' => $this->data()['url'],
-                'config_secret' => $this->data()['secret'],
+            view('ssh.services.monitoring.vito-agent.install', [
+                'downloadUrl' => $downloadUrl,
+                'configUrl' => $this->data()['url'],
+                'configSecret' => $this->data()['secret'],
             ]),
             'install-vito-agent'
         );
@@ -82,12 +85,15 @@ class VitoAgent extends AbstractService
         $this->service->validateInstall($status);
     }
 
+    /**
+     * @throws SSHError
+     */
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            $this->getScript('uninstall.sh'),
+            view('ssh.services.monitoring.vito-agent.uninstall'),
             'uninstall-vito-agent'
         );
-        Metric::where('server_id', $this->service->server_id)->delete();
+        Metric::query()->where('server_id', $this->service->server_id)->delete();
     }
 }

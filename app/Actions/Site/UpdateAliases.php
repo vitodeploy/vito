@@ -14,7 +14,7 @@ class UpdateAliases
 
         /** @var Webserver $webserver */
         $webserver = $site->server->webserver()->handler();
-        $webserver->updateVHost($site, ! $site->hasSSL());
+        $webserver->updateVHost($site);
 
         $site->save();
     }

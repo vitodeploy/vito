@@ -5,11 +5,7 @@ namespace App\Models;
 use App\Actions\Service\Manage;
 use App\Enums\ServiceStatus;
 use App\Exceptions\ServiceInstallationFailed;
-use App\SSH\Services\Database\Database as DatabaseAlias;
-use App\SSH\Services\PHP\PHP as PHPAlias;
-use App\SSH\Services\ProcessManager\ProcessManager;
 use App\SSH\Services\ServiceInterface;
-use App\SSH\Services\WebServer\WebServer as WebServerAlias;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -79,9 +75,6 @@ class Service extends AbstractModel
         return $this->belongsTo(Server::class);
     }
 
-    /**
-     * @return ProcessManager|DatabaseAlias|PHPAlias|WebServerAlias
-     */
     public function handler(): ServiceInterface
     {
         $handler = config('core.service_handlers')[$this->name];
