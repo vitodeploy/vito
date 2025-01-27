@@ -12,3 +12,4 @@ sail
 *.yml
 !*.blade.php
 !*.sh
+resources/views/ssh/
