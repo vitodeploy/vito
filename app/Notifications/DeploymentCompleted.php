@@ -9,7 +9,6 @@ use Illuminate\Notifications\Messages\MailMessage;
 class DeploymentCompleted extends AbstractNotification
 {
     protected Deployment $deployment;
-
     protected Site $site;
 
     public function __construct(Deployment $deployment, Site $site)
@@ -20,7 +19,7 @@ class DeploymentCompleted extends AbstractNotification
 
     public function rawText(): string
     {
-        return __('Deployment for site [:site] has completed with status: :status', [
+        return __("Deployment for site [:site] has completed with status: :status", [
             'site' => $this->site->domain,
             'status' => $this->deployment->status,
         ]);
@@ -30,7 +29,7 @@ class DeploymentCompleted extends AbstractNotification
     {
         return (new MailMessage)
             ->subject(__('Deployment Completed'))
-            ->line('Deployment for site ['.$this->site->domain.'] has completed with status: '.$this->deployment->status);
+            ->line("Deployment for site [".$this->site->domain.'] has completed with status: '.$this->deployment->status);
     }
 
     public function toSlack(object $notifiable): string
