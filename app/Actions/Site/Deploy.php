@@ -5,9 +5,11 @@ namespace App\Actions\Site;
 use App\Enums\DeploymentStatus;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\SSHError;
+use App\Facades\Notifier;
 use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Models\Site;
+use App\Notifications\DeploymentCompleted;
 
 class Deploy
 {
@@ -53,9 +55,11 @@ class Deploy
             );
             $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();
-        })->catch(function () use ($deployment) {
+            Notifier::send($site, new DeploymentCompleted($deployment, $site));
+        })->catch(function () use ($deployment, $site) {
             $deployment->status = DeploymentStatus::FAILED;
             $deployment->save();
+            Notifier::send($site, new DeploymentCompleted($deployment, $site));
         })->onConnection('ssh');
 
         return $deployment;
