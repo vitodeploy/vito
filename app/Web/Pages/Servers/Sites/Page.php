@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Sites;
 
 use App\Models\Queue;
+use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\Web\Contracts\HasSecondSubNav;
@@ -47,6 +48,16 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ->icon('heroicon-o-queue-list')
                 ->isActiveWhen(fn () => request()->routeIs(Pages\Queues\Index::getRouteName()))
                 ->url(Pages\Queues\Index::getUrl(parameters: [
+                    'server' => $this->server,
+                    'site' => $this->site,
+                ]));
+        }
+
+        if ($user->can('viewAny', [ServerLog::class, $this->server])) {
+            $items[] = NavigationItem::make(Pages\Logs\Index::getNavigationLabel())
+                ->icon('heroicon-o-square-3-stack-3d')
+                ->isActiveWhen(fn () => request()->routeIs(Pages\Logs\Index::getRouteName()))
+                ->url(Pages\Logs\Index::getUrl(parameters: [
                     'server' => $this->server,
                     'site' => $this->site,
                 ]));
