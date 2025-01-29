@@ -114,7 +114,7 @@ class CreateSite
                 'regex:/^[a-z_][a-z0-9_-]*[a-z0-9]$/',
                 'min:3',
                 'max:32',
-                'unique:sites,user',
+                Rule::unique('sites', 'user')->where('server_id', $server->id),
                 Rule::notIn($server->getSshUsers()),
             ],
         ];
