@@ -52,6 +52,7 @@ class SiteController extends Controller
     #[BodyParam(name: 'branch', description: 'Branch, Required for Sites which support source control', example: 'main')]
     #[BodyParam(name: 'composer', type: 'boolean', description: 'Run composer if site supports composer', example: true)]
     #[BodyParam(name: 'version', description: 'Version, if the site type requires a version like PHPMyAdmin', example: '5.2.1')]
+    #[BodyParam(name: 'user', description: 'user, to isolate the website under a new user')]
     #[ResponseFromApiResource(SiteResource::class, Site::class)]
     public function create(Request $request, Project $project, Server $server): SiteResource
     {
