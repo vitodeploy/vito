@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
  * @property string $ca_path
  * @property ?array $domains
  * @property int $log_id
+ * @property string $email
  * @property ?ServerLog $log
  */
 class Ssl extends AbstractModel
@@ -36,6 +37,7 @@ class Ssl extends AbstractModel
         'status',
         'domains',
         'log_id',
+        'email',
     ];
 
     protected $casts = [
@@ -142,5 +144,14 @@ class Ssl extends AbstractModel
     public function log(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class);
+    }
+
+    public function getEmailAttribute(?string $value): string
+    {
+        if ($value) {
+            return $value;
+        }
+
+        return $this->site->server->creator->email;
     }
 }
