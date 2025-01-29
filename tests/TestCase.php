@@ -3,10 +3,10 @@
 namespace Tests;
 
 use App\Enums\Database;
-use App\Enums\NotificationChannel;
 use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Enums\Webserver;
+use App\Models\NotificationChannel;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -24,6 +24,8 @@ abstract class TestCase extends BaseTestCase
 
     protected Site $site;
 
+    protected NotificationChannel $notificationChannel;
+
     public const EXPECT_SUCCESS = true;
 
     public const EXPECT_FAILURE = false;
@@ -40,8 +42,8 @@ abstract class TestCase extends BaseTestCase
         ]);
         $this->user->createDefaultProject();
 
-        \App\Models\NotificationChannel::factory()->create([
-            'provider' => NotificationChannel::EMAIL,
+        $this->notificationChannel = NotificationChannel::factory()->create([
+            'provider' => \App\Enums\NotificationChannel::EMAIL,
             'connected' => true,
             'data' => [
                 'email' => 'user@example.com',

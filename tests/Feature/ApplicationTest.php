@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Enums\DeploymentStatus;
 use App\Facades\SSH;
 use App\Models\GitHook;
+use App\Notifications\DeploymentCompleted;
 use App\Web\Pages\Servers\Sites\View;
 use App\Web\Pages\Servers\Sites\Widgets\DeploymentsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -65,6 +67,7 @@ class ApplicationTest extends TestCase
                 ],
             ]),
         ]);
+        Notification::fake();
 
         $this->site->deploymentScript->update([
             'content' => 'git pull',
@@ -87,6 +90,8 @@ class ApplicationTest extends TestCase
 
         SSH::assertExecutedContains('cd /home/vito/'.$this->site->domain);
         SSH::assertExecutedContains('git pull');
+
+        Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
 
         $this->get(
             View::getUrl([
