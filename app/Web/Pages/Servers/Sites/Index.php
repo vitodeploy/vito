@@ -134,9 +134,9 @@ class Index extends \App\Web\Pages\Servers\Page
                     // WordPress
                     $this->wordpressFields(),
                     TextInput::make('user')
-                        ->label('Username')
-                        ->hintIcon('heroicon-o-information-circle')
-                        ->hintIconTooltip(
+                        ->label('User')
+                        ->placeholder('vito')
+                        ->helperText(
                             'Optional. If provided, a new user will be created and the site will be owned by this user.'
                         )
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['user']),
