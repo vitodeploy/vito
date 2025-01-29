@@ -114,7 +114,7 @@ class Index extends Page
                         ->schema([
                             Select::make('region')
                                 ->label('Region')
-                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['region'])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['region'] ?? [])
                                 ->live()
                                 ->reactive()
                                 ->options(function ($get) {
@@ -130,7 +130,7 @@ class Index extends Page
                                 ->searchable(),
                             Select::make('plan')
                                 ->label('Plan')
-                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['plan'])
+                                ->rules(fn ($get) => CreateServerAction::rules($project, $get())['plan'] ?? [])
                                 ->reactive()
                                 ->options(function ($get) {
                                     if (! $get('server_provider') || ! $get('region')) {
