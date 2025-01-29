@@ -44,6 +44,7 @@ class SslTest extends TestCase
         ])
             ->callAction('create', [
                 'type' => SslType::LETSENCRYPT,
+                'email' => 'ssl@example.com',
             ])
             ->assertSuccessful();
 
@@ -52,6 +53,7 @@ class SslTest extends TestCase
             'type' => SslType::LETSENCRYPT,
             'status' => SslStatus::CREATED,
             'domains' => json_encode([$this->site->domain]),
+            'email' => 'ssl@example.com',
         ]);
     }
 
@@ -67,6 +69,7 @@ class SslTest extends TestCase
         ])
             ->callAction('create', [
                 'type' => SslType::LETSENCRYPT,
+                'email' => 'ssl@example.com',
                 'aliases' => true,
             ])
             ->assertSuccessful();
@@ -76,6 +79,7 @@ class SslTest extends TestCase
             'type' => SslType::LETSENCRYPT,
             'status' => SslStatus::CREATED,
             'domains' => json_encode(array_merge([$this->site->domain], $this->site->aliases)),
+            'email' => 'ssl@example.com',
         ]);
     }
 

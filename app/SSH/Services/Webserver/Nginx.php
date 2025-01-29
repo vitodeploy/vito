@@ -168,7 +168,7 @@ class Nginx extends AbstractWebserver
             $domains .= ' -d '.$domain;
         }
         $command = view('ssh.services.webserver.nginx.create-letsencrypt-ssl', [
-            'email' => $ssl->site->server->creator->email,
+            'email' => $ssl->email,
             'domain' => $ssl->site->domain,
             'domains' => $domains,
         ]);
