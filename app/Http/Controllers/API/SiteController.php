@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\UpdateLoadBalancer;
+use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
 use App\Models\Project;
 use App\Models\Server;
@@ -42,7 +43,7 @@ class SiteController extends Controller
 
     #[Post('/', name: 'api.projects.servers.sites.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create', description: 'Create a new site.')]
-    #[BodyParam(name: 'type', required: true, enum: [SiteType::PHP, SiteType::PHP_BLANK, SiteType::PHPMYADMIN, SiteType::LARAVEL, SiteType::WORDPRESS])]
+    #[BodyParam(name: 'type', required: true, enum: [SiteType::PHP, SiteType::PHP_BLANK, SiteType::PHPMYADMIN, SiteType::LARAVEL, SiteType::WORDPRESS, SiteType::LOAD_BALANCER])]
     #[BodyParam(name: 'domain', required: true)]
     #[BodyParam(name: 'aliases', type: 'array')]
     #[BodyParam(name: 'php_version', description: 'One of the installed PHP Versions', required: true, example: '7.4')]
@@ -53,6 +54,7 @@ class SiteController extends Controller
     #[BodyParam(name: 'composer', type: 'boolean', description: 'Run composer if site supports composer', example: true)]
     #[BodyParam(name: 'version', description: 'Version, if the site type requires a version like PHPMyAdmin', example: '5.2.1')]
     #[BodyParam(name: 'user', description: 'user, to isolate the website under a new user')]
+    #[BodyParam(name: 'method', description: 'Load balancer method, Required if the site type is Load balancer', enum: [LoadBalancerMethod::ROUND_ROBIN, LoadBalancerMethod::LEAST_CONNECTIONS, LoadBalancerMethod::IP_HASH])]
     #[ResponseFromApiResource(SiteResource::class, Site::class)]
     public function create(Request $request, Project $project, Server $server): SiteResource
     {
@@ -70,13 +72,13 @@ class SiteController extends Controller
     #[Get('{site}', name: 'api.projects.servers.sites.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show', description: 'Get a site by ID.')]
     #[ResponseFromApiResource(SiteResource::class, Site::class)]
-    public function show(Project $project, Server $server, Site $site): ServerResource
+    public function show(Project $project, Server $server, Site $site): SiteResource
     {
         $this->authorize('view', [$site, $server]);
 
         $this->validateRoute($project, $server, $site);
 
-        return new ServerResource($server);
+        return new SiteResource($site);
     }
 
     #[Delete('{site}', name: 'api.projects.servers.sites.delete', middleware: 'ability:write')]
@@ -91,6 +93,24 @@ class SiteController extends Controller
         $site->delete();
 
         return response()->noContent();
+    }
+
+    #[Post('{site}/load-balancer', name: 'api.projects.servers.sites.load-balancer', middleware: 'ability:write')]
+    #[Endpoint(title: 'load-balancer', description: 'Update load balancer.')]
+    #[BodyParam(name: 'method', description: 'Load balancer method, Required if the site type is Load balancer', enum: [LoadBalancerMethod::ROUND_ROBIN, LoadBalancerMethod::LEAST_CONNECTIONS, LoadBalancerMethod::IP_HASH])]
+    #[BodyParam(name: 'servers', type: 'array', description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)')]
+    #[Response(status: 200)]
+    public function updateLoadBalancer(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, UpdateLoadBalancer::rules($site));
+
+        app(UpdateLoadBalancer::class)->update($site, $request->all());
+
+        return new SiteResource($site);
     }
 
     private function validateRoute(Project $project, Server $server, ?Site $site = null): void

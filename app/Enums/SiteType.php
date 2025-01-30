@@ -14,20 +14,5 @@ final class SiteType
 
     const PHPMYADMIN = 'phpmyadmin';
 
-    public static function hasWebDirectory(): array
-    {
-        return [
-            self::PHP,
-            self::PHP_BLANK,
-            self::LARAVEL,
-        ];
-    }
-
-    public static function hasSourceControl(): array
-    {
-        return [
-            self::PHP,
-            self::LARAVEL,
-        ];
-    }
+    const LOAD_BALANCER = 'load-balancer';
 }

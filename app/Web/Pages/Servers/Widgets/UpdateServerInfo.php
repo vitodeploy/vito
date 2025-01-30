@@ -27,6 +27,8 @@ class UpdateServerInfo extends Widget implements HasForms
 
     public string $ip;
 
+    public ?string $local_ip;
+
     public string $port;
 
     public function mount(Server $server): void
@@ -34,6 +36,7 @@ class UpdateServerInfo extends Widget implements HasForms
         $this->server = $server;
         $this->name = $server->name;
         $this->ip = $server->ip;
+        $this->local_ip = $server->local_ip;
         $this->port = $server->port;
     }
 
@@ -52,6 +55,10 @@ class UpdateServerInfo extends Widget implements HasForms
                         TextInput::make('ip')
                             ->label('IP Address')
                             ->rules(EditServer::rules($this->server)['ip']),
+                        TextInput::make('local_ip')
+                            ->label('Local Network IP Address')
+                            ->placeholder('10.0.0.1')
+                            ->rules(EditServer::rules($this->server)['local_ip']),
                         TextInput::make('port')
                             ->label('Port')
                             ->rules(EditServer::rules($this->server)['port']),

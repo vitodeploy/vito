@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteStatus;
 use App\Enums\SiteType;
 use App\Enums\SourceControl;
@@ -416,6 +417,15 @@ class SitesTest extends TestCase
                     'php_version' => '8.2',
                     'version' => '5.1.2',
                     'user' => 'example',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::LOAD_BALANCER,
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'user' => 'example',
+                    'method' => LoadBalancerMethod::ROUND_ROBIN,
                 ],
             ],
         ];

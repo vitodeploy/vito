@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Sites;
 
 use App\Actions\Site\CreateSite;
+use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -133,6 +134,17 @@ class Index extends \App\Web\Pages\Servers\Page
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['version']),
                     // WordPress
                     $this->wordpressFields(),
+                    // Load Balancer
+                    Select::make('method')
+                        ->label('Balancing Method')
+                        ->validationAttribute('Balancing Method')
+                        ->options(
+                            collect(LoadBalancerMethod::all())
+                                ->mapWithKeys(fn ($method) => [$method => $method])
+                        )
+                        ->visible(fn (Get $get) => $get('type') === SiteType::LOAD_BALANCER)
+                        ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['method'] ?? []),
+                    // User
                     TextInput::make('user')
                         ->label('User')
                         ->placeholder('vito')

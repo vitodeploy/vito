@@ -39,7 +39,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Jaiden Kling","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Ms. Brianne Bosco","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Mr. Reuben Schimmel","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Ms. Brandy Mraz V","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -47,7 +47,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer PfaEg1eZh66cd5V4v8bD3ak'
+      - 'Bearer g4kDa1vV6cdfPe3baZ8h5E6'
     controller: null
     method: null
     route: null
@@ -102,7 +102,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: eos
+        example: dignissimos
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -112,7 +112,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: et
+        example: voluptates
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -122,7 +122,7 @@ endpoints:
         name: url
         description: 'The URL if the provider is Gitlab and it is self-hosted'
         required: true
-        example: 'https://lueilwitz.com/nostrum-et-porro-atque-sint.html'
+        example: 'https://www.hamill.net/culpa-non-qui-suscipit-dolores-id-aliquam'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -132,7 +132,7 @@ endpoints:
         name: username
         description: 'The username if the provider is Bitbucket'
         required: true
-        example: consectetur
+        example: nisi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -142,7 +142,7 @@ endpoints:
         name: password
         description: 'The password if the provider is Bitbucket'
         required: true
-        example: 'PL.P?{06\ECi0'
+        example: W~19Z0
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -150,16 +150,16 @@ endpoints:
         custom: []
     cleanBodyParameters:
       provider: bitbucket
-      name: eos
-      token: et
-      url: 'https://lueilwitz.com/nostrum-et-porro-atque-sint.html'
-      username: consectetur
-      password: 'PL.P?{06\ECi0'
+      name: dignissimos
+      token: voluptates
+      url: 'https://www.hamill.net/culpa-non-qui-suscipit-dolores-id-aliquam'
+      username: nisi
+      password: W~19Z0
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Toby Parker","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Harmony Koss DVM","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -167,7 +167,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer V5Zf3a1ve6d6kP4cbgha8DE'
+      - 'Bearer fhEkg836V6cbd5ZPva4Dae1'
     controller: null
     method: null
     route: null
@@ -204,7 +204,7 @@ endpoints:
         name: sourceControl_id
         description: 'The ID of the sourceControl.'
         required: true
-        example: 3
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -212,7 +212,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      sourceControl_id: 3
+      sourceControl_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -221,7 +221,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Prof. Bartholome Graham IV","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Martin Welch","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -229,7 +229,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer k1b5hac6veZ36P8gDV4fadE'
+      - 'Bearer 458gPbv6deEfkcZ13ahaD6V'
     controller: null
     method: null
     route: null
@@ -266,7 +266,7 @@ endpoints:
         name: sourceControl_id
         description: 'The ID of the sourceControl.'
         required: true
-        example: 3
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -274,7 +274,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      sourceControl_id: 3
+      sourceControl_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -282,7 +282,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: quaerat
+        example: aut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -292,7 +292,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: consectetur
+        example: repudiandae
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -302,7 +302,7 @@ endpoints:
         name: url
         description: 'The URL if the provider is Gitlab and it is self-hosted'
         required: true
-        example: 'http://www.hudson.biz/rerum-voluptatem-debitis-accusamus'
+        example: 'http://howe.net/eaque-assumenda-voluptatem-quo-libero-eius.html'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -312,7 +312,7 @@ endpoints:
         name: username
         description: 'The username if the provider is Bitbucket'
         required: true
-        example: voluptatem
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -322,7 +322,7 @@ endpoints:
         name: password
         description: 'The password if the provider is Bitbucket'
         required: true
-        example: '\p/el>)3#~E?kI'
+        example: 'oX/H"pAIt7R2"'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -341,17 +341,17 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: quaerat
-      token: consectetur
-      url: 'http://www.hudson.biz/rerum-voluptatem-debitis-accusamus'
-      username: voluptatem
-      password: '\p/el>)3#~E?kI'
+      name: aut
+      token: repudiandae
+      url: 'http://howe.net/eaque-assumenda-voluptatem-quo-libero-eius.html'
+      username: consequatur
+      password: 'oX/H"pAIt7R2"'
       global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Cicero Smitham","provider":"github","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Miss Dulce Nicolas III","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -359,7 +359,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6dkE6h8a5eg3f14acVvbPDZ'
+      - 'Bearer De1a4dEaV5v3Zgh8fPk66bc'
     controller: null
     method: null
     route: null
@@ -396,7 +396,7 @@ endpoints:
         name: sourceControl_id
         description: 'The ID of the sourceControl.'
         required: true
-        example: 3
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -404,7 +404,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      sourceControl_id: 3
+      sourceControl_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -413,7 +413,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -421,7 +421,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fb6Zk4EP318eva5hDdcV6ga'
+      - 'Bearer EZhd63eafgcV4a651PvkDb8'
     controller: null
     method: null
     route: null

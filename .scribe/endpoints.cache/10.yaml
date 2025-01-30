@@ -35,7 +35,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +43,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 8
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -52,7 +52,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer gaeE86fd1aZP53Vvc6Dhbk4'
+      - 'Bearer 3gE54ahkea166PfvbVD8Zdc'
     controller: null
     method: null
     route: null
@@ -97,7 +97,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -105,7 +105,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 8
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -113,7 +113,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: wordpress
+        example: php
         type: string
         enumValues:
           - php
@@ -121,6 +121,7 @@ endpoints:
           - phpmyadmin
           - laravel
           - wordpress
+          - load-balancer
         exampleWasSpecified: false
         nullable: false
         custom: []
@@ -128,7 +129,7 @@ endpoints:
         name: domain
         description: ''
         required: true
-        example: quo
+        example: rem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -139,7 +140,7 @@ endpoints:
         description: ''
         required: true
         example:
-          - dolorum
+          - libero
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -169,7 +170,7 @@ endpoints:
         name: source_control
         description: 'Source control ID, Required for Sites which support source control'
         required: true
-        example: explicabo
+        example: dolor
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -215,23 +216,48 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
+      user:
+        name: user
+        description: 'user, to isolate the website under a new user'
+        required: true
+        example: vitae
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      method:
+        name: method
+        description: 'Load balancer method, Required if the site type is Load balancer'
+        required: true
+        example: ip-hash
+        type: string
+        enumValues:
+          - round-robin
+          - least-connections
+          - ip-hash
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
     cleanBodyParameters:
-      type: wordpress
-      domain: quo
+      type: php
+      domain: rem
       aliases:
-        - dolorum
+        - libero
       php_version: '7.4'
       web_directory: public
-      source_control: explicabo
+      source_control: dolor
       repository: organization/repository
       branch: main
       composer: true
       version: 5.2.1
+      user: vitae
+      method: ip-hash
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -239,7 +265,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer efDd36cab6vZEaV4hkP851g'
+      - 'Bearer e1V4ga3Pavk6ch6b5E8fZdD'
     controller: null
     method: null
     route: null
@@ -276,7 +302,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -286,7 +312,7 @@ endpoints:
         name: id
         description: 'The ID of the site.'
         required: true
-        example: 8
+        example: 26
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -294,8 +320,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      id: 8
+      server_id: 8
+      id: 26
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -304,7 +330,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"progress":100,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -312,7 +338,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer bVkf841ava5gE6DPch36Zde'
+      - 'Bearer 8gZkEaehfd4v3bac615DVP6'
     controller: null
     method: null
     route: null
@@ -349,7 +375,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -359,7 +385,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 8
+        example: 26
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -367,8 +393,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      site_id: 8
+      server_id: 8
+      site_id: 26
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -377,7 +403,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -385,7 +411,107 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer gfVZbEP5Ddah6k13ae6c8v4'
+      - 'Bearer aadb1h6f6kD4V8vePZgcE35'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/load-balancer'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: load-balancer
+      description: 'Update load balancer.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 8
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 26
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 8
+      site_id: 26
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      method:
+        name: method
+        description: 'Load balancer method, Required if the site type is Load balancer'
+        required: true
+        example: least-connections
+        type: string
+        enumValues:
+          - round-robin
+          - least-connections
+          - ip-hash
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      servers:
+        name: servers
+        description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)'
+        required: true
+        example:
+          - deleniti
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      method: least-connections
+      servers:
+        - deleniti
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 5E6hZa64bka1cV3Pdvf8Deg'
     controller: null
     method: null
     route: null
