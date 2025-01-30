@@ -6,6 +6,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
 use App\Enums\ServerType;
+use App\Exceptions\SSHConnectionError;
 use App\Facades\Notifier;
 use App\Models\Project;
 use App\Models\Server;
@@ -15,7 +16,6 @@ use App\Notifications\ServerInstallationSucceed;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -81,34 +81,34 @@ class CreateServer
 
     private function install(Server $server): void
     {
-        $bus = Bus::chain([
-            function () use ($server) {
-                if (! $server->provider()->isRunning()) {
-                    sleep(2);
+        dispatch(function () use ($server) {
+            $maxWait = 180;
+            while ($maxWait > 0) {
+                sleep(10);
+                $maxWait -= 10;
+                try {
+                    $server->ssh()->connect();
+                    break;
+                } catch (SSHConnectionError) {
+                    // ignore
                 }
-                $server->type()->install();
-                $server->update([
-                    'status' => ServerStatus::READY,
-                ]);
-                Notifier::send($server, new ServerInstallationSucceed($server));
-            },
-        ])->catch(function (Throwable $e) use ($server) {
+            }
+            $server->type()->install();
             $server->update([
-                'status' => ServerStatus::INSTALLATION_FAILED,
+                'status' => ServerStatus::READY,
             ]);
-            Notifier::send($server, new ServerInstallationFailed($server));
-            Log::error('server-installation-error', [
-                'error' => (string) $e,
-            ]);
-        });
-
-        if ($server->provider != ServerProvider::CUSTOM) {
-            $server->progress_step = 'waiting-for-provider';
-            $server->save();
-            $bus->delay(now()->addMinutes(3));
-        }
-
-        $bus->onConnection('ssh')->dispatch();
+            Notifier::send($server, new ServerInstallationSucceed($server));
+        })
+            ->catch(function (Throwable $e) use ($server) {
+                $server->update([
+                    'status' => ServerStatus::INSTALLATION_FAILED,
+                ]);
+                Notifier::send($server, new ServerInstallationFailed($server));
+                Log::error('server-installation-error', [
+                    'error' => (string) $e,
+                ]);
+            })
+            ->onConnection('ssh');
     }
 
     public static function rules(Project $project, array $input): array
