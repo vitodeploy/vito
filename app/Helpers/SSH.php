@@ -60,7 +60,7 @@ class SSH
     }
 
     /**
-     * @throws Throwable
+     * @throws SSHConnectionError
      */
     public function connect(bool $sftp = false): void
     {
