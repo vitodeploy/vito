@@ -35,7 +35,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +43,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 8
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -52,7 +52,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"name":"clockman","status":"ready","created_at":null,"updated_at":null},{"id":null,"server_id":null,"name":"wvonrueden","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":null,"name":"amalia38","status":"ready","created_at":null,"updated_at":null},{"id":null,"server_id":null,"name":"troy.rippin","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer efEV4g86bd5PZac6vak3Dh1'
+      - 'Bearer Z641ebPacDV6f38kEgdah5v'
     controller: null
     method: null
     route: null
@@ -97,7 +97,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -105,7 +105,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 8
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -113,19 +113,19 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: nesciunt
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: nesciunt
+      name: et
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"name":"johanna76","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"name":"harvey.haskell","status":"ready","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -133,7 +133,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3E6VD14dvaekbaZfh6Pg8c5'
+      - 'Bearer d4gbv56caV3aZ8D1h6kfEPe'
     controller: null
     method: null
     route: null
@@ -170,7 +170,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -180,7 +180,7 @@ endpoints:
         name: id
         description: 'The ID of the database.'
         required: true
-        example: 6
+        example: 19
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -188,8 +188,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      id: 6
+      server_id: 8
+      id: 19
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -198,7 +198,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"name":"chloe.huel","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"name":"ruthie.koepp","status":"ready","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -206,7 +206,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fb5hVc38e1aDP6ZvkgEda46'
+      - 'Bearer P68VgDcaEZvk63f4b5aed1h'
     controller: null
     method: null
     route: null
@@ -243,7 +243,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -253,7 +253,7 @@ endpoints:
         name: database_id
         description: 'The ID of the database.'
         required: true
-        example: 6
+        example: 15
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -261,8 +261,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      database_id: 6
+      server_id: 8
+      database_id: 15
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -271,7 +271,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -279,7 +279,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer cPVbhaZkfg5aEv46D183ed6'
+      - 'Bearer DkPc6d1heEv5a8fb4V63agZ'
     controller: null
     method: null
     route: null

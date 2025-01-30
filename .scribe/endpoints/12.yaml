@@ -39,7 +39,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":3,"project_id":null,"global":true,"name":"et","provider":"local","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"},{"id":4,"project_id":null,"global":true,"name":"sed","provider":"local","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"dolorem","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"},{"id":6,"project_id":null,"global":true,"name":"itaque","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -47,7 +47,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1dbV3vkh6EPD5g48cafeZ6a'
+      - 'Bearer D16Vg58E6Pfkh3Zveab4dca'
     controller: null
     method: null
     route: null
@@ -89,7 +89,7 @@ endpoints:
         name: provider
         description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
         required: true
-        example: quod
+        example: alias
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -99,7 +99,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: commodi
+        example: explicabo
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -109,7 +109,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: ipsum
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -119,7 +119,7 @@ endpoints:
         name: key
         description: 'The key if provider requires key'
         required: true
-        example: ratione
+        example: libero
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -129,23 +129,23 @@ endpoints:
         name: secret
         description: 'The secret if provider requires key'
         required: true
-        example: iste
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: quod
-      name: commodi
-      token: ipsum
-      key: ratione
-      secret: iste
+      provider: alias
+      name: explicabo
+      token: ut
+      key: libero
+      secret: consequatur
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"est","provider":"dropbox","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"quos","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -153,7 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer abehv36kP4D658VafgdZE1c'
+      - 'Bearer DaZ6d6Eck1bhVe3g4aP85vf'
     controller: null
     method: null
     route: null
@@ -190,7 +190,7 @@ endpoints:
         name: storageProvider_id
         description: 'The ID of the storageProvider.'
         required: true
-        example: 1
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -198,7 +198,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 1
+      storageProvider_id: 3
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -207,7 +207,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"officia","provider":"ftp","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"id","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -215,7 +215,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer bda64P5c1gEDe8V3Z6vhkaf'
+      - 'Bearer 1dekD4gva56bc683VPEhZfa'
     controller: null
     method: null
     route: null
@@ -252,7 +252,7 @@ endpoints:
         name: storageProvider_id
         description: 'The ID of the storageProvider.'
         required: true
-        example: 1
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -260,7 +260,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 1
+      storageProvider_id: 3
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -268,7 +268,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: iusto
+        example: sequi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -278,7 +278,7 @@ endpoints:
         name: global
         description: 'Accessible in all projects'
         required: true
-        example: true
+        example: false
         type: string
         enumValues:
           - true
@@ -287,13 +287,13 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: iusto
-      global: true
+      name: sequi
+      global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"rerum","provider":"ftp","created_at":"2024-11-01T15:40:48.000000Z","updated_at":"2024-11-01T15:40:48.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"velit","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -301,7 +301,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aEP35hVakDdf814eZvg66cb'
+      - 'Bearer V65g18Pca4v3hDEkbZfe6da'
     controller: null
     method: null
     route: null
@@ -338,7 +338,7 @@ endpoints:
         name: storageProvider_id
         description: 'The ID of the storageProvider.'
         required: true
-        example: 1
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -346,7 +346,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 1
+      storageProvider_id: 3
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -355,7 +355,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -363,7 +363,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Dah3PgE5d64fcbe8a16VkvZ'
+      - 'Bearer 1v6a6efgch3DbZ4aVE5d8kP'
     controller: null
     method: null
     route: null

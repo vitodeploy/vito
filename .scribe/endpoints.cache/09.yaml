@@ -35,7 +35,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +43,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 8
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer h6bDec51ak84ZVafgv3PE6d'
+      - 'Bearer cdhb5VevgkZ6DafP6184a3E'
     controller: null
     method: null
     route: null
@@ -97,7 +97,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -107,7 +107,7 @@ endpoints:
         name: id
         description: 'The ID of the service.'
         required: true
-        example: 27
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -115,8 +115,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      id: 27
+      server_id: 8
+      id: 53
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -133,7 +133,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer da4V3kfgZ6a86PchevED5b1'
+      - 'Bearer 3vDaE6Pc51Zg8kbheadVf64'
     controller: null
     method: null
     route: null
@@ -170,7 +170,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -180,7 +180,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 27
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -188,8 +188,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      service_id: 27
+      server_id: 8
+      service_id: 53
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -198,7 +198,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -206,7 +206,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 86fdV5D6gv1E3ekaPZac4hb'
+      - 'Bearer a6e6Db5VcP314EgZdka8vhf'
     controller: null
     method: null
     route: null
@@ -243,7 +243,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -253,7 +253,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 27
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -261,8 +261,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      service_id: 27
+      server_id: 8
+      service_id: 53
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -271,7 +271,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -279,7 +279,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer kPZ563E1Vfgh4cbDad8vae6'
+      - 'Bearer kefg56PEc4a18aDdvVZb3h6'
     controller: null
     method: null
     route: null
@@ -316,7 +316,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -326,7 +326,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 27
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -334,8 +334,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      service_id: 27
+      server_id: 8
+      service_id: 53
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -344,7 +344,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -352,7 +352,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fd14PaDb58gchv3ZVeaEk66'
+      - 'Bearer edhaE164avZ6gbVDPf3k8c5'
     controller: null
     method: null
     route: null
@@ -389,7 +389,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -399,7 +399,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 27
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -407,8 +407,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      service_id: 27
+      server_id: 8
+      service_id: 53
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -417,7 +417,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -425,7 +425,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Dv1aVe6hZfkagdE356b4cP8'
+      - 'Bearer D4c1hbfV6Pad68v3gEkaeZ5'
     controller: null
     method: null
     route: null
@@ -462,7 +462,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -472,7 +472,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 27
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -480,8 +480,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      service_id: 27
+      server_id: 8
+      service_id: 53
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -490,7 +490,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -498,7 +498,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6bdDc4Eah3ZV18kf6Pveag5'
+      - 'Bearer be41fvh6a8d5PkDVEgZ36ca'
     controller: null
     method: null
     route: null
@@ -535,7 +535,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -545,7 +545,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 27
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -553,8 +553,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      service_id: 27
+      server_id: 8
+      service_id: 53
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -563,7 +563,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -571,7 +571,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 36kf84v6bVhE5gdPDeZ1caa'
+      - 'Bearer dcb68hg634P1DaZvef5VakE'
     controller: null
     method: null
     route: null

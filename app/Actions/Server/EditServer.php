@@ -24,6 +24,9 @@ class EditServer
             }
             $server->ip = $input['ip'];
         }
+        if (isset($input['local_ip'])) {
+            $server->local_ip = $input['local_ip'];
+        }
         if (isset($input['port'])) {
             if ($server->port !== $input['port']) {
                 $checkConnection = true;
@@ -50,6 +53,10 @@ class EditServer
             'ip' => [
                 'string',
                 new RestrictedIPAddressesRule,
+                Rule::unique('servers')->where('project_id', $server->project_id)->ignore($server->id),
+            ],
+            'local_ip' => [
+                'string',
                 Rule::unique('servers')->where('project_id', $server->project_id)->ignore($server->id),
             ],
             'port' => [

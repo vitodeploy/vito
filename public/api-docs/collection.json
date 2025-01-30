@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "API Documentation",
-        "_postman_id": "a41cda01-38ef-4ec3-8538-037284060387",
+        "_postman_id": "c9ba8a9b-023e-481f-a881-1f6cbf138017",
         "description": "VitoDeploy's API documentation.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -37,7 +37,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -83,7 +83,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -101,7 +101,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"command\":\"qui\",\"user\":\"root\",\"frequency\":\"* * * * *\"}"
+                            "raw": "{\"command\":\"itaque\",\"user\":\"root\",\"frequency\":\"* * * * *\"}"
                         },
                         "description": "Create a new cron job."
                     },
@@ -132,13 +132,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "cronJob_id",
                                     "key": "cronJob_id",
-                                    "value": "5",
+                                    "value": "18",
                                     "description": "The ID of the cronJob."
                                 }
                             ]
@@ -184,13 +184,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "cronJob_id",
                                     "key": "cronJob_id",
-                                    "value": "5",
+                                    "value": "10",
                                     "description": "The ID of the cronJob."
                                 }
                             ]
@@ -213,7 +213,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -242,7 +242,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -265,7 +265,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"username\":\"nyasia68\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"username\":\"madyson20\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"username\":\"xgaylord\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"username\":\"una37\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -288,7 +288,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -306,7 +306,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"username\":\"dignissimos\",\"password\":\"OK+XEG2)\",\"host\":\"%\"}"
+                            "raw": "{\"username\":\"consequuntur\",\"password\":\"fI\\\/i2.O4u&dla?eXvR2\",\"host\":\"%\"}"
                         },
                         "description": "Create a new database user."
                     },
@@ -314,7 +314,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"amya.nitzsche\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"kari.farrell\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -337,13 +337,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "4",
+                                    "value": "18",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -366,7 +366,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"bergstrom.ericka\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"caterina.mosciski\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -389,7 +389,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
@@ -413,7 +413,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"databases\":\"accusantium\"}"
+                            "raw": "{\"databases\":\"non\"}"
                         },
                         "description": "Link to databases"
                     },
@@ -421,7 +421,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"fmurray\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"kurtis05\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -444,13 +444,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "4",
+                                    "value": "6",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -473,7 +473,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -502,7 +502,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -525,7 +525,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"name\":\"clockman\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"name\":\"wvonrueden\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"name\":\"amalia38\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"name\":\"troy.rippin\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -548,7 +548,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -566,7 +566,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"nesciunt\"}"
+                            "raw": "{\"name\":\"et\"}"
                         },
                         "description": "Create a new database."
                     },
@@ -574,7 +574,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"johanna76\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"harvey.haskell\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -597,13 +597,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "6",
+                                    "value": "19",
                                     "description": "The ID of the database."
                                 }
                             ]
@@ -626,7 +626,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"chloe.huel\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"ruthie.koepp\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -649,13 +649,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "database_id",
                                     "key": "database_id",
-                                    "value": "6",
+                                    "value": "15",
                                     "description": "The ID of the database."
                                 }
                             ]
@@ -678,7 +678,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -707,7 +707,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -730,7 +730,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":18074,\"source\":\"189.27.156.82\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":41088,\"source\":\"86.177.121.87\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":38781,\"source\":\"79.116.255.150\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":32141,\"source\":\"52.174.114.251\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -753,7 +753,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -771,7 +771,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"type\":\"allow\",\"protocol\":\"udp\",\"port\":\"voluptates\",\"source\":\"saepe\",\"mask\":\"0\"}"
+                            "raw": "{\"type\":\"deny\",\"protocol\":\"udp\",\"port\":\"et\",\"source\":\"voluptates\",\"mask\":\"0\"}"
                         },
                         "description": "Create a new firewall rule."
                     },
@@ -779,7 +779,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":61992,\"source\":\"47.222.76.48\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":47148,\"source\":\"119.182.8.45\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -802,13 +802,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "firewallRule_id",
                                     "key": "firewallRule_id",
-                                    "value": "7",
+                                    "value": "29",
                                     "description": "The ID of the firewallRule."
                                 }
                             ]
@@ -831,7 +831,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":43107,\"source\":\"135.73.216.16\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":2317,\"source\":\"44.161.134.114\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -854,13 +854,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "firewallRule_id",
                                     "key": "firewallRule_id",
-                                    "value": "7",
+                                    "value": "29",
                                     "description": "The ID of the firewallRule."
                                 }
                             ]
@@ -883,7 +883,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -945,7 +945,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"success\":true,\"version\":\"2.0.0\"}",
+                            "body": "{\"success\":true,\"version\":\"2.1.0\"}",
                             "name": ""
                         }
                     ]
@@ -983,7 +983,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":29,\"name\":\"Zachary Lueilwitz\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":30,\"name\":\"Mrs. Kiarra Heller IV\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":3,\"name\":\"Jeffry Dickinson\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"},{\"id\":4,\"name\":\"Miss Tianna Dietrich PhD\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1018,7 +1018,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":29,\"name\":\"Hershel Spinka\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Isidro Franecki\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1058,7 +1058,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":29,\"name\":\"Emery Kiehn\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Rhoda Parisian\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1093,7 +1093,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"ut\"}"
+                            "raw": "{\"name\":\"ullam\"}"
                         },
                         "description": "Update project."
                     },
@@ -1101,7 +1101,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":29,\"name\":\"Mable Prohaska\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Mr. Dashawn Jacobson Sr.\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1141,7 +1141,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1187,7 +1187,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"dolor\",\"provider\":\"digitalocean\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"enim\",\"provider\":\"digitalocean\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"laudantium\",\"provider\":\"vultr\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"},{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"aut\",\"provider\":\"aws\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1222,7 +1222,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"autem\",\"name\":\"enim\",\"token\":\"culpa\",\"key\":\"sit\",\"secret\":\"voluptates\"}"
+                            "raw": "{\"provider\":\"voluptatem\",\"name\":\"repellat\",\"token\":\"omnis\",\"key\":\"recusandae\",\"secret\":\"in\"}"
                         },
                         "description": ""
                     },
@@ -1230,7 +1230,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"eligendi\",\"provider\":\"aws\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"quia\",\"provider\":\"vultr\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1276,7 +1276,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"architecto\",\"provider\":\"digitalocean\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"ab\",\"provider\":\"hetzner\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1317,7 +1317,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"minus\",\"global\":false}"
+                            "raw": "{\"name\":\"est\",\"global\":true}"
                         },
                         "description": ""
                     },
@@ -1325,7 +1325,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"reiciendis\",\"provider\":\"hetzner\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":2,\"project_id\":null,\"global\":true,\"name\":\"nesciunt\",\"provider\":\"linode\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1371,7 +1371,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1417,7 +1417,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Dorthy Toy\",\"ssh_user\":\"vito\",\"ip\":\"172.132.95.155\",\"local_ip\":\"118.57.197.65\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Carrie Sporer\",\"ssh_user\":\"vito\",\"ip\":\"184.242.162.173\",\"local_ip\":\"135.244.50.22\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Amina DuBuque\",\"ssh_user\":\"vito\",\"ip\":\"163.77.69.73\",\"local_ip\":\"137.139.200.70\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Floy Cummerata\",\"ssh_user\":\"vito\",\"ip\":\"62.53.140.25\",\"local_ip\":\"34.59.35.195\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1452,7 +1452,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"et\",\"server_provider\":\"digitalocean\",\"region\":\"inventore\",\"plan\":\"atque\",\"ip\":\"quam\",\"port\":\"nemo\",\"name\":\"perspiciatis\",\"os\":\"similique\",\"type\":\"regular\",\"webserver\":\"none\",\"database\":\"none\",\"php\":\"8.1\"}"
+                            "raw": "{\"provider\":\"iste\",\"server_provider\":\"custom\",\"region\":\"libero\",\"plan\":\"ut\",\"ip\":\"molestias\",\"port\":\"laudantium\",\"name\":\"illum\",\"os\":\"autem\",\"webserver\":\"none\",\"database\":\"postgresql12\",\"php\":\"7.4\"}"
                         },
                         "description": "Create a new server."
                     },
@@ -1460,7 +1460,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Flo Beer PhD\",\"ssh_user\":\"vito\",\"ip\":\"168.238.14.230\",\"local_ip\":\"40.232.73.41\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Archibald Nolan\",\"ssh_user\":\"vito\",\"ip\":\"226.168.13.177\",\"local_ip\":\"143.14.43.182\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -1483,7 +1483,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -1506,7 +1506,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Stephany Ankunding\",\"ssh_user\":\"vito\",\"ip\":\"145.28.94.46\",\"local_ip\":\"69.133.44.100\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Tevin Sipes\",\"ssh_user\":\"vito\",\"ip\":\"61.41.183.152\",\"local_ip\":\"197.160.239.147\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -1529,7 +1529,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -1552,7 +1552,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1575,7 +1575,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -1598,7 +1598,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1621,7 +1621,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -1644,7 +1644,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1673,7 +1673,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -1719,13 +1719,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "27",
+                                    "value": "53",
                                     "description": "The ID of the service."
                                 }
                             ]
@@ -1771,13 +1771,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "service_id",
                                     "key": "service_id",
-                                    "value": "27",
+                                    "value": "53",
                                     "description": "The ID of the service."
                                 }
                             ]
@@ -1800,7 +1800,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1823,13 +1823,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "service_id",
                                     "key": "service_id",
-                                    "value": "27",
+                                    "value": "53",
                                     "description": "The ID of the service."
                                 }
                             ]
@@ -1852,7 +1852,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1875,13 +1875,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "service_id",
                                     "key": "service_id",
-                                    "value": "27",
+                                    "value": "53",
                                     "description": "The ID of the service."
                                 }
                             ]
@@ -1904,7 +1904,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1927,13 +1927,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "service_id",
                                     "key": "service_id",
-                                    "value": "27",
+                                    "value": "53",
                                     "description": "The ID of the service."
                                 }
                             ]
@@ -1956,7 +1956,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -1979,13 +1979,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "service_id",
                                     "key": "service_id",
-                                    "value": "27",
+                                    "value": "53",
                                     "description": "The ID of the service."
                                 }
                             ]
@@ -2008,7 +2008,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -2031,13 +2031,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "service_id",
                                     "key": "service_id",
-                                    "value": "27",
+                                    "value": "53",
                                     "description": "The ID of the service."
                                 }
                             ]
@@ -2060,7 +2060,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -2089,7 +2089,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -2112,7 +2112,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"user\":\"vito\",\"progress\":100,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"user\":\"vito\",\"progress\":100,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2135,7 +2135,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -2153,7 +2153,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"type\":\"wordpress\",\"domain\":\"quo\",\"aliases\":[\"dolorum\"],\"php_version\":\"7.4\",\"web_directory\":\"public\",\"source_control\":\"explicabo\",\"repository\":\"organization\\\/repository\",\"branch\":\"main\",\"composer\":true,\"version\":\"5.2.1\"}"
+                            "raw": "{\"type\":\"php\",\"domain\":\"rem\",\"aliases\":[\"libero\"],\"php_version\":\"7.4\",\"web_directory\":\"public\",\"source_control\":\"dolor\",\"repository\":\"organization\\\/repository\",\"branch\":\"main\",\"composer\":true,\"version\":\"5.2.1\",\"user\":\"vitae\",\"method\":\"ip-hash\"}"
                         },
                         "description": "Create a new site."
                     },
@@ -2161,7 +2161,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"user\":\"vito\",\"progress\":100,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -2184,13 +2184,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "8",
+                                    "value": "26",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2213,7 +2213,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"progress\":100,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":null,\"web_directory\":\"\\\/\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"port\":null,\"user\":\"vito\",\"progress\":100,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -2236,13 +2236,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "8",
+                                    "value": "26",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2265,7 +2265,62 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "load-balancer",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/load-balancer",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/load-balancer",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "8",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "site_id",
+                                    "key": "site_id",
+                                    "value": "26",
+                                    "description": "The ID of the site."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"method\":\"least-connections\",\"servers\":[\"deleniti\"]}"
+                        },
+                        "description": "Update load balancer."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -2311,7 +2366,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Jaiden Kling\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"Ms. Brianne Bosco\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Mr. Reuben Schimmel\",\"provider\":\"github\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"Ms. Brandy Mraz V\",\"provider\":\"github\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2346,7 +2401,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"bitbucket\",\"name\":\"eos\",\"token\":\"et\",\"url\":\"https:\\\/\\\/lueilwitz.com\\\/nostrum-et-porro-atque-sint.html\",\"username\":\"consectetur\",\"password\":\"PL.P?{06\\\\ECi0\"}"
+                            "raw": "{\"provider\":\"bitbucket\",\"name\":\"dignissimos\",\"token\":\"voluptates\",\"url\":\"https:\\\/\\\/www.hamill.net\\\/culpa-non-qui-suscipit-dolores-id-aliquam\",\"username\":\"nisi\",\"password\":\"W~19Z0\"}"
                         },
                         "description": ""
                     },
@@ -2354,7 +2409,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Toby Parker\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Harmony Koss DVM\",\"provider\":\"github\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2377,7 +2432,7 @@
                                 {
                                     "id": "sourceControl_id",
                                     "key": "sourceControl_id",
-                                    "value": "3",
+                                    "value": "1",
                                     "description": "The ID of the sourceControl."
                                 }
                             ]
@@ -2400,7 +2455,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Prof. Bartholome Graham IV\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Martin Welch\",\"provider\":\"github\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2423,7 +2478,7 @@
                                 {
                                     "id": "sourceControl_id",
                                     "key": "sourceControl_id",
-                                    "value": "3",
+                                    "value": "1",
                                     "description": "The ID of the sourceControl."
                                 }
                             ]
@@ -2441,7 +2496,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"quaerat\",\"token\":\"consectetur\",\"url\":\"http:\\\/\\\/www.hudson.biz\\\/rerum-voluptatem-debitis-accusamus\",\"username\":\"voluptatem\",\"password\":\"\\\\p\\\/el>)3#~E?kI\",\"global\":false}"
+                            "raw": "{\"name\":\"aut\",\"token\":\"repudiandae\",\"url\":\"http:\\\/\\\/howe.net\\\/eaque-assumenda-voluptatem-quo-libero-eius.html\",\"username\":\"consequatur\",\"password\":\"oX\\\/H\\\"pAIt7R2\\\"\",\"global\":false}"
                         },
                         "description": ""
                     },
@@ -2449,7 +2504,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Cicero Smitham\",\"provider\":\"github\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Miss Dulce Nicolas III\",\"provider\":\"github\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2472,7 +2527,7 @@
                                 {
                                     "id": "sourceControl_id",
                                     "key": "sourceControl_id",
-                                    "value": "3",
+                                    "value": "1",
                                     "description": "The ID of the sourceControl."
                                 }
                             ]
@@ -2495,7 +2550,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -2524,7 +2579,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -2547,7 +2602,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"user\":null,\"name\":\"Dr. Reanna Braun\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"user\":null,\"name\":\"Norene Fritsch\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"user\":null,\"name\":\"Godfrey Mills\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"user\":null,\"name\":\"Donato Streich\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2570,7 +2625,7 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 }
                             ]
@@ -2588,7 +2643,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"key_id\":\"vero\",\"name\":\"voluptates\",\"public_key\":\"dolor\"}"
+                            "raw": "{\"key_id\":\"numquam\",\"name\":\"alias\",\"public_key\":\"voluptate\"}"
                         },
                         "description": "Deploy ssh key to server."
                     },
@@ -2596,7 +2651,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"user\":null,\"name\":\"Sophia D'Amore\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"user\":null,\"name\":\"Mr. Stanton Bergnaum\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -2619,13 +2674,13 @@
                                 {
                                     "id": "server_id",
                                     "key": "server_id",
-                                    "value": "3",
+                                    "value": "8",
                                     "description": "The ID of the server."
                                 },
                                 {
                                     "id": "sshKey_id",
                                     "key": "sshKey_id",
-                                    "value": "4",
+                                    "value": "1",
                                     "description": "The ID of the sshKey."
                                 }
                             ]
@@ -2648,7 +2703,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]
@@ -2694,7 +2749,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"local\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"sed\",\"provider\":\"local\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"dolorem\",\"provider\":\"s3\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"itaque\",\"provider\":\"s3\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2729,7 +2784,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"quod\",\"name\":\"commodi\",\"token\":\"ipsum\",\"key\":\"ratione\",\"secret\":\"iste\"}"
+                            "raw": "{\"provider\":\"alias\",\"name\":\"explicabo\",\"token\":\"ut\",\"key\":\"libero\",\"secret\":\"consequatur\"}"
                         },
                         "description": ""
                     },
@@ -2737,7 +2792,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"est\",\"provider\":\"dropbox\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"quos\",\"provider\":\"s3\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2760,7 +2815,7 @@
                                 {
                                     "id": "storageProvider_id",
                                     "key": "storageProvider_id",
-                                    "value": "1",
+                                    "value": "3",
                                     "description": "The ID of the storageProvider."
                                 }
                             ]
@@ -2783,7 +2838,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"officia\",\"provider\":\"ftp\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"id\",\"provider\":\"s3\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2806,7 +2861,7 @@
                                 {
                                     "id": "storageProvider_id",
                                     "key": "storageProvider_id",
-                                    "value": "1",
+                                    "value": "3",
                                     "description": "The ID of the storageProvider."
                                 }
                             ]
@@ -2824,7 +2879,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"iusto\",\"global\":true}"
+                            "raw": "{\"name\":\"sequi\",\"global\":false}"
                         },
                         "description": ""
                     },
@@ -2832,7 +2887,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"rerum\",\"provider\":\"ftp\",\"created_at\":\"2024-11-01T15:40:48.000000Z\",\"updated_at\":\"2024-11-01T15:40:48.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"velit\",\"provider\":\"s3\",\"created_at\":\"2025-01-30T22:42:49.000000Z\",\"updated_at\":\"2025-01-30T22:42:49.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2855,7 +2910,7 @@
                                 {
                                     "id": "storageProvider_id",
                                     "key": "storageProvider_id",
-                                    "value": "1",
+                                    "value": "3",
                                     "description": "The ID of the storageProvider."
                                 }
                             ]
@@ -2878,7 +2933,7 @@
                         {
                             "header": [],
                             "code": 204,
-                            "body": "null",
+                            "body": null,
                             "name": ""
                         }
                     ]

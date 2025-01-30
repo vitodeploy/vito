@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -47,6 +48,7 @@ use Illuminate\Support\Str;
  * @property ?Ssl $activeSsl
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
+ * @property Collection<LoadBalancerServer> $loadBalancerServers
  *
  * @TODO: Add nodejs_version column
  */
@@ -331,5 +333,10 @@ class Site extends AbstractModel
         $webserver = $this->server->webserver()->handler();
 
         return $webserver;
+    }
+
+    public function loadBalancerServers(): HasMany
+    {
+        return $this->hasMany(LoadBalancerServer::class, 'load_balancer_id');
     }
 }

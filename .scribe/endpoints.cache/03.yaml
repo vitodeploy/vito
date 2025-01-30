@@ -35,7 +35,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +43,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 8
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -52,7 +52,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":18074,"source":"189.27.156.82","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":41088,"source":"86.177.121.87","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":38781,"source":"79.116.255.150","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":32141,"source":"52.174.114.251","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer vhkc4aPa6ZdeV8D3Ef156gb'
+      - 'Bearer h3P5gD8E4dkeZ6abac6vfV1'
     controller: null
     method: null
     route: null
@@ -97,7 +97,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -105,7 +105,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
+      server_id: 8
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -113,7 +113,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: allow
+        example: deny
         type: string
         enumValues:
           - allow
@@ -137,7 +137,7 @@ endpoints:
         name: port
         description: ''
         required: true
-        example: voluptates
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -147,7 +147,7 @@ endpoints:
         name: source
         description: ''
         required: true
-        example: saepe
+        example: voluptates
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -164,16 +164,16 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      type: allow
+      type: deny
       protocol: udp
-      port: voluptates
-      source: saepe
+      port: et
+      source: voluptates
       mask: '0'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":61992,"source":"47.222.76.48","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":47148,"source":"119.182.8.45","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -181,7 +181,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1cEb5P66VeDkf8aahg3Zdv4'
+      - 'Bearer 6a8DVv5k3gZfEe6hb1daPc4'
     controller: null
     method: null
     route: null
@@ -218,7 +218,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -228,7 +228,7 @@ endpoints:
         name: firewallRule_id
         description: 'The ID of the firewallRule.'
         required: true
-        example: 7
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -236,8 +236,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      firewallRule_id: 7
+      server_id: 8
+      firewallRule_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -246,7 +246,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":43107,"source":"135.73.216.16","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"type":"allow","protocol":"tcp","port":2317,"source":"44.161.134.114","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -254,7 +254,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6VaPhkD5vd1Z8e6E3cba4gf'
+      - 'Bearer P4bZdV1geED3kfh568aa6cv'
     controller: null
     method: null
     route: null
@@ -291,7 +291,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 3
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -301,7 +301,7 @@ endpoints:
         name: firewallRule_id
         description: 'The ID of the firewallRule.'
         required: true
-        example: 7
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -309,8 +309,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 3
-      firewallRule_id: 7
+      server_id: 8
+      firewallRule_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -319,7 +319,7 @@ endpoints:
     responses:
       -
         status: 204
-        content: 'null'
+        content: null
         headers: []
         description: ''
         custom: []
@@ -327,7 +327,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer v81d5Efch636aVgZebaPkD4'
+      - 'Bearer Dh3kcaafdg6E5ZvV46ePb81'
     controller: null
     method: null
     route: null

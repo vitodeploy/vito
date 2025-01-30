@@ -7,6 +7,7 @@ use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Enums\SiteFeature;
+use App\Enums\SiteType;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -57,6 +58,10 @@ class View extends Page
         if ($this->site->isReady()) {
             if (in_array(SiteFeature::DEPLOYMENT, $this->site->type()->supportedFeatures())) {
                 $widgets[] = [Widgets\DeploymentsList::class, ['site' => $this->site]];
+            }
+
+            if ($this->site->type === SiteType::LOAD_BALANCER) {
+                $widgets[] = [Widgets\LoadBalancerServers::class, ['site' => $this->site]];
             }
         }
 

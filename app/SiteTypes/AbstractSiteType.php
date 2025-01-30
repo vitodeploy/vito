@@ -34,7 +34,7 @@ abstract class AbstractSiteType implements SiteType
 
     public function editRules(array $input): array
     {
-        return [];
+        return $this->createRules($input);
     }
 
     protected function progress(int $percentage): void
