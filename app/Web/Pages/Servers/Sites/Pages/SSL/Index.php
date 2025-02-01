@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 
 class Index extends Page
@@ -44,6 +45,24 @@ class Index extends Page
                 ->color('gray')
                 ->url('https://vitodeploy.com/sites/ssl')
                 ->openUrlInNewTab(),
+            Action::make('force-ssl')
+                ->label('Force SSL')
+                ->tooltip(fn () => $this->site->force_ssl ? 'Disable force SSL' : 'Enable force SSL')
+                ->icon(fn () => $this->site->force_ssl ? 'icon-force-ssl-enabled' : 'icon-force-ssl-disabled')
+                ->requiresConfirmation()
+                ->modalSubmitActionLabel(fn () => $this->site->force_ssl ? 'Disable' : 'Enable')
+                ->action(function () {
+                    $this->site->update([
+                        'force_ssl' => ! $this->site->force_ssl,
+                    ]);
+                    $this->site->webserver()->updateVHost($this->site);
+                    Notification::make()
+                        ->success()
+                        ->title('SSL status has been updated.')
+                        ->send();
+                    $this->dispatch('$refresh');
+                })
+                ->color('gray'),
             CreateAction::make('create')
                 ->label('New Certificate')
                 ->icon('heroicon-o-lock-closed')

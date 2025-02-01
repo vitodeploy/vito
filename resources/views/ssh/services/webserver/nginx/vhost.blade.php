@@ -33,8 +33,8 @@ server {
     @endif
     @if ($site->activeSsl)
         listen 443 ssl;
-        ssl_certificate {{ $site->activeSsl->getCertificatePath() }};
-        ssl_certificate_key {{ $site->activeSsl->getPkPath() }};
+        ssl_certificate {{ $site->activeSsl->certificate_path }};
+        ssl_certificate_key {{ $site->activeSsl->pk_path }};
     @endif
 
     server_name {{ $site->domain }} {{ $site->getAliasesString() }};

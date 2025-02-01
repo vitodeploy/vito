@@ -75,6 +75,7 @@ class Site extends AbstractModel
         'port',
         'progress',
         'user',
+        'force_ssl',
     ];
 
     protected $casts = [
@@ -84,6 +85,7 @@ class Site extends AbstractModel
         'progress' => 'integer',
         'aliases' => 'array',
         'source_control_id' => 'integer',
+        'force_ssl' => 'boolean',
     ];
 
     public static array $statusColors = [
@@ -227,6 +229,7 @@ class Site extends AbstractModel
         return $this->hasOne(Ssl::class)
             ->where('expires_at', '>=', now())
             ->where('status', SslStatus::CREATED)
+            ->where('is_active', true)
             ->orderByDesc('id');
     }
 

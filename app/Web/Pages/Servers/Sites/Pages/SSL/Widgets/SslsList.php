@@ -2,11 +2,14 @@
 
 namespace App\Web\Pages\Servers\Sites\Pages\SSL\Widgets;
 
+use App\Actions\SSL\ActivateSSL;
 use App\Actions\SSL\DeleteSSL;
 use App\Models\Site;
 use App\Models\Ssl;
+use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
@@ -27,6 +30,9 @@ class SslsList extends Widget
     protected function getTableColumns(): array
     {
         return [
+            IconColumn::make('is_active')
+                ->color(fn (Ssl $record) => $record->is_active ? 'green' : 'gray')
+                ->icon(fn (Ssl $record) => $record->is_active ? 'heroicon-o-lock-closed' : 'heroicon-o-lock-open'),
             TextColumn::make('type')
                 ->searchable()
                 ->sortable(),
@@ -52,6 +58,25 @@ class SslsList extends Widget
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
             ->actions([
+                Action::make('activate-ssl')
+                    ->hiddenLabel()
+                    ->visible(fn (Ssl $record) => ! $record->is_active)
+                    ->tooltip('Activate SSL')
+                    ->icon('heroicon-o-lock-closed')
+                    ->authorize(fn (Ssl $record) => auth()->user()->can('update', [$record->site, $this->site->server]))
+                    ->requiresConfirmation()
+                    ->modalHeading('Activate SSL')
+                    ->modalSubmitActionLabel('Activate')
+                    ->action(function (Ssl $record) {
+                        run_action($this, function () use ($record) {
+                            app(ActivateSSL::class)->activate($record);
+
+                            Notification::make()
+                                ->success()
+                                ->title('SSL has been activated.')
+                                ->send();
+                        });
+                    }),
                 Action::make('logs')
                     ->hiddenLabel()
                     ->tooltip('Logs')
