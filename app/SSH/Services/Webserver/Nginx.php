@@ -169,16 +169,19 @@ class Nginx extends AbstractWebserver
         }
         $command = view('ssh.services.webserver.nginx.create-letsencrypt-ssl', [
             'email' => $ssl->email,
-            'domain' => $ssl->site->domain,
+            'name' => $ssl->id,
             'domains' => $domains,
         ]);
         if ($ssl->type == 'custom') {
+            $ssl->certificate_path = '/etc/ssl/'.$ssl->id.'/cert.pem';
+            $ssl->pk_path = '/etc/ssl/'.$ssl->id.'/privkey.pem';
+            $ssl->save();
             $command = view('ssh.services.webserver.nginx.create-custom-ssl', [
-                'path' => $ssl->getCertsDirectoryPath(),
+                'path' => dirname($ssl->certificate_path),
                 'certificate' => $ssl->certificate,
                 'pk' => $ssl->pk,
-                'certificatePath' => $ssl->getCertificatePath(),
-                'pkPath' => $ssl->getPkPath(),
+                'certificatePath' => $ssl->certificate_path,
+                'pkPath' => $ssl->pk_path,
             ]);
         }
         $result = $this->service->server->ssh()->setLog($ssl->log)->exec(
@@ -197,7 +200,7 @@ class Nginx extends AbstractWebserver
     public function removeSSL(Ssl $ssl): void
     {
         $this->service->server->ssh()->exec(
-            'sudo rm -rf '.$ssl->getCertsDirectoryPath().'*',
+            'sudo rm -rf '.dirname($ssl->certificate_path).'*',
             'remove-ssl',
             $ssl->site_id
         );

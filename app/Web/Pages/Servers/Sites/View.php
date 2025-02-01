@@ -82,7 +82,9 @@ class View extends Page
 
         if (in_array(SiteFeature::DEPLOYMENT, $this->site->type()->supportedFeatures())) {
             $actions[] = $this->deployAction();
-            $actionsGroup[] = $this->autoDeploymentAction();
+            if ($this->site->sourceControl) {
+                $actionsGroup[] = $this->autoDeploymentAction();
+            }
             $actionsGroup[] = $this->deploymentScriptAction();
         }
 

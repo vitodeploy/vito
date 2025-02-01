@@ -31,6 +31,7 @@ class CreateSSL
             'expires_at' => $input['type'] === SslType::LETSENCRYPT ? now()->addMonths(3) : $input['expires_at'],
             'status' => SslStatus::CREATING,
             'email' => $input['email'] ?? null,
+            'is_active' => ! $site->activeSsl,
         ]);
         $ssl->domains = [$site->domain];
         if (isset($input['aliases']) && $input['aliases']) {
