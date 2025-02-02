@@ -15,7 +15,10 @@ class ManageBackupFile
      */
     public function download(BackupFile $file): StreamedResponse
     {
-        $file->backup->server->download($file->path());
+        $file->backup->server->ssh()->download(
+            Storage::disk('tmp')->path(basename($file->path())),
+            $file->path()
+        );
 
         return Storage::disk('tmp')->download(basename($file->path()));
     }

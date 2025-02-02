@@ -269,10 +269,9 @@ class FilesList extends Widget
             ->after(function (array $data) {
                 run_action($this, function () use ($data) {
                     foreach ($data['file'] as $file) {
-                        $this->server->os()->write(
+                        $this->server->ssh($this->serverUser)->upload(
+                            Storage::disk('tmp')->path($file),
                             $this->path.'/'.$file,
-                            Storage::disk('tmp')->get($file),
-                            $this->serverUser
                         );
                     }
                     $this->refresh();
@@ -312,9 +311,12 @@ class FilesList extends Widget
             ->hiddenLabel()
             ->visible(fn (File $file) => $file->type === 'file')
             ->action(function (File $file) {
-                $file->server->download($file->getFilePath());
+                $file->server->ssh($file->server_user)->download(
+                    Storage::disk('tmp')->path($file->name),
+                    $file->getFilePath()
+                );
 
-                return Storage::disk('tmp')->download(basename($file->getFilePath()));
+                return Storage::disk('tmp')->download($file->name);
             });
     }
 
@@ -337,7 +339,10 @@ class FilesList extends Widget
                 return [
                     CodeEditorField::make('content')
                         ->formatStateUsing(function () use ($file) {
-                            $file->server->download($file->getFilePath());
+                            $file->server->ssh($file->server_user)->download(
+                                Storage::disk('tmp')->path($file->name),
+                                $file->getFilePath()
+                            );
 
                             return Storage::disk('tmp')->get(basename($file->getFilePath()));
                         }),
