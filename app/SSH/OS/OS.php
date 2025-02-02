@@ -263,10 +263,14 @@ class OS
     /**
      * @throws SSHError
      */
-    public function unzip(string $path): string
+    public function extract(string $path, ?string $destination = null, ?string $user = null): void
     {
-        return $this->server->ssh()->exec(
-            'unzip '.$path
+        $this->server->ssh($user)->exec(
+            view('ssh.os.extract', [
+                'path' => $path,
+                'destination' => $destination,
+            ]),
+            'extract'
         );
     }
 
@@ -304,14 +308,41 @@ class OS
     /**
      * @throws SSHError
      */
-    public function deleteFile(string $path): void
+    public function deleteFile(string $path, ?string $user = null): void
     {
-        $this->server->ssh()->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.delete-file', [
                 'path' => $path,
             ]),
             'delete-file'
         );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function ls(string $path, ?string $user = null): string
+    {
+        return $this->server->ssh($user)->exec('ls -la '.$path);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function write(string $path, string $content, ?string $user = null): void
+    {
+        $this->server->ssh($user)->write(
+            $path,
+            $content
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function mkdir(string $path, ?string $user = null): string
+    {
+        return $this->server->ssh($user)->exec('mkdir -p '.$path);
     }
 
     private function deleteTempFile(string $name): void

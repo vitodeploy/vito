@@ -1,1 +1,1 @@
-rm -f {{ $path }}
+rm -rf {{ $path }}
