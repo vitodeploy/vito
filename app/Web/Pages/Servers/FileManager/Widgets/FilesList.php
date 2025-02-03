@@ -215,7 +215,7 @@ class FilesList extends Widget
                 run_action($this, function () use ($data) {
                     $this->server->os()->write(
                         $this->path.'/'.$data['name'],
-                        $data['content'],
+                        str_replace("\r\n", "\n", $data['content']),
                         $this->serverUser
                     );
                     $this->refresh();
@@ -330,7 +330,7 @@ class FilesList extends Widget
             ->action(function (File $file, array $data) {
                 $file->server->os()->write(
                     $file->getFilePath(),
-                    $data['content'],
+                    str_replace("\r\n", "\n", $data['content']),
                     $file->server_user
                 );
                 $this->refresh();
