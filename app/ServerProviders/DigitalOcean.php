@@ -176,6 +176,10 @@ class DigitalOcean extends AbstractProvider
             $this->server->save();
         }
 
+        if (! $this->server->ip) {
+            return false;
+        }
+
         return $status->json()['droplet']['status'] == 'active';
     }
 

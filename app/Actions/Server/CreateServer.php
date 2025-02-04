@@ -86,6 +86,9 @@ class CreateServer
             while ($maxWait > 0) {
                 sleep(10);
                 $maxWait -= 10;
+                if (! $server->provider()->isRunning()) {
+                    continue;
+                }
                 try {
                     $server->ssh()->connect();
                     break;
