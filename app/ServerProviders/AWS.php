@@ -149,6 +149,10 @@ class AWS extends AbstractProvider
                 $this->server->save();
             }
 
+            if (! $this->server->ip) {
+                return false;
+            }
+
             if (isset($result['Reservations'][0]['Instances'][0]['State']) && isset($result['Reservations'][0]['Instances'][0]['State']['Name'])) {
                 $status = $result['Reservations'][0]['Instances'][0]['State']['Name'];
                 if ($status == 'running') {
