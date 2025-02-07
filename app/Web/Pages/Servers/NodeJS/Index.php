@@ -42,6 +42,7 @@ class Index extends Page
                 ->modalWidth(MaxWidth::Large)
                 ->form([
                     Select::make('version')
+                        ->native(false)
                         ->options(
                             collect(config('core.nodejs_versions'))
                                 ->filter(fn ($version) => ! in_array($version, array_merge($installedNodeVersions, [NodeJS::NONE])))

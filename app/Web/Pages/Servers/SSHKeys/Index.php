@@ -42,6 +42,7 @@ class Index extends Page
                 ->modalWidth(MaxWidth::Large)
                 ->form([
                     Select::make('type')
+                        ->native(false)
                         ->options([
                             'existing' => 'An existing key',
                             'new' => 'A new key',
@@ -49,6 +50,7 @@ class Index extends Page
                         ->reactive()
                         ->default('existing'),
                     Select::make('key_id')
+                        ->native(false)
                         ->label('Key')
                         ->options(auth()->user()->sshKeys()->pluck('name', 'id')->toArray())
                         ->visible(fn ($get) => $get('type') === 'existing')

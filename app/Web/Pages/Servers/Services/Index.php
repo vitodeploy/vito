@@ -47,11 +47,13 @@ class Index extends Page
                 ->modalSubmitActionLabel('Install')
                 ->form([
                     Select::make('name')
+                        ->native(false)
                         ->searchable()
                         ->options($availableServices)
                         ->reactive()
                         ->rules(fn ($get) => Install::rules($get())['name']),
                     Select::make('version')
+                        ->native(false)
                         ->options(function (callable $get) {
                             if (! $get('name')) {
                                 return [];

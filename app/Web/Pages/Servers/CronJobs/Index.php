@@ -55,9 +55,11 @@ class Index extends Page
                             'text' => 'How the command should look like?',
                         ])),
                     Select::make('user')
+                        ->native(false)
                         ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['user'])
                         ->options(array_combine($users, $users)),
                     Select::make('frequency')
+                        ->native(false)
                         ->options(config('core.cronjob_intervals'))
                         ->reactive()
                         ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['frequency']),

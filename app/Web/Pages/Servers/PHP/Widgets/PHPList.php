@@ -92,6 +92,7 @@ class PHPList extends Widget
                     ->default(fn (Service $service) => $service->version)
                     ->rules(InstallPHPExtension::rules($this->server)['version']),
                 Select::make('extension')
+                    ->native(false)
                     ->options(
                         collect(config('core.php_extensions'))
                             ->mapWithKeys(fn ($extension) => [$extension => $extension])
