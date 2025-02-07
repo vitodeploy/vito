@@ -22,10 +22,15 @@ class DatabaseBackupTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_backup(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_create_backup(string $db): void
     {
         SSH::fake();
         Http::fake();
+
+        $this->setupDatabase($db);
 
         $this->actingAs($this->user);
 
@@ -152,8 +157,13 @@ class DatabaseBackupTest extends TestCase
         ]);
     }
 
-    public function test_delete_backup(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_delete_backup(string $db): void
     {
+        $this->setupDatabase($db);
+
         $this->actingAs($this->user);
 
         $database = Database::factory()->create([
@@ -182,10 +192,15 @@ class DatabaseBackupTest extends TestCase
         ]);
     }
 
-    public function test_restore_backup(): void
+    /**
+     * @dataProvider data
+     */
+    public function test_restore_backup(string $db): void
     {
         Http::fake();
         SSH::fake();
+
+        $this->setupDatabase($db);
 
         $this->actingAs($this->user);
 
@@ -219,5 +234,25 @@ class DatabaseBackupTest extends TestCase
             'id' => $backupFile->id,
             'status' => BackupFileStatus::RESTORED,
         ]);
+    }
+
+    private function setupDatabase(string $database): void
+    {
+        $this->server->services()->where('type', 'database')->delete();
+
+        $this->server->services()->create([
+            'type' => 'database',
+            'name' => config('core.databases_name.'.$database),
+            'version' => config('core.databases_version.'.$database),
+        ]);
+    }
+
+    public static function data(): array
+    {
+        return [
+            [\App\Enums\Database::MYSQL80],
+            [\App\Enums\Database::MARIADB104],
+            [\App\Enums\Database::POSTGRESQL16],
+        ];
     }
 }
