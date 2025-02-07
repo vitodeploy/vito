@@ -74,10 +74,20 @@ class Index extends Page
                         ->default(ServerProvider::CUSTOM)
                         ->live()
                         ->reactive()
-                        ->afterStateUpdated(function (callable $set) {
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
                             $set('server_provider', null);
                             $set('region', null);
                             $set('plan', null);
+
+                            if ($state !== ServerProvider::CUSTOM) {
+                                $profiles = \App\Models\ServerProvider::getByProjectId(auth()->user()->current_project_id)
+                                    ->where('provider', $state)
+                                    ->pluck('profile', 'id');
+
+                                if ($profiles->count() === 1) {
+                                    $set('server_provider', $profiles->keys()->first());
+                                }
+                            }
                         })
                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['provider']),
                     AlertField::make('alert')
