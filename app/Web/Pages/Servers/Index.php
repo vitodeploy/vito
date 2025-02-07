@@ -248,6 +248,7 @@ class Index extends Page
                                         ->default(PHP::NONE)
                                         ->options(
                                             collect(config('core.php_versions'))
+                                                ->sortDesc()
                                                 ->mapWithKeys(fn ($value) => [
                                                     $value => $value === PHP::NONE ? ucwords(str_replace('_', ' ', $value)) : 'PHP '.ucwords(str_replace('_', ' ', $value)),
                                                 ])
