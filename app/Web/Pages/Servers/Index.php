@@ -74,7 +74,7 @@ class Index extends Page
                         ->default(ServerProvider::CUSTOM)
                         ->live()
                         ->reactive()
-                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        ->afterStateUpdated(function ($state, callable $set) {
                             $set('server_provider', null);
                             $set('region', null);
                             $set('plan', null);
@@ -199,6 +199,7 @@ class Index extends Page
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['ip']),
                             TextInput::make('port')
                                 ->label('SSH Port')
+                                ->default(22)
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['port']),
                         ])
                         ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
@@ -217,7 +218,11 @@ class Index extends Page
                                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['webserver'] ?? [])
                                         ->default(Webserver::NONE)
                                         ->options(
-                                            collect(config('core.webservers'))->mapWithKeys(fn ($value) => [$value => $value])
+                                            collect(config('core.webservers'))
+                                                ->mapWithKeys(fn ($value) => [
+                                                    $value => ucwords(str_replace('_', ' ', $value)),
+                                                ])
+                                                ->toArray(),
                                         ),
                                     Select::make('database')
                                         ->label('Database')
@@ -227,10 +232,14 @@ class Index extends Page
                                         ->default(Database::NONE)
                                         ->options(
                                             collect(config('core.databases_name'))
-                                                ->mapWithKeys(fn ($value, $key) => [
-                                                    $key => $value.' '.config('core.databases_version')[$key],
-                                                ])
+                                                ->mapWithKeys(
+                                                    fn ($value, $key) => [
+                                                        $key => ucwords(str_replace('_', ' ', $value)).' '.config('core.databases_version')[$key],
+                                                    ]
+                                                )
+                                                ->toArray(),
                                         ),
+
                                     Select::make('php')
                                         ->label('PHP')
                                         ->native(false)
@@ -239,7 +248,10 @@ class Index extends Page
                                         ->default(PHP::NONE)
                                         ->options(
                                             collect(config('core.php_versions'))
-                                                ->mapWithKeys(fn ($value) => [$value => $value])
+                                                ->mapWithKeys(fn ($value) => [
+                                                    $value => $value === PHP::NONE ? ucwords(str_replace('_', ' ', $value)) : 'PHP '.ucwords(str_replace('_', ' ', $value)),
+                                                ])
+                                                ->toArray(),
                                         ),
                                 ]),
                         ]),
