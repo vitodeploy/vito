@@ -176,7 +176,10 @@ class Index extends Page
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['os'])
                                 ->options(
                                     collect(config('core.operating_systems'))
-                                        ->mapWithKeys(fn ($value) => [$value => $value])
+                                        ->mapWithKeys(fn ($value) => [
+                                            $value => ucwords(str_replace('_', ' ', $value)),
+                                        ])
+                                        ->toArray(),
                                 ),
                         ]),
                     Grid::make()
