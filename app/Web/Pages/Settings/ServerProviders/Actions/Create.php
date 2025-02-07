@@ -23,6 +23,7 @@ class Create
                         ->mapWithKeys(fn ($provider) => [$provider => $provider])
                 )
                 ->live()
+                ->native(false)
                 ->reactive()
                 ->rules(fn (Get $get) => CreateServerProvider::rules($get())['provider']),
             TextInput::make('name')

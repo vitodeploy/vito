@@ -22,6 +22,7 @@ class Create
                         ->mapWithKeys(fn ($provider) => [$provider => $provider])
                 )
                 ->live()
+                ->native(false)
                 ->reactive()
                 ->rules(fn (Get $get) => ConnectSourceControl::rules($get())['provider']),
             TextInput::make('name')

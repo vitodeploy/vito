@@ -22,6 +22,7 @@ class Create
                 )
                 ->live()
                 ->reactive()
+                ->native(false)
                 ->rules(fn (Get $get) => AddChannel::rules($get())['provider']),
             TextInput::make('label')
                 ->rules(fn (Get $get) => AddChannel::rules($get())['label']),
