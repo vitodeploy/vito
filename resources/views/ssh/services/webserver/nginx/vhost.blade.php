@@ -49,7 +49,7 @@ server {
 
     @if ($site->type()->language() === 'php')
         @php
-            $phpSocket = 'unix:/var/run/php/php-fpm.sock';
+            $phpSocket = "unix:/var/run/php/php{$site->php_version}-fpm.sock";
             if ($site->isIsolated()) {
                 $phpSocket = "unix:/run/php/php{$site->php_version}-fpm-{$site->user}.sock";
             }
