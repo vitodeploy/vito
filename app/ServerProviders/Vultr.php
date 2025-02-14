@@ -171,6 +171,10 @@ class Vultr extends AbstractProvider
             $this->server->save();
         }
 
+        if (! $this->server->ip) {
+            return false;
+        }
+
         return $status->json()['instance']['status'] == 'active';
     }
 
