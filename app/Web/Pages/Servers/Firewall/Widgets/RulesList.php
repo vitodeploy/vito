@@ -79,6 +79,9 @@ class RulesList extends Widget
                     ->tooltip('Edit')
                     ->hiddenLabel()
                     ->modalWidth(MaxWidth::Large)
+                    ->modalHeading('Edit Firewall Rule')
+                    ->modalDescription('Edit the associated servers firewall rule.')
+                    ->modalSubmitActionLabel('Update')
                     ->authorize(fn (FirewallRule $record) => auth()->user()->can('update', $record))
                     ->form(fn ($record) => Index::getFirewallForm($record))
                     ->action(function (FirewallRule $record, array $data) {

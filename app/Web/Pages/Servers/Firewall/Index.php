@@ -106,6 +106,9 @@ class Index extends Page
                 ->label('Create a Rule')
                 ->icon('heroicon-o-plus')
                 ->modalWidth(MaxWidth::Large)
+                ->modalHeading('Create Firewall Rule')
+                ->modalDescription('Add a new rule to the firewall')
+                ->modalSubmitActionLabel('Create')
                 ->form(self::getFirewallForm())
                 ->action(function (array $data) {
                     run_action($this, function () use ($data) {
