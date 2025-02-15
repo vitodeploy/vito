@@ -15,6 +15,13 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     protected string $defaultCharset;
 
+    protected string $separator = "\t";
+
+    protected int $headerLines = 1;
+
+    protected bool $removeLastRow = false;
+
+
     protected function getScriptView(string $script): string
     {
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
@@ -322,12 +329,18 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $lines = explode("\n", trim($data));
 
         if (! $keepHeader) {
-            array_shift($lines);
+            for ($i = 0; $i < $this->headerLines; $i++) {
+                array_shift($lines);
+            }
+        }
+
+        if ($this->removeLastRow) {
+            array_pop($lines);
         }
 
         $rows = [];
         foreach ($lines as $line) {
-            $row = explode("\t", $line);
+            $row = explode($this->separator, $line);
             $row = array_map('trim', $row);
             $rows[] = $row;
         }
