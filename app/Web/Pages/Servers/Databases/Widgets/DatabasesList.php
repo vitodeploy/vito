@@ -36,7 +36,8 @@ class DatabasesList extends Widget
             TextColumn::make('status')
                 ->label('Status')
                 ->badge()
-                ->color(fn (Database $database) => Database::$statusColors[$database->status])
+                ->color(fn (Database $record) => $record->status->getColor())
+                ->formatStateUsing(fn (Database $record) => $record->status->getText())
                 ->sortable(),
         ];
     }
