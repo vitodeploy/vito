@@ -27,14 +27,16 @@ class DatabasesList extends Widget
         return [
             TextColumn::make('name')
                 ->searchable(),
+            TextColumn::make('collation')
+                ->label('Collation')
+                ->sortable(),
+            TextColumn::make('charset')
+                ->label('Charset / Encoding')
+                ->sortable(),
             TextColumn::make('status')
                 ->label('Status')
                 ->badge()
                 ->color(fn (Database $database) => Database::$statusColors[$database->status])
-                ->sortable(),
-            TextColumn::make('created_at')
-                ->label('Created At')
-                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
                 ->sortable(),
         ];
     }

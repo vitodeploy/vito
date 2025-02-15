@@ -21,4 +21,8 @@ interface Database
     public function runBackup(BackupFile $backupFile): void;
 
     public function restoreBackup(BackupFile $backupFile, string $database): void;
+
+    public function updateCharsets(): void;
+
+    public function syncDatabases(bool $createNew = false): void;
 }

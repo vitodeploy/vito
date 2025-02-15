@@ -1,4 +1,4 @@
-sudo service mysql stop
+sudo service mariadb stop
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get remove mariadb-server mariadb-backup -y
 

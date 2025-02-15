@@ -11,6 +11,8 @@ use Closure;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
+    protected array $systemDbs = [];
+
     protected function getScriptView(string $script): string
     {
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
@@ -218,5 +220,68 @@ abstract class AbstractDatabase extends AbstractService implements Database
             ]),
             'restore-database'
         );
+    }
+
+    public function updateCharsets(): void
+    {
+        // TODO: Implement updateCharsets() method.
+    }
+
+    public function syncDatabases(bool $createNew = false): void
+    {
+        $data = $this->service->server->ssh()->exec(
+            view($this->getScriptView('get-db-list')),
+            'get-db-list'
+        );
+
+        $databases = $this->tableToArray($data);
+
+        foreach ($databases as $database)
+        {
+            if (in_array($database[0], $this->systemDbs))
+            {
+                continue;
+            }
+
+            $db = $this->service->server->databases()
+                ->where('name', $database[0])
+                ->first();
+
+            if ($db === null) {
+                if ($createNew) {
+                    $this->service->server->databases()->create([
+                        'name' => $database[0],
+                        'collation' => $database[1],
+                        'charset' => $database[2]
+                    ]);
+                }
+                continue;
+            }
+
+            if ($db->collation !== $database[1] || $db->charset !== $database[2]) {
+                $db->update([
+                    'collation' => $database[1],
+                    'charset' => $database[2]
+                ]);
+            }
+        }
+    }
+
+    protected function tableToArray(string $data, bool $keepHeader = false): array
+    {
+        $lines = explode("\n", trim($data));
+
+        if (!$keepHeader) {
+            array_shift($lines);
+        }
+
+        $rows = [];
+        foreach ($lines as $line) {
+            $row = explode("\t", $line);
+            $row = array_map('trim', $row);
+            $rows[] = $row;
+        }
+
+        return $rows;
     }
 }
