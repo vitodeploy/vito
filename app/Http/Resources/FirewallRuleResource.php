@@ -13,6 +13,7 @@ class FirewallRuleResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'name' => $this->name,
             'server_id' => $this->server_id,
             'type' => $this->type,
             'protocol' => $this->protocol,

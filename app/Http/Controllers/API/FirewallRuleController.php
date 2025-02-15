@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Actions\FirewallRule\CreateRule;
-use App\Actions\FirewallRule\DeleteRule;
+use App\Actions\FirewallRule\ManageRule;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\FirewallRuleResource;
 use App\Models\FirewallRule;
@@ -21,6 +20,7 @@ use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Spatie\RouteAttributes\Attributes\Put;
 
 #[Prefix('api/projects/{project}/servers/{server}/firewall-rules')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
@@ -41,10 +41,11 @@ class FirewallRuleController extends Controller
 
     #[Post('/', name: 'api.projects.servers.firewall-rules.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create', description: 'Create a new firewall rule.')]
+    #[BodyParam(name: 'name', required: true)]
     #[BodyParam(name: 'type', required: true, enum: ['allow', 'deny'])]
     #[BodyParam(name: 'protocol', required: true, enum: ['tcp', 'udp'])]
     #[BodyParam(name: 'port', required: true)]
-    #[BodyParam(name: 'source', required: true)]
+    #[BodyParam(name: 'source', required: false)]
     #[BodyParam(name: 'mask', description: 'Mask for source IP.', example: '0')]
     #[ResponseFromApiResource(FirewallRuleResource::class, FirewallRule::class)]
     public function create(Request $request, Project $project, Server $server): FirewallRuleResource
@@ -53,9 +54,31 @@ class FirewallRuleController extends Controller
 
         $this->validateRoute($project, $server);
 
-        $this->validate($request, CreateRule::rules());
+        $this->validate($request, ManageRule::rules());
 
-        $firewallRule = app(CreateRule::class)->create($server, $request->all());
+        $firewallRule = app(ManageRule::class)->create($server, $request->all());
+
+        return new FirewallRuleResource($firewallRule);
+    }
+
+    #[Put('{firewallRule}', name: 'api.projects.servers.firewall-rules.edit', middleware: 'ability:write')]
+    #[Endpoint(title: 'edit', description: 'Update an existing firewall rule.')]
+    #[BodyParam(name: 'name', required: true)]
+    #[BodyParam(name: 'type', required: true, enum: ['allow', 'deny'])]
+    #[BodyParam(name: 'protocol', required: true, enum: ['tcp', 'udp'])]
+    #[BodyParam(name: 'port', required: true)]
+    #[BodyParam(name: 'source', required: false)]
+    #[BodyParam(name: 'mask', description: 'Mask for source IP.', example: '0')]
+    #[ResponseFromApiResource(FirewallRuleResource::class, FirewallRule::class)]
+    public function edit(Request $request, Project $project, Server $server, FirewallRule $firewallRule): FirewallRuleResource
+    {
+        $this->authorize('update', [FirewallRule::class, $firewallRule]);
+
+        $this->validateRoute($project, $server);
+
+        $this->validate($request, ManageRule::rules());
+
+        $firewallRule = app(ManageRule::class)->update($firewallRule, $request->all());
 
         return new FirewallRuleResource($firewallRule);
     }
@@ -81,7 +104,7 @@ class FirewallRuleController extends Controller
 
         $this->validateRoute($project, $server, $firewallRule);
 
-        app(DeleteRule::class)->delete($server, $firewallRule);
+        app(ManageRule::class)->delete($firewallRule);
 
         return response()->noContent();
     }

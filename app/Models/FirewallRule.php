@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use App\Enums\FirewallRuleStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $server_id
+ * @property string $name
  * @property string $type
  * @property string $protocol
  * @property int $port
  * @property string $source
  * @property ?string $mask
  * @property string $note
- * @property string $status
+ * @property FirewallRuleStatus $status
  * @property Server $server
  */
 class FirewallRule extends AbstractModel
@@ -21,6 +23,7 @@ class FirewallRule extends AbstractModel
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'server_id',
         'type',
         'protocol',
@@ -34,15 +37,11 @@ class FirewallRule extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'port' => 'integer',
+        'status' => FirewallRuleStatus::class,
     ];
 
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
-    }
-
-    public function getRealProtocol(): string
-    {
-        return $this->protocol === 'udp' ? 'udp' : 'tcp';
     }
 }

@@ -2,11 +2,31 @@
 
 namespace App\Enums;
 
-final class FirewallRuleStatus
+enum FirewallRuleStatus: string
 {
-    const CREATING = 'creating';
+    case CREATING = 'creating';
+    case UPDATING = 'updating';
+    case READY = 'ready';
+    case DELETING = 'deleting';
+    case FAILED = 'failed';
 
-    const READY = 'ready';
+    public function getText(): string
+    {
+        return match ($this) {
+            self::CREATING => 'Creating',
+            self::UPDATING => 'Updating',
+            self::READY => 'Active',
+            self::DELETING => 'Deleting',
+            self::FAILED => 'Failed',
+        };
+    }
 
-    const DELETING = 'deleting';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::CREATING, self::UPDATING, self::DELETING => 'primary',
+            self::READY => 'success',
+            self::FAILED => 'danger',
+        };
+    }
 }
