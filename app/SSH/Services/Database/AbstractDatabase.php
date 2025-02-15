@@ -21,7 +21,6 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     protected bool $removeLastRow = false;
 
-
     protected function getScriptView(string $script): string
     {
         return 'ssh.services.database.'.$this->service->name.'.'.$script;

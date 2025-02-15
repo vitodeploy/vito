@@ -10,7 +10,7 @@ class Postgresql extends AbstractDatabase
 
     protected int $headerLines = 2;
 
-    protected string $separator = "|";
+    protected string $separator = '|';
 
     protected bool $removeLastRow = true;
 }
