@@ -300,18 +300,18 @@ abstract class AbstractDatabase extends AbstractService implements Database
                 if ($createNew) {
                     $this->service->server->databases()->create([
                         'name' => $database[0],
-                        'collation' => $database[1],
-                        'charset' => $database[2],
+                        'collation' => $database[2],
+                        'charset' => $database[1],
                     ]);
                 }
 
                 continue;
             }
 
-            if ($db->collation !== $database[1] || $db->charset !== $database[2]) {
+            if ($db->collation !== $database[2] || $db->charset !== $database[1]) {
                 $db->update([
-                    'collation' => $database[1],
-                    'charset' => $database[2],
+                    'collation' => $database[2],
+                    'charset' => $database[1],
                 ]);
             }
         }

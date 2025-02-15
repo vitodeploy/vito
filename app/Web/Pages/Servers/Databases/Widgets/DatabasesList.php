@@ -27,11 +27,11 @@ class DatabasesList extends Widget
         return [
             TextColumn::make('name')
                 ->searchable(),
-            TextColumn::make('collation')
-                ->label('Collation')
-                ->sortable(),
             TextColumn::make('charset')
                 ->label('Charset / Encoding')
+                ->sortable(),
+            TextColumn::make('collation')
+                ->label('Collation')
                 ->sortable(),
             TextColumn::make('status')
                 ->label('Status')

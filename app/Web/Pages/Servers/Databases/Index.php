@@ -32,7 +32,7 @@ class Index extends Page implements HasSecondSubNav
     public static function getCharsetInput(Server $server): Select
     {
         return Select::make('charset')
-            ->label('Charset')
+            ->label('Charset / Encoding')
             ->native(false)
             ->live()
             ->default(function () use ($server) {
