@@ -13,6 +13,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
 {
     protected array $systemDbs = [];
 
+    protected string $defaultCharset;
+
     protected function getScriptView(string $script): string
     {
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
@@ -45,6 +47,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $status = $this->service->server->systemd()->status($this->service->unit);
         $this->service->validateInstall($status);
         $this->service->server->os()->cleanup();
+
+        $this->updateCharsets();
+        $this->syncDatabases();
     }
 
     public function deletionRules(): array
@@ -85,11 +90,13 @@ abstract class AbstractDatabase extends AbstractService implements Database
     /**
      * @throws SSHError
      */
-    public function create(string $name): void
+    public function create(string $name, string $charset, string $collation): void
     {
         $this->service->server->ssh()->exec(
             view($this->getScriptView('create'), [
                 'name' => $name,
+                'charset' => $charset,
+                'collation' => $collation,
             ]),
             'create-database'
         );
@@ -224,10 +231,54 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     public function updateCharsets(): void
     {
-        // TODO: Implement updateCharsets() method.
+        $data = $this->service->server->ssh()->exec(
+            view($this->getScriptView('get-charsets')),
+            'get-database-charsets'
+        );
+
+        $charsets = $this->tableToArray($data);
+
+        $results = [];
+        $charsetCollations = [];
+
+        foreach ($charsets as $key => $charset) {
+            if (empty($charsetCollations[$charset[1]])) {
+                $charsetCollations[$charset[1]] = [];
+            }
+
+            $charsetCollations[$charset[1]][] = $charset[0];
+
+            if ($charset[3] === 'Yes') {
+                $results[$charset[1]] = [
+                    'default' => $charset[0],
+                    'list' => [],
+                ];
+            }
+
+            if ($key == count($charsets) - 1) {
+                $results[$charset[1]] = [
+                    'default' => null,
+                    'list' => [],
+                ];
+            }
+        }
+
+        foreach ($results as $charset => $data) {
+            $results[$charset]['list'] = $charsetCollations[$charset];
+        }
+
+        ksort($results);
+
+        $data = array_merge(
+            $this->service->type_data ?? [],
+            ['charsets' => $results, 'defaultCharset' => $this->defaultCharset]
+        );
+
+        $this->service->update(['type_data' => $data]);
+
     }
 
-    public function syncDatabases(bool $createNew = false): void
+    public function syncDatabases(bool $createNew = true): void
     {
         $data = $this->service->server->ssh()->exec(
             view($this->getScriptView('get-db-list')),
@@ -236,10 +287,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $databases = $this->tableToArray($data);
 
-        foreach ($databases as $database)
-        {
-            if (in_array($database[0], $this->systemDbs))
-            {
+        foreach ($databases as $database) {
+            if (in_array($database[0], $this->systemDbs)) {
                 continue;
             }
 
@@ -252,16 +301,17 @@ abstract class AbstractDatabase extends AbstractService implements Database
                     $this->service->server->databases()->create([
                         'name' => $database[0],
                         'collation' => $database[1],
-                        'charset' => $database[2]
+                        'charset' => $database[2],
                     ]);
                 }
+
                 continue;
             }
 
             if ($db->collation !== $database[1] || $db->charset !== $database[2]) {
                 $db->update([
                     'collation' => $database[1],
-                    'charset' => $database[2]
+                    'charset' => $database[2],
                 ]);
             }
         }
@@ -271,7 +321,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     {
         $lines = explode("\n", trim($data));
 
-        if (!$keepHeader) {
+        if (! $keepHeader) {
             array_shift($lines);
         }
 

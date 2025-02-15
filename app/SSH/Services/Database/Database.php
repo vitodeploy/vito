@@ -6,7 +6,7 @@ use App\Models\BackupFile;
 
 interface Database
 {
-    public function create(string $name): void;
+    public function create(string $name, string $charset, string $collation): void;
 
     public function delete(string $name): void;
 
@@ -24,5 +24,5 @@ interface Database
 
     public function updateCharsets(): void;
 
-    public function syncDatabases(bool $createNew = false): void;
+    public function syncDatabases(bool $createNew = true): void;
 }

@@ -27,6 +27,8 @@ class DatabaseTest extends TestCase
         ])
             ->callAction('create', [
                 'name' => 'database',
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
             ])
             ->assertSuccessful();
 
@@ -47,6 +49,8 @@ class DatabaseTest extends TestCase
         ])
             ->callAction('create', [
                 'name' => 'database',
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
                 'user' => true,
                 'username' => 'user',
                 'password' => 'password',

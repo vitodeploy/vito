@@ -19,11 +19,19 @@ return new class extends Migration
         });
 
         $servers = Server::where('status', 'ready')->get();
-        foreach ($servers as $server)
-        {
+
+        foreach ($servers as $server) {
+            $service = $server->defaultService('database');
+
+            if (! $service) {
+                continue;
+            }
+
             /** @var Database $db */
-            $db = $server->defaultService('database')->handler();
-            $db->syncDatabases();
+            $db = $service->handler();
+
+            $db->syncDatabases(false);
+            $db->updateCharsets();
         }
     }
 
