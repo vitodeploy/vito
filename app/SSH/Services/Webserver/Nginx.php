@@ -199,11 +199,13 @@ class Nginx extends AbstractWebserver
      */
     public function removeSSL(Ssl $ssl): void
     {
-        $this->service->server->ssh()->exec(
-            'sudo rm -rf '.dirname($ssl->certificate_path).'*',
-            'remove-ssl',
-            $ssl->site_id
-        );
+        if ($ssl->certificate_path) {
+            $this->service->server->ssh()->exec(
+                'sudo rm -rf '.dirname($ssl->certificate_path),
+                'remove-ssl',
+                $ssl->site_id
+            );
+        }
 
         $this->updateVHost($ssl->site);
     }

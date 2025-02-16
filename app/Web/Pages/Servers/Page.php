@@ -15,6 +15,7 @@ use App\Web\Components\Page as BasePage;
 use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
 use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
+use App\Web\Pages\Servers\FileManager\Index as FileManagerIndex;
 use App\Web\Pages\Servers\Firewall\Index as FirewallIndex;
 use App\Web\Pages\Servers\Logs\Index as LogsIndex;
 use App\Web\Pages\Servers\Metrics\Index as MetricsIndex;
@@ -57,6 +58,13 @@ abstract class Page extends BasePage
                 ->icon('heroicon-o-circle-stack')
                 ->isActiveWhen(fn () => request()->routeIs(DatabasesIndex::getRouteName().'*'))
                 ->url(DatabasesIndex::getUrl(parameters: ['server' => $this->server]));
+        }
+
+        if (auth()->user()->can('update', $this->server)) {
+            $items[] = NavigationItem::make(FileManagerIndex::getNavigationLabel())
+                ->icon('heroicon-o-folder')
+                ->isActiveWhen(fn () => request()->routeIs(FileManagerIndex::getRouteName().'*'))
+                ->url(FileManagerIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
