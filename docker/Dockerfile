@@ -10,7 +10,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 # requirements
 RUN apt-get install -y software-properties-common curl zip unzip gcc \
     cron gnupg gosu curl ca-certificates zip unzip supervisor libcap2-bin libpng-dev \
-    python2 dnsutils librsvg2-bin fswatch wget openssh-client
+    dnsutils librsvg2-bin fswatch wget openssh-client
 
 # nginx
 RUN apt-get install -y nginx
