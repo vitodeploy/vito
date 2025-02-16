@@ -62,8 +62,7 @@ class RulesList extends Widget
             TextColumn::make('status')
                 ->label('Status')
                 ->badge()
-                ->color(fn (FirewallRule $record) => $record->getStatusColor())
-                ->formatStateUsing(fn (FirewallRule $record) => $record->getStatusText()),
+                ->color(fn (FirewallRule $record) => $record->getStatusColor()),
         ];
     }
 

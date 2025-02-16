@@ -39,23 +39,12 @@ class FirewallRule extends AbstractModel
         'port' => 'integer',
     ];
 
-    public function getStatusText(): string
-    {
-        return match ($this->status) {
-            FirewallRuleStatus::CREATING => 'Creating',
-            FirewallRuleStatus::UPDATING => 'Updating',
-            FirewallRuleStatus::READY => 'Active',
-            FirewallRuleStatus::DELETING => 'Deleting',
-            FirewallRuleStatus::FAILED => 'Failed',
-        };
-    }
-
     public function getStatusColor(): string
     {
         return match ($this->status) {
             FirewallRuleStatus::CREATING,
             FirewallRuleStatus::UPDATING,
-            FirewallRuleStatus::DELETING => 'primary',
+            FirewallRuleStatus::DELETING => 'warning',
             FirewallRuleStatus::READY => 'success',
             FirewallRuleStatus::FAILED => 'danger',
         };
