@@ -25,10 +25,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push to the latest tag
-        run: |
-          docker buildx build . \
-            -f docker/Dockerfile \
-            -t vitodeploy/vito:latest \
-            --platform linux/amd64,linux/arm64 \
-            --push
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: false
+          tags: vitodeploy/vito:latest
