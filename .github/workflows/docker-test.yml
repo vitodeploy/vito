@@ -23,10 +23,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: false
-          tags: vitodeploy/vito:latest
+        run: |
+          docker buildx build . \
+            -f docker/Dockerfile \
+            -t vitodeploy/vito:latest \
+            --platform linux/amd64,linux/arm64
