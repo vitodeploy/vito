@@ -1,0 +1,30 @@
+name: Docker Test
+
+on:
+  pull_request:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build
+        run: |
+          docker buildx build . \
+            -f docker/Dockerfile \
+            -t vitodeploy/vito:2.x \
+            --platform linux/amd64,linux/arm64
