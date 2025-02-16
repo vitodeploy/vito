@@ -2,9 +2,9 @@ name: Docker Latest
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 2.x
+#  push:
+#    branches:
+#      - 2.x
 
 jobs:
   build-and-push:
@@ -31,5 +31,4 @@ jobs:
             -f docker/Dockerfile \
             -t vitodeploy/vito:latest \
             --platform linux/amd64,linux/arm64 \
-            --no-cache \
             --push
