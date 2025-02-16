@@ -16,7 +16,7 @@ RUN apt-get install -y nginx
 # php
 RUN apt-get update \
     && apt-get install -y cron gnupg gosu curl ca-certificates zip unzip supervisor libcap2-bin libpng-dev \
-        python2 dnsutils librsvg2-bin fswatch wget openssh-client \
+        dnsutils librsvg2-bin fswatch wget openssh-client \
     && add-apt-repository ppa:ondrej/php -y \
     && apt-get update \
     && apt-get install -y php8.2 php8.2-fpm php8.2-mbstring php8.2-mcrypt php8.2-gd php8.2-xml \
