@@ -1,11 +1,11 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # upgrade
-RUN apt-get clean && apt-get update && apt-get update && apt-get upgrade -y && apt-get autoremove -y
+RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 
 # requirements
 RUN apt-get install -y software-properties-common curl zip unzip gcc
