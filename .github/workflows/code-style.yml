@@ -6,7 +6,7 @@ on:
       - main
       - 1.x
       - 2.x
-#  pull_request:
+  pull_request:
 
 jobs:
   code-style:
