@@ -202,7 +202,8 @@ class ApplicationTest extends TestCase
             ->assertSuccessful()
             ->assertNotified('.env updated!');
 
-        SSH::assertFileUploaded('/home/vito/'.$this->site->domain.'/.env', 'APP_ENV="production"');
+        SSH::assertExecutedContains('tee /home/vito/vito.test/.env << \'VITO_SSH_EOF\'');
+        SSH::assertExecutedContains('APP_ENV="production"');
     }
 
     public function test_git_hook_deployment(): void
