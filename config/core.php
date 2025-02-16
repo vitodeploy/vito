@@ -486,14 +486,6 @@ return [
     ],
 
     /*
-     * firewall
-     */
-    'firewall_protocols_port' => [
-        'tcp' => '',
-        'udp' => '',
-    ],
-
-    /*
      * Disable these IPs for servers
      */
     'restricted_ip_addresses' => array_merge(

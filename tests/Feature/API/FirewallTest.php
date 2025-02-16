@@ -23,16 +23,47 @@ class FirewallTest extends TestCase
             'project' => $this->server->project,
             'server' => $this->server,
         ]), [
+            'name' => 'Test',
             'type' => 'allow',
             'protocol' => 'tcp',
             'port' => '1234',
             'source' => '0.0.0.0',
-            'mask' => '0',
+            'mask' => '1',
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
                 'port' => 1234,
-                'status' => FirewallRuleStatus::READY,
+                'status' => FirewallRuleStatus::CREATING,
+            ]);
+    }
+
+    public function test_edit_firewall_rule(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $rule = FirewallRule::factory()->create([
+            'server_id' => $this->server->id,
+            'port' => 1234,
+        ]);
+
+        $this->json('PUT', route('api.projects.servers.firewall-rules.edit', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'firewallRule' => $rule,
+        ]), [
+            'name' => 'Test',
+            'type' => 'allow',
+            'protocol' => 'tcp',
+            'port' => '55',
+            'source' => null,
+            'mask' => null,
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'port' => 55,
+                'status' => FirewallRuleStatus::UPDATING,
             ]);
     }
 
