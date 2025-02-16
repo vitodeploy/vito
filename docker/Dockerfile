@@ -4,17 +4,17 @@ WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update && apt-get install -y software-properties-common
-
-# Add repositories
-RUN add-apt-repository ppa:ondrej/php -y
+# upgrade
+RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 
 # requirements
-RUN apt-get install -y curl zip unzip gcc nginx \
+RUN apt-get install -y software-properties-common curl zip unzip gcc nginx \
     cron gnupg gosu curl ca-certificates zip unzip supervisor libcap2-bin libpng-dev \
     dnsutils librsvg2-bin fswatch wget openssh-client \
-    php8.2 php8.2-fpm php8.2-mbstring php8.2-mcrypt php8.2-gd php8.2-xml \
-    php8.2-curl php8.2-gettext php8.2-zip php8.2-bcmath php8.2-soap php8.2-redis php8.2-sqlite3 php8.2-intl
+    && add-apt-repository ppa:ondrej/php -y \
+    && apt-get update \
+    && apt-get install -y php8.2 php8.2-fpm php8.2-mbstring php8.2-mcrypt php8.2-gd php8.2-xml \
+        php8.2-curl php8.2-gettext php8.2-zip php8.2-bcmath php8.2-soap php8.2-redis php8.2-sqlite3 php8.2-intl
 
 # php
 COPY docker/php.ini /etc/php/8.2/cli/conf.d/99-vito.ini
