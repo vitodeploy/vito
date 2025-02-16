@@ -4,13 +4,10 @@ WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get install -y software-properties-common
+RUN apt-get update && apt-get install -y software-properties-common
 
 # Add repositories
 RUN add-apt-repository ppa:ondrej/php -y
-
-# upgrade
-RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 
 # requirements
 RUN apt-get install -y curl zip unzip gcc nginx \
