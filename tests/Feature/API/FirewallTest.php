@@ -28,7 +28,7 @@ class FirewallTest extends TestCase
             'protocol' => 'tcp',
             'port' => '1234',
             'source' => '0.0.0.0',
-            'mask' => '0',
+            'mask' => '1',
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
