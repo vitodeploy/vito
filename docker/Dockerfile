@@ -4,6 +4,8 @@ WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND noninteractive
 
+RUN apt-get install -y software-properties-common
+
 # Add repositories
 RUN add-apt-repository ppa:ondrej/php -y
 
@@ -11,7 +13,7 @@ RUN add-apt-repository ppa:ondrej/php -y
 RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 
 # requirements
-RUN apt-get install -y software-properties-common curl zip unzip gcc nginx \
+RUN apt-get install -y curl zip unzip gcc nginx \
     cron gnupg gosu curl ca-certificates zip unzip supervisor libcap2-bin libpng-dev \
     dnsutils librsvg2-bin fswatch wget openssh-client \
     php8.2 php8.2-fpm php8.2-mbstring php8.2-mcrypt php8.2-gd php8.2-xml \
