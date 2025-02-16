@@ -26,6 +26,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           file: ./docker/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: false
           tags: vitodeploy/vito:latest
