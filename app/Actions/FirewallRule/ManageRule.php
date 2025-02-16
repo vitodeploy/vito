@@ -109,6 +109,8 @@ class ManageRule
             'mask' => [
                 'nullable',
                 'numeric',
+                'min:1',
+                'max:32',
             ],
         ];
     }
