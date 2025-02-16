@@ -62,7 +62,7 @@ return [
             'root' => storage_path('app/key-pairs'),
         ],
 
-        'backups' => [
+        'tmp' => [
             'driver' => 'local',
             'root' => sys_get_temp_dir(),
         ],

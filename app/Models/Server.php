@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Actions\Server\CheckConnection;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
+use App\Exceptions\SSHError;
 use App\Facades\SSH;
 use App\ServerTypes\ServerType;
 use App\SSH\Cron\Cron;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * @property int $project_id
@@ -146,7 +148,7 @@ class Server extends AbstractModel
                 }
                 $server->provider()->delete();
                 DB::commit();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;
             }
@@ -465,6 +467,9 @@ class Server extends AbstractModel
         return new Cron($this);
     }
 
+    /**
+     * @throws SSHError
+     */
     public function checkForUpdates(): void
     {
         $this->updates = $this->os()->availableUpdates();
@@ -479,5 +484,16 @@ class Server extends AbstractModel
         }
 
         return $value;
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function download(string $path, string $disk = 'tmp'): void
+    {
+        $this->ssh()->download(
+            Storage::disk($disk)->path(basename($path)),
+            $path
+        );
     }
 }

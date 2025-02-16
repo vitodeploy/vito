@@ -15,16 +15,12 @@ class ManageBackupFile
      */
     public function download(BackupFile $file): StreamedResponse
     {
-        $localFilename = "backup_{$file->id}_{$file->name}.zip";
+        $file->backup->server->ssh()->download(
+            Storage::disk('tmp')->path(basename($file->path())),
+            $file->path()
+        );
 
-        if (! Storage::disk('backups')->exists($localFilename)) {
-            $file->backup->server->ssh()->download(
-                Storage::disk('backups')->path($localFilename),
-                $file->path()
-            );
-        }
-
-        return Storage::disk('backups')->download($localFilename, $file->name.'.zip');
+        return Storage::disk('tmp')->download(basename($file->path()));
     }
 
     public function delete(BackupFile $file): void
