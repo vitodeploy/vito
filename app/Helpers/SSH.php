@@ -114,7 +114,7 @@ class SSH
             if ($this->asUser) {
                 // Escape single quotes in the command and wrap in single quotes
                 $escapedCommand = str_replace("'", "'\\''", $command);
-                $command = "sudo su - ".$this->asUser." -c '".$escapedCommand."'";
+                $command = 'sudo su - '.$this->asUser." -c '".$escapedCommand."'";
             }
 
             $this->connection->setTimeout(0);
