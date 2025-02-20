@@ -18,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if ($this->app->runningInConsole()) {
+            return;
+        }
         Fortify::ignoreRoutes();
     }
 
@@ -36,6 +39,8 @@ class AppServiceProvider extends ServiceProvider
             return new FTP;
         });
 
-        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+        if (! $this->app->runningInConsole()) {
+            Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+        }
     }
 }

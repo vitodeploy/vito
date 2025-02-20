@@ -1,0 +1,20 @@
+{
+    "directories": [
+        "app",
+        "bootstrap",
+        "config",
+        "database",
+        "public",
+        "resources",
+        "routes",
+        "storage",
+        "vendor"
+    ],
+    "files": [
+        "artisan"
+    ],
+    "main": "cli",
+    "output": "vito-cli.phar",
+    "chmod": "0755",
+    "stub": true
+}

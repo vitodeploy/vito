@@ -38,11 +38,18 @@ class WebServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if ($this->app->runningInConsole()) {
+            return;
+        }
         Filament::registerPanel($this->panel(Panel::make()));
     }
 
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
         FilamentView::registerRenderHook(
             PanelsRenderHook::SIDEBAR_NAV_START,
             fn () => Livewire::mount(SelectProject::class)
