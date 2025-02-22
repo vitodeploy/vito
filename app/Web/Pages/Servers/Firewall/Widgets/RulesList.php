@@ -2,15 +2,18 @@
 
 namespace App\Web\Pages\Servers\Firewall\Widgets;
 
-use App\Actions\FirewallRule\DeleteRule;
+use App\Actions\FirewallRule\ManageRule;
 use App\Models\FirewallRule;
 use App\Models\Server;
+use App\Web\Pages\Servers\Firewall\Index;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class RulesList extends Widget
 {
@@ -26,19 +29,40 @@ class RulesList extends Widget
     protected function getTableColumns(): array
     {
         return [
+            TextColumn::make('name')
+                ->searchable()
+                ->sortable()
+                ->label('Purpose'),
             TextColumn::make('type')
                 ->sortable()
-                ->extraAttributes(['class' => 'uppercase'])
-                ->color(fn (FirewallRule $record) => $record->type === 'allow' ? 'green' : 'red'),
+                ->badge()
+                ->color(fn ($state) => $state === 'allow' ? 'success' : 'warning')
+                ->label('Type')
+                ->formatStateUsing(fn ($state) => Str::upper($state)),
+            TextColumn::make('id')
+                ->sortable()
+                ->label('Source')
+                ->formatStateUsing(function (FirewallRule $record) {
+                    $source = $record->source == null ? 'any' : $record->source;
+                    if ($source !== 'any' && $record->mask !== null) {
+                        $source .= '/'.$record->mask;
+                    }
+
+                    return $source;
+                }),
             TextColumn::make('protocol')
                 ->sortable()
-                ->extraAttributes(['class' => 'uppercase']),
+                ->badge()
+                ->color('primary')
+                ->label('Protocol')
+                ->formatStateUsing(fn ($state) => Str::upper($state)),
             TextColumn::make('port')
-                ->sortable(),
-            TextColumn::make('source')
-                ->sortable(),
-            TextColumn::make('mask')
-                ->sortable(),
+                ->sortable()
+                ->label('Port'),
+            TextColumn::make('status')
+                ->label('Status')
+                ->badge()
+                ->color(fn (FirewallRule $record) => $record->getStatusColor()),
         ];
     }
 
@@ -49,6 +73,28 @@ class RulesList extends Widget
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
             ->actions([
+                Action::make('edit')
+                    ->icon('heroicon-o-pencil')
+                    ->tooltip('Edit')
+                    ->hiddenLabel()
+                    ->modalWidth(MaxWidth::Large)
+                    ->modalHeading('Edit Firewall Rule')
+                    ->modalDescription('Edit the associated servers firewall rule.')
+                    ->modalSubmitActionLabel('Update')
+                    ->authorize(fn (FirewallRule $record) => auth()->user()->can('update', $record))
+                    ->form(fn ($record) => Index::getFirewallForm($record))
+                    ->action(function (FirewallRule $record, array $data) {
+                        run_action($this, function () use ($record, $data) {
+                            app(ManageRule::class)->update($record, $data);
+
+                            $this->dispatch('$refresh');
+
+                            Notification::make()
+                                ->success()
+                                ->title('Applying Firewall Rule')
+                                ->send();
+                        });
+                    }),
                 Action::make('delete')
                     ->icon('heroicon-o-trash')
                     ->tooltip('Delete')
@@ -58,7 +104,7 @@ class RulesList extends Widget
                     ->authorize(fn (FirewallRule $record) => auth()->user()->can('delete', $record))
                     ->action(function (FirewallRule $record) {
                         try {
-                            app(DeleteRule::class)->delete($this->server, $record);
+                            app(ManageRule::class)->delete($record);
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->danger()

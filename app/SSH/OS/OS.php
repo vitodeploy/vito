@@ -201,13 +201,31 @@ class OS
     /**
      * @throws SSHError
      */
+    public function editFileAs(string $path, string $user, ?string $content = null): void
+    {
+        $sudo = $user === 'root';
+        $actualUser = $sudo ? $this->server->getSshUser() : $user;
+
+        $this->server->ssh($actualUser)->exec(
+            view('ssh.os.edit-file', [
+                'path' => $path,
+                'content' => $content,
+                'sudo' => $sudo,
+            ]),
+            'edit-file'
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
     public function readFile(string $path): string
     {
-        return $this->server->ssh()->exec(
+        return trim($this->server->ssh()->exec(
             view('ssh.os.read-file', [
                 'path' => $path,
             ])
-        );
+        ));
     }
 
     /**
@@ -263,10 +281,14 @@ class OS
     /**
      * @throws SSHError
      */
-    public function unzip(string $path): string
+    public function extract(string $path, ?string $destination = null, ?string $user = null): void
     {
-        return $this->server->ssh()->exec(
-            'unzip '.$path
+        $this->server->ssh($user)->exec(
+            view('ssh.os.extract', [
+                'path' => $path,
+                'destination' => $destination,
+            ]),
+            'extract'
         );
     }
 
@@ -304,14 +326,41 @@ class OS
     /**
      * @throws SSHError
      */
-    public function deleteFile(string $path): void
+    public function deleteFile(string $path, ?string $user = null): void
     {
-        $this->server->ssh()->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.delete-file', [
                 'path' => $path,
             ]),
             'delete-file'
         );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function ls(string $path, ?string $user = null): string
+    {
+        return $this->server->ssh($user)->exec('ls -la '.$path);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function write(string $path, string $content, ?string $user = null): void
+    {
+        $this->server->ssh($user)->write(
+            $path,
+            $content
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function mkdir(string $path, ?string $user = null): string
+    {
+        return $this->server->ssh($user)->exec('mkdir -p '.$path);
     }
 
     private function deleteTempFile(string $name): void

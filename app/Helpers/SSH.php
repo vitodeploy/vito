@@ -94,11 +94,7 @@ class SSH
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        if (! $log) {
-            $log = 'run-command';
-        }
-
-        if (! $this->log) {
+        if (! $this->log && $log) {
             $this->log = ServerLog::make($this->server, $log);
             if ($siteId) {
                 $this->log->forSite($siteId);
@@ -116,13 +112,15 @@ class SSH
 
         try {
             if ($this->asUser) {
-                $command = 'sudo su - '.$this->asUser.' -c '.'"'.addslashes($command).'"';
+                $command = addslashes($command);
+                $command = str_replace('\\\'', '\'', $command);
+                $command = 'sudo su - '.$this->asUser.' -c '.'"'.trim($command).'"';
             }
 
             $this->connection->setTimeout(0);
             if ($stream) {
                 $this->connection->exec($command, function ($output) use ($streamCallback) {
-                    $this->log->write($output);
+                    $this->log?->write($output);
 
                     return $streamCallback($output);
                 });
@@ -131,7 +129,7 @@ class SSH
             } else {
                 $output = '';
                 $this->connection->exec($command, function ($out) use (&$output) {
-                    $this->log->write($out);
+                    $this->log?->write($out);
                     $output .= $out;
                 });
 

@@ -178,3 +178,31 @@ function get_from_route(string $modelName, string $routeKey): mixed
 
     return null;
 }
+
+function absolute_path(string $path): string
+{
+    $parts = explode('/', $path);
+    $absoluteParts = [];
+
+    foreach ($parts as $part) {
+        if ($part === '' || $part === '.') {
+            continue; // Skip empty and current directory parts
+        }
+        if ($part === '..') {
+            array_pop($absoluteParts); // Move up one directory
+        } else {
+            $absoluteParts[] = $part; // Add valid directory parts
+        }
+    }
+
+    return '/'.implode('/', $absoluteParts);
+}
+
+function home_path(string $user): string
+{
+    if ($user === 'root') {
+        return '/root';
+    }
+
+    return '/home/'.$user;
+}

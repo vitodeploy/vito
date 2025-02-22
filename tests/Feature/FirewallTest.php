@@ -25,6 +25,7 @@ class FirewallTest extends TestCase
             'server' => $this->server,
         ])
             ->callAction('create', [
+                'name' => 'Test',
                 'type' => 'allow',
                 'protocol' => 'tcp',
                 'port' => '1234',
