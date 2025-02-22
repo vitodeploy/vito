@@ -88,8 +88,7 @@ abstract class TestCase extends BaseTestCase
             'status' => ServiceStatus::READY,
         ]);
 
-        $db = $this->server->defaultService('database');
-        $db?->update(['type_data' => [
+        $this->server->database()?->update(['type_data' => [
             'charsets' => ['utf8mb3' => ['default' => 'utf8mb3_general_ci', 'list' => ['utf8mb3_general_ci']]],
             'defaultCharset' => 'utf8mb3',
         ]]);

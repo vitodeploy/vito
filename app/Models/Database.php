@@ -52,24 +52,12 @@ class Database extends AbstractModel
         });
     }
 
-    public function getStatusText(): string
-    {
-        return match ($this->status) {
-            DatabaseStatus::READY => 'Ready',
-            DatabaseStatus::CREATING => 'Creating',
-            DatabaseStatus::FAILED => 'Failed',
-            DatabaseStatus::DELETING => 'Deleting',
-        };
-    }
-
-    public function getStatusColor(): string
-    {
-        return match ($this->status) {
-            DatabaseStatus::CREATING, DatabaseStatus::DELETING => 'primary',
-            DatabaseStatus::READY => 'success',
-            DatabaseStatus::FAILED => 'error',
-        };
-    }
+    public static array $statusColors = [
+        DatabaseStatus::READY => 'success',
+        DatabaseStatus::CREATING => 'warning',
+        DatabaseStatus::DELETING => 'warning',
+        DatabaseStatus::FAILED => 'danger',
+    ];
 
     public function server(): BelongsTo
     {

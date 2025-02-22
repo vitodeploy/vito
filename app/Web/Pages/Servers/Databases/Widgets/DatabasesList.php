@@ -36,8 +36,11 @@ class DatabasesList extends Widget
             TextColumn::make('status')
                 ->label('Status')
                 ->badge()
-                ->color(fn (Database $record) => $record->getStatusColor())
-                ->formatStateUsing(fn (Database $record) => $record->getStatusText())
+                ->color(fn (Database $database) => Database::$statusColors[$database->status])
+                ->sortable(),
+            TextColumn::make('created_at')
+                ->label('Created At')
+                ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
                 ->sortable(),
         ];
     }

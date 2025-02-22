@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ServerStatus;
 use App\Models\Server;
 use App\SSH\Services\Database\Database;
 use Illuminate\Database\Migrations\Migration;
@@ -18,10 +19,11 @@ return new class extends Migration
             $table->string('charset')->nullable();
         });
 
-        $servers = Server::where('status', 'ready')->get();
+        $servers = Server::query()->where('status', ServerStatus::READY)->get();
 
+        /** @var Server $server */
         foreach ($servers as $server) {
-            $service = $server->defaultService('database');
+            $service = $server->database();
 
             if (! $service) {
                 continue;
