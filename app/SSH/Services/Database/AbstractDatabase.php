@@ -235,6 +235,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         );
     }
 
+    /**
+     * @throws SSHError
+     */
     public function updateCharsets(): void
     {
         $data = $this->service->server->ssh()->exec(
@@ -284,6 +287,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     }
 
+    /**
+     * @throws SSHError
+     */
     public function syncDatabases(bool $createNew = true): void
     {
         $data = $this->service->server->ssh()->exec(
