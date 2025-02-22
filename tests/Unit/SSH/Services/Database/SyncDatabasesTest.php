@@ -32,6 +32,7 @@ class SyncDatabasesTest extends TestCase
 
     /**
      * @TODO Add more test cases
+     *
      * @return array[]
      */
     public static function data(): array
