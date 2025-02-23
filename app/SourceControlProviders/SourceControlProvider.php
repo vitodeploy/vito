@@ -36,4 +36,6 @@ interface SourceControlProvider
      * @throws FailedToDeployGitKey
      */
     public function deployKey(string $title, string $repo, string $key): void;
+
+    public function getWebhookBranch(array $payload): string;
 }
