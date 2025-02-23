@@ -29,7 +29,8 @@ class GitHookController extends Controller
             ->firstOrFail();
 
         foreach ($gitHook->actions as $action) {
-            if ($action == 'deploy') {
+            $webhookBranch = $gitHook->site->sourceControl->provider()->getWebhookBranch($request->array());
+            if ($action == 'deploy' && $gitHook->site->branch === $webhookBranch) {
                 try {
                     app(Deploy::class)->run($gitHook->site);
                 } catch (SourceControlIsNotConnected) {

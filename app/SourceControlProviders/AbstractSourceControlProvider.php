@@ -70,4 +70,9 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
             throw new RepositoryPermissionDenied($repo);
         }
     }
+
+    public function getWebhookBranch(array $payload): string
+    {
+        return str($payload['ref'] ?? '')->after('refs/heads/')->toString();
+    }
 }
