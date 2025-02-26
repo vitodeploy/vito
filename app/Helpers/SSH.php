@@ -157,7 +157,7 @@ class SSH
     /**
      * @throws Throwable
      */
-    public function upload(string $local, string $remote): void
+    public function upload(string $local, string $remote, ?string $owner = null): void
     {
         $this->log = null;
 
@@ -165,7 +165,17 @@ class SSH
             $this->connect(true);
         }
 
-        $this->connection->put($remote, $local, SFTP::SOURCE_LOCAL_FILE);
+        $tmpName = Str::random(10).strtotime('now');
+        $tempPath = home_path($this->user).'/'.$tmpName;
+
+        $this->connection->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
+
+        $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));
+        if (! $owner) {
+            $owner = $this->user;
+        }
+        $this->exec(sprintf('sudo chown %s:%s %s', $owner, $owner, $remote));
+        $this->exec(sprintf('sudo chmod 644 %s', $remote));
     }
 
     /**
@@ -185,22 +195,15 @@ class SSH
     /**
      * @throws SSHError
      */
-    public function write(string $remotePath, string $content, bool $sudo = false): void
+    public function write(string $remotePath, string $content, ?string $owner = null): void
     {
         $tmpName = Str::random(10).strtotime('now');
 
         try {
             /** @var FilesystemAdapter $storageDisk */
             $storageDisk = Storage::disk('local');
-
             $storageDisk->put($tmpName, $content);
-
-            if ($sudo) {
-                $this->upload($storageDisk->path($tmpName), sprintf('/home/%s/%s', $this->server->ssh_user, $tmpName));
-                $this->exec(sprintf('sudo mv /home/%s/%s %s', $this->server->ssh_user, $tmpName, $remotePath));
-            } else {
-                $this->upload($storageDisk->path($tmpName), $remotePath);
-            }
+            $this->upload($storageDisk->path($tmpName), $remotePath, $owner);
         } catch (Throwable $e) {
             throw new SSHCommandError(
                 message: $e->getMessage()

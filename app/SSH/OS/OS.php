@@ -3,14 +3,9 @@
 namespace App\SSH\OS;
 
 use App\Exceptions\SSHError;
-use App\Exceptions\SSHUploadFailed;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Site;
-use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Throwable;
 
 class OS
 {
@@ -178,27 +173,8 @@ class OS
     }
 
     /**
-     * @throws SSHUploadFailed
-     */
-    public function editFile(string $path, ?string $content = null): void
-    {
-        $tmpName = Str::random(10).strtotime('now');
-        try {
-            /** @var FilesystemAdapter $storageDisk */
-            $storageDisk = Storage::disk('local');
-            $storageDisk->put($tmpName, $content);
-            $this->server->ssh()->upload(
-                $storageDisk->path($tmpName),
-                $path
-            );
-        } catch (Throwable) {
-            throw new SSHUploadFailed;
-        } finally {
-            $this->deleteTempFile($tmpName);
-        }
-    }
-
-    /**
+     * @deprecated use write() instead
+     *
      * @throws SSHError
      */
     public function editFileAs(string $path, string $user, ?string $content = null): void
@@ -349,9 +325,10 @@ class OS
      */
     public function write(string $path, string $content, ?string $user = null): void
     {
-        $this->server->ssh($user)->write(
+        $this->server->ssh()->write(
             $path,
-            $content
+            $content,
+            $user
         );
     }
 
@@ -361,12 +338,5 @@ class OS
     public function mkdir(string $path, ?string $user = null): string
     {
         return $this->server->ssh($user)->exec('mkdir -p '.$path);
-    }
-
-    private function deleteTempFile(string $name): void
-    {
-        if (Storage::disk('local')->exists($name)) {
-            Storage::disk('local')->delete($name);
-        }
     }
 }

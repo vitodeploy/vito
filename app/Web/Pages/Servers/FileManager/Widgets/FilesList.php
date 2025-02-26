@@ -269,9 +269,10 @@ class FilesList extends Widget
             ->after(function (array $data) {
                 run_action($this, function () use ($data) {
                     foreach ($data['file'] as $file) {
-                        $this->server->ssh($this->serverUser)->upload(
+                        $this->server->ssh()->upload(
                             Storage::disk('tmp')->path($file),
                             $this->path.'/'.$file,
+                            $this->serverUser
                         );
                     }
                     $this->refresh();
