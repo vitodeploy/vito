@@ -40,5 +40,8 @@ jobs:
       - name: Create sqlite database
         run: touch storage/database-test.sqlite
 
+      - name: Set up the .env file
+        run: touch .env
+
       - name: Run test suite
         run: php artisan test

@@ -14,7 +14,7 @@ class Index extends Page
 
     public function mount(): void
     {
-        $this->authorize('update', $this->server);
+        $this->authorize('manage', $this->server);
     }
 
     public function getWidgets(): array

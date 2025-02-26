@@ -26,7 +26,7 @@ class Nginx extends AbstractWebserver
             view('ssh.services.webserver.nginx.nginx', [
                 'user' => $this->service->server->getSshUser(),
             ]),
-            true
+            'root'
         );
 
         $this->service->server->systemd()->restart('nginx');
@@ -83,7 +83,7 @@ class Nginx extends AbstractWebserver
             view('ssh.services.webserver.nginx.vhost', [
                 'site' => $site,
             ]),
-            true
+            'root'
         );
 
         $this->service->server->ssh()->exec(
@@ -108,7 +108,7 @@ class Nginx extends AbstractWebserver
             $vhost ?? view('ssh.services.webserver.nginx.vhost', [
                 'site' => $site,
             ]),
-            true
+            'root'
         );
 
         $this->service->server->systemd()->restart('nginx');

@@ -55,7 +55,7 @@ class Supervisor extends AbstractProcessManager
                 'numprocs' => (string) $numprocs,
                 'logFile' => $logFile,
             ]),
-            true
+            'root'
         );
 
         $this->service->server->ssh()->exec(
