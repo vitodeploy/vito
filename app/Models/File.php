@@ -103,7 +103,7 @@ class File extends AbstractModel
         array_shift($lines);
 
         foreach ($lines as $line) {
-            if (preg_match('/^([drwx\-]+)\s+(\d+)\s+(\w+)\s+(\w+)\s+(\d+)\s+([\w\s:\-]+)\s+(.+)$/', $line, $matches)) {
+            if (preg_match('/^([drwx\-]+)\s+(\d+)\s+([\w\-]+)\s+([\w\-]+)\s+(\d+)\s+([\w\s:\-]+)\s+(.+)$/', $line, $matches)) {
                 $type = match ($matches[1][0]) {
                     '-' => 'file',
                     'd' => 'directory',
