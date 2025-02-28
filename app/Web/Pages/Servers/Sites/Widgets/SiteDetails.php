@@ -4,6 +4,7 @@ namespace App\Web\Pages\Servers\Sites\Widgets;
 
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdatePHPVersion;
+use App\Actions\Site\UpdateSiteType;
 use App\Actions\Site\UpdateSourceControl;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -60,7 +61,36 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                         TextEntry::make('type')
                             ->extraAttributes(['class' => 'capitalize'])
                             ->icon(fn ($state) => 'icon-'.$state)
-                            ->inlineLabel(),
+                            ->inlineLabel()
+                            ->suffixAction(
+                                Action::make('edit_site_type')
+                                    ->icon('heroicon-o-pencil-square')
+                                    ->tooltip('Change')
+                                    ->modalSubmitActionLabel('Save')
+                                    ->modalHeading('Update Site Type')
+                                    ->modalWidth(MaxWidth::Medium)
+                                    ->form([
+                                        Select::make('type')
+                                            ->label('Site Type')
+                                            ->selectablePlaceholder(false)
+                                            ->rules(UpdateSiteType::rules()['type'])
+                                            ->default($this->site->type)
+                                            ->options(
+                                                collect(config('core.site_types'))->mapWithKeys(fn ($type) => [$type => $type])
+                                            ),
+
+                                    ])
+                                    ->action(function (array $data) {
+                                        run_action($this, function () use ($data) {
+                                            app(UpdateSiteType::class)->update($this->site, $data);
+
+                                            Notification::make()
+                                                ->success()
+                                                ->title('Site type updated!')
+                                                ->send();
+                                        });
+                                    })
+                            ),
                         TextEntry::make('tags.*')
                             ->default('No tags')
                             ->formatStateUsing(fn ($state) => is_object($state) ? $state->name : $state)
