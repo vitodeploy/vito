@@ -16,6 +16,7 @@ class UpdateBranch
     public function update(Site $site, array $input): void
     {
         $site->branch = $input['branch'];
+        app(Git::class)->fetchOrigin($site);
         app(Git::class)->checkout($site);
         $site->save();
     }
