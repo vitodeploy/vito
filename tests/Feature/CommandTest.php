@@ -29,7 +29,7 @@ class CommandTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->server = Server::factory()->create(['team_id' => $this->user->current_team_id]);
+        $this->server = Server::factory()->create();
         $this->site = Site::factory()->create(['server_id' => $this->server->id]);
         $this->command = Command::factory()->create([
             'site_id' => $this->site->id,
