@@ -36,6 +36,8 @@ class CommandTest extends TestCase
             'name' => 'Test Command',
             'command' => 'php artisan test',
         ]);
+
+        $this->actingAs($this->user); // Ensure the user is authenticated for all tests
     }
 
     /** @test */
@@ -50,8 +52,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_can_create_command()
     {
-        $this->actingAs($this->user);
-
         Livewire::test(CommandsWidget::class, ['site' => $this->site])
             ->callTableAction('new-command', [
                 'name' => 'New Command',
@@ -68,8 +68,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_can_edit_command()
     {
-        $this->actingAs($this->user);
-
         Livewire::test(CommandsWidget::class, ['site' => $this->site])
             ->callTableAction('edit', [
                 'name' => 'Updated Command',
@@ -86,8 +84,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_can_delete_command()
     {
-        $this->actingAs($this->user);
-
         Livewire::test(CommandsWidget::class, ['site' => $this->site])
             ->callTableAction('delete', [], $this->command);
 
@@ -99,8 +95,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_can_execute_command()
     {
-        $this->actingAs($this->user);
-
         Livewire::test(CommandsWidget::class, ['site' => $this->site])
             ->callTableAction('execute', [], $this->command);
 
@@ -112,8 +106,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_can_execute_command_with_variables()
     {
-        $this->actingAs($this->user);
-
         $command = Command::factory()->create([
             'site_id' => $this->site->id,
             'name' => 'Command with Variables',
@@ -136,8 +128,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_validates_required_fields_when_creating()
     {
-        $this->actingAs($this->user);
-
         Livewire::test(CommandsWidget::class, ['site' => $this->site])
             ->callTableAction('new-command', [
                 'name' => '',
@@ -149,8 +139,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_validates_required_fields_when_editing()
     {
-        $this->actingAs($this->user);
-
         Livewire::test(CommandsWidget::class, ['site' => $this->site])
             ->callTableAction('edit', [
                 'name' => '',
@@ -208,8 +196,6 @@ class CommandTest extends TestCase
     /** @test */
     public function it_can_view_command_logs()
     {
-        $this->actingAs($this->user);
-
         $execution = CommandExecution::factory()->create([
             'command_id' => $this->command->id,
         ]);
