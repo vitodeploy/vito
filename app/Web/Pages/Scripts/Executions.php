@@ -64,7 +64,7 @@ class Executions extends Page
         ];
 
         foreach ($this->script->getVariables() as $variable) {
-            $form[] = TextInput::make($variable)
+            $form[] = TextInput::make('variables.'.$variable)
                 ->label($variable)
                 ->rules(fn (Get $get) => ExecuteScript::rules($get())['variables.*']);
         }
