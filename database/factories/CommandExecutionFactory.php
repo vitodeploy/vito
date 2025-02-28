@@ -14,8 +14,8 @@ class CommandExecutionFactory extends Factory
     {
         return [
             'command_id' => Command::factory(),
-            'status' => $this->faker->randomElement(['pending', 'running', 'completed', 'failed']),
-            'output' => $this->faker->text,
+            'status' => $this->faker->randomElement(['running', 'completed', 'failed']),
+            'user' => 'vito',
         ];
     }
 }
