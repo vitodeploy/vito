@@ -180,6 +180,16 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                         });
                                     })
                             ),
+                        TextEntry::make('repository')
+                            ->label('Repository')
+                            ->visible(fn (Site $record) => $record->repository)
+                            ->formatStateUsing(fn (Site $record) => $record->repository)
+                            ->inlineLabel(),
+                        TextEntry::make('branch')
+                            ->label('Branch')
+                            ->visible(fn (Site $record) => $record->branch)
+                            ->formatStateUsing(fn (Site $record) => $record->branch)
+                            ->inlineLabel(),
                     ]),
             ])
             ->record($this->site);
