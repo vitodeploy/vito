@@ -63,7 +63,7 @@ class ConsoleController extends Controller
     public function workingDir(Server $server)
     {
         return response()->json([
-            'dir' => Cache::get('console.'.$server->id.'.dir'),
+            'dir' => Cache::get('console.'.$server->id.'.dir', '~'),
         ]);
     }
 }
