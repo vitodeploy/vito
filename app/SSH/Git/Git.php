@@ -39,4 +39,18 @@ class Git
             $site->id
         );
     }
+
+    /**
+     * @throws SSHError
+     */
+    public function fetchOrigin(Site $site): void
+    {
+        $site->server->ssh($site->user)->exec(
+            view('ssh.git.fetch-origin', [
+                'path' => $site->path,
+            ]),
+            'fetch-origin',
+            $site->id
+        );
+    }
 }
