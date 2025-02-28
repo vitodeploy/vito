@@ -13,6 +13,7 @@ class PHPBlank extends PHPSite
     {
         return [
             SiteFeature::DEPLOYMENT,
+            SiteFeature::COMMANDS,
             SiteFeature::ENV,
             SiteFeature::SSL,
             SiteFeature::QUEUES,

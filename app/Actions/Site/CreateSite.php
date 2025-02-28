@@ -68,6 +68,16 @@ class CreateSite
                 'content' => '',
             ]);
 
+            // create predefined commands if any
+            if (count($site->type()->predefinedCommands())) {
+                foreach ($site->type()->predefinedCommands() as $command) {
+                    $site->commands()->create([
+                        'name' => $command['name'],
+                        'command' => $command['command'],
+                    ]);
+                }
+            }
+
             // install site
             dispatch(function () use ($site) {
                 $site->type()->install();
