@@ -37,7 +37,7 @@ class ConsoleController extends Controller
 
         return response()->stream(
             function () use ($server, $request, $ssh, $log, $currentDir) {
-                $command = 'cd '.$currentDir.' && '.$request->command.' && echo "VITO_WORKING_DIR: $(pwd)"';
+                $command = 'cd '.$currentDir.' && '.$request->command.' && echo -n "VITO_WORKING_DIR: " && pwd';
                 $output = '';
                 $ssh->exec(command: $command, log: $log, stream: true, streamCallback: function ($out) use (&$output) {
                     echo preg_replace('/^VITO_WORKING_DIR:.*(\r?\n)?/m', '', $out);
