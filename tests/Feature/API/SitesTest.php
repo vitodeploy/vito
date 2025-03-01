@@ -54,7 +54,7 @@ class SitesTest extends TestCase
             ->assertJsonFragment([
                 'domain' => $inputs['domain'],
                 'aliases' => $inputs['aliases'] ?? [],
-                'user' => $inputs['user'] ?? $this->server->getSshUser()
+                'user' => $inputs['user'] ?? $this->server->getSshUser(),
             ]);
     }
 

@@ -54,7 +54,7 @@ class SitesTest extends TestCase
             'domain' => $inputs['domain'],
             'aliases' => json_encode($inputs['aliases'] ?? []),
             'status' => SiteStatus::READY,
-            'user' => $expectedUser
+            'user' => $expectedUser,
         ]);
     }
 
