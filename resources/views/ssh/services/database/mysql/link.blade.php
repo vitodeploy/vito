@@ -1,4 +1,4 @@
-if ! sudo mysql -e "GRANT ALL PRIVILEGES ON {{ $database }}.* TO '{{ $username }}'@'{{ $host }}'"; then
+if ! sudo mysql -e "GRANT ALL PRIVILEGES ON \`{{ $database }}\`.* TO '{{ $username }}'@'{{ $host }}'"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
