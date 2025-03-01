@@ -68,15 +68,8 @@ class CreateSite
                 'content' => '',
             ]);
 
-            // create predefined commands if any
-            if (count($site->type()->predefinedCommands())) {
-                foreach ($site->type()->predefinedCommands() as $command) {
-                    $site->commands()->create([
-                        'name' => $command['name'],
-                        'command' => $command['command'],
-                    ]);
-                }
-            }
+            // create base commands if any
+            $site->commands()->createMany($site->type()->baseCommands());
 
             // install site
             dispatch(function () use ($site) {

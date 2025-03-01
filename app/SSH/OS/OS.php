@@ -244,30 +244,6 @@ class OS
     /**
      * @throws SSHError
      */
-    public function runCommand(string $path, string $command_script, ?ServerLog $serverLog, ?string $user = null, ?array $variables = []): ServerLog
-    {
-        $ssh = $this->server->ssh($user);
-        if ($serverLog) {
-            $ssh->setLog($serverLog);
-        }
-        $command = '';
-        foreach ($variables as $key => $variable) {
-            $command .= "$key=$variable\n";
-        }
-        $command .= view('ssh.os.run-command', [
-            'path' => $path,
-            'command_script' => $command_script,
-        ]);
-        $ssh->exec($command, 'run-command');
-
-        info($command);
-
-        return $ssh->log;
-    }
-
-    /**
-     * @throws SSHError
-     */
     public function download(string $url, string $path): string
     {
         return $this->server->ssh()->exec(

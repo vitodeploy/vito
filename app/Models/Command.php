@@ -18,20 +18,20 @@ use Illuminate\Support\Collection;
  * @property Carbon $updated_at
  * @property Collection<CommandExecution> $executions
  * @property ?CommandExecution $lastExecution
- * @property User $user
+ * @property Site $site
  */
 class Command extends AbstractModel
 {
     use HasFactory;
 
     protected $fillable = [
+        'site_id',
         'name',
         'command',
-        'site_id',
     ];
 
     protected $casts = [
-        'site_id' => 'int',
+        'site_id' => 'integer',
     ];
 
     public static function boot(): void
@@ -41,11 +41,6 @@ class Command extends AbstractModel
         static::deleting(function (Command $command) {
             $command->executions()->delete();
         });
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     public function site(): BelongsTo

@@ -37,7 +37,7 @@ abstract class AbstractSiteType implements SiteType
         return $this->createRules($input);
     }
 
-    public function predefinedCommands(): array
+    public function baseCommands(): array
     {
         return [];
     }

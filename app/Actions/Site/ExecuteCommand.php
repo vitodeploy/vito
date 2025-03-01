@@ -5,18 +5,17 @@ namespace App\Actions\Site;
 use App\Enums\CommandExecutionStatus;
 use App\Models\Command;
 use App\Models\CommandExecution;
-use App\Models\Server;
 use App\Models\ServerLog;
-use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class ExecuteCommand
 {
-    public function execute(Command $command, array $input): CommandExecution
+    public function execute(Command $command, User $user, array $input): CommandExecution
     {
         $execution = new CommandExecution([
             'command_id' => $command->id,
             'server_id' => $command->site->server_id,
-            'user' => $command->site->user,
+            'user_id' => $user->id,
             'variables' => $input['variables'] ?? [],
             'status' => CommandExecutionStatus::EXECUTING,
         ]);
@@ -28,7 +27,13 @@ class ExecuteCommand
             $log->save();
             $execution->server_log_id = $log->id;
             $execution->save();
-            $execution->server->os()->runCommand($command->site->path, $content, $log, $execution->user);
+            $execution->server->os()->runScript(
+                path: $command->site->path,
+                script: $content,
+                user: $command->site->user,
+                serverLog: $log,
+                variables: $execution->variables
+            );
             $execution->status = CommandExecutionStatus::COMPLETED;
             $execution->save();
         })->catch(function () use ($execution) {
@@ -41,22 +46,7 @@ class ExecuteCommand
 
     public static function rules(array $input): array
     {
-        $users = ['root'];
-        if (isset($input['server'])) {
-            /** @var ?Server $server */
-            $server = Server::query()->find($input['server']);
-            $users = $server->getSshUsers();
-        }
-
         return [
-            'server' => [
-                'required',
-                Rule::exists('servers', 'id'),
-            ],
-            'user' => [
-                'required',
-                Rule::in($users),
-            ],
             'variables' => 'array',
             'variables.*' => [
                 'required',

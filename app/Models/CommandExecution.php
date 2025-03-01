@@ -10,16 +10,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $id
  * @property int $command_id
- * @property int $server_log_id
- * @property ?int $server_id
- * @property string $user
+ * @property int $server_id
+ * @property int $user_id
+ * @property ?int $server_log_id
  * @property array $variables
  * @property string $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Command $command
  * @property ?ServerLog $serverLog
- * @property ?Server $server
+ * @property Server $server
+ * @property ?User $user
  */
 class CommandExecution extends AbstractModel
 {
@@ -28,15 +29,16 @@ class CommandExecution extends AbstractModel
     protected $fillable = [
         'command_id',
         'server_id',
+        'user_id',
         'server_log_id',
-        'user',
         'variables',
         'status',
     ];
 
     protected $casts = [
-        'script_id' => 'integer',
+        'command_id' => 'integer',
         'server_id' => 'integer',
+        'user_id' => 'integer',
         'server_log_id' => 'integer',
         'variables' => 'array',
     ];
@@ -74,16 +76,8 @@ class CommandExecution extends AbstractModel
         return $this->belongsTo(Server::class);
     }
 
-    public function getServer(): ?Server
+    public function user(): BelongsTo
     {
-        if ($this->server_id) {
-            return $this->server;
-        }
-
-        if ($this->server_log_id) {
-            return $this->serverLog?->server;
-        }
-
-        return null;
+        return $this->belongsTo(User::class);
     }
 }

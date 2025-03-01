@@ -59,6 +59,7 @@ class View extends Page
             if (in_array(SiteFeature::COMMANDS, $this->site->type()->supportedFeatures())) {
                 $widgets[] = [Widgets\Commands::class, ['site' => $this->site]];
             }
+
             if (in_array(SiteFeature::DEPLOYMENT, $this->site->type()->supportedFeatures())) {
                 $widgets[] = [Widgets\DeploymentsList::class, ['site' => $this->site]];
             }

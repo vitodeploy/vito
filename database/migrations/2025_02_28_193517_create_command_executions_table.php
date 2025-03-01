@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('command_executions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('command_id');
-            $table->unsignedInteger('server_id')->nullable();
+            $table->unsignedInteger('server_id');
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('server_log_id')->nullable();
-            $table->string('user');
             $table->json('variables')->nullable();
             $table->string('status');
             $table->timestamps();

@@ -56,4 +56,9 @@ class PHPBlank extends PHPSite
         $this->progress(65);
         $this->site->php()?->restart();
     }
+
+    public function baseCommands(): array
+    {
+        return [];
+    }
 }

@@ -28,7 +28,7 @@ class PHPSite extends AbstractSiteType
         ];
     }
 
-    public function predefinedCommands(): array
+    public function baseCommands(): array
     {
         return [
             [

@@ -4,14 +4,10 @@ namespace App\SiteTypes;
 
 class Laravel extends PHPSite
 {
-    public function predefinedCommands(): array
+    public function baseCommands(): array
     {
-        return [
+        return array_merge(parent::baseCommands(), [
             // Initial Setup Commands
-            [
-                'name' => 'Install Composer Dependencies',
-                'command' => 'composer install --no-dev --no-interaction --no-progress',
-            ],
             [
                 'name' => 'Generate Application Key',
                 'command' => 'php artisan key:generate',
@@ -20,13 +16,11 @@ class Laravel extends PHPSite
                 'name' => 'Create Storage Symbolic Link',
                 'command' => 'php artisan storage:link',
             ],
-
             // Database Commands
             [
                 'name' => 'Run Database Migrations',
                 'command' => 'php artisan migrate --force',
             ],
-
             // Cache & Optimization Commands
             [
                 'name' => 'Optimize Application',
@@ -40,7 +34,6 @@ class Laravel extends PHPSite
                 'name' => 'Clear Application Cache Only',
                 'command' => 'php artisan cache:clear',
             ],
-
             // Queue Commands
             [
                 'name' => 'Restart Queue Workers',
@@ -50,7 +43,6 @@ class Laravel extends PHPSite
                 'name' => 'Clear All Failed Queue Jobs',
                 'command' => 'php artisan queue:flush',
             ],
-
             // Application State Commands
             [
                 'name' => 'Put Application in Maintenance Mode',
@@ -60,6 +52,6 @@ class Laravel extends PHPSite
                 'name' => 'Bring Application Online',
                 'command' => 'php artisan up',
             ],
-        ];
+        ]);
     }
 }
