@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Sites\Widgets;
 
 use App\Actions\Site\UpdateAliases;
+use App\Actions\Site\UpdateDomain;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
 use App\Models\Site;
@@ -11,6 +12,7 @@ use App\Web\Pages\Settings\SourceControls\Actions\Create;
 use App\Web\Pages\Settings\Tags\Actions\EditTags;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\Actions\Action;
@@ -100,6 +102,35 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             Notification::make()
                                                 ->success()
                                                 ->title('PHP version updated!')
+                                                ->send();
+                                        });
+                                    })
+                            ),
+                        TextEntry::make('domain')
+                            ->inlineLabel()
+                            ->badge()
+                            ->default($this->site->domain)
+                            ->color('primary')
+                            ->suffixAction(
+                                Action::make('edit_domain')
+                                    ->icon('heroicon-o-pencil-square')
+                                    ->tooltip('Change')
+                                    ->modalSubmitActionLabel('Save')
+                                    ->modalHeading('Update Domain')
+                                    ->modalWidth(MaxWidth::Medium)
+                                    ->form([
+                                        TextInput::make('domain')
+                                            ->default($this->site->domain)
+                                            ->rules(UpdateDomain::rules()['domain']),
+
+                                    ])
+                                    ->action(function (array $data) {
+                                        run_action($this, function () use ($data) {
+                                            app(UpdateDomain::class)->update($this->site, $data);
+
+                                            Notification::make()
+                                                ->success()
+                                                ->title('Domain updated!')
                                                 ->send();
                                         });
                                     })
