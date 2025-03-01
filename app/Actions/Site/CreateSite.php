@@ -14,6 +14,7 @@ use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -30,7 +31,7 @@ class CreateSite
                 'domain' => $input['domain'],
                 'aliases' => $input['aliases'] ?? [],
                 'user' => $user,
-                'path' => '/home/'.$user.'/'.$input['domain'],
+                'path' => '/home/'.$user.'/'.self::generateUniqueAppFolderName($input['domain']),
                 'status' => SiteStatus::INSTALLING,
             ]);
 
@@ -134,5 +135,24 @@ class CreateSite
         );
 
         return $site->type()->createRules($input);
+    }
+
+    private static function generateUniqueAppFolderName(string $domain, int $maxDomainLength = 15): string
+    {
+        // Extract domain name without TLD
+        $domainParts = explode('.', $domain);
+        array_pop($domainParts); // Remove the TLD
+        $domainName = implode('_', $domainParts); // Handle subdomains
+
+        // Sanitize domain name, limit length, and convert to lowercase
+        $cleanDomain = Str::slug($domainName, '_');
+        $cleanDomain = Str::limit($cleanDomain, $maxDomainLength, '');
+        $cleanDomain = Str::lower($cleanDomain);
+
+        // Generate a short unique identifier (always lowercase)
+        $uniqueID = Str::lower(Str::random(6));
+
+        // Combine final folder name
+        return "{$cleanDomain}_{$uniqueID}";
     }
 }
