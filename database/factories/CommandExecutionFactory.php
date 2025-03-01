@@ -18,7 +18,7 @@ class CommandExecutionFactory extends Factory
             'status' => $this->faker->randomElement([
                 CommandExecutionStatus::COMPLETED,
                 CommandExecutionStatus::FAILED,
-                CommandExecutionStatus::EXECUTING
+                CommandExecutionStatus::EXECUTING,
             ]),
             'variables' => [],
         ];

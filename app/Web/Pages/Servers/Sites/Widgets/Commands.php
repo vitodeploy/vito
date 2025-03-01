@@ -37,11 +37,6 @@ class Commands extends Widget
         return $query->latest('created_at');
     }
 
-    public function isReadOnly(): bool
-    {
-        return false;
-    }
-
     protected function getTableColumns(): array
     {
         return [
@@ -106,6 +101,7 @@ class Commands extends Widget
                     ->tooltip('Execute')
                     ->icon('heroicon-o-play')
                     ->modalWidth(MaxWidth::Medium)
+                    ->modalSubmitActionLabel('Execute')
                     ->form(function (Command $record) {
                         $form = [
                             TextInput::make('command')->default($record->command)->disabled(),
