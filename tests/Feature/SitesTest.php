@@ -319,6 +319,69 @@ class SitesTest extends TestCase
                     'user' => 'qwertyuiopasdfghjklzxcvbnmqwertyu',
                 ],
             ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => '*-sub.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'sub.-*.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'sub.*-.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'sub*.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => '*.*.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => '*sub.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => 'sub*.sub.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
         ];
     }
 
@@ -426,6 +489,33 @@ class SitesTest extends TestCase
                     'aliases' => ['www.example.com'],
                     'user' => 'example',
                     'method' => LoadBalancerMethod::ROUND_ROBIN,
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => '*.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => '*.sub.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                ],
+            ],
+            [
+                [
+                    'type' => SiteType::PHP_BLANK,
+                    'domain' => '*.sub.sub2.example.com',
+                    'aliases' => [],
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
                 ],
             ],
         ];
