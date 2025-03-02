@@ -41,6 +41,7 @@ use Illuminate\Support\Str;
  * @property Server $server
  * @property ServerLog[] $logs
  * @property Deployment[] $deployments
+ * @property Command[] $commands
  * @property ?GitHook $gitHook
  * @property DeploymentScript $deploymentScript
  * @property Queue[] $queues
@@ -142,6 +143,11 @@ class Site extends AbstractModel
     public function deployments(): HasMany
     {
         return $this->hasMany(Deployment::class);
+    }
+
+    public function commands(): HasMany
+    {
+        return $this->hasMany(Command::class);
     }
 
     public function gitHook(): HasOne

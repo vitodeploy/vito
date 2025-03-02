@@ -13,6 +13,7 @@ class PHPBlank extends PHPSite
     {
         return [
             SiteFeature::DEPLOYMENT,
+            SiteFeature::COMMANDS,
             SiteFeature::ENV,
             SiteFeature::SSL,
             SiteFeature::QUEUES,
@@ -54,5 +55,10 @@ class PHPBlank extends PHPSite
         $webserver->createVHost($this->site);
         $this->progress(65);
         $this->site->php()?->restart();
+    }
+
+    public function baseCommands(): array
+    {
+        return [];
     }
 }
