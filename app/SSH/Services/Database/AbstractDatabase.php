@@ -262,6 +262,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
                     'default' => $charset[0],
                     'list' => [],
                 ];
+
+                continue;
             }
 
             if ($key == count($charsets) - 1) {
