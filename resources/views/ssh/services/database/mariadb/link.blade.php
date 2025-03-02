@@ -1,8 +1,8 @@
-if ! sudo mysql -e "GRANT ALL PRIVILEGES ON {{ $database }}.* TO '{{ $username }}'@'{{ $host }}'"; then
+if ! sudo mariadb -e "GRANT ALL PRIVILEGES ON {{ $database }}.* TO '{{ $username }}'@'{{ $host }}'"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo mysql -e "FLUSH PRIVILEGES"; then
+if ! sudo mariadb -e "FLUSH PRIVILEGES"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 

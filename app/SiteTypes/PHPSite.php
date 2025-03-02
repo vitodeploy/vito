@@ -21,9 +21,20 @@ class PHPSite extends AbstractSiteType
     {
         return [
             SiteFeature::DEPLOYMENT,
+            SiteFeature::COMMANDS,
             SiteFeature::ENV,
             SiteFeature::SSL,
             SiteFeature::QUEUES,
+        ];
+    }
+
+    public function baseCommands(): array
+    {
+        return [
+            [
+                'name' => 'Install Composer Dependencies',
+                'command' => 'composer install --no-dev --no-interaction --no-progress',
+            ],
         ];
     }
 
