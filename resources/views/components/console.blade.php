@@ -335,44 +335,6 @@
                 this.directorySuggestions = []
             }
         },
-        processSuggestions(isCD, currentPath, basePath, partialName) {
-            const suggestions = this.getCurrentSuggestions()
-
-            if (! currentPath.trim()) {
-                this.showSuggestions = true
-                this.selectedSuggestionIndex = 0
-                return
-            }
-
-            const matches = suggestions.filter((s) =>
-                typeof s === 'string'
-                    ? s.toLowerCase().startsWith(partialName.toLowerCase())
-                    : s.name.toLowerCase().startsWith(partialName.toLowerCase()),
-            )
-
-            if (matches.length === 1) {
-                const matchValue = matches[0].name || matches[0]
-                const fullPath = basePath ? `${basePath}/${matchValue}` : matchValue
-
-                if (isCD) {
-                    this.command = `cd ${fullPath}`
-                } else {
-                    const parts = this.command.split(' ')
-                    parts[parts.length - 1] = fullPath
-                    this.command = parts.join(' ')
-                }
-
-                if (matches[0].isDirectory) {
-                    this.fetchCompletionSuggestions(fullPath)
-                }
-
-                this.showSuggestions = false
-            } else if (matches.length > 1) {
-                this.showSuggestions = true
-                this.selectedSuggestionIndex = 0
-            }
-        },
-
         getCurrentSuggestions() {
             if (this.command.trim().startsWith('cd')) {
                 return this.directorySuggestions
@@ -424,7 +386,6 @@
                 this.selectedSuggestionIndex = -1
             }
         },
-
         selectSuggestion(suggestion) {
             const suggestionValue = suggestion.name || suggestion
             const isCD = this.command.trim().startsWith('cd')
