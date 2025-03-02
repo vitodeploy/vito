@@ -68,6 +68,9 @@ class CreateSite
                 'content' => '',
             ]);
 
+            // create base commands if any
+            $site->commands()->createMany($site->type()->baseCommands());
+
             // install site
             dispatch(function () use ($site) {
                 $site->type()->install();
