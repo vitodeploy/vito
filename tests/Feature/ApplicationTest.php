@@ -206,19 +206,21 @@ class ApplicationTest extends TestCase
         SSH::assertExecutedContains('APP_ENV="production"');
     }
 
-    public function test_git_hook_deployment(): void
+    /**
+     * @dataProvider hookData
+     */
+    public function test_git_hook_deployment(string $provider, array $webhook, string $url, array $payload, bool $skip): void
     {
         SSH::fake();
         Http::fake([
-            'github.com/*' => Http::response([
-                'sha' => '123',
-                'commit' => [
-                    'message' => 'test commit message',
-                    'name' => 'test commit name',
-                    'email' => 'user@example.com',
-                    'url' => 'https://github.com',
-                ],
-            ], 200),
+            $url => Http::response($payload),
+        ]);
+
+        $this->site->update([
+            'branch' => 'main',
+        ]);
+        $this->site->sourceControl->update([
+            'provider' => $provider,
         ]);
 
         GitHook::factory()->create([
@@ -233,15 +235,29 @@ class ApplicationTest extends TestCase
             'content' => 'git pull',
         ]);
 
-        $this->post(route('api.git-hooks'), [
+        $this->post(route('api.git-hooks', [
             'secret' => 'secret',
-        ])->assertSessionDoesntHaveErrors();
+        ]), $webhook)->assertSessionDoesntHaveErrors();
+
+        if ($skip) {
+            $this->assertDatabaseMissing('deployments', [
+                'site_id' => $this->site->id,
+                'deployment_script_id' => $this->site->deploymentScript->id,
+                'status' => DeploymentStatus::FINISHED,
+            ]);
+
+            return;
+        }
 
         $this->assertDatabaseHas('deployments', [
             'site_id' => $this->site->id,
             'deployment_script_id' => $this->site->deploymentScript->id,
             'status' => DeploymentStatus::FINISHED,
         ]);
+
+        $deployment = $this->site->deployments()->first();
+        $this->assertEquals('saeed', $deployment->commit_data['name']);
+        $this->assertEquals('saeed@vitodeploy.com', $deployment->commit_data['email']);
     }
 
     public function test_git_hook_deployment_invalid_secret(): void
@@ -270,5 +286,147 @@ class ApplicationTest extends TestCase
             'deployment_script_id' => $this->site->deploymentScript->id,
             'status' => DeploymentStatus::FINISHED,
         ]);
+    }
+
+    public static function hookData(): array
+    {
+        return [
+            [
+                'github',
+                [
+                    'ref' => 'refs/heads/main',
+                ],
+                'github.com/*',
+                [
+                    'sha' => '123',
+                    'commit' => [
+                        'committer' => [
+                            'name' => 'saeed',
+                            'email' => 'saeed@vitodeploy.com',
+                        ],
+                        'message' => 'test commit message',
+                        'url' => 'https://github.com',
+                    ],
+                ],
+                false,
+            ],
+            [
+                'github',
+                [
+                    'ref' => 'refs/heads/other-branch',
+                ],
+                'github.com/*',
+                [
+                    'sha' => '123',
+                    'commit' => [
+                        'committer' => [
+                            'name' => 'saeed',
+                            'email' => 'saeed@vitodeploy.com',
+                        ],
+                        'message' => 'test commit message',
+                        'url' => 'https://github.com',
+                    ],
+                ],
+                true,
+            ],
+            [
+                'gitlab',
+                [
+                    'ref' => 'main',
+                ],
+                'gitlab.com/*',
+                [
+                    [
+                        'id' => '123',
+                        'committer_name' => 'saeed',
+                        'committer_email' => 'saeed@vitodeploy.com',
+                        'title' => 'test',
+                        'web_url' => 'https://gitlab.com',
+                    ],
+                ],
+                false,
+            ],
+            [
+                'gitlab',
+                [
+                    'ref' => 'other-branch',
+                ],
+                'gitlab.com/*',
+                [
+                    [
+                        'id' => '123',
+                        'committer_name' => 'saeed',
+                        'committer_email' => 'saeed@vitodeploy.com',
+                        'title' => 'test',
+                        'web_url' => 'https://gitlab.com',
+                    ],
+                ],
+                true,
+            ],
+            [
+                'bitbucket',
+                [
+                    'push' => [
+                        'changes' => [
+                            [
+                                'new' => [
+                                    'name' => 'main',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'bitbucket.org/*',
+                [
+                    'values' => [
+                        [
+                            'hash' => '123',
+                            'author' => [
+                                'raw' => 'saeed <saeed@vitodeploy.com>',
+                            ],
+                            'message' => 'test',
+                            'links' => [
+                                'html' => [
+                                    'href' => 'https://bitbucket.org',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                false,
+            ],
+            [
+                'bitbucket',
+                [
+                    'push' => [
+                        'changes' => [
+                            [
+                                'new' => [
+                                    'name' => 'other-branch',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'bitbucket.org/*',
+                [
+                    'values' => [
+                        [
+                            'hash' => '123',
+                            'author' => [
+                                'raw' => 'saeed <saeed@vitodeploy.com>',
+                            ],
+                            'message' => 'test',
+                            'links' => [
+                                'html' => [
+                                    'href' => 'https://bitbucket.org',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                true,
+            ],
+        ];
     }
 }

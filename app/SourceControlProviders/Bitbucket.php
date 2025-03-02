@@ -183,4 +183,9 @@ class Bitbucket extends AbstractSourceControlProvider
             'Authorization' => 'Basic '.$basicAuth,
         ];
     }
+
+    public function getWebhookBranch(array $payload): string
+    {
+        return data_get($payload, 'push.changes.0.new.name', 'default-branch');
+    }
 }

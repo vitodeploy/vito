@@ -135,7 +135,7 @@ class PHP extends AbstractService
                 'user' => $user,
                 'version' => $version,
             ]),
-            true
+            'root'
         );
 
         $this->service->server->systemd()->restart($this->service->unit);

@@ -60,7 +60,7 @@ abstract class Page extends BasePage
                 ->url(DatabasesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('update', $this->server)) {
+        if (auth()->user()->can('manage', $this->server)) {
             $items[] = NavigationItem::make(FileManagerIndex::getNavigationLabel())
                 ->icon('heroicon-o-folder')
                 ->isActiveWhen(fn () => request()->routeIs(FileManagerIndex::getRouteName().'*'))
