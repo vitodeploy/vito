@@ -1,10 +1,11 @@
 <?php
 
+use App\Actions\Database\SyncDatabases;
 use App\Enums\ServerStatus;
 use App\Models\Server;
-use App\SSH\Services\Database\Database;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -23,17 +24,11 @@ return new class extends Migration
 
         /** @var Server $server */
         foreach ($servers as $server) {
-            $service = $server->database();
-
-            if (! $service) {
-                continue;
+            try {
+                app(SyncDatabases::class)->sync($server);
+            } catch (Exception $e) {
+                Log::error($e->getMessage());
             }
-
-            /** @var Database $db */
-            $db = $service->handler();
-
-            $db->syncDatabases(false);
-            $db->updateCharsets();
         }
     }
 

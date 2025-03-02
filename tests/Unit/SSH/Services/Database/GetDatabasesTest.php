@@ -6,12 +6,12 @@ use App\Facades\SSH;
 use App\SSH\Services\Database\Database;
 use Tests\TestCase;
 
-class SyncDatabasesTest extends TestCase
+class GetDatabasesTest extends TestCase
 {
     /**
      * @dataProvider data
      */
-    public function test_sync_databases(string $name, string $version, string $output): void
+    public function test_get_databases(string $name, string $version, string $output): void
     {
         $database = $this->server->database();
         $database->name = $name;
@@ -22,17 +22,13 @@ class SyncDatabasesTest extends TestCase
 
         /** @var Database $databaseHandler */
         $databaseHandler = $database->handler();
-        $databaseHandler->syncDatabases();
+        $databases = $databaseHandler->getDatabases();
 
-        $this->assertDatabaseHas('databases', [
-            'server_id' => $this->server->id,
-            'name' => 'vito',
-        ]);
+        $this->assertIsArray($databases);
+        $this->assertEquals('vito', $databases[0][0]);
     }
 
     /**
-     * @TODO Add more test cases
-     *
      * @return array[]
      */
     public static function data(): array

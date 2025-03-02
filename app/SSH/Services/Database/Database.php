@@ -22,7 +22,7 @@ interface Database
 
     public function restoreBackup(BackupFile $backupFile, string $database): void;
 
-    public function updateCharsets(): void;
+    public function getCharsets(): array;
 
-    public function syncDatabases(bool $createNew = true): void;
+    public function getDatabases(): array;
 }

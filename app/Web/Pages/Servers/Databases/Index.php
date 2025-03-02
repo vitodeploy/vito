@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Databases;
 
 use App\Actions\Database\CreateDatabase;
+use App\Actions\Database\SyncDatabases;
 use App\Models\Database;
 use App\Models\Server;
 use App\Web\Contracts\HasSecondSubNav;
@@ -85,6 +86,26 @@ class Index extends Page implements HasSecondSubNav
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('sync')
+                ->color('gray')
+                ->label('Sync Databases')
+                ->icon('heroicon-o-arrow-path')
+                ->authorize(fn () => auth()->user()?->can('create', [Database::class, $this->server]))
+                ->requiresConfirmation()
+                ->modalDescription('This will create databases that exist on the server but not in Vito.')
+                ->modalSubmitActionLabel('Sync')
+                ->action(function () {
+                    run_action($this, function () {
+                        app(SyncDatabases::class)->sync($this->server);
+
+                        $this->dispatch('$refresh');
+
+                        Notification::make()
+                            ->success()
+                            ->title('Database Created!')
+                            ->send();
+                    });
+                }),
             Action::make('create')
                 ->label('Create Database')
                 ->icon('heroicon-o-plus')
