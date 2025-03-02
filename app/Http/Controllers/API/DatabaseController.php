@@ -41,6 +41,8 @@ class DatabaseController extends Controller
     #[Post('/', name: 'api.projects.servers.databases.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create', description: 'Create a new database.')]
     #[BodyParam(name: 'name', required: true)]
+    #[BodyParam(name: 'charset', required: true)]
+    #[BodyParam(name: 'collation', required: true)]
     #[ResponseFromApiResource(DatabaseResource::class, Database::class)]
     public function create(Request $request, Project $project, Server $server): DatabaseResource
     {

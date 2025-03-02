@@ -24,6 +24,8 @@ class DatabaseTest extends TestCase
             'server' => $this->server,
         ]), [
             'name' => 'database',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
