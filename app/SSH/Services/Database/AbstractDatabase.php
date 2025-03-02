@@ -11,6 +11,16 @@ use Closure;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
+    protected array $systemDbs = [];
+
+    protected string $defaultCharset;
+
+    protected string $separator = "\t";
+
+    protected int $headerLines = 1;
+
+    protected bool $removeLastRow = false;
+
     protected function getScriptView(string $script): string
     {
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
@@ -43,6 +53,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $status = $this->service->server->systemd()->status($this->service->unit);
         $this->service->validateInstall($status);
         $this->service->server->os()->cleanup();
+
+        $this->updateCharsets();
+        $this->syncDatabases();
     }
 
     public function deletionRules(): array
@@ -83,11 +96,13 @@ abstract class AbstractDatabase extends AbstractService implements Database
     /**
      * @throws SSHError
      */
-    public function create(string $name): void
+    public function create(string $name, string $charset, string $collation): void
     {
         $this->service->server->ssh()->exec(
             view($this->getScriptView('create'), [
                 'name' => $name,
+                'charset' => $charset,
+                'collation' => $collation,
             ]),
             'create-database'
         );
@@ -218,5 +233,125 @@ abstract class AbstractDatabase extends AbstractService implements Database
             ]),
             'restore-database'
         );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function updateCharsets(): void
+    {
+        $data = $this->service->server->ssh()->exec(
+            view($this->getScriptView('get-charsets')),
+            'get-database-charsets'
+        );
+
+        $charsets = $this->tableToArray($data);
+
+        $results = [];
+        $charsetCollations = [];
+
+        foreach ($charsets as $key => $charset) {
+            if (empty($charsetCollations[$charset[1]])) {
+                $charsetCollations[$charset[1]] = [];
+            }
+
+            $charsetCollations[$charset[1]][] = $charset[0];
+
+            if ($charset[3] === 'Yes') {
+                $results[$charset[1]] = [
+                    'default' => $charset[0],
+                    'list' => [],
+                ];
+
+                continue;
+            }
+
+            if ($key == count($charsets) - 1) {
+                $results[$charset[1]] = [
+                    'default' => null,
+                    'list' => [],
+                ];
+            }
+        }
+
+        foreach ($results as $charset => $data) {
+            $results[$charset]['list'] = $charsetCollations[$charset];
+        }
+
+        ksort($results);
+
+        $data = array_merge(
+            $this->service->type_data ?? [],
+            ['charsets' => $results, 'defaultCharset' => $this->defaultCharset]
+        );
+
+        $this->service->update(['type_data' => $data]);
+
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function syncDatabases(bool $createNew = true): void
+    {
+        $data = $this->service->server->ssh()->exec(
+            view($this->getScriptView('get-db-list')),
+            'get-db-list'
+        );
+
+        $databases = $this->tableToArray($data);
+
+        foreach ($databases as $database) {
+            if (in_array($database[0], $this->systemDbs)) {
+                continue;
+            }
+
+            $db = $this->service->server->databases()
+                ->where('name', $database[0])
+                ->first();
+
+            if ($db === null) {
+                if ($createNew) {
+                    $this->service->server->databases()->create([
+                        'name' => $database[0],
+                        'collation' => $database[2],
+                        'charset' => $database[1],
+                    ]);
+                }
+
+                continue;
+            }
+
+            if ($db->collation !== $database[2] || $db->charset !== $database[1]) {
+                $db->update([
+                    'collation' => $database[2],
+                    'charset' => $database[1],
+                ]);
+            }
+        }
+    }
+
+    protected function tableToArray(string $data, bool $keepHeader = false): array
+    {
+        $lines = explode("\n", trim($data));
+
+        if (! $keepHeader) {
+            for ($i = 0; $i < $this->headerLines; $i++) {
+                array_shift($lines);
+            }
+        }
+
+        if ($this->removeLastRow) {
+            array_pop($lines);
+        }
+
+        $rows = [];
+        foreach ($lines as $line) {
+            $row = explode($this->separator, $line);
+            $row = array_map('trim', $row);
+            $rows[] = $row;
+        }
+
+        return $rows;
     }
 }

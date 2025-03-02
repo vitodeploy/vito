@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $server_id
  * @property string $name
+ * @property string $collation
+ * @property string $charset
  * @property string $status
  * @property Server $server
  * @property Backup[] $backups
@@ -25,6 +27,8 @@ class Database extends AbstractModel
     protected $fillable = [
         'server_id',
         'name',
+        'collation',
+        'charset',
         'status',
     ];
 
