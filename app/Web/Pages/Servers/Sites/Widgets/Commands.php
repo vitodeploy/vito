@@ -59,6 +59,7 @@ class Commands extends Widget
         return [
             Action::make('new-command')
                 ->label('Create a Command')
+                ->modalDescription('The command will be executed inside the site\'s directory')
                 ->icon('heroicon-o-plus')
                 ->authorize(fn () => auth()->user()->can('create', [Command::class, $this->site, $this->site->server]))
                 ->action(function (array $data) {
@@ -95,6 +96,8 @@ class Commands extends Widget
             ->headerActions($this->getTableHeaderActions())
             ->columns($this->getTableColumns())
             ->heading('Commands')
+            ->defaultPaginationPageOption(5)
+            ->searchable(false)
             ->actions([
                 Action::make('execute')
                     ->hiddenLabel()
