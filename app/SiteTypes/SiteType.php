@@ -19,4 +19,6 @@ interface SiteType
     public function editRules(array $input): array;
 
     public function edit(): void;
+
+    public function baseCommands(): array;
 }

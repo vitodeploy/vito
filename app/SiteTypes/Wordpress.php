@@ -24,6 +24,7 @@ class Wordpress extends AbstractSiteType
     {
         return [
             SiteFeature::SSL,
+            SiteFeature::COMMANDS,
         ];
     }
 

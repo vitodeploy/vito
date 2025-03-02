@@ -37,6 +37,11 @@ abstract class AbstractSiteType implements SiteType
         return $this->createRules($input);
     }
 
+    public function baseCommands(): array
+    {
+        return [];
+    }
+
     protected function progress(int $percentage): void
     {
         $this->site->progress = $percentage;
