@@ -199,6 +199,8 @@ class Index extends \App\Web\Pages\Servers\Page
                 TextInput::make('database')
                     ->helperText('It will create a database with this name')
                     ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['database']),
+                \App\Web\Pages\Servers\Databases\Index::getCharsetInput($this->server),
+                \App\Web\Pages\Servers\Databases\Index::getCollationInput($this->server),
                 TextInput::make('database_user')
                     ->helperText('It will create a db user with this username')
                     ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['database']),

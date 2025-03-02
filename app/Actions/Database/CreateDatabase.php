@@ -14,11 +14,13 @@ class CreateDatabase
     {
         $database = new Database([
             'server_id' => $server->id,
+            'charset' => $input['charset'],
+            'collation' => $input['collation'],
             'name' => $input['name'],
         ]);
         /** @var \App\SSH\Services\Database\Database $databaseHandler */
         $databaseHandler = $server->database()->handler();
-        $databaseHandler->create($database->name);
+        $databaseHandler->create($database->name, $database->charset, $database->collation);
         $database->status = DatabaseStatus::READY;
         $database->save();
 
@@ -41,6 +43,14 @@ class CreateDatabase
                 'required',
                 'alpha_dash',
                 Rule::unique('databases', 'name')->where('server_id', $server->id),
+            ],
+            'charset' => [
+                'required',
+                'string',
+            ],
+            'collation' => [
+                'required',
+                'string',
             ],
         ];
         if (isset($input['user']) && $input['user']) {

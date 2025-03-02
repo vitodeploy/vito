@@ -80,6 +80,8 @@ class Wordpress extends AbstractSiteType
             'email' => $input['email'],
             'password' => $input['password'],
             'database' => $input['database'],
+            'database_charset' => $input['charset'],
+            'database_collation' => $input['collation'],
             'database_user' => $input['database_user'],
             'database_password' => $input['database_password'],
         ];
@@ -96,20 +98,28 @@ class Wordpress extends AbstractSiteType
         $webserver = $this->site->server->webserver()->handler();
         $webserver->createVHost($this->site);
         $this->progress(30);
+
         /** @var Database $database */
         $database = app(CreateDatabase::class)->create($this->site->server, [
             'name' => $this->site->type_data['database'],
+            'charset' => $this->site->type_data['database_charset'],
+            'collation' => $this->site->type_data['database_collation'],
         ]);
+
         /** @var DatabaseUser $databaseUser */
         $databaseUser = app(CreateDatabaseUser::class)->create($this->site->server, [
             'username' => $this->site->type_data['database_user'],
             'password' => $this->site->type_data['database_password'],
+            'collation' => $this->site->type_data['database_collation'],
+            'charset' => $this->site->type_data['database_charset'],
             'remote' => false,
             'host' => 'localhost',
         ], [$database->name]);
+
         app(LinkUser::class)->link($databaseUser, [
             'databases' => [$database->name],
         ]);
+
         $this->site->php()?->restart();
         $this->progress(60);
         app(\App\SSH\Wordpress\Wordpress::class)->install($this->site);

@@ -1,4 +1,4 @@
-if ! sudo mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '{{ $username }}'@'{{ $host }}'"; then
+if ! sudo mariadb -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '{{ $username }}'@'{{ $host }}'"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
