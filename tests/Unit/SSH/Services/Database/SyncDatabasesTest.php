@@ -42,15 +42,12 @@ class SyncDatabasesTest extends TestCase
                 'mysql',
                 '8.0',
                 <<<'EOD'
-                +--------------------+---------+--------------------+
-                | database_name      | charset | collation          |
-                +--------------------+---------+--------------------+
-                | mysql              | utf8mb4 | utf8mb4_0900_ai_ci |
-                | information_schema | utf8mb3 | utf8mb3_general_ci |
-                | performance_schema | utf8mb4 | utf8mb4_0900_ai_ci |
-                | sys                | utf8mb4 | utf8mb4_0900_ai_ci |
-                | vito               | utf8mb3 | utf8mb3_general_ci |
-                +--------------------+---------+--------------------+
+                database_name	charset	collation
+                mysql	utf8mb4	utf8mb4_0900_ai_ci
+                information_schema	utf8mb3	utf8mb3_general_ci
+                performance_schema	utf8mb4	utf8mb4_0900_ai_ci
+                sys	utf8mb4	utf8mb4_0900_ai_ci
+                vito	utf8mb3	utf8mb3_general_ci
                 EOD
             ],
         ];
