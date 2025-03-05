@@ -67,17 +67,19 @@ function run_action(object $static, Closure $callback): void
     try {
         $callback();
     } catch (SSHError $e) {
+        $actions = [];
+        if ($e->getLog()) {
+            $actions[] = Action::make('View Logs')
+                ->url(App\Web\Pages\Servers\Logs\Index::getUrl([
+                    'server' => $e->getLog()->server_id,
+                ]))
+                ->openUrlInNewTab();
+        }
         Notification::make()
             ->danger()
             ->title($e->getMessage())
             ->body($e->getLog()?->getContent(30))
-            ->actions([
-                Action::make('View Logs')
-                    ->url(App\Web\Pages\Servers\Logs\Index::getUrl([
-                        'server' => $e->getLog()?->server_id,
-                    ]))
-                    ->openUrlInNewTab(),
-            ])
+            ->actions($actions)
             ->send();
 
         if (method_exists($static, 'halt')) {
