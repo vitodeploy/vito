@@ -25,4 +25,6 @@ interface Database
     public function getCharsets(): array;
 
     public function getDatabases(): array;
+
+    public function getUsers(): array;
 }

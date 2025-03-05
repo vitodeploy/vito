@@ -102,7 +102,7 @@ class Index extends Page implements HasSecondSubNav
 
                         Notification::make()
                             ->success()
-                            ->title('Database Created!')
+                            ->title('Databases synced!')
                             ->send();
                     });
                 }),

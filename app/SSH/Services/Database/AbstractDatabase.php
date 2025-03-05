@@ -14,6 +14,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
 {
     protected array $systemDbs = [];
 
+    protected array $systemUsers = [];
+
     protected string $defaultCharset;
 
     protected string $separator = "\t";
@@ -300,6 +302,23 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         return array_values(array_filter($databases, function ($database) {
             return ! in_array($database[0], $this->systemDbs);
+        }));
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function getUsers(): array
+    {
+        $data = $this->service->server->ssh()->exec(
+            view($this->getScriptView('get-users-list')),
+            'get-users-list'
+        );
+
+        $users = $this->tableToArray($data);
+
+        return array_values(array_filter($users, function ($users) {
+            return ! in_array($users[0], $this->systemUsers);
         }));
     }
 

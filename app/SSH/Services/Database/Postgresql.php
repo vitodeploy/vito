@@ -6,6 +6,8 @@ class Postgresql extends AbstractDatabase
 {
     protected array $systemDbs = ['template0', 'template1', 'postgres'];
 
+    protected array $systemUsers = ['postgres'];
+
     protected string $defaultCharset = 'UTF8';
 
     protected int $headerLines = 2;
