@@ -8,9 +8,8 @@ class Mariadb extends AbstractDatabase
 
     protected array $systemUsers = [
         'root',
-        'mysql.session',
-        'mysql.sys',
-        'mysql.infoschema'
+        'mysql',
+        'mariadb.sys',
     ];
 
     protected string $defaultCharset = 'utf8mb3';

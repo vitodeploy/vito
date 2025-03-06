@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Enums\DatabaseStatus;
 use App\Models\Server;
 use App\Models\Service;
 use App\SSH\Services\Database\Database;
@@ -45,6 +46,7 @@ class SyncDatabases
                     'name' => $database[0],
                     'collation' => $database[2],
                     'charset' => $database[1],
+                    'status' => DatabaseStatus::READY,
                 ]);
 
                 continue;

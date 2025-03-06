@@ -317,9 +317,19 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $users = $this->tableToArray($data);
 
-        return array_values(array_filter($users, function ($users) {
+        $users = array_values(array_filter($users, function ($users) {
             return ! in_array($users[0], $this->systemUsers);
         }));
+
+        foreach ($users as $key => $user) {
+            $databases = explode(',', $user[2]);
+            $databases = array_values(array_filter($databases, function ($database) {
+                return ! in_array($database, $this->systemDbs);
+            }));
+            $users[$key][2] = implode(',', $databases);
+        }
+
+        return $users;
     }
 
     protected function tableToArray(string $data, bool $keepHeader = false): array

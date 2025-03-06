@@ -64,6 +64,7 @@ class Users extends Page implements HasSecondSubNav
                     Checkbox::make('remote')
                         ->label('Remote')
                         ->default(false)
+                        ->visible(in_array($this->server->database()->name, ['mysql', 'mariadb']))
                         ->reactive(),
                     TextInput::make('host')
                         ->label('Host')

@@ -37,7 +37,7 @@ class SyncDatabaseUsers
                     'username' => $user[0],
                     'host' => $user[1],
                     'databases' => $databases,
-                    'status' => DatabaseUserStatus::READY
+                    'status' => DatabaseUserStatus::READY,
                 ]);
 
                 continue;
