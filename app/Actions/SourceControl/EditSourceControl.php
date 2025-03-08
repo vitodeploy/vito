@@ -35,7 +35,7 @@ class EditSourceControl
             ],
         ];
 
-        return array_merge($rules, static::providerRules($sourceControl, $input));
+        return array_merge($rules, self::providerRules($sourceControl, $input));
     }
 
     /**

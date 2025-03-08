@@ -23,7 +23,7 @@ class ExecuteCommand
 
         dispatch(function () use ($execution, $command) {
             $content = $execution->getContent();
-            $log = ServerLog::make($execution->server, 'command-'.$command->id.'-'.strtotime('now'));
+            $log = ServerLog::newLog($execution->server, 'command-'.$command->id.'-'.strtotime('now'));
             $log->save();
             $execution->server_log_id = $log->id;
             $execution->save();

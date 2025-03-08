@@ -25,6 +25,7 @@
         "fakerphp/faker": "^1.9.1",
         "knuckleswtf/scribe": "^4.37",
         "laradumps/laradumps": "^3.0",
+        "larastan/larastan": "^3.0",
         "laravel/pint": "^1.10",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",

@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Sites\Widgets;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Models\LoadBalancerServer;
+use App\Models\Server;
 use App\Models\Site;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Repeater;
@@ -88,7 +89,7 @@ class LoadBalancerServers extends Widget implements HasForms
                                         return $this->site->project->servers()
                                             ->where('id', '!=', $this->site->server_id)
                                             ->get()
-                                            ->mapWithKeys(function ($server) {
+                                            ->mapWithKeys(function (Server $server) {
                                                 return [$server->local_ip => $server->name.' ('.$server->local_ip.')'];
                                             });
                                     }),

@@ -26,8 +26,8 @@ class EditTags
             ->modalSubmitActionLabel('Save')
             ->modalHeading('Edit Tags')
             ->modalWidth(MaxWidth::Medium)
-            ->form(static::form($taggable))
-            ->action(static::action($taggable));
+            ->form(self::form($taggable))
+            ->action(self::action($taggable));
     }
 
     /**
@@ -42,8 +42,8 @@ class EditTags
             ->modalSubmitActionLabel('Save')
             ->modalHeading('Edit Tags')
             ->modalWidth(MaxWidth::Medium)
-            ->form(static::form($taggable))
-            ->action(static::action($taggable));
+            ->form(self::form($taggable))
+            ->action(self::action($taggable));
     }
 
     /**
@@ -80,7 +80,9 @@ class EditTags
     private static function action(mixed $taggable): \Closure
     {
         return function (array $data) use ($taggable) {
-            app(SyncTags::class)->sync(auth()->user(), [
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+            app(SyncTags::class)->sync($user, [
                 'taggable_id' => $taggable->id,
                 'taggable_type' => get_class($taggable),
                 'tags' => $data['tags'],

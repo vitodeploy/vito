@@ -59,7 +59,7 @@ class AddChannel
             'label' => 'required',
         ];
 
-        return array_merge($rules, static::providerRules($input));
+        return array_merge($rules, self::providerRules($input));
     }
 
     private static function providerRules(array $input): array

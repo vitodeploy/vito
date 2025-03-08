@@ -5,9 +5,9 @@ namespace App\Web\Pages\Servers\Databases\Traits;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\DatabaseUser;
-use App\Web\Pages\Servers\Databases\Backups as Backups;
+use App\Web\Pages\Servers\Databases\Backups;
 use App\Web\Pages\Servers\Databases\Index as Databases;
-use App\Web\Pages\Servers\Databases\Users as Users;
+use App\Web\Pages\Servers\Databases\Users;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 

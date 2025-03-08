@@ -8,6 +8,7 @@ use App\SSH\Services\PHP\PHP;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class GetPHPIni
 {
@@ -22,7 +23,7 @@ class GetPHPIni
             $handler = $php->handler();
 
             return $handler->getPHPIni($input['type']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw ValidationException::withMessages(
                 ['ini' => $e->getMessage()]
             );

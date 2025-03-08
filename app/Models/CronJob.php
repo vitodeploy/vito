@@ -59,6 +59,7 @@ class CronJob extends AbstractModel
                 CronjobStatus::ENABLING,
             ])
             ->get();
+        /** @var CronJob $cronJob */
         foreach ($cronJobs as $key => $cronJob) {
             $data .= $cronJob->frequency.' '.$cronJob->command;
             if ($key != count($cronJobs) - 1) {

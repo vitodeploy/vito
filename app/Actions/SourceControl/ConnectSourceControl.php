@@ -46,7 +46,7 @@ class ConnectSourceControl
             ],
         ];
 
-        return array_merge($rules, static::providerRules($input));
+        return array_merge($rules, self::providerRules($input));
     }
 
     /**

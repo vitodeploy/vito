@@ -280,7 +280,7 @@ class Server extends AbstractModel
 
     public function service($type, $version = null): ?Service
     {
-        /* @var Service $service */
+        /** @var Service $service */
         $service = $this->services()
             ->where(function ($query) use ($type, $version) {
                 $query->where('type', $type);
@@ -295,7 +295,7 @@ class Server extends AbstractModel
 
     public function defaultService($type): ?Service
     {
-        /* @var Service $service */
+        /** @var Service $service */
         $service = $this->services()
             ->where('type', $type)
             ->where('is_default', 1)
@@ -309,7 +309,7 @@ class Server extends AbstractModel
                 ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])
                 ->first();
             if ($service) {
-                $service->is_default = 1;
+                $service->is_default = true;
                 $service->save();
             }
         }
@@ -326,6 +326,7 @@ class Server extends AbstractModel
     {
         $versions = [];
         $phps = $this->services()->where('type', 'php')->get(['version']);
+        /** @var Service $php */
         foreach ($phps as $php) {
             $versions[] = $php->version;
         }
@@ -337,6 +338,7 @@ class Server extends AbstractModel
     {
         $versions = [];
         $nodes = $this->services()->where('type', 'nodejs')->get(['version']);
+        /** @var Service $node */
         foreach ($nodes as $node) {
             $versions[] = $node->version;
         }

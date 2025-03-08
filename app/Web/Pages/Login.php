@@ -141,7 +141,7 @@ class Login extends \Filament\Pages\Auth\Login
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn (): string => Blade::render(
                     <<<BLADE
-                        <x-slot name="subheading">{$this->logoutAction()->render()}</x-slot>
+                        <x-slot name="subheading">{$this->logoutAction()->render()->render()}</x-slot>
                     BLADE
                 ),
             );

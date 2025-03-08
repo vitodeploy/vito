@@ -95,7 +95,7 @@ class SSH
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
         if (! $this->log && $log) {
-            $this->log = ServerLog::make($this->server, $log);
+            $this->log = ServerLog::newLog($this->server, $log);
             if ($siteId) {
                 $this->log->forSite($siteId);
             }
@@ -168,6 +168,7 @@ class SSH
         $tmpName = Str::random(10).strtotime('now');
         $tempPath = home_path($this->user).'/'.$tmpName;
 
+        /** @phpstan-ignore-next-line */
         $this->connection->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
 
         $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));
@@ -189,6 +190,7 @@ class SSH
             $this->connect(true);
         }
 
+        /** @phpstan-ignore-next-line */
         $this->connection->get($remote, $local);
     }
 

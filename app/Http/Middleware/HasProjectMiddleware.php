@@ -18,7 +18,9 @@ class HasProjectMiddleware
 
         if (! $user->currentProject) {
             if ($user->allProjects()->count() > 0) {
-                $user->current_project_id = $user->allProjects()->first()->id;
+                /** @var \App\Models\Project $firstProject */
+                $firstProject = $user->allProjects()->first();
+                $user->current_project_id = $firstProject->id;
                 $user->save();
 
                 $request->user()->refresh();

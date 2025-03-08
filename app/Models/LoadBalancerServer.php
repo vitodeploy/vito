@@ -39,6 +39,9 @@ class LoadBalancerServer extends AbstractModel
 
     public function server(): ?Server
     {
-        return $this->loadBalancer->project->servers()->where('local_ip', $this->ip)->first();
+        /** @var ?Server $server */
+        $server = $this->loadBalancer->project->servers()->where('local_ip', $this->ip)->first();
+
+        return $server;
     }
 }

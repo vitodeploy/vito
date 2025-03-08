@@ -41,12 +41,13 @@ class BackupFile extends AbstractModel
         static::created(function (BackupFile $backupFile) {
             $keep = $backupFile->backup->keep_backups;
             if ($backupFile->backup->files()->count() > $keep) {
-                /* @var BackupFile $lastFileToKeep */
+                /** @var ?BackupFile $lastFileToKeep */
                 $lastFileToKeep = $backupFile->backup->files()->orderByDesc('id')->skip($keep)->first();
                 if ($lastFileToKeep) {
                     $files = $backupFile->backup->files()
                         ->where('id', '<=', $lastFileToKeep->id)
                         ->get();
+                    /** @var BackupFile $file */
                     foreach ($files as $file) {
                         app(ManageBackupFile::class)->delete($file);
                     }

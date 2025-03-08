@@ -29,7 +29,7 @@ class UpdateServerInfo extends Widget implements HasForms
 
     public ?string $local_ip;
 
-    public string $port;
+    public int $port;
 
     public function mount(Server $server): void
     {

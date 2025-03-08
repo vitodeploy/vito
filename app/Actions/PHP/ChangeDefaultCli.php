@@ -3,12 +3,16 @@
 namespace App\Actions\PHP;
 
 use App\Enums\ServiceStatus;
+use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\SSH\Services\PHP\PHP;
 use Illuminate\Validation\ValidationException;
 
 class ChangeDefaultCli
 {
+    /**
+     * @throws SSHError
+     */
     public function change(Server $server, array $input): void
     {
         $this->validate($server, $input);

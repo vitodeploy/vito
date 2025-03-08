@@ -12,7 +12,9 @@ class ManageQueue
         $queue->status = QueueStatus::STARTING;
         $queue->save();
         dispatch(function () use ($queue) {
-            $queue->server->processManager()->handler()->start($queue->id, $queue->site_id);
+            /** @var \App\SSH\Services\ProcessManager\ProcessManager $handler */
+            $handler = $queue->server->processManager()->handler();
+            $handler->start($queue->id, $queue->site_id);
             $queue->status = QueueStatus::RUNNING;
             $queue->save();
         })->onConnection('ssh');
@@ -23,7 +25,9 @@ class ManageQueue
         $queue->status = QueueStatus::STOPPING;
         $queue->save();
         dispatch(function () use ($queue) {
-            $queue->server->processManager()->handler()->stop($queue->id, $queue->site_id);
+            /** @var \App\SSH\Services\ProcessManager\ProcessManager $handler */
+            $handler = $queue->server->processManager()->handler();
+            $handler->stop($queue->id, $queue->site_id);
             $queue->status = QueueStatus::STOPPED;
             $queue->save();
         })->onConnection('ssh');
@@ -34,7 +38,9 @@ class ManageQueue
         $queue->status = QueueStatus::RESTARTING;
         $queue->save();
         dispatch(function () use ($queue) {
-            $queue->server->processManager()->handler()->restart($queue->id, $queue->site_id);
+            /** @var \App\SSH\Services\ProcessManager\ProcessManager $handler */
+            $handler = $queue->server->processManager()->handler();
+            $handler->restart($queue->id, $queue->site_id);
             $queue->status = QueueStatus::RUNNING;
             $queue->save();
         })->onConnection('ssh');

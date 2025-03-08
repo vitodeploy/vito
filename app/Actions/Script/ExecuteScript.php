@@ -24,7 +24,7 @@ class ExecuteScript
 
         dispatch(function () use ($execution, $script) {
             $content = $execution->getContent();
-            $log = ServerLog::make($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
+            $log = ServerLog::newLog($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
             $log->save();
             $execution->server_log_id = $log->id;
             $execution->save();

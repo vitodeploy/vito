@@ -41,7 +41,7 @@ class Deploy
 
         dispatch(function () use ($site, $deployment) {
             /** @var ServerLog $log */
-            $log = ServerLog::make($site->server, 'deploy-'.strtotime('now'))
+            $log = ServerLog::newLog($site->server, 'deploy-'.strtotime('now'))
                 ->forSite($site);
             $log->save();
             $deployment->log_id = $log->id;

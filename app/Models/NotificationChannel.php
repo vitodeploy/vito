@@ -10,10 +10,10 @@ use Illuminate\Notifications\Notifiable;
 
 /**
  * @property int $id
- * @property string provider
- * @property array data
- * @property string label
- * @property bool connected
+ * @property string $provider
+ * @property array $data
+ * @property string $label
+ * @property bool $connected
  * @property int $project_id
  */
 class NotificationChannel extends AbstractModel

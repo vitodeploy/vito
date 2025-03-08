@@ -306,6 +306,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
                 continue;
             }
 
+            /** @var ?\App\Models\Database $db */
             $db = $this->service->server->databases()
                 ->where('name', $database[0])
                 ->first();

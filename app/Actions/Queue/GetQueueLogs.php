@@ -8,6 +8,9 @@ class GetQueueLogs
 {
     public function getLogs(Queue $queue): string
     {
-        return $queue->server->processManager()->handler()->getLogs($queue->user, $queue->getLogFile());
+        /** @var \App\SSH\Services\ProcessManager\ProcessManager $handler */
+        $handler = $queue->server->processManager()->handler();
+
+        return $handler->getLogs($queue->user, $queue->getLogFile());
     }
 }

@@ -17,7 +17,7 @@ class CreateServerProvider
      */
     public function create(User $user, Project $project, array $input): ServerProvider
     {
-        $provider = static::getProvider($input['provider']);
+        $provider = self::getProvider($input['provider']);
 
         try {
             $provider->connect($input);
@@ -60,7 +60,7 @@ class CreateServerProvider
             ],
         ];
 
-        return array_merge($rules, static::providerRules($input));
+        return array_merge($rules, self::providerRules($input));
     }
 
     private static function providerRules(array $input): array
@@ -69,6 +69,6 @@ class CreateServerProvider
             return [];
         }
 
-        return static::getProvider($input['provider'])->credentialValidationRules($input);
+        return self::getProvider($input['provider'])->credentialValidationRules($input);
     }
 }

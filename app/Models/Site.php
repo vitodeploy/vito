@@ -50,8 +50,7 @@ use Illuminate\Support\Str;
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
  * @property Collection<LoadBalancerServer> $loadBalancerServers
- *
- * @TODO: Add nodejs_version column
+ * @property Project $project
  */
 class Site extends AbstractModel
 {

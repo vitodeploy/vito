@@ -12,17 +12,7 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
-/**
- * @property int $server_id
- * @property ?int $site_id
- * @property string $type
- * @property string $name
- * @property string $disk
- * @property Server $server
- * @property ?Site $site
- * @property bool $is_remote
- */
-class ServerLog extends AbstractModel
+final class ServerLog extends AbstractModel
 {
     use HasFactory;
 
@@ -45,7 +35,7 @@ class ServerLog extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (ServerLog $log) {
+        self::deleting(function (ServerLog $log) {
             if ($log->is_remote) {
                 try {
                     if (Storage::disk($log->disk)->exists($log->name)) {
@@ -63,11 +53,17 @@ class ServerLog extends AbstractModel
         return 'log';
     }
 
+    /**
+     * @return BelongsTo<Server, $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<Site, $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
@@ -140,9 +136,9 @@ class ServerLog extends AbstractModel
         return "Log file doesn't exist!";
     }
 
-    public static function log(Server $server, string $type, string $content, ?Site $site = null): static
+    public static function log(Server $server, string $type, string $content, ?Site $site = null): ServerLog
     {
-        $log = new static([
+        $log = new self([
             'server_id' => $server->id,
             'site_id' => $site?->id,
             'name' => $server->id.'-'.strtotime('now').'-'.$type.'.log',
@@ -155,9 +151,9 @@ class ServerLog extends AbstractModel
         return $log;
     }
 
-    public static function make(Server $server, string $type): ServerLog
+    public static function newLog(Server $server, string $type): ServerLog
     {
-        return new static([
+        return new self([
             'server_id' => $server->id,
             'name' => $server->id.'-'.strtotime('now').'-'.$type.'.log',
             'type' => $type,
