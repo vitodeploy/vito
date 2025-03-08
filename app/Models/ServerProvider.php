@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Cache;
  * @property User $user
  * @property ?int $project_id
  * @property Server[] $servers
- * @property Project $project
+ * @property ?Project $project
  */
 class ServerProvider extends AbstractModel
 {

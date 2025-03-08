@@ -12,7 +12,17 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
-final class ServerLog extends AbstractModel
+/**
+ * @property int $server_id
+ * @property ?int $site_id
+ * @property string $type
+ * @property string $name
+ * @property string $disk
+ * @property bool $is_remote
+ * @property Server $server
+ * @property ?Site $site
+ */
+class ServerLog extends AbstractModel
 {
     use HasFactory;
 
@@ -165,11 +175,11 @@ final class ServerLog extends AbstractModel
     {
         if ($site instanceof Site) {
             $site = $site->id;
+
+            return $this;
         }
 
-        if (is_int($site)) {
-            $this->site_id = $site;
-        }
+        $this->site_id = $site;
 
         return $this;
     }

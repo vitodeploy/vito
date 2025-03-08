@@ -4,7 +4,6 @@ namespace App\Actions\StorageProvider;
 
 use App\Models\Project;
 use App\Models\StorageProvider;
-use Illuminate\Validation\ValidationException;
 
 class EditStorageProvider
 {
@@ -18,9 +17,6 @@ class EditStorageProvider
         return $storageProvider;
     }
 
-    /**
-     * @throws ValidationException
-     */
     public static function rules(): array
     {
         return [

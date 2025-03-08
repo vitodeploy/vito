@@ -96,7 +96,7 @@ class Login extends \Filament\Pages\Auth\Login
         return $loginResponse;
     }
 
-    private function confirmTwoFactor(): ?LoginResponse
+    private function confirmTwoFactor(): LoginResponse
     {
         $request = TwoFactorLoginRequest::createFrom(request())->merge([
             'code' => $this->data['code'],

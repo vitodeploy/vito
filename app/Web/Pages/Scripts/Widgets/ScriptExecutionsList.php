@@ -33,7 +33,7 @@ class ScriptExecutionsList extends Widget
         return [
             TextColumn::make('server')
                 ->formatStateUsing(function (ScriptExecution $record) {
-                    return $record->getServer()?->name ?? 'Unknown';
+                    return $record->getServer()->name ?? 'Unknown';
                 })
                 ->url(function (ScriptExecution $record) {
                     $server = $record->getServer();

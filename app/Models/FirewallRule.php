@@ -47,6 +47,7 @@ class FirewallRule extends AbstractModel
             FirewallRuleStatus::DELETING => 'warning',
             FirewallRuleStatus::READY => 'success',
             FirewallRuleStatus::FAILED => 'danger',
+            default => 'secondary',
         };
     }
 

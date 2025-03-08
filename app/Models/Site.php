@@ -43,7 +43,7 @@ use Illuminate\Support\Str;
  * @property Deployment[] $deployments
  * @property Command[] $commands
  * @property ?GitHook $gitHook
- * @property DeploymentScript $deploymentScript
+ * @property ?DeploymentScript $deploymentScript
  * @property Queue[] $queues
  * @property Ssl[] $ssls
  * @property ?Ssl $activeSsl
@@ -324,7 +324,7 @@ class Site extends AbstractModel
             'DOMAIN' => $this->domain,
             'BRANCH' => $this->branch ?? '',
             'REPOSITORY' => $this->repository ?? '',
-            'COMMIT_ID' => $deployment?->commit_id ?? '',
+            'COMMIT_ID' => $deployment->commit_id ?? '',
             'PHP_VERSION' => $this->php_version,
             'PHP_PATH' => '/usr/bin/php'.$this->php_version,
         ];

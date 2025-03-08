@@ -16,7 +16,7 @@ class UpdateSourceControl
         $site->source_control_id = $input['source_control'];
         try {
             if ($site->sourceControl) {
-                $site->sourceControl?->getRepo($site->repository);
+                $site->sourceControl->getRepo($site->repository);
             }
         } catch (SourceControlIsNotConnected) {
             throw ValidationException::withMessages([

@@ -24,9 +24,6 @@ class CreateSshKey
         return $key;
     }
 
-    /**
-     * @throws ValidationException
-     */
     public static function rules(): array
     {
         return [

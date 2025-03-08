@@ -36,7 +36,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $profile_photo_url
  * @property string $timezone
  * @property ?int $current_project_id
- * @property Project $currentProject
+ * @property ?Project $currentProject
  * @property Collection<Project> $projects
  * @property string $role
  * @property Carbon $created_at
@@ -126,7 +126,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function createDefaultProject(): Project
     {
-        /** @var Project $project */
+        /** @var ?Project $project */
         $project = $this->projects()->first();
 
         if (! $project) {

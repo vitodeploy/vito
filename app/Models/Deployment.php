@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $status
  * @property Site $site
  * @property DeploymentScript $deploymentScript
- * @property ServerLog $log
+ * @property ?ServerLog $log
  */
 class Deployment extends AbstractModel
 {

@@ -20,7 +20,7 @@ class UpdateProjects
 
         $user->refresh();
 
-        /** @var Project $firstProject */
+        /** @var ?Project $firstProject */
         $firstProject = $user->projects->first();
         if (! $user->currentProject && $firstProject) {
             $user->current_project_id = $firstProject->id;

@@ -64,7 +64,7 @@ use Throwable;
  * @property Tag[] $tags
  * @property string $hostname
  * @property int $updates
- * @property Carbon $last_update_check
+ * @property ?Carbon $last_update_check
  */
 class Server extends AbstractModel
 {
@@ -295,7 +295,7 @@ class Server extends AbstractModel
 
     public function defaultService($type): ?Service
     {
-        /** @var Service $service */
+        /** @var ?Service $service */
         $service = $this->services()
             ->where('type', $type)
             ->where('is_default', 1)
@@ -303,7 +303,7 @@ class Server extends AbstractModel
 
         // If no default service found, get the first service with status ready or stopped
         if (! $service) {
-            /** @var Service $service */
+            /** @var ?Service $service */
             $service = $this->services()
                 ->where('type', $type)
                 ->whereIn('status', [ServiceStatus::READY, ServiceStatus::STOPPED])

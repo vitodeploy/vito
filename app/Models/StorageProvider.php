@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $provider
  * @property array $credentials
  * @property User $user
- * @property int $project_id
+ * @property ?int $project_id
  */
 class StorageProvider extends AbstractModel
 {

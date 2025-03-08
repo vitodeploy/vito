@@ -109,7 +109,6 @@ class SSHFake extends SSH
         if (! $allExecuted) {
             Assert::fail('The expected commands are not executed. executed commands: '.implode(', ', $this->commands));
         }
-        Assert::assertTrue(true, $allExecuted);
     }
 
     public function assertExecutedContains(string $command): void
@@ -129,7 +128,6 @@ class SSHFake extends SSH
                 'The expected command is not executed in the executed commands: '.implode(', ', $this->commands)
             );
         }
-        Assert::assertTrue(true, $executed);
     }
 
     public function assertFileUploaded(string $toPath, ?string $content = null): void

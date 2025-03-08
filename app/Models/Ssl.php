@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
  * @property Carbon $expires_at
  * @property string $status
  * @property Site $site
- * @property ?array $domains
+ * @property array|string|null $domains
  * @property int $log_id
  * @property string $email
  * @property bool $is_active

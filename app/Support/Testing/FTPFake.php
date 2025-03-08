@@ -55,6 +55,5 @@ class FTPFake
         if (! $connected) {
             Assert::fail('The expected host is not connected');
         }
-        Assert::assertTrue(true, $connected);
     }
 }
