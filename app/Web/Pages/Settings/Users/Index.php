@@ -61,7 +61,7 @@ class Index extends Page
                                 ->rules($rules['password']),
                             Select::make('role')
                                 ->rules($rules['role'])
-                                ->options(collect(config('core.user_roles'))->mapWithKeys(fn ($role) => [$role => $role])),
+                                ->options(collect((array) config('core.user_roles'))->mapWithKeys(fn ($role) => [$role => $role])),
                         ])
                         ->columns(1);
                 })

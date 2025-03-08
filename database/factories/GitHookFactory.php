@@ -8,6 +8,9 @@ use App\Models\SourceControl;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<\App\Models\GitHook>
+ */
 class GitHookFactory extends Factory
 {
     protected $model = GitHook::class;

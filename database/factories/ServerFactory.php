@@ -9,6 +9,9 @@ use App\Enums\ServerType;
 use App\Models\Server;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<\App\Models\Server>
+ */
 class ServerFactory extends Factory
 {
     protected $model = Server::class;

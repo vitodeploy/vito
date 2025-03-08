@@ -22,12 +22,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UsersList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
-
-    protected function getTableQuery(): Builder
-    {
-        return User::query();
-    }
 
     protected function getTableColumns(): array
     {
@@ -52,7 +50,7 @@ class UsersList extends Widget
     {
         return $table
             ->heading(null)
-            ->query($this->getTableQuery())
+            ->query(User::query())
             ->columns($this->getTableColumns())
             ->actions([
                 EditAction::make('edit')
@@ -76,7 +74,7 @@ class UsersList extends Widget
                                     ->rules(UpdateUser::rules($record)['timezone']),
                                 Select::make('role')
                                     ->options(
-                                        collect(config('core.user_roles'))
+                                        collect((array) config('core.user_roles'))
                                             ->mapWithKeys(fn ($role) => [$role => $role])
                                     )
                                     ->rules(UpdateUser::rules($record)['role']),

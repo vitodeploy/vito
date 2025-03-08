@@ -6,6 +6,9 @@ use App\Enums\QueueStatus;
 use App\Models\Queue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<\App\Models\Queue>
+ */
 class QueueFactory extends Factory
 {
     protected $model = Queue::class;
