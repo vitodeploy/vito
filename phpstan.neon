@@ -3,5 +3,8 @@ includes:
     - vendor/nesbot/carbon/extension.neon
 parameters:
     paths:
-        - app/
+        - app
+        - config
+        - bootstrap
+        - database/factories
     level: 5
