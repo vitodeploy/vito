@@ -31,7 +31,7 @@ use Throwable;
  * @property string $name
  * @property string $ssh_user
  * @property string $ip
- * @property string $local_ip
+ * @property ?string $local_ip
  * @property int $port
  * @property string $os
  * @property string $type
@@ -122,14 +122,16 @@ class Server extends AbstractModel
         static::deleting(function (Server $server) {
             DB::beginTransaction();
             try {
-                $server->sites()->each(function (Site $site) {
+                $server->sites()->each(function ($site) {
+                    /** @var Site $site */
                     $site->queues()->delete();
                     $site->ssls()->delete();
                     $site->deployments()->delete();
                     $site->deploymentScript()->delete();
                 });
                 $server->sites()->delete();
-                $server->logs()->each(function (ServerLog $log) {
+                $server->logs()->each(function ($log) {
+                    /** @var ServerLog $log */
                     $log->delete();
                 });
                 $server->services()->delete();

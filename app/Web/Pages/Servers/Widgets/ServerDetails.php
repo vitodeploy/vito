@@ -63,7 +63,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                         Notification::make()
                                             ->info()
                                             ->title('Available updates:')
-                                            ->body($record->updates)
+                                            ->body((string) $record->updates)
                                             ->send();
                                     })
                             ),

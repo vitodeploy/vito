@@ -88,9 +88,11 @@ class LoadBalancerServers extends Widget implements HasForms
                                     ->options(function () {
                                         return $this->site->project->servers()
                                             ->where('id', '!=', $this->site->server_id)
+                                            ->whereNotNull('local_ip')
                                             ->get()
-                                            ->mapWithKeys(function (Server $server) {
-                                                return [$server->local_ip => $server->name.' ('.$server->local_ip.')'];
+                                            ->mapWithKeys(function ($server) {
+                                                /** @var Server $server */
+                                                return $server->local_ip ? [$server->local_ip => $server->name.' ('.$server->local_ip.')'] : [];
                                             });
                                     }),
                                 TextInput::make('port')

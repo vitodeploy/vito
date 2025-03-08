@@ -67,7 +67,7 @@ class Hetzner extends AbstractProvider
                 ->json();
 
             return collect($plans['server_types'])->filter(function ($type) use ($region) {
-                return collect($type['prices'])->filter(function ($price) use ($region) {
+                return collect($type['prices'])->contains(function ($price) use ($region) {
                     return $price['location'] === $region;
                 });
             })

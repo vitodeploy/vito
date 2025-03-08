@@ -41,7 +41,8 @@ class Database extends AbstractModel
         parent::boot();
 
         static::deleting(function (Database $database) {
-            $database->server->databaseUsers()->each(function (DatabaseUser $user) use ($database) {
+            $database->server->databaseUsers()->each(function ($user) use ($database) {
+                /** @var DatabaseUser $user */
                 $databases = $user->databases;
                 if ($databases && in_array($database->name, $databases)) {
                     unset($databases[array_search($database->name, $databases)]);

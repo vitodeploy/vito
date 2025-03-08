@@ -100,7 +100,10 @@ class Site extends AbstractModel
         parent::boot();
 
         static::deleting(function (Site $site) {
-            $site->queues()->each(fn (Queue $queue) => $queue->delete());
+            $site->queues()->each(function ($queue) {
+                /** @var Queue $queue */
+                $queue->delete();
+            });
             $site->ssls()->delete();
             $site->deployments()->delete();
             $site->deploymentScript()->delete();

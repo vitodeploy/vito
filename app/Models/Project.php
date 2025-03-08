@@ -38,7 +38,8 @@ class Project extends Model
         parent::boot();
 
         static::deleting(function (Project $project) {
-            $project->servers()->each(function (Server $server) {
+            $project->servers()->each(function ($server) {
+                /** @var Server $server */
                 $server->delete();
             });
         });

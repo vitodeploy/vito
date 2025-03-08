@@ -46,8 +46,10 @@ class Backup extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (Backup $backup) {
-            $backup->files()->each(function (BackupFile $file) {
+        static::deleting(function ($backup) {
+            /** @var Backup $backup */
+            $backup->files()->each(function ($file) {
+                /** @var BackupFile $file */
                 $file->delete();
             });
         });
