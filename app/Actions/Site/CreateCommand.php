@@ -7,6 +7,9 @@ use App\Models\Site;
 
 class CreateCommand
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function create(Site $site, array $input): Command
     {
         $script = new Command([
@@ -19,6 +22,9 @@ class CreateCommand
         return $script;
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

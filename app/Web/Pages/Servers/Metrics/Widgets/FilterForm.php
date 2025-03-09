@@ -20,13 +20,16 @@ class FilterForm extends Widget implements HasForms
 
     protected static string $view = 'components.form';
 
+    /**
+     * @var ?array<string, mixed>
+     */
     public ?array $data = [
         'period' => '1h',
         'from' => null,
         'to' => null,
     ];
 
-    public function updated($name, $value): void
+    public function updated(string $name, mixed $value): void
     {
         if ($value !== 'custom') {
             $this->dispatch('updateFilters', filters: $this->data);
@@ -61,12 +64,12 @@ class FilterForm extends Widget implements HasForms
                             ->rules(fn (Get $get) => GetMetrics::rules($get())['period']),
                         DatePicker::make('from')
                             ->reactive()
-                            ->visible(fn (Get $get) => $get('period') === 'custom')
+                            ->visible(fn (Get $get): bool => $get('period') === 'custom')
                             ->maxDate(fn (Get $get) => now())
                             ->rules(fn (Get $get) => GetMetrics::rules($get())['from']),
                         DatePicker::make('to')
                             ->reactive()
-                            ->visible(fn (Get $get) => $get('period') === 'custom')
+                            ->visible(fn (Get $get): bool => $get('period') === 'custom')
                             ->minDate(fn (Get $get) => $get('from') ?: now())
                             ->maxDate(now())
                             ->rules(fn (Get $get) => GetMetrics::rules($get())['to']),

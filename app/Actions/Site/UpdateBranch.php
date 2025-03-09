@@ -9,6 +9,8 @@ use App\SSH\Git\Git;
 class UpdateBranch
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws SSHError
      */
     public function update(Site $site, array $input): void
@@ -19,6 +21,9 @@ class UpdateBranch
         $site->save();
     }
 
+    /**
+     * @return array<string, string>
+     */
     public static function rules(): array
     {
         return [

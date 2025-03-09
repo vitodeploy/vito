@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 class HasProjectMiddleware
 {
+    /**
+     * @return mixed
+     */
     public function handle(Request $request, Closure $next)
     {
         /** @var ?User $user */

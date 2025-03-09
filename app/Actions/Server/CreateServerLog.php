@@ -8,6 +8,8 @@ use Illuminate\Validation\ValidationException;
 class CreateServerLog
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function create(Server $server, array $input): void
@@ -20,6 +22,9 @@ class CreateServerLog
         ]);
     }
 
+    /**
+     * @return array<string, string>
+     */
     public static function rules(): array
     {
         return [

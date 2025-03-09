@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 class CreateStorageProvider
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function create(User $user, Project $project, array $input): StorageProvider
@@ -41,6 +43,10 @@ class CreateStorageProvider
         return $storageProvider;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<mixed>>
+     */
     public static function rules(array $input): array
     {
         $rules = [

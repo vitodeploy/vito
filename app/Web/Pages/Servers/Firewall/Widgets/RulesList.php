@@ -19,8 +19,14 @@ class RulesList extends Widget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<FirewallRule>
+     */
     protected function getTableQuery(): Builder
     {
         return FirewallRule::query()->where('server_id', $this->server->id);
@@ -36,7 +42,7 @@ class RulesList extends Widget
             TextColumn::make('type')
                 ->sortable()
                 ->badge()
-                ->color(fn ($state) => $state === 'allow' ? 'success' : 'warning')
+                ->color(fn ($state): string => $state === 'allow' ? 'success' : 'warning')
                 ->label('Type')
                 ->formatStateUsing(fn ($state) => Str::upper($state)),
             TextColumn::make('id')
@@ -62,7 +68,7 @@ class RulesList extends Widget
             TextColumn::make('status')
                 ->label('Status')
                 ->badge()
-                ->color(fn (FirewallRule $record) => $record->getStatusColor()),
+                ->color(fn (FirewallRule $record): string => $record->getStatusColor()),
         ];
     }
 
@@ -82,9 +88,9 @@ class RulesList extends Widget
                     ->modalDescription('Edit the associated servers firewall rule.')
                     ->modalSubmitActionLabel('Update')
                     ->authorize(fn (FirewallRule $record) => auth()->user()->can('update', $record))
-                    ->form(fn ($record) => Index::getFirewallForm($record))
-                    ->action(function (FirewallRule $record, array $data) {
-                        run_action($this, function () use ($record, $data) {
+                    ->form(fn ($record): array => Index::getFirewallForm($record))
+                    ->action(function (FirewallRule $record, array $data): void {
+                        run_action($this, function () use ($record, $data): void {
                             app(ManageRule::class)->update($record, $data);
 
                             $this->dispatch('$refresh');
@@ -102,7 +108,7 @@ class RulesList extends Widget
                     ->hiddenLabel()
                     ->requiresConfirmation()
                     ->authorize(fn (FirewallRule $record) => auth()->user()->can('delete', $record))
-                    ->action(function (FirewallRule $record) {
+                    ->action(function (FirewallRule $record): void {
                         try {
                             app(ManageRule::class)->delete($record);
                         } catch (\Exception $e) {

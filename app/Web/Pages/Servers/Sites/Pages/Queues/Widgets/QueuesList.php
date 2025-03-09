@@ -27,8 +27,14 @@ class QueuesList extends Widget
 {
     public Site $site;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Queue>
+     */
     protected function getTableQuery(): Builder
     {
         return Queue::query()->where('site_id', $this->site->id);
@@ -79,8 +85,8 @@ class QueuesList extends Widget
             ->authorize(fn (Queue $record) => auth()->user()->can('update', [$record, $this->site, $this->site->server]))
             ->label(ucfirst($type).' queue')
             ->icon($icon)
-            ->action(function (Queue $record) use ($type) {
-                run_action($this, function () use ($record, $type) {
+            ->action(function (Queue $record) use ($type): void {
+                run_action($this, function () use ($record, $type): void {
                     app(ManageQueue::class)->$type($record);
                     $this->dispatch('$refresh');
                 });
@@ -93,12 +99,10 @@ class QueuesList extends Widget
             ->icon('heroicon-o-eye')
             ->authorize(fn (Queue $record) => auth()->user()->can('view', [$record, $this->site, $this->site->server]))
             ->modalHeading('View Log')
-            ->modalContent(function (Queue $record) {
-                return view('components.console-view', [
-                    'slot' => app(GetQueueLogs::class)->getLogs($record),
-                    'attributes' => new ComponentAttributeBag,
-                ]);
-            })
+            ->modalContent(fn (Queue $record) => view('components.console-view', [
+                'slot' => app(GetQueueLogs::class)->getLogs($record),
+                'attributes' => new ComponentAttributeBag,
+            ]))
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Close');
     }
@@ -109,7 +113,7 @@ class QueuesList extends Widget
             ->icon('heroicon-o-pencil-square')
             ->authorize(fn (Queue $record) => auth()->user()->can('update', [$record, $this->site, $this->site->server]))
             ->modalWidth(MaxWidth::ExtraLarge)
-            ->fillForm(fn (Queue $record) => [
+            ->fillForm(fn (Queue $record): array => [
                 'command' => $record->command,
                 'user' => $record->user,
                 'numprocs' => $record->numprocs,
@@ -138,8 +142,8 @@ class QueuesList extends Widget
                             ->default(false),
                     ]),
             ])
-            ->using(function (Queue $record, array $data) {
-                run_action($this, function () use ($record, $data) {
+            ->using(function (Queue $record, array $data): void {
+                run_action($this, function () use ($record, $data): void {
                     app(EditQueue::class)->edit($record, $data);
                     $this->dispatch('$refresh');
                 });
@@ -151,8 +155,8 @@ class QueuesList extends Widget
         return DeleteAction::make('delete')
             ->icon('heroicon-o-trash')
             ->authorize(fn (Queue $record) => auth()->user()->can('delete', [$record, $this->site, $this->site->server]))
-            ->using(function (Queue $record) {
-                run_action($this, function () use ($record) {
+            ->using(function (Queue $record): void {
+                run_action($this, function () use ($record): void {
                     app(DeleteQueue::class)->delete($record);
                     $this->dispatch('$refresh');
                 });

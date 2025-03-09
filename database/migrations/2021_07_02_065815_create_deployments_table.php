@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('deployments', function (Blueprint $table) {
+        Schema::create('deployments', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('site_id');
             $table->unsignedBigInteger('deployment_script_id');

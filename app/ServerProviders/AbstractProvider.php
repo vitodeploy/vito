@@ -9,15 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 abstract class AbstractProvider implements ServerProvider
 {
-    protected ?Provider $serverProvider;
-
-    protected ?Server $server;
-
-    public function __construct(?Provider $serverProvider = null, ?Server $server = null)
-    {
-        $this->serverProvider = $serverProvider;
-        $this->server = $server;
-    }
+    public function __construct(protected ?Provider $serverProvider = null, protected ?Server $server = null) {}
 
     public function generateKeyPair(): void
     {

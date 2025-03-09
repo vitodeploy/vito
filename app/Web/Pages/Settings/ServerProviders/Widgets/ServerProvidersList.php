@@ -18,8 +18,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ServerProvidersList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<ServerProvider>
+     */
     protected function getTableQuery(): Builder
     {
         return ServerProvider::getByProjectId(auth()->user()->current_project_id);
@@ -29,7 +35,7 @@ class ServerProvidersList extends Widget
     {
         return [
             IconColumn::make('provider')
-                ->icon(fn (ServerProvider $record) => 'icon-'.$record->provider)
+                ->icon(fn (ServerProvider $record): string => 'icon-'.$record->provider)
                 ->width(24),
             TextColumn::make('name')
                 ->default(fn ($record) => $record->profile)
@@ -39,10 +45,8 @@ class ServerProvidersList extends Widget
             TextColumn::make('id')
                 ->label('Global')
                 ->badge()
-                ->color(fn ($record) => $record->project_id ? 'gray' : 'success')
-                ->formatStateUsing(function (ServerProvider $record) {
-                    return $record->project_id ? 'No' : 'Yes';
-                }),
+                ->color(fn ($record): string => $record->project_id ? 'gray' : 'success')
+                ->formatStateUsing(fn (ServerProvider $record): string => $record->project_id ? 'No' : 'Yes'),
             TextColumn::make('created_at')
                 ->label('Created At')
                 ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
@@ -61,12 +65,10 @@ class ServerProvidersList extends Widget
                 EditAction::make('edit')
                     ->label('Edit')
                     ->modalHeading('Edit Server Provider')
-                    ->mutateRecordDataUsing(function (array $data, ServerProvider $record) {
-                        return [
-                            'name' => $record->profile,
-                            'global' => $record->project_id === null,
-                        ];
-                    })
+                    ->mutateRecordDataUsing(fn (array $data, ServerProvider $record): array => [
+                        'name' => $record->profile,
+                        'global' => $record->project_id === null,
+                    ])
                     ->form(Edit::form())
                     ->authorize(fn (ServerProvider $record) => auth()->user()->can('update', $record))
                     ->using(fn (array $data, ServerProvider $record) => Edit::action($record, $data))
@@ -75,7 +77,7 @@ class ServerProvidersList extends Widget
                     ->label('Delete')
                     ->modalHeading('Delete Server Provider')
                     ->authorize(fn (ServerProvider $record) => auth()->user()->can('delete', $record))
-                    ->using(function (array $data, ServerProvider $record) {
+                    ->using(function (array $data, ServerProvider $record): void {
                         try {
                             app(DeleteServerProvider::class)->delete($record);
                         } catch (Exception $e) {

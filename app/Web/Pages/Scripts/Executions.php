@@ -42,16 +42,14 @@ class Executions extends Page
     {
         $form = [
             Select::make('server')
-                ->options(function () {
-                    return auth()->user()?->currentProject?->servers?->pluck('name', 'id') ?? [];
-                })
+                ->options(fn () => auth()->user()?->currentProject?->servers?->pluck('name', 'id') ?? [])
                 ->rules(fn (Get $get) => ExecuteScript::rules($get())['server'])
                 ->searchable()
                 ->reactive(),
             Select::make('user')
                 ->rules(fn (Get $get) => ExecuteScript::rules($get())['user'])
                 ->native(false)
-                ->options(function (Get $get) {
+                ->options(function (Get $get): array {
                     $users = ['root'];
 
                     $server = Server::query()->find($get('server'));
@@ -74,7 +72,7 @@ class Executions extends Page
                 ->icon('heroicon-o-bolt')
                 ->modalWidth(MaxWidth::Large)
                 ->form($form)
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     app(ExecuteScript::class)->execute($this->script, $data);
 
                     $this->dispatch('$refresh');

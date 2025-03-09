@@ -10,11 +10,14 @@ class SelectProject extends Widget
 {
     protected static string $view = 'widgets.select-project';
 
-    public ?Project $currentProject;
+    public ?Project $currentProject = null;
 
+    /**
+     * @var Collection<int, Project>
+     */
     public Collection $projects;
 
-    public int|string|null $project;
+    public int|string|null $project = null;
 
     public function mount(): void
     {

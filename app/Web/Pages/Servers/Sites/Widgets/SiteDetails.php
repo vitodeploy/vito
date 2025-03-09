@@ -28,6 +28,9 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
@@ -59,7 +62,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel(),
                         TextEntry::make('type')
                             ->extraAttributes(['class' => 'capitalize'])
-                            ->icon(fn ($state) => 'icon-'.$state)
+                            ->icon(fn ($state): string => 'icon-'.$state)
                             ->inlineLabel(),
                         TextEntry::make('tags.*')
                             ->default('No tags')
@@ -67,7 +70,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel()
                             ->badge()
                             ->color(fn ($state) => is_object($state) ? $state->color : 'gray')
-                            ->icon(fn ($state) => is_object($state) ? 'heroicon-o-tag' : '')
+                            ->icon(fn ($state): string => is_object($state) ? 'heroicon-o-tag' : '')
                             ->suffixAction(
                                 EditTags::infolist($this->site)
                             ),
@@ -93,8 +96,8 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             ),
 
                                     ])
-                                    ->action(function (array $data) {
-                                        run_action($this, function () use ($data) {
+                                    ->action(function (array $data): void {
+                                        run_action($this, function () use ($data): void {
                                             app(UpdatePHPVersion::class)->update($this->site, $data);
 
                                             Notification::make()
@@ -108,7 +111,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel()
                             ->badge()
                             ->default('No aliases')
-                            ->color(fn ($state) => $state == 'No aliases' ? 'gray' : 'primary')
+                            ->color(fn ($state): string => $state == 'No aliases' ? 'gray' : 'primary')
                             ->suffixAction(
                                 Action::make('edit_aliases')
                                     ->icon('heroicon-o-pencil-square')
@@ -124,8 +127,8 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             ->nestedRecursiveRules(UpdateAliases::rules()['aliases.*']),
 
                                     ])
-                                    ->action(function (array $data) {
-                                        run_action($this, function () use ($data) {
+                                    ->action(function (array $data): void {
+                                        run_action($this, function () use ($data): void {
                                             app(UpdateAliases::class)->update($this->site, $data);
 
                                             Notification::make()
@@ -169,8 +172,8 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             )
                                             ->placeholder('Select source control'),
                                     ])
-                                    ->action(function (array $data) {
-                                        run_action($this, function () use ($data) {
+                                    ->action(function (array $data): void {
+                                        run_action($this, function () use ($data): void {
                                             app(UpdateSourceControl::class)->update($this->site, $data);
 
                                             Notification::make()

@@ -10,6 +10,9 @@ use Illuminate\Validation\ValidationException;
 
 class CreateDatabase
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function create(Server $server, array $input): Database
     {
         $database = new Database([
@@ -34,6 +37,9 @@ class CreateDatabase
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     *
      * @throws ValidationException
      */
     public static function rules(Server $server, array $input): array

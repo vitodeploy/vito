@@ -10,6 +10,9 @@ use Illuminate\Validation\Rule;
 
 class Install
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function install(Server $server, array $input): Service
     {
         $input['type'] = config('core.service_types')[$input['name']];
@@ -28,11 +31,11 @@ class Install
 
         $service->save();
 
-        dispatch(function () use ($service) {
+        dispatch(function () use ($service): void {
             $service->handler()->install();
             $service->status = ServiceStatus::READY;
             $service->save();
-        })->catch(function () use ($service) {
+        })->catch(function () use ($service): void {
             $service->status = ServiceStatus::INSTALLATION_FAILED;
             $service->save();
         })->onConnection('ssh');
@@ -40,6 +43,10 @@ class Install
         return $service;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<mixed>>
+     */
     public static function rules(array $input): array
     {
         $rules = [

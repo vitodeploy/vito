@@ -17,8 +17,14 @@ class SshKeysList extends TableWidget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<SshKey>
+     */
     protected function getTableQuery(): Builder
     {
         return SshKey::withTrashed()
@@ -52,7 +58,7 @@ class SshKeysList extends TableWidget
                 DeleteAction::make('delete')
                     ->hiddenLabel()
                     ->authorize(fn (SshKey $record) => auth()->user()->can('deleteServer', [SshKey::class, $this->server]))
-                    ->using(function (SshKey $record) {
+                    ->using(function (SshKey $record): void {
                         try {
                             app(DeleteKeyFromServer::class)->delete($this->server, $record);
                         } catch (Exception $e) {

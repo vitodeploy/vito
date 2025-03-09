@@ -24,6 +24,9 @@ class Index extends Page
 
     public string $token = '';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public static function canAccess(): bool
@@ -59,8 +62,8 @@ class Index extends Page
                 ->icon('heroicon-o-plus')
                 ->modalHeading('Create a new Key')
                 ->modalSubmitActionLabel('Create')
-                ->form(function () {
-                    if ($this->token) {
+                ->form(function (): array {
+                    if ($this->token !== '' && $this->token !== '0') {
                         return [];
                     }
 
@@ -76,8 +79,8 @@ class Index extends Page
                             ->required(),
                     ];
                 })
-                ->infolist(function () {
-                    if ($this->token) {
+                ->infolist(function (): array {
+                    if ($this->token !== '' && $this->token !== '0') {
                         return [
                             TextEntry::make('token')
                                 ->state($this->token)
@@ -91,7 +94,7 @@ class Index extends Page
                 })
                 ->authorize('create', PersonalAccessToken::class)
                 ->modalWidth(MaxWidth::Large)
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     $permissions = ['read'];
                     if ($data['permission'] === 'write') {
                         $permissions[] = 'write';
@@ -105,11 +108,11 @@ class Index extends Page
                     $this->halt();
                 })
                 ->modalSubmitAction(function () {
-                    if ($this->token) {
+                    if ($this->token !== '' && $this->token !== '0') {
                         return false;
                     }
                 })
-                ->closeModalByClickingAway(fn () => ! $this->token),
+                ->closeModalByClickingAway(fn (): bool => $this->token === '' || $this->token === '0'),
         ];
     }
 }

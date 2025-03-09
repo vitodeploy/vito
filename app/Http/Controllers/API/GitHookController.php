@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GitHook;
 use App\Models\ServerLog;
 use App\Notifications\SourceControlDisconnected;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Spatie\RouteAttributes\Attributes\Any;
@@ -17,7 +18,7 @@ use Throwable;
 class GitHookController extends Controller
 {
     #[Any('api/git-hooks', name: 'api.git-hooks')]
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         if (! $request->input('secret')) {
             abort(404);

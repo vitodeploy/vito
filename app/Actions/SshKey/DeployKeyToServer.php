@@ -10,6 +10,9 @@ use Illuminate\Validation\Rule;
 
 class DeployKeyToServer
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function deploy(Server $server, array $input): void
     {
         /** @var SshKey $sshKey */
@@ -23,6 +26,9 @@ class DeployKeyToServer
         ]);
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(User $user, Server $server): array
     {
         return [

@@ -20,8 +20,14 @@ class DatabaseUsersList extends Widget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<DatabaseUser>
+     */
     protected function getTableQuery(): Builder
     {
         return DatabaseUser::query()->where('server_id', $this->server->id);
@@ -73,7 +79,7 @@ class DatabaseUsersList extends Widget
                     ->default(fn (DatabaseUser $record) => $record->password)
                     ->disabled(),
             ])
-            ->action(function (DatabaseUser $record, array $data) {
+            ->action(function (DatabaseUser $record, array $data): void {
                 //
             })
             ->modalSubmitAction(false)
@@ -94,11 +100,11 @@ class DatabaseUsersList extends Widget
                 CheckboxList::make('databases')
                     ->label('Databases')
                     ->options($this->server->databases()->pluck('name', 'name')->toArray())
-                    ->rules(fn (callable $get) => LinkUser::rules($this->server, $get()))
+                    ->rules(fn (callable $get): array => LinkUser::rules($this->server, $get()))
                     ->default(fn (DatabaseUser $record) => $record->databases),
             ])
-            ->action(function (DatabaseUser $record, array $data) {
-                run_action($this, function () use ($record, $data) {
+            ->action(function (DatabaseUser $record, array $data): void {
+                run_action($this, function () use ($record, $data): void {
                     app(LinkUser::class)->link($record, $data);
 
                     Notification::make()
@@ -119,8 +125,8 @@ class DatabaseUsersList extends Widget
             ->tooltip('Delete')
             ->authorize(fn ($record) => auth()->user()->can('delete', $record))
             ->requiresConfirmation()
-            ->action(function (DatabaseUser $record) {
-                run_action($this, function () use ($record) {
+            ->action(function (DatabaseUser $record): void {
+                run_action($this, function () use ($record): void {
                     app(DeleteDatabaseUser::class)->delete($this->server, $record);
                     $this->dispatch('$refresh');
                 });

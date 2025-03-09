@@ -17,8 +17,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TagsList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Tag>
+     */
     protected function getTableQuery(): Builder
     {
         return Tag::getByProjectId(auth()->user()->current_project_id);
@@ -54,13 +60,11 @@ class TagsList extends Widget
     private function editAction(): Action
     {
         return EditAction::make('edit')
-            ->fillForm(function (Tag $record) {
-                return [
-                    'name' => $record->name,
-                    'color' => $record->color,
-                    'global' => $record->project_id === null,
-                ];
-            })
+            ->fillForm(fn (Tag $record): array => [
+                'name' => $record->name,
+                'color' => $record->color,
+                'global' => $record->project_id === null,
+            ])
             ->form(Edit::form())
             ->authorize(fn (Tag $record) => auth()->user()->can('update', $record))
             ->using(fn (array $data, Tag $record) => Edit::action($record, $data))
@@ -71,7 +75,7 @@ class TagsList extends Widget
     {
         return DeleteAction::make('delete')
             ->authorize(fn (Tag $record) => auth()->user()->can('delete', $record))
-            ->using(function (Tag $record) {
+            ->using(function (Tag $record): void {
                 app(DeleteTag::class)->delete($record);
             });
     }

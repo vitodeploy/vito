@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Metric extends Model
 {
+    /** @use HasFactory<\Database\Factories\MetricFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -53,6 +54,9 @@ class Metric extends Model
         'disk_free' => 'float',
     ];
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

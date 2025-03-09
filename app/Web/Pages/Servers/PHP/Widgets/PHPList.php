@@ -29,8 +29,14 @@ class PHPList extends Widget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Service>
+     */
     protected function getTableQuery(): Builder
     {
         return Service::query()->where('type', 'php')->where('server_id', $this->server->id);
@@ -49,8 +55,8 @@ class PHPList extends Widget
             TextColumn::make('is_default')
                 ->label('Default Cli')
                 ->badge()
-                ->color(fn (Service $service) => $service->is_default ? 'primary' : 'gray')
-                ->state(fn (Service $service) => $service->is_default ? 'Yes' : 'No')
+                ->color(fn (Service $service): string => $service->is_default ? 'primary' : 'gray')
+                ->state(fn (Service $service): string => $service->is_default ? 'Yes' : 'No')
                 ->sortable(),
             TextColumn::make('created_at')
                 ->label('Installed At')
@@ -93,12 +99,12 @@ class PHPList extends Widget
                     ->rules(InstallPHPExtension::rules($this->server)['version']),
                 Select::make('extension')
                     ->options(
-                        collect(config('core.php_extensions'))
+                        collect((array) config('core.php_extensions'))
                             ->mapWithKeys(fn ($extension) => [$extension => $extension])
                     )
                     ->rules(InstallPHPExtension::rules($this->server)['extension']),
             ])
-            ->action(function (array $data) {
+            ->action(function (array $data): void {
                 $this->validate();
 
                 try {
@@ -132,7 +138,7 @@ class PHPList extends Widget
             ->authorize(fn (Service $php) => auth()->user()?->can('update', $php))
             ->label('Make Default CLI')
             ->hidden(fn (Service $service) => $service->is_default)
-            ->action(function (Service $service) {
+            ->action(function (Service $service): void {
                 try {
                     app(ChangeDefaultCli::class)->change($this->server, ['version' => $service->version]);
 
@@ -176,7 +182,7 @@ class PHPList extends Widget
                         'version' => $service->version,
                     ])),
             ])
-            ->action(function (array $data) {
+            ->action(function (array $data): void {
                 $this->validate();
 
                 try {
@@ -205,7 +211,7 @@ class PHPList extends Widget
         return Action::make('restart-fpm')
             ->authorize(fn (Service $php) => auth()->user()?->can('update', $php))
             ->label('Restart PHP FPM')
-            ->action(function (Service $service) {
+            ->action(function (Service $service): void {
                 try {
                     app(Manage::class)->restart($service);
                 } catch (Exception $e) {
@@ -228,7 +234,7 @@ class PHPList extends Widget
             ->label('Uninstall')
             ->color('danger')
             ->requiresConfirmation()
-            ->action(function (Service $service) {
+            ->action(function (Service $service): void {
                 try {
                     app(Uninstall::class)->uninstall($service);
                 } catch (Exception $e) {

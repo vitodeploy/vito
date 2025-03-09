@@ -21,6 +21,9 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
@@ -55,7 +58,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                 Action::make('check-update')
                                     ->icon('heroicon-o-arrow-path')
                                     ->tooltip('Check Now')
-                                    ->action(function (Server $record) {
+                                    ->action(function (Server $record): void {
                                         $record->checkForUpdates();
 
                                         $this->dispatch('$refresh');
@@ -75,7 +78,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                     ->icon('heroicon-o-check-circle')
                                     ->tooltip('Update Now')
                                     ->requiresConfirmation()
-                                    ->action(function (Server $record) {
+                                    ->action(function (Server $record): void {
                                         app(Update::class)->update($record);
 
                                         $this->dispatch('$refresh');
@@ -95,7 +98,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel()
                             ->badge()
                             ->color(fn ($state) => is_object($state) ? $state->color : 'gray')
-                            ->icon(fn ($state) => is_object($state) ? 'heroicon-o-tag' : '')
+                            ->icon(fn ($state): string => is_object($state) ? 'heroicon-o-tag' : '')
                             ->suffixAction(
                                 EditTags::infolist($this->server)
                             ),

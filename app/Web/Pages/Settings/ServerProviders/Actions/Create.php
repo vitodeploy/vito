@@ -13,13 +13,16 @@ use Filament\Notifications\Notification;
 
 class Create
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(): array
     {
         return [
             Select::make('provider')
                 ->options(
-                    collect(config('core.server_providers'))
-                        ->filter(fn ($provider) => $provider != ServerProvider::CUSTOM)
+                    collect((array) config('core.server_providers'))
+                        ->filter(fn ($provider): bool => $provider != ServerProvider::CUSTOM)
                         ->mapWithKeys(fn ($provider) => [$provider => $provider])
                 )
                 ->live()
@@ -30,15 +33,15 @@ class Create
             TextInput::make('token')
                 ->label('API Key')
                 ->validationAttribute('API Key')
-                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['token']))
+                ->visible(fn ($get): bool => isset(CreateServerProvider::rules($get())['token']))
                 ->rules(fn (Get $get) => CreateServerProvider::rules($get())['token']),
             TextInput::make('key')
                 ->label('Access Key')
-                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['key']))
+                ->visible(fn ($get): bool => isset(CreateServerProvider::rules($get())['key']))
                 ->rules(fn (Get $get) => CreateServerProvider::rules($get())['key']),
             TextInput::make('secret')
                 ->label('Secret')
-                ->visible(fn ($get) => isset(CreateServerProvider::rules($get())['secret']))
+                ->visible(fn ($get): bool => isset(CreateServerProvider::rules($get())['secret']))
                 ->rules(fn (Get $get) => CreateServerProvider::rules($get())['secret']),
             Checkbox::make('global')
                 ->label('Is Global (Accessible in all projects)'),
@@ -46,12 +49,16 @@ class Create
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     *
      * @throws Exception
      */
     public static function action(array $data): void
     {
         try {
-            app(CreateServerProvider::class)->create(auth()->user(), auth()->user()->currentProject, $data);
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+            app(CreateServerProvider::class)->create($user, auth()->user()->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

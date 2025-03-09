@@ -30,6 +30,9 @@ class FilesList extends Widget
 
     public string $path;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void
@@ -43,6 +46,9 @@ class FilesList extends Widget
         $this->refresh();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     protected function getTableHeaderActions(): array
     {
         return [
@@ -63,6 +69,9 @@ class FilesList extends Widget
         ];
     }
 
+    /**
+     * @return Builder<File>
+     */
     protected function getTableQuery(): Builder
     {
         return File::query()
@@ -79,7 +88,7 @@ class FilesList extends Widget
             ->columns([
                 IconColumn::make('type')
                     ->sortable()
-                    ->icon(fn (File $file) => $this->getIcon($file)),
+                    ->icon(fn (File $file): string => $this->getIcon($file)),
                 TextColumn::make('name')
                     ->sortable(),
                 TextColumn::make('size')
@@ -93,7 +102,7 @@ class FilesList extends Widget
                 TextColumn::make('permissions')
                     ->sortable(),
             ])
-            ->recordUrl(function (File $file) {
+            ->recordUrl(function (File $file): string {
                 if ($file->type === 'directory') {
                     return Index::getUrl([
                         'server' => $this->server->id,
@@ -172,7 +181,7 @@ class FilesList extends Widget
             ->label('Home')
             ->size(ActionSize::Small)
             ->icon('heroicon-o-home')
-            ->action(function () {
+            ->action(function (): void {
                 $this->path = home_path($this->serverUser);
                 $this->refresh();
             });
@@ -211,8 +220,8 @@ class FilesList extends Widget
         return Action::make('new-file')
             ->label('New File')
             ->icon('heroicon-o-document-text')
-            ->action(function (array $data) {
-                run_action($this, function () use ($data) {
+            ->action(function (array $data): void {
+                run_action($this, function () use ($data): void {
                     $this->server->os()->write(
                         $this->path.'/'.$data['name'],
                         str_replace("\r\n", "\n", $data['content']),
@@ -221,13 +230,11 @@ class FilesList extends Widget
                     $this->refresh();
                 });
             })
-            ->form(function () {
-                return [
-                    TextInput::make('name')
-                        ->placeholder('file-name.txt'),
-                    CodeEditorField::make('content'),
-                ];
-            })
+            ->form(fn (): array => [
+                TextInput::make('name')
+                    ->placeholder('file-name.txt'),
+                CodeEditorField::make('content'),
+            ])
             ->modalSubmitActionLabel('Create')
             ->modalHeading('New File')
             ->modalWidth('4xl');
@@ -238,8 +245,8 @@ class FilesList extends Widget
         return Action::make('new-directory')
             ->label('New Directory')
             ->icon('heroicon-o-folder')
-            ->action(function (array $data) {
-                run_action($this, function () use ($data) {
+            ->action(function (array $data): void {
+                run_action($this, function () use ($data): void {
                     $this->server->os()->mkdir(
                         $this->path.'/'.$data['name'],
                         $this->serverUser
@@ -247,12 +254,10 @@ class FilesList extends Widget
                     $this->refresh();
                 });
             })
-            ->form(function () {
-                return [
-                    TextInput::make('name')
-                        ->placeholder('directory name'),
-                ];
-            })
+            ->form(fn (): array => [
+                TextInput::make('name')
+                    ->placeholder('directory name'),
+            ])
             ->modalSubmitActionLabel('Create')
             ->modalHeading('New Directory')
             ->modalWidth('lg');
@@ -263,11 +268,11 @@ class FilesList extends Widget
         return Action::make('upload')
             ->label('Upload File')
             ->icon('heroicon-o-arrow-up-on-square')
-            ->action(function (array $data) {
+            ->action(function (array $data): void {
                 //
             })
-            ->after(function (array $data) {
-                run_action($this, function () use ($data) {
+            ->after(function (array $data): void {
+                run_action($this, function () use ($data): void {
                     foreach ($data['file'] as $file) {
                         $this->server->ssh()->upload(
                             Storage::disk('tmp')->path($file),
@@ -278,14 +283,12 @@ class FilesList extends Widget
                     $this->refresh();
                 });
             })
-            ->form(function () {
-                return [
-                    FileUpload::make('file')
-                        ->disk('tmp')
-                        ->multiple()
-                        ->preserveFilenames(),
-                ];
-            })
+            ->form(fn (): array => [
+                FileUpload::make('file')
+                    ->disk('tmp')
+                    ->multiple()
+                    ->preserveFilenames(),
+            ])
             ->modalSubmitActionLabel('Upload to Server')
             ->modalHeading('Upload File')
             ->modalWidth('xl');
@@ -297,8 +300,8 @@ class FilesList extends Widget
             ->tooltip('Extract')
             ->icon('heroicon-o-archive-box')
             ->hiddenLabel()
-            ->visible(fn (File $file) => $file->isExtractable())
-            ->action(function (File $file) {
+            ->visible(fn (File $file): bool => $file->isExtractable())
+            ->action(function (File $file): void {
                 $file->server->os()->extract($file->getFilePath(), $file->path, $file->server_user);
                 $this->refresh();
             });
@@ -310,7 +313,7 @@ class FilesList extends Widget
             ->tooltip('Download')
             ->icon('heroicon-o-arrow-down-tray')
             ->hiddenLabel()
-            ->visible(fn (File $file) => $file->type === 'file')
+            ->visible(fn (File $file): bool => $file->type === 'file')
             ->action(function (File $file) {
                 $file->server->ssh($file->server_user)->download(
                     Storage::disk('tmp')->path($file->name),
@@ -327,8 +330,8 @@ class FilesList extends Widget
             ->tooltip('Edit')
             ->icon('heroicon-o-pencil')
             ->hiddenLabel()
-            ->visible(fn (File $file) => $file->type === 'file')
-            ->action(function (File $file, array $data) {
+            ->visible(fn (File $file): bool => $file->type === 'file')
+            ->action(function (File $file, array $data): void {
                 $file->server->os()->write(
                     $file->getFilePath(),
                     str_replace("\r\n", "\n", $data['content']),
@@ -336,19 +339,17 @@ class FilesList extends Widget
                 );
                 $this->refresh();
             })
-            ->form(function (File $file) {
-                return [
-                    CodeEditorField::make('content')
-                        ->formatStateUsing(function () use ($file) {
-                            $file->server->ssh($file->server_user)->download(
-                                Storage::disk('tmp')->path($file->name),
-                                $file->getFilePath()
-                            );
+            ->form(fn (File $file): array => [
+                CodeEditorField::make('content')
+                    ->formatStateUsing(function () use ($file) {
+                        $file->server->ssh($file->server_user)->download(
+                            Storage::disk('tmp')->path($file->name),
+                            $file->getFilePath()
+                        );
 
-                            return Storage::disk('tmp')->get(basename($file->getFilePath()));
-                        }),
-                ];
-            })
+                        return Storage::disk('tmp')->get(basename($file->getFilePath()));
+                    }),
+            ])
             ->modalSubmitActionLabel('Save')
             ->modalHeading('Edit')
             ->modalWidth('4xl');
@@ -362,9 +363,9 @@ class FilesList extends Widget
             ->color('danger')
             ->hiddenLabel()
             ->requiresConfirmation()
-            ->visible(fn (File $file) => $file->name !== '..')
-            ->action(function (File $file) {
-                run_action($this, function () use ($file) {
+            ->visible(fn (File $file): bool => $file->name !== '..')
+            ->action(function (File $file): void {
+                run_action($this, function () use ($file): void {
                     $file->delete();
                 });
             });

@@ -11,6 +11,9 @@ use Illuminate\Validation\ValidationException;
 class LinkUser
 {
     /**
+     * @param  array<string, mixed>  $input
+     * @return DatabaseUser $databaseUser
+     *
      * @throws ValidationException
      */
     public function link(DatabaseUser $databaseUser, array $input): DatabaseUser
@@ -49,6 +52,10 @@ class LinkUser
         return $databaseUser;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(Server $server, array $input): array
     {
         return [

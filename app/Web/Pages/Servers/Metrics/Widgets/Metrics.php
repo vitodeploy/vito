@@ -14,10 +14,16 @@ class Metrics extends BaseWidget
 {
     public Server $server;
 
+    /**
+     * @var array<string, mixed>
+     */
     public array $filters = [];
 
     protected static bool $isLazy = false;
 
+    /**
+     * @param  array<string, mixed>  $filters
+     */
     #[On('updateFilters')]
     public function updateFilters(array $filters): void
     {

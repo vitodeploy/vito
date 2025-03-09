@@ -7,6 +7,11 @@ use Illuminate\Validation\Rule;
 
 class UpdateUserProfileInformation
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function update(User $user, array $input): void
     {
         if ($input['email'] !== $user->email) {
@@ -20,6 +25,9 @@ class UpdateUserProfileInformation
         }
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(User $user): array
     {
         return [
@@ -33,7 +41,7 @@ class UpdateUserProfileInformation
     }
 
     /**
-     * Update the given verified user's profile information.
+     * @param  array<string, mixed>  $input
      */
     protected function updateVerifiedUser(User $user, array $input): void
     {

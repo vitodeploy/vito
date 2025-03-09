@@ -13,31 +13,55 @@ class ServerLogPolicy
 
     public function viewAny(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $server->project->users->contains($user);
     }
 
     public function view(User $user, ServerLog $serverLog): bool
     {
-        return $user->isAdmin() || $serverLog->server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $serverLog->server->project->users->contains($user);
     }
 
     public function create(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $server->project->users->contains($user);
     }
 
     public function update(User $user, ServerLog $serverLog): bool
     {
-        return $user->isAdmin() || $serverLog->server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $serverLog->server->project->users->contains($user);
     }
 
     public function delete(User $user, ServerLog $serverLog): bool
     {
-        return $user->isAdmin() || $serverLog->server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $serverLog->server->project->users->contains($user);
     }
 
     public function deleteMany(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $server->project->users->contains($user);
     }
 }

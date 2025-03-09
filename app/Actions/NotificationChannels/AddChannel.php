@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 class AddChannel
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      * @throws Exception
      */
@@ -49,6 +51,10 @@ class AddChannel
         $channel->save();
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     public static function rules(array $input): array
     {
         $rules = [
@@ -62,6 +68,10 @@ class AddChannel
         return array_merge($rules, self::providerRules($input));
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     private static function providerRules(array $input): array
     {
         if (! isset($input['provider'])) {

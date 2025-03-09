@@ -11,8 +11,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SshKeysList extends TableWidget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<SshKey>
+     */
     protected function getTableQuery(): Builder
     {
         return SshKey::query()->where('user_id', auth()->id());
@@ -43,8 +49,8 @@ class SshKeysList extends TableWidget
                 DeleteAction::make('delete')
                     ->requiresConfirmation()
                     ->authorize(fn (SshKey $record) => auth()->user()->can('delete', $record))
-                    ->action(function (SshKey $record) {
-                        run_action($this, function () use ($record) {
+                    ->action(function (SshKey $record): void {
+                        run_action($this, function () use ($record): void {
                             $record->delete();
                             $this->dispatch('$refresh');
                         });

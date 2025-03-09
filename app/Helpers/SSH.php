@@ -23,13 +23,13 @@ class SSH
 {
     public Server $server;
 
-    public ?ServerLog $log;
+    public ?ServerLog $log = null;
 
     protected SSH2|SFTP|null $connection = null;
 
-    protected ?string $user;
+    protected ?string $user = null;
 
-    protected ?string $asUser;
+    protected ?string $asUser = null;
 
     protected string $publicKey;
 
@@ -42,7 +42,7 @@ class SSH
         $this->asUser = null;
         $this->server = $server->refresh();
         $this->user = $server->getSshUser();
-        if ($asUser && $asUser != $server->getSshUser()) {
+        if ($asUser && $asUser !== $server->getSshUser()) {
             $this->asUser = $asUser;
         }
         $this->privateKey = PublicKeyLoader::loadPrivateKey(
@@ -94,9 +94,9 @@ class SSH
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        if (! $this->log && $log) {
+        if (! $this->log instanceof \App\Models\ServerLog && $log) {
             $this->log = ServerLog::newLog($this->server, $log);
-            if ($siteId) {
+            if ($siteId !== null && $siteId !== 0) {
                 $this->log->forSite($siteId);
             }
             $this->log->save();
@@ -111,14 +111,14 @@ class SSH
         }
 
         try {
-            if ($this->asUser) {
+            if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
                 $command = addslashes($command);
                 $command = str_replace('\\\'', '\'', $command);
                 $command = 'sudo su - '.$this->asUser.' -c '.'"'.trim($command).'"';
             }
 
             $this->connection->setTimeout(0);
-            if ($stream) {
+            if ($stream === true) {
                 $this->connection->exec($command, function ($output) use ($streamCallback) {
                     $this->log?->write($output);
 
@@ -126,22 +126,20 @@ class SSH
                 });
 
                 return '';
-            } else {
-                $output = '';
-                $this->connection->exec($command, function ($out) use (&$output) {
-                    $this->log?->write($out);
-                    $output .= $out;
-                });
-
-                if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {
-                    throw new SSHCommandError(
-                        message: 'SSH command failed with an error',
-                        log: $this->log
-                    );
-                }
-
-                return $output;
             }
+            $output = '';
+            $this->connection->exec($command, function (string $out) use (&$output): void {
+                $this->log?->write($out);
+                $output .= $out;
+            });
+            if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {
+                throw new SSHCommandError(
+                    message: 'SSH command failed with an error',
+                    log: $this->log
+                );
+            }
+
+            return $output;
         } catch (Throwable $e) {
             Log::error('Error executing command', [
                 'msg' => $e->getMessage(),
@@ -172,7 +170,7 @@ class SSH
         $this->connection->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
 
         $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));
-        if (! $owner) {
+        if ($owner === null || $owner === '' || $owner === '0') {
             $owner = $this->user;
         }
         $this->exec(sprintf('sudo chown %s:%s %s', $owner, $owner, $remote));
@@ -222,7 +220,7 @@ class SSH
      */
     public function disconnect(): void
     {
-        if ($this->connection) {
+        if ($this->connection instanceof \phpseclib3\Net\SSH2) {
             $this->connection->disconnect();
             $this->connection = null;
         }

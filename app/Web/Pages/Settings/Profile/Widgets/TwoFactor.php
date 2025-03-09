@@ -22,6 +22,9 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
@@ -70,7 +73,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
                         ->hiddenLabel()
                         ->extraAttributes(['class' => 'rounded-lg border border-gray-100 p-2 dark:border-gray-700'])
                         ->view('components.container', [
-                            'content' => $this->enabled ? implode('</br>', json_decode(decrypt(auth()->user()->two_factor_recovery_codes), true)) : null,
+                            'content' => $this->enabled ? implode('</br>', json_decode((string) decrypt(auth()->user()->two_factor_recovery_codes), true)) : null,
                         ])
                         ->visible($this->enabled),
                 ])
@@ -78,7 +81,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
                     Action::make('two-factor')
                         ->color($this->enabled ? 'danger' : 'primary')
                         ->label($this->enabled ? 'Disable' : 'Enable')
-                        ->action(function () {
+                        ->action(function (): void {
                             if ($this->enabled) {
                                 $this->disableTwoFactor();
                             } else {

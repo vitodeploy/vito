@@ -21,6 +21,9 @@ class ServerSummary extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
@@ -39,7 +42,7 @@ class ServerSummary extends Widget implements HasForms, HasInfolists
                     ->schema([
                         TextEntry::make('name')
                             ->label('Name')
-                            ->url(fn (Server $record) => View::getUrl(parameters: ['server' => $record])),
+                            ->url(fn (Server $record): string => View::getUrl(parameters: ['server' => $record])),
                         TextEntry::make('ip')
                             ->label('IP Address')
                             ->icon('heroicon-o-clipboard-document')
@@ -48,14 +51,12 @@ class ServerSummary extends Widget implements HasForms, HasInfolists
                         TextEntry::make('status')
                             ->label('Status')
                             ->badge()
-                            ->color(static function ($state): string {
-                                return Server::$statusColors[$state];
-                            })
+                            ->color(static fn ($state): string => Server::$statusColors[$state])
                             ->suffixAction(
                                 Action::make('check-status')
                                     ->icon('heroicon-o-arrow-path')
                                     ->tooltip('Check Connection')
-                                    ->action(function (Server $record) {
+                                    ->action(function (Server $record): void {
                                         $previousStatus = $record->status;
 
                                         $record = $record->checkConnection();

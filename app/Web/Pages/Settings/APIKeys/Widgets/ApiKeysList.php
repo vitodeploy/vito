@@ -12,10 +12,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ApiKeysList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<PersonalAccessToken>
+     */
     protected function getTableQuery(): Builder
     {
+        /** @phpstan-ignore-next-line */
         return auth()->user()->tokens()->getQuery();
     }
 
@@ -35,7 +42,7 @@ class ApiKeysList extends Widget
                 ->sortable(),
             TextColumn::make('last_used_at')
                 ->label('Last Used At')
-                ->formatStateUsing(fn (PersonalAccessToken $record) => $record->getDateTimeByTimezone($record->last_used_at))
+                ->formatStateUsing(fn (PersonalAccessToken $record): ?string => $record->getDateTimeByTimezone($record->last_used_at))
                 ->searchable()
                 ->sortable(),
         ];
@@ -51,7 +58,7 @@ class ApiKeysList extends Widget
                 DeleteAction::make('delete')
                     ->modalHeading('Delete Token')
                     ->authorize(fn (PersonalAccessToken $record) => auth()->user()->can('delete', $record))
-                    ->using(function (array $data, PersonalAccessToken $record) {
+                    ->using(function (array $data, PersonalAccessToken $record): void {
                         $record->delete();
                     }),
             ])

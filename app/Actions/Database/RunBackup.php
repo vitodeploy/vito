@@ -20,7 +20,7 @@ class RunBackup
         ]);
         $file->save();
 
-        dispatch(function () use ($file, $backup) {
+        dispatch(function () use ($file, $backup): void {
             /** @var Database $databaseHandler */
             $databaseHandler = $file->backup->server->database()->handler();
             $databaseHandler->runBackup($file);
@@ -31,7 +31,7 @@ class RunBackup
                 $backup->status = BackupStatus::RUNNING;
                 $backup->save();
             }
-        })->catch(function () use ($file, $backup) {
+        })->catch(function () use ($file, $backup): void {
             $backup->status = BackupStatus::FAILED;
             $backup->save();
             $file->status = BackupFileStatus::FAILED;

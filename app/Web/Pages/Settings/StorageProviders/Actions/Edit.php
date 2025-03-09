@@ -9,6 +9,9 @@ use Filament\Forms\Components\TextInput;
 
 class Edit
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(): array
     {
         return [
@@ -20,6 +23,9 @@ class Edit
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function action(StorageProvider $provider, array $data): void
     {
         app(EditStorageProvider::class)->edit($provider, auth()->user()->currentProject, $data);

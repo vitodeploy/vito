@@ -17,7 +17,7 @@ use Illuminate\Support\Collection;
  * @property string $content
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property Collection<ScriptExecution> $executions
+ * @property Collection<int, ScriptExecution> $executions
  * @property ?ScriptExecution $lastExecution
  * @property User $user
  * @property int $project_id
@@ -25,6 +25,7 @@ use Illuminate\Support\Collection;
  */
 class Script extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\ScriptFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -43,46 +44,65 @@ class Script extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (Script $script) {
+        static::deleting(function (Script $script): void {
             $script->executions()->delete();
         });
     }
 
+    /**
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Project, covariant $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return array<string>
+     */
     public function getVariables(): array
     {
         $variables = [];
         preg_match_all('/\${(.*?)}/', $this->content, $matches);
-        foreach ($matches[1] as $match) {
-            $variables[] = $match;
-        }
+        $variables = $matches[1];
 
         return array_unique($variables);
     }
 
+    /**
+     * @return HasMany<ScriptExecution, covariant $this>
+     */
     public function executions(): HasMany
     {
         return $this->hasMany(ScriptExecution::class);
     }
 
+    /**
+     * @return HasOne<ScriptExecution, covariant $this>
+     */
     public function lastExecution(): HasOne
     {
         return $this->hasOne(ScriptExecution::class)->latest();
     }
 
+    /**
+     * @return Builder<Script>
+     */
     public static function getByProjectId(int $projectId, int $userId): Builder
     {
-        return self::query()
-            ->where(function (Builder $query) use ($projectId, $userId) {
+        /** @var Builder<Script> $query */
+        $query = static::query();
+
+        return $query
+            ->where(function (Builder $query) use ($projectId, $userId): void {
                 $query->where('project_id', $projectId)
                     ->orWhere('user_id', $userId)
                     ->orWhereNull('project_id');

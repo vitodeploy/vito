@@ -62,7 +62,7 @@ class StorageProviderController extends Controller
     #[Get('{storageProvider}', name: 'api.projects.storage-providers.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show')]
     #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class)]
-    public function show(Project $project, StorageProvider $storageProvider)
+    public function show(Project $project, StorageProvider $storageProvider): \App\Http\Resources\StorageProviderResource
     {
         $this->authorize('view', $storageProvider);
 
@@ -76,7 +76,7 @@ class StorageProviderController extends Controller
     #[BodyParam(name: 'name', description: 'The name of the storage provider.', required: true)]
     #[BodyParam(name: 'global', description: 'Accessible in all projects', enum: [true, false])]
     #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class)]
-    public function update(Request $request, Project $project, StorageProvider $storageProvider)
+    public function update(Request $request, Project $project, StorageProvider $storageProvider): \App\Http\Resources\StorageProviderResource
     {
         $this->authorize('update', $storageProvider);
 
@@ -92,7 +92,7 @@ class StorageProviderController extends Controller
     #[Delete('{storageProvider}', name: 'api.projects.storage-providers.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete')]
     #[Response(status: 204)]
-    public function delete(Project $project, StorageProvider $storageProvider)
+    public function delete(Project $project, StorageProvider $storageProvider): \Illuminate\Http\Response
     {
         $this->authorize('delete', $storageProvider);
 

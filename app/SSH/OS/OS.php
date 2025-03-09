@@ -218,12 +218,14 @@ class OS
     }
 
     /**
+     * @param  array<string, mixed>  $variables
+     *
      * @throws SSHError
      */
     public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null, ?array $variables = []): ServerLog
     {
         $ssh = $this->server->ssh($user);
-        if ($serverLog) {
+        if ($serverLog instanceof \App\Models\ServerLog) {
             $ssh->setLog($serverLog);
         }
         $command = '';
@@ -280,6 +282,8 @@ class OS
     }
 
     /**
+     * @return array<string, string>
+     *
      * @throws SSHError
      */
     public function resourceInfo(): array

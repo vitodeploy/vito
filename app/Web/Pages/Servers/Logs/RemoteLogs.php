@@ -44,7 +44,7 @@ class RemoteLogs extends Page implements HasSecondSubNav
                         ->rules(fn (callable $get) => CreateServerLog::rules()['path']),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     app(CreateServerLog::class)->create($this->server, $data);
 
                     $this->dispatch('$refresh');

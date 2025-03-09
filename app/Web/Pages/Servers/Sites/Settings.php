@@ -15,6 +15,9 @@ class Settings extends Page
 
     protected static ?string $title = 'Settings';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void
@@ -44,8 +47,8 @@ class Settings extends Page
             ->record($this->site)
             ->modalHeading('Delete Site')
             ->modalDescription('Once your site is deleted, all of its resources and data will be permanently deleted and can\'t be restored')
-            ->using(function () {
-                run_action($this, function () {
+            ->using(function (): void {
+                run_action($this, function (): void {
                     app(DeleteSite::class)->delete($this->site);
 
                     $this->redirect(Index::getUrl(['server' => $this->server]));
@@ -70,8 +73,8 @@ class Settings extends Page
                     })
                     ->rules(['required']),
             ])
-            ->action(function (array $data) {
-                run_action($this, function () use ($data) {
+            ->action(function (array $data): void {
+                run_action($this, function () use ($data): void {
                     /** @var Webserver $handler */
                     $handler = $this->server->webserver()->handler();
                     $handler->updateVHost($this->site, $data['vhost']);

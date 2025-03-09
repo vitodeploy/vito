@@ -18,8 +18,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SourceControlsList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<SourceControl>
+     */
     protected function getTableQuery(): Builder
     {
         return SourceControl::getByProjectId(auth()->user()->current_project_id);
@@ -29,7 +35,7 @@ class SourceControlsList extends Widget
     {
         return [
             IconColumn::make('provider')
-                ->icon(fn (SourceControl $record) => 'icon-'.$record->provider)
+                ->icon(fn (SourceControl $record): string => 'icon-'.$record->provider)
                 ->width(24),
             TextColumn::make('name')
                 ->default(fn (SourceControl $record) => $record->profile)
@@ -39,10 +45,8 @@ class SourceControlsList extends Widget
             TextColumn::make('id')
                 ->label('Global')
                 ->badge()
-                ->color(fn (SourceControl $record) => $record->project_id ? 'gray' : 'success')
-                ->formatStateUsing(function (SourceControl $record) {
-                    return $record->project_id ? 'No' : 'Yes';
-                }),
+                ->color(fn (SourceControl $record): string => $record->project_id ? 'gray' : 'success')
+                ->formatStateUsing(fn (SourceControl $record): string => $record->project_id ? 'No' : 'Yes'),
             TextColumn::make('created_at')
                 ->label('Created At')
                 ->formatStateUsing(fn (SourceControl $record) => $record->created_at_by_timezone)
@@ -61,17 +65,15 @@ class SourceControlsList extends Widget
                 EditAction::make('edit')
                     ->label('Edit')
                     ->modalHeading('Edit Source Control')
-                    ->fillForm(function (array $data, SourceControl $record) {
-                        return [
-                            'provider' => $record->provider,
-                            'name' => $record->profile,
-                            'token' => $record->provider_data['token'] ?? null,
-                            'username' => $record->provider_data['username'] ?? null,
-                            'password' => $record->provider_data['password'] ?? null,
-                            'global' => $record->project_id === null,
-                        ];
-                    })
-                    ->form(fn (SourceControl $record) => Edit::form($record))
+                    ->fillForm(fn (array $data, SourceControl $record): array => [
+                        'provider' => $record->provider,
+                        'name' => $record->profile,
+                        'token' => $record->provider_data['token'] ?? null,
+                        'username' => $record->provider_data['username'] ?? null,
+                        'password' => $record->provider_data['password'] ?? null,
+                        'global' => $record->project_id === null,
+                    ])
+                    ->form(fn (SourceControl $record): array => Edit::form($record))
                     ->authorize(fn (SourceControl $record) => auth()->user()->can('update', $record))
                     ->using(fn (array $data, SourceControl $record) => Edit::action($record, $data))
                     ->modalWidth(MaxWidth::Medium),
@@ -82,7 +84,7 @@ class SourceControlsList extends Widget
                     ->requiresConfirmation()
                     ->modalHeading('Delete Source Control')
                     ->authorize(fn (SourceControl $record) => auth()->user()->can('delete', $record))
-                    ->action(function (array $data, SourceControl $record) {
+                    ->action(function (array $data, SourceControl $record): void {
                         try {
                             app(DeleteSourceControl::class)->delete($record);
 

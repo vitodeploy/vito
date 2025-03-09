@@ -44,10 +44,8 @@ class Wordpress extends AbstractSiteType
             ],
             'database' => [
                 'required',
-                Rule::unique('databases', 'name')->where(function ($query) {
-                    return $query->where('server_id', $this->site->server_id);
-                }),
-                function (string $attribute, mixed $value, Closure $fail) {
+                Rule::unique('databases', 'name')->where(fn ($query) => $query->where('server_id', $this->site->server_id)),
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if (! $this->site->server->database()) {
                         $fail(__('Database is not installed'));
                     }
@@ -55,9 +53,7 @@ class Wordpress extends AbstractSiteType
             ],
             'database_user' => [
                 'required',
-                Rule::unique('database_users', 'username')->where(function ($query) {
-                    return $query->where('server_id', $this->site->server_id);
-                }),
+                Rule::unique('database_users', 'username')->where(fn ($query) => $query->where('server_id', $this->site->server_id)),
             ],
             'database_password' => 'required',
         ];

@@ -10,6 +10,9 @@ use Filament\Forms\Get;
 
 class Edit
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(): array
     {
         return [
@@ -20,8 +23,13 @@ class Edit
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function action(NotificationChannel $channel, array $data): void
     {
-        app(EditChannel::class)->edit($channel, auth()->user(), $data);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        app(EditChannel::class)->edit($channel, $user, $data);
     }
 }

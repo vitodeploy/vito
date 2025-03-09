@@ -53,7 +53,7 @@ class Index extends Page
                 ])
                 ->authorize('create', SshKey::class)
                 ->modalWidth(MaxWidth::Large)
-                ->using(function (array $data) {
+                ->using(function (array $data): void {
                     app(CreateSshKey::class)->create(auth()->user(), $data);
 
                     $this->dispatch('$refresh');

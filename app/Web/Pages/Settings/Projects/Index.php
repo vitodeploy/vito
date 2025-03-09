@@ -47,14 +47,12 @@ class Index extends Page
                 ->icon('heroicon-o-plus')
                 ->authorize('create', Project::class)
                 ->modalWidth(MaxWidth::Large)
-                ->form(function (Form $form) {
-                    return $form->schema([
-                        TextInput::make('name')
-                            ->name('name')
-                            ->rules(CreateProject::rules()['name']),
-                    ])->columns(1);
-                })
-                ->action(function (array $data) {
+                ->form(fn (Form $form): \Filament\Forms\Form => $form->schema([
+                    TextInput::make('name')
+                        ->name('name')
+                        ->rules(CreateProject::rules()['name']),
+                ])->columns(1))
+                ->action(function (array $data): void {
                     app(CreateProject::class)->create(auth()->user(), $data);
 
                     $this->dispatch('$refresh');

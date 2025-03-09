@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class FirewallRule extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\FirewallRuleFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -51,6 +52,9 @@ class FirewallRule extends AbstractModel
         };
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

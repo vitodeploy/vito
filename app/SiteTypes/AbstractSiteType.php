@@ -10,12 +10,7 @@ use Illuminate\Support\Str;
 
 abstract class AbstractSiteType implements SiteType
 {
-    protected Site $site;
-
-    public function __construct(Site $site)
-    {
-        $this->site = $site;
-    }
+    public function __construct(protected Site $site) {}
 
     public function createRules(array $input): array
     {
@@ -86,8 +81,7 @@ abstract class AbstractSiteType implements SiteType
             $php = $this->site->php()->handler();
             $php->createFpmPool(
                 $this->site->user,
-                $this->site->php_version,
-                $this->site->id
+                $this->site->php_version
             );
         }
     }

@@ -27,7 +27,7 @@ class NodeJS extends AbstractService
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasSite = $this->service->server->sites()
                         ->where('nodejs_version', $this->service->version)
                         ->exists();

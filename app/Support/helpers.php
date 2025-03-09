@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 
-function generate_public_key($privateKeyPath, $publicKeyPath): void
+function generate_public_key(string $privateKeyPath, string $publicKeyPath): void
 {
     chmod($privateKeyPath, 0400);
     exec("ssh-keygen -y -f {$privateKeyPath} > {$publicKeyPath}");
 }
 
-function generate_key_pair($path): void
+function generate_key_pair(string $path): void
 {
     exec("ssh-keygen -t ed25519 -m PEM -N '' -f {$path}");
     chmod($path, 0400);
@@ -23,10 +23,10 @@ function generate_key_pair($path): void
 /**
  * @throws Exception
  */
-function date_with_timezone($date, $timezone): string
+function date_with_timezone(mixed $date, string $timezone): string
 {
     $dt = new DateTime('now', new DateTimeZone($timezone));
-    $dt->setTimestamp(strtotime($date));
+    $dt->setTimestamp(strtotime((string) $date));
 
     return $dt->format('Y-m-d H:i:s');
 }
@@ -42,13 +42,13 @@ function show_vito_version(): string
     return $version;
 }
 
-function convert_time_format($string): string
+function convert_time_format(string $string): string
 {
-    $string = preg_replace('/(\d+)m/', '$1 minutes', $string);
-    $string = preg_replace('/(\d+)s/', '$1 seconds', $string);
-    $string = preg_replace('/(\d+)d/', '$1 days', $string);
+    $string = preg_replace('/(\d+)m/', '$1 minutes', (string) $string);
+    $string = preg_replace('/(\d+)s/', '$1 seconds', (string) $string);
+    $string = preg_replace('/(\d+)d/', '$1 days', (string) $string);
 
-    return preg_replace('/(\d+)h/', '$1 hours', $string);
+    return preg_replace('/(\d+)h/', '$1 hours', (string) $string);
 }
 
 function get_public_key_content(): string
@@ -68,7 +68,7 @@ function run_action(object $static, Closure $callback): void
         $callback();
     } catch (SSHError $e) {
         $actions = [];
-        if ($e->getLog()) {
+        if ($e->getLog() instanceof \App\Models\ServerLog) {
             $actions[] = Action::make('View Logs')
                 ->url(App\Web\Pages\Servers\Logs\Index::getUrl([
                     'server' => $e->getLog()->server_id,
@@ -102,7 +102,7 @@ function run_action(object $static, Closure $callback): void
 /**
  * Credit: https://gist.github.com/lorenzos/1711e81a9162320fde20
  */
-function tail($filepath, $lines = 1, $adaptive = true): string
+function tail(string $filepath, int $lines = 1, bool $adaptive = true): string
 {
     // Open file
     $f = @fopen($filepath, 'rb');

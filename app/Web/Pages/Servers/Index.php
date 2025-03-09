@@ -74,7 +74,7 @@ class Index extends Page
                         ->default(ServerProvider::CUSTOM)
                         ->live()
                         ->reactive()
-                        ->afterStateUpdated(function (callable $set) {
+                        ->afterStateUpdated(function (callable $set): void {
                             $set('server_provider', null);
                             $set('region', null);
                             $set('plan', null);
@@ -83,16 +83,14 @@ class Index extends Page
                     AlertField::make('alert')
                         ->warning()
                         ->message(__('servers.create.public_key_warning'))
-                        ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
+                        ->visible(fn ($get): bool => $get('provider') === ServerProvider::CUSTOM),
                     Select::make('server_provider')
-                        ->visible(fn ($get) => $get('provider') !== ServerProvider::CUSTOM)
+                        ->visible(fn ($get): bool => $get('provider') !== ServerProvider::CUSTOM)
                         ->label('Server provider connection')
                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['server_provider'])
-                        ->options(function ($get) {
-                            return \App\Models\ServerProvider::getByProjectId(auth()->user()->current_project_id)
-                                ->where('provider', $get('provider'))
-                                ->pluck('profile', 'id');
-                        })
+                        ->options(fn ($get) => \App\Models\ServerProvider::getByProjectId(auth()->user()->current_project_id)
+                            ->where('provider', $get('provider'))
+                            ->pluck('profile', 'id'))
                         ->suffixAction(
                             Action::make('connect')
                                 ->form(Create::form())
@@ -109,7 +107,7 @@ class Index extends Page
                         ->live()
                         ->reactive()
                         ->selectablePlaceholder(false)
-                        ->visible(fn ($get) => $get('provider') !== ServerProvider::CUSTOM),
+                        ->visible(fn ($get): bool => $get('provider') !== ServerProvider::CUSTOM),
                     Grid::make()
                         ->schema([
                             Select::make('region')
@@ -117,7 +115,7 @@ class Index extends Page
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['region'] ?? [])
                                 ->live()
                                 ->reactive()
-                                ->options(function ($get) {
+                                ->options(function ($get): array {
                                     if (! $get('server_provider')) {
                                         return [];
                                     }
@@ -125,14 +123,14 @@ class Index extends Page
                                     return \App\Models\ServerProvider::regions($get('server_provider'));
                                 })
                                 ->loadingMessage('Loading regions...')
-                                ->disabled(fn ($get) => ! $get('server_provider'))
-                                ->placeholder(fn ($get) => $get('server_provider') ? 'Select region' : 'Select connection first')
+                                ->disabled(fn ($get): bool => ! $get('server_provider'))
+                                ->placeholder(fn ($get): string => $get('server_provider') ? 'Select region' : 'Select connection first')
                                 ->searchable(),
                             Select::make('plan')
                                 ->label('Plan')
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['plan'] ?? [])
                                 ->reactive()
-                                ->options(function ($get) {
+                                ->options(function ($get): array {
                                     if (! $get('server_provider') || ! $get('region')) {
                                         return [];
                                     }
@@ -140,11 +138,11 @@ class Index extends Page
                                     return \App\Models\ServerProvider::plans($get('server_provider'), $get('region'));
                                 })
                                 ->loadingMessage('Loading plans...')
-                                ->disabled(fn ($get) => ! $get('region'))
-                                ->placeholder(fn ($get) => $get('region') ? 'Select plan' : 'Select plan first')
+                                ->disabled(fn ($get): bool => ! $get('region'))
+                                ->placeholder(fn ($get): string => $get('region') ? 'Select plan' : 'Select plan first')
                                 ->searchable(),
                         ])
-                        ->visible(fn ($get) => $get('provider') !== ServerProvider::CUSTOM),
+                        ->visible(fn ($get): bool => $get('provider') !== ServerProvider::CUSTOM),
                     TextInput::make('public_key')
                         ->label('Public Key')
                         ->default($publicKey)
@@ -152,7 +150,7 @@ class Index extends Page
                             Action::make('copy')
                                 ->icon('heroicon-o-clipboard-document-list')
                                 ->tooltip('Copy')
-                                ->action(function ($livewire, $state) {
+                                ->action(function ($livewire, string $state): void {
                                     $livewire->js(
                                         'window.navigator.clipboard.writeText("'.$state.'");'
                                     );
@@ -164,7 +162,7 @@ class Index extends Page
                         )
                         ->helperText('Run this command on your server as root user')
                         ->disabled()
-                        ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
+                        ->visible(fn ($get): bool => $get('provider') === ServerProvider::CUSTOM),
                     Grid::make()
                         ->schema([
                             TextInput::make('name')
@@ -175,7 +173,7 @@ class Index extends Page
                                 ->native(false)
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['os'])
                                 ->options(
-                                    collect(config('core.operating_systems'))
+                                    collect((array) config('core.operating_systems'))
                                         ->mapWithKeys(fn ($value) => [$value => $value])
                                 ),
                         ]),
@@ -188,7 +186,7 @@ class Index extends Page
                                 ->label('SSH Port')
                                 ->rules(fn ($get) => CreateServerAction::rules($project, $get())['port']),
                         ])
-                        ->visible(fn ($get) => $get('provider') === ServerProvider::CUSTOM),
+                        ->visible(fn ($get): bool => $get('provider') === ServerProvider::CUSTOM),
                     Fieldset::make('Services')
                         ->columns(1)
                         ->schema([
@@ -204,7 +202,7 @@ class Index extends Page
                                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['webserver'] ?? [])
                                         ->default(Webserver::NONE)
                                         ->options(
-                                            collect(config('core.webservers'))->mapWithKeys(fn ($value) => [$value => $value])
+                                            collect((array) config('core.webservers'))->mapWithKeys(fn ($value) => [$value => $value])
                                         ),
                                     Select::make('database')
                                         ->label('Database')
@@ -213,7 +211,7 @@ class Index extends Page
                                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['database'] ?? [])
                                         ->default(Database::NONE)
                                         ->options(
-                                            collect(config('core.databases_name'))
+                                            collect((array) config('core.databases_name'))
                                                 ->mapWithKeys(fn ($value, $key) => [
                                                     $key => $value.' '.config('core.databases_version')[$key],
                                                 ])
@@ -225,16 +223,18 @@ class Index extends Page
                                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['php'] ?? [])
                                         ->default(PHP::NONE)
                                         ->options(
-                                            collect(config('core.php_versions'))
+                                            collect((array) config('core.php_versions'))
                                                 ->mapWithKeys(fn ($value) => [$value => $value])
                                         ),
                                 ]),
                         ]),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
-                        $server = app(CreateServerAction::class)->create(auth()->user(), auth()->user()->currentProject, $data);
+                ->action(function (array $data): void {
+                    run_action($this, function () use ($data): void {
+                        /** @var \App\Models\User $user */
+                        $user = auth()->user();
+                        $server = app(CreateServerAction::class)->create($user, auth()->user()->currentProject, $data);
 
                         $this->redirect(View::getUrl(['server' => $server]));
                     });

@@ -42,7 +42,7 @@ class Index extends Page
                 ->form(Actions\Create::form())
                 ->authorize('create', NotificationChannel::class)
                 ->modalWidth(MaxWidth::Large)
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     try {
                         Actions\Create::action($data);
 

@@ -12,6 +12,11 @@ use Throwable;
 
 class GetPHPIni
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function getIni(Server $server, array $input): string
     {
         $this->validate($server, $input);
@@ -30,6 +35,11 @@ class GetPHPIni
         }
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function validate(Server $server, array $input): void
     {
         Validator::make($input, [

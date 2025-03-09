@@ -8,15 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class DeploymentCompleted extends AbstractNotification
 {
-    protected Deployment $deployment;
-
-    protected Site $site;
-
-    public function __construct(Deployment $deployment, Site $site)
-    {
-        $this->deployment = $deployment;
-        $this->site = $site;
-    }
+    public function __construct(protected Deployment $deployment, protected Site $site) {}
 
     public function rawText(): string
     {

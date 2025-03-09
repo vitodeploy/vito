@@ -10,13 +10,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('ssls', function (Blueprint $table) {
+        Schema::table('ssls', function (Blueprint $table): void {
             $table->boolean('is_active')->default(false);
             $table->string('certificate_path')->nullable();
             $table->string('pk_path')->nullable();
             $table->string('ca_path')->nullable();
         });
-        Site::query()->chunk(100, function ($sites) {
+        Site::query()->chunk(100, function ($sites): void {
             foreach ($sites as $site) {
                 foreach ($site->ssls as $ssl) {
                     if ($ssl->type === SslType::LETSENCRYPT) {
@@ -44,7 +44,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('ssls', function (Blueprint $table) {
+        Schema::table('ssls', function (Blueprint $table): void {
             $table->dropColumn('is_active');
             $table->dropColumn('certificate_path');
             $table->dropColumn('pk_path');

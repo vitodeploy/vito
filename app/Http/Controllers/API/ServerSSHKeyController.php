@@ -74,7 +74,7 @@ class ServerSSHKeyController extends Controller
     #[Delete('{sshKey}', name: 'api.projects.servers.ssh-keys.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete ssh key from server.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, SshKey $sshKey)
+    public function delete(Project $project, Server $server, SshKey $sshKey): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$sshKey, $server]);
 

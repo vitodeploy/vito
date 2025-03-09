@@ -12,8 +12,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ProjectsList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Project>
+     */
     protected function getTableQuery(): Builder
     {
         return Project::query();
@@ -39,13 +45,13 @@ class ProjectsList extends Widget
             ->heading(null)
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
-            ->recordUrl(fn (Project $record) => Settings::getUrl(['project' => $record]))
+            ->recordUrl(fn (Project $record): string => Settings::getUrl(['project' => $record]))
             ->actions([
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
                     ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->url(fn (Project $record) => Settings::getUrl(['project' => $record])),
+                    ->url(fn (Project $record): string => Settings::getUrl(['project' => $record])),
             ]);
     }
 }

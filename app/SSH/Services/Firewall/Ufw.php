@@ -35,7 +35,7 @@ class Ufw extends AbstractFirewall
             ->get();
 
         $this->service->server->ssh()->exec(
-            view('ssh.services.firewall.ufw.apply-rules', compact('rules')),
+            view('ssh.services.firewall.ufw.apply-rules', ['rules' => $rules]),
             'apply-rules'
         );
     }

@@ -12,6 +12,9 @@ use Illuminate\Validation\ValidationException;
 class CreateDatabaseUser
 {
     /**
+     * @param  array<string, mixed>  $input
+     * @param  array<string>  $links
+     *
      * @throws ValidationException
      */
     public function create(Server $server, array $input, array $links = []): DatabaseUser
@@ -41,6 +44,9 @@ class CreateDatabaseUser
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     *
      * @throws ValidationException
      */
     public static function rules(Server $server, array $input): array

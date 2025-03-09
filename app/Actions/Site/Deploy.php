@@ -39,7 +39,7 @@ class Deploy
         }
         $deployment->save();
 
-        dispatch(function () use ($site, $deployment) {
+        dispatch(function () use ($site, $deployment): void {
             /** @var ServerLog $log */
             $log = ServerLog::newLog($site->server, 'deploy-'.strtotime('now'))
                 ->forSite($site);
@@ -56,7 +56,7 @@ class Deploy
             $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
-        })->catch(function () use ($deployment, $site) {
+        })->catch(function () use ($deployment, $site): void {
             $deployment->status = DeploymentStatus::FAILED;
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));

@@ -26,15 +26,9 @@ class AppServiceProvider extends ServiceProvider
         ResourceCollection::withoutWrapping();
 
         // facades
-        $this->app->bind('ssh', function () {
-            return new SSH;
-        });
-        $this->app->bind('notifier', function () {
-            return new Notifier;
-        });
-        $this->app->bind('ftp', function () {
-            return new FTP;
-        });
+        $this->app->bind('ssh', fn (): \App\Helpers\SSH => new SSH);
+        $this->app->bind('notifier', fn (): \App\Helpers\Notifier => new Notifier);
+        $this->app->bind('ftp', fn (): \App\Helpers\FTP => new FTP);
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
     }

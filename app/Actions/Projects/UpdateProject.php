@@ -8,6 +8,9 @@ use Illuminate\Validation\Rule;
 
 class UpdateProject
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function update(Project $project, array $input): Project
     {
         if (isset($input['name'])) {
@@ -23,6 +26,9 @@ class UpdateProject
         return $project;
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Project $project): array
     {
         return [
@@ -36,6 +42,9 @@ class UpdateProject
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     private function validate(Project $project, array $input): void
     {
         Validator::make($input, self::rules($project))->validate();

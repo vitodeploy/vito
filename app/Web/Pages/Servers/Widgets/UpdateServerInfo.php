@@ -27,7 +27,7 @@ class UpdateServerInfo extends Widget implements HasForms
 
     public string $ip;
 
-    public ?string $local_ip;
+    public ?string $local_ip = null;
 
     public int $port;
 

@@ -24,6 +24,7 @@ use Throwable;
  */
 class Queue extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\QueueFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -48,6 +49,9 @@ class Queue extends AbstractModel
         'redirect_stderr' => 'boolean',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         QueueStatus::RUNNING => 'success',
         QueueStatus::CREATING => 'warning',
@@ -63,7 +67,7 @@ class Queue extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (Queue $queue) {
+        static::deleting(function (Queue $queue): void {
             try {
                 /** @var \App\SSH\Services\ProcessManager\ProcessManager $handler */
                 $handler = $queue->server->processManager()->handler();
@@ -77,7 +81,7 @@ class Queue extends AbstractModel
 
     public function getServerIdAttribute(int $value): int
     {
-        if (! $value) {
+        if ($value === 0) {
             $value = $this->site->server_id;
             $this->fill(['server_id' => $this->site->server_id]);
             $this->save();
@@ -86,11 +90,17 @@ class Queue extends AbstractModel
         return $value;
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<Site, covariant $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);

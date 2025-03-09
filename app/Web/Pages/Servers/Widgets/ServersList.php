@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ServersList extends Widget
 {
+    /**
+     * @return Builder<Server>
+     */
     protected function getTableQuery(): Builder
     {
         return Server::query()->where('project_id', auth()->user()->current_project_id);
@@ -23,7 +26,7 @@ class ServersList extends Widget
     {
         return [
             IconColumn::make('provider')
-                ->icon(fn (Server $record) => 'icon-'.$record->provider)
+                ->icon(fn (Server $record): string => 'icon-'.$record->provider)
                 ->tooltip(fn (Server $record) => $record->provider)
                 ->width(24),
             TextColumn::make('name')
@@ -57,13 +60,13 @@ class ServersList extends Widget
             ->heading(null)
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
-            ->recordUrl(fn (Server $record) => View::getUrl(parameters: ['server' => $record]))
+            ->recordUrl(fn (Server $record): string => View::getUrl(parameters: ['server' => $record]))
             ->actions([
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
                     ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->url(fn (Server $record) => Settings::getUrl(parameters: ['server' => $record])),
+                    ->url(fn (Server $record): string => Settings::getUrl(parameters: ['server' => $record])),
             ]);
     }
 }

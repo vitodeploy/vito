@@ -8,6 +8,11 @@ use Illuminate\Validation\Rule;
 
 class UpdateProjects
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function update(User $user, array $input): void
     {
         $this->validate($input);
@@ -28,11 +33,19 @@ class UpdateProjects
         }
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     private function validate(array $input): void
     {
         validator($input, self::rules())->validate();
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

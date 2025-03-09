@@ -22,9 +22,9 @@ use Illuminate\Support\Str;
 /**
  * @property int $server_id
  * @property string $type
- * @property array $type_data
+ * @property array<string, string> $type_data
  * @property string $domain
- * @property array $aliases
+ * @property array<int, string> $aliases
  * @property string $web_directory
  * @property string $path
  * @property string $php_version
@@ -39,22 +39,24 @@ use Illuminate\Support\Str;
  * @property string $user
  * @property bool $force_ssl
  * @property Server $server
- * @property ServerLog[] $logs
- * @property Deployment[] $deployments
- * @property Command[] $commands
+ * @property Collection<int, ServerLog> $logs
+ * @property Collection<int, Deployment> $deployments
+ * @property Collection<int, Command> $commands
  * @property ?GitHook $gitHook
  * @property ?DeploymentScript $deploymentScript
- * @property Queue[] $queues
- * @property Ssl[] $ssls
+ * @property Collection<int, Queue> $queues
+ * @property Collection<int, Ssl> $ssls
  * @property ?Ssl $activeSsl
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
- * @property Collection<LoadBalancerServer> $loadBalancerServers
+ * @property Collection<int, LoadBalancerServer> $loadBalancerServers
  * @property Project $project
  */
 class Site extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\SiteFactory> */
     use HasFactory;
+
     use HasProjectThroughServer;
 
     protected $fillable = [
@@ -88,6 +90,9 @@ class Site extends AbstractModel
         'force_ssl' => 'boolean',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         SiteStatus::READY => 'success',
         SiteStatus::INSTALLING => 'warning',
@@ -99,8 +104,8 @@ class Site extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (Site $site) {
-            $site->queues()->each(function ($queue) {
+        static::deleting(function (Site $site): void {
+            $site->queues()->each(function ($queue): void {
                 /** @var Queue $queue */
                 $queue->delete();
             });
@@ -109,7 +114,7 @@ class Site extends AbstractModel
             $site->deploymentScript()->delete();
         });
 
-        static::created(function (Site $site) {
+        static::created(function (Site $site): void {
             $site->deploymentScript()->create([
                 'name' => 'default',
                 'content' => '',
@@ -132,51 +137,81 @@ class Site extends AbstractModel
         return $this->status === SiteStatus::INSTALLATION_FAILED;
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return HasMany<ServerLog, covariant $this>
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(ServerLog::class);
     }
 
+    /**
+     * @return HasMany<Deployment, covariant $this>
+     */
     public function deployments(): HasMany
     {
         return $this->hasMany(Deployment::class);
     }
 
+    /**
+     * @return HasMany<Command, covariant $this>
+     */
     public function commands(): HasMany
     {
         return $this->hasMany(Command::class);
     }
 
+    /**
+     * @return HasOne<GitHook, covariant $this>
+     */
     public function gitHook(): HasOne
     {
         return $this->hasOne(GitHook::class);
     }
 
+    /**
+     * @return HasOne<DeploymentScript, covariant $this>
+     */
     public function deploymentScript(): HasOne
     {
         return $this->hasOne(DeploymentScript::class);
     }
 
+    /**
+     * @return HasMany<Queue, covariant $this>
+     */
     public function queues(): HasMany
     {
         return $this->hasMany(Queue::class);
     }
 
+    /**
+     * @return HasMany<Ssl, covariant $this>
+     */
     public function ssls(): HasMany
     {
         return $this->hasMany(Ssl::class);
     }
 
+    /**
+     * @return MorphToMany<Tag, covariant $this>
+     */
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
+    /**
+     * @return BelongsTo<SourceControl, covariant $this>
+     */
     public function sourceControl(): BelongsTo
     {
         return $this->belongsTo(SourceControl::class)->withTrashed();
@@ -215,7 +250,7 @@ class Site extends AbstractModel
     /**
      * @throws SSHError
      */
-    public function changePHPVersion($version): void
+    public function changePHPVersion(string $version): void
     {
         /** @var Webserver $handler */
         $handler = $this->server->webserver()->handler();
@@ -225,13 +260,16 @@ class Site extends AbstractModel
             /** @var PHP $php */
             $php = $this->server->php()->handler();
             $php->removeFpmPool($this->user, $this->php_version, $this->id);
-            $php->createFpmPool($this->user, $version, $this->id);
+            $php->createFpmPool($this->user, $version);
         }
 
         $this->php_version = $version;
         $this->save();
     }
 
+    /**
+     * @return HasOne<Ssl, covariant $this>
+     */
     public function activeSsl(): HasOne
     {
         return $this->hasOne(Ssl::class)
@@ -320,6 +358,9 @@ class Site extends AbstractModel
         }
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function environmentVariables(?Deployment $deployment = null): array
     {
         return [
@@ -346,6 +387,9 @@ class Site extends AbstractModel
         return $webserver;
     }
 
+    /**
+     * @return HasMany<LoadBalancerServer, covariant $this>
+     */
     public function loadBalancerServers(): HasMany
     {
         return $this->hasMany(LoadBalancerServer::class, 'load_balancer_id');

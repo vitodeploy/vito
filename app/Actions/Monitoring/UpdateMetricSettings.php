@@ -6,6 +6,9 @@ use App\Models\Server;
 
 class UpdateMetricSettings
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function update(Server $server, array $input): void
     {
         $service = $server->monitoring();
@@ -16,6 +19,9 @@ class UpdateMetricSettings
         $service->save();
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

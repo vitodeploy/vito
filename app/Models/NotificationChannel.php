@@ -11,14 +11,16 @@ use Illuminate\Notifications\Notifiable;
 /**
  * @property int $id
  * @property string $provider
- * @property array $data
+ * @property array<string, mixed> $data
  * @property string $label
  * @property bool $connected
  * @property int $project_id
  */
 class NotificationChannel extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\NotificationChannelFactory> */
     use HasFactory;
+
     use Notifiable;
 
     protected $fillable = [
@@ -52,16 +54,24 @@ class NotificationChannel extends AbstractModel
         }
     }
 
+    /**
+     * @return BelongsTo<Project, covariant $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return Builder<NotificationChannel>
+     */
     public static function getByProjectId(int $projectId): Builder
     {
-        return self::query()
-            ->where(function (Builder $query) use ($projectId) {
-                $query->where('project_id', $projectId)->orWhereNull('project_id');
-            });
+        /** @var Builder<NotificationChannel> $query */
+        $query = NotificationChannel::query();
+
+        return $query->where(function (Builder $query) use ($projectId): void {
+            $query->where('project_id', $projectId)->orWhereNull('project_id');
+        });
     }
 }

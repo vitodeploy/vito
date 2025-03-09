@@ -7,20 +7,26 @@ use PHPUnit\Framework\Assert;
 
 class FTPFake
 {
+    /**
+     * @var array<array{host: string, port: string, ssl: bool}>
+     */
     protected array $connections = [];
 
+    /**
+     * @var array<array{username: string, password: string}>
+     */
     protected array $logins = [];
 
     public function connect(string $host, string $port, bool $ssl = false): bool|Connection
     {
-        $this->connections[] = compact('host', 'port', 'ssl');
+        $this->connections[] = ['host' => $host, 'port' => $port, 'ssl' => $ssl];
 
         return true;
     }
 
     public function login(string $username, string $password, bool|Connection $connection): bool
     {
-        $this->logins[] = compact('username', 'password');
+        $this->logins[] = ['username' => $username, 'password' => $password];
 
         return true;
     }
@@ -42,7 +48,7 @@ class FTPFake
 
     public function assertConnected(string $host): void
     {
-        if (! $this->connections) {
+        if ($this->connections === []) {
             Assert::fail('No connections are made');
         }
         $connected = false;

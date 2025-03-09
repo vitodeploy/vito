@@ -12,9 +12,8 @@ class SSHFake extends SSH
 {
     use ReflectsClosures;
 
+    /** @var array<string> */
     protected array $commands = [];
-
-    protected ?string $output;
 
     protected bool $connectionWillFail = false;
 
@@ -24,10 +23,7 @@ class SSHFake extends SSH
 
     protected string $uploadedContent;
 
-    public function __construct(?string $output = null)
-    {
-        $this->output = $output;
-    }
+    public function __construct(protected ?string $output = null) {}
 
     public function init(Server $server, ?string $asUser = null): self
     {
@@ -36,7 +32,7 @@ class SSHFake extends SSH
         $this->asUser = null;
         $this->server = $server->refresh();
         $this->user = $server->getSshUser();
-        if ($asUser && $asUser != $server->getSshUser()) {
+        if ($asUser && $asUser !== $server->getSshUser()) {
             $this->asUser = $asUser;
         }
 
@@ -57,7 +53,7 @@ class SSHFake extends SSH
 
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        if (! $this->log && $log) {
+        if (! $this->log instanceof \App\Models\ServerLog && $log) {
             /** @var \App\Models\ServerLog $log */
             $log = $this->server->logs()->create([
                 'site_id' => $siteId,
@@ -73,7 +69,7 @@ class SSHFake extends SSH
         $output = $this->output ?? 'fake output';
         $this->log?->write($output);
 
-        if ($stream) {
+        if ($stream === true) {
             echo $output;
             ob_flush();
             flush();
@@ -92,9 +88,12 @@ class SSHFake extends SSH
         $this->log = null;
     }
 
+    /**
+     * @param  array<string>|string  $commands
+     */
     public function assertExecuted(array|string $commands): void
     {
-        if (! $this->commands) {
+        if ($this->commands === []) {
             Assert::fail('No commands are executed');
         }
         if (! is_array($commands)) {
@@ -113,7 +112,7 @@ class SSHFake extends SSH
 
     public function assertExecutedContains(string $command): void
     {
-        if (! $this->commands) {
+        if ($this->commands === []) {
             Assert::fail('No commands are executed');
         }
         $executed = false;
@@ -132,13 +131,13 @@ class SSHFake extends SSH
 
     public function assertFileUploaded(string $toPath, ?string $content = null): void
     {
-        if (! $this->uploadedLocalPath || ! $this->uploadedRemotePath) {
+        if ($this->uploadedLocalPath === '' || $this->uploadedLocalPath === '0' || ($this->uploadedRemotePath === '' || $this->uploadedRemotePath === '0')) {
             Assert::fail('File is not uploaded');
         }
 
         Assert::assertEquals($toPath, $this->uploadedRemotePath);
 
-        if ($content) {
+        if ($content !== null && $content !== '' && $content !== '0') {
             Assert::assertEquals($content, $this->uploadedContent);
         }
     }

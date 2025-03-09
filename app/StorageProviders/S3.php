@@ -16,6 +16,9 @@ class S3 extends AbstractStorageProvider
 
     protected ?S3Client $client = null;
 
+    /**
+     * @var array<string, mixed>
+     */
     protected array $clientConfig = [];
 
     public function getApiUrl(): string
@@ -37,6 +40,8 @@ class S3 extends AbstractStorageProvider
     /**
      * Build the configuration array for the S3 client.
      * This method can be overridden by child classes to modify the configuration.
+     *
+     * @return array<string, mixed>
      */
     public function buildClientConfig(): array
     {

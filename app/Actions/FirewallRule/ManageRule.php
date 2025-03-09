@@ -9,6 +9,10 @@ use App\SSH\Services\Firewall\Firewall;
 
 class ManageRule
 {
+    /**
+     * @param  array<string, mixed>  $input
+     * @return FirewallRule $rule
+     */
     public function create(Server $server, array $input): FirewallRule
     {
         $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
@@ -30,6 +34,10 @@ class ManageRule
         return $rule;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return FirewallRule $rule
+     */
     public function update(FirewallRule $rule, array $input): FirewallRule
     {
         $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
@@ -56,7 +64,7 @@ class ManageRule
         dispatch(fn () => $this->applyRule($rule));
     }
 
-    protected function applyRule($rule): void
+    protected function applyRule(FirewallRule $rule): void
     {
         try {
             /** @var Firewall $handler */
@@ -80,6 +88,9 @@ class ManageRule
         $rule->save();
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

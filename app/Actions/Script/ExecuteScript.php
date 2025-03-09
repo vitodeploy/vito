@@ -11,6 +11,9 @@ use Illuminate\Validation\Rule;
 
 class ExecuteScript
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function execute(Script $script, array $input): ScriptExecution
     {
         $execution = new ScriptExecution([
@@ -22,7 +25,7 @@ class ExecuteScript
         ]);
         $execution->save();
 
-        dispatch(function () use ($execution, $script) {
+        dispatch(function () use ($execution, $script): void {
             $content = $execution->getContent();
             $log = ServerLog::newLog($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
             $log->save();
@@ -31,7 +34,7 @@ class ExecuteScript
             $execution->server->os()->runScript('~/', $content, $log, $execution->user);
             $execution->status = ScriptExecutionStatus::COMPLETED;
             $execution->save();
-        })->catch(function () use ($execution) {
+        })->catch(function () use ($execution): void {
             $execution->status = ScriptExecutionStatus::FAILED;
             $execution->save();
         })->onConnection('ssh');
@@ -39,6 +42,10 @@ class ExecuteScript
         return $execution;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(array $input): array
     {
         $users = ['root'];

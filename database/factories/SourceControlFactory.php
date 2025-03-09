@@ -23,39 +23,33 @@ class SourceControlFactory extends Factory
         ];
     }
 
-    public function gitlab(): SourceControl
+    /**
+     * @return Factory<\App\Models\SourceControl>
+     */
+    public function gitlab(): Factory
     {
-        /** @var SourceControl $sourceControl */
-        $sourceControl = $this->state(function (array $attributes) {
-            return [
-                'provider' => \App\Enums\SourceControl::GITLAB,
-            ];
-        });
-
-        return $sourceControl;
+        return $this->state(fn (array $attributes): array => [
+            'provider' => \App\Enums\SourceControl::GITLAB,
+        ]);
     }
 
-    public function github(): SourceControl
+    /**
+     * @return Factory<\App\Models\SourceControl>
+     */
+    public function github(): Factory
     {
-        /** @var SourceControl $sourceControl */
-        $sourceControl = $this->state(function (array $attributes) {
-            return [
-                'provider' => \App\Enums\SourceControl::GITLAB,
-            ];
-        });
-
-        return $sourceControl;
+        return $this->state(fn (array $attributes): array => [
+            'provider' => \App\Enums\SourceControl::GITHUB,
+        ]);
     }
 
-    public function bitbucket(): SourceControl
+    /**
+     * @return Factory<\App\Models\SourceControl>
+     */
+    public function bitbucket(): Factory
     {
-        /** @var SourceControl $sourceControl */
-        $sourceControl = $this->state(function (array $attributes) {
-            return [
-                'provider' => \App\Enums\SourceControl::BITBUCKET,
-            ];
-        });
-
-        return $sourceControl;
+        return $this->state(fn (array $attributes): array => [
+            'provider' => \App\Enums\SourceControl::BITBUCKET,
+        ]);
     }
 }

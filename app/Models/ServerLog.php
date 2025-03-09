@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\File;
@@ -24,6 +25,7 @@ use Throwable;
  */
 class ServerLog extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\ServerLogFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -45,7 +47,7 @@ class ServerLog extends AbstractModel
     {
         parent::boot();
 
-        self::deleting(function (ServerLog $log) {
+        self::deleting(function (ServerLog $log): void {
             if ($log->is_remote) {
                 try {
                     if (Storage::disk($log->disk)->exists($log->name)) {
@@ -90,7 +92,7 @@ class ServerLog extends AbstractModel
 
             $this->server->ssh()->download($tmpPath, $this->name);
 
-            dispatch(function () use ($tmpPath) {
+            dispatch(function () use ($tmpPath): void {
                 if (File::exists($tmpPath)) {
                     File::delete($tmpPath);
                 }
@@ -104,18 +106,22 @@ class ServerLog extends AbstractModel
         return Storage::disk($this->disk)->download($this->name);
     }
 
-    public static function getRemote($query, bool $active = true, ?Site $site = null)
+    /**
+     * @param  Builder<ServerLog>  $query
+     * @return Builder<ServerLog>
+     */
+    public static function getRemote(Builder $query, bool $active = true, ?Site $site = null): Builder
     {
         $query->where('is_remote', $active);
 
-        if ($site) {
+        if ($site instanceof \App\Models\Site) {
             $query->where('name', 'like', $site->path.'%');
         }
 
         return $query;
     }
 
-    public function write($buf): void
+    public function write(string $buf): void
     {
         if (Str::contains($buf, 'VITO_SSH_ERROR')) {
             $buf = str_replace('VITO_SSH_ERROR', '', $buf);
@@ -127,7 +133,7 @@ class ServerLog extends AbstractModel
         }
     }
 
-    public function getContent($lines = null): ?string
+    public function getContent(?int $lines = null): ?string
     {
         if ($this->is_remote) {
             return $this->server->os()->tail($this->name, $lines ?? 150);

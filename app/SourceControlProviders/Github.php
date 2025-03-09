@@ -31,11 +31,7 @@ class Github extends AbstractSourceControlProvider
      */
     public function getRepo(?string $repo = null): mixed
     {
-        if ($repo) {
-            $url = $this->apiUrl.'/repos/'.$repo;
-        } else {
-            $url = $this->apiUrl.'/user/repos';
-        }
+        $url = $repo !== null && $repo !== '' && $repo !== '0' ? $this->apiUrl.'/repos/'.$repo : $this->apiUrl.'/user/repos';
         $res = Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json',
             'Authorization' => 'Bearer '.$this->data()['token'],

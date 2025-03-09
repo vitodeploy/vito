@@ -54,7 +54,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
                                     ->label('Password')
                                     ->required(),
                             ])
-                            ->action(function (array $data) {
+                            ->action(function (array $data): void {
                                 self::logoutOtherBrowserSessions($data['password']);
                             })
                             ->modalWidth('2xl'),
@@ -62,6 +62,9 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
             ]);
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     private function getDynamicSchema(): array
     {
         $sections = [];
@@ -92,6 +95,9 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         return $sections;
     }
 
+    /**
+     * @return array<object>
+     */
     private function getSessions(): array
     {
         if (config(key: 'session.driver') !== 'database') {
@@ -121,15 +127,15 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         })->toArray();
     }
 
-    private function createAgent(mixed $session)
+    private function createAgent(mixed $session): Agent
     {
         return tap(
             value: new Agent,
-            callback: fn ($agent) => $agent->setUserAgent(userAgent: $session->user_agent)
+            callback: fn ($agent): string => $agent->setUserAgent(userAgent: $session->user_agent)
         );
     }
 
-    private function logoutOtherBrowserSessions($password): void
+    private function logoutOtherBrowserSessions(string $password): void
     {
         if (! Hash::check($password, Auth::user()->password)) {
             Notification::make()

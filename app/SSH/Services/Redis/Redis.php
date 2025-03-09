@@ -14,7 +14,7 @@ class Redis extends AbstractService
         return [
             'type' => [
                 'required',
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $redisExists = $this->service->server->memoryDatabase();
                     if ($redisExists) {
                         $fail('You already have a Redis service on the server.');

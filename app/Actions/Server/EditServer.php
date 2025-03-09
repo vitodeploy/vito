@@ -10,6 +10,9 @@ use Illuminate\Validation\ValidationException;
 class EditServer
 {
     /**
+     * @param  array<string, mixed>  $input
+     * @return Server $server
+     *
      * @throws ValidationException
      */
     public function edit(Server $server, array $input): Server
@@ -42,6 +45,9 @@ class EditServer
         return $server;
     }
 
+    /**
+     * @return array<string, array<mixed>>
+     */
     public static function rules(Server $server): array
     {
         return [

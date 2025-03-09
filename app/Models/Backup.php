@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Backup extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\BackupFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -46,15 +47,18 @@ class Backup extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function ($backup) {
+        static::deleting(function ($backup): void {
             /** @var Backup $backup */
-            $backup->files()->each(function ($file) {
+            $backup->files()->each(function ($file): void {
                 /** @var BackupFile $file */
                 $file->delete();
             });
         });
     }
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         BackupStatus::RUNNING => 'success',
         BackupStatus::FAILED => 'danger',
@@ -64,31 +68,46 @@ class Backup extends AbstractModel
     public function isCustomInterval(): bool
     {
         $intervals = array_keys(config('core.cronjob_intervals'));
-        $intervals = array_filter($intervals, fn ($interval) => $interval !== 'custom');
+        $intervals = array_filter($intervals, fn ($interval): bool => $interval !== 'custom');
 
         return ! in_array($this->interval, $intervals);
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<StorageProvider, covariant $this>
+     */
     public function storage(): BelongsTo
     {
         return $this->belongsTo(StorageProvider::class, 'storage_id');
     }
 
+    /**
+     * @return BelongsTo<Database, covariant $this>
+     */
     public function database(): BelongsTo
     {
         return $this->belongsTo(Database::class)->withTrashed();
     }
 
+    /**
+     * @return HasMany<BackupFile, covariant $this>
+     */
     public function files(): HasMany
     {
         return $this->hasMany(BackupFile::class, 'backup_id');
     }
 
+    /**
+     * @return HasOne<BackupFile, covariant $this>
+     */
     public function lastFile(): HasOne
     {
         return $this->hasOne(BackupFile::class, 'backup_id')->latest();

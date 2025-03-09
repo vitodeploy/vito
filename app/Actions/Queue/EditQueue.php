@@ -12,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 class EditQueue
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function edit(Queue $queue, array $input): void
@@ -26,7 +28,7 @@ class EditQueue
         ]);
         $queue->save();
 
-        dispatch(function () use ($queue) {
+        dispatch(function () use ($queue): void {
             /** @var ProcessManager $processManager */
             $processManager = $queue->server->processManager()->handler();
             $processManager->delete($queue->id, $queue->site_id);
@@ -43,12 +45,15 @@ class EditQueue
             );
             $queue->status = QueueStatus::RUNNING;
             $queue->save();
-        })->catch(function () use ($queue) {
+        })->catch(function () use ($queue): void {
             $queue->status = QueueStatus::FAILED;
             $queue->save();
         })->onConnection('ssh');
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Server $server): array
     {
         return [

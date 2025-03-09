@@ -51,19 +51,19 @@ class Index extends Page
                     Select::make('key_id')
                         ->label('Key')
                         ->options(auth()->user()->sshKeys()->pluck('name', 'id')->toArray())
-                        ->visible(fn ($get) => $get('type') === 'existing')
+                        ->visible(fn ($get): bool => $get('type') === 'existing')
                         ->rules(DeployKeyToServer::rules(auth()->user(), $this->server)['key_id']),
                     TextInput::make('name')
                         ->label('Name')
-                        ->visible(fn ($get) => $get('type') === 'new')
+                        ->visible(fn ($get): bool => $get('type') === 'new')
                         ->rules(CreateSshKey::rules()['name']),
                     Textarea::make('public_key')
                         ->label('Public Key')
-                        ->visible(fn ($get) => $get('type') === 'new')
+                        ->visible(fn ($get): bool => $get('type') === 'new')
                         ->rules(CreateSshKey::rules()['public_key']),
                 ])
                 ->modalSubmitActionLabel('Deploy')
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     $this->validate();
 
                     try {

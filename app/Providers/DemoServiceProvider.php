@@ -11,22 +11,31 @@ class DemoServiceProvider extends ServiceProvider
 {
     protected string $error = 'Cannot modify on Demo!';
 
+    /**
+     * @var string[]
+     */
     protected array $canDelete = [
         //
     ];
 
+    /**
+     * @var string[]
+     */
     protected array $canUpdate = [
-        'App\Models\ServerLog',
-        'App\Models\Script',
-        'App\Models\ScriptExecution',
+        \App\Models\ServerLog::class,
+        \App\Models\Script::class,
+        \App\Models\ScriptExecution::class,
     ];
 
+    /**
+     * @var string[]
+     */
     protected array $canCreate = [
-        'App\Models\ServerLog',
-        'App\Models\Script',
-        'App\Models\ScriptExecution',
-        'App\Models\FirewallRule',
-        'App\Models\PersonalAccessToken',
+        \App\Models\ServerLog::class,
+        \App\Models\Script::class,
+        \App\Models\ScriptExecution::class,
+        \App\Models\FirewallRule::class,
+        \App\Models\PersonalAccessToken::class,
     ];
 
     public function register(): void
@@ -42,7 +51,7 @@ class DemoServiceProvider extends ServiceProvider
 
         // get all classes inside App\Models namespace
         $models = collect(scandir(app_path('Models')))
-            ->filter(fn ($file) => ! in_array($file, ['.', '..']))
+            ->filter(fn ($file): bool => ! in_array($file, ['.', '..']))
             ->map(fn ($file) => 'App\\Models\\'.str_replace('.php', '', $file));
 
         foreach ($models as $model) {
@@ -69,7 +78,7 @@ class DemoServiceProvider extends ServiceProvider
 
     private function preventUpdating(string $model): void
     {
-        $model::updating(function ($m) {
+        $model::updating(function ($m): void {
             $throw = true;
             if ($m instanceof User && ! $m->isDirty(['name', 'email', 'password', 'two_factor_secret', 'two_factor_recovery_codes'])) {
                 $throw = false;
@@ -82,14 +91,14 @@ class DemoServiceProvider extends ServiceProvider
 
     private function preventDeletion(string $model): void
     {
-        $model::deleting(function ($m) {
+        $model::deleting(function ($m): void {
             abort(403, $this->error);
         });
     }
 
     private function preventCreating(string $model): void
     {
-        $model::creating(function ($m) {
+        $model::creating(function ($m): void {
             abort(403, $this->error);
         });
     }

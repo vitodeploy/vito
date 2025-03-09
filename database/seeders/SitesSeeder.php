@@ -18,7 +18,7 @@ class SitesSeeder extends Seeder
 {
     public function run(): void
     {
-        $servers = Server::query()->whereHas('services', function (Builder $query) {
+        $servers = Server::query()->whereHas('services', function (Builder $query): void {
             $query->where('type', 'webserver');
         })->get();
 
@@ -53,8 +53,8 @@ class SitesSeeder extends Seeder
                 'server_id' => $server->id,
                 'domain' => 'blog.'.$server->project->name.'.com',
                 'type' => SiteType::WORDPRESS,
-                'path' => '/home/vito/'.'blog.'.$server->project->name.'.com',
-                'aliases' => ['www.'.'blog.'.$server->project->name.'.com'],
+                'path' => '/home/vito/blog.'.$server->project->name.'.com',
+                'aliases' => ['www.blog.'.$server->project->name.'.com'],
             ]);
             $blog->tags()->attach($server->tags()->first());
             Ssl::factory()->create([

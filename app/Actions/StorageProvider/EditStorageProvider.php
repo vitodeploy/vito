@@ -7,6 +7,9 @@ use App\Models\StorageProvider;
 
 class EditStorageProvider
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function edit(StorageProvider $storageProvider, Project $project, array $input): StorageProvider
     {
         $storageProvider->profile = $input['name'];
@@ -17,6 +20,9 @@ class EditStorageProvider
         return $storageProvider;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function rules(): array
     {
         return [

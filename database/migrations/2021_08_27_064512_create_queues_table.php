@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('queues', function (Blueprint $table) {
+        Schema::create('queues', function (Blueprint $table): void {
             $table->id();
             $table->unsignedInteger('server_id')->nullable();
             $table->unsignedBigInteger('site_id');

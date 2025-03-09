@@ -11,6 +11,9 @@ use Closure;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
+    /**
+     * @var array<string>
+     */
     protected array $systemDbs = [];
 
     protected string $defaultCharset;
@@ -31,7 +34,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         return [
             'type' => [
                 'required',
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $databaseExists = $this->service->server->database();
                     if ($databaseExists) {
                         $fail('You already have a database service on the server.');
@@ -62,7 +65,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasDatabase = $this->service->server->databases()->exists();
                     if ($hasDatabase) {
                         $fail('You have database(s) on the server.');
@@ -332,6 +335,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         }
     }
 
+    /**
+     * @return array<array<string>>
+     */
     protected function tableToArray(string $data, bool $keepHeader = false): array
     {
         $lines = explode("\n", trim($data));

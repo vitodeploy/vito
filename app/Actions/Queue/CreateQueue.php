@@ -13,6 +13,9 @@ use Illuminate\Validation\ValidationException;
 class CreateQueue
 {
     /**
+     * @param  Server|Site  $queueable
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function create(mixed $queueable, array $input): void
@@ -29,7 +32,7 @@ class CreateQueue
         ]);
         $queue->save();
 
-        dispatch(function () use ($queue) {
+        dispatch(function () use ($queue): void {
             /** @var ProcessManager $processManager */
             $processManager = $queue->server->processManager()->handler();
             $processManager->create(
@@ -44,11 +47,14 @@ class CreateQueue
             );
             $queue->status = QueueStatus::RUNNING;
             $queue->save();
-        })->catch(function () use ($queue) {
+        })->catch(function () use ($queue): void {
             $queue->delete();
         })->onConnection('ssh');
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Site $site): array
     {
         return [

@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 class ChangeDefaultCli
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws SSHError
      */
     public function change(Server $server, array $input): void
@@ -25,6 +27,11 @@ class ChangeDefaultCli
         $service->update(['status' => ServiceStatus::READY]);
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function validate(Server $server, array $input): void
     {
         if (! isset($input['version']) || ! in_array($input['version'], $server->installedPHPVersions())) {

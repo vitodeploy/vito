@@ -28,6 +28,9 @@ class Index extends Page
         return auth()->user()?->can('viewAny', User::class) ?? false;
     }
 
+    /**
+     * @return array<int, array<int, class-string>>
+     */
     public function getWidgets(): array
     {
         return [
@@ -48,7 +51,7 @@ class Index extends Page
 
                     return $user;
                 })
-                ->form(function (Form $form) {
+                ->form(function (Form $form): \Filament\Forms\Form {
                     $rules = CreateUser::rules();
 
                     return $form

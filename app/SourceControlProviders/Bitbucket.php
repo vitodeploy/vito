@@ -163,6 +163,9 @@ class Bitbucket extends AbstractSourceControlProvider
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function getCommitter(string $raw): array
     {
         $committer = explode(' <', $raw);
@@ -173,6 +176,9 @@ class Bitbucket extends AbstractSourceControlProvider
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getAuthenticationHeaders(): array
     {
         $username = $this->data()['username'];

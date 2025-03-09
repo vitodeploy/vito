@@ -10,27 +10,47 @@ class ServerPolicy
 {
     public function viewAny(User $user, Project $project): bool
     {
-        return $user->isAdmin() || $project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $project->users->contains($user);
     }
 
     public function view(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $server->project->users->contains($user);
     }
 
     public function create(User $user, Project $project): bool
     {
-        return $user->isAdmin() || $project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $project->users->contains($user);
     }
 
     public function update(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $server->project->users->contains($user);
     }
 
     public function delete(User $user, Server $server): bool
     {
-        return $user->isAdmin() || $server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $server->project->users->contains($user);
     }
 
     public function manage(User $user, Server $server): bool

@@ -19,6 +19,11 @@ use Illuminate\Validation\ValidationException;
 
 class CreateSite
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function create(Server $server, array $input): Site
     {
         DB::beginTransaction();
@@ -72,14 +77,14 @@ class CreateSite
             $site->commands()->createMany($site->type()->baseCommands());
 
             // install site
-            dispatch(function () use ($site) {
+            dispatch(function () use ($site): void {
                 $site->type()->install();
                 $site->update([
                     'status' => SiteStatus::READY,
                     'progress' => 100,
                 ]);
                 Notifier::send($site, new SiteInstallationSucceed($site));
-            })->catch(function () use ($site) {
+            })->catch(function () use ($site): void {
                 $site->status = SiteStatus::INSTALLATION_FAILED;
                 $site->save();
                 Notifier::send($site, new SiteInstallationFailed($site));
@@ -96,6 +101,10 @@ class CreateSite
         }
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     public static function rules(Server $server, array $input): array
     {
         $rules = [
@@ -106,9 +115,7 @@ class CreateSite
             'domain' => [
                 'required',
                 new DomainRule,
-                Rule::unique('sites', 'domain')->where(function ($query) use ($server) {
-                    return $query->where('server_id', $server->id);
-                }),
+                Rule::unique('sites', 'domain')->where(fn ($query) => $query->where('server_id', $server->id)),
             ],
             'aliases.*' => [
                 new DomainRule,
@@ -125,6 +132,10 @@ class CreateSite
         return array_merge($rules, self::typeRules($server, $input));
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     private static function typeRules(Server $server, array $input): array
     {
         if (! isset($input['type']) || ! in_array($input['type'], config('core.site_types'))) {

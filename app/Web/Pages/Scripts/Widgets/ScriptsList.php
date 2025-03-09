@@ -18,8 +18,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ScriptsList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Script>
+     */
     protected function getTableQuery(): Builder
     {
         return Script::getByProjectId(auth()->user()->current_project_id, auth()->user()->id);
@@ -34,10 +40,8 @@ class ScriptsList extends Widget
             TextColumn::make('id')
                 ->label('Global')
                 ->badge()
-                ->color(fn ($record) => $record->project_id ? 'gray' : 'success')
-                ->formatStateUsing(function (Script $record) {
-                    return $record->project_id ? 'No' : 'Yes';
-                }),
+                ->color(fn ($record): string => $record->project_id ? 'gray' : 'success')
+                ->formatStateUsing(fn (Script $record): string => $record->project_id ? 'No' : 'Yes'),
             TextColumn::make('created_at')
                 ->label('Created At')
                 ->formatStateUsing(fn (Script $record) => $record->created_at_by_timezone)
@@ -52,18 +56,16 @@ class ScriptsList extends Widget
             ->heading(null)
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
-            ->recordUrl(fn (Script $record) => Executions::getUrl(['script' => $record]))
+            ->recordUrl(fn (Script $record): string => Executions::getUrl(['script' => $record]))
             ->actions([
                 EditAction::make('edit')
                     ->label('Edit')
                     ->modalHeading('Edit Script')
-                    ->mutateRecordDataUsing(function (array $data, Script $record) {
-                        return [
-                            'name' => $record->name,
-                            'content' => $record->content,
-                            'global' => $record->project_id === null,
-                        ];
-                    })
+                    ->mutateRecordDataUsing(fn (array $data, Script $record): array => [
+                        'name' => $record->name,
+                        'content' => $record->content,
+                        'global' => $record->project_id === null,
+                    ])
                     ->form([
                         TextInput::make('name')
                             ->rules(EditScript::rules()['name']),
@@ -74,7 +76,7 @@ class ScriptsList extends Widget
                             ->label('Is Global (Accessible in all projects)'),
                     ])
                     ->authorize(fn (Script $record) => auth()->user()->can('update', $record))
-                    ->using(function (array $data, Script $record) {
+                    ->using(function (array $data, Script $record): void {
                         app(EditScript::class)->edit($record, auth()->user(), $data);
                         $this->dispatch('$refresh');
                     })
@@ -83,7 +85,7 @@ class ScriptsList extends Widget
                     ->label('Delete')
                     ->modalHeading('Delete Script')
                     ->authorize(fn (Script $record) => auth()->user()->can('delete', $record))
-                    ->using(function (array $data, Script $record) {
+                    ->using(function (array $data, Script $record): void {
                         $record->delete();
                     }),
             ]);

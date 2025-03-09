@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
  * @method static string upload(string $local, string $remote, ?string $owner = null)
  * @method static string download(string $local, string $remote)
  * @method static string write(string $path, string $content, string $owner = null)
- * @method static string assertExecuted(array|string $commands)
+ * @method static string assertExecuted(array<int, string>|string $commands)
  * @method static string assertExecutedContains(string $command)
  * @method static string assertFileUploaded(string $toPath, ?string $content = null)
  * @method static string getUploadedLocalPath()

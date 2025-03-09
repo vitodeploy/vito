@@ -14,6 +14,8 @@ use Throwable;
 class UpdatePHPIni
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function update(Server $server, array $input): void
@@ -48,6 +50,9 @@ class UpdatePHPIni
         }
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Server $server): array
     {
         return [

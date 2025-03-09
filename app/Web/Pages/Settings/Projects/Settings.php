@@ -62,7 +62,7 @@ class Settings extends Page
                 ->modalHeading('Delete Project')
                 ->modalDescription('Are you sure you want to delete this project? This action will delete all associated data and cannot be undone.')
                 ->requiresConfirmation()
-                ->action(function (Project $record) {
+                ->action(function (Project $record): void {
                     try {
                         app(DeleteProject::class)->delete(auth()->user(), $record);
 

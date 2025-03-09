@@ -8,6 +8,9 @@ use App\Models\Database;
 
 class RestoreBackup
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function restore(BackupFile $backupFile, array $input): void
     {
         /** @var Database $database */
@@ -16,19 +19,22 @@ class RestoreBackup
         $backupFile->restored_to = $database->name;
         $backupFile->save();
 
-        dispatch(function () use ($backupFile, $database) {
+        dispatch(function () use ($backupFile, $database): void {
             /** @var \App\SSH\Services\Database\Database $databaseHandler */
             $databaseHandler = $database->server->database()->handler();
             $databaseHandler->restoreBackup($backupFile, $database->name);
             $backupFile->status = BackupFileStatus::RESTORED;
             $backupFile->restored_at = now();
             $backupFile->save();
-        })->catch(function () use ($backupFile) {
+        })->catch(function () use ($backupFile): void {
             $backupFile->status = BackupFileStatus::RESTORE_FAILED;
             $backupFile->save();
         })->onConnection('ssh');
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

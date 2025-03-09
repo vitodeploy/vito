@@ -7,6 +7,9 @@ use App\Models\User;
 
 class CreateScript
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function create(User $user, array $input): Script
     {
         $script = new Script([
@@ -20,6 +23,9 @@ class CreateScript
         return $script;
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

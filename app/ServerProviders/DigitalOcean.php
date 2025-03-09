@@ -65,23 +65,24 @@ class DigitalOcean extends AbstractProvider
     public function plans(?string $region): array
     {
         try {
+            /** @var array<string, mixed> $plans */
             $plans = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/sizes', ['per_page' => 200])
                 ->json();
 
-            return collect($plans['sizes'])->filter(function ($size) use ($region) {
-                return in_array($region, $size['regions']);
-            })
-                ->mapWithKeys(function ($value) {
-                    return [
-                        $value['slug'] => __('server_providers.plan', [
-                            'name' => $value['description'],
-                            'cpu' => $value['vcpus'],
-                            'memory' => $value['memory'],
-                            'disk' => $value['disk'],
-                        ]),
-                    ];
-                })
+            /** @var array<int, array{slug: string, description: string, vcpus: int, memory: int, disk: int, regions: array<string>}> $sizes */
+            $sizes = $plans['sizes'] ?? [];
+
+            return collect($sizes)
+                ->filter(fn (array $size): bool => in_array($region, $size['regions']))
+                ->mapWithKeys(fn (array $value): array => [
+                    $value['slug'] => __('server_providers.plan', [
+                        'name' => $value['description'],
+                        'cpu' => $value['vcpus'],
+                        'memory' => $value['memory'],
+                        'disk' => $value['disk'],
+                    ]),
+                ])
                 ->toArray();
         } catch (Exception) {
             return [];
@@ -91,13 +92,16 @@ class DigitalOcean extends AbstractProvider
     public function regions(): array
     {
         try {
+            /** @var array{regions?: array<int, array{slug: string, name: string, available: bool}>} $regions */
             $regions = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/regions', ['per_page' => 200])
                 ->json();
 
-            return collect($regions['regions'])
+            $regionsList = $regions['regions'] ?? []; // Ensure it's always an array
+
+            return collect($regionsList)
                 ->where('available', true)
-                ->mapWithKeys(fn ($value) => [$value['slug'] => $value['name']])
+                ->mapWithKeys(fn (array $value): array => [$value['slug'] => $value['name']])
                 ->toArray();
         } catch (Exception) {
             return [];
@@ -213,15 +217,17 @@ class DigitalOcean extends AbstractProvider
                 ])
                 ->json();
 
-            $image = collect($result['images'])
-                ->filter(function ($image) use ($region, $version) {
-                    return in_array($region, $image['regions']) && str_contains($image['name'], $version);
-                })
+            /** @var array<int, array{ id: int, name: string, distribution: string, status: string, regions: array<string> }> $images */
+            $images = $result['images'] ?? []; // Ensure $images is an array
+
+            $image = collect($images)
+                ->filter(fn (array $image): bool => in_array($region, $image['regions']) && str_contains((string) $image['name'], (string) $version)
+                )
                 ->where('distribution', 'Ubuntu')
                 ->where('status', 'available')
                 ->first();
 
-            return $image['id'];
+            return $image['id'] ?? null; // Handle the case where first() returns null
         } catch (Exception) {
             throw new Exception('Could not find image ID');
         }

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
  * @property int $user_id
  * @property string $profile
  * @property string $provider
- * @property array $credentials
+ * @property array<string, string> $credentials
  * @property bool $connected
  * @property User $user
  * @property ?int $project_id
@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class ServerProvider extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\ServerProviderFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -39,16 +40,25 @@ class ServerProvider extends AbstractModel
         'project_id' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getCredentials(): array
     {
         return $this->credentials;
     }
 
+    /**
+     * @return HasMany<Server, covariant $this>
+     */
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class, 'provider_id');
@@ -61,22 +71,34 @@ class ServerProvider extends AbstractModel
         return new $providerClass($this);
     }
 
+    /**
+     * @return BelongsTo<Project, covariant $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return Builder<ServerProvider>
+     */
     public static function getByProjectId(int $projectId): Builder
     {
-        return self::query()
-            ->where(function (Builder $query) use ($projectId) {
+        /** @var Builder<ServerProvider> $query */
+        $query = static::query();
+
+        return $query
+            ->where(function (Builder $query) use ($projectId): void {
                 $query->where('project_id', $projectId)->orWhereNull('project_id');
             });
     }
 
+    /**
+     * @return array<string>
+     */
     public static function regions(?int $id): array
     {
-        if (! $id) {
+        if ($id === null || $id === 0) {
             return [];
         }
         /** @var ?ServerProvider $profile */
@@ -95,9 +117,12 @@ class ServerProvider extends AbstractModel
         return $regions;
     }
 
+    /**
+     * @return array<string>
+     */
     public static function plans(?int $id, ?string $region): array
     {
-        if (! $id) {
+        if ($id === null || $id === 0) {
             return [];
         }
         $profile = self::find($id);

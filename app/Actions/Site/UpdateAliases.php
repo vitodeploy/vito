@@ -8,6 +8,9 @@ use App\ValidationRules\DomainRule;
 
 class UpdateAliases
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function update(Site $site, array $input): void
     {
         $site->aliases = $input['aliases'] ?? [];
@@ -19,6 +22,9 @@ class UpdateAliases
         $site->save();
     }
 
+    /**
+     * @return array<string, array<mixed>>
+     */
     public static function rules(): array
     {
         return [

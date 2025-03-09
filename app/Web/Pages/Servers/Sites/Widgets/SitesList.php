@@ -17,6 +17,9 @@ class SitesList extends Widget
 {
     public Server $server;
 
+    /**
+     * @return Builder<Site>
+     */
     protected function getTableQuery(): Builder
     {
         return Site::query()->where('server_id', $this->server->id);
@@ -26,7 +29,7 @@ class SitesList extends Widget
     {
         return [
             IconColumn::make('type')
-                ->icon(fn (Site $record) => 'icon-'.$record->type)
+                ->icon(fn (Site $record): string => 'icon-'.$record->type)
                 ->tooltip(fn (Site $record) => $record->type)
                 ->width(24),
             TextColumn::make('domain')
@@ -58,13 +61,13 @@ class SitesList extends Widget
             ->heading(null)
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
-            ->recordUrl(fn (Site $record) => View::getUrl(parameters: ['server' => $this->server, 'site' => $record]))
+            ->recordUrl(fn (Site $record): string => View::getUrl(parameters: ['server' => $this->server, 'site' => $record]))
             ->actions([
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
                     ->authorize(fn (Site $record) => auth()->user()->can('update', [$record, $this->server]))
-                    ->url(fn (Site $record) => Settings::getUrl(parameters: ['server' => $this->server, 'site' => $record])),
+                    ->url(fn (Site $record): string => Settings::getUrl(parameters: ['server' => $this->server, 'site' => $record])),
             ]);
     }
 }

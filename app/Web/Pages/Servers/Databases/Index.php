@@ -40,7 +40,7 @@ class Index extends Page implements HasSecondSubNav
 
                 return $service->type_data['defaultCharset'] ?? null;
             })
-            ->options(function () use ($server) {
+            ->options(function () use ($server): array {
                 $service = $server->defaultService('database');
                 $charsets = $service->type_data['charsets'] ?? [];
 
@@ -49,7 +49,7 @@ class Index extends Page implements HasSecondSubNav
                     array_keys($charsets)
                 );
             })
-            ->afterStateUpdated(function (Get $get, Set $set, $state) use ($server) {
+            ->afterStateUpdated(function (Get $get, Set $set, $state) use ($server): void {
                 $service = $server->defaultService('database');
                 $charsets = $service->type_data['charsets'] ?? [];
                 $set('collation', $charsets[$state]['default'] ?? null);
@@ -70,7 +70,7 @@ class Index extends Page implements HasSecondSubNav
 
                 return $charsets[$charset]['default'] ?? null;
             })
-            ->options(function (Get $get) use ($server) {
+            ->options(function (Get $get) use ($server): array {
                 $service = $server->defaultService('database');
                 $collations = $service->type_data['charsets'][$get('charset')]['list'] ?? [];
 
@@ -102,24 +102,24 @@ class Index extends Page implements HasSecondSubNav
                     TextInput::make('username')
                         ->label('Username')
                         ->rules(fn (callable $get) => CreateDatabase::rules($this->server, $get())['username'])
-                        ->hidden(fn (callable $get) => $get('user') !== true),
+                        ->hidden(fn (callable $get): bool => $get('user') !== true),
                     TextInput::make('password')
                         ->label('Password')
                         ->rules(fn (callable $get) => CreateDatabase::rules($this->server, $get())['password'])
-                        ->hidden(fn (callable $get) => $get('user') !== true),
+                        ->hidden(fn (callable $get): bool => $get('user') !== true),
                     Checkbox::make('remote')
                         ->label('Remote')
                         ->default(false)
-                        ->hidden(fn (callable $get) => $get('user') !== true)
+                        ->hidden(fn (callable $get): bool => $get('user') !== true)
                         ->reactive(),
                     TextInput::make('host')
                         ->label('Host')
                         ->rules(fn (callable $get) => CreateDatabase::rules($this->server, $get())['host'])
-                        ->hidden(fn (callable $get) => $get('remote') !== true),
+                        ->hidden(fn (callable $get): bool => $get('remote') !== true),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->action(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(CreateDatabase::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');

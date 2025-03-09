@@ -47,16 +47,14 @@ class EditTags
     }
 
     /**
-     * @param  Site|Server  $taggable
+     * @return array<int, mixed>
      */
-    private static function form(mixed $taggable): array
+    private static function form(Site|Server $taggable): array
     {
         return [
             Select::make('tags')
                 ->default($taggable->tags()->pluck('tags.id')->toArray())
-                ->options(function () {
-                    return auth()->user()->currentProject->tags()->pluck('name', 'id')->toArray();
-                })
+                ->options(fn () => auth()->user()->currentProject->tags()->pluck('name', 'id')->toArray())
                 ->nestedRecursiveRules(SyncTags::rules(auth()->user()->currentProject->id)['tags.*'])
                 ->suffixAction(
                     FormAction::make('create_tag')
@@ -66,7 +64,7 @@ class EditTags
                         ->modalHeading('Create Tag')
                         ->modalWidth(MaxWidth::Medium)
                         ->form(Create::form())
-                        ->action(function (array $data) {
+                        ->action(function (array $data): void {
                             Create::action($data);
                         }),
                 )
@@ -79,12 +77,12 @@ class EditTags
      */
     private static function action(mixed $taggable): \Closure
     {
-        return function (array $data) use ($taggable) {
+        return function (array $data) use ($taggable): void {
             /** @var \App\Models\User $user */
             $user = auth()->user();
-            app(SyncTags::class)->sync($user, [
+            app(SyncTags::class)->sync([
                 'taggable_id' => $taggable->id,
-                'taggable_type' => get_class($taggable),
+                'taggable_type' => $taggable::class,
                 'tags' => $data['tags'],
             ]);
 

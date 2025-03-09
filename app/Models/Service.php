@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 /**
  * @property int $server_id
  * @property string $type
- * @property array $type_data
+ * @property array<string, mixed> $type_data
  * @property string $name
  * @property string $version
  * @property string $unit
@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
  */
 class Service extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\ServiceFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -52,13 +53,16 @@ class Service extends AbstractModel
     {
         parent::boot();
 
-        static::creating(function (Service $service) {
+        static::creating(function (Service $service): void {
             if (array_key_exists($service->name, config('core.service_units'))) {
                 $service->unit = config('core.service_units')[$service->name][$service->server->os][$service->version];
             }
         });
     }
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         ServiceStatus::READY => 'success',
         ServiceStatus::INSTALLING => 'warning',
@@ -74,6 +78,9 @@ class Service extends AbstractModel
         ServiceStatus::DISABLED => 'gray',
     ];
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
@@ -89,7 +96,7 @@ class Service extends AbstractModel
     /**
      * @throws ServiceInstallationFailed
      */
-    public function validateInstall($result): void
+    public function validateInstall(string $result): void
     {
         if (! Str::contains($result, 'Active: active')) {
             throw new ServiceInstallationFailed;

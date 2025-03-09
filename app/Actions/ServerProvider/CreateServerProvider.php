@@ -13,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 class CreateServerProvider
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function create(User $user, Project $project, array $input): ServerProvider
@@ -40,13 +42,17 @@ class CreateServerProvider
         return $serverProvider;
     }
 
-    private static function getProvider($name): ServerProviderContract
+    private static function getProvider(string $name): ServerProviderContract
     {
         $providerClass = config('core.server_providers_class.'.$name);
 
         return new $providerClass;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     public static function rules(array $input): array
     {
         $rules = [
@@ -63,6 +69,10 @@ class CreateServerProvider
         return array_merge($rules, self::providerRules($input));
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     private static function providerRules(array $input): array
     {
         if (! isset($input['provider'])) {

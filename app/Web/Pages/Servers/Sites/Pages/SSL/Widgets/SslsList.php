@@ -20,8 +20,14 @@ class SslsList extends Widget
 {
     public Site $site;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Ssl>
+     */
     protected function getTableQuery(): Builder
     {
         return Ssl::query()->where('site_id', $this->site->id);
@@ -31,8 +37,8 @@ class SslsList extends Widget
     {
         return [
             IconColumn::make('is_active')
-                ->color(fn (Ssl $record) => $record->is_active ? 'green' : 'gray')
-                ->icon(fn (Ssl $record) => $record->is_active ? 'heroicon-o-lock-closed' : 'heroicon-o-lock-open'),
+                ->color(fn (Ssl $record): string => $record->is_active ? 'green' : 'gray')
+                ->icon(fn (Ssl $record): string => $record->is_active ? 'heroicon-o-lock-closed' : 'heroicon-o-lock-open'),
             TextColumn::make('type')
                 ->searchable()
                 ->sortable(),
@@ -40,7 +46,7 @@ class SslsList extends Widget
                 ->formatStateUsing(fn (Ssl $record) => $record->created_at_by_timezone)
                 ->sortable(),
             TextColumn::make('expires_at')
-                ->formatStateUsing(fn (Ssl $record) => $record->getDateTimeByTimezone($record->expires_at))
+                ->formatStateUsing(fn (Ssl $record): ?string => $record->getDateTimeByTimezone($record->expires_at))
                 ->sortable(),
             TextColumn::make('status')
                 ->label('Status')
@@ -60,15 +66,15 @@ class SslsList extends Widget
             ->actions([
                 Action::make('activate-ssl')
                     ->hiddenLabel()
-                    ->visible(fn (Ssl $record) => ! $record->is_active)
+                    ->visible(fn (Ssl $record): bool => ! $record->is_active)
                     ->tooltip('Activate SSL')
                     ->icon('heroicon-o-lock-closed')
                     ->authorize(fn (Ssl $record) => auth()->user()->can('update', [$record->site, $this->site->server]))
                     ->requiresConfirmation()
                     ->modalHeading('Activate SSL')
                     ->modalSubmitActionLabel('Activate')
-                    ->action(function (Ssl $record) {
-                        run_action($this, function () use ($record) {
+                    ->action(function (Ssl $record): void {
+                        run_action($this, function () use ($record): void {
                             app(ActivateSSL::class)->activate($record);
 
                             Notification::make()
@@ -83,12 +89,10 @@ class SslsList extends Widget
                     ->icon('heroicon-o-eye')
                     ->authorize(fn (Ssl $record) => auth()->user()->can('view', [$record, $this->site, $this->site->server]))
                     ->modalHeading('View Log')
-                    ->modalContent(function (Ssl $record) {
-                        return view('components.console-view', [
-                            'slot' => $record->log?->getContent(),
-                            'attributes' => new ComponentAttributeBag,
-                        ]);
-                    })
+                    ->modalContent(fn (Ssl $record) => view('components.console-view', [
+                        'slot' => $record->log?->getContent(),
+                        'attributes' => new ComponentAttributeBag,
+                    ]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
                 DeleteAction::make('delete')
@@ -96,8 +100,8 @@ class SslsList extends Widget
                     ->tooltip('Delete')
                     ->icon('heroicon-o-trash')
                     ->authorize(fn (Ssl $record) => auth()->user()->can('delete', [$record, $this->site, $this->site->server]))
-                    ->using(function (Ssl $record) {
-                        run_action($this, function () use ($record) {
+                    ->using(function (Ssl $record): void {
+                        run_action($this, function () use ($record): void {
                             app(DeleteSSL::class)->delete($record);
                             $this->dispatch('$refresh');
                         });

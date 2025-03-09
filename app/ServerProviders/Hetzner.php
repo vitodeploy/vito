@@ -62,25 +62,25 @@ class Hetzner extends AbstractProvider
     public function plans(?string $region): array
     {
         try {
+            /** @var array{server_types?: array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>}>} $plans */
             $plans = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/server_types', ['per_page' => 50])
                 ->json();
 
-            return collect($plans['server_types'])->filter(function ($type) use ($region) {
-                return collect($type['prices'])->contains(function ($price) use ($region) {
-                    return $price['location'] === $region;
-                });
-            })
-                ->mapWithKeys(function ($value) {
-                    return [
-                        $value['name'] => __('server_providers.plan', [
-                            'name' => $value['name'],
-                            'cpu' => $value['cores'],
-                            'memory' => $value['memory'],
-                            'disk' => $value['disk'],
-                        ]),
-                    ];
-                })
+            /** @var array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>}> $serverTypes */
+            $serverTypes = $plans['server_types'] ?? [];
+
+            return collect($serverTypes)
+                ->filter(fn (array $type): bool => collect($type['prices'])->contains(fn (array $price): bool => $price['location'] === $region)
+                )
+                ->mapWithKeys(fn (array $value): array => [
+                    $value['name'] => __('server_providers.plan', [
+                        'name' => $value['name'],
+                        'cpu' => $value['cores'],
+                        'memory' => $value['memory'],
+                        'disk' => $value['disk'],
+                    ]),
+                ])
                 ->toArray();
         } catch (Exception) {
             return [];
@@ -94,8 +94,11 @@ class Hetzner extends AbstractProvider
                 ->get($this->apiUrl.'/locations', ['per_page' => 50])
                 ->json();
 
-            return collect($regions['locations'])
-                ->mapWithKeys(fn ($value) => [$value['name'] => $value['city'].' - '.$value['country']])
+            /** @var array<int, array{name: string, city: string, country: string}> $locations */
+            $locations = $regions['locations'];
+
+            return collect($locations)
+                ->mapWithKeys(fn (array $value): array => [$value['name'] => $value['city'].' - '.$value['country']])
                 ->toArray();
         } catch (Exception) {
             return [];

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('source_controls', function (Blueprint $table) {
+        Schema::create('source_controls', function (Blueprint $table): void {
             $table->id();
             $table->string('provider');
             $table->json('provider_data')->nullable();

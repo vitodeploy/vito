@@ -12,6 +12,9 @@ use Filament\Notifications\Notification;
 
 class Edit
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(SourceControl $sourceControl): array
     {
         return [
@@ -39,6 +42,8 @@ class Edit
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     *
      * @throws Exception
      */
     public static function action(SourceControl $sourceControl, array $data): void

@@ -8,6 +8,9 @@ use FTP\Connection;
 
 class FTP extends AbstractStorageProvider
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function validationRules(): array
     {
         return [
@@ -63,8 +66,8 @@ class FTP extends AbstractStorageProvider
 
         return \App\Facades\FTP::connect(
             $credentials['host'],
-            $credentials['port'],
-            $credentials['ssl']
+            (int) $credentials['port'],
+            (bool) $credentials['ssl']
         );
     }
 

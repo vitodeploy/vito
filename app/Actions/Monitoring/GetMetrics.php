@@ -11,6 +11,10 @@ use Illuminate\Validation\Rule;
 
 class GetMetrics
 {
+    /**
+     * @param  array<string, mixed>  $input
+     * @return Collection<int, mixed>
+     */
     public function filter(Server $server, array $input): Collection
     {
         if (isset($input['from']) && isset($input['to']) && $input['from'] === $input['to']) {
@@ -32,6 +36,9 @@ class GetMetrics
         );
     }
 
+    /**
+     * @return Collection<int, mixed>
+     */
     private function metrics(
         Server $server,
         Carbon $fromDate,
@@ -57,13 +64,16 @@ class GetMetrics
             ->groupByRaw('date_interval')
             ->orderBy('date_interval')
             ->get()
-            ->map(function ($item) {
+            ->map(function ($item): \stdClass {
                 $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
 
                 return $item;
             });
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     private function getFromDate(array $input): Carbon
     {
         if ($input['period'] === 'custom') {
@@ -73,6 +83,9 @@ class GetMetrics
         return Carbon::parse('-'.convert_time_format($input['period']));
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     private function getToDate(array $input): Carbon
     {
         if ($input['period'] === 'custom') {
@@ -82,6 +95,9 @@ class GetMetrics
         return Carbon::now();
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     private function getInterval(array $input): Expression
     {
         if ($input['period'] === 'custom') {
@@ -107,6 +123,10 @@ class GetMetrics
         return DB::raw("strftime('%Y-%m-%d 00:00:00', created_at) as date_interval");
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     public static function rules(array $input): array
     {
         $rules = [

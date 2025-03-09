@@ -62,8 +62,8 @@ class Index extends Page
                         ->label('Is Global (Accessible in all projects)'),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->action(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(CreateScript::class)->create(auth()->user(), $data);
 
                         $this->dispatch('$refresh');

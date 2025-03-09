@@ -8,6 +8,8 @@ use App\Models\Site;
 class UpdateEnv
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws SSHError
      */
     public function update(Site $site, array $input): void
@@ -15,7 +17,7 @@ class UpdateEnv
         $site->server->os()->editFileAs(
             $site->path.'/.env',
             $site->user,
-            trim($input['env']),
+            trim((string) $input['env']),
         );
     }
 }

@@ -9,6 +9,9 @@ use Illuminate\Validation\Rule;
 
 class CreateUser
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function create(array $input): User
     {
         $this->validate($input);
@@ -25,11 +28,17 @@ class CreateUser
         return $user;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     private function validate(array $input): void
     {
         Validator::make($input, self::rules())->validate();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function rules(): array
     {
         return [

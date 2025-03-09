@@ -39,7 +39,7 @@ class Login extends \Filament\Pages\Auth\Login
             ->label('Logout')
             ->color('danger')
             ->link()
-            ->action(function () {
+            ->action(function (): void {
                 Filament::auth()->logout();
 
                 session()->forget('login.id');

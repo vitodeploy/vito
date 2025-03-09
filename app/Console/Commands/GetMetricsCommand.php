@@ -15,10 +15,10 @@ class GetMetricsCommand extends Command
     public function handle(): void
     {
         $checkedMetrics = 0;
-        Server::query()->whereHas('services', function (Builder $query) {
+        Server::query()->whereHas('services', function (Builder $query): void {
             $query->where('type', 'monitoring')
                 ->where('name', 'remote-monitor');
-        })->chunk(10, function ($servers) use (&$checkedMetrics) {
+        })->chunk(10, function ($servers) use (&$checkedMetrics): void {
             /** @var Server $server */
             foreach ($servers as $server) {
                 $info = $server->os()->resourceInfo();

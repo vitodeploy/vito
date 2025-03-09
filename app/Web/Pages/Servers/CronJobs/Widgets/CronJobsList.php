@@ -18,8 +18,14 @@ class CronJobsList extends Widget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<CronJob>
+     */
     protected function getTableQuery(): Builder
     {
         return CronJob::query()->where('server_id', $this->server->id);
@@ -34,7 +40,7 @@ class CronJobsList extends Widget
                 ->searchable()
                 ->copyable(),
             TextColumn::make('frequency')
-                ->formatStateUsing(fn (CronJob $cronJob) => $cronJob->frequencyLabel())
+                ->formatStateUsing(fn (CronJob $cronJob): string => $cronJob->frequencyLabel())
                 ->searchable()
                 ->sortable()
                 ->copyable(),
@@ -63,9 +69,9 @@ class CronJobsList extends Widget
                     ->icon('heroicon-o-play')
                     ->requiresConfirmation()
                     ->authorize(fn (CronJob $record) => auth()->user()->can('update', [$record, $this->server]))
-                    ->visible(fn (CronJob $record) => $record->isDisabled())
-                    ->action(function (CronJob $record) {
-                        run_action($this, function () use ($record) {
+                    ->visible(fn (CronJob $record): bool => $record->isDisabled())
+                    ->action(function (CronJob $record): void {
+                        run_action($this, function () use ($record): void {
                             app(EnableCronJob::class)->enable($this->server, $record);
                         });
                     }),
@@ -75,9 +81,9 @@ class CronJobsList extends Widget
                     ->icon('heroicon-o-stop')
                     ->requiresConfirmation()
                     ->authorize(fn (CronJob $record) => auth()->user()->can('update', [$record, $this->server]))
-                    ->visible(fn (CronJob $record) => $record->isEnabled())
-                    ->action(function (CronJob $record) {
-                        run_action($this, function () use ($record) {
+                    ->visible(fn (CronJob $record): bool => $record->isEnabled())
+                    ->action(function (CronJob $record): void {
+                        run_action($this, function () use ($record): void {
                             app(DisableCronJob::class)->disable($this->server, $record);
                         });
                     }),
@@ -88,7 +94,7 @@ class CronJobsList extends Widget
                     ->hiddenLabel()
                     ->requiresConfirmation()
                     ->authorize(fn (CronJob $record) => auth()->user()->can('delete', $record))
-                    ->action(function (CronJob $record) {
+                    ->action(function (CronJob $record): void {
                         try {
                             app(DeleteCronJob::class)->delete($this->server, $record);
                         } catch (\Exception $e) {

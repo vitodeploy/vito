@@ -9,12 +9,7 @@ use App\SSH\Services\PHP\PHP;
 
 abstract class AbstractType implements ServerType
 {
-    protected Server $server;
-
-    public function __construct(Server $server)
-    {
-        $this->server = $server;
-    }
+    public function __construct(protected Server $server) {}
 
     /**
      * @throws SSHError
@@ -67,7 +62,7 @@ abstract class AbstractType implements ServerType
 
     protected function addWebserver(string $service): void
     {
-        if ($service != 'none') {
+        if ($service !== 'none') {
             $this->server->services()->create([
                 'type' => 'webserver',
                 'name' => $service,
@@ -78,7 +73,7 @@ abstract class AbstractType implements ServerType
 
     protected function addDatabase(string $service): void
     {
-        if ($service != 'none') {
+        if ($service !== 'none') {
             $this->server->services()->create([
                 'type' => 'database',
                 'name' => config('core.databases_name.'.$service),
@@ -89,7 +84,7 @@ abstract class AbstractType implements ServerType
 
     protected function addPHP(string $version): void
     {
-        if ($version != 'none') {
+        if ($version !== 'none') {
             $this->server->services()->create([
                 'type' => 'php',
                 'type_data' => [
