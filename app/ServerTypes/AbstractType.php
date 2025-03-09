@@ -53,7 +53,7 @@ abstract class AbstractType implements ServerType
         $this->server->save();
     }
 
-    protected function progress(int $percentage, ?string $step = null): void
+    protected function progress(int|float $percentage, ?string $step = null): void
     {
         $this->server->progress = $percentage;
         $this->server->progress_step = $step;

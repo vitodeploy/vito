@@ -32,14 +32,17 @@ class LinkUser
 
         $databaseUser->databases = $input['databases'];
 
+        /** @var \App\SSH\Services\Database\Database $handler */
+        $handler = $databaseUser->server->database()->handler();
+
         // Unlink the user from all databases
-        $databaseUser->server->database()->handler()->unlink(
+        $handler->unlink(
             $databaseUser->username,
             $databaseUser->host
         );
 
         // Link the user to the selected databases
-        $databaseUser->server->database()->handler()->link(
+        $handler->link(
             $databaseUser->username,
             $databaseUser->host,
             $databaseUser->databases

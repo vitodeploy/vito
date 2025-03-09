@@ -52,6 +52,7 @@ class Executions extends Page
                 ->options(function (Get $get): array {
                     $users = ['root'];
 
+                    /** @var ?Server $server */
                     $server = Server::query()->find($get('server'));
                     if ($server) {
                         $users = $server->getSshUsers();

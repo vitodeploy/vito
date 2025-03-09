@@ -46,7 +46,10 @@ class StorageProvider extends AbstractModel
     {
         $providerClass = config('core.storage_providers_class')[$this->provider];
 
-        return new $providerClass($this);
+        /** @var \App\StorageProviders\StorageProvider $provider */
+        $provider = new $providerClass($this);
+
+        return $provider;
     }
 
     /**

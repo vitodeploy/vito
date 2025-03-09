@@ -45,13 +45,15 @@ class CreateServerProvider
     private static function getProvider(string $name): ServerProviderContract
     {
         $providerClass = config('core.server_providers_class.'.$name);
+        /** @var ServerProviderContract $provider */
+        $provider = new $providerClass;
 
-        return new $providerClass;
+        return $provider;
     }
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, array<string>>
+     * @return array<string, mixed>
      */
     public static function rules(array $input): array
     {

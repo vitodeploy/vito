@@ -46,7 +46,7 @@ class SSH
             $this->asUser = $asUser;
         }
         $this->privateKey = PublicKeyLoader::loadPrivateKey(
-            file_get_contents($this->server->sshKey()['private_key_path'])
+            (string) file_get_contents($this->server->sshKey()['private_key_path'])
         );
 
         return $this;

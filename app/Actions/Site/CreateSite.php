@@ -103,7 +103,7 @@ class CreateSite
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, array<string>>
+     * @return array<string, mixed>
      */
     public static function rules(Server $server, array $input): array
     {

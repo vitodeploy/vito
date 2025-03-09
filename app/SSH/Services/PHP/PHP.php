@@ -97,7 +97,11 @@ class PHP extends AbstractService
             ]),
             'install-php-extension-'.$name
         );
-        $result = Str::substr($result, strpos($result, '[PHP Modules]'));
+        $pos = strpos($result, '[PHP Modules]');
+        if ($pos === false) {
+            throw new SSHCommandError('Failed to install extension');
+        }
+        $result = Str::substr($result, $pos);
         if (! Str::contains($result, $name)) {
             throw new SSHCommandError('Failed to install extension');
         }

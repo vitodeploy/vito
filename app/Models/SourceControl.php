@@ -43,7 +43,10 @@ class SourceControl extends AbstractModel
     {
         $providerClass = config('core.source_control_providers_class')[$this->provider];
 
-        return new $providerClass($this);
+        /** @var SourceControlProvider $provider */
+        $provider = new $providerClass($this);
+
+        return $provider;
     }
 
     public function getRepo(?string $repo = null): mixed

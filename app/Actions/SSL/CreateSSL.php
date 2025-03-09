@@ -57,7 +57,7 @@ class CreateSSL
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, array<string>>
+     * @return array<string, mixed>
      */
     public static function rules(array $input): array
     {

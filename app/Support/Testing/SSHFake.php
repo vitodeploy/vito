@@ -84,7 +84,7 @@ class SSHFake extends SSH
     {
         $this->uploadedLocalPath = $local;
         $this->uploadedRemotePath = $remote;
-        $this->uploadedContent = file_get_contents($local);
+        $this->uploadedContent = file_get_contents($local) ?: '';
         $this->log = null;
     }
 

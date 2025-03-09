@@ -90,7 +90,10 @@ class Service extends AbstractModel
     {
         $handler = config('core.service_handlers')[$this->name];
 
-        return new $handler($this);
+        /** @var ServiceInterface $service */
+        $service = new $handler($this);
+
+        return $service;
     }
 
     /**

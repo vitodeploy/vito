@@ -74,8 +74,8 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
                 ->schema([
                     TextEntry::make('device')
                         ->hiddenLabel()
-                        ->icon($session->device['desktop'] ? 'heroicon-o-computer-desktop' : 'heroicon-o-device-phone-mobile')
-                        ->state($session->device['platform'].' - '.$session->device['browser']),
+                        ->icon(isset($session->device['desktop']) ? 'heroicon-o-computer-desktop' : 'heroicon-o-device-phone-mobile')
+                        ->state(($session->device['platform'] ?? 'Platform').' - '.($session->device['browser'] ?? 'Browser')),
                     TextEntry::make('browser')
                         ->hiddenLabel()
                         ->icon('heroicon-o-map-pin')
@@ -96,7 +96,18 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
     }
 
     /**
-     * @return array<object>
+     * @return array<int, object{
+     *     device: array{
+     *         browser: string,
+     *         desktop: bool,
+     *         mobile: bool,
+     *         tablet: bool,
+     *         platform: string
+     *     },
+     *     ip_address: string|null,
+     *     is_current_device: bool,
+     *     last_active: string
+     * }>
      */
     private function getSessions(): array
     {

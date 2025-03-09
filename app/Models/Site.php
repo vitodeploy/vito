@@ -235,7 +235,10 @@ class Site extends AbstractModel
     {
         $typeClass = config('core.site_types_class.'.$this->type);
 
-        return new $typeClass($this);
+        /** @var SiteType $type */
+        $type = new $typeClass($this);
+
+        return $type;
     }
 
     public function php(): ?Service

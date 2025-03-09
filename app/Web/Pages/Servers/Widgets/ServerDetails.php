@@ -94,10 +94,10 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel(),
                         TextEntry::make('tags.*')
                             ->default('No tags')
-                            ->formatStateUsing(fn ($state) => is_object($state) ? $state->name : $state)
+                            ->formatStateUsing(fn ($state) => is_object($state) && isset($state->name) ? $state->name : $state)
                             ->inlineLabel()
                             ->badge()
-                            ->color(fn ($state) => is_object($state) ? $state->color : 'gray')
+                            ->color(fn ($state) => is_object($state) && isset($state->color) ? $state->color : 'gray')
                             ->icon(fn ($state): string => is_object($state) ? 'heroicon-o-tag' : '')
                             ->suffixAction(
                                 EditTags::infolist($this->server)

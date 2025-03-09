@@ -46,7 +46,7 @@ use Throwable;
  * @property bool $auto_update
  * @property int $available_updates
  * @property int $security_updates
- * @property int $progress
+ * @property int|float $progress
  * @property string $progress_step
  * @property Project $project
  * @property User $creator
@@ -107,7 +107,7 @@ class Server extends AbstractModel
         'auto_update' => 'boolean',
         'available_updates' => 'integer',
         'security_updates' => 'integer',
-        'progress' => 'integer',
+        'progress' => 'float',
         'updates' => 'integer',
         'last_update_check' => 'datetime',
     ];
@@ -413,14 +413,20 @@ class Server extends AbstractModel
     {
         $typeClass = config('core.server_types_class')[$this->type];
 
-        return new $typeClass($this);
+        /** @var ServerType $type */
+        $type = new $typeClass($this);
+
+        return $type;
     }
 
     public function provider(): \App\ServerProviders\ServerProvider
     {
         $providerClass = config('core.server_providers_class')[$this->provider];
 
-        return new $providerClass($this->serverProvider, $this);
+        /** @var \App\ServerProviders\ServerProvider $provider */
+        $provider = new $providerClass($this->serverProvider, $this);
+
+        return $provider;
     }
 
     public function webserver(?string $version = null): ?Service

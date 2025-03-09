@@ -9,7 +9,9 @@ class DeleteDatabaseUser
 {
     public function delete(Server $server, DatabaseUser $databaseUser): void
     {
-        $server->database()->handler()->deleteUser($databaseUser->username, $databaseUser->host);
+        /** @var \App\SSH\Services\Database\Database $handler */
+        $handler = $server->database()->handler();
+        $handler->deleteUser($databaseUser->username, $databaseUser->host);
         $databaseUser->delete();
     }
 }

@@ -50,7 +50,8 @@ class DemoServiceProvider extends ServiceProvider
         }
 
         // get all classes inside App\Models namespace
-        $models = collect(scandir(app_path('Models')))
+        $files = scandir(app_path('Models')) ?: [];
+        $models = collect($files)
             ->filter(fn ($file): bool => ! in_array($file, ['.', '..']))
             ->map(fn ($file) => 'App\\Models\\'.str_replace('.php', '', $file));
 

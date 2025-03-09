@@ -24,8 +24,12 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     protected bool $removeLastRow = false;
 
+    /**
+     * @phpstan-return view-string
+     */
     protected function getScriptView(string $script): string
     {
+        /** @phpstan-ignore-next-line */
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
     }
 
@@ -354,7 +358,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $rows = [];
         foreach ($lines as $line) {
-            $row = explode($this->separator, $line);
+            $separator = ! empty($this->separator) ? $this->separator : "\t";
+            $row = explode($separator, $line);
             $row = array_map('trim', $row);
             $rows[] = $row;
         }

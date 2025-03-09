@@ -43,7 +43,10 @@ class NotificationChannel extends AbstractModel
     {
         $class = config('core.notification_channels_providers_class')[$this->provider];
 
-        return new $class($this);
+        /** @var \App\NotificationChannels\NotificationChannel $provider */
+        $provider = new $class($this);
+
+        return $provider;
     }
 
     public static function notifyAll(NotificationInterface $notification): void

@@ -12,8 +12,9 @@ class UpdateMetricSettings
     public function update(Server $server, array $input): void
     {
         $service = $server->monitoring();
-
-        $data = $service->handler()->data();
+        /** @var \App\SSH\Services\ServiceInterface $handler */
+        $handler = $service->handler();
+        $data = $handler->data();
         $data['data_retention'] = $input['data_retention'];
         $service->type_data = $data;
         $service->save();

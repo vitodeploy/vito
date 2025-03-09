@@ -26,7 +26,11 @@ function generate_key_pair(string $path): void
 function date_with_timezone(mixed $date, string $timezone): string
 {
     $dt = new DateTime('now', new DateTimeZone($timezone));
-    $dt->setTimestamp(strtotime((string) $date));
+    $time = strtotime((string) $date);
+    if ($time === false) {
+        throw new Exception('Invalid date');
+    }
+    $dt->setTimestamp($time);
 
     return $dt->format('Y-m-d H:i:s');
 }
@@ -57,7 +61,13 @@ function get_public_key_content(): string
         Artisan::call('ssh-key:generate --force');
     }
 
-    return str(file_get_contents(storage_path(config('core.ssh_public_key_name'))))
+    $content = file_get_contents(storage_path(config('core.ssh_public_key_name')));
+
+    if ($content === false) {
+        return '';
+    }
+
+    return str($content)
         ->replace("\n", '')
         ->toString();
 }
@@ -143,10 +153,10 @@ function tail(string $filepath, int $lines = 1, bool $adaptive = true): string
         $output = ($chunk = fread($f, $seek)).$output;
 
         // Jump back to where we started reading
-        fseek($f, -mb_strlen($chunk, '8bit'), SEEK_CUR);
+        fseek($f, -mb_strlen($chunk !== false ? $chunk : '', '8bit'), SEEK_CUR);
 
         // Decrease our line counter
-        $lines -= substr_count($chunk, "\n");
+        $lines -= substr_count($chunk !== false ? $chunk : '', "\n");
     }
 
     // While we have too many lines

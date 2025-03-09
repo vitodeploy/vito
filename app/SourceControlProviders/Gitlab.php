@@ -54,7 +54,7 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function fullRepoUrl(string $repo, string $key): string
     {
-        $host = parse_url($this->getApiUrl())['host'];
+        $host = parse_url($this->getApiUrl())['host'] ?? 'gitlab.com';
 
         return sprintf('git@%s-%s:%s.git', $host, $key, $repo);
     }

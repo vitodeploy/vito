@@ -9,7 +9,9 @@ class DeleteDatabase
 {
     public function delete(Server $server, Database $database): void
     {
-        $server->database()->handler()->delete($database->name);
+        /** @var \App\SSH\Services\Database\Database $handler */
+        $handler = $server->database()->handler();
+        $handler->delete($database->name);
         $database->delete();
     }
 }
