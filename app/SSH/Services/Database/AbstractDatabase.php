@@ -358,7 +358,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $rows = [];
         foreach ($lines as $line) {
-            $separator = ! empty($this->separator) ? $this->separator : "\t";
+            $separator = $this->separator === '' || $this->separator === '0' ? "\t" : $this->separator;
             $row = explode($separator, $line);
             $row = array_map('trim', $row);
             $rows[] = $row;
