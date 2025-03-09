@@ -44,7 +44,7 @@ function show_vito_version(): string
 
 function convert_time_format(string $string): string
 {
-    $string = preg_replace('/(\d+)m/', '$1 minutes', (string) $string);
+    $string = preg_replace('/(\d+)m/', '$1 minutes', $string);
     $string = preg_replace('/(\d+)s/', '$1 seconds', (string) $string);
     $string = preg_replace('/(\d+)d/', '$1 days', (string) $string);
 

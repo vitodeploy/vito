@@ -140,7 +140,7 @@ class ServerLog extends AbstractModel
         }
 
         if (Storage::disk($this->disk)->exists($this->name)) {
-            if ($lines) {
+            if ($lines !== null && $lines !== 0) {
                 return tail(Storage::disk($this->disk)->path($this->name), $lines);
             }
 

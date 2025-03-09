@@ -14,7 +14,7 @@ class UpdateProject
     public function update(Project $project, array $input): Project
     {
         if (isset($input['name'])) {
-            $input['name'] = strtolower($input['name']);
+            $input['name'] = strtolower((string) $input['name']);
         }
 
         $this->validate($project, $input);

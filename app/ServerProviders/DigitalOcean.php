@@ -221,7 +221,7 @@ class DigitalOcean extends AbstractProvider
             $images = $result['images'] ?? []; // Ensure $images is an array
 
             $image = collect($images)
-                ->filter(fn (array $image): bool => in_array($region, $image['regions']) && str_contains((string) $image['name'], (string) $version)
+                ->filter(fn (array $image): bool => in_array($region, $image['regions']) && str_contains($image['name'], (string) $version)
                 )
                 ->where('distribution', 'Ubuntu')
                 ->where('status', 'available')

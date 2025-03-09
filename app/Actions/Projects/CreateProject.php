@@ -14,7 +14,7 @@ class CreateProject
     public function create(User $user, array $input): Project
     {
         if (isset($input['name'])) {
-            $input['name'] = strtolower($input['name']);
+            $input['name'] = strtolower((string) $input['name']);
         }
 
         $this->validate($input);
