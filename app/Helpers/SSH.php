@@ -76,7 +76,7 @@ class SSH
                 $this->connection = new SSH2($ip, $this->server->port);
             }
 
-            assert($this->user !== null);
+            throw_if($this->user === null);
 
             $login = $this->connection->login($this->user, $this->privateKey);
 
@@ -107,7 +107,7 @@ class SSH
         try {
             if (! $this->connection instanceof SSH2) {
                 $this->connect();
-                assert($this->connection instanceof SSH2);
+                throw_unless($this->connection instanceof SSH2);
             }
         } catch (Throwable $e) {
             throw new SSHConnectionError($e->getMessage());
@@ -167,8 +167,8 @@ class SSH
             $this->connect(true);
         }
 
-        assert($this->connection instanceof SFTP);
-        assert($this->user !== null);
+        throw_unless($this->connection instanceof SFTP);
+        throw_if($this->user === null);
 
         $tmpName = Str::random(10).strtotime('now');
         $tempPath = home_path($this->user).'/'.$tmpName;

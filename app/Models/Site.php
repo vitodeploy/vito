@@ -260,7 +260,7 @@ class Site extends AbstractModel
 
         if ($this->isIsolated()) {
             $php = $this->server->php();
-            assert($php !== null);
+            throw_if($php === null);
             /** @var PHP $phpHandler */
             $phpHandler = $php->handler();
             $phpHandler->removeFpmPool($this->user, $this->php_version, $this->id);
@@ -386,7 +386,7 @@ class Site extends AbstractModel
     public function webserver(): Webserver
     {
         $webserver = $this->server->webserver();
-        assert($webserver !== null);
+        throw_if($webserver === null);
 
         /** @var Webserver $handler */
         $handler = $webserver->handler();

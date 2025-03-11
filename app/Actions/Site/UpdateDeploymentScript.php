@@ -12,7 +12,7 @@ class UpdateDeploymentScript
     public function update(Site $site, array $input): void
     {
         $script = $site->deploymentScript;
-        assert($script !== null);
+        throw_if($script === null);
         $script->content = $input['script'];
         $script->save();
     }

@@ -13,7 +13,7 @@ class DeleteSSL
         $ssl->status = SslStatus::DELETING;
         $ssl->save();
         $service = $ssl->site->server->webserver();
-        assert($service !== null);
+        throw_if($service === null);
         /** @var Webserver $webserver */
         $webserver = $service->handler();
         $webserver->removeSSL($ssl);

@@ -31,7 +31,7 @@ class GitHookController extends Controller
 
         foreach ($gitHook->actions as $action) {
             $sourceControl = $gitHook->site->sourceControl;
-            assert($sourceControl !== null);
+            throw_if($sourceControl === null);
             $webhookBranch = $sourceControl->provider()->getWebhookBranch($request->array());
             if ($action == 'deploy' && $gitHook->site->branch === $webhookBranch) {
                 try {

@@ -44,7 +44,7 @@ class CreateSSL
 
         dispatch(function () use ($site, $ssl): void {
             $service = $site->server->webserver();
-            assert($service !== null);
+            throw_if($service === null);
             /** @var Webserver $webserver */
             $webserver = $service->handler();
             $webserver->setupSSL($ssl);

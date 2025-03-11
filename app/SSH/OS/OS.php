@@ -240,7 +240,7 @@ class OS
         ]);
         $ssh->exec($command, 'run-script');
 
-        assert($ssh->log instanceof ServerLog);
+        throw_unless($ssh->log instanceof ServerLog);
 
         return $ssh->log;
     }
