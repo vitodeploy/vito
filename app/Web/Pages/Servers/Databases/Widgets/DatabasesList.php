@@ -53,6 +53,9 @@ class DatabasesList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -64,7 +67,7 @@ class DatabasesList extends Widget
                     ->modalHeading('Delete Database')
                     ->color('danger')
                     ->tooltip('Delete')
-                    ->authorize(fn ($record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn ($record) => $user->can('delete', $record))
                     ->requiresConfirmation()
                     ->action(function (Database $record): void {
                         run_action($this, function () use ($record): void {

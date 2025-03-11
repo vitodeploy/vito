@@ -54,7 +54,9 @@ class StorageProviderController extends Controller
 
         $this->validate($request, CreateStorageProvider::rules($request->all()));
 
-        $storageProvider = app(CreateStorageProvider::class)->create(auth()->user(), $project, $request->all());
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $storageProvider = app(CreateStorageProvider::class)->create($user, $project, $request->all());
 
         return new StorageProviderResource($storageProvider);
     }

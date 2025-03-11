@@ -37,100 +37,103 @@ abstract class Page extends BasePage
 
     public function getSubNavigation(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $items = [];
 
-        if (auth()->user()->can('view', $this->server)) {
+        if ($user->can('view', $this->server)) {
             $items[] = NavigationItem::make(ServerView::getNavigationLabel())
                 ->icon('heroicon-o-chart-pie')
                 ->isActiveWhen(fn () => request()->routeIs(ServerView::getRouteName()))
                 ->url(ServerView::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [Site::class, $this->server])) {
+        if ($user->can('viewAny', [Site::class, $this->server])) {
             $items[] = NavigationItem::make(SitesIndex::getNavigationLabel())
                 ->icon('heroicon-o-cursor-arrow-ripple')
                 ->isActiveWhen(fn () => request()->routeIs(SitesIndex::getRouteName().'*'))
                 ->url(SitesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [Database::class, $this->server])) {
+        if ($user->can('viewAny', [Database::class, $this->server])) {
             $items[] = NavigationItem::make(DatabasesIndex::getNavigationLabel())
                 ->icon('heroicon-o-circle-stack')
                 ->isActiveWhen(fn () => request()->routeIs(DatabasesIndex::getRouteName().'*'))
                 ->url(DatabasesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('manage', $this->server)) {
+        if ($user->can('manage', $this->server)) {
             $items[] = NavigationItem::make(FileManagerIndex::getNavigationLabel())
                 ->icon('heroicon-o-folder')
                 ->isActiveWhen(fn () => request()->routeIs(FileManagerIndex::getRouteName().'*'))
                 ->url(FileManagerIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
+        if ($user->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(PHPIndex::getNavigationLabel())
                 ->icon('icon-php-alt')
                 ->isActiveWhen(fn () => request()->routeIs(PHPIndex::getRouteName().'*'))
                 ->url(PHPIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
+        if ($user->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(NodeJsIndex::getNavigationLabel())
                 ->icon('icon-nodejs-alt')
                 ->isActiveWhen(fn () => request()->routeIs(NodeJsIndex::getRouteName().'*'))
                 ->url(NodeJsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [FirewallRule::class, $this->server])) {
+        if ($user->can('viewAny', [FirewallRule::class, $this->server])) {
             $items[] = NavigationItem::make(FirewallIndex::getNavigationLabel())
                 ->icon('heroicon-o-fire')
                 ->isActiveWhen(fn () => request()->routeIs(FirewallIndex::getRouteName().'*'))
                 ->url(FirewallIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [CronJob::class, $this->server])) {
+        if ($user->can('viewAny', [CronJob::class, $this->server])) {
             $items[] = NavigationItem::make(CronJobsIndex::getNavigationLabel())
                 ->icon('heroicon-o-clock')
                 ->isActiveWhen(fn () => request()->routeIs(CronJobsIndex::getRouteName().'*'))
                 ->url(CronJobsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAnyServer', [SshKey::class, $this->server])) {
+        if ($user->can('viewAnyServer', [SshKey::class, $this->server])) {
             $items[] = NavigationItem::make(SshKeysIndex::getNavigationLabel())
                 ->icon('heroicon-o-key')
                 ->isActiveWhen(fn () => request()->routeIs(SshKeysIndex::getRouteName().'*'))
                 ->url(SshKeysIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [Service::class, $this->server])) {
+        if ($user->can('viewAny', [Service::class, $this->server])) {
             $items[] = NavigationItem::make(ServicesIndex::getNavigationLabel())
                 ->icon('heroicon-o-cog-6-tooth')
                 ->isActiveWhen(fn () => request()->routeIs(ServicesIndex::getRouteName().'*'))
                 ->url(ServicesIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [Metric::class, $this->server])) {
+        if ($user->can('viewAny', [Metric::class, $this->server])) {
             $items[] = NavigationItem::make(MetricsIndex::getNavigationLabel())
                 ->icon('heroicon-o-chart-bar')
                 ->isActiveWhen(fn () => request()->routeIs(MetricsIndex::getRouteName().'*'))
                 ->url(MetricsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('manage', $this->server)) {
+        if ($user->can('manage', $this->server)) {
             $items[] = NavigationItem::make(ConsoleIndex::getNavigationLabel())
                 ->icon('heroicon-o-command-line')
                 ->isActiveWhen(fn () => request()->routeIs(ConsoleIndex::getRouteName().'*'))
                 ->url(ConsoleIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
+        if ($user->can('viewAny', [ServerLog::class, $this->server])) {
             $items[] = NavigationItem::make(LogsIndex::getNavigationLabel())
                 ->icon('heroicon-o-square-3-stack-3d')
                 ->isActiveWhen(fn () => request()->routeIs(LogsIndex::getRouteName().'*'))
                 ->url(LogsIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('update', $this->server)) {
+        if ($user->can('update', $this->server)) {
             $items[] = NavigationItem::make(ServerSettings::getNavigationLabel())
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->isActiveWhen(fn () => request()->routeIs(ServerSettings::getRouteName().'*'))

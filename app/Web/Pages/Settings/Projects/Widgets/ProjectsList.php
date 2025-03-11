@@ -41,6 +41,9 @@ class ProjectsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -50,7 +53,7 @@ class ProjectsList extends Widget
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
+                    ->authorize(fn ($record) => $user->can('update', $record))
                     ->url(fn (Project $record): string => Settings::getUrl(['project' => $record])),
             ]);
     }

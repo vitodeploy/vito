@@ -3,7 +3,6 @@
 namespace App\Web\Pages\Servers\Sites;
 
 use App\Actions\Site\DeleteSite;
-use App\SSH\Services\Webserver\Webserver;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -65,19 +64,12 @@ class Settings extends Page
             ->modalSubmitActionLabel('Save')
             ->form([
                 CodeEditorField::make('vhost')
-                    ->formatStateUsing(function () {
-                        /** @var Webserver $handler */
-                        $handler = $this->server->webserver()->handler();
-
-                        return $handler->getVhost($this->site);
-                    })
+                    ->formatStateUsing(fn (): string => $this->site->webserver()->getVhost($this->site))
                     ->rules(['required']),
             ])
             ->action(function (array $data): void {
                 run_action($this, function () use ($data): void {
-                    /** @var Webserver $handler */
-                    $handler = $this->server->webserver()->handler();
-                    $handler->updateVHost($this->site, $data['vhost']);
+                    $this->site->webserver()->updateVHost($this->site, $data['vhost']);
                     Notification::make()
                         ->success()
                         ->title('VHost updated!')

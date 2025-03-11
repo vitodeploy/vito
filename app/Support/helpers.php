@@ -52,7 +52,7 @@ function convert_time_format(string $string): string
     $string = preg_replace('/(\d+)s/', '$1 seconds', (string) $string);
     $string = preg_replace('/(\d+)d/', '$1 days', (string) $string);
 
-    return preg_replace('/(\d+)h/', '$1 hours', (string) $string);
+    return (string) preg_replace('/(\d+)h/', '$1 hours', (string) $string);
 }
 
 function get_public_key_content(): string

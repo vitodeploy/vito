@@ -58,7 +58,10 @@ class Create
         try {
             /** @var \App\Models\User $user */
             $user = auth()->user();
-            app(CreateServerProvider::class)->create($user, auth()->user()->currentProject, $data);
+
+            throw_if($user->currentProject === null);
+
+            app(CreateServerProvider::class)->create($user, $user->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

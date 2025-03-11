@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  * @property Collection<int, ScriptExecution> $executions
  * @property ?ScriptExecution $lastExecution
  * @property User $user
- * @property int $project_id
+ * @property ?int $project_id
  * @property ?Project $project
  */
 class Script extends AbstractModel

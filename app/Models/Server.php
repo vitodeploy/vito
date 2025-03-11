@@ -47,7 +47,7 @@ use Throwable;
  * @property int $available_updates
  * @property int $security_updates
  * @property int|float $progress
- * @property string $progress_step
+ * @property ?string $progress_step
  * @property Project $project
  * @property User $creator
  * @property ServerProvider $serverProvider
@@ -424,7 +424,7 @@ class Server extends AbstractModel
         $providerClass = config('core.server_providers_class')[$this->provider];
 
         /** @var \App\ServerProviders\ServerProvider $provider */
-        $provider = new $providerClass($this->serverProvider, $this);
+        $provider = new $providerClass($this->serverProvider ?? new ServerProvider, $this);
 
         return $provider;
     }

@@ -27,6 +27,10 @@ class UpdatePHPIni
             /** @var FilesystemAdapter $storageDisk */
             $storageDisk = Storage::disk('local');
 
+            if (! $service instanceof \App\Models\Service) {
+                throw new \Exception('PHP service not found');
+            }
+
             $storageDisk->put($tmpName, $input['ini']);
             $service->server->ssh('root')->upload(
                 $storageDisk->path($tmpName),

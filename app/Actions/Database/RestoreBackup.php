@@ -20,8 +20,12 @@ class RestoreBackup
         $backupFile->save();
 
         dispatch(function () use ($backupFile, $database): void {
+            $service = $database->server->database();
+            if (! $service) {
+                throw new \Exception('Database service not found');
+            }
             /** @var \App\SSH\Services\Database\Database $databaseHandler */
-            $databaseHandler = $database->server->database()->handler();
+            $databaseHandler = $service->handler();
             $databaseHandler->restoreBackup($backupFile, $database->name);
             $backupFile->status = BackupFileStatus::RESTORED;
             $backupFile->restored_at = now();

@@ -27,7 +27,7 @@ class CreateTag
         }
 
         $tag = new Tag([
-            'project_id' => $user->currentProject->id,
+            'project_id' => $user->currentProject?->id,
             'name' => $input['name'],
             'color' => $input['color'],
         ]);

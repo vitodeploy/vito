@@ -26,7 +26,7 @@ class HasProjectMiddleware
                 $user->current_project_id = $firstProject->id;
                 $user->save();
 
-                $request->user()->refresh();
+                $user->refresh();
 
                 return $next($request);
             }

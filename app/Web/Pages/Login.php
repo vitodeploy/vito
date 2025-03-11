@@ -99,12 +99,18 @@ class Login extends \Filament\Pages\Auth\Login
     private function confirmTwoFactor(): LoginResponse
     {
         $request = TwoFactorLoginRequest::createFrom(request())->merge([
-            'code' => $this->data['code'],
-            'recovery_code' => $this->data['recovery_code'],
+            'code' => $this->data['code'] ?? null,
+            'recovery_code' => $this->data['recovery_code'] ?? null,
         ]);
 
         /** @var ?User $user */
         $user = $request->challengedUser();
+
+        if (! $user) {
+            $this->redirect(Filament::getLoginUrl());
+
+            return app(LoginResponse::class);
+        }
 
         if ($code = $request->validRecoveryCode()) {
             $user->replaceRecoveryCode($code);

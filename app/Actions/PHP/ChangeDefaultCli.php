@@ -19,10 +19,13 @@ class ChangeDefaultCli
     {
         $this->validate($server, $input);
         $service = $server->php($input['version']);
+        if (! $service instanceof \App\Models\Service) {
+            throw new \Exception('PHP service not found');
+        }
         /** @var PHP $handler */
         $handler = $service->handler();
         $handler->setDefaultCli();
-        $server->defaultService('php')->update(['is_default' => 0]);
+        $server->defaultService('php')?->update(['is_default' => 0]);
         $service->update(['is_default' => 1]);
         $service->update(['status' => ServiceStatus::READY]);
     }

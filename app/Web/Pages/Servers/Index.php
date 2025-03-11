@@ -37,7 +37,10 @@ class Index extends Page
 
     public function mount(): void
     {
-        $this->authorize('viewAny', [Server::class, auth()->user()->currentProject]);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $this->authorize('viewAny', [Server::class, $user->currentProject]);
     }
 
     public function getWidgets(): array
@@ -53,7 +56,11 @@ class Index extends Page
             'public_key' => get_public_key_content(),
         ]);
 
-        $project = auth()->user()->currentProject;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $project = $user->currentProject;
+        throw_if($project === null);
 
         return [
             \Filament\Actions\Action::make('read-the-docs')
@@ -65,7 +72,7 @@ class Index extends Page
             \Filament\Actions\Action::make('create')
                 ->label('Create a Server')
                 ->icon('heroicon-o-plus')
-                ->authorize('create', [Server::class, auth()->user()->currentProject])
+                ->authorize('create', [Server::class, $user->currentProject])
                 ->modalWidth(MaxWidth::FiveExtraLarge)
                 ->slideOver()
                 ->form([
@@ -88,7 +95,7 @@ class Index extends Page
                         ->visible(fn ($get): bool => $get('provider') !== ServerProvider::CUSTOM)
                         ->label('Server provider connection')
                         ->rules(fn ($get) => CreateServerAction::rules($project, $get())['server_provider'])
-                        ->options(fn ($get) => \App\Models\ServerProvider::getByProjectId(auth()->user()->current_project_id)
+                        ->options(fn ($get) => \App\Models\ServerProvider::getByProjectId($project->id)
                             ->where('provider', $get('provider'))
                             ->pluck('profile', 'id'))
                         ->suffixAction(
@@ -99,7 +106,7 @@ class Index extends Page
                                 ->icon('heroicon-o-wifi')
                                 ->tooltip('Connect to a new server provider')
                                 ->modalWidth(MaxWidth::Medium)
-                                ->authorize(fn () => auth()->user()->can('create', \App\Models\ServerProvider::class))
+                                ->authorize(fn () => $user->can('create', \App\Models\ServerProvider::class))
                                 ->action(fn (array $data) => Create::action($data))
                         )
                         ->placeholder('Select profile')
@@ -230,11 +237,9 @@ class Index extends Page
                         ]),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data): void {
-                    run_action($this, function () use ($data): void {
-                        /** @var \App\Models\User $user */
-                        $user = auth()->user();
-                        $server = app(CreateServerAction::class)->create($user, auth()->user()->currentProject, $data);
+                ->action(function (array $data) use ($user, $project): void {
+                    run_action($this, function () use ($data, $user, $project): void {
+                        $server = app(CreateServerAction::class)->create($user, $project, $data);
 
                         $this->redirect(View::getUrl(['server' => $server]));
                     });

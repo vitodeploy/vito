@@ -50,6 +50,9 @@ class SshKeysList extends TableWidget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -57,7 +60,7 @@ class SshKeysList extends TableWidget
             ->actions([
                 DeleteAction::make('delete')
                     ->hiddenLabel()
-                    ->authorize(fn (SshKey $record) => auth()->user()->can('deleteServer', [SshKey::class, $this->server]))
+                    ->authorize(fn (SshKey $record) => $user->can('deleteServer', [SshKey::class, $this->server]))
                     ->using(function (SshKey $record): void {
                         try {
                             app(DeleteKeyFromServer::class)->delete($this->server, $record);

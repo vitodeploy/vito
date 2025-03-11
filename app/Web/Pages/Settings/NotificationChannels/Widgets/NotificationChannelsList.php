@@ -25,7 +25,12 @@ class NotificationChannelsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        return NotificationChannel::getByProjectId(auth()->user()->current_project_id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
+        return NotificationChannel::getByProjectId($user->current_project_id);
     }
 
     protected function getTableColumns(): array
@@ -53,6 +58,9 @@ class NotificationChannelsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -65,12 +73,12 @@ class NotificationChannelsList extends Widget
                         'global' => ! $record->project_id,
                     ])
                     ->form(Edit::form())
-                    ->authorize(fn (NotificationChannel $record) => auth()->user()->can('update', $record))
+                    ->authorize(fn (NotificationChannel $record) => $user->can('update', $record))
                     ->using(fn (array $data, NotificationChannel $record) => Edit::action($record, $data))
                     ->modalWidth(MaxWidth::Medium),
                 DeleteAction::make('delete')
                     ->modalHeading('Delete Notification Channel')
-                    ->authorize(fn (NotificationChannel $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (NotificationChannel $record) => $user->can('delete', $record))
                     ->using(function (array $data, NotificationChannel $record): void {
                         $record->delete();
                     }),

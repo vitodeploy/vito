@@ -31,7 +31,10 @@ class Index extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('viewAny', PersonalAccessToken::class) ?? false;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        return $user->can('viewAny', PersonalAccessToken::class);
     }
 
     public function getWidgets(): array
@@ -50,6 +53,9 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return [
             Action::make('read-the-docs')
                 ->label('Read the Docs')
@@ -94,12 +100,12 @@ class Index extends Page
                 })
                 ->authorize('create', PersonalAccessToken::class)
                 ->modalWidth(MaxWidth::Large)
-                ->action(function (array $data): void {
+                ->action(function (array $data) use ($user): void {
                     $permissions = ['read'];
                     if ($data['permission'] === 'write') {
                         $permissions[] = 'write';
                     }
-                    $token = auth()->user()->createToken($data['name'], $permissions);
+                    $token = $user->createToken($data['name'], $permissions);
 
                     $this->dispatch('$refresh');
 

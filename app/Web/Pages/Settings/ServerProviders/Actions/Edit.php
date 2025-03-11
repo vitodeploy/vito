@@ -28,6 +28,11 @@ class Edit
      */
     public static function action(ServerProvider $provider, array $data): void
     {
-        app(EditServerProvider::class)->edit($provider, auth()->user()->currentProject, $data);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->currentProject === null);
+
+        app(EditServerProvider::class)->edit($provider, $user->currentProject, $data);
     }
 }

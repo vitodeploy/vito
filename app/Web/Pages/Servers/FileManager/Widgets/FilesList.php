@@ -81,6 +81,8 @@ class FilesList extends Widget
 
     public function table(Table $table): Table
     {
+        auth()->user();
+
         return $table
             ->query($this->getTableQuery())
             ->headerActions($this->getTableHeaderActions())
@@ -143,9 +145,12 @@ class FilesList extends Widget
 
     public function refresh(): void
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         try {
             app(FetchFiles::class)->fetch(
-                auth()->user(),
+                $user,
                 $this->server,
                 [
                     'user' => $this->serverUser,

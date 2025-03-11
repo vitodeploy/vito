@@ -52,18 +52,21 @@ class ServerSSHKeyController extends Controller
 
         $this->validateRoute($project, $server);
 
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $sshKey = null;
         if ($request->has('key_id')) {
-            $this->validate($request, DeployKeyToServer::rules($request->user(), $server));
+            $this->validate($request, DeployKeyToServer::rules($user, $server));
 
             /** @var ?SshKey $sshKey */
-            $sshKey = $request->user()->sshKeys()->findOrFail($request->key_id);
+            $sshKey = $user->sshKeys()->findOrFail($request->key_id);
         }
 
         if (! $sshKey) {
             $this->validate($request, CreateSshKey::rules());
             /** @var SshKey $sshKey */
-            $sshKey = app(CreateSshKey::class)->create($request->user(), $request->all());
+            $sshKey = app(CreateSshKey::class)->create($user, $request->all());
         }
 
         app(DeployKeyToServer::class)->deploy($server, ['key_id' => $sshKey->id]);

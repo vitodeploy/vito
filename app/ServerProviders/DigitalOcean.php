@@ -47,7 +47,7 @@ class DigitalOcean extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(?array $credentials = null): bool
+    public function connect(array $credentials): bool
     {
         try {
             $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
@@ -227,7 +227,7 @@ class DigitalOcean extends AbstractProvider
                 ->where('status', 'available')
                 ->first();
 
-            return $image['id'] ?? null; // Handle the case where first() returns null
+            return $image['id'] ?? 0; // Handle the case where first() returns null
         } catch (Exception) {
             throw new Exception('Could not find image ID');
         }

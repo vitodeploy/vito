@@ -15,23 +15,26 @@ trait Navigation
 {
     public function getSecondSubNavigation(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $items = [];
 
-        if (auth()->user()->can('viewAny', [Database::class, $this->server])) {
+        if ($user->can('viewAny', [Database::class, $this->server])) {
             $items[] = NavigationItem::make(Databases::getNavigationLabel())
                 ->icon('heroicon-o-circle-stack')
                 ->isActiveWhen(fn () => request()->routeIs(Databases::getRouteName()))
                 ->url(Databases::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [DatabaseUser::class, $this->server])) {
+        if ($user->can('viewAny', [DatabaseUser::class, $this->server])) {
             $items[] = NavigationItem::make(Users::getNavigationLabel())
                 ->icon('heroicon-o-users')
                 ->isActiveWhen(fn () => request()->routeIs(Users::getRouteName()))
                 ->url(Users::getUrl(parameters: ['server' => $this->server]));
         }
 
-        if (auth()->user()->can('viewAny', [Backup::class, $this->server])) {
+        if ($user->can('viewAny', [Backup::class, $this->server])) {
             $items[] = NavigationItem::make(Backups::getNavigationLabel())
                 ->icon('heroicon-o-cloud')
                 ->isActiveWhen(fn () => request()->routeIs(Backups::getRouteName()))

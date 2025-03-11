@@ -62,6 +62,9 @@ class BackupsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -72,7 +75,7 @@ class BackupsList extends Widget
                     ->icon('heroicon-o-pencil')
                     ->tooltip('Edit Configuration')
                     ->disabled(fn (Backup $record): bool => ! in_array($record->status, ['running', 'failed']))
-                    ->authorize(fn (Backup $record) => auth()->user()->can('update', $record))
+                    ->authorize(fn (Backup $record) => $user->can('update', $record))
                     ->modelLabel('Edit Backup')
                     ->modalWidth(MaxWidth::Large)
                     ->modalSubmitActionLabel('Update')
@@ -114,7 +117,7 @@ class BackupsList extends Widget
                     ->color('gray')
                     ->tooltip('Show backup files')
                     ->disabled(fn (Backup $record): bool => ! in_array($record->status, ['running', 'failed']))
-                    ->authorize(fn (Backup $record) => auth()->user()->can('viewAny', [BackupFile::class, $record]))
+                    ->authorize(fn (Backup $record) => $user->can('viewAny', [BackupFile::class, $record]))
                     ->modalContent(fn (Backup $record) => view('components.dynamic-widget', [
                         'widget' => BackupFilesList::class,
                         'params' => [
@@ -143,7 +146,7 @@ class BackupsList extends Widget
                     ->disabled(fn (Backup $record): bool => ! in_array($record->status, ['running', 'failed']))
                     ->color('danger')
                     ->tooltip('Delete')
-                    ->authorize(fn (Backup $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (Backup $record) => $user->can('delete', $record))
                     ->requiresConfirmation()
                     ->action(function (Backup $record): void {
                         app(ManageBackup::class)->delete($record);

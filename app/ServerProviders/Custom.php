@@ -42,7 +42,7 @@ class Custom extends AbstractProvider
         return [];
     }
 
-    public function connect(?array $credentials = null): bool
+    public function connect(array $credentials): bool
     {
         return true;
     }

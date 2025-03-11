@@ -106,8 +106,13 @@ class Create
      */
     public static function action(array $data): void
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->currentProject === null);
+
         try {
-            app(CreateStorageProvider::class)->create(auth()->user(), auth()->user()->currentProject, $data);
+            app(CreateStorageProvider::class)->create($user, $user->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

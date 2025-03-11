@@ -25,6 +25,10 @@ class ExecuteScript
         ]);
         $execution->save();
 
+        if (! $execution->server) {
+            throw new \RuntimeException('Server not found');
+        }
+
         dispatch(function () use ($execution, $script): void {
             $content = $execution->getContent();
             $log = ServerLog::newLog($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
@@ -50,8 +54,8 @@ class ExecuteScript
     {
         $users = ['root'];
         if (isset($input['server'])) {
-            /** @var ?Server $server */
-            $server = Server::query()->find($input['server']);
+            /** @var Server $server */
+            $server = Server::query()->findOrFail($input['server']);
             $users = $server->getSshUsers();
         }
 

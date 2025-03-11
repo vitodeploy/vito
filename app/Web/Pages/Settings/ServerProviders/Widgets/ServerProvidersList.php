@@ -28,7 +28,12 @@ class ServerProvidersList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        return ServerProvider::getByProjectId(auth()->user()->current_project_id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
+        return ServerProvider::getByProjectId($user->current_project_id);
     }
 
     protected function getTableColumns(): array
@@ -57,6 +62,9 @@ class ServerProvidersList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -70,13 +78,13 @@ class ServerProvidersList extends Widget
                         'global' => $record->project_id === null,
                     ])
                     ->form(Edit::form())
-                    ->authorize(fn (ServerProvider $record) => auth()->user()->can('update', $record))
+                    ->authorize(fn (ServerProvider $record) => $user->can('update', $record))
                     ->using(fn (array $data, ServerProvider $record) => Edit::action($record, $data))
                     ->modalWidth(MaxWidth::Medium),
                 DeleteAction::make('delete')
                     ->label('Delete')
                     ->modalHeading('Delete Server Provider')
-                    ->authorize(fn (ServerProvider $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (ServerProvider $record) => $user->can('delete', $record))
                     ->using(function (array $data, ServerProvider $record): void {
                         try {
                             app(DeleteServerProvider::class)->delete($record);

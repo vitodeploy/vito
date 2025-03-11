@@ -21,8 +21,12 @@ class RunBackup
         $file->save();
 
         dispatch(function () use ($file, $backup): void {
+            $service = $backup->server->database();
+            if (! $service) {
+                throw new \Exception('Database service not found');
+            }
             /** @var Database $databaseHandler */
-            $databaseHandler = $file->backup->server->database()->handler();
+            $databaseHandler = $service->handler();
             $databaseHandler->runBackup($file);
             $file->status = BackupFileStatus::CREATED;
             $file->save();

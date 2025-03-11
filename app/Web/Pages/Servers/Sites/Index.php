@@ -41,6 +41,11 @@ class Index extends \App\Web\Pages\Servers\Page
 
     protected function getHeaderActions(): array
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
         return [
             Action::make('read-the-docs')
                 ->label('Read the Docs')
@@ -51,7 +56,7 @@ class Index extends \App\Web\Pages\Servers\Page
             Action::make('create')
                 ->label('Create a Site')
                 ->icon('heroicon-o-plus')
-                ->authorize(fn () => auth()->user()?->can('create', [Site::class, $this->server]))
+                ->authorize(fn () => $user->can('create', [Site::class, $this->server]))
                 ->modalWidth(MaxWidth::FiveExtraLarge)
                 ->slideOver()
                 ->form([
@@ -94,7 +99,7 @@ class Index extends \App\Web\Pages\Servers\Page
                         ->label('Source Control')
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['source_control'])
                         ->options(
-                            SourceControl::getByProjectId(auth()->user()->current_project_id)
+                            SourceControl::getByProjectId($user->current_project_id)
                                 ->pluck('profile', 'id')
                         )
                         ->suffixAction(
@@ -105,7 +110,7 @@ class Index extends \App\Web\Pages\Servers\Page
                                 ->icon('heroicon-o-wifi')
                                 ->tooltip('Connect to a source control')
                                 ->modalWidth(MaxWidth::Large)
-                                ->authorize(fn () => auth()->user()->can('create', SourceControl::class))
+                                ->authorize(fn () => $user->can('create', SourceControl::class))
                                 ->action(fn (array $data) => Create::action($data))
                         )
                         ->placeholder('Select source control')
@@ -178,6 +183,9 @@ class Index extends \App\Web\Pages\Servers\Page
 
     private function wordpressFields(): Component
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return Grid::make()
             ->columns(3)
             ->visible(fn (Get $get): bool => $get('type') === SiteType::WORDPRESS)
@@ -188,7 +196,7 @@ class Index extends \App\Web\Pages\Servers\Page
                     ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['title']),
                 TextInput::make('email')
                     ->label('WP Admin Email')
-                    ->default(auth()->user()?->email)
+                    ->default($user->email)
                     ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['email']),
                 TextInput::make('username')
                     ->label('WP Admin Username')

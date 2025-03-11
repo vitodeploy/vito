@@ -26,8 +26,13 @@ class CreateDatabaseUser
             'host' => (isset($input['remote']) && $input['remote']) || isset($input['host']) ? $input['host'] : 'localhost',
             'databases' => $links,
         ]);
+        $service = $server->database();
+        if (! $service instanceof \App\Models\Service) {
+            throw new \Exception('Database service not found');
+        }
+
         /** @var Database $databaseHandler */
-        $databaseHandler = $server->database()->handler();
+        $databaseHandler = $service->handler();
         $databaseHandler->createUser(
             $databaseUser->username,
             $databaseUser->password,

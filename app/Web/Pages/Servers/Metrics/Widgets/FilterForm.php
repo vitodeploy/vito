@@ -35,7 +35,10 @@ class FilterForm extends Widget implements HasForms
             $this->dispatch('updateFilters', filters: $this->data);
         }
 
-        if ($value === 'custom' && $this->data['from'] && $this->data['to']) {
+        $from = $this->data['from'] ?? null;
+        $to = $this->data['to'] ?? null;
+
+        if ($value === 'custom' && $from && $to) {
             $this->dispatch('updateFilters', filters: $this->data);
         }
     }

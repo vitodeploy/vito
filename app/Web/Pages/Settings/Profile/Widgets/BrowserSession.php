@@ -111,13 +111,16 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
      */
     private function getSessions(): array
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         if (config(key: 'session.driver') !== 'database') {
             return [];
         }
 
         return collect(
             value: DB::connection(config(key: 'session.connection'))->table(table: config(key: 'session.table', default: 'sessions'))
-                ->where(column: 'user_id', operator: Auth::user()->getAuthIdentifier())
+                ->where(column: 'user_id', operator: $user->getAuthIdentifier())
                 ->latest(column: 'last_activity')
                 ->get()
         )->map(callback: function ($session): object {
@@ -148,7 +151,10 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
 
     private function logoutOtherBrowserSessions(string $password): void
     {
-        if (! Hash::check($password, Auth::user()->password)) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (! Hash::check($password, $user->password)) {
             Notification::make()
                 ->danger()
                 ->title('The password you entered was incorrect. Please try again.')
@@ -160,7 +166,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         Auth::guard()->logoutOtherDevices($password);
 
         request()->session()->put([
-            'password_hash_'.Auth::getDefaultDriver() => Auth::user()->getAuthPassword(),
+            'password_hash_'.Auth::getDefaultDriver() => $user->getAuthPassword(),
         ]);
 
         $this->deleteOtherSessionRecords();
@@ -173,12 +179,15 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
 
     private function deleteOtherSessionRecords(): void
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         if (config(key: 'session.driver') !== 'database') {
             return;
         }
 
         DB::connection(config(key: 'session.connection'))->table(table: config(key: 'session.table', default: 'sessions'))
-            ->where('user_id', Auth::user()->getAuthIdentifier())
+            ->where('user_id', $user->getAuthIdentifier())
             ->where('id', '!=', request()->session()->getId())
             ->delete();
     }

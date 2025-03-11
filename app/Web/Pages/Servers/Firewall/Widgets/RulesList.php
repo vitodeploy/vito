@@ -74,6 +74,9 @@ class RulesList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -87,7 +90,7 @@ class RulesList extends Widget
                     ->modalHeading('Edit Firewall Rule')
                     ->modalDescription('Edit the associated servers firewall rule.')
                     ->modalSubmitActionLabel('Update')
-                    ->authorize(fn (FirewallRule $record) => auth()->user()->can('update', $record))
+                    ->authorize(fn (FirewallRule $record) => $user->can('update', $record))
                     ->form(fn ($record): array => Index::getFirewallForm($record))
                     ->action(function (FirewallRule $record, array $data): void {
                         run_action($this, function () use ($record, $data): void {
@@ -107,7 +110,7 @@ class RulesList extends Widget
                     ->color('danger')
                     ->hiddenLabel()
                     ->requiresConfirmation()
-                    ->authorize(fn (FirewallRule $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (FirewallRule $record) => $user->can('delete', $record))
                     ->action(function (FirewallRule $record): void {
                         try {
                             app(ManageRule::class)->delete($record);

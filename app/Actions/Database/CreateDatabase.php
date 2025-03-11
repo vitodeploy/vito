@@ -21,8 +21,14 @@ class CreateDatabase
             'collation' => $input['collation'],
             'name' => $input['name'],
         ]);
+
+        $service = $server->database();
+        if (! $service instanceof \App\Models\Service) {
+            throw new \Exception('Database service not found');
+        }
+
         /** @var \App\SSH\Services\Database\Database $databaseHandler */
-        $databaseHandler = $server->database()->handler();
+        $databaseHandler = $service->handler();
         $databaseHandler->create($database->name, $database->charset, $database->collation);
         $database->status = DatabaseStatus::READY;
         $database->save();

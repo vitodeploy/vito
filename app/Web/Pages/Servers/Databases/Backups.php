@@ -29,11 +29,14 @@ class Backups extends Page implements HasSecondSubNav
 
     protected function getHeaderActions(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return [
             Action::make('create')
                 ->icon('heroicon-o-plus')
                 ->modalWidth(MaxWidth::Large)
-                ->authorize(fn () => auth()->user()?->can('create', [Backup::class, $this->server]))
+                ->authorize(fn () => $user->can('create', [Backup::class, $this->server]))
                 ->form([
                     Select::make('database')
                         ->label('Database')
@@ -52,7 +55,7 @@ class Backups extends Page implements HasSecondSubNav
                                 ->icon('heroicon-o-wifi')
                                 ->tooltip('Connect to a new storage provider')
                                 ->modalWidth(MaxWidth::Medium)
-                                ->authorize(fn () => auth()->user()->can('create', StorageProvider::class))
+                                ->authorize(fn () => $user->can('create', StorageProvider::class))
                                 ->action(fn (array $data) => Create::action($data))
                         ),
                     Select::make('interval')

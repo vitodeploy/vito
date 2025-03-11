@@ -19,7 +19,10 @@ class ServersList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        return Server::query()->where('project_id', auth()->user()->current_project_id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        return Server::query()->where('project_id', $user->current_project_id);
     }
 
     protected function getTableColumns(): array
@@ -56,6 +59,9 @@ class ServersList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -65,7 +71,7 @@ class ServersList extends Widget
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
+                    ->authorize(fn ($record) => $user->can('update', $record))
                     ->url(fn (Server $record): string => Settings::getUrl(parameters: ['server' => $record])),
             ]);
     }

@@ -41,9 +41,9 @@ class Gitlab extends AbstractSourceControlProvider
     /**
      * @throws Exception
      */
-    public function getRepo(?string $repo = null): mixed
+    public function getRepo(string $repo): mixed
     {
-        $repository = $repo !== null && $repo !== '' && $repo !== '0' ? urlencode($repo) : null;
+        $repository = $repo !== '' && $repo !== '0' ? urlencode($repo) : null;
         $res = Http::withToken($this->data()['token'])
             ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits');
 

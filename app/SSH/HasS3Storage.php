@@ -15,6 +15,10 @@ trait HasS3Storage
             return trim($prefix, '/').'/'.$path;
         }
 
+        if ($path === null) {
+            throw new \Exception('Invalid S3 path');
+        }
+
         return $path;
     }
 }

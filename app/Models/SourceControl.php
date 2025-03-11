@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property string $provider
  * @property array<string, string> $provider_data
- * @property ?string $profile
+ * @property string $profile
  * @property ?string $url
  * @property string $access_token
  * @property ?int $project_id
@@ -49,7 +49,7 @@ class SourceControl extends AbstractModel
         return $provider;
     }
 
-    public function getRepo(?string $repo = null): mixed
+    public function getRepo(string $repo): mixed
     {
         return $this->provider()->getRepo($repo);
     }

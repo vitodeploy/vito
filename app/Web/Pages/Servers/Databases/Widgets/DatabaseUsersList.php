@@ -65,6 +65,9 @@ class DatabaseUsersList extends Widget
 
     private function passwordAction(): Action
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return Action::make('password')
             ->hiddenLabel()
             ->icon('heroicon-o-key')
@@ -72,7 +75,7 @@ class DatabaseUsersList extends Widget
             ->modalHeading('Database user\'s password')
             ->modalWidth(MaxWidth::Large)
             ->tooltip('Show the password')
-            ->authorize(fn ($record) => auth()->user()->can('view', $record))
+            ->authorize(fn ($record) => $user->can('view', $record))
             ->form([
                 TextInput::make('password')
                     ->label('Password')
@@ -88,6 +91,9 @@ class DatabaseUsersList extends Widget
 
     private function linkAction(): Action
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return Action::make('link')
             ->hiddenLabel()
             ->icon('heroicon-o-link')
@@ -95,7 +101,7 @@ class DatabaseUsersList extends Widget
             ->modalWidth(MaxWidth::Large)
             ->tooltip('Link user')
             ->modalSubmitActionLabel('Save')
-            ->authorize(fn ($record) => auth()->user()->can('update', $record))
+            ->authorize(fn ($record) => $user->can('update', $record))
             ->form([
                 CheckboxList::make('databases')
                     ->label('Databases')
@@ -117,13 +123,16 @@ class DatabaseUsersList extends Widget
 
     private function deleteAction(): Action
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return Action::make('delete')
             ->hiddenLabel()
             ->icon('heroicon-o-trash')
             ->modalHeading('Delete Database User')
             ->color('danger')
             ->tooltip('Delete')
-            ->authorize(fn ($record) => auth()->user()->can('delete', $record))
+            ->authorize(fn ($record) => $user->can('delete', $record))
             ->requiresConfirmation()
             ->action(function (DatabaseUser $record): void {
                 run_action($this, function () use ($record): void {

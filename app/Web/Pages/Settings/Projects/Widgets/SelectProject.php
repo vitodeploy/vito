@@ -21,14 +21,20 @@ class SelectProject extends Widget
 
     public function mount(): void
     {
-        $this->currentProject = auth()->user()->currentProject;
-        $this->projects = auth()->user()->allProjects()->get();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $this->currentProject = $user->currentProject;
+        $this->projects = $user->allProjects()->get();
     }
 
     public function updateProject(Project $project): void
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $this->authorize('view', $project);
-        auth()->user()->update(['current_project_id' => $project->id]);
+        $user->update(['current_project_id' => $project->id]);
 
         $this->redirect('/');
     }

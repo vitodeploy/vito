@@ -60,8 +60,13 @@ class Create
      */
     public static function action(array $data): void
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->currentProject === null);
+
         try {
-            app(ConnectSourceControl::class)->connect(auth()->user()->currentProject, $data);
+            app(ConnectSourceControl::class)->connect($user->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

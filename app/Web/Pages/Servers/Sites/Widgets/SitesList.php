@@ -57,6 +57,9 @@ class SitesList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -66,7 +69,7 @@ class SitesList extends Widget
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
-                    ->authorize(fn (Site $record) => auth()->user()->can('update', [$record, $this->server]))
+                    ->authorize(fn (Site $record) => $user->can('update', [$record, $this->server]))
                     ->url(fn (Site $record): string => Settings::getUrl(parameters: ['server' => $this->server, 'site' => $record])),
             ]);
     }

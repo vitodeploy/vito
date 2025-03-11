@@ -47,13 +47,16 @@ class UsersList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query(User::query())
             ->columns($this->getTableColumns())
             ->actions([
                 EditAction::make('edit')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
+                    ->authorize(fn ($record) => $user->can('update', $record))
                     ->using(function ($record, array $data): void {
                         app(UpdateUser::class)->update($record, $data);
                     })
@@ -82,7 +85,7 @@ class UsersList extends Widget
                 Action::make('update-projects')
                     ->label('Projects')
                     ->icon('heroicon-o-rectangle-stack')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
+                    ->authorize(fn ($record) => $user->can('update', $record))
                     ->form(fn (Form $form, $record): \Filament\Forms\Form => $form
                         ->schema([
                             CheckboxList::make('projects')
@@ -102,7 +105,7 @@ class UsersList extends Widget
                     ->modalSubmitActionLabel('Save')
                     ->modalWidth(MaxWidth::Large),
                 DeleteAction::make('delete')
-                    ->authorize(fn (User $record) => auth()->user()->can('delete', $record)),
+                    ->authorize(fn (User $record) => $user->can('delete', $record)),
             ]);
     }
 }

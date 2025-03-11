@@ -69,7 +69,7 @@ class ServerProvider extends AbstractModel
         $providerClass = config('core.server_providers_class')[$this->provider];
 
         /** @var \App\ServerProviders\ServerProvider $provider */
-        $provider = new $providerClass($this);
+        $provider = new $providerClass($this, new Server);
 
         return $provider;
     }

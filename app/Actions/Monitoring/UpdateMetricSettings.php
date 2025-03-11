@@ -12,6 +12,9 @@ class UpdateMetricSettings
     public function update(Server $server, array $input): void
     {
         $service = $server->monitoring();
+        if (! $service instanceof \App\Models\Service) {
+            throw new \Exception('Monitoring service not found');
+        }
         /** @var \App\SSH\Services\ServiceInterface $handler */
         $handler = $service->handler();
         $data = $handler->data();

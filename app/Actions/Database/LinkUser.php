@@ -32,8 +32,13 @@ class LinkUser
 
         $databaseUser->databases = $input['databases'];
 
+        $service = $databaseUser->server->database();
+        if (! $service) {
+            throw new \Exception('Database service not found');
+        }
+
         /** @var \App\SSH\Services\Database\Database $handler */
-        $handler = $databaseUser->server->database()->handler();
+        $handler = $service->handler();
 
         // Unlink the user from all databases
         $handler->unlink(

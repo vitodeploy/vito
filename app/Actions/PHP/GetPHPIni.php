@@ -24,6 +24,10 @@ class GetPHPIni
         $php = $server->php($input['version']);
 
         try {
+            if (! $php instanceof \App\Models\Service) {
+                throw new \Exception('PHP service not found');
+            }
+
             /** @var PHP $handler */
             $handler = $php->handler();
 

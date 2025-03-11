@@ -51,11 +51,16 @@ class EditTags
      */
     private static function form(Site|Server $taggable): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->currentProject === null);
+
         return [
             Select::make('tags')
                 ->default($taggable->tags()->pluck('tags.id')->toArray())
-                ->options(fn () => auth()->user()->currentProject->tags()->pluck('name', 'id')->toArray())
-                ->nestedRecursiveRules(SyncTags::rules(auth()->user()->currentProject->id)['tags.*'])
+                ->options(fn () => $user->currentProject->tags()->pluck('name', 'id')->toArray())
+                ->nestedRecursiveRules(SyncTags::rules($user->currentProject->id)['tags.*'])
                 ->suffixAction(
                     FormAction::make('create_tag')
                         ->icon('heroicon-o-plus')
@@ -78,8 +83,6 @@ class EditTags
     private static function action(mixed $taggable): \Closure
     {
         return function (array $data) use ($taggable): void {
-            /** @var \App\Models\User $user */
-            $user = auth()->user();
             app(SyncTags::class)->sync([
                 'taggable_id' => $taggable->id,
                 'taggable_type' => $taggable::class,

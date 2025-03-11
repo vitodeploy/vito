@@ -7,6 +7,7 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\SSH\Services\PHP\PHP;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 abstract class AbstractSiteType implements SiteType
 {
@@ -77,8 +78,12 @@ abstract class AbstractSiteType implements SiteType
 
         // Generate the FPM pool
         if ($this->site->php_version) {
+            $service = $this->site->php();
+            if (! $service instanceof \App\Models\Service) {
+                throw new RuntimeException('PHP service not found');
+            }
             /** @var PHP $php */
-            $php = $this->site->php()->handler();
+            $php = $service->handler();
             $php->createFpmPool(
                 $this->site->user,
                 $this->site->php_version

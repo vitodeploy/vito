@@ -18,10 +18,13 @@ class ChangeDefaultCli
     {
         $this->validate($server, $input);
         $service = $server->nodejs($input['version']);
+        if (! $service instanceof \App\Models\Service) {
+            throw new \Exception('NodeJS service not found');
+        }
         /** @var NodeJS $handler */
         $handler = $service->handler();
         $handler->setDefaultCli();
-        $server->defaultService('nodejs')->update(['is_default' => 0]);
+        $server->defaultService('nodejs')?->update(['is_default' => 0]);
         $service->update(['is_default' => 1]);
         $service->update(['status' => ServiceStatus::READY]);
     }

@@ -64,7 +64,7 @@ class Settings extends Page
                 ->requiresConfirmation()
                 ->action(function (Project $record): void {
                     try {
-                        app(DeleteProject::class)->delete(auth()->user(), $record);
+                        app(DeleteProject::class)->delete($this->getUser(), $record);
 
                         Notification::make()
                             ->success()

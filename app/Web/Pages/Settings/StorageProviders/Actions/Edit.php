@@ -28,6 +28,11 @@ class Edit
      */
     public static function action(StorageProvider $provider, array $data): void
     {
-        app(EditStorageProvider::class)->edit($provider, auth()->user()->currentProject, $data);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->currentProject === null);
+
+        app(EditStorageProvider::class)->edit($provider, $user->currentProject, $data);
     }
 }

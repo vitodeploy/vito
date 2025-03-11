@@ -3,6 +3,7 @@
 namespace App\Actions\ServerProvider;
 
 use App\Models\Project;
+use App\Models\Server;
 use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\ServerProvider as ServerProviderContract;
@@ -46,7 +47,7 @@ class CreateServerProvider
     {
         $providerClass = config('core.server_providers_class.'.$name);
         /** @var ServerProviderContract $provider */
-        $provider = new $providerClass;
+        $provider = new $providerClass(new ServerProvider, new Server);
 
         return $provider;
     }

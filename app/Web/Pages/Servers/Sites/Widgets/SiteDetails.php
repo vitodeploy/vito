@@ -41,6 +41,11 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
 
     public function infolist(Infolist $infolist): Infolist
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
         return $infolist
             ->schema([
                 Section::make()
@@ -155,7 +160,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             ->label('Source Control')
                                             ->rules(UpdateSourceControl::rules()['source_control'])
                                             ->options(
-                                                SourceControl::getByProjectId(auth()->user()->current_project_id)
+                                                SourceControl::getByProjectId($user->current_project_id)
                                                     ->pluck('profile', 'id')
                                             )
                                             ->default($this->site->source_control_id)
@@ -167,7 +172,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                                     ->icon('heroicon-o-wifi')
                                                     ->tooltip('Connect to a source control')
                                                     ->modalWidth(MaxWidth::Large)
-                                                    ->authorize(fn () => auth()->user()->can('create', SourceControl::class))
+                                                    ->authorize(fn () => $user->can('create', SourceControl::class))
                                                     ->action(fn (array $data) => Create::action($data))
                                             )
                                             ->placeholder('Select source control'),

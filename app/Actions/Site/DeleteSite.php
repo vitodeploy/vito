@@ -14,13 +14,22 @@ class DeleteSite
      */
     public function delete(Site $site): void
     {
+        $service = $site->server->webserver();
+        if (! $service) {
+            throw new \RuntimeException('Webserver service not found');
+        }
+
         /** @var Webserver $webserverHandler */
-        $webserverHandler = $site->server->webserver()->handler();
+        $webserverHandler = $service->handler();
         $webserverHandler->deleteSite($site);
 
         if ($site->isIsolated()) {
+            $phpService = $site->server->php();
+            if (! $phpService) {
+                throw new \RuntimeException('PHP service not found');
+            }
             /** @var PHP $php */
-            $php = $site->server->php()->handler();
+            $php = $phpService->handler();
             $php->removeFpmPool($site->user, $site->php_version, $site->id);
 
             $os = $site->server->os();

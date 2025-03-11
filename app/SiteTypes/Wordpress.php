@@ -9,7 +9,6 @@ use App\Enums\SiteFeature;
 use App\Exceptions\SSHError;
 use App\Models\Database;
 use App\Models\DatabaseUser;
-use App\SSH\Services\Webserver\Webserver;
 use Closure;
 use Illuminate\Validation\Rule;
 
@@ -90,9 +89,7 @@ class Wordpress extends AbstractSiteType
     {
         $this->isolate();
 
-        /** @var Webserver $webserver */
-        $webserver = $this->site->server->webserver()->handler();
-        $webserver->createVHost($this->site);
+        $this->site->webserver()->createVHost($this->site);
         $this->progress(30);
 
         /** @var Database $database */

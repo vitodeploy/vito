@@ -52,7 +52,7 @@ class Bitbucket extends AbstractSourceControlProvider
     /**
      * @throws Exception
      */
-    public function getRepo(?string $repo = null): mixed
+    public function getRepo(string $repo): mixed
     {
         $res = Http::withHeaders($this->getAuthenticationHeaders())
             ->get($this->apiUrl."/repositories/$repo");

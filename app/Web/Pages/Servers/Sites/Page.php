@@ -20,6 +20,7 @@ abstract class Page extends BasePage implements HasSecondSubNav
 
     public function getSecondSubNavigation(): array
     {
+        /** @var \App\Models\User */
         $user = auth()->user();
         $items = [];
 
@@ -99,7 +100,10 @@ abstract class Page extends BasePage implements HasSecondSubNav
         }
 
         if ($site) {
-            return Site::query()->find($site);
+            /** @var Site $site */
+            $site = Site::query()->findOrFail($site);
+
+            return $site;
         }
 
         return null;

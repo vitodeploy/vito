@@ -69,12 +69,15 @@ class Commands extends Widget
 
     protected function getTableHeaderActions(): array
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return [
             Action::make('new-command')
                 ->label('Create a Command')
                 ->modalDescription('The command will be executed inside the site\'s directory')
                 ->icon('heroicon-o-plus')
-                ->authorize(fn () => auth()->user()->can('create', [Command::class, $this->site, $this->site->server]))
+                ->authorize(fn () => $user->can('create', [Command::class, $this->site, $this->site->server]))
                 ->action(function (array $data): void {
                     run_action($this, function () use ($data): void {
                         app(CreateCommand::class)->create($this->site, $data);
@@ -104,6 +107,9 @@ class Commands extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return $table
             ->query($this->getTableQuery())
             ->headerActions($this->getTableHeaderActions())
@@ -131,10 +137,8 @@ class Commands extends Widget
 
                         return $form;
                     })
-                    ->authorize(fn (Command $record) => auth()->user()->can('update', [$record->site, $record->site->server]))
-                    ->action(function (array $data, Command $record): void {
-                        /** @var \App\Models\User $user */
-                        $user = auth()->user();
+                    ->authorize(fn (Command $record) => $user->can('update', [$record->site, $record->site->server]))
+                    ->action(function (array $data, Command $record) use ($user): void {
                         app(ExecuteCommand::class)->execute($record, $user, $data);
                         $this->dispatch('$refresh');
                     }),
@@ -165,7 +169,7 @@ class Commands extends Widget
                             ->helperText('You can use variables like ${VARIABLE_NAME} in the command. The variables will be asked when executing the command'),
 
                     ])
-                    ->authorize(fn (Command $record) => auth()->user()->can('update', [$record, $this->site, $this->site->server]))
+                    ->authorize(fn (Command $record) => $user->can('update', [$record, $this->site, $this->site->server]))
                     ->using(function (array $data, Command $record): void {
                         app(EditCommand::class)->edit($record, $data);
                         $this->dispatch('$refresh');
@@ -176,7 +180,7 @@ class Commands extends Widget
                     ->hiddenLabel()
                     ->tooltip('Delete')
                     ->modalHeading('Delete Command')
-                    ->authorize(fn (Command $record) => auth()->user()->can('delete', [$record, $this->site, $this->site->server]))
+                    ->authorize(fn (Command $record) => $user->can('delete', [$record, $this->site, $this->site->server]))
                     ->using(function (array $data, Command $record): void {
                         $record->delete();
                     }),

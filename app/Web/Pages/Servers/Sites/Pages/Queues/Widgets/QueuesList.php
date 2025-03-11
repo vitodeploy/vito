@@ -81,8 +81,11 @@ class QueuesList extends Widget
 
     private function operationAction(string $type, string $icon): Action
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return Action::make($type)
-            ->authorize(fn (Queue $record) => auth()->user()->can('update', [$record, $this->site, $this->site->server]))
+            ->authorize(fn (Queue $record) => $user->can('update', [$record, $this->site, $this->site->server]))
             ->label(ucfirst($type).' queue')
             ->icon($icon)
             ->action(function (Queue $record) use ($type): void {
@@ -95,9 +98,12 @@ class QueuesList extends Widget
 
     private function logsAction(): Action
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return Action::make('logs')
             ->icon('heroicon-o-eye')
-            ->authorize(fn (Queue $record) => auth()->user()->can('view', [$record, $this->site, $this->site->server]))
+            ->authorize(fn (Queue $record) => $user->can('view', [$record, $this->site, $this->site->server]))
             ->modalHeading('View Log')
             ->modalContent(fn (Queue $record) => view('components.console-view', [
                 'slot' => app(GetQueueLogs::class)->getLogs($record),
@@ -109,9 +115,12 @@ class QueuesList extends Widget
 
     private function editAction(): Action
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return EditAction::make('edit')
             ->icon('heroicon-o-pencil-square')
-            ->authorize(fn (Queue $record) => auth()->user()->can('update', [$record, $this->site, $this->site->server]))
+            ->authorize(fn (Queue $record) => $user->can('update', [$record, $this->site, $this->site->server]))
             ->modalWidth(MaxWidth::ExtraLarge)
             ->fillForm(fn (Queue $record): array => [
                 'command' => $record->command,
@@ -152,9 +161,12 @@ class QueuesList extends Widget
 
     private function deleteAction(): Action
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return DeleteAction::make('delete')
             ->icon('heroicon-o-trash')
-            ->authorize(fn (Queue $record) => auth()->user()->can('delete', [$record, $this->site, $this->site->server]))
+            ->authorize(fn (Queue $record) => $user->can('delete', [$record, $this->site, $this->site->server]))
             ->using(function (Queue $record): void {
                 run_action($this, function () use ($record): void {
                     app(DeleteQueue::class)->delete($record);

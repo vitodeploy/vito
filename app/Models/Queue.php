@@ -69,8 +69,10 @@ class Queue extends AbstractModel
 
         static::deleting(function (Queue $queue): void {
             try {
+                $service = $queue->server->processManager();
+                assert($service !== null);
                 /** @var \App\SSH\Services\ProcessManager\ProcessManager $handler */
-                $handler = $queue->server->processManager()->handler();
+                $handler = $service->handler();
 
                 $handler->delete($queue->id, $queue->site_id);
             } catch (Throwable $e) {

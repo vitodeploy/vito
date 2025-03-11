@@ -255,15 +255,16 @@ class Site extends AbstractModel
      */
     public function changePHPVersion(string $version): void
     {
-        /** @var Webserver $handler */
-        $handler = $this->server->webserver()->handler();
-        $handler->changePHPVersion($this, $version);
+        $webserver = $this->webserver();
+        $webserver->changePHPVersion($this, $version);
 
         if ($this->isIsolated()) {
-            /** @var PHP $php */
-            $php = $this->server->php()->handler();
-            $php->removeFpmPool($this->user, $this->php_version, $this->id);
-            $php->createFpmPool($this->user, $version);
+            $php = $this->server->php();
+            assert($php !== null);
+            /** @var PHP $phpHandler */
+            $phpHandler = $php->handler();
+            $phpHandler->removeFpmPool($this->user, $this->php_version, $this->id);
+            $phpHandler->createFpmPool($this->user, $version);
         }
 
         $this->php_version = $version;
@@ -384,10 +385,13 @@ class Site extends AbstractModel
 
     public function webserver(): Webserver
     {
-        /** @var Webserver $webserver */
-        $webserver = $this->server->webserver()->handler();
+        $webserver = $this->server->webserver();
+        assert($webserver !== null);
 
-        return $webserver;
+        /** @var Webserver $handler */
+        $handler = $webserver->handler();
+
+        return $handler;
     }
 
     /**

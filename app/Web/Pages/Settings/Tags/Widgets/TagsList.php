@@ -27,7 +27,12 @@ class TagsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        return Tag::getByProjectId(auth()->user()->current_project_id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
+        return Tag::getByProjectId($user->current_project_id);
     }
 
     protected function getTableColumns(): array
@@ -59,6 +64,9 @@ class TagsList extends Widget
 
     private function editAction(): Action
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return EditAction::make('edit')
             ->fillForm(fn (Tag $record): array => [
                 'name' => $record->name,
@@ -66,15 +74,18 @@ class TagsList extends Widget
                 'global' => $record->project_id === null,
             ])
             ->form(Edit::form())
-            ->authorize(fn (Tag $record) => auth()->user()->can('update', $record))
+            ->authorize(fn (Tag $record) => $user->can('update', $record))
             ->using(fn (array $data, Tag $record) => Edit::action($record, $data))
             ->modalWidth(MaxWidth::Medium);
     }
 
     private function deleteAction(): Action
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return DeleteAction::make('delete')
-            ->authorize(fn (Tag $record) => auth()->user()->can('delete', $record))
+            ->authorize(fn (Tag $record) => $user->can('delete', $record))
             ->using(function (Tag $record): void {
                 app(DeleteTag::class)->delete($record);
             });

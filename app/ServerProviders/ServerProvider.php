@@ -29,9 +29,9 @@ interface ServerProvider
     public function data(array $input): array;
 
     /**
-     * @param  ?array<string, mixed>  $credentials
+     * @param  array<string, mixed>  $credentials
      */
-    public function connect(?array $credentials = null): bool;
+    public function connect(array $credentials): bool;
 
     /**
      * @return array<string, mixed>

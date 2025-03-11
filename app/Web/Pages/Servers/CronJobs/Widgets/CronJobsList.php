@@ -58,6 +58,9 @@ class CronJobsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -68,7 +71,7 @@ class CronJobsList extends Widget
                     ->tooltip('Enable')
                     ->icon('heroicon-o-play')
                     ->requiresConfirmation()
-                    ->authorize(fn (CronJob $record) => auth()->user()->can('update', [$record, $this->server]))
+                    ->authorize(fn (CronJob $record) => $user->can('update', [$record, $this->server]))
                     ->visible(fn (CronJob $record): bool => $record->isDisabled())
                     ->action(function (CronJob $record): void {
                         run_action($this, function () use ($record): void {
@@ -80,7 +83,7 @@ class CronJobsList extends Widget
                     ->tooltip('Disable')
                     ->icon('heroicon-o-stop')
                     ->requiresConfirmation()
-                    ->authorize(fn (CronJob $record) => auth()->user()->can('update', [$record, $this->server]))
+                    ->authorize(fn (CronJob $record) => $user->can('update', [$record, $this->server]))
                     ->visible(fn (CronJob $record): bool => $record->isEnabled())
                     ->action(function (CronJob $record): void {
                         run_action($this, function () use ($record): void {
@@ -93,7 +96,7 @@ class CronJobsList extends Widget
                     ->color('danger')
                     ->hiddenLabel()
                     ->requiresConfirmation()
-                    ->authorize(fn (CronJob $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (CronJob $record) => $user->can('delete', $record))
                     ->action(function (CronJob $record): void {
                         try {
                             app(DeleteCronJob::class)->delete($this->server, $record);

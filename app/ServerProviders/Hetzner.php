@@ -49,7 +49,7 @@ class Hetzner extends AbstractProvider
      * @throws CouldNotConnectToProvider
      * @throws ConnectionException
      */
-    public function connect(?array $credentials = null): bool
+    public function connect(array $credentials): bool
     {
         $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/servers');
         if (! $connect->ok()) {

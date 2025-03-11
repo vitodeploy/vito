@@ -73,6 +73,9 @@ class LogsList extends Widget
      */
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -98,7 +101,7 @@ class LogsList extends Widget
                     ->hiddenLabel()
                     ->tooltip('View')
                     ->icon('heroicon-o-eye')
-                    ->authorize(fn ($record) => auth()->user()->can('view', $record))
+                    ->authorize(fn ($record) => $user->can('view', $record))
                     ->modalHeading('View Log')
                     ->modalContent(fn (ServerLog $record) => view('components.console-view', [
                         'slot' => $record->getContent(),
@@ -111,19 +114,19 @@ class LogsList extends Widget
                     ->tooltip('Download')
                     ->color('gray')
                     ->icon('heroicon-o-archive-box-arrow-down')
-                    ->authorize(fn ($record) => auth()->user()->can('view', $record))
+                    ->authorize(fn ($record) => $user->can('view', $record))
                     ->action(fn (ServerLog $record): \Symfony\Component\HttpFoundation\StreamedResponse => $record->download()),
                 DeleteAction::make()
                     ->hiddenLabel()
                     ->tooltip('Delete')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
-                    ->authorize(fn ($record) => auth()->user()->can('delete', $record)),
+                    ->authorize(fn ($record) => $user->can('delete', $record)),
             ])
             ->bulkActions([
                 DeleteBulkAction::make()
                     ->requiresConfirmation()
-                    ->authorize(auth()->user()->can('deleteMany', [ServerLog::class, $this->server])),
+                    ->authorize($user->can('deleteMany', [ServerLog::class, $this->server])),
             ]);
     }
 }

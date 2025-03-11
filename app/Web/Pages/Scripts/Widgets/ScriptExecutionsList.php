@@ -74,7 +74,7 @@ class ScriptExecutionsList extends Widget
                     ->hiddenLabel()
                     ->tooltip('Logs')
                     ->icon('heroicon-o-eye')
-                    ->authorize(fn (ScriptExecution $record) => auth()->user()->can('view', $record->serverLog))
+                    ->authorize(fn (ScriptExecution $record) => auth()->user()?->can('view', $record->serverLog))
                     ->modalHeading('View Log')
                     ->modalContent(fn (ScriptExecution $record) => view('components.console-view', [
                         'slot' => $record->serverLog?->getContent(),

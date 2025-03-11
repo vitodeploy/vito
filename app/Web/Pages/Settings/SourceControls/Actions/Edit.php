@@ -48,8 +48,13 @@ class Edit
      */
     public static function action(SourceControl $sourceControl, array $data): void
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->currentProject === null);
+
         try {
-            app(EditSourceControl::class)->edit($sourceControl, auth()->user()->currentProject, $data);
+            app(EditSourceControl::class)->edit($sourceControl, $user->currentProject, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

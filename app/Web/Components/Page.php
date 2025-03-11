@@ -2,6 +2,7 @@
 
 namespace App\Web\Components;
 
+use App\Models\User;
 use Filament\Pages\Page as BasePage;
 use Illuminate\View\ComponentAttributeBag;
 
@@ -46,5 +47,15 @@ abstract class Page extends BasePage
     public function getWidgets(): array
     {
         return [];
+    }
+
+    protected function getUser(): User
+    {
+        /** @var ?\App\Models\User $user */
+        $user = auth()->user();
+
+        throw_unless($user, \Illuminate\Auth\AuthenticationException::class);
+
+        return $user;
     }
 }

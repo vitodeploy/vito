@@ -28,7 +28,12 @@ class SourceControlsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        return SourceControl::getByProjectId(auth()->user()->current_project_id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
+        return SourceControl::getByProjectId($user->current_project_id);
     }
 
     protected function getTableColumns(): array
@@ -57,6 +62,9 @@ class SourceControlsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -74,7 +82,7 @@ class SourceControlsList extends Widget
                         'global' => $record->project_id === null,
                     ])
                     ->form(fn (SourceControl $record): array => Edit::form($record))
-                    ->authorize(fn (SourceControl $record) => auth()->user()->can('update', $record))
+                    ->authorize(fn (SourceControl $record) => $user->can('update', $record))
                     ->using(fn (array $data, SourceControl $record) => Edit::action($record, $data))
                     ->modalWidth(MaxWidth::Medium),
                 Action::make('delete')
@@ -83,7 +91,7 @@ class SourceControlsList extends Widget
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading('Delete Source Control')
-                    ->authorize(fn (SourceControl $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (SourceControl $record) => $user->can('delete', $record))
                     ->action(function (array $data, SourceControl $record): void {
                         try {
                             app(DeleteSourceControl::class)->delete($record);

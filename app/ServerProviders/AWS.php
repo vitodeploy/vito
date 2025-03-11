@@ -53,7 +53,7 @@ class AWS extends AbstractProvider
     public function connect(?array $credentials = null): bool
     {
         try {
-            $this->connectToEc2ClientTest($credentials);
+            $this->connectToEc2ClientTest($credentials ?? []);
             $this->ec2Client->describeInstances();
 
             return true;
@@ -186,7 +186,7 @@ class AWS extends AbstractProvider
         $credentials = $this->serverProvider->getCredentials();
 
         if ($region === null || $region === '' || $region === '0') {
-            $region = $this->server?->provider_data['region'];
+            $region = $this->server->provider_data['region'];
         }
 
         $this->ec2Client = new Ec2Client([
@@ -202,7 +202,7 @@ class AWS extends AbstractProvider
     /**
      * @param  array<string, mixed>  $credentials
      */
-    private function connectToEc2ClientTest(?array $credentials): void
+    private function connectToEc2ClientTest(array $credentials): void
     {
         $this->ec2Client = new Ec2Client([
             'region' => 'us-east-1',

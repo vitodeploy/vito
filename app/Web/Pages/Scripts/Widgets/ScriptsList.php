@@ -28,7 +28,12 @@ class ScriptsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        return Script::getByProjectId(auth()->user()->current_project_id, auth()->user()->id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
+        return Script::getByProjectId($user->current_project_id, $user->id);
     }
 
     protected function getTableColumns(): array
@@ -52,6 +57,9 @@ class ScriptsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -75,16 +83,16 @@ class ScriptsList extends Widget
                         Checkbox::make('global')
                             ->label('Is Global (Accessible in all projects)'),
                     ])
-                    ->authorize(fn (Script $record) => auth()->user()->can('update', $record))
-                    ->using(function (array $data, Script $record): void {
-                        app(EditScript::class)->edit($record, auth()->user(), $data);
+                    ->authorize(fn (Script $record) => $user->can('update', $record))
+                    ->using(function (array $data, Script $record) use ($user): void {
+                        app(EditScript::class)->edit($record, $user, $data);
                         $this->dispatch('$refresh');
                     })
                     ->modalWidth(MaxWidth::ThreeExtraLarge),
                 DeleteAction::make('delete')
                     ->label('Delete')
                     ->modalHeading('Delete Script')
-                    ->authorize(fn (Script $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (Script $record) => $user->can('delete', $record))
                     ->using(function (array $data, Script $record): void {
                         $record->delete();
                     }),

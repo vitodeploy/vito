@@ -43,8 +43,10 @@ class CreateSSL
         $ssl->save();
 
         dispatch(function () use ($site, $ssl): void {
+            $service = $site->server->webserver();
+            assert($service !== null);
             /** @var Webserver $webserver */
-            $webserver = $site->server->webserver()->handler();
+            $webserver = $service->handler();
             $webserver->setupSSL($ssl);
             $ssl->status = SslStatus::CREATED;
             $ssl->save();

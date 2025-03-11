@@ -24,7 +24,10 @@ class Settings extends Page
 
     public function mount(): void
     {
-        $this->authorize('update', [$this->server, auth()->user()->currentProject]);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $this->authorize('update', [$this->server, $user->currentProject]);
     }
 
     public function getWidgets(): array

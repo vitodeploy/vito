@@ -29,7 +29,10 @@ class Index extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('viewAny', Project::class) ?? false;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        return $user->can('viewAny', Project::class);
     }
 
     public function getWidgets(): array
@@ -53,7 +56,7 @@ class Index extends Page
                         ->rules(CreateProject::rules()['name']),
                 ])->columns(1))
                 ->action(function (array $data): void {
-                    app(CreateProject::class)->create(auth()->user(), $data);
+                    app(CreateProject::class)->create($this->getUser(), $data);
 
                     $this->dispatch('$refresh');
                 }),

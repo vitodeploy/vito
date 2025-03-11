@@ -15,8 +15,13 @@ class UpdateAliases
     {
         $site->aliases = $input['aliases'] ?? [];
 
+        $service = $site->server->webserver();
+        if (! $service) {
+            throw new \RuntimeException('Webserver service not found');
+        }
+
         /** @var Webserver $webserver */
-        $webserver = $site->server->webserver()->handler();
+        $webserver = $service->handler();
         $webserver->updateVHost($site);
 
         $site->save();

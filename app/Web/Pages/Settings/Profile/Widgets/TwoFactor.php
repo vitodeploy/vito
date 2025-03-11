@@ -37,13 +37,19 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function mount(): void
     {
-        if (auth()->user()->two_factor_secret) {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        if ($user->two_factor_secret) {
             $this->enabled = true;
         }
     }
 
     public function infolist(Infolist $infolist): Infolist
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $infolist->schema([
             Section::make()
                 ->heading('Two Factor Authentication')
@@ -56,12 +62,12 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
                     ViewEntry::make('qr_code')
                         ->hiddenLabel()
                         ->view('components.container', [
-                            'content' => $this->enabled ? auth()->user()->twoFactorQrCodeSvg() : null,
+                            'content' => $this->enabled ? $user->twoFactorQrCodeSvg() : null,
                         ])
                         ->visible($this->enabled && $this->showCodes),
                     TextEntry::make('qr_code_manual')
                         ->label('If you are unable to scan the QR code, please use the 2FA secret instead.')
-                        ->state($this->enabled ? decrypt(auth()->user()->two_factor_secret) : null)
+                        ->state($this->enabled ? decrypt($user->two_factor_secret) : null)
                         ->copyable()
                         ->visible($this->enabled && $this->showCodes),
                     TextEntry::make('recovery_codes_text')
@@ -73,7 +79,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
                         ->hiddenLabel()
                         ->extraAttributes(['class' => 'rounded-lg border border-gray-100 p-2 dark:border-gray-700'])
                         ->view('components.container', [
-                            'content' => $this->enabled ? implode('</br>', json_decode((string) decrypt(auth()->user()->two_factor_recovery_codes), true)) : null,
+                            'content' => $this->enabled ? implode('</br>', json_decode((string) decrypt($user->two_factor_recovery_codes), true)) : null,
                         ])
                         ->visible($this->enabled),
                 ])
@@ -99,7 +105,10 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function enableTwoFactor(): void
     {
-        app(EnableTwoFactorAuthentication::class)(auth()->user());
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        app(EnableTwoFactorAuthentication::class)($user);
 
         $this->enabled = true;
         $this->showCodes = true;
@@ -114,7 +123,10 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function disableTwoFactor(): void
     {
-        app(DisableTwoFactorAuthentication::class)(auth()->user());
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        app(DisableTwoFactorAuthentication::class)($user);
 
         $this->enabled = false;
         $this->showCodes = false;
@@ -129,7 +141,10 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function regenerateRecoveryCodes(): void
     {
-        app(GenerateNewRecoveryCodes::class)(auth()->user());
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        app(GenerateNewRecoveryCodes::class)($user);
 
         Notification::make()
             ->success()

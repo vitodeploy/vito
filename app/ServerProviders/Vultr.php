@@ -49,7 +49,7 @@ class Vultr extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(?array $credentials = null): bool
+    public function connect(array $credentials): bool
     {
         try {
             $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');

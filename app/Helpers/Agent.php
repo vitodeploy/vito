@@ -106,6 +106,10 @@ class Agent extends MobileDetect
     {
         $userAgent = $this->getUserAgent();
 
+        if ($userAgent === null || $userAgent === '' || $userAgent === '0') {
+            return null;
+        }
+
         foreach ($rules as $key => $regex) {
             if (empty($regex)) {
                 continue;

@@ -76,6 +76,8 @@ class SSH
                 $this->connection = new SSH2($ip, $this->server->port);
             }
 
+            assert($this->user !== null);
+
             $login = $this->connection->login($this->user, $this->privateKey);
 
             if (! $login) {
@@ -105,6 +107,7 @@ class SSH
         try {
             if (! $this->connection instanceof SSH2) {
                 $this->connect();
+                assert($this->connection instanceof SSH2);
             }
         } catch (Throwable $e) {
             throw new SSHConnectionError($e->getMessage());
@@ -119,6 +122,7 @@ class SSH
 
             $this->connection->setTimeout(0);
             if ($stream === true) {
+                /** @var callable $streamCallback */
                 $this->connection->exec($command, function ($output) use ($streamCallback) {
                     $this->log?->write($output);
 
@@ -163,10 +167,12 @@ class SSH
             $this->connect(true);
         }
 
+        assert($this->connection instanceof SFTP);
+        assert($this->user !== null);
+
         $tmpName = Str::random(10).strtotime('now');
         $tempPath = home_path($this->user).'/'.$tmpName;
 
-        /** @phpstan-ignore-next-line */
         $this->connection->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
 
         $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));

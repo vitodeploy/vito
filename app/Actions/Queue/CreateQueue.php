@@ -33,8 +33,12 @@ class CreateQueue
         $queue->save();
 
         dispatch(function () use ($queue): void {
+            $service = $queue->server->processManager();
+            if (! $service) {
+                throw new \Exception('Process manager service not found');
+            }
             /** @var ProcessManager $processManager */
-            $processManager = $queue->server->processManager()->handler();
+            $processManager = $service->handler();
             $processManager->create(
                 $queue->id,
                 $queue->command,

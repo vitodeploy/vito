@@ -27,7 +27,12 @@ class StorageProvidersList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        return StorageProvider::getByProjectId(auth()->user()->current_project_id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        throw_if($user->current_project_id === null);
+
+        return StorageProvider::getByProjectId($user->current_project_id);
     }
 
     protected function getTableColumns(): array
@@ -57,6 +62,9 @@ class StorageProvidersList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -70,13 +78,13 @@ class StorageProvidersList extends Widget
                         'global' => $record->project_id === null,
                     ])
                     ->form(Edit::form())
-                    ->authorize(fn (StorageProvider $record) => auth()->user()->can('update', $record))
+                    ->authorize(fn (StorageProvider $record) => $user->can('update', $record))
                     ->using(fn (array $data, StorageProvider $record) => Edit::action($record, $data))
                     ->modalWidth(MaxWidth::Medium),
                 DeleteAction::make('delete')
                     ->label('Delete')
                     ->modalHeading('Delete Storage Provider')
-                    ->authorize(fn (StorageProvider $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (StorageProvider $record) => $user->can('delete', $record))
                     ->using(function (array $data, StorageProvider $record): void {
                         try {
                             app(DeleteStorageProvider::class)->delete($record);

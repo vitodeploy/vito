@@ -67,8 +67,12 @@ class ManageRule
     protected function applyRule(FirewallRule $rule): void
     {
         try {
+            $service = $rule->server->firewall();
+            if (! $service) {
+                throw new \Exception('Firewall service not found');
+            }
             /** @var Firewall $handler */
-            $handler = $rule->server->firewall()->handler();
+            $handler = $service->handler();
             $handler->applyRules();
         } catch (\Exception $e) {
             $rule->server->firewallRules()
