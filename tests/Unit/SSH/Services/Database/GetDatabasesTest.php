@@ -6,12 +6,12 @@ use App\Facades\SSH;
 use App\SSH\Services\Database\Database;
 use Tests\TestCase;
 
-class SyncDatabasesTest extends TestCase
+class GetDatabasesTest extends TestCase
 {
     /**
      * @dataProvider data
      */
-    public function test_sync_databases(string $name, string $version, string $output): void
+    public function test_get_databases(string $name, string $version, string $output): void
     {
         $database = $this->server->database();
         $database->name = $name;
@@ -22,17 +22,13 @@ class SyncDatabasesTest extends TestCase
 
         /** @var Database $databaseHandler */
         $databaseHandler = $database->handler();
-        $databaseHandler->syncDatabases();
+        $databases = $databaseHandler->getDatabases();
 
-        $this->assertDatabaseHas('databases', [
-            'server_id' => $this->server->id,
-            'name' => 'vito',
-        ]);
+        $this->assertIsArray($databases);
+        $this->assertEquals('vito', $databases[0][0]);
     }
 
     /**
-     * @TODO Add more test cases
-     *
      * @return array[]
      */
     public static function data(): array
@@ -59,6 +55,18 @@ class SyncDatabasesTest extends TestCase
                 information_schema	utf8mb3	utf8mb3_general_ci
                 performance_schema	utf8mb4	utf8mb4_0900_ai_ci
                 sys	utf8mb4	utf8mb4_0900_ai_ci
+                vito	utf8mb3	utf8mb3_general_ci
+                EOD
+            ],
+            [
+                'mariadb',
+                '11.4',
+                <<<'EOD'
+                database_name	charset	collation
+                information_schema	utf8mb3	utf8mb3_general_ci
+                mysql	utf8mb4	utf8mb4_uca1400_ai_ci
+                performance_schema	utf8mb3	utf8mb3_general_ci
+                sys	utf8mb3	utf8mb3_general_ci
                 vito	utf8mb3	utf8mb3_general_ci
                 EOD
             ],

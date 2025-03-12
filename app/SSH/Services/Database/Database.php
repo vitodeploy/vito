@@ -26,7 +26,18 @@ interface Database extends ServiceInterface
 
     public function restoreBackup(BackupFile $backupFile, string $database): void;
 
-    public function updateCharsets(): void;
+    /**
+     * @return array<string, mixed>
+     */
+    public function getCharsets(): array;
 
-    public function syncDatabases(bool $createNew = true): void;
+    /**
+     * @return array<int, array<string>>
+     */
+    public function getDatabases(): array;
+
+    /**
+     * @return array<int, array<string>>
+     */
+    public function getUsers(): array;
 }
