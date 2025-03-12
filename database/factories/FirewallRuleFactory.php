@@ -5,6 +5,9 @@ namespace Database\Factories;
 use App\Models\FirewallRule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<\App\Models\FirewallRule>
+ */
 class FirewallRuleFactory extends Factory
 {
     protected $model = FirewallRule::class;

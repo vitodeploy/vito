@@ -43,15 +43,15 @@ class Index extends Page
                 ->form([
                     Select::make('version')
                         ->options(
-                            collect(config('core.php_versions'))
-                                ->filter(fn ($version) => ! in_array($version, array_merge($installedPHPs, [PHP::NONE])))
+                            collect((array) config('core.php_versions'))
+                                ->filter(fn ($version): bool => ! in_array($version, array_merge($installedPHPs, [PHP::NONE])))
                                 ->mapWithKeys(fn ($version) => [$version => $version])
                                 ->toArray()
                         )
                         ->rules(InstallNewPHP::rules($this->server)['version']),
                 ])
                 ->modalSubmitActionLabel('Install')
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     app(InstallNewPHP::class)->install($this->server, $data);
 
                     Notification::make()

@@ -10,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 class CreateSshKey
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function create(User $user, array $input): SshKey
@@ -25,7 +27,7 @@ class CreateSshKey
     }
 
     /**
-     * @throws ValidationException
+     * @return array<string, mixed>
      */
     public static function rules(): array
     {

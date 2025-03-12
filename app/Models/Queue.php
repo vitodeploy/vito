@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\QueueStatus;
+use App\SSH\Services\ProcessManager\ProcessManager;
+use Database\Factories\QueueFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +26,7 @@ use Throwable;
  */
 class Queue extends AbstractModel
 {
+    /** @use HasFactory<QueueFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -48,6 +51,9 @@ class Queue extends AbstractModel
         'redirect_stderr' => 'boolean',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         QueueStatus::RUNNING => 'success',
         QueueStatus::CREATING => 'warning',
@@ -63,9 +69,14 @@ class Queue extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (Queue $queue) {
+        static::deleting(function (Queue $queue): void {
             try {
-                $queue->server->processManager()->handler()->delete($queue->id, $queue->site_id);
+                /** @var Service $service */
+                $service = $queue->server->processManager();
+                /** @var ProcessManager $handler */
+                $handler = $service->handler();
+
+                $handler->delete($queue->id, $queue->site_id);
             } catch (Throwable $e) {
                 Log::error($e);
             }
@@ -74,7 +85,7 @@ class Queue extends AbstractModel
 
     public function getServerIdAttribute(int $value): int
     {
-        if (! $value) {
+        if ($value === 0) {
             $value = $this->site->server_id;
             $this->fill(['server_id' => $this->site->server_id]);
             $this->save();
@@ -83,11 +94,17 @@ class Queue extends AbstractModel
         return $value;
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<Site, covariant $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);

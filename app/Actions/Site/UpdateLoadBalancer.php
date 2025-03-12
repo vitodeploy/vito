@@ -9,6 +9,9 @@ use Illuminate\Validation\Rule;
 
 class UpdateLoadBalancer
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function update(Site $site, array $input): void
     {
         $site->loadBalancerServers()->delete();
@@ -27,6 +30,9 @@ class UpdateLoadBalancer
         $site->webserver()->updateVHost($site);
     }
 
+    /**
+     * @return array<string, array<int, mixed>>
+     */
     public static function rules(Site $site): array
     {
         return [

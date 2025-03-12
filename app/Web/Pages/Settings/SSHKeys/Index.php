@@ -24,7 +24,10 @@ class Index extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('viewAny', SshKey::class) ?? false;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        return $user->can('viewAny', SshKey::class);
     }
 
     public function getWidgets(): array
@@ -36,6 +39,9 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return [
             CreateAction::make('add')
                 ->label('Add Key')
@@ -53,8 +59,8 @@ class Index extends Page
                 ])
                 ->authorize('create', SshKey::class)
                 ->modalWidth(MaxWidth::Large)
-                ->using(function (array $data) {
-                    app(CreateSshKey::class)->create(auth()->user(), $data);
+                ->using(function (array $data) use ($user): void {
+                    app(CreateSshKey::class)->create($user, $data);
 
                     $this->dispatch('$refresh');
                 }),

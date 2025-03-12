@@ -5,6 +5,7 @@ namespace App\Actions\Queue;
 use App\Enums\QueueStatus;
 use App\Models\Queue;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\ProcessManager\ProcessManager;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -12,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 class EditQueue
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function edit(Queue $queue, array $input): void
@@ -26,9 +29,11 @@ class EditQueue
         ]);
         $queue->save();
 
-        dispatch(function () use ($queue) {
+        dispatch(function () use ($queue): void {
+            /** @var Service $service */
+            $service = $queue->server->processManager();
             /** @var ProcessManager $processManager */
-            $processManager = $queue->server->processManager()->handler();
+            $processManager = $service->handler();
             $processManager->delete($queue->id, $queue->site_id);
 
             $processManager->create(
@@ -43,12 +48,15 @@ class EditQueue
             );
             $queue->status = QueueStatus::RUNNING;
             $queue->save();
-        })->catch(function () use ($queue) {
+        })->catch(function () use ($queue): void {
             $queue->status = QueueStatus::FAILED;
             $queue->save();
         })->onConnection('ssh');
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Server $server): array
     {
         return [

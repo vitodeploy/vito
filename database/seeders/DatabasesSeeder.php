@@ -16,7 +16,7 @@ class DatabasesSeeder extends Seeder
 {
     public function run(): void
     {
-        $servers = Server::query()->whereHas('services', function (Builder $query) {
+        $servers = Server::query()->whereHas('services', function (Builder $query): void {
             $query->where('type', 'database');
         })->get();
 
@@ -44,7 +44,7 @@ class DatabasesSeeder extends Seeder
             ]);
             BackupFile::factory(10)->create([
                 'name' => $database->name.'-'.now()->format('Y-m-d-H-i-s').'.zip',
-                'size' => rand(1000000, 10000000),
+                'size' => random_int(1000000, 10000000),
                 'backup_id' => $backup->id,
                 'status' => BackupFileStatus::CREATED,
             ]);

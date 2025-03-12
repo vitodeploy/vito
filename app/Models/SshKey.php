@@ -16,7 +16,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class SshKey extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\SshKeyFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -30,11 +32,17 @@ class SshKey extends AbstractModel
         'public_key' => 'encrypted',
     ];
 
+    /**
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsToMany<Server, covariant $this>
+     */
     public function servers(): BelongsToMany
     {
         return $this->belongsToMany(Server::class, 'server_ssh_keys')

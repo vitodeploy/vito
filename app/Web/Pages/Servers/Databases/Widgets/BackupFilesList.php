@@ -20,13 +20,22 @@ class BackupFilesList extends Widget
 {
     public Backup $backup;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<BackupFile>
+     */
     protected function getTableQuery(): Builder
     {
         return BackupFile::query()->where('backup_id', $this->backup->id);
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     protected function getTableColumns(): array
     {
         return [
@@ -38,7 +47,7 @@ class BackupFilesList extends Widget
             TextColumn::make('restored_to')
                 ->searchable(),
             TextColumn::make('restored_at')
-                ->formatStateUsing(fn (BackupFile $record) => $record->getDateTimeByTimezone($record->restored_at))
+                ->formatStateUsing(fn (BackupFile $record): string => $record->getDateTimeByTimezone($record->restored_at))
                 ->sortable(),
             TextColumn::make('status')
                 ->badge()
@@ -48,6 +57,10 @@ class BackupFilesList extends Widget
         ];
     }
 
+    /**
+     * @param  Builder<BackupFile>  $query
+     * @return Builder<BackupFile>
+     */
     protected function applyDefaultSortingToTableQuery(Builder $query): Builder
     {
         return $query->latest('created_at');
@@ -55,6 +68,9 @@ class BackupFilesList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -63,19 +79,17 @@ class BackupFilesList extends Widget
                 Action::make('download')
                     ->hiddenLabel()
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->visible(fn (BackupFile $record) => $record->isAvailable() && $record->isLocal())
+                    ->visible(fn (BackupFile $record): bool => $record->isAvailable() && $record->isLocal())
                     ->tooltip('Download')
-                    ->action(function (BackupFile $record) {
-                        return app(ManageBackupFile::class)->download($record);
-                    })
-                    ->authorize(fn (BackupFile $record) => auth()->user()->can('view', $record)),
+                    ->action(fn (BackupFile $record) => app(ManageBackupFile::class)->download($record))
+                    ->authorize(fn (BackupFile $record) => $user->can('view', $record)),
                 Action::make('restore')
                     ->hiddenLabel()
                     ->icon('heroicon-o-arrow-path')
                     ->modalHeading('Restore Backup')
                     ->tooltip('Restore Backup')
-                    ->disabled(fn (BackupFile $record) => ! $record->isAvailable())
-                    ->authorize(fn (BackupFile $record) => auth()->user()->can('update', $record->backup))
+                    ->disabled(fn (BackupFile $record): bool => ! $record->isAvailable())
+                    ->authorize(fn (BackupFile $record) => $user->can('update', $record->backup))
                     ->form([
                         Select::make('database')
                             ->label('Restore to')
@@ -84,8 +98,8 @@ class BackupFilesList extends Widget
                             ->native(false),
                     ])
                     ->modalWidth(MaxWidth::Large)
-                    ->action(function (BackupFile $record, array $data) {
-                        run_action($this, function () use ($record, $data) {
+                    ->action(function (BackupFile $record, array $data): void {
+                        run_action($this, function () use ($record, $data): void {
                             $this->validate();
 
                             /** @var Database $database */
@@ -108,11 +122,11 @@ class BackupFilesList extends Widget
                     ->icon('heroicon-o-trash')
                     ->modalHeading('Delete Backup File')
                     ->color('danger')
-                    ->disabled(fn (BackupFile $record) => ! $record->isAvailable())
+                    ->disabled(fn (BackupFile $record): bool => ! $record->isAvailable())
                     ->tooltip('Delete')
-                    ->authorize(fn (BackupFile $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (BackupFile $record) => $user->can('delete', $record))
                     ->requiresConfirmation()
-                    ->action(function (BackupFile $record) {
+                    ->action(function (BackupFile $record): void {
                         app(ManageBackupFile::class)->delete($record);
                         $this->dispatch('$refresh');
                     }),

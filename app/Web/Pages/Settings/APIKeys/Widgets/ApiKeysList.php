@@ -12,11 +12,23 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ApiKeysList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<PersonalAccessToken>
+     */
     protected function getTableQuery(): Builder
     {
-        return auth()->user()->tokens()->getQuery();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        /** @var Builder<PersonalAccessToken> $query */
+        $query = $user->tokens()->getQuery();
+
+        return $query;
     }
 
     protected function getTableColumns(): array
@@ -35,7 +47,7 @@ class ApiKeysList extends Widget
                 ->sortable(),
             TextColumn::make('last_used_at')
                 ->label('Last Used At')
-                ->formatStateUsing(fn (PersonalAccessToken $record) => $record->getDateTimeByTimezone($record->last_used_at))
+                ->formatStateUsing(fn (PersonalAccessToken $record): string => $record->getDateTimeByTimezone($record->last_used_at))
                 ->searchable()
                 ->sortable(),
         ];
@@ -43,6 +55,9 @@ class ApiKeysList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -50,15 +65,15 @@ class ApiKeysList extends Widget
             ->actions([
                 DeleteAction::make('delete')
                     ->modalHeading('Delete Token')
-                    ->authorize(fn (PersonalAccessToken $record) => auth()->user()->can('delete', $record))
-                    ->using(function (array $data, PersonalAccessToken $record) {
+                    ->authorize(fn (PersonalAccessToken $record) => $user->can('delete', $record))
+                    ->using(function (array $data, PersonalAccessToken $record): void {
                         $record->delete();
                     }),
             ])
             ->bulkActions([
                 DeleteBulkAction::make()
                     ->requiresConfirmation()
-                    ->authorize(auth()->user()->can('deleteMany', PersonalAccessToken::class)),
+                    ->authorize($user->can('deleteMany', PersonalAccessToken::class)),
             ]);
     }
 }

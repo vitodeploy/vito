@@ -7,7 +7,6 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\SSH\Composer\Composer;
 use App\SSH\Git\Git;
-use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Validation\Rule;
 
 class PHPSite extends AbstractSiteType
@@ -90,10 +89,7 @@ class PHPSite extends AbstractSiteType
     public function install(): void
     {
         $this->isolate();
-
-        /** @var Webserver $webserver */
-        $webserver = $this->site->server->webserver()->handler();
-        $webserver->createVHost($this->site);
+        $this->site->webserver()->createVHost($this->site);
         $this->progress(15);
         $this->deployKey();
         $this->progress(30);

@@ -69,11 +69,11 @@ class Users extends Page implements HasSecondSubNav
                     TextInput::make('host')
                         ->label('Host')
                         ->rules(fn (callable $get) => CreateDatabase::rules($this->server, $get())['host'])
-                        ->hidden(fn (callable $get) => $get('remote') !== true),
+                        ->hidden(fn (callable $get): bool => $get('remote') !== true),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->action(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(CreateDatabaseUser::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');

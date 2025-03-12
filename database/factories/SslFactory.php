@@ -7,6 +7,9 @@ use App\Models\Ssl;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<\App\Models\Ssl>
+ */
 class SslFactory extends Factory
 {
     protected $model = Ssl::class;

@@ -9,10 +9,14 @@ trait HasS3Storage
         $path = trim($path);
         $path = ltrim($path, '/');
         $path = preg_replace('/[^a-zA-Z0-9\-_\.\/]/', '_', $path);
-        $path = preg_replace('/\/+/', '/', $path);
+        $path = preg_replace('/\/+/', '/', (string) $path);
 
-        if ($prefix) {
-            $path = trim($prefix, '/').'/'.$path;
+        if ($prefix !== '' && $prefix !== '0') {
+            return trim($prefix, '/').'/'.$path;
+        }
+
+        if ($path === null) {
+            throw new \Exception('Invalid S3 path');
         }
 
         return $path;

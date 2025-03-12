@@ -98,7 +98,7 @@ class FirewallRuleController extends Controller
     #[Delete('{firewallRule}', name: 'api.projects.servers.firewall-rules.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete firewall rule.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, FirewallRule $firewallRule)
+    public function delete(Project $project, Server $server, FirewallRule $firewallRule): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$firewallRule, $server]);
 

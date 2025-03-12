@@ -490,7 +490,7 @@ return [
      */
     'restricted_ip_addresses' => array_merge(
         ['127.0.0.1', 'localhost', '0.0.0.0'],
-        explode(',', env('RESTRICTED_IP_ADDRESSES', ''))
+        explode(',', (string) env('RESTRICTED_IP_ADDRESSES', ''))
     ),
 
     /*

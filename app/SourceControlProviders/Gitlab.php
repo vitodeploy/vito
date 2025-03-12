@@ -41,9 +41,9 @@ class Gitlab extends AbstractSourceControlProvider
     /**
      * @throws Exception
      */
-    public function getRepo(?string $repo = null): mixed
+    public function getRepo(string $repo): mixed
     {
-        $repository = $repo ? urlencode($repo) : null;
+        $repository = $repo !== '' && $repo !== '0' ? urlencode($repo) : null;
         $res = Http::withToken($this->data()['token'])
             ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits');
 
@@ -54,7 +54,7 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function fullRepoUrl(string $repo, string $key): string
     {
-        $host = parse_url($this->getApiUrl())['host'];
+        $host = parse_url($this->getApiUrl())['host'] ?? 'gitlab.com';
 
         return sprintf('git@%s-%s:%s.git', $host, $key, $repo);
     }
@@ -170,9 +170,7 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function getApiUrl(): string
     {
-        $host = $this->sourceControl->url === null
-            ? $this->defaultApiHost
-            : $this->sourceControl->url;
+        $host = $this->sourceControl->url ?? $this->defaultApiHost;
 
         return $host.$this->apiVersion;
     }

@@ -7,6 +7,9 @@ use App\Models\ServerProvider;
 
 class EditServerProvider
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function edit(ServerProvider $serverProvider, Project $project, array $input): ServerProvider
     {
         $serverProvider->profile = $input['name'];
@@ -17,6 +20,9 @@ class EditServerProvider
         return $serverProvider;
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

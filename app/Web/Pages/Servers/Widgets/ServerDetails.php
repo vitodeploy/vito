@@ -21,6 +21,9 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
@@ -55,7 +58,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                 Action::make('check-update')
                                     ->icon('heroicon-o-arrow-path')
                                     ->tooltip('Check Now')
-                                    ->action(function (Server $record) {
+                                    ->action(function (Server $record): void {
                                         $record->checkForUpdates();
 
                                         $this->dispatch('$refresh');
@@ -63,7 +66,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                         Notification::make()
                                             ->info()
                                             ->title('Available updates:')
-                                            ->body($record->updates)
+                                            ->body((string) $record->updates)
                                             ->send();
                                     })
                             ),
@@ -75,7 +78,7 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                                     ->icon('heroicon-o-check-circle')
                                     ->tooltip('Update Now')
                                     ->requiresConfirmation()
-                                    ->action(function (Server $record) {
+                                    ->action(function (Server $record): void {
                                         app(Update::class)->update($record);
 
                                         $this->dispatch('$refresh');
@@ -91,11 +94,11 @@ class ServerDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel(),
                         TextEntry::make('tags.*')
                             ->default('No tags')
-                            ->formatStateUsing(fn ($state) => is_object($state) ? $state->name : $state)
+                            ->formatStateUsing(fn ($state) => is_object($state) && isset($state->name) ? $state->name : $state)
                             ->inlineLabel()
                             ->badge()
-                            ->color(fn ($state) => is_object($state) ? $state->color : 'gray')
-                            ->icon(fn ($state) => is_object($state) ? 'heroicon-o-tag' : '')
+                            ->color(fn ($state) => is_object($state) && isset($state->color) ? $state->color : 'gray')
+                            ->icon(fn ($state): string => is_object($state) ? 'heroicon-o-tag' : '')
                             ->suffixAction(
                                 EditTags::infolist($this->server)
                             ),

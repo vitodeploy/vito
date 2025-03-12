@@ -53,7 +53,7 @@ class AWS extends AbstractProvider
     public function connect(?array $credentials = null): bool
     {
         try {
-            $this->connectToEc2ClientTest($credentials);
+            $this->connectToEc2ClientTest($credentials ?? []);
             $this->ec2Client->describeInstances();
 
             return true;
@@ -120,7 +120,10 @@ class AWS extends AbstractProvider
 
         $regions = $this->ec2Client->describeRegions();
 
-        return collect($regions->toArray()['Regions'] ?? [])
+        /** @var array<int, array{RegionName: string}> $regionsArray */
+        $regionsArray = $regions->toArray()['Regions'] ?? [];
+
+        return collect($regionsArray)
             ->mapWithKeys(fn ($value) => [$value['RegionName'] => $value['RegionName']])
             ->toArray();
     }
@@ -182,8 +185,8 @@ class AWS extends AbstractProvider
     {
         $credentials = $this->serverProvider->getCredentials();
 
-        if (! $region) {
-            $region = $this->server?->provider_data['region'];
+        if ($region === null || $region === '' || $region === '0') {
+            $region = $this->server->provider_data['region'];
         }
 
         $this->ec2Client = new Ec2Client([
@@ -196,7 +199,10 @@ class AWS extends AbstractProvider
         ]);
     }
 
-    private function connectToEc2ClientTest($credentials): void
+    /**
+     * @param  array<string, mixed>  $credentials
+     */
+    private function connectToEc2ClientTest(array $credentials): void
     {
         $this->ec2Client = new Ec2Client([
             'region' => 'us-east-1',
@@ -302,9 +308,7 @@ class AWS extends AbstractProvider
 
         if (! empty($images)) {
             // Sort images by creation date to get the latest one
-            usort($images, function ($a, $b) {
-                return strtotime($b['CreationDate']) - strtotime($a['CreationDate']);
-            });
+            usort($images, fn (array $a, array $b): int => strtotime((string) $b['CreationDate']) - strtotime((string) $a['CreationDate']));
 
             return $images[0]['ImageId'];
         }

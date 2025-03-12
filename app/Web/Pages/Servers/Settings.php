@@ -17,11 +17,17 @@ class Settings extends Page
 
     protected static ?string $title = 'Settings';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void
     {
-        $this->authorize('update', [$this->server, auth()->user()->currentProject]);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $this->authorize('update', [$this->server, $user->currentProject]);
     }
 
     public function getWidgets(): array
@@ -46,7 +52,7 @@ class Settings extends Page
                 ->modalHeading('Delete Server')
                 ->modalDescription('Once your server is deleted, all of its resources and data will be permanently deleted and can\'t be restored')
                 ->authorize('delete', $this->server)
-                ->action(function () {
+                ->action(function (): void {
                     try {
                         $this->server->delete();
 
@@ -68,7 +74,7 @@ class Settings extends Page
                 ->icon('heroicon-o-arrow-path')
                 ->label('Reboot')
                 ->requiresConfirmation()
-                ->action(function () {
+                ->action(function (): void {
                     app(RebootServer::class)->reboot($this->server);
 
                     $this->dispatch('$refresh');

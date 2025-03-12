@@ -4,14 +4,18 @@ namespace App\Actions\SourceControl;
 
 use App\Models\Project;
 use App\Models\SourceControl;
-use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ConnectSourceControl
 {
-    public function connect(User $user, Project $project, array $input): SourceControl
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
+    public function connect(Project $project, array $input): SourceControl
     {
         $sourceControl = new SourceControl([
             'provider' => $input['provider'],
@@ -34,6 +38,10 @@ class ConnectSourceControl
         return $sourceControl;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<int, mixed>>
+     */
     public static function rules(array $input): array
     {
         $rules = [
@@ -46,10 +54,13 @@ class ConnectSourceControl
             ],
         ];
 
-        return array_merge($rules, static::providerRules($input));
+        return array_merge($rules, self::providerRules($input));
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     *
      * @throws ValidationException
      */
     private static function providerRules(array $input): array

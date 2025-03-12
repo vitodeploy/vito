@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('load_balancer_servers', function (Blueprint $table) {
+        Schema::create('load_balancer_servers', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('load_balancer_id');
             $table->string('ip');

@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Sites\Widgets;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Models\LoadBalancerServer;
+use App\Models\Server;
 use App\Models\Site;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Repeater;
@@ -29,12 +30,15 @@ class LoadBalancerServers extends Widget implements HasForms
 
     public string $method;
 
+    /**
+     * @var array<int, mixed>
+     */
     public array $servers = [];
 
     public function mount(): void
     {
         $this->setLoadBalancerServers();
-        if (empty($this->servers)) {
+        if ($this->servers === []) {
             $this->servers = [
                 [
                     'server' => null,
@@ -50,14 +54,12 @@ class LoadBalancerServers extends Widget implements HasForms
     #[On('load-balancer-updated')]
     public function setLoadBalancerServers(): void
     {
-        $this->servers = $this->site->loadBalancerServers->map(function (LoadBalancerServer $server) {
-            return [
-                'server' => $server->ip,
-                'port' => $server->port,
-                'weight' => $server->weight,
-                'backup' => $server->backup,
-            ];
-        })->toArray();
+        $this->servers = $this->site->loadBalancerServers->map(fn (LoadBalancerServer $server): array => [
+            'server' => $server->ip,
+            'port' => $server->port,
+            'weight' => $server->weight,
+            'backup' => $server->backup,
+        ])->toArray();
     }
 
     public function form(Form $form): Form
@@ -84,14 +86,14 @@ class LoadBalancerServers extends Widget implements HasForms
                                     ->searchable()
                                     ->required()
                                     ->rules(UpdateLoadBalancer::rules($this->site)['servers.*.server'])
-                                    ->options(function () {
-                                        return $this->site->project->servers()
-                                            ->where('id', '!=', $this->site->server_id)
-                                            ->get()
-                                            ->mapWithKeys(function ($server) {
-                                                return [$server->local_ip => $server->name.' ('.$server->local_ip.')'];
-                                            });
-                                    }),
+                                    ->options(fn () => $this->site->project->servers()
+                                        ->where('id', '!=', $this->site->server_id)
+                                        ->whereNotNull('local_ip')
+                                        ->get()
+                                        ->mapWithKeys(function ($server): array {
+                                            /** @var Server $server */
+                                            return $server->local_ip ? [$server->local_ip => $server->name.' ('.$server->local_ip.')'] : [];
+                                        })),
                                 TextInput::make('port')
                                     ->default(80)
                                     ->required()
@@ -124,7 +126,7 @@ class LoadBalancerServers extends Widget implements HasForms
 
         $this->validate();
 
-        run_action($this, function () {
+        run_action($this, function (): void {
             app(UpdateLoadBalancer::class)->update($this->site, [
                 'method' => $this->method,
                 'servers' => $this->servers,

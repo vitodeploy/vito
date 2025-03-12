@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('servers', function (Blueprint $table) {
+        Schema::table('servers', function (Blueprint $table): void {
             $table->integer('updates')->default(0);
             $table->timestamp('last_update_check')->nullable();
         });
@@ -16,7 +16,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('servers', function (Blueprint $table) {
+        Schema::table('servers', function (Blueprint $table): void {
             $table->dropColumn('updates');
             $table->dropColumn('last_update_check');
         });

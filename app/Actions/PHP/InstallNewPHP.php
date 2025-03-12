@@ -10,6 +10,9 @@ use Illuminate\Validation\Rule;
 
 class InstallNewPHP
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function install(Server $server, array $input): void
     {
         $php = new Service([
@@ -26,15 +29,18 @@ class InstallNewPHP
         ]);
         $php->save();
 
-        dispatch(function () use ($php) {
+        dispatch(function () use ($php): void {
             $php->handler()->install();
             $php->status = ServiceStatus::READY;
             $php->save();
-        })->catch(function () use ($php) {
+        })->catch(function () use ($php): void {
             $php->delete();
         })->onConnection('ssh');
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Server $server): array
     {
         return [

@@ -7,6 +7,7 @@ use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\Models\User;
 use App\Web\Pages\Settings\SourceControls\Actions\Create;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
@@ -41,6 +42,9 @@ class Index extends \App\Web\Pages\Servers\Page
 
     protected function getHeaderActions(): array
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return [
             Action::make('read-the-docs')
                 ->label('Read the Docs')
@@ -51,17 +55,17 @@ class Index extends \App\Web\Pages\Servers\Page
             Action::make('create')
                 ->label('Create a Site')
                 ->icon('heroicon-o-plus')
-                ->authorize(fn () => auth()->user()?->can('create', [Site::class, $this->server]))
+                ->authorize(fn () => $user->can('create', [Site::class, $this->server]))
                 ->modalWidth(MaxWidth::FiveExtraLarge)
                 ->slideOver()
                 ->form([
                     Select::make('type')
                         ->label('Site Type')
                         ->options(
-                            collect(config('core.site_types'))->mapWithKeys(fn ($type) => [$type => $type])
+                            collect((array) config('core.site_types'))->mapWithKeys(fn ($type) => [$type => $type])
                         )
                         ->reactive()
-                        ->afterStateUpdated(function (?string $state, Set $set) {
+                        ->afterStateUpdated(function (?string $state, Set $set): void {
                             if ($state === SiteType::LARAVEL) {
                                 $set('web_directory', 'public');
                             } else {
@@ -78,12 +82,12 @@ class Index extends \App\Web\Pages\Servers\Page
                     Select::make('php_version')
                         ->label('PHP Version')
                         ->options(collect($this->server->installedPHPVersions())->mapWithKeys(fn ($version) => [$version => $version]))
-                        ->visible(fn (Get $get) => isset(CreateSite::rules($this->server, $get())['php_version']))
+                        ->visible(fn (Get $get): bool => isset(CreateSite::rules($this->server, $get())['php_version']))
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['php_version']),
                     TextInput::make('web_directory')
                         ->placeholder('For / leave empty')
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['web_directory'])
-                        ->visible(fn (Get $get) => isset(CreateSite::rules($this->server, $get())['web_directory']))
+                        ->visible(fn (Get $get): bool => isset(CreateSite::rules($this->server, $get())['web_directory']))
                         ->helperText(
                             sprintf(
                                 'The relative path of your website from /home/%s/your-domain/',
@@ -94,7 +98,7 @@ class Index extends \App\Web\Pages\Servers\Page
                         ->label('Source Control')
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['source_control'])
                         ->options(
-                            SourceControl::getByProjectId(auth()->user()->current_project_id)
+                            SourceControl::getByProjectId($user->current_project_id)
                                 ->pluck('profile', 'id')
                         )
                         ->suffixAction(
@@ -105,24 +109,24 @@ class Index extends \App\Web\Pages\Servers\Page
                                 ->icon('heroicon-o-wifi')
                                 ->tooltip('Connect to a source control')
                                 ->modalWidth(MaxWidth::Large)
-                                ->authorize(fn () => auth()->user()->can('create', SourceControl::class))
+                                ->authorize(fn () => $user->can('create', SourceControl::class))
                                 ->action(fn (array $data) => Create::action($data))
                         )
                         ->placeholder('Select source control')
                         ->live()
-                        ->visible(fn (Get $get) => isset(CreateSite::rules($this->server, $get())['source_control'])),
+                        ->visible(fn (Get $get): bool => isset(CreateSite::rules($this->server, $get())['source_control'])),
                     TextInput::make('repository')
                         ->placeholder('organization/repository')
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['repository'])
-                        ->visible(fn (Get $get) => isset(CreateSite::rules($this->server, $get())['repository'])),
+                        ->visible(fn (Get $get): bool => isset(CreateSite::rules($this->server, $get())['repository'])),
                     TextInput::make('branch')
                         ->placeholder('main')
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['branch'])
-                        ->visible(fn (Get $get) => isset(CreateSite::rules($this->server, $get())['branch'])),
+                        ->visible(fn (Get $get): bool => isset(CreateSite::rules($this->server, $get())['branch'])),
                     Checkbox::make('composer')
                         ->label('Run `composer install --no-dev`')
                         ->default(false)
-                        ->visible(fn (Get $get) => isset(CreateSite::rules($this->server, $get())['composer'])),
+                        ->visible(fn (Get $get): bool => isset(CreateSite::rules($this->server, $get())['composer'])),
                     // PHPMyAdmin
                     Select::make('version')
                         ->label('PHPMyAdmin Version')
@@ -130,7 +134,7 @@ class Index extends \App\Web\Pages\Servers\Page
                         ->options([
                             '5.2.1' => '5.2.1',
                         ])
-                        ->visible(fn (Get $get) => $get('type') === SiteType::PHPMYADMIN)
+                        ->visible(fn (Get $get): bool => $get('type') === SiteType::PHPMYADMIN)
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['version']),
                     // WordPress
                     $this->wordpressFields(),
@@ -142,7 +146,7 @@ class Index extends \App\Web\Pages\Servers\Page
                             collect(LoadBalancerMethod::all())
                                 ->mapWithKeys(fn ($method) => [$method => $method])
                         )
-                        ->visible(fn (Get $get) => $get('type') === SiteType::LOAD_BALANCER)
+                        ->visible(fn (Get $get): bool => $get('type') === SiteType::LOAD_BALANCER)
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['method'] ?? []),
                     // User
                     TextInput::make('user')
@@ -153,7 +157,7 @@ class Index extends \App\Web\Pages\Servers\Page
                         )
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['user']),
                 ])
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     $this->authorize('create', [Site::class, $this->server]);
 
                     $this->validate();
@@ -178,9 +182,12 @@ class Index extends \App\Web\Pages\Servers\Page
 
     private function wordpressFields(): Component
     {
+        /** @var User */
+        $user = auth()->user();
+
         return Grid::make()
             ->columns(3)
-            ->visible(fn (Get $get) => $get('type') === SiteType::WORDPRESS)
+            ->visible(fn (Get $get): bool => $get('type') === SiteType::WORDPRESS)
             ->schema([
                 TextInput::make('title')
                     ->label('Site Title')
@@ -188,7 +195,7 @@ class Index extends \App\Web\Pages\Servers\Page
                     ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['title']),
                 TextInput::make('email')
                     ->label('WP Admin Email')
-                    ->default(auth()->user()?->email)
+                    ->default($user->email)
                     ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['email']),
                 TextInput::make('username')
                     ->label('WP Admin Username')

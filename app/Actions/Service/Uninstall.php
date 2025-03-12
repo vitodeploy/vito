@@ -20,10 +20,10 @@ class Uninstall
         $service->status = ServiceStatus::UNINSTALLING;
         $service->save();
 
-        dispatch(function () use ($service) {
+        dispatch(function () use ($service): void {
             $service->handler()->uninstall();
             $service->delete();
-        })->catch(function () use ($service) {
+        })->catch(function () use ($service): void {
             $service->status = ServiceStatus::FAILED;
             $service->save();
         })->onConnection('ssh');

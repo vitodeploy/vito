@@ -5,6 +5,7 @@ namespace App\Actions\SSL;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Models\ServerLog;
+use App\Models\Service;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\SSH\Services\Webserver\Webserver;
@@ -14,6 +15,8 @@ use Illuminate\Validation\ValidationException;
 class CreateSSL
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function create(Site $site, array $input): void
@@ -40,19 +43,25 @@ class CreateSSL
         $ssl->log_id = ServerLog::log($site->server, 'create-ssl', '', $site)->id;
         $ssl->save();
 
-        dispatch(function () use ($site, $ssl) {
+        dispatch(function () use ($site, $ssl): void {
+            /** @var Service $service */
+            $service = $site->server->webserver();
             /** @var Webserver $webserver */
-            $webserver = $site->server->webserver()->handler();
+            $webserver = $service->handler();
             $webserver->setupSSL($ssl);
             $ssl->status = SslStatus::CREATED;
             $ssl->save();
             $webserver->updateVHost($site);
-        })->catch(function () use ($ssl) {
+        })->catch(function () use ($ssl): void {
             $ssl->status = SslStatus::FAILED;
             $ssl->save();
         })->onConnection('ssh');
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(array $input): array
     {
         $rules = [

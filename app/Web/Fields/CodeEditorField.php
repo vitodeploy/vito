@@ -12,6 +12,9 @@ class CodeEditorField extends Field
 
     public bool $readonly = false;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getOptions(): array
     {
         return [

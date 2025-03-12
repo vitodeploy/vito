@@ -47,11 +47,11 @@ class Index extends Page
                 ->openUrlInNewTab(),
             Action::make('force-ssl')
                 ->label('Force SSL')
-                ->tooltip(fn () => $this->site->force_ssl ? 'Disable force SSL' : 'Enable force SSL')
-                ->icon(fn () => $this->site->force_ssl ? 'icon-force-ssl-enabled' : 'icon-force-ssl-disabled')
+                ->tooltip(fn (): string => $this->site->force_ssl ? 'Disable force SSL' : 'Enable force SSL')
+                ->icon(fn (): string => $this->site->force_ssl ? 'icon-force-ssl-enabled' : 'icon-force-ssl-disabled')
                 ->requiresConfirmation()
-                ->modalSubmitActionLabel(fn () => $this->site->force_ssl ? 'Disable' : 'Enable')
-                ->action(function () {
+                ->modalSubmitActionLabel(fn (): string => $this->site->force_ssl ? 'Disable' : 'Enable')
+                ->action(function (): void {
                     $this->site->update([
                         'force_ssl' => ! $this->site->force_ssl,
                     ]);
@@ -72,34 +72,34 @@ class Index extends Page
                         ->message('Let\'s Encrypt has rate limits. Read more about them <a href="https://letsencrypt.org/docs/rate-limits/" target="_blank" class="underline">here</a>.'),
                     Select::make('type')
                         ->options(
-                            collect(config('core.ssl_types'))->mapWithKeys(fn ($type) => [$type => $type])
+                            collect((array) config('core.ssl_types'))->mapWithKeys(fn ($type) => [$type => $type])
                         )
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['type'])
                         ->reactive(),
                     TextInput::make('email')
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['email'] ?? [])
-                        ->visible(fn (Get $get) => $get('type') === SslType::LETSENCRYPT)
+                        ->visible(fn (Get $get): bool => $get('type') === SslType::LETSENCRYPT)
                         ->helperText('Email address to provide to Certbot.'),
                     Textarea::make('certificate')
                         ->rows(5)
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['certificate'])
-                        ->visible(fn (Get $get) => $get('type') === SslType::CUSTOM),
+                        ->visible(fn (Get $get): bool => $get('type') === SslType::CUSTOM),
                     Textarea::make('private')
                         ->label('Private Key')
                         ->rows(5)
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['private'])
-                        ->visible(fn (Get $get) => $get('type') === SslType::CUSTOM),
+                        ->visible(fn (Get $get): bool => $get('type') === SslType::CUSTOM),
                     DatePicker::make('expires_at')
                         ->format('Y-m-d')
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['expires_at'])
-                        ->visible(fn (Get $get) => $get('type') === SslType::CUSTOM),
+                        ->visible(fn (Get $get): bool => $get('type') === SslType::CUSTOM),
                     Checkbox::make('aliases')
                         ->label("Set SSL for site's aliases as well"),
                 ])
                 ->createAnother(false)
                 ->modalWidth(MaxWidth::Large)
-                ->using(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->using(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(CreateSSL::class)->create($this->site, $data);
 
                         $this->dispatch('$refresh');

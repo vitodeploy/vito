@@ -61,7 +61,9 @@ class ServerController extends Controller
 
         $this->validate($request, CreateServer::rules($project, $request->input()));
 
-        $server = app(CreateServer::class)->create(auth()->user(), $project, $request->all());
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $server = app(CreateServer::class)->create($user, $project, $request->all());
 
         return new ServerResource($server);
     }
@@ -81,7 +83,7 @@ class ServerController extends Controller
     #[Post('{server}/reboot', name: 'api.projects.servers.reboot', middleware: 'ability:write')]
     #[Endpoint(title: 'reboot', description: 'Reboot a server.')]
     #[Response(status: 204)]
-    public function reboot(Project $project, Server $server)
+    public function reboot(Project $project, Server $server): \Illuminate\Http\Response
     {
         $this->authorize('update', [$server, $project]);
 
@@ -95,7 +97,7 @@ class ServerController extends Controller
     #[Post('{server}/upgrade', name: 'api.projects.servers.upgrade', middleware: 'ability:write')]
     #[Endpoint(title: 'upgrade', description: 'Upgrade server.')]
     #[Response(status: 204)]
-    public function upgrade(Project $project, Server $server)
+    public function upgrade(Project $project, Server $server): \Illuminate\Http\Response
     {
         $this->authorize('update', [$server, $project]);
 
@@ -109,7 +111,7 @@ class ServerController extends Controller
     #[Delete('{server}', name: 'api.projects.servers.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete server.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server)
+    public function delete(Project $project, Server $server): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$server, $project]);
 

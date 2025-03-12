@@ -20,6 +20,9 @@ class MetricDetails extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;

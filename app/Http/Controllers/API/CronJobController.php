@@ -73,7 +73,7 @@ class CronJobController extends Controller
     #[Delete('{cronJob}', name: 'api.projects.servers.cron-jobs.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete cron job.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, CronJob $cronJob)
+    public function delete(Project $project, Server $server, CronJob $cronJob): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$cronJob, $server]);
 

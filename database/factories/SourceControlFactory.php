@@ -6,6 +6,9 @@ use App\Models\SourceControl;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
+/**
+ * @extends Factory<\App\Models\SourceControl>
+ */
 class SourceControlFactory extends Factory
 {
     protected $model = SourceControl::class;
@@ -20,30 +23,33 @@ class SourceControlFactory extends Factory
         ];
     }
 
+    /**
+     * @return Factory<\App\Models\SourceControl>
+     */
     public function gitlab(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'provider' => \App\Enums\SourceControl::GITLAB,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'provider' => \App\Enums\SourceControl::GITLAB,
+        ]);
     }
 
+    /**
+     * @return Factory<\App\Models\SourceControl>
+     */
     public function github(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'provider' => \App\Enums\SourceControl::GITHUB,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'provider' => \App\Enums\SourceControl::GITHUB,
+        ]);
     }
 
+    /**
+     * @return Factory<\App\Models\SourceControl>
+     */
     public function bitbucket(): Factory
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'provider' => \App\Enums\SourceControl::BITBUCKET,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'provider' => \App\Enums\SourceControl::BITBUCKET,
+        ]);
     }
 }

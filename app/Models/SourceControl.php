@@ -11,15 +11,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $provider
- * @property array $provider_data
- * @property ?string $profile
+ * @property array<string, string> $provider_data
+ * @property string $profile
  * @property ?string $url
  * @property string $access_token
  * @property ?int $project_id
  */
 class SourceControl extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\SourceControlFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -41,28 +43,43 @@ class SourceControl extends AbstractModel
     {
         $providerClass = config('core.source_control_providers_class')[$this->provider];
 
-        return new $providerClass($this);
+        /** @var SourceControlProvider $provider */
+        $provider = new $providerClass($this);
+
+        return $provider;
     }
 
-    public function getRepo(?string $repo = null): ?array
+    public function getRepo(string $repo): mixed
     {
         return $this->provider()->getRepo($repo);
     }
 
+    /**
+     * @return HasMany<Site, covariant $this>
+     */
     public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
     }
 
+    /**
+     * @return BelongsTo<Project, covariant $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return Builder<SourceControl>
+     */
     public static function getByProjectId(int $projectId): Builder
     {
-        return self::query()
-            ->where(function (Builder $query) use ($projectId) {
+        /** @var Builder<SourceControl> $query */
+        $query = static::query();
+
+        return $query
+            ->where(function (Builder $query) use ($projectId): void {
                 $query->where('project_id', $projectId)->orWhereNull('project_id');
             });
     }

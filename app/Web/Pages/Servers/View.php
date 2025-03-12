@@ -18,7 +18,10 @@ class View extends Page
 
     public function mount(): void
     {
-        $this->authorize('view', [$this->server, auth()->user()->currentProject]);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $this->authorize('view', [$this->server, $user->currentProject]);
         $this->previousStatus = $this->server->status;
     }
 
@@ -36,6 +39,9 @@ class View extends Page
 
     public function getWidgets(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $widgets = [];
 
         if ($this->server->isInstalling()) {
@@ -44,7 +50,7 @@ class View extends Page
             $widgets[] = [ServerStats::class, ['server' => $this->server]];
         }
 
-        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
+        if ($user->can('viewAny', [ServerLog::class, $this->server])) {
             $widgets[] = [
                 LogsList::class, [
                     'server' => $this->server,

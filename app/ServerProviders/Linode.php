@@ -47,7 +47,7 @@ class Linode extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(?array $credentials = null): bool
+    public function connect(array $credentials): bool
     {
         try {
             $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
@@ -65,21 +65,23 @@ class Linode extends AbstractProvider
     public function plans(?string $region): array
     {
         try {
+            /** @var array<string, mixed> $plans */
             $plans = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/linode/types')
                 ->json();
 
-            return collect($plans['data'])
-                ->mapWithKeys(function ($value) {
-                    return [
-                        $value['id'] => __('server_providers.plan', [
-                            'name' => $value['label'],
-                            'cpu' => $value['vcpus'],
-                            'memory' => $value['memory'],
-                            'disk' => $value['disk'],
-                        ]),
-                    ];
-                })
+            /** @var array<int, array<string, mixed>> $plansData */
+            $plansData = $plans['data'];
+
+            return collect($plansData)
+                ->mapWithKeys(fn (array $value) => [
+                    $value['id'] => __('server_providers.plan', [
+                        'name' => $value['label'],
+                        'cpu' => $value['vcpus'],
+                        'memory' => $value['memory'],
+                        'disk' => $value['disk'],
+                    ]),
+                ])
                 ->toArray();
         } catch (Exception) {
             return [];
@@ -89,12 +91,16 @@ class Linode extends AbstractProvider
     public function regions(): array
     {
         try {
+            /** @var array<string, mixed> $regions */
             $regions = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/regions')
                 ->json();
 
-            return collect($regions['data'])
-                ->mapWithKeys(fn ($value) => [$value['id'] => $value['label']])
+            /** @var array<int, array<string, mixed>> $regionsData */
+            $regionsData = $regions['data'];
+
+            return collect($regionsData)
+                ->mapWithKeys(fn (array $value) => [$value['id'] => $value['label']])
                 ->toArray();
         } catch (Exception) {
             return [];

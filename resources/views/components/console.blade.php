@@ -112,8 +112,9 @@
         <form class="flex items-center justify-between">
             <x-filament::input.wrapper>
                 <x-filament::input.select id="user" name="user" x-model="user" class="w-full" x-bind:disabled="running">
-                    <option value="root">root</option>
-                    <option value="{{ $server->ssh_user }}">{{ $server->ssh_user }}</option>
+                    @foreach ($server->getSshUsers() as $user)
+                        <option value="{{ $user }}">{{ $user }}</option>
+                    @endforeach
                 </x-filament::input.select>
             </x-filament::input.wrapper>
             <div class="flex items-center">

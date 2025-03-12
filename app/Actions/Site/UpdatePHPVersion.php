@@ -8,6 +8,9 @@ use Illuminate\Validation\Rule;
 
 class UpdatePHPVersion
 {
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Site $site): array
     {
         return [
@@ -21,6 +24,8 @@ class UpdatePHPVersion
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws SSHError
      */
     public function update(Site $site, array $input): void

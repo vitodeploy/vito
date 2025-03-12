@@ -7,6 +7,7 @@ use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\Models\User;
 use App\Web\Pages\Settings\SourceControls\Actions\Create;
 use App\Web\Pages\Settings\Tags\Actions\EditTags;
 use Filament\Forms\Components\Select;
@@ -28,6 +29,9 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
@@ -38,6 +42,9 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
 
     public function infolist(Infolist $infolist): Infolist
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return $infolist
             ->schema([
                 Section::make()
@@ -59,15 +66,15 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel(),
                         TextEntry::make('type')
                             ->extraAttributes(['class' => 'capitalize'])
-                            ->icon(fn ($state) => 'icon-'.$state)
+                            ->icon(fn ($state): string => 'icon-'.$state)
                             ->inlineLabel(),
                         TextEntry::make('tags.*')
                             ->default('No tags')
-                            ->formatStateUsing(fn ($state) => is_object($state) ? $state->name : $state)
+                            ->formatStateUsing(fn ($state) => is_object($state) && isset($state->name) ? $state->name : $state)
                             ->inlineLabel()
                             ->badge()
-                            ->color(fn ($state) => is_object($state) ? $state->color : 'gray')
-                            ->icon(fn ($state) => is_object($state) ? 'heroicon-o-tag' : '')
+                            ->color(fn ($state) => is_object($state) && isset($state->color) ? $state->color : 'gray')
+                            ->icon(fn ($state): string => is_object($state) ? 'heroicon-o-tag' : '')
                             ->suffixAction(
                                 EditTags::infolist($this->site)
                             ),
@@ -93,8 +100,8 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             ),
 
                                     ])
-                                    ->action(function (array $data) {
-                                        run_action($this, function () use ($data) {
+                                    ->action(function (array $data): void {
+                                        run_action($this, function () use ($data): void {
                                             app(UpdatePHPVersion::class)->update($this->site, $data);
 
                                             Notification::make()
@@ -108,7 +115,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                             ->inlineLabel()
                             ->badge()
                             ->default('No aliases')
-                            ->color(fn ($state) => $state == 'No aliases' ? 'gray' : 'primary')
+                            ->color(fn ($state): string => $state == 'No aliases' ? 'gray' : 'primary')
                             ->suffixAction(
                                 Action::make('edit_aliases')
                                     ->icon('heroicon-o-pencil-square')
@@ -124,8 +131,8 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             ->nestedRecursiveRules(UpdateAliases::rules()['aliases.*']),
 
                                     ])
-                                    ->action(function (array $data) {
-                                        run_action($this, function () use ($data) {
+                                    ->action(function (array $data): void {
+                                        run_action($this, function () use ($data): void {
                                             app(UpdateAliases::class)->update($this->site, $data);
 
                                             Notification::make()
@@ -152,7 +159,7 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                             ->label('Source Control')
                                             ->rules(UpdateSourceControl::rules()['source_control'])
                                             ->options(
-                                                SourceControl::getByProjectId(auth()->user()->current_project_id)
+                                                SourceControl::getByProjectId($user->current_project_id)
                                                     ->pluck('profile', 'id')
                                             )
                                             ->default($this->site->source_control_id)
@@ -164,13 +171,13 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
                                                     ->icon('heroicon-o-wifi')
                                                     ->tooltip('Connect to a source control')
                                                     ->modalWidth(MaxWidth::Large)
-                                                    ->authorize(fn () => auth()->user()->can('create', SourceControl::class))
+                                                    ->authorize(fn () => $user->can('create', SourceControl::class))
                                                     ->action(fn (array $data) => Create::action($data))
                                             )
                                             ->placeholder('Select source control'),
                                     ])
-                                    ->action(function (array $data) {
-                                        run_action($this, function () use ($data) {
+                                    ->action(function (array $data): void {
+                                        run_action($this, function () use ($data): void {
                                             app(UpdateSourceControl::class)->update($this->site, $data);
 
                                             Notification::make()

@@ -11,10 +11,10 @@ class DeleteOlderMetricsCommand extends Command
 
     protected $description = 'Delete older metrics from database';
 
-    public function handle()
+    public function handle(): void
     {
-        Service::query()->where('type', 'monitoring')->chunk(100, function ($services) {
-            $services->each(function ($service) {
+        Service::query()->where('type', 'monitoring')->chunk(100, function ($services): void {
+            $services->each(function ($service): void {
                 $this->info("Deleting older metrics for service {$service->server->name}");
                 $service
                     ->server

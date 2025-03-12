@@ -52,16 +52,21 @@ class ServerSSHKeyController extends Controller
 
         $this->validateRoute($project, $server);
 
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $sshKey = null;
         if ($request->has('key_id')) {
-            $this->validate($request, DeployKeyToServer::rules($request->user(), $server));
+            $this->validate($request, DeployKeyToServer::rules($user, $server));
 
-            $sshKey = $request->user()->sshKeys()->findOrFail($request->key_id);
+            /** @var ?SshKey $sshKey */
+            $sshKey = $user->sshKeys()->findOrFail($request->key_id);
         }
 
         if (! $sshKey) {
             $this->validate($request, CreateSshKey::rules());
-            $sshKey = app(CreateSshKey::class)->create($request->user(), $request->all());
+            /** @var SshKey $sshKey */
+            $sshKey = app(CreateSshKey::class)->create($user, $request->all());
         }
 
         app(DeployKeyToServer::class)->deploy($server, ['key_id' => $sshKey->id]);
@@ -72,7 +77,7 @@ class ServerSSHKeyController extends Controller
     #[Delete('{sshKey}', name: 'api.projects.servers.ssh-keys.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete ssh key from server.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, SshKey $sshKey)
+    public function delete(Project $project, Server $server, SshKey $sshKey): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$sshKey, $server]);
 

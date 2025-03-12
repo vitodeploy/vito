@@ -12,6 +12,9 @@ use Filament\Notifications\Notification;
 
 class Create
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(): array
     {
         return [
@@ -19,10 +22,10 @@ class Create
                 ->rules(fn ($get) => CreateTag::rules()['name']),
             Select::make('color')
                 ->prefixIcon('heroicon-s-tag')
-                ->prefixIconColor(fn (Get $get) => $get('color'))
+                ->prefixIconColor(fn (Get $get): mixed => $get('color'))
                 ->searchable()
                 ->options(
-                    collect(config('core.tag_colors'))
+                    collect((array) config('core.tag_colors'))
                         ->mapWithKeys(fn ($color) => [$color => $color])
                 )
                 ->reactive()
@@ -31,12 +34,17 @@ class Create
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     *
      * @throws Exception
      */
     public static function action(array $data): Tag
     {
         try {
-            return app(CreateTag::class)->create(auth()->user(), $data);
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+
+            return app(CreateTag::class)->create($user, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

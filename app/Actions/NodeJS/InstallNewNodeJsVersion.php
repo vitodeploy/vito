@@ -10,6 +10,9 @@ use Illuminate\Validation\Rule;
 
 class InstallNewNodeJsVersion
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function install(Server $server, array $input): void
     {
         $nodejs = new Service([
@@ -23,15 +26,18 @@ class InstallNewNodeJsVersion
         ]);
         $nodejs->save();
 
-        dispatch(function () use ($nodejs) {
+        dispatch(function () use ($nodejs): void {
             $nodejs->handler()->install();
             $nodejs->status = ServiceStatus::READY;
             $nodejs->save();
-        })->catch(function () use ($nodejs) {
+        })->catch(function () use ($nodejs): void {
             $nodejs->delete();
         })->onConnection('ssh');
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Server $server): array
     {
         return [

@@ -38,7 +38,7 @@ class Nginx extends AbstractWebserver
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasSite = $this->service->server->sites()
                         ->exists();
                     if ($hasSite) {
@@ -145,7 +145,7 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function changePHPVersion(Site $site, $version): void
+    public function changePHPVersion(Site $site, string $version): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.change-php-version', [

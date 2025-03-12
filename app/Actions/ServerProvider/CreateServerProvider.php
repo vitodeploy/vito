@@ -3,6 +3,7 @@
 namespace App\Actions\ServerProvider;
 
 use App\Models\Project;
+use App\Models\Server;
 use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\ServerProvider as ServerProviderContract;
@@ -13,11 +14,13 @@ use Illuminate\Validation\ValidationException;
 class CreateServerProvider
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     public function create(User $user, Project $project, array $input): ServerProvider
     {
-        $provider = static::getProvider($input['provider']);
+        $provider = self::getProvider($input['provider']);
 
         try {
             $provider->connect($input);
@@ -40,13 +43,19 @@ class CreateServerProvider
         return $serverProvider;
     }
 
-    private static function getProvider($name): ServerProviderContract
+    private static function getProvider(string $name): ServerProviderContract
     {
         $providerClass = config('core.server_providers_class.'.$name);
+        /** @var ServerProviderContract $provider */
+        $provider = new $providerClass(new ServerProvider, new Server);
 
-        return new $providerClass;
+        return $provider;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(array $input): array
     {
         $rules = [
@@ -60,15 +69,19 @@ class CreateServerProvider
             ],
         ];
 
-        return array_merge($rules, static::providerRules($input));
+        return array_merge($rules, self::providerRules($input));
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     private static function providerRules(array $input): array
     {
         if (! isset($input['provider'])) {
             return [];
         }
 
-        return static::getProvider($input['provider'])->credentialValidationRules($input);
+        return self::getProvider($input['provider'])->credentialValidationRules($input);
     }
 }

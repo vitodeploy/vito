@@ -5,6 +5,9 @@ namespace Database\Factories;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<\App\Models\StorageProvider>
+ */
 class StorageProviderFactory extends Factory
 {
     public function definition(): array

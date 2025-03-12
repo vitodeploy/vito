@@ -21,7 +21,7 @@ class AddUser extends Widget implements HasForms
 
     public Project $project;
 
-    public ?int $user;
+    public ?int $user = null;
 
     public function mount(Project $project): void
     {
@@ -38,7 +38,7 @@ class AddUser extends Widget implements HasForms
                         Select::make('user')
                             ->name('user')
                             ->options(fn () => User::query()
-                                ->whereNotExists(function ($query) {
+                                ->whereNotExists(function ($query): void {
                                     $query->select('user_id')
                                         ->from('user_project')
                                         ->whereColumn('users.id', 'user_project.user_id')

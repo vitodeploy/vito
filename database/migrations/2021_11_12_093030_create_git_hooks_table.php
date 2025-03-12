@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('git_hooks', function (Blueprint $table) {
+        Schema::create('git_hooks', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('site_id');
             $table->unsignedBigInteger('source_control_id');

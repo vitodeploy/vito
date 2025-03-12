@@ -5,12 +5,14 @@ namespace App\Actions\Tag;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Tag;
-use App\Models\User;
 use Illuminate\Validation\Rule;
 
 class SyncTags
 {
-    public function sync(User $user, array $input): void
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    public function sync(array $input): void
     {
         /** @var Server|Site $taggable */
         $taggable = $input['taggable_type']::findOrFail($input['taggable_id']);
@@ -20,6 +22,9 @@ class SyncTags
         $taggable->tags()->sync($tags->pluck('id'));
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(int $projectId): array
     {
         return [
