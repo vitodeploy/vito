@@ -259,8 +259,8 @@ class Site extends AbstractModel
         $webserver->changePHPVersion($this, $version);
 
         if ($this->isIsolated()) {
+            /** @var Service $php */
             $php = $this->server->php();
-            throw_if($php === null);
             /** @var PHP $phpHandler */
             $phpHandler = $php->handler();
             $phpHandler->removeFpmPool($this->user, $this->php_version, $this->id);
@@ -385,8 +385,8 @@ class Site extends AbstractModel
 
     public function webserver(): Webserver
     {
+        /** @var Service $webserver */
         $webserver = $this->server->webserver();
-        throw_if($webserver === null);
 
         /** @var Webserver $handler */
         $handler = $webserver->handler();

@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\SourceControls\Actions;
 
 use App\Actions\SourceControl\EditSourceControl;
 use App\Models\SourceControl;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
@@ -48,10 +49,8 @@ class Edit
      */
     public static function action(SourceControl $sourceControl, array $data): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->currentProject === null);
 
         try {
             app(EditSourceControl::class)->edit($sourceControl, $user->currentProject, $data);

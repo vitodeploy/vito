@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\SourceControls\Actions;
 
 use App\Actions\SourceControl\ConnectSourceControl;
 use App\Enums\SourceControl;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
@@ -60,10 +61,8 @@ class Create
      */
     public static function action(array $data): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->currentProject === null);
 
         try {
             app(ConnectSourceControl::class)->connect($user->currentProject, $data);

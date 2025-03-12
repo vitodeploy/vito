@@ -34,7 +34,7 @@ class EditSourceControl
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, array<mixed>>
+     * @return array<string, array<int, mixed>>
      */
     public static function rules(SourceControl $sourceControl, array $input): array
     {
@@ -49,7 +49,7 @@ class EditSourceControl
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, array<mixed>>
+     * @return array<string, array<int, mixed>>
      *
      * @throws ValidationException
      */

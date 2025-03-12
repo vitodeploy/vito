@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\NotificationChannels\Widgets;
 
 use App\Models\NotificationChannel;
+use App\Models\User;
 use App\Web\Pages\Settings\NotificationChannels\Actions\Edit;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\DeleteAction;
@@ -25,10 +26,8 @@ class NotificationChannelsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->current_project_id === null);
 
         return NotificationChannel::getByProjectId($user->current_project_id);
     }
@@ -58,7 +57,7 @@ class NotificationChannelsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

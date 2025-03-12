@@ -2,7 +2,6 @@
 
 namespace App\Actions\PHP;
 
-use App\Exceptions\SSHCommandError;
 use App\Models\Server;
 use App\Models\Service;
 use App\SSH\Services\PHP\PHP;
@@ -34,9 +33,6 @@ class InstallPHPExtension
         $service->save();
 
         dispatch(
-            /**
-             * @throws SSHCommandError
-             */
             function () use ($service, $input): void {
                 /** @var PHP $handler */
                 $handler = $service->handler();

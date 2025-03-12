@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\QueueStatus;
+use App\SSH\Services\ProcessManager\ProcessManager;
+use Database\Factories\QueueFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
@@ -24,7 +26,7 @@ use Throwable;
  */
 class Queue extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\QueueFactory> */
+    /** @use HasFactory<QueueFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -69,9 +71,9 @@ class Queue extends AbstractModel
 
         static::deleting(function (Queue $queue): void {
             try {
+                /** @var Service $service */
                 $service = $queue->server->processManager();
-                throw_if($service === null);
-                /** @var \App\SSH\Services\ProcessManager\ProcessManager $handler */
+                /** @var ProcessManager $handler */
                 $handler = $service->handler();
 
                 $handler->delete($queue->id, $queue->site_id);

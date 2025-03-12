@@ -14,7 +14,6 @@ class AddChannel
      * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
-     * @throws Exception
      */
     public function add(User $user, array $input): void
     {
@@ -44,7 +43,9 @@ class AddChannel
         } catch (Exception $e) {
             $channel->delete();
 
-            throw $e;
+            throw ValidationException::withMessages([
+                'provider' => $e->getMessage(),
+            ]);
         }
 
         $channel->connected = true;

@@ -4,6 +4,7 @@ namespace App\Web\Pages\Scripts\Widgets;
 
 use App\Actions\Script\EditScript;
 use App\Models\Script;
+use App\Models\User;
 use App\Web\Fields\CodeEditorField;
 use App\Web\Pages\Scripts\Executions;
 use Filament\Forms\Components\Checkbox;
@@ -28,10 +29,8 @@ class ScriptsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->current_project_id === null);
 
         return Script::getByProjectId($user->current_project_id, $user->id);
     }
@@ -57,7 +56,7 @@ class ScriptsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

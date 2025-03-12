@@ -25,17 +25,16 @@ class ExecuteScript
         ]);
         $execution->save();
 
-        if (! $execution->server) {
-            throw new \RuntimeException('Server not found');
-        }
-
         dispatch(function () use ($execution, $script): void {
+            /** @var Server $server */
+            $server = $execution->server;
+
             $content = $execution->getContent();
-            $log = ServerLog::newLog($execution->server, 'script-'.$script->id.'-'.strtotime('now'));
+            $log = ServerLog::newLog($server, 'script-'.$script->id.'-'.strtotime('now'));
             $log->save();
             $execution->server_log_id = $log->id;
             $execution->save();
-            $execution->server->os()->runScript('~/', $content, $log, $execution->user);
+            $server->os()->runScript('~/', $content, $log, $execution->user);
             $execution->status = ScriptExecutionStatus::COMPLETED;
             $execution->save();
         })->catch(function () use ($execution): void {

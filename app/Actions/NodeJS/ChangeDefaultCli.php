@@ -3,7 +3,9 @@
 namespace App\Actions\NodeJS;
 
 use App\Enums\ServiceStatus;
+use App\Exceptions\SSHError;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\NodeJS\NodeJS;
 use Illuminate\Validation\ValidationException;
 
@@ -13,14 +15,13 @@ class ChangeDefaultCli
      * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
+     * @throws SSHError
      */
     public function change(Server $server, array $input): void
     {
         $this->validate($server, $input);
+        /** @var Service $service */
         $service = $server->nodejs($input['version']);
-        if (! $service instanceof \App\Models\Service) {
-            throw new \Exception('NodeJS service not found');
-        }
         /** @var NodeJS $handler */
         $handler = $service->handler();
         $handler->setDefaultCli();

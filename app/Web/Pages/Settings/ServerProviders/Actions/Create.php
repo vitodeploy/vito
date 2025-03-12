@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\ServerProviders\Actions;
 
 use App\Actions\ServerProvider\CreateServerProvider;
 use App\Enums\ServerProvider;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
@@ -56,10 +57,8 @@ class Create
     public static function action(array $data): void
     {
         try {
-            /** @var \App\Models\User $user */
+            /** @var User $user */
             $user = auth()->user();
-
-            throw_if($user->currentProject === null);
 
             app(CreateServerProvider::class)->create($user, $user->currentProject, $data);
         } catch (Exception $e) {

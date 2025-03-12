@@ -3,6 +3,7 @@
 namespace App\Actions\SshKey;
 
 use App\Enums\SshKeyStatus;
+use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\SshKey;
 use App\Models\User;
@@ -12,6 +13,8 @@ class DeployKeyToServer
 {
     /**
      * @param  array<string, mixed>  $input
+     *
+     * @throws SSHError
      */
     public function deploy(Server $server, array $input): void
     {

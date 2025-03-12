@@ -5,6 +5,8 @@ namespace App\Web\Pages\Settings\Tags\Actions;
 use App\Actions\Tag\SyncTags;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\User;
+use Closure;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
@@ -51,10 +53,8 @@ class EditTags
      */
     private static function form(Site|Server $taggable): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->currentProject === null);
 
         return [
             Select::make('tags')
@@ -80,7 +80,7 @@ class EditTags
     /**
      * @param  Site|Server  $taggable
      */
-    private static function action(mixed $taggable): \Closure
+    private static function action(mixed $taggable): Closure
     {
         return function (array $data) use ($taggable): void {
             app(SyncTags::class)->sync([

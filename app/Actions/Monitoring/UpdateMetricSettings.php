@@ -3,6 +3,8 @@
 namespace App\Actions\Monitoring;
 
 use App\Models\Server;
+use App\Models\Service;
+use App\SSH\Services\ServiceInterface;
 
 class UpdateMetricSettings
 {
@@ -11,11 +13,9 @@ class UpdateMetricSettings
      */
     public function update(Server $server, array $input): void
     {
+        /** @var Service $service */
         $service = $server->monitoring();
-        if (! $service instanceof \App\Models\Service) {
-            throw new \Exception('Monitoring service not found');
-        }
-        /** @var \App\SSH\Services\ServiceInterface $handler */
+        /** @var ServiceInterface $handler */
         $handler = $service->handler();
         $data = $handler->data();
         $data['data_retention'] = $input['data_retention'];

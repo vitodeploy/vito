@@ -7,6 +7,7 @@ use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\Models\User;
 use App\Web\Pages\Settings\SourceControls\Actions\Create;
 use App\Web\Pages\Settings\Tags\Actions\EditTags;
 use Filament\Forms\Components\Select;
@@ -41,10 +42,8 @@ class SiteDetails extends Widget implements HasForms, HasInfolists
 
     public function infolist(Infolist $infolist): Infolist
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->current_project_id === null);
 
         return $infolist
             ->schema([

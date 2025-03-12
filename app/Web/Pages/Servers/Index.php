@@ -7,7 +7,9 @@ use App\Enums\Database;
 use App\Enums\PHP;
 use App\Enums\ServerProvider;
 use App\Enums\Webserver;
+use App\Models\Project;
 use App\Models\Server;
+use App\Models\User;
 use App\Web\Components\Page;
 use App\Web\Fields\AlertField;
 use App\Web\Fields\ProviderField;
@@ -37,7 +39,7 @@ class Index extends Page
 
     public function mount(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $this->authorize('viewAny', [Server::class, $user->currentProject]);
@@ -56,11 +58,11 @@ class Index extends Page
             'public_key' => get_public_key_content(),
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
+        /** @var Project $project */
         $project = $user->currentProject;
-        throw_if($project === null);
 
         return [
             \Filament\Actions\Action::make('read-the-docs')

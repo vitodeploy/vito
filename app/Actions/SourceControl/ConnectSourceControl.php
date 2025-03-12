@@ -40,7 +40,7 @@ class ConnectSourceControl
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, array<mixed>>
+     * @return array<string, array<int, mixed>>
      */
     public static function rules(array $input): array
     {

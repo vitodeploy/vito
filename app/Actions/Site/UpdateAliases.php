@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Models\Service;
 use App\Models\Site;
 use App\SSH\Services\Webserver\Webserver;
 use App\ValidationRules\DomainRule;
@@ -15,10 +16,8 @@ class UpdateAliases
     {
         $site->aliases = $input['aliases'] ?? [];
 
+        /** @var Service $service */
         $service = $site->server->webserver();
-        if (! $service) {
-            throw new \RuntimeException('Webserver service not found');
-        }
 
         /** @var Webserver $webserver */
         $webserver = $service->handler();
@@ -28,7 +27,7 @@ class UpdateAliases
     }
 
     /**
-     * @return array<string, array<mixed>>
+     * @return array<string, array<int, mixed>>
      */
     public static function rules(): array
     {

@@ -5,6 +5,7 @@ namespace App\Actions\SSL;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Models\ServerLog;
+use App\Models\Service;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\SSH\Services\Webserver\Webserver;
@@ -43,8 +44,8 @@ class CreateSSL
         $ssl->save();
 
         dispatch(function () use ($site, $ssl): void {
+            /** @var Service $service */
             $service = $site->server->webserver();
-            throw_if($service === null);
             /** @var Webserver $webserver */
             $webserver = $service->handler();
             $webserver->setupSSL($ssl);

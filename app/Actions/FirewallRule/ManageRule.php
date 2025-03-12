@@ -5,7 +5,9 @@ namespace App\Actions\FirewallRule;
 use App\Enums\FirewallRuleStatus;
 use App\Models\FirewallRule;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\Firewall\Firewall;
+use Exception;
 
 class ManageRule
 {
@@ -67,19 +69,17 @@ class ManageRule
     protected function applyRule(FirewallRule $rule): void
     {
         try {
+            /** @var Service $service */
             $service = $rule->server->firewall();
-            if (! $service) {
-                throw new \Exception('Firewall service not found');
-            }
             /** @var Firewall $handler */
             $handler = $service->handler();
             $handler->applyRules();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             $rule->server->firewallRules()
                 ->where('status', '!=', FirewallRuleStatus::READY)
                 ->update(['status' => FirewallRuleStatus::FAILED]);
 
-            throw $e;
+            return;
         }
 
         if ($rule->status === FirewallRuleStatus::DELETING) {

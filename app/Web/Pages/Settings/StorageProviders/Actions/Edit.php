@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\StorageProviders\Actions;
 
 use App\Actions\StorageProvider\EditStorageProvider;
 use App\Models\StorageProvider;
+use App\Models\User;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 
@@ -28,10 +29,8 @@ class Edit
      */
     public static function action(StorageProvider $provider, array $data): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->currentProject === null);
 
         app(EditStorageProvider::class)->edit($provider, $user->currentProject, $data);
     }

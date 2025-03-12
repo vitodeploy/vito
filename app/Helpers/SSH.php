@@ -27,7 +27,7 @@ class SSH
 
     protected SSH2|SFTP|null $connection = null;
 
-    protected ?string $user = null;
+    protected string $user = '';
 
     protected ?string $asUser = null;
 
@@ -76,8 +76,6 @@ class SSH
                 $this->connection = new SSH2($ip, $this->server->port);
             }
 
-            throw_if($this->user === null);
-
             $login = $this->connection->login($this->user, $this->privateKey);
 
             if (! $login) {
@@ -96,7 +94,7 @@ class SSH
      */
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        if (! $this->log instanceof \App\Models\ServerLog && $log) {
+        if (! $this->log instanceof ServerLog && $log) {
             $this->log = ServerLog::newLog($this->server, $log);
             if ($siteId !== null && $siteId !== 0) {
                 $this->log->forSite($siteId);
@@ -107,7 +105,6 @@ class SSH
         try {
             if (! $this->connection instanceof SSH2) {
                 $this->connect();
-                throw_unless($this->connection instanceof SSH2);
             }
         } catch (Throwable $e) {
             throw new SSHConnectionError($e->getMessage());
@@ -167,12 +164,10 @@ class SSH
             $this->connect(true);
         }
 
-        throw_unless($this->connection instanceof SFTP);
-        throw_if($this->user === null);
-
         $tmpName = Str::random(10).strtotime('now');
         $tempPath = home_path($this->user).'/'.$tmpName;
 
+        /** @phpstan-ignore-next-line */
         $this->connection->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
 
         $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));
@@ -226,7 +221,7 @@ class SSH
      */
     public function disconnect(): void
     {
-        if ($this->connection instanceof \phpseclib3\Net\SSH2) {
+        if ($this->connection instanceof SSH2) {
             $this->connection->disconnect();
             $this->connection = null;
         }

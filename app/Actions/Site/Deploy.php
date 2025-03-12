@@ -40,7 +40,6 @@ class Deploy
         $deployment->save();
 
         dispatch(function () use ($site, $deployment): void {
-            /** @var ServerLog $log */
             $log = ServerLog::newLog($site->server, 'deploy-'.strtotime('now'))
                 ->forSite($site);
             $log->save();

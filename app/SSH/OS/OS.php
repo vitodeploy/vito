@@ -240,9 +240,10 @@ class OS
         ]);
         $ssh->exec($command, 'run-script');
 
-        throw_unless($ssh->log instanceof ServerLog);
+        /** @var ServerLog $log */
+        $log = $ssh->log;
 
-        return $ssh->log;
+        return $log;
     }
 
     /**

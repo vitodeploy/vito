@@ -8,6 +8,7 @@ use App\Facades\Notifier;
 use App\Http\Controllers\Controller;
 use App\Models\GitHook;
 use App\Models\ServerLog;
+use App\Models\SourceControl;
 use App\Notifications\SourceControlDisconnected;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,8 +31,8 @@ class GitHookController extends Controller
             ->firstOrFail();
 
         foreach ($gitHook->actions as $action) {
+            /** @var SourceControl $sourceControl */
             $sourceControl = $gitHook->site->sourceControl;
-            throw_if($sourceControl === null);
             $webhookBranch = $sourceControl->provider()->getWebhookBranch($request->array());
             if ($action == 'deploy' && $gitHook->site->branch === $webhookBranch) {
                 try {

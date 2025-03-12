@@ -4,7 +4,9 @@ namespace App\Web\Pages\Settings\StorageProviders\Widgets;
 
 use App\Actions\StorageProvider\DeleteStorageProvider;
 use App\Models\StorageProvider;
+use App\Models\User;
 use App\Web\Pages\Settings\StorageProviders\Actions\Edit;
+use Exception;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\DeleteAction;
@@ -27,10 +29,8 @@ class StorageProvidersList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->current_project_id === null);
 
         return StorageProvider::getByProjectId($user->current_project_id);
     }
@@ -62,7 +62,7 @@ class StorageProvidersList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table
@@ -88,7 +88,7 @@ class StorageProvidersList extends Widget
                     ->using(function (array $data, StorageProvider $record): void {
                         try {
                             app(DeleteStorageProvider::class)->delete($record);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             Notification::make()
                                 ->danger()
                                 ->title($e->getMessage())

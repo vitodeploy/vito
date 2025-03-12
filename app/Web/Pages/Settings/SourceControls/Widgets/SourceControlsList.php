@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\SourceControls\Widgets;
 
 use App\Actions\SourceControl\DeleteSourceControl;
 use App\Models\SourceControl;
+use App\Models\User;
 use App\Web\Pages\Settings\SourceControls\Actions\Edit;
 use Exception;
 use Filament\Notifications\Notification;
@@ -28,10 +29,8 @@ class SourceControlsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->current_project_id === null);
 
         return SourceControl::getByProjectId($user->current_project_id);
     }
@@ -62,7 +61,7 @@ class SourceControlsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

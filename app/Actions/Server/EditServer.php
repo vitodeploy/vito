@@ -46,7 +46,7 @@ class EditServer
     }
 
     /**
-     * @return array<string, array<mixed>>
+     * @return array<string, array<int, mixed>>
      */
     public static function rules(Server $server): array
     {

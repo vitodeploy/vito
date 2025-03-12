@@ -4,16 +4,16 @@ namespace App\Actions\Database;
 
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Models\Service;
+use App\SSH\Services\Database\Database;
 
 class DeleteDatabaseUser
 {
     public function delete(Server $server, DatabaseUser $databaseUser): void
     {
+        /** @var Service $service */
         $service = $server->database();
-        if (! $service instanceof \App\Models\Service) {
-            throw new \Exception('Database service not found');
-        }
-        /** @var \App\SSH\Services\Database\Database $handler */
+        /** @var Database $handler */
         $handler = $service->handler();
         $handler->deleteUser($databaseUser->username, $databaseUser->host);
         $databaseUser->delete();

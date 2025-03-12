@@ -33,8 +33,8 @@ class ExecuteCommand
             $execution->server->os()->runScript(
                 path: $command->site->path,
                 script: $content,
-                user: $command->site->user,
                 serverLog: $log,
+                user: $command->site->user,
                 variables: $execution->variables
             );
             $execution->status = CommandExecutionStatus::COMPLETED;
@@ -49,7 +49,7 @@ class ExecuteCommand
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, string|array<mixed>>
+     * @return array<string, string|array<int, mixed>>
      */
     public static function rules(array $input): array
     {

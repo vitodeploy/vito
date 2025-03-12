@@ -4,13 +4,14 @@ namespace App\Actions\User;
 
 use App\Models\User;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class UpdateUserProfileInformation
 {
     /**
      * @param  array<string, mixed>  $input
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function update(User $user, array $input): void
     {

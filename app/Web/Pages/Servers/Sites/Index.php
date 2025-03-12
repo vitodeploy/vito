@@ -7,6 +7,7 @@ use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\Models\User;
 use App\Web\Pages\Settings\SourceControls\Actions\Create;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
@@ -41,10 +42,8 @@ class Index extends \App\Web\Pages\Servers\Page
 
     protected function getHeaderActions(): array
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->current_project_id === null);
 
         return [
             Action::make('read-the-docs')
@@ -183,7 +182,7 @@ class Index extends \App\Web\Pages\Servers\Page
 
     private function wordpressFields(): Component
     {
-        /** @var \App\Models\User */
+        /** @var User */
         $user = auth()->user();
 
         return Grid::make()

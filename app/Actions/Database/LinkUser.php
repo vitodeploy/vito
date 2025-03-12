@@ -5,6 +5,7 @@ namespace App\Actions\Database;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Models\Service;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -32,10 +33,8 @@ class LinkUser
 
         $databaseUser->databases = $input['databases'];
 
+        /** @var Service $service */
         $service = $databaseUser->server->database();
-        if (! $service) {
-            throw new \Exception('Database service not found');
-        }
 
         /** @var \App\SSH\Services\Database\Database $handler */
         $handler = $service->handler();

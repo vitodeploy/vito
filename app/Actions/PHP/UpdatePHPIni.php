@@ -4,6 +4,7 @@ namespace App\Actions\PHP;
 
 use App\Enums\PHPIniType;
 use App\Models\Server;
+use App\Models\Service;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,16 +21,13 @@ class UpdatePHPIni
      */
     public function update(Server $server, array $input): void
     {
+        /** @var Service $service */
         $service = $server->php($input['version']);
 
         $tmpName = Str::random(10).strtotime('now');
         try {
             /** @var FilesystemAdapter $storageDisk */
             $storageDisk = Storage::disk('local');
-
-            if (! $service instanceof \App\Models\Service) {
-                throw new \Exception('PHP service not found');
-            }
 
             $storageDisk->put($tmpName, $input['ini']);
             $service->server->ssh('root')->upload(

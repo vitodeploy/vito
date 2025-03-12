@@ -5,6 +5,7 @@ namespace App\Actions\Database;
 use App\Enums\BackupFileStatus;
 use App\Models\BackupFile;
 use App\Models\Database;
+use App\Models\Service;
 
 class RestoreBackup
 {
@@ -20,10 +21,8 @@ class RestoreBackup
         $backupFile->save();
 
         dispatch(function () use ($backupFile, $database): void {
+            /** @var Service $service */
             $service = $database->server->database();
-            if (! $service) {
-                throw new \Exception('Database service not found');
-            }
             /** @var \App\SSH\Services\Database\Database $databaseHandler */
             $databaseHandler = $service->handler();
             $databaseHandler->restoreBackup($backupFile, $database->name);

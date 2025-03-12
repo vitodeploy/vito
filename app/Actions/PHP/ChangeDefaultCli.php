@@ -5,6 +5,7 @@ namespace App\Actions\PHP;
 use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\PHP\PHP;
 use Illuminate\Validation\ValidationException;
 
@@ -18,10 +19,8 @@ class ChangeDefaultCli
     public function change(Server $server, array $input): void
     {
         $this->validate($server, $input);
+        /** @var Service $service */
         $service = $server->php($input['version']);
-        if (! $service instanceof \App\Models\Service) {
-            throw new \Exception('PHP service not found');
-        }
         /** @var PHP $handler */
         $handler = $service->handler();
         $handler->setDefaultCli();

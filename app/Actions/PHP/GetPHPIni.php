@@ -4,6 +4,7 @@ namespace App\Actions\PHP;
 
 use App\Enums\PHPIniType;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\PHP\PHP;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -21,13 +22,10 @@ class GetPHPIni
     {
         $this->validate($server, $input);
 
+        /** @var Service $php */
         $php = $server->php($input['version']);
 
         try {
-            if (! $php instanceof \App\Models\Service) {
-                throw new \Exception('PHP service not found');
-            }
-
             /** @var PHP $handler */
             $handler = $php->handler();
 

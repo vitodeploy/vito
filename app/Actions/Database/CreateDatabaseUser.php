@@ -5,6 +5,7 @@ namespace App\Actions\Database;
 use App\Enums\DatabaseUserStatus;
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\Database\Database;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -26,10 +27,9 @@ class CreateDatabaseUser
             'host' => (isset($input['remote']) && $input['remote']) || isset($input['host']) ? $input['host'] : 'localhost',
             'databases' => $links,
         ]);
+
+        /** @var Service $service */
         $service = $server->database();
-        if (! $service instanceof \App\Models\Service) {
-            throw new \Exception('Database service not found');
-        }
 
         /** @var Database $databaseHandler */
         $databaseHandler = $service->handler();

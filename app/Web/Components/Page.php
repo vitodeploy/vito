@@ -51,10 +51,8 @@ abstract class Page extends BasePage
 
     protected function getUser(): User
     {
-        /** @var ?\App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_unless($user, \Illuminate\Auth\AuthenticationException::class);
 
         return $user;
     }

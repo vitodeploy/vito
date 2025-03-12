@@ -5,6 +5,7 @@ namespace App\Actions\Queue;
 use App\Enums\QueueStatus;
 use App\Models\Queue;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\ProcessManager\ProcessManager;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -29,10 +30,8 @@ class EditQueue
         $queue->save();
 
         dispatch(function () use ($queue): void {
+            /** @var Service $service */
             $service = $queue->server->processManager();
-            if (! $service) {
-                throw new \Exception('Process manager service not found');
-            }
             /** @var ProcessManager $processManager */
             $processManager = $service->handler();
             $processManager->delete($queue->id, $queue->site_id);

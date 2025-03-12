@@ -5,6 +5,7 @@ namespace App\Actions\Database;
 use App\Enums\DatabaseStatus;
 use App\Models\Database;
 use App\Models\Server;
+use App\Models\Service;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -22,10 +23,8 @@ class CreateDatabase
             'name' => $input['name'],
         ]);
 
+        /** @var Service $service */
         $service = $server->database();
-        if (! $service instanceof \App\Models\Service) {
-            throw new \Exception('Database service not found');
-        }
 
         /** @var \App\SSH\Services\Database\Database $databaseHandler */
         $databaseHandler = $service->handler();

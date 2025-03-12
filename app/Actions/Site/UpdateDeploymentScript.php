@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Models\DeploymentScript;
 use App\Models\Site;
 
 class UpdateDeploymentScript
@@ -11,8 +12,8 @@ class UpdateDeploymentScript
      */
     public function update(Site $site, array $input): void
     {
+        /** @var DeploymentScript $script */
         $script = $site->deploymentScript;
-        throw_if($script === null);
         $script->content = $input['script'];
         $script->save();
     }

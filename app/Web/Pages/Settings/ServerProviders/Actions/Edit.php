@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\ServerProviders\Actions;
 
 use App\Actions\ServerProvider\EditServerProvider;
 use App\Models\ServerProvider;
+use App\Models\User;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 
@@ -28,10 +29,8 @@ class Edit
      */
     public static function action(ServerProvider $provider, array $data): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->currentProject === null);
 
         app(EditServerProvider::class)->edit($provider, $user->currentProject, $data);
     }

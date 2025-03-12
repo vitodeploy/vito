@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\Tags\Widgets;
 
 use App\Actions\Tag\DeleteTag;
 use App\Models\Tag;
+use App\Models\User;
 use App\Web\Pages\Settings\Tags\Actions\Edit;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
@@ -27,10 +28,8 @@ class TagsList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->current_project_id === null);
 
         return Tag::getByProjectId($user->current_project_id);
     }
@@ -64,7 +63,7 @@ class TagsList extends Widget
 
     private function editAction(): Action
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return EditAction::make('edit')
@@ -81,7 +80,7 @@ class TagsList extends Widget
 
     private function deleteAction(): Action
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return DeleteAction::make('delete')

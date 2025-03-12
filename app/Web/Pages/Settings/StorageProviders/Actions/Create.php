@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\StorageProviders\Actions;
 
 use App\Actions\StorageProvider\CreateStorageProvider;
 use App\Enums\StorageProvider;
+use App\Models\User;
 use App\Web\Components\Link;
 use Exception;
 use Filament\Forms\Components\Checkbox;
@@ -79,7 +80,7 @@ class Create
                 ->schema([
                     TextInput::make('key')
                         ->rules(fn ($get) => CreateStorageProvider::rules($get())['key'])
-                        ->helperText(fn ($get): \App\Web\Components\Link|string => match ($get('provider')) {
+                        ->helperText(fn ($get): Link|string => match ($get('provider')) {
                             StorageProvider::S3 => new Link(
                                 href: 'https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html',
                                 text: 'How to generate?',
@@ -106,10 +107,8 @@ class Create
      */
     public static function action(array $data): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
-
-        throw_if($user->currentProject === null);
 
         try {
             app(CreateStorageProvider::class)->create($user, $user->currentProject, $data);

@@ -6,6 +6,7 @@ use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Models\Backup;
 use App\Models\BackupFile;
+use App\Models\Service;
 use App\SSH\Services\Database\Database;
 use Illuminate\Support\Str;
 
@@ -21,10 +22,8 @@ class RunBackup
         $file->save();
 
         dispatch(function () use ($file, $backup): void {
+            /** @var Service $service */
             $service = $backup->server->database();
-            if (! $service) {
-                throw new \Exception('Database service not found');
-            }
             /** @var Database $databaseHandler */
             $databaseHandler = $service->handler();
             $databaseHandler->runBackup($file);
