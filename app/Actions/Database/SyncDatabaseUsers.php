@@ -27,7 +27,7 @@ class SyncDatabaseUsers
         foreach ($users as $user) {
             $databases = $user[2] != 'NULL' ? explode(',', $user[2]) : [];
 
-            /** @var DatabaseUser $user */
+            /** @var ?DatabaseUser $databaseUser */
             $databaseUser = $server->databaseUsers()
                 ->where('username', $user[0])
                 ->first();

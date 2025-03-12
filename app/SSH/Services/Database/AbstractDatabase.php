@@ -17,6 +17,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
      */
     protected array $systemDbs = [];
 
+    /**
+     * @var array<string>
+     */
     protected array $systemUsers = [];
 
     protected string $defaultCharset;

@@ -36,7 +36,7 @@ class SyncDatabases
     {
         $databases = $handler->getDatabases();
         foreach ($databases as $database) {
-            /** @var \App\Models\Database $db */
+            /** @var ?\App\Models\Database $db */
             $db = $server->databases()
                 ->where('name', $database[0])
                 ->first();
