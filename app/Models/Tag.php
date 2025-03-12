@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  */
 class Tag extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\TagFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -30,25 +31,40 @@ class Tag extends AbstractModel
         'project_id' => 'int',
     ];
 
+    /**
+     * @return BelongsTo<Project, covariant $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return MorphToMany<Server, covariant $this>
+     */
     public function servers(): MorphToMany
     {
         return $this->morphedByMany(Server::class, 'taggable');
     }
 
+    /**
+     * @return MorphToMany<Site, covariant $this>
+     */
     public function sites(): MorphToMany
     {
         return $this->morphedByMany(Site::class, 'taggable');
     }
 
+    /**
+     * @return Builder<Tag>
+     */
     public static function getByProjectId(int $projectId): Builder
     {
-        return self::query()
-            ->where(function (Builder $query) use ($projectId) {
+        /** @var Builder<Tag> $query */
+        $query = static::query();
+
+        return $query
+            ->where(function (Builder $query) use ($projectId): void {
                 $query->where('project_id', $projectId)->orWhereNull('project_id');
             });
     }

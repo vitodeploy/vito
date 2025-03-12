@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $server_id
  * @property int $user_id
  * @property ?int $server_log_id
- * @property array $variables
+ * @property array<mixed> $variables
  * @property string $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CommandExecution extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\CommandExecutionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -43,12 +44,18 @@ class CommandExecution extends AbstractModel
         'variables' => 'array',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         CommandExecutionStatus::EXECUTING => 'warning',
         CommandExecutionStatus::COMPLETED => 'success',
         CommandExecutionStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Command, covariant $this>
+     */
     public function command(): BelongsTo
     {
         return $this->belongsTo(Command::class);
@@ -58,7 +65,7 @@ class CommandExecution extends AbstractModel
     {
         $content = $this->command->command;
         foreach ($this->variables as $variable => $value) {
-            if (is_string($value) && ! empty($value)) {
+            if (is_string($value) && ($value !== '' && $value !== '0')) {
                 $content = str_replace('${'.$variable.'}', $value, $content);
             }
         }
@@ -66,16 +73,25 @@ class CommandExecution extends AbstractModel
         return $content;
     }
 
+    /**
+     * @return BelongsTo<ServerLog, covariant $this>
+     */
     public function serverLog(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class);
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

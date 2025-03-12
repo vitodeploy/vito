@@ -18,16 +18,13 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
-use Illuminate\Database\Eloquent\Builder;
 
 class UsersList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
-
-    protected function getTableQuery(): Builder
-    {
-        return User::query();
-    }
 
     protected function getTableColumns(): array
     {
@@ -50,56 +47,55 @@ class UsersList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
-            ->query($this->getTableQuery())
+            ->query(User::query())
             ->columns($this->getTableColumns())
             ->actions([
                 EditAction::make('edit')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->using(function ($record, array $data) {
+                    ->authorize(fn ($record) => $user->can('update', $record))
+                    ->using(function ($record, array $data): void {
                         app(UpdateUser::class)->update($record, $data);
                     })
-                    ->form(function (Form $form, $record) {
-                        return $form
-                            ->schema([
-                                TextInput::make('name')
-                                    ->rules(UpdateUser::rules($record)['name']),
-                                TextInput::make('email')
-                                    ->rules(UpdateUser::rules($record)['email']),
-                                Select::make('timezone')
-                                    ->searchable()
-                                    ->options(
-                                        collect(timezone_identifiers_list())
-                                            ->mapWithKeys(fn ($timezone) => [$timezone => $timezone])
-                                    )
-                                    ->rules(UpdateUser::rules($record)['timezone']),
-                                Select::make('role')
-                                    ->options(
-                                        collect(config('core.user_roles'))
-                                            ->mapWithKeys(fn ($role) => [$role => $role])
-                                    )
-                                    ->rules(UpdateUser::rules($record)['role']),
-                            ])
-                            ->columns(1);
-                    })
+                    ->form(fn (Form $form, $record): \Filament\Forms\Form => $form
+                        ->schema([
+                            TextInput::make('name')
+                                ->rules(UpdateUser::rules($record)['name']),
+                            TextInput::make('email')
+                                ->rules(UpdateUser::rules($record)['email']),
+                            Select::make('timezone')
+                                ->searchable()
+                                ->options(
+                                    collect(timezone_identifiers_list())
+                                        ->mapWithKeys(fn ($timezone) => [$timezone => $timezone])
+                                )
+                                ->rules(UpdateUser::rules($record)['timezone']),
+                            Select::make('role')
+                                ->options(
+                                    collect((array) config('core.user_roles'))
+                                        ->mapWithKeys(fn ($role) => [$role => $role])
+                                )
+                                ->rules(UpdateUser::rules($record)['role']),
+                        ])
+                        ->columns(1))
                     ->modalWidth(MaxWidth::Large),
                 Action::make('update-projects')
                     ->label('Projects')
                     ->icon('heroicon-o-rectangle-stack')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->form(function (Form $form, $record) {
-                        return $form
-                            ->schema([
-                                CheckboxList::make('projects')
-                                    ->options(Project::query()->pluck('name', 'id')->toArray())
-                                    ->searchable()
-                                    ->default($record->projects->pluck('id')->toArray())
-                                    ->rules(UpdateProjects::rules()['projects.*']),
-                            ])
-                            ->columns(1);
-                    })
-                    ->action(function ($record, array $data) {
+                    ->authorize(fn ($record) => $user->can('update', $record))
+                    ->form(fn (Form $form, $record): \Filament\Forms\Form => $form
+                        ->schema([
+                            CheckboxList::make('projects')
+                                ->options(Project::query()->pluck('name', 'id')->toArray())
+                                ->searchable()
+                                ->default($record->projects->pluck('id')->toArray())
+                                ->rules(UpdateProjects::rules()['projects.*']),
+                        ])
+                        ->columns(1))
+                    ->action(function ($record, array $data): void {
                         app(UpdateProjects::class)->update($record, $data);
                         Notification::make()
                             ->title('Projects Updated')
@@ -109,7 +105,7 @@ class UsersList extends Widget
                     ->modalSubmitActionLabel('Save')
                     ->modalWidth(MaxWidth::Large),
                 DeleteAction::make('delete')
-                    ->authorize(fn (User $record) => auth()->user()->can('delete', $record)),
+                    ->authorize(fn (User $record) => $user->can('delete', $record)),
             ]);
     }
 }

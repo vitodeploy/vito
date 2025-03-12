@@ -7,12 +7,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class ServerInstallationSucceed extends AbstractNotification
 {
-    protected Server $server;
-
-    public function __construct(Server $server)
-    {
-        $this->server = $server;
-    }
+    public function __construct(protected Server $server) {}
 
     public function subject(): string
     {

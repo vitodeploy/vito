@@ -21,7 +21,7 @@ trait HasTimezoneTimestamps
         return $this->getDateTimeByTimezone($this->updated_at);
     }
 
-    public function getDateTimeByTimezone(?Carbon $value = null): ?string
+    public function getDateTimeByTimezone(?Carbon $value = null): string
     {
         if ($value && auth()->user() && auth()->user()->timezone) {
             try {
@@ -30,6 +30,6 @@ trait HasTimezoneTimestamps
             }
         }
 
-        return $value;
+        return $value ?? '';
     }
 }

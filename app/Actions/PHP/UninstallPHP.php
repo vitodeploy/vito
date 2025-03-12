@@ -10,6 +10,11 @@ use Illuminate\Validation\ValidationException;
 
 class UninstallPHP
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function uninstall(Server $server, array $input): void
     {
         $this->validate($server, $input);
@@ -19,16 +24,18 @@ class UninstallPHP
         $php->status = ServiceStatus::UNINSTALLING;
         $php->save();
 
-        dispatch(function () use ($php) {
+        dispatch(function () use ($php): void {
             $php->handler()->uninstall();
             $php->delete();
-        })->catch(function () use ($php) {
+        })->catch(function () use ($php): void {
             $php->status = ServiceStatus::FAILED;
             $php->save();
         })->onConnection('ssh');
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     private function validate(Server $server, array $input): void

@@ -7,6 +7,9 @@ use App\Models\User;
 
 class EditChannel
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function edit(NotificationChannel $notificationChannel, User $user, array $input): void
     {
         $notificationChannel->fill([
@@ -16,6 +19,10 @@ class EditChannel
         $notificationChannel->save();
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, string>
+     */
     public static function rules(array $input): array
     {
         return [

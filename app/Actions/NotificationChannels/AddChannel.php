@@ -11,8 +11,9 @@ use Illuminate\Validation\ValidationException;
 class AddChannel
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
-     * @throws Exception
      */
     public function add(User $user, array $input): void
     {
@@ -42,13 +43,19 @@ class AddChannel
         } catch (Exception $e) {
             $channel->delete();
 
-            throw $e;
+            throw ValidationException::withMessages([
+                'provider' => $e->getMessage(),
+            ]);
         }
 
         $channel->connected = true;
         $channel->save();
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(array $input): array
     {
         $rules = [
@@ -59,9 +66,13 @@ class AddChannel
             'label' => 'required',
         ];
 
-        return array_merge($rules, static::providerRules($input));
+        return array_merge($rules, self::providerRules($input));
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     private static function providerRules(array $input): array
     {
         if (! isset($input['provider'])) {

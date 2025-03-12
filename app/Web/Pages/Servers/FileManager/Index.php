@@ -10,6 +10,9 @@ class Index extends Page
 
     protected static ?string $title = 'File Manager';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void

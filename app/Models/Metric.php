@@ -10,13 +10,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $id
  * @property int $server_id
- * @property float $load
- * @property float $memory_total
- * @property float $memory_used
- * @property float $memory_free
- * @property float $disk_total
- * @property float $disk_used
- * @property float $disk_free
+ * @property ?float $load
+ * @property ?float $memory_total
+ * @property ?float $memory_used
+ * @property ?float $memory_free
+ * @property ?float $disk_total
+ * @property ?float $disk_used
+ * @property ?float $disk_free
  * @property-read float|int $memory_total_in_bytes
  * @property-read float|int $memory_used_in_bytes
  * @property-read float|int $memory_free_in_bytes
@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Metric extends Model
 {
+    /** @use HasFactory<\Database\Factories\MetricFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -53,6 +54,9 @@ class Metric extends Model
         'disk_free' => 'float',
     ];
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
@@ -60,31 +64,31 @@ class Metric extends Model
 
     public function getMemoryTotalInBytesAttribute(): float|int
     {
-        return $this->memory_total * 1024;
+        return ($this->memory_total ?? 0) * 1024;
     }
 
     public function getMemoryUsedInBytesAttribute(): float|int
     {
-        return $this->memory_used * 1024;
+        return ($this->memory_used ?? 0) * 1024;
     }
 
     public function getMemoryFreeInBytesAttribute(): float|int
     {
-        return $this->memory_free * 1024;
+        return ($this->memory_free ?? 0) * 1024;
     }
 
     public function getDiskTotalInBytesAttribute(): float|int
     {
-        return $this->disk_total * (1024 * 1024);
+        return ($this->disk_total ?? 0) * (1024 * 1024);
     }
 
     public function getDiskUsedInBytesAttribute(): float|int
     {
-        return $this->disk_used * (1024 * 1024);
+        return ($this->disk_used ?? 0) * (1024 * 1024);
     }
 
     public function getDiskFreeInBytesAttribute(): float|int
     {
-        return $this->disk_free * (1024 * 1024);
+        return ($this->disk_free ?? 0) * (1024 * 1024);
     }
 }

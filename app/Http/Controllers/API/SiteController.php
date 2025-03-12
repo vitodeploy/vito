@@ -84,7 +84,7 @@ class SiteController extends Controller
     #[Delete('{site}', name: 'api.projects.servers.sites.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete site.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, Site $site)
+    public function delete(Project $project, Server $server, Site $site): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$site, $server]);
 

@@ -17,6 +17,9 @@ class Index extends Page
 
     protected static ?string $title = 'Cron Jobs';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void
@@ -64,11 +67,11 @@ class Index extends Page
                     TextInput::make('custom')
                         ->label('Custom Frequency (Cron)')
                         ->rules(fn (callable $get) => CreateCronJob::rules($get(), $this->server)['custom'])
-                        ->visible(fn (callable $get) => $get('frequency') === 'custom')
+                        ->visible(fn (callable $get): bool => $get('frequency') === 'custom')
                         ->placeholder('0 * * * *'),
                 ])
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->action(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(CreateCronJob::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');

@@ -8,6 +8,11 @@ use Illuminate\Validation\ValidationException;
 
 class EditSourceControl
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function edit(SourceControl $sourceControl, Project $project, array $input): SourceControl
     {
         $sourceControl->profile = $input['name'];
@@ -27,6 +32,10 @@ class EditSourceControl
         return $sourceControl;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<int, mixed>>
+     */
     public static function rules(SourceControl $sourceControl, array $input): array
     {
         $rules = [
@@ -35,10 +44,13 @@ class EditSourceControl
             ],
         ];
 
-        return array_merge($rules, static::providerRules($sourceControl, $input));
+        return array_merge($rules, self::providerRules($sourceControl, $input));
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<int, mixed>>
+     *
      * @throws ValidationException
      */
     private static function providerRules(SourceControl $sourceControl, array $input): array

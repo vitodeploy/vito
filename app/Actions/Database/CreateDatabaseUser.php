@@ -5,6 +5,7 @@ namespace App\Actions\Database;
 use App\Enums\DatabaseUserStatus;
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\Database\Database;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -12,6 +13,9 @@ use Illuminate\Validation\ValidationException;
 class CreateDatabaseUser
 {
     /**
+     * @param  array<string, mixed>  $input
+     * @param  array<string>  $links
+     *
      * @throws ValidationException
      */
     public function create(Server $server, array $input, array $links = []): DatabaseUser
@@ -23,8 +27,12 @@ class CreateDatabaseUser
             'host' => (isset($input['remote']) && $input['remote']) || isset($input['host']) ? $input['host'] : 'localhost',
             'databases' => $links,
         ]);
+
+        /** @var Service $service */
+        $service = $server->database();
+
         /** @var Database $databaseHandler */
-        $databaseHandler = $server->database()->handler();
+        $databaseHandler = $service->handler();
         $databaseHandler->createUser(
             $databaseUser->username,
             $databaseUser->password,
@@ -41,6 +49,9 @@ class CreateDatabaseUser
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     *
      * @throws ValidationException
      */
     public static function rules(Server $server, array $input): array

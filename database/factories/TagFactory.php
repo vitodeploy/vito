@@ -6,6 +6,9 @@ use App\Models\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<\App\Models\Tag>
+ */
 class TagFactory extends Factory
 {
     protected $model = Tag::class;

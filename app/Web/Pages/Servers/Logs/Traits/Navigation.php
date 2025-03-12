@@ -12,9 +12,12 @@ trait Navigation
 {
     public function getSecondSubNavigation(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $items = [];
 
-        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
+        if ($user->can('viewAny', [ServerLog::class, $this->server])) {
             $items[] = NavigationItem::make(Index::getNavigationLabel())
                 ->icon('heroicon-o-square-3-stack-3d')
                 ->isActiveWhen(fn () => request()->routeIs(Index::getRouteName()))

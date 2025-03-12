@@ -43,15 +43,15 @@ class Index extends Page
                 ->form([
                     Select::make('version')
                         ->options(
-                            collect(config('core.nodejs_versions'))
-                                ->filter(fn ($version) => ! in_array($version, array_merge($installedNodeVersions, [NodeJS::NONE])))
+                            collect((array) config('core.nodejs_versions'))
+                                ->filter(fn ($version): bool => ! in_array($version, array_merge($installedNodeVersions, [NodeJS::NONE])))
                                 ->mapWithKeys(fn ($version) => [$version => $version])
                                 ->toArray()
                         )
                         ->rules(InstallNewNodeJsVersion::rules($this->server)['version']),
                 ])
                 ->modalSubmitActionLabel('Install')
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     app(InstallNewNodeJsVersion::class)->install($this->server, $data);
 
                     Notification::make()

@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('sites', function (Blueprint $table): void {
             $table->boolean('force_ssl')->default(false);
         });
     }
 
     public function down(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('sites', function (Blueprint $table): void {
             $table->dropColumn('force_ssl');
         });
     }

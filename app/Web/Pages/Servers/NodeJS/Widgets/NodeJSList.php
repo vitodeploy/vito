@@ -19,8 +19,14 @@ class NodeJSList extends Widget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Service>
+     */
     protected function getTableQuery(): Builder
     {
         return Service::query()->where('type', 'nodejs')->where('server_id', $this->server->id);
@@ -39,8 +45,8 @@ class NodeJSList extends Widget
             TextColumn::make('is_default')
                 ->label('Default Cli')
                 ->badge()
-                ->color(fn (Service $service) => $service->is_default ? 'primary' : 'gray')
-                ->state(fn (Service $service) => $service->is_default ? 'Yes' : 'No')
+                ->color(fn (Service $service): string => $service->is_default ? 'primary' : 'gray')
+                ->state(fn (Service $service): string => $service->is_default ? 'Yes' : 'No')
                 ->sortable(),
             TextColumn::make('created_at')
                 ->label('Installed At')
@@ -71,7 +77,7 @@ class NodeJSList extends Widget
             ->authorize(fn (Service $nodejs) => auth()->user()?->can('update', $nodejs))
             ->label('Make Default CLI')
             ->hidden(fn (Service $service) => $service->is_default)
-            ->action(function (Service $service) {
+            ->action(function (Service $service): void {
                 try {
                     app(ChangeDefaultCli::class)->change($this->server, ['version' => $service->version]);
 
@@ -99,7 +105,7 @@ class NodeJSList extends Widget
             ->label('Uninstall')
             ->color('danger')
             ->requiresConfirmation()
-            ->action(function (Service $service) {
+            ->action(function (Service $service): void {
                 try {
                     app(Uninstall::class)->uninstall($service);
                 } catch (Exception $e) {

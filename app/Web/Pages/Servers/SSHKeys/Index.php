@@ -34,10 +34,13 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return [
             Action::make('deploy')
                 ->label('Deploy a Key')
-                ->authorize(fn () => auth()->user()?->can('createServer', [SshKey::class, $this->server]))
+                ->authorize(fn () => $user->can('createServer', [SshKey::class, $this->server]))
                 ->icon('heroicon-o-rocket-launch')
                 ->modalWidth(MaxWidth::Large)
                 ->form([
@@ -50,25 +53,25 @@ class Index extends Page
                         ->default('existing'),
                     Select::make('key_id')
                         ->label('Key')
-                        ->options(auth()->user()->sshKeys()->pluck('name', 'id')->toArray())
-                        ->visible(fn ($get) => $get('type') === 'existing')
-                        ->rules(DeployKeyToServer::rules(auth()->user(), $this->server)['key_id']),
+                        ->options($user->sshKeys()->pluck('name', 'id')->toArray())
+                        ->visible(fn ($get): bool => $get('type') === 'existing')
+                        ->rules(DeployKeyToServer::rules($user, $this->server)['key_id']),
                     TextInput::make('name')
                         ->label('Name')
-                        ->visible(fn ($get) => $get('type') === 'new')
+                        ->visible(fn ($get): bool => $get('type') === 'new')
                         ->rules(CreateSshKey::rules()['name']),
                     Textarea::make('public_key')
                         ->label('Public Key')
-                        ->visible(fn ($get) => $get('type') === 'new')
+                        ->visible(fn ($get): bool => $get('type') === 'new')
                         ->rules(CreateSshKey::rules()['public_key']),
                 ])
                 ->modalSubmitActionLabel('Deploy')
-                ->action(function (array $data) {
+                ->action(function (array $data) use ($user): void {
                     $this->validate();
 
                     try {
                         if (! isset($data['key_id'])) {
-                            $data['key_id'] = app(CreateSshKey::class)->create(auth()->user(), $data)->id;
+                            $data['key_id'] = app(CreateSshKey::class)->create($user, $data)->id;
                         }
 
                         app(DeployKeyToServer::class)->deploy($this->server, $data);

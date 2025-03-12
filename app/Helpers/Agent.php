@@ -59,11 +59,9 @@ class Agent extends MobileDetect
      */
     public function platform()
     {
-        return $this->retrieveUsingCacheOrResolve('paymently.platform', function () {
-            return $this->findDetectionRulesAgainstUserAgent(
-                $this->mergeRules(MobileDetect::getOperatingSystems(), static::$additionalOperatingSystems)
-            );
-        });
+        return $this->retrieveUsingCacheOrResolve('paymently.platform', fn () => $this->findDetectionRulesAgainstUserAgent(
+            $this->mergeRules(MobileDetect::getOperatingSystems(), static::$additionalOperatingSystems)
+        ));
     }
 
     /**
@@ -73,11 +71,9 @@ class Agent extends MobileDetect
      */
     public function browser()
     {
-        return $this->retrieveUsingCacheOrResolve('paymently.browser', function () {
-            return $this->findDetectionRulesAgainstUserAgent(
-                $this->mergeRules(static::$additionalBrowsers, MobileDetect::getBrowsers())
-            );
-        });
+        return $this->retrieveUsingCacheOrResolve('paymently.browser', fn () => $this->findDetectionRulesAgainstUserAgent(
+            $this->mergeRules(static::$additionalBrowsers, MobileDetect::getBrowsers())
+        ));
     }
 
     /**
@@ -87,7 +83,7 @@ class Agent extends MobileDetect
      */
     public function isDesktop()
     {
-        return $this->retrieveUsingCacheOrResolve('paymently.desktop', function () {
+        return $this->retrieveUsingCacheOrResolve('paymently.desktop', function (): bool {
             // Check specifically for cloudfront headers if the useragent === 'Amazon CloudFront'
             if (
                 $this->getUserAgent() === static::$cloudFrontUA
@@ -103,11 +99,16 @@ class Agent extends MobileDetect
     /**
      * Match a detection rule and return the matched key.
      *
+     * @param  array<mixed, string>  $rules
      * @return string|null
      */
     protected function findDetectionRulesAgainstUserAgent(array $rules)
     {
         $userAgent = $this->getUserAgent();
+
+        if ($userAgent === null || $userAgent === '' || $userAgent === '0') {
+            return null;
+        }
 
         foreach ($rules as $key => $regex) {
             if (empty($regex)) {
@@ -115,7 +116,7 @@ class Agent extends MobileDetect
             }
 
             if ($this->match($regex, $userAgent)) {
-                return $key ?: reset($this->matchesArray);
+                return $key !== 0 && ($key !== '' && $key !== '0') ? $key : reset($this->matchesArray);
             }
         }
 
@@ -136,7 +137,7 @@ class Agent extends MobileDetect
             return $cacheItem;
         }
 
-        return tap(call_user_func($callback), function ($result) use ($cacheKey) {
+        return tap(call_user_func($callback), function ($result) use ($cacheKey): void {
             $this->store[$cacheKey] = $result;
         });
     }
@@ -144,10 +145,10 @@ class Agent extends MobileDetect
     /**
      * Merge multiple rules into one array.
      *
-     * @param  array  $all
+     * @param  array<mixed>  $all
      * @return array<string, string>
      */
-    protected function mergeRules(...$all)
+    protected function mergeRules(...$all): array
     {
         $merged = [];
 

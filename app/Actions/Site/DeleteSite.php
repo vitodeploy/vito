@@ -3,6 +3,7 @@
 namespace App\Actions\Site;
 
 use App\Exceptions\SSHError;
+use App\Models\Service;
 use App\Models\Site;
 use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\Webserver\Webserver;
@@ -14,13 +15,18 @@ class DeleteSite
      */
     public function delete(Site $site): void
     {
+        /** @var Service $service */
+        $service = $site->server->webserver();
+
         /** @var Webserver $webserverHandler */
-        $webserverHandler = $site->server->webserver()->handler();
+        $webserverHandler = $service->handler();
         $webserverHandler->deleteSite($site);
 
         if ($site->isIsolated()) {
+            /** @var Service $phpService */
+            $phpService = $site->server->php();
             /** @var PHP $php */
-            $php = $site->server->php()->handler();
+            $php = $phpService->handler();
             $php->removeFpmPool($site->user, $site->php_version, $site->id);
 
             $os = $site->server->os();

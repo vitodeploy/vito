@@ -4,7 +4,6 @@ namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
 use App\Exceptions\SSHError;
-use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Validation\Rule;
 
 class PHPMyAdmin extends PHPSite
@@ -48,10 +47,7 @@ class PHPMyAdmin extends PHPSite
     public function install(): void
     {
         $this->isolate();
-
-        /** @var Webserver $webserver */
-        $webserver = $this->site->server->webserver()->handler();
-        $webserver->createVHost($this->site);
+        $this->site->webserver()->createVHost($this->site);
         $this->progress(30);
         app(\App\SSH\PHPMyAdmin\PHPMyAdmin::class)->install($this->site);
         $this->progress(65);

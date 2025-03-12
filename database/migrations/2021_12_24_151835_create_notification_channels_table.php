@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('notification_channels', function (Blueprint $table) {
+        Schema::create('notification_channels', function (Blueprint $table): void {
             $table->id();
             $table->string('provider');
             $table->string('label');

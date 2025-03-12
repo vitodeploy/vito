@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 
 class CanSeeProjectMiddleware
 {
+    /**
+     * @return mixed
+     */
     public function handle(Request $request, Closure $next)
     {
         /** @var User $user */

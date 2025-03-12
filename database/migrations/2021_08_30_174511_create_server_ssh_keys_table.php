@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('server_ssh_keys', function (Blueprint $table) {
+        Schema::create('server_ssh_keys', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('server_id');
             $table->unsignedBigInteger('ssh_key_id');

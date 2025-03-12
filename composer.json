@@ -25,11 +25,13 @@
         "fakerphp/faker": "^1.9.1",
         "knuckleswtf/scribe": "^4.37",
         "laradumps/laradumps": "^3.0",
+        "larastan/larastan": "^3.1",
         "laravel/pint": "^1.10",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.1",
         "phpunit/phpunit": "^10.0",
+        "rector/rector": "^2.0",
         "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {

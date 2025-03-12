@@ -12,7 +12,7 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
  * @property int $tokenable_id
  * @property string $name
  * @property string $token
- * @property array $abilities
+ * @property array<string> $abilities
  * @property Carbon $last_used_at
  * @property Carbon $created_at
  * @property Carbon $updated_at

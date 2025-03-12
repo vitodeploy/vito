@@ -13,11 +13,11 @@ class Update
     {
         $server->status = ServerStatus::UPDATING;
         $server->save();
-        dispatch(function () use ($server) {
+        dispatch(function () use ($server): void {
             $server->os()->upgrade();
             $server->checkConnection();
             $server->checkForUpdates();
-        })->catch(function () use ($server) {
+        })->catch(function () use ($server): void {
             Notifier::send($server, new ServerUpdateFailed($server));
             $server->checkConnection();
         })->onConnection('ssh');

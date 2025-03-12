@@ -6,7 +6,7 @@ use App\Facades\SSH;
 use App\SSH\Services\Database\Database;
 use Tests\TestCase;
 
-class UpdateCharsetsTest extends TestCase
+class GetCharsetsTest extends TestCase
 {
     protected static array $mysqlCharsets = [
         'armscii8' => [
@@ -46,15 +46,12 @@ class UpdateCharsetsTest extends TestCase
 
         /** @var Database $databaseHandler */
         $databaseHandler = $database->handler();
-        $databaseHandler->updateCharsets();
+        $charsets = $databaseHandler->getCharsets();
 
-        $database->refresh();
-        $this->assertEquals($expected, $database->type_data['charsets']);
+        $this->assertEquals($expected, $charsets['charsets']);
     }
 
     /**
-     * @TODO Add more test cases
-     *
      * @return array[]
      */
     public static function data(): array

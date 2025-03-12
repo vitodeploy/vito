@@ -7,6 +7,9 @@ use App\Models\User;
 
 class EditScript
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function edit(Script $script, User $user, array $input): Script
     {
         $script->name = $input['name'];
@@ -18,6 +21,9 @@ class EditScript
         return $script;
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

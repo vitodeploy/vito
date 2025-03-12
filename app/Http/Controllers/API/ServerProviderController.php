@@ -54,7 +54,9 @@ class ServerProviderController extends Controller
 
         $this->validate($request, CreateServerProvider::rules($request->all()));
 
-        $serverProvider = app(CreateServerProvider::class)->create(auth()->user(), $project, $request->all());
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $serverProvider = app(CreateServerProvider::class)->create($user, $project, $request->all());
 
         return new ServerProviderResource($serverProvider);
     }
@@ -62,7 +64,7 @@ class ServerProviderController extends Controller
     #[Get('{serverProvider}', name: 'api.projects.server-providers.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show')]
     #[ResponseFromApiResource(ServerProviderResource::class, ServerProvider::class)]
-    public function show(Project $project, ServerProvider $serverProvider)
+    public function show(Project $project, ServerProvider $serverProvider): \App\Http\Resources\ServerProviderResource
     {
         $this->authorize('view', $serverProvider);
 
@@ -76,7 +78,7 @@ class ServerProviderController extends Controller
     #[BodyParam(name: 'name', description: 'The name of the server provider.', required: true)]
     #[BodyParam(name: 'global', description: 'Accessible in all projects', enum: [true, false])]
     #[ResponseFromApiResource(ServerProviderResource::class, ServerProvider::class)]
-    public function update(Request $request, Project $project, ServerProvider $serverProvider)
+    public function update(Request $request, Project $project, ServerProvider $serverProvider): \App\Http\Resources\ServerProviderResource
     {
         $this->authorize('update', $serverProvider);
 
@@ -92,7 +94,7 @@ class ServerProviderController extends Controller
     #[Delete('{serverProvider}', name: 'api.projects.server-providers.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete')]
     #[Response(status: 204)]
-    public function delete(Project $project, ServerProvider $serverProvider)
+    public function delete(Project $project, ServerProvider $serverProvider): \Illuminate\Http\Response
     {
         $this->authorize('delete', $serverProvider);
 

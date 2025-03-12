@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('sites', function (Blueprint $table): void {
             $table->longText('ssh_key')->nullable()->after('repository');
         });
     }
 
     public function down(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('sites', function (Blueprint $table): void {
             $table->dropColumn('ssh_key');
         });
     }

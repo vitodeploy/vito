@@ -5,12 +5,16 @@ namespace App\Actions\Database;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Models\Service;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class LinkUser
 {
     /**
+     * @param  array<string, mixed>  $input
+     * @return DatabaseUser $databaseUser
+     *
      * @throws ValidationException
      */
     public function link(DatabaseUser $databaseUser, array $input): DatabaseUser
@@ -29,14 +33,20 @@ class LinkUser
 
         $databaseUser->databases = $input['databases'];
 
+        /** @var Service $service */
+        $service = $databaseUser->server->database();
+
+        /** @var \App\SSH\Services\Database\Database $handler */
+        $handler = $service->handler();
+
         // Unlink the user from all databases
-        $databaseUser->server->database()->handler()->unlink(
+        $handler->unlink(
             $databaseUser->username,
             $databaseUser->host
         );
 
         // Link the user to the selected databases
-        $databaseUser->server->database()->handler()->link(
+        $handler->link(
             $databaseUser->username,
             $databaseUser->host,
             $databaseUser->databases
@@ -49,6 +59,10 @@ class LinkUser
         return $databaseUser;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(Server $server, array $input): array
     {
         return [

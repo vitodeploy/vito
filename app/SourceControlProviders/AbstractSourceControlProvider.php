@@ -10,12 +10,7 @@ use Illuminate\Http\Client\Response;
 
 abstract class AbstractSourceControlProvider implements SourceControlProvider
 {
-    protected SourceControl $sourceControl;
-
-    public function __construct(SourceControl $sourceControl)
-    {
-        $this->sourceControl = $sourceControl;
-    }
+    public function __construct(protected SourceControl $sourceControl) {}
 
     public function createRules(array $input): array
     {

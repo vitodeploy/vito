@@ -2,23 +2,24 @@
 
 namespace App\Actions\Site;
 
+use App\Models\DeploymentScript;
 use App\Models\Site;
-use Illuminate\Validation\ValidationException;
 
 class UpdateDeploymentScript
 {
     /**
-     * @throws ValidationException
+     * @param  array<string, mixed>  $input
      */
     public function update(Site $site, array $input): void
     {
+        /** @var DeploymentScript $script */
         $script = $site->deploymentScript;
         $script->content = $input['script'];
         $script->save();
     }
 
     /**
-     * @throws ValidationException
+     * @return array<string, array<string>>
      */
     public static function rules(): array
     {

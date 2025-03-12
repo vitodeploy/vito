@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
  * @property Carbon $expires_at
  * @property string $status
  * @property Site $site
- * @property ?array $domains
+ * @property array<int, string>|string|null $domains
  * @property int $log_id
  * @property string $email
  * @property bool $is_active
@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
  */
 class Ssl extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\SslFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -58,6 +59,9 @@ class Ssl extends AbstractModel
         'is_active' => 'boolean',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         SslStatus::CREATED => 'success',
         SslStatus::CREATING => 'warning',
@@ -65,6 +69,9 @@ class Ssl extends AbstractModel
         SslStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Site, covariant $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
@@ -85,6 +92,9 @@ class Ssl extends AbstractModel
         return true;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getDomains(): array
     {
         if (! empty($this->domains) && is_array($this->domains)) {
@@ -97,6 +107,9 @@ class Ssl extends AbstractModel
         return $this->domains;
     }
 
+    /**
+     * @return BelongsTo<ServerLog, covariant $this>
+     */
     public function log(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class);

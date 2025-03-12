@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class LoadBalancerServer extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\LoadBalancerServerFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -32,6 +33,9 @@ class LoadBalancerServer extends AbstractModel
         'backup' => 'boolean',
     ];
 
+    /**
+     * @return BelongsTo<Site, covariant $this>
+     */
     public function loadBalancer(): BelongsTo
     {
         return $this->belongsTo(Site::class, 'load_balancer_id');
@@ -39,6 +43,9 @@ class LoadBalancerServer extends AbstractModel
 
     public function server(): ?Server
     {
-        return $this->loadBalancer->project->servers()->where('local_ip', $this->ip)->first();
+        /** @var ?Server $server */
+        $server = $this->loadBalancer->project->servers()->where('local_ip', $this->ip)->first();
+
+        return $server;
     }
 }

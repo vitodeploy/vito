@@ -28,7 +28,7 @@ class ManageBackupFile
         $file->status = BackupFileStatus::DELETING;
         $file->save();
 
-        dispatch(function () use ($file) {
+        dispatch(function () use ($file): void {
             $file->deleteFile();
         });
     }

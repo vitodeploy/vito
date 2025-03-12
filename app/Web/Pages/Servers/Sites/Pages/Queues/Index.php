@@ -67,8 +67,8 @@ class Index extends Page
                                 ->default(false),
                         ]),
                 ])
-                ->using(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->using(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(CreateQueue::class)->create($this->site, $data);
 
                         $this->dispatch('$refresh');

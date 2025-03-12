@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('firewall_rules', function (Blueprint $table) {
+        Schema::table('firewall_rules', function (Blueprint $table): void {
             $table->string('name')->default('Undefined')->after('id');
             $table->ipAddress('source')->default(null)->nullable()->change();
         });
@@ -31,7 +31,7 @@ return new class extends Migration
         DB::statement("UPDATE firewall_rules SET source = '0.0.0.0' WHERE source is null");
         DB::statement("UPDATE firewall_rules SET mask = '0' WHERE mask is null");
 
-        Schema::table('firewall_rules', function (Blueprint $table) {
+        Schema::table('firewall_rules', function (Blueprint $table): void {
             $table->dropColumn('name');
             $table->ipAddress('source')->default('0.0.0.0')->change();
         });
