@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $user_id
  * @property string $profile
  * @property string $provider
- * @property array $credentials
+ * @property array<string, string> $credentials
  * @property User $user
- * @property int $project_id
+ * @property ?int $project_id
  */
 class StorageProvider extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\StorageProviderFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -33,6 +34,9 @@ class StorageProvider extends AbstractModel
         'project_id' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -42,23 +46,38 @@ class StorageProvider extends AbstractModel
     {
         $providerClass = config('core.storage_providers_class')[$this->provider];
 
-        return new $providerClass($this);
+        /** @var \App\StorageProviders\StorageProvider $provider */
+        $provider = new $providerClass($this);
+
+        return $provider;
     }
 
+    /**
+     * @return HasMany<Backup, covariant $this>
+     */
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class, 'storage_id');
     }
 
+    /**
+     * @return BelongsTo<Project, covariant $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return Builder<StorageProvider>
+     */
     public static function getByProjectId(int $projectId): Builder
     {
-        return self::query()
-            ->where(function (Builder $query) use ($projectId) {
+        /** @var Builder<StorageProvider> $query */
+        $query = static::query();
+
+        return $query
+            ->where(function (Builder $query) use ($projectId): void {
                 $query->where('project_id', $projectId)->orWhereNull('project_id');
             });
     }

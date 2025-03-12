@@ -5,10 +5,16 @@ namespace App\Actions\FirewallRule;
 use App\Enums\FirewallRuleStatus;
 use App\Models\FirewallRule;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\Firewall\Firewall;
+use Exception;
 
 class ManageRule
 {
+    /**
+     * @param  array<string, mixed>  $input
+     * @return FirewallRule $rule
+     */
     public function create(Server $server, array $input): FirewallRule
     {
         $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
@@ -30,6 +36,10 @@ class ManageRule
         return $rule;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return FirewallRule $rule
+     */
     public function update(FirewallRule $rule, array $input): FirewallRule
     {
         $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
@@ -56,18 +66,20 @@ class ManageRule
         dispatch(fn () => $this->applyRule($rule));
     }
 
-    protected function applyRule($rule): void
+    protected function applyRule(FirewallRule $rule): void
     {
         try {
+            /** @var Service $service */
+            $service = $rule->server->firewall();
             /** @var Firewall $handler */
-            $handler = $rule->server->firewall()->handler();
+            $handler = $service->handler();
             $handler->applyRules();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             $rule->server->firewallRules()
                 ->where('status', '!=', FirewallRuleStatus::READY)
                 ->update(['status' => FirewallRuleStatus::FAILED]);
 
-            throw $e;
+            return;
         }
 
         if ($rule->status === FirewallRuleStatus::DELETING) {
@@ -80,6 +92,9 @@ class ManageRule
         $rule->save();
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

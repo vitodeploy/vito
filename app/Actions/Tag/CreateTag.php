@@ -9,6 +9,11 @@ use Illuminate\Validation\ValidationException;
 
 class CreateTag
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function create(User $user, array $input): Tag
     {
         $tag = Tag::query()
@@ -22,7 +27,7 @@ class CreateTag
         }
 
         $tag = new Tag([
-            'project_id' => $user->currentProject->id,
+            'project_id' => $user->currentProject?->id,
             'name' => $input['name'],
             'color' => $input['color'],
         ]);
@@ -31,6 +36,9 @@ class CreateTag
         return $tag;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function rules(): array
     {
         return [

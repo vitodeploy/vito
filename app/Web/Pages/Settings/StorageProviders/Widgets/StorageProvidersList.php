@@ -4,7 +4,9 @@ namespace App\Web\Pages\Settings\StorageProviders\Widgets;
 
 use App\Actions\StorageProvider\DeleteStorageProvider;
 use App\Models\StorageProvider;
+use App\Models\User;
 use App\Web\Pages\Settings\StorageProviders\Actions\Edit;
+use Exception;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\DeleteAction;
@@ -17,18 +19,27 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StorageProvidersList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<StorageProvider>
+     */
     protected function getTableQuery(): Builder
     {
-        return StorageProvider::getByProjectId(auth()->user()->current_project_id);
+        /** @var User $user */
+        $user = auth()->user();
+
+        return StorageProvider::getByProjectId($user->current_project_id);
     }
 
     protected function getTableColumns(): array
     {
         return [
             IconColumn::make('provider')
-                ->icon(fn (StorageProvider $record) => 'icon-'.$record->provider)
+                ->icon(fn (StorageProvider $record): string => 'icon-'.$record->provider)
                 ->tooltip(fn (StorageProvider $record) => $record->provider)
                 ->width(24),
             TextColumn::make('name')
@@ -39,10 +50,8 @@ class StorageProvidersList extends Widget
             TextColumn::make('id')
                 ->label('Global')
                 ->badge()
-                ->color(fn ($record) => $record->project_id ? 'gray' : 'success')
-                ->formatStateUsing(function (StorageProvider $record) {
-                    return $record->project_id ? 'No' : 'Yes';
-                }),
+                ->color(fn ($record): string => $record->project_id ? 'gray' : 'success')
+                ->formatStateUsing(fn (StorageProvider $record): string => $record->project_id ? 'No' : 'Yes'),
             TextColumn::make('created_at')
                 ->label('Created At')
                 ->formatStateUsing(fn ($record) => $record->created_at_by_timezone)
@@ -53,6 +62,9 @@ class StorageProvidersList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -61,24 +73,22 @@ class StorageProvidersList extends Widget
                 EditAction::make('edit')
                     ->label('Edit')
                     ->modalHeading('Edit Storage Provider')
-                    ->mutateRecordDataUsing(function (array $data, StorageProvider $record) {
-                        return [
-                            'name' => $record->profile,
-                            'global' => $record->project_id === null,
-                        ];
-                    })
+                    ->mutateRecordDataUsing(fn (array $data, StorageProvider $record): array => [
+                        'name' => $record->profile,
+                        'global' => $record->project_id === null,
+                    ])
                     ->form(Edit::form())
-                    ->authorize(fn (StorageProvider $record) => auth()->user()->can('update', $record))
+                    ->authorize(fn (StorageProvider $record) => $user->can('update', $record))
                     ->using(fn (array $data, StorageProvider $record) => Edit::action($record, $data))
                     ->modalWidth(MaxWidth::Medium),
                 DeleteAction::make('delete')
                     ->label('Delete')
                     ->modalHeading('Delete Storage Provider')
-                    ->authorize(fn (StorageProvider $record) => auth()->user()->can('delete', $record))
-                    ->using(function (array $data, StorageProvider $record) {
+                    ->authorize(fn (StorageProvider $record) => $user->can('delete', $record))
+                    ->using(function (array $data, StorageProvider $record): void {
                         try {
                             app(DeleteStorageProvider::class)->delete($record);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             Notification::make()
                                 ->danger()
                                 ->title($e->getMessage())

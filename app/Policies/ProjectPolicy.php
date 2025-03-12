@@ -14,7 +14,11 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $user->isAdmin() || $project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $project->users->contains($user);
     }
 
     public function create(User $user): bool

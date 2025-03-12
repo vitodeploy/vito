@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('ssls', function (Blueprint $table) {
+        Schema::create('ssls', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('site_id');
             $table->string('type')->default('letsencrypt');

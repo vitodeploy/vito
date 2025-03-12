@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('firewall_rules', function (Blueprint $table) {
+        Schema::create('firewall_rules', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('server_id');
             $table->string('type');

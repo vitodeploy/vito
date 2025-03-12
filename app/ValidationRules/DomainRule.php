@@ -12,7 +12,7 @@ class DomainRule implements ValidationRule
         if (! $value) {
             return;
         }
-        if (preg_match("/^(?!\-)(?:[a-zA-Z\d\-]{0,62}[a-zA-Z\d]\.){1,126}(?!\d+)[a-zA-Z\d]{1,63}$/", $value) === 1) {
+        if (preg_match("/^(?!\-)(?:[a-zA-Z\d\-]{0,62}[a-zA-Z\d]\.){1,126}(?!\d+)[a-zA-Z\d]{1,63}$/", (string) $value) === 1) {
             return;
         }
         $fail('Domain is not valid')->translate();

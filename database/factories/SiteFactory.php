@@ -6,6 +6,9 @@ use App\Enums\SiteType;
 use App\Models\Site;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<\App\Models\Site>
+ */
 class SiteFactory extends Factory
 {
     protected $model = Site::class;

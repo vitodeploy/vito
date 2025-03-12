@@ -7,10 +7,5 @@ use App\StorageProviders\StorageProvider as StorageProviderContract;
 
 abstract class AbstractStorageProvider implements StorageProviderContract
 {
-    protected StorageProvider $storageProvider;
-
-    public function __construct(StorageProvider $storageProvider)
-    {
-        $this->storageProvider = $storageProvider;
-    }
+    public function __construct(protected StorageProvider $storageProvider) {}
 }

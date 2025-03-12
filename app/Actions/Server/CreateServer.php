@@ -24,6 +24,9 @@ use Throwable;
 
 class CreateServer
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function create(User $creator, Project $project, array $input): Server
     {
         $server = new Server([
@@ -81,7 +84,7 @@ class CreateServer
 
     private function install(Server $server): void
     {
-        dispatch(function () use ($server) {
+        dispatch(function () use ($server): void {
             $maxWait = 180;
             while ($maxWait > 0) {
                 sleep(10);
@@ -102,7 +105,7 @@ class CreateServer
             ]);
             Notifier::send($server, new ServerInstallationSucceed($server));
         })
-            ->catch(function (Throwable $e) use ($server) {
+            ->catch(function (Throwable $e) use ($server): void {
                 $server->update([
                     'status' => ServerStatus::INSTALLATION_FAILED,
                 ]);
@@ -114,6 +117,10 @@ class CreateServer
             ->onConnection('ssh');
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(Project $project, array $input): array
     {
         $rules = [
@@ -129,28 +136,22 @@ class CreateServer
                 Rule::in(config('core.operating_systems')),
             ],
             'server_provider' => [
-                Rule::when(function () use ($input) {
-                    return isset($input['provider']) && $input['provider'] != ServerProvider::CUSTOM;
-                }, [
+                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] != ServerProvider::CUSTOM, [
                     'required',
-                    Rule::exists('server_providers', 'id')->where(function (Builder $query) use ($project) {
+                    Rule::exists('server_providers', 'id')->where(function (Builder $query) use ($project): void {
                         $query->where('project_id', $project->id)
                             ->orWhereNull('project_id');
                     }),
                 ]),
             ],
             'ip' => [
-                Rule::when(function () use ($input) {
-                    return isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM;
-                }, [
+                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM, [
                     'required',
                     new RestrictedIPAddressesRule,
                 ]),
             ],
             'port' => [
-                Rule::when(function () use ($input) {
-                    return isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM;
-                }, [
+                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM, [
                     'required',
                     'numeric',
                     'min:1',
@@ -162,6 +163,10 @@ class CreateServer
         return array_merge($rules, self::typeRules($input), self::providerRules($input));
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     private static function typeRules(array $input): array
     {
         if (! isset($input['type']) || ! in_array($input['type'], config('core.server_types'))) {
@@ -173,6 +178,10 @@ class CreateServer
         return $server->type()->createRules($input);
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<string>>
+     */
     private static function providerRules(array $input): array
     {
         if (

@@ -49,7 +49,7 @@ class Vultr extends AbstractProvider
     /**
      * @throws CouldNotConnectToProvider
      */
-    public function connect(?array $credentials = null): bool
+    public function connect(array $credentials): bool
     {
         try {
             $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
@@ -67,23 +67,23 @@ class Vultr extends AbstractProvider
     public function plans(?string $region): array
     {
         try {
+            /** @var array<string, mixed> $plans */
             $plans = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/plans', ['per_page' => 500])
                 ->json();
 
-            return collect($plans['plans'])->filter(function ($plan) use ($region) {
-                return in_array($region, $plan['locations']);
-            })
-                ->mapWithKeys(function ($value) {
-                    return [
-                        $value['id'] => __('server_providers.plan', [
-                            'name' => $value['type'],
-                            'cpu' => $value['vcpu_count'],
-                            'memory' => $value['ram'],
-                            'disk' => $value['disk'],
-                        ]),
-                    ];
-                })
+            /** @var array<string, mixed> $plans */
+            $plans = $plans['plans'] ?? [];
+
+            return collect($plans)->filter(fn (array $plan): bool => in_array($region, $plan['locations']))
+                ->mapWithKeys(fn (array $value) => [
+                    $value['id'] => __('server_providers.plan', [
+                        'name' => $value['type'],
+                        'cpu' => $value['vcpu_count'],
+                        'memory' => $value['ram'],
+                        'disk' => $value['disk'],
+                    ]),
+                ])
                 ->toArray();
         } catch (Exception) {
             return [];
@@ -93,11 +93,15 @@ class Vultr extends AbstractProvider
     public function regions(): array
     {
         try {
+            /** @var array<string, mixed> $regions */
             $regions = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/regions', ['per_page' => 500])
                 ->json();
 
-            return collect($regions['regions'])
+            /** @var array<string, mixed> $regions */
+            $regions = $regions['regions'] ?? [];
+
+            return collect($regions)
                 ->mapWithKeys(fn ($value) => [$value['id'] => $value['country'].' - '.$value['city']])
                 ->toArray();
         } catch (Exception) {
@@ -207,14 +211,16 @@ class Vultr extends AbstractProvider
         $version = config('core.operating_system_versions.'.$os);
 
         try {
+            /** @var array<string, mixed> $result */
             $result = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/os', ['per_page' => 500])
                 ->json();
 
-            $image = collect($result['os'])
-                ->filter(function ($os) use ($version) {
-                    return str_contains($os['name'], $version);
-                })
+            /** @var array<string, mixed> $os */
+            $os = $result['os'] ?? [];
+
+            $image = collect($os)
+                ->filter(fn (array $os): bool => str_contains((string) $os['name'], (string) $version))
                 ->where('family', 'ubuntu')
                 ->where('arch', 'x64')
                 ->first();

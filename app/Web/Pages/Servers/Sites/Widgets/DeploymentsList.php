@@ -15,13 +15,23 @@ class DeploymentsList extends Widget
 {
     public Site $site;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Deployment>
+     */
     protected function getTableQuery(): Builder
     {
         return Deployment::query()->where('site_id', $this->site->id);
     }
 
+    /**
+     * @param  Builder<Deployment>  $query
+     * @return Builder<Deployment>
+     */
     protected function applySortingToTableQuery(Builder $query): Builder
     {
         return $query->latest('created_at');
@@ -53,6 +63,9 @@ class DeploymentsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
         return $table
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
@@ -62,14 +75,12 @@ class DeploymentsList extends Widget
                     ->hiddenLabel()
                     ->tooltip('View')
                     ->icon('heroicon-o-eye')
-                    ->authorize(fn ($record) => auth()->user()->can('view', $record->log))
+                    ->authorize(fn ($record) => $user->can('view', $record->log))
                     ->modalHeading('View Log')
-                    ->modalContent(function (Deployment $record) {
-                        return view('components.console-view', [
-                            'slot' => $record->log?->getContent(),
-                            'attributes' => new ComponentAttributeBag,
-                        ]);
-                    })
+                    ->modalContent(fn (Deployment $record) => view('components.console-view', [
+                        'slot' => $record->log?->getContent(),
+                        'attributes' => new ComponentAttributeBag,
+                    ]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
                 Action::make('download')
@@ -77,7 +88,7 @@ class DeploymentsList extends Widget
                     ->tooltip('Download')
                     ->color('gray')
                     ->icon('heroicon-o-archive-box-arrow-down')
-                    ->authorize(fn ($record) => auth()->user()->can('view', $record->log))
+                    ->authorize(fn ($record) => $user->can('view', $record->log))
                     ->action(fn (Deployment $record) => $record->log?->download()),
             ]);
     }

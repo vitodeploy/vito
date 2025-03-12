@@ -16,9 +16,9 @@ class MigrateFromMysqlToSqlite extends Command
     {
         $this->info('Migrating from Mysql to SQLite...');
 
-        File::exists(storage_path('database.sqlite'))
-            ? File::delete(storage_path('database.sqlite'))
-            : null;
+        if (File::exists(storage_path('database.sqlite'))) {
+            File::delete(storage_path('database.sqlite'));
+        }
 
         File::put(storage_path('database.sqlite'), '');
 

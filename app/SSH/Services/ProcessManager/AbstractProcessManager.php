@@ -12,7 +12,7 @@ abstract class AbstractProcessManager extends AbstractService implements Process
         return [
             'type' => [
                 'required',
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $processManagerExists = $this->service->server->processManager();
                     if ($processManagerExists) {
                         $fail('You already have a process manager service on the server.');
@@ -26,7 +26,7 @@ abstract class AbstractProcessManager extends AbstractService implements Process
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasQueue = $this->service->server->queues()->exists();
                     if ($hasQueue) {
                         $fail('You have queue(s) on the server.');

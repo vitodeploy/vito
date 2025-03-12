@@ -54,7 +54,7 @@ class Index extends Page
                         ->default($this->server->monitoring()?->type_data['data_retention'] ?? 30),
                 ])
                 ->modalSubmitActionLabel('Save')
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     app(UpdateMetricSettings::class)->update($this->server, $data);
 
                     Notification::make()

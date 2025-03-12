@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('source_controls', function (Blueprint $table) {
+        Schema::table('source_controls', function (Blueprint $table): void {
             $table->string('url')->nullable()->after('provider');
         });
     }
 
     public function down(): void
     {
-        Schema::table('source_controls', function (Blueprint $table) {
+        Schema::table('source_controls', function (Blueprint $table): void {
             $table->dropColumn('url');
         });
     }

@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('sites', function (Blueprint $table): void {
             $table->unsignedBigInteger('source_control_id')->nullable()->after('source_control');
         });
     }
 
     public function down(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('sites', function (Blueprint $table): void {
             $table->dropColumn('source_control_id');
         });
     }

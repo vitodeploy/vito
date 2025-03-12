@@ -3,7 +3,6 @@
 namespace App\Web\Pages\Servers\Sites;
 
 use App\Actions\Site\DeleteSite;
-use App\SSH\Services\Webserver\Webserver;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -15,6 +14,9 @@ class Settings extends Page
 
     protected static ?string $title = 'Settings';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void
@@ -44,8 +46,8 @@ class Settings extends Page
             ->record($this->site)
             ->modalHeading('Delete Site')
             ->modalDescription('Once your site is deleted, all of its resources and data will be permanently deleted and can\'t be restored')
-            ->using(function () {
-                run_action($this, function () {
+            ->using(function (): void {
+                run_action($this, function (): void {
                     app(DeleteSite::class)->delete($this->site);
 
                     $this->redirect(Index::getUrl(['server' => $this->server]));
@@ -62,19 +64,12 @@ class Settings extends Page
             ->modalSubmitActionLabel('Save')
             ->form([
                 CodeEditorField::make('vhost')
-                    ->formatStateUsing(function () {
-                        /** @var Webserver $handler */
-                        $handler = $this->server->webserver()->handler();
-
-                        return $handler->getVhost($this->site);
-                    })
+                    ->formatStateUsing(fn (): string => $this->site->webserver()->getVhost($this->site))
                     ->rules(['required']),
             ])
-            ->action(function (array $data) {
-                run_action($this, function () use ($data) {
-                    /** @var Webserver $handler */
-                    $handler = $this->server->webserver()->handler();
-                    $handler->updateVHost($this->site, $data['vhost']);
+            ->action(function (array $data): void {
+                run_action($this, function () use ($data): void {
+                    $this->site->webserver()->updateVHost($this->site, $data['vhost']);
                     Notification::make()
                         ->success()
                         ->title('VHost updated!')

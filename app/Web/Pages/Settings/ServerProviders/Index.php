@@ -43,7 +43,7 @@ class Index extends Page
                 ->form(Actions\Create::form())
                 ->authorize('create', ServerProvider::class)
                 ->modalWidth(MaxWidth::Medium)
-                ->using(function (array $data) {
+                ->using(function (array $data): void {
                     Actions\Create::action($data);
 
                     $this->dispatch('$refresh');

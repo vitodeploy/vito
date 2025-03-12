@@ -45,7 +45,9 @@ class ProjectController extends Controller
 
         $this->validate($request, CreateProject::rules());
 
-        $project = app(CreateProject::class)->create(auth()->user(), $request->all());
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $project = app(CreateProject::class)->create($user, $request->all());
 
         return new ProjectResource($project);
     }
@@ -82,7 +84,9 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        app(DeleteProject::class)->delete(auth()->user(), $project);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        app(DeleteProject::class)->delete($user, $project);
 
         return response()->noContent();
     }

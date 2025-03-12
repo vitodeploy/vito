@@ -12,12 +12,15 @@ use Filament\Notifications\Notification;
 
 class Create
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(): array
     {
         return [
             Select::make('provider')
                 ->options(
-                    collect(config('core.notification_channels_providers'))
+                    collect((array) config('core.notification_channels_providers'))
                         ->mapWithKeys(fn ($provider) => [$provider => $provider])
                 )
                 ->live()
@@ -47,12 +50,16 @@ class Create
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     *
      * @throws Exception
      */
     public static function action(array $data): void
     {
         try {
-            app(AddChannel::class)->add(auth()->user(), $data);
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+            app(AddChannel::class)->add($user, $data);
         } catch (Exception $e) {
             Notification::make()
                 ->title($e->getMessage())

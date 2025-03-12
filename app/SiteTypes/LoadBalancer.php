@@ -5,7 +5,6 @@ namespace App\SiteTypes;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteFeature;
 use App\Exceptions\SSHError;
-use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Validation\Rule;
 
 class LoadBalancer extends AbstractSiteType
@@ -46,9 +45,7 @@ class LoadBalancer extends AbstractSiteType
     {
         $this->isolate();
 
-        /** @var Webserver $webserver */
-        $webserver = $this->site->server->webserver()->handler();
-        $webserver->createVHost($this->site);
+        $this->site->webserver()->createVHost($this->site);
     }
 
     public function edit(): void

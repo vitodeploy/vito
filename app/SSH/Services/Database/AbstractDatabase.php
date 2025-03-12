@@ -11,6 +11,9 @@ use Closure;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
+    /**
+     * @var array<string>
+     */
     protected array $systemDbs = [];
 
     protected string $defaultCharset;
@@ -21,8 +24,12 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     protected bool $removeLastRow = false;
 
+    /**
+     * @phpstan-return view-string
+     */
     protected function getScriptView(string $script): string
     {
+        /** @phpstan-ignore-next-line */
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
     }
 
@@ -31,7 +38,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         return [
             'type' => [
                 'required',
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $databaseExists = $this->service->server->database();
                     if ($databaseExists) {
                         $fail('You already have a database service on the server.');
@@ -62,7 +69,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasDatabase = $this->service->server->databases()->exists();
                     if ($hasDatabase) {
                         $fail('You have database(s) on the server.');
@@ -306,6 +313,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
                 continue;
             }
 
+            /** @var ?\App\Models\Database $db */
             $db = $this->service->server->databases()
                 ->where('name', $database[0])
                 ->first();
@@ -331,6 +339,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
         }
     }
 
+    /**
+     * @return array<array<string>>
+     */
     protected function tableToArray(string $data, bool $keepHeader = false): array
     {
         $lines = explode("\n", trim($data));
@@ -347,7 +358,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $rows = [];
         foreach ($lines as $line) {
-            $row = explode($this->separator, $line);
+            $separator = $this->separator === '' || $this->separator === '0' ? "\t" : $this->separator;
+            $row = explode($separator, $line);
             $row = array_map('trim', $row);
             $rows[] = $row;
         }

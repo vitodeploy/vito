@@ -25,6 +25,9 @@ class Index extends Page
         return auth()->user()?->can('viewAny', Tag::class) ?? false;
     }
 
+    /**
+     * @return array<int, array<int, class-string>>
+     */
     public function getWidgets(): array
     {
         return [
@@ -44,7 +47,7 @@ class Index extends Page
                 ->form(Actions\Create::form())
                 ->authorize('create', Tag::class)
                 ->modalWidth(MaxWidth::ExtraLarge)
-                ->using(function (array $data) {
+                ->using(function (array $data): void {
                     Actions\Create::action($data);
 
                     $this->dispatch('$refresh');

@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ProjectUsersList extends Widget
 {
+    /**
+     * @var array<string, string>
+     */
     protected $listeners = ['userAdded' => '$refresh'];
 
     public Project $project;
@@ -20,9 +23,12 @@ class ProjectUsersList extends Widget
         $this->project = $project;
     }
 
+    /**
+     * @return Builder<User>
+     */
     protected function getTableQuery(): Builder
     {
-        return User::query()->whereHas('projects', function (Builder $query) {
+        return User::query()->whereHas('projects', function (Builder $query): void {
             $query->where('project_id', $this->project->id);
         });
     }
@@ -46,10 +52,8 @@ class ProjectUsersList extends Widget
                 Tables\Actions\DeleteAction::make()
                     ->label('Remove')
                     ->modalHeading('Remove user from project')
-                    ->visible(function ($record) {
-                        return $this->authorize('update', $this->project)->allowed() && $record->id !== auth()->id();
-                    })
-                    ->using(function ($record) {
+                    ->visible(fn ($record): bool => $this->authorize('update', $this->project)->allowed() && $record->id !== auth()->id())
+                    ->using(function ($record): void {
                         $this->project->users()->detach($record);
                     }),
             ])

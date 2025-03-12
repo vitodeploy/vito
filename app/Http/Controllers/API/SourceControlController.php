@@ -55,7 +55,7 @@ class SourceControlController extends Controller
 
         $this->validate($request, ConnectSourceControl::rules($request->all()));
 
-        $sourceControl = app(ConnectSourceControl::class)->connect(auth()->user(), $project, $request->all());
+        $sourceControl = app(ConnectSourceControl::class)->connect($project, $request->all());
 
         return new SourceControlResource($sourceControl);
     }
@@ -63,7 +63,7 @@ class SourceControlController extends Controller
     #[Get('{sourceControl}', name: 'api.projects.source-controls.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show')]
     #[ResponseFromApiResource(SourceControlResource::class, SourceControl::class)]
-    public function show(Project $project, SourceControl $sourceControl)
+    public function show(Project $project, SourceControl $sourceControl): \App\Http\Resources\SourceControlResource
     {
         $this->authorize('view', $sourceControl);
 
@@ -81,7 +81,7 @@ class SourceControlController extends Controller
     #[BodyParam(name: 'password', description: 'The password if the provider is Bitbucket')]
     #[BodyParam(name: 'global', description: 'Accessible in all projects', enum: [true, false])]
     #[ResponseFromApiResource(SourceControlResource::class, SourceControl::class)]
-    public function update(Request $request, Project $project, SourceControl $sourceControl)
+    public function update(Request $request, Project $project, SourceControl $sourceControl): \App\Http\Resources\SourceControlResource
     {
         $this->authorize('update', $sourceControl);
 
@@ -97,7 +97,7 @@ class SourceControlController extends Controller
     #[Delete('{sourceControl}', name: 'api.projects.source-controls.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete')]
     #[Response(status: 204)]
-    public function delete(Project $project, SourceControl $sourceControl)
+    public function delete(Project $project, SourceControl $sourceControl): \Illuminate\Http\Response
     {
         $this->authorize('delete', $sourceControl);
 

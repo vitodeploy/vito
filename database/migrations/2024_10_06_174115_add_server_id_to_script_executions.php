@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('script_executions', function (Blueprint $table) {
+        Schema::table('script_executions', function (Blueprint $table): void {
             $table->unsignedInteger('server_id')->nullable();
         });
     }
 
     public function down(): void
     {
-        Schema::table('script_executions', function (Blueprint $table) {
+        Schema::table('script_executions', function (Blueprint $table): void {
             $table->dropColumn('server_id');
         });
     }

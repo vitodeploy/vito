@@ -20,6 +20,9 @@ class Index extends Page
 
     protected static ?string $title = 'Firewall';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void
@@ -34,6 +37,9 @@ class Index extends Page
         ];
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public static function getFirewallForm(?FirewallRule $record = null): array
     {
         return [
@@ -68,7 +74,7 @@ class Index extends Page
                 ->helperText('Allow connections from any source, regardless of their IP address or subnet mask.')
                 ->live(),
             TextInput::make('source')
-                ->hidden(fn (Get $get) => $get('source_any') == true)
+                ->hidden(fn (Get $get): bool => $get('source_any') == true)
                 ->label('Source')
                 ->helperText('The IP address of the source of the connection.')
                 ->rules(ManageRule::rules()['source'])
@@ -78,13 +84,13 @@ class Index extends Page
                         ->icon('heroicon-o-globe-alt')
                         ->color('primary')
                         ->tooltip('Use My IP')
-                        ->action(function ($set) {
+                        ->action(function ($set): void {
                             $ip = Request::ip();
                             $set('source', $ip);
                         })
                 ),
             TextInput::make('mask')
-                ->hidden(fn (Get $get) => $get('source_any') == true)
+                ->hidden(fn (Get $get): bool => $get('source_any') == true)
                 ->label('Mask')
                 ->default($record->mask ?? null)
                 ->helperText('The subnet mask of the source of the connection. Leave blank for a single IP address.')
@@ -110,8 +116,8 @@ class Index extends Page
                 ->modalDescription('Add a new rule to the firewall')
                 ->modalSubmitActionLabel('Create')
                 ->form(self::getFirewallForm())
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->action(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(ManageRule::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');

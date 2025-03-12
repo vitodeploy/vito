@@ -6,6 +6,9 @@ use App\Enums\DatabaseStatus;
 use App\Models\Database;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<\App\Models\Database>
+ */
 class DatabaseFactory extends Factory
 {
     protected $model = Database::class;

@@ -4,9 +4,15 @@ namespace App\Actions\User;
 
 use App\Models\User;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class UpdateUserProfileInformation
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function update(User $user, array $input): void
     {
         if ($input['email'] !== $user->email) {
@@ -20,6 +26,9 @@ class UpdateUserProfileInformation
         }
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(User $user): array
     {
         return [
@@ -33,7 +42,7 @@ class UpdateUserProfileInformation
     }
 
     /**
-     * Update the given verified user's profile information.
+     * @param  array<string, mixed>  $input
      */
     protected function updateVerifiedUser(User $user, array $input): void
     {

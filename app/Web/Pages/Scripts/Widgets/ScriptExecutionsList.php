@@ -14,15 +14,25 @@ use Illuminate\View\ComponentAttributeBag;
 
 class ScriptExecutionsList extends Widget
 {
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public Script $script;
 
+    /**
+     * @return Builder<ScriptExecution>
+     */
     protected function getTableQuery(): Builder
     {
         return ScriptExecution::query()->where('script_id', $this->script->id);
     }
 
+    /**
+     * @param  Builder<ScriptExecution>  $query
+     * @return Builder<ScriptExecution>
+     */
     protected function applyDefaultSortingToTableQuery(Builder $query): Builder
     {
         return $query->latest('created_at');
@@ -32,13 +42,11 @@ class ScriptExecutionsList extends Widget
     {
         return [
             TextColumn::make('server')
-                ->formatStateUsing(function (ScriptExecution $record) {
-                    return $record->getServer()?->name ?? 'Unknown';
-                })
-                ->url(function (ScriptExecution $record) {
+                ->formatStateUsing(fn (ScriptExecution $record) => $record->getServer()->name ?? 'Unknown')
+                ->url(function (ScriptExecution $record): ?string {
                     $server = $record->getServer();
 
-                    return $server ? View::getUrl(['server' => $server]) : null;
+                    return $server instanceof \App\Models\Server ? View::getUrl(['server' => $server]) : null;
                 })
                 ->searchable()
                 ->sortable(),
@@ -66,14 +74,12 @@ class ScriptExecutionsList extends Widget
                     ->hiddenLabel()
                     ->tooltip('Logs')
                     ->icon('heroicon-o-eye')
-                    ->authorize(fn (ScriptExecution $record) => auth()->user()->can('view', $record->serverLog))
+                    ->authorize(fn (ScriptExecution $record) => auth()->user()?->can('view', $record->serverLog))
                     ->modalHeading('View Log')
-                    ->modalContent(function (ScriptExecution $record) {
-                        return view('components.console-view', [
-                            'slot' => $record->serverLog?->getContent(),
-                            'attributes' => new ComponentAttributeBag,
-                        ]);
-                    })
+                    ->modalContent(fn (ScriptExecution $record) => view('components.console-view', [
+                        'slot' => $record->serverLog?->getContent(),
+                        'attributes' => new ComponentAttributeBag,
+                    ]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
             ]);

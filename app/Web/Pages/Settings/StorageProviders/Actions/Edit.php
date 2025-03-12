@@ -4,11 +4,15 @@ namespace App\Web\Pages\Settings\StorageProviders\Actions;
 
 use App\Actions\StorageProvider\EditStorageProvider;
 use App\Models\StorageProvider;
+use App\Models\User;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 
 class Edit
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(): array
     {
         return [
@@ -20,8 +24,14 @@ class Edit
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function action(StorageProvider $provider, array $data): void
     {
-        app(EditStorageProvider::class)->edit($provider, auth()->user()->currentProject, $data);
+        /** @var User $user */
+        $user = auth()->user();
+
+        app(EditStorageProvider::class)->edit($provider, $user->currentProject, $data);
     }
 }

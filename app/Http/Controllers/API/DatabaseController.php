@@ -72,7 +72,7 @@ class DatabaseController extends Controller
     #[Delete('{database}', name: 'api.projects.servers.databases.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete database.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, Database $database)
+    public function delete(Project $project, Server $server, Database $database): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$database, $server]);
 

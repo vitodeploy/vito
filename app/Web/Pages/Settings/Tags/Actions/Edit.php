@@ -9,6 +9,9 @@ use Filament\Forms\Components\TextInput;
 
 class Edit
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(): array
     {
         return [
@@ -17,13 +20,16 @@ class Edit
             Select::make('color')
                 ->searchable()
                 ->options(
-                    collect(config('core.tag_colors'))
+                    collect((array) config('core.tag_colors'))
                         ->mapWithKeys(fn ($color) => [$color => $color])
                 )
                 ->rules(fn ($get) => EditTag::rules()['color']),
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function action(Tag $tag, array $data): void
     {
         app(EditTag::class)->edit($tag, $data);

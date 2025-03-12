@@ -10,12 +10,9 @@ class NotificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $text;
-
-    public function __construct(string $subject, string $text)
+    public function __construct(string $subject, public string $text)
     {
         $this->subject = $subject;
-        $this->text = $text;
     }
 
     public function build(): self

@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 class FetchFiles
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws SSHError
      */
     public function fetch(User $user, Server $server, array $input): void
@@ -24,6 +26,9 @@ class FetchFiles
         );
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Server $server): array
     {
         return [

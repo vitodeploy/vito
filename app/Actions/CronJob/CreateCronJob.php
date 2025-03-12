@@ -10,6 +10,9 @@ use Illuminate\Validation\Rule;
 
 class CreateCronJob
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function create(Server $server, array $input): CronJob
     {
         $cronJob = new CronJob([
@@ -28,6 +31,10 @@ class CreateCronJob
         return $cronJob;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<mixed>>
+     */
     public static function rules(array $input, Server $server): array
     {
         $rules = [

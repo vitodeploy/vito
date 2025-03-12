@@ -21,8 +21,14 @@ class BackupsList extends Widget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Backup>
+     */
     protected function getTableQuery(): Builder
     {
         return Backup::query()->where('server_id', $this->server->id);
@@ -56,6 +62,9 @@ class BackupsList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -65,8 +74,8 @@ class BackupsList extends Widget
                     ->hiddenLabel()
                     ->icon('heroicon-o-pencil')
                     ->tooltip('Edit Configuration')
-                    ->disabled(fn (Backup $record) => ! in_array($record->status, ['running', 'failed']))
-                    ->authorize(fn (Backup $record) => auth()->user()->can('update', $record))
+                    ->disabled(fn (Backup $record): bool => ! in_array($record->status, ['running', 'failed']))
+                    ->authorize(fn (Backup $record) => $user->can('update', $record))
                     ->modelLabel('Edit Backup')
                     ->modalWidth(MaxWidth::Large)
                     ->modalSubmitActionLabel('Update')
@@ -80,7 +89,7 @@ class BackupsList extends Widget
                         TextInput::make('custom_interval')
                             ->label('Custom Interval (Cron)')
                             ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['custom_interval'])
-                            ->visible(fn (callable $get) => $get('interval') === 'custom')
+                            ->visible(fn (callable $get): bool => $get('interval') === 'custom')
                             ->default(fn (Backup $record) => $record->isCustomInterval() ? $record->interval : '')
                             ->placeholder('0 * * * *'),
                         TextInput::make('keep')
@@ -89,8 +98,8 @@ class BackupsList extends Widget
                             ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['keep'])
                             ->helperText('How many backups to keep before deleting the oldest one'),
                     ])
-                    ->action(function (Backup $backup, array $data) {
-                        run_action($this, function () use ($data, $backup) {
+                    ->action(function (Backup $backup, array $data): void {
+                        run_action($this, function () use ($data, $backup): void {
                             app(ManageBackup::class)->update($backup, $data);
 
                             $this->dispatch('$refresh');
@@ -107,8 +116,8 @@ class BackupsList extends Widget
                     ->modalHeading('Backup Files')
                     ->color('gray')
                     ->tooltip('Show backup files')
-                    ->disabled(fn (Backup $record) => ! in_array($record->status, ['running', 'failed']))
-                    ->authorize(fn (Backup $record) => auth()->user()->can('viewAny', [BackupFile::class, $record]))
+                    ->disabled(fn (Backup $record): bool => ! in_array($record->status, ['running', 'failed']))
+                    ->authorize(fn (Backup $record) => $user->can('viewAny', [BackupFile::class, $record]))
                     ->modalContent(fn (Backup $record) => view('components.dynamic-widget', [
                         'widget' => BackupFilesList::class,
                         'params' => [
@@ -124,7 +133,7 @@ class BackupsList extends Widget
                             ->label('Run Backup')
                             ->icon('heroicon-o-play')
                             ->color('primary')
-                            ->action(function (Backup $record) {
+                            ->action(function (Backup $record): void {
                                 app(RunBackup::class)->run($record);
 
                                 $this->dispatch('$refresh');
@@ -134,12 +143,12 @@ class BackupsList extends Widget
                     ->hiddenLabel()
                     ->icon('heroicon-o-trash')
                     ->modalHeading('Delete Backup & Files')
-                    ->disabled(fn (Backup $record) => ! in_array($record->status, ['running', 'failed']))
+                    ->disabled(fn (Backup $record): bool => ! in_array($record->status, ['running', 'failed']))
                     ->color('danger')
                     ->tooltip('Delete')
-                    ->authorize(fn (Backup $record) => auth()->user()->can('delete', $record))
+                    ->authorize(fn (Backup $record) => $user->can('delete', $record))
                     ->requiresConfirmation()
-                    ->action(function (Backup $record) {
+                    ->action(function (Backup $record): void {
                         app(ManageBackup::class)->delete($record);
 
                         $this->dispatch('$refresh');

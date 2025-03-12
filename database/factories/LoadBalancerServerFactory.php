@@ -6,6 +6,9 @@ use App\Models\LoadBalancerServer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<\App\Models\LoadBalancerServer>
+ */
 class LoadBalancerServerFactory extends Factory
 {
     protected $model = LoadBalancerServer::class;

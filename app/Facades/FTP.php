@@ -7,7 +7,7 @@ use FTP\Connection;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static bool|Connection connect(string $host, string $port, bool $ssl = false)
+ * @method static bool|Connection connect(string $host, int $port, bool $ssl = false)
  * @method static bool login(string $username, string $password, bool|Connection $connection)
  * @method static void close(bool|Connection $connection)
  * @method static bool passive(bool|Connection $connection, bool $passive)

@@ -11,12 +11,17 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateSourceControl
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function update(Site $site, array $input): void
     {
         $site->source_control_id = $input['source_control'];
         try {
             if ($site->sourceControl) {
-                $site->sourceControl?->getRepo($site->repository);
+                $site->sourceControl->getRepo($site->repository);
             }
         } catch (SourceControlIsNotConnected) {
             throw ValidationException::withMessages([
@@ -34,6 +39,9 @@ class UpdateSourceControl
         $site->save();
     }
 
+    /**
+     * @return array<string, array<int, mixed>>
+     */
     public static function rules(): array
     {
         return [

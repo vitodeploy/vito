@@ -141,7 +141,7 @@ class OS
      */
     public function generateSSHKey(string $name, ?Site $site = null): void
     {
-        $site->server->ssh($site->user)->exec(
+        $this->server->ssh($site?->user)->exec(
             view('ssh.os.generate-ssh-key', [
                 'name' => $name,
             ]),
@@ -155,7 +155,7 @@ class OS
      */
     public function readSSHKey(string $name, ?Site $site = null): string
     {
-        return $site->server->ssh($site->user)->exec(
+        return $this->server->ssh($site?->user)->exec(
             view('ssh.os.read-ssh-key', [
                 'name' => $name,
             ]),
@@ -218,17 +218,21 @@ class OS
     }
 
     /**
+     * @param  array<string, mixed>  $variables
+     *
      * @throws SSHError
      */
     public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null, ?array $variables = []): ServerLog
     {
         $ssh = $this->server->ssh($user);
-        if ($serverLog) {
+        if ($serverLog instanceof \App\Models\ServerLog) {
             $ssh->setLog($serverLog);
         }
         $command = '';
-        foreach ($variables as $key => $variable) {
-            $command .= "$key=$variable\n";
+        if ($variables !== null && $variables !== []) {
+            foreach ($variables as $key => $variable) {
+                $command .= "$key=$variable\n";
+            }
         }
         $command .= view('ssh.os.run-script', [
             'path' => $path,
@@ -236,9 +240,10 @@ class OS
         ]);
         $ssh->exec($command, 'run-script');
 
-        info($command);
+        /** @var ServerLog $log */
+        $log = $ssh->log;
 
-        return $ssh->log;
+        return $log;
     }
 
     /**
@@ -280,6 +285,8 @@ class OS
     }
 
     /**
+     * @return array<string, string>
+     *
      * @throws SSHError
      */
     public function resourceInfo(): array

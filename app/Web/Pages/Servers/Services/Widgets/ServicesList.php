@@ -21,8 +21,14 @@ class ServicesList extends TableWidget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<Service>
+     */
     protected function getTableQuery(): Builder
     {
         return Service::query()->where('server_id', $this->server->id);
@@ -33,7 +39,7 @@ class ServicesList extends TableWidget
         return [
             IconColumn::make('id')
                 ->label('Service')
-                ->icon(fn (Service $record) => 'icon-'.$record->name)
+                ->icon(fn (Service $record): string => 'icon-'.$record->name)
                 ->width(24),
             TextColumn::make('name')
                 ->sortable(),
@@ -78,7 +84,7 @@ class ServicesList extends TableWidget
             ->authorize(fn (Service $service) => auth()->user()?->can($type, $service))
             ->label(ucfirst($type).' Service')
             ->icon($icon)
-            ->action(function (Service $service) use ($type) {
+            ->action(function (Service $service) use ($type): void {
                 try {
                     app(Manage::class)->$type($service);
                 } catch (Exception $e) {
@@ -102,7 +108,7 @@ class ServicesList extends TableWidget
             ->icon('heroicon-o-trash')
             ->color('danger')
             ->requiresConfirmation()
-            ->action(function (Service $service) {
+            ->action(function (Service $service): void {
                 try {
                     app(Uninstall::class)->uninstall($service);
 
