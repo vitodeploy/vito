@@ -4,6 +4,7 @@ namespace App\Web\Pages\Scripts;
 
 use App\Actions\Script\CreateScript;
 use App\Models\Script;
+use App\Models\User;
 use App\Web\Components\Page;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
@@ -40,7 +41,7 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return [

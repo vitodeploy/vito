@@ -4,6 +4,7 @@ namespace App\Web\Pages\Servers\Sites\Widgets;
 
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\User;
 use App\Web\Pages\Servers\Sites\Settings;
 use App\Web\Pages\Servers\Sites\View;
 use Filament\Tables\Actions\Action;
@@ -57,7 +58,7 @@ class SitesList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

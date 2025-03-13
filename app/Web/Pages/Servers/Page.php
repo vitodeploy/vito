@@ -11,6 +11,7 @@ use App\Models\ServerLog;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\SshKey;
+use App\Models\User;
 use App\Web\Components\Page as BasePage;
 use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
@@ -37,7 +38,7 @@ abstract class Page extends BasePage
 
     public function getSubNavigation(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $items = [];

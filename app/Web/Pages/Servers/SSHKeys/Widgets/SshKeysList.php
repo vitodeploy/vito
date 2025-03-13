@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\SSHKeys\Widgets;
 use App\Actions\SshKey\DeleteKeyFromServer;
 use App\Models\Server;
 use App\Models\SshKey;
+use App\Models\User;
 use Exception;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\DeleteAction;
@@ -50,7 +51,7 @@ class SshKeysList extends TableWidget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

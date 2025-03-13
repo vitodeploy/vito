@@ -6,6 +6,7 @@ use App\Actions\SSL\ActivateSSL;
 use App\Actions\SSL\DeleteSSL;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
@@ -61,7 +62,7 @@ class SslsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

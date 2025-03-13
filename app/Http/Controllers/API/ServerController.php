@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerResource;
 use App\Models\Project;
 use App\Models\Server;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -61,7 +62,7 @@ class ServerController extends Controller
 
         $this->validate($request, CreateServer::rules($project, $request->input()));
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
         $server = app(CreateServer::class)->create($user, $project, $request->all());
 

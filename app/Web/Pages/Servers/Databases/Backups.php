@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Databases;
 use App\Actions\Database\ManageBackup;
 use App\Models\Backup;
 use App\Models\StorageProvider;
+use App\Models\User;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Settings\StorageProviders\Actions\Create;
@@ -29,7 +30,7 @@ class Backups extends Page implements HasSecondSubNav
 
     protected function getHeaderActions(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return [

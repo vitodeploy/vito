@@ -6,6 +6,7 @@ use App\Models\Queue;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Models\User;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page as BasePage;
 use App\Web\Pages\Servers\Sites\Widgets\SiteSummary;
@@ -20,7 +21,7 @@ abstract class Page extends BasePage implements HasSecondSubNav
 
     public function getSecondSubNavigation(): array
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
         $items = [];
 

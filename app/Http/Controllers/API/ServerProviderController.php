@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\Project;
 use App\Models\ServerProvider;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -54,7 +55,7 @@ class ServerProviderController extends Controller
 
         $this->validate($request, CreateServerProvider::rules($request->all()));
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
         $serverProvider = app(CreateServerProvider::class)->create($user, $project, $request->all());
 
@@ -64,7 +65,7 @@ class ServerProviderController extends Controller
     #[Get('{serverProvider}', name: 'api.projects.server-providers.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show')]
     #[ResponseFromApiResource(ServerProviderResource::class, ServerProvider::class)]
-    public function show(Project $project, ServerProvider $serverProvider): \App\Http\Resources\ServerProviderResource
+    public function show(Project $project, ServerProvider $serverProvider): ServerProviderResource
     {
         $this->authorize('view', $serverProvider);
 
@@ -78,7 +79,7 @@ class ServerProviderController extends Controller
     #[BodyParam(name: 'name', description: 'The name of the server provider.', required: true)]
     #[BodyParam(name: 'global', description: 'Accessible in all projects', enum: [true, false])]
     #[ResponseFromApiResource(ServerProviderResource::class, ServerProvider::class)]
-    public function update(Request $request, Project $project, ServerProvider $serverProvider): \App\Http\Resources\ServerProviderResource
+    public function update(Request $request, Project $project, ServerProvider $serverProvider): ServerProviderResource
     {
         $this->authorize('update', $serverProvider);
 

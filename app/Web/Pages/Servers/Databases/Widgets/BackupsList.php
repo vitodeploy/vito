@@ -7,6 +7,7 @@ use App\Actions\Database\RunBackup;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Server;
+use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -62,7 +63,7 @@ class BackupsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

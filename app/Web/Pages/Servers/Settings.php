@@ -4,10 +4,12 @@ namespace App\Web\Pages\Servers;
 
 use App\Actions\Server\RebootServer;
 use App\Models\Server;
+use App\Models\User;
 use App\Web\Pages\Servers\Widgets\ServerDetails;
 use App\Web\Pages\Servers\Widgets\UpdateServerInfo;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Throwable;
 
 class Settings extends Page
 {
@@ -24,7 +26,7 @@ class Settings extends Page
 
     public function mount(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $this->authorize('update', [$this->server, $user->currentProject]);
@@ -62,7 +64,7 @@ class Settings extends Page
                             ->send();
 
                         $this->redirect(Index::getUrl());
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         Notification::make()
                             ->danger()
                             ->title($e->getMessage())

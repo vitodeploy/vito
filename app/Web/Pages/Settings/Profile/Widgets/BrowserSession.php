@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\Profile\Widgets;
 
 use App\Helpers\Agent;
+use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -111,7 +112,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
      */
     private function getSessions(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if (config(key: 'session.driver') !== 'database') {
@@ -151,7 +152,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
 
     private function logoutOtherBrowserSessions(string $password): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if (! Hash::check($password, $user->password)) {
@@ -179,7 +180,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
 
     private function deleteOtherSessionRecords(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if (config(key: 'session.driver') !== 'database') {

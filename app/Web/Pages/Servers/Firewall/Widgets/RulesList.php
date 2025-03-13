@@ -5,7 +5,9 @@ namespace App\Web\Pages\Servers\Firewall\Widgets;
 use App\Actions\FirewallRule\ManageRule;
 use App\Models\FirewallRule;
 use App\Models\Server;
+use App\Models\User;
 use App\Web\Pages\Servers\Firewall\Index;
+use Exception;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
@@ -74,7 +76,7 @@ class RulesList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table
@@ -114,7 +116,7 @@ class RulesList extends Widget
                     ->action(function (FirewallRule $record): void {
                         try {
                             app(ManageRule::class)->delete($record);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             Notification::make()
                                 ->danger()
                                 ->title($e->getMessage())

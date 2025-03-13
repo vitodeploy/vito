@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\Projects;
 
 use App\Actions\Projects\CreateProject;
 use App\Models\Project;
+use App\Models\User;
 use App\Web\Components\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -29,7 +30,7 @@ class Index extends Page
 
     public static function canAccess(): bool
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $user->can('viewAny', Project::class);
@@ -50,7 +51,7 @@ class Index extends Page
                 ->icon('heroicon-o-plus')
                 ->authorize('create', Project::class)
                 ->modalWidth(MaxWidth::Large)
-                ->form(fn (Form $form): \Filament\Forms\Form => $form->schema([
+                ->form(fn (Form $form): Form => $form->schema([
                     TextInput::make('name')
                         ->name('name')
                         ->rules(CreateProject::rules()['name']),

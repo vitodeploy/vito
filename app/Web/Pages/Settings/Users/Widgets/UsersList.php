@@ -47,7 +47,7 @@ class UsersList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table
@@ -60,7 +60,7 @@ class UsersList extends Widget
                     ->using(function ($record, array $data): void {
                         app(UpdateUser::class)->update($record, $data);
                     })
-                    ->form(fn (Form $form, $record): \Filament\Forms\Form => $form
+                    ->form(fn (Form $form, $record): Form => $form
                         ->schema([
                             TextInput::make('name')
                                 ->rules(UpdateUser::rules($record)['name']),
@@ -86,7 +86,7 @@ class UsersList extends Widget
                     ->label('Projects')
                     ->icon('heroicon-o-rectangle-stack')
                     ->authorize(fn ($record) => $user->can('update', $record))
-                    ->form(fn (Form $form, $record): \Filament\Forms\Form => $form
+                    ->form(fn (Form $form, $record): Form => $form
                         ->schema([
                             CheckboxList::make('projects')
                                 ->options(Project::query()->pluck('name', 'id')->toArray())

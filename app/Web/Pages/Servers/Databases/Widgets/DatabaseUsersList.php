@@ -6,6 +6,7 @@ use App\Actions\Database\DeleteDatabaseUser;
 use App\Actions\Database\LinkUser;
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Models\User;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -65,7 +66,7 @@ class DatabaseUsersList extends Widget
 
     private function passwordAction(): Action
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return Action::make('password')
@@ -91,7 +92,7 @@ class DatabaseUsersList extends Widget
 
     private function linkAction(): Action
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return Action::make('link')
@@ -123,7 +124,7 @@ class DatabaseUsersList extends Widget
 
     private function deleteAction(): Action
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return Action::make('delete')

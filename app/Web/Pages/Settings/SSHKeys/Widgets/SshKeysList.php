@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\SSHKeys\Widgets;
 
 use App\Models\SshKey;
+use App\Models\User;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -41,7 +42,7 @@ class SshKeysList extends TableWidget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

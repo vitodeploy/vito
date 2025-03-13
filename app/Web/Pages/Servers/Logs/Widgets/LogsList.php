@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Logs\Widgets;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Site;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\Action;
@@ -16,6 +17,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\ComponentAttributeBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LogsList extends Widget
 {
@@ -38,7 +40,7 @@ class LogsList extends Widget
         return ServerLog::query()
             ->where('server_id', $this->server->id)
             ->where(function (Builder $query): void {
-                if ($this->site instanceof \App\Models\Site) {
+                if ($this->site instanceof Site) {
                     $query->where('site_id', $this->site->id);
                 }
             })
@@ -73,7 +75,7 @@ class LogsList extends Widget
      */
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table
@@ -115,7 +117,7 @@ class LogsList extends Widget
                     ->color('gray')
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->authorize(fn ($record) => $user->can('view', $record))
-                    ->action(fn (ServerLog $record): \Symfony\Component\HttpFoundation\StreamedResponse => $record->download()),
+                    ->action(fn (ServerLog $record): StreamedResponse => $record->download()),
                 DeleteAction::make()
                     ->hiddenLabel()
                     ->tooltip('Delete')

@@ -8,6 +8,7 @@ use App\Actions\Queue\GetQueueLogs;
 use App\Actions\Queue\ManageQueue;
 use App\Models\Queue;
 use App\Models\Site;
+use App\Models\User;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
@@ -81,7 +82,7 @@ class QueuesList extends Widget
 
     private function operationAction(string $type, string $icon): Action
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return Action::make($type)
@@ -98,7 +99,7 @@ class QueuesList extends Widget
 
     private function logsAction(): Action
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return Action::make('logs')
@@ -115,7 +116,7 @@ class QueuesList extends Widget
 
     private function editAction(): Action
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return EditAction::make('edit')
@@ -161,7 +162,7 @@ class QueuesList extends Widget
 
     private function deleteAction(): Action
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return DeleteAction::make('delete')

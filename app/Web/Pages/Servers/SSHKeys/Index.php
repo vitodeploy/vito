@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\SSHKeys;
 use App\Actions\SshKey\CreateSshKey;
 use App\Actions\SshKey\DeployKeyToServer;
 use App\Models\SshKey;
+use App\Models\User;
 use App\Web\Pages\Servers\Page;
 use Exception;
 use Filament\Actions\Action;
@@ -34,7 +35,7 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return [

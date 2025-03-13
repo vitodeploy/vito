@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\Projects\Widgets;
 
 use App\Models\Project;
+use App\Models\User;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 
@@ -21,7 +22,7 @@ class SelectProject extends Widget
 
     public function mount(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $this->currentProject = $user->currentProject;
@@ -30,7 +31,7 @@ class SelectProject extends Widget
 
     public function updateProject(Project $project): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $this->authorize('view', $project);
