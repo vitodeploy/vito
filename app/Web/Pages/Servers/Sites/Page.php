@@ -2,11 +2,11 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
-use App\Models\Worker;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\Models\User;
+use App\Models\Worker;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page as BasePage;
 use App\Web\Pages\Servers\Sites\Widgets\SiteSummary;

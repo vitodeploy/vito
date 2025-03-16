@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\WorkerStatus;
 use App\Facades\SSH;
-use App\Models\Worker;
 use App\Models\Site;
+use App\Models\Worker;
 use App\Web\Pages\Servers\Sites\Pages\Workers\Index;
 use App\Web\Pages\Servers\Sites\Pages\Workers\Widgets\WorkersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;

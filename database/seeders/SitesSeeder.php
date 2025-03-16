@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Enums\WorkerStatus;
 use App\Enums\SiteType;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
-use App\Models\Worker;
+use App\Enums\WorkerStatus;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Ssl;
+use App\Models\Worker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 

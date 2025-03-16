@@ -42,7 +42,7 @@ class Index extends Page
                 ->modalWidth(MaxWidth::ExtraLarge)
                 ->label('New Worker')
                 ->form(Create::form($this->server))
-                ->using(fn(array $data) => run_action($this, function () use ($data): void {
+                ->using(fn (array $data) => run_action($this, function () use ($data): void {
                     Create::action($this, $data, $this->server);
                 })),
         ];

@@ -16,7 +16,6 @@ use App\Models\Worker;
 use App\Web\Components\Page as BasePage;
 use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
-use App\Web\Pages\Servers\Workers\Index as WorkersIndex;
 use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
 use App\Web\Pages\Servers\FileManager\Index as FileManagerIndex;
 use App\Web\Pages\Servers\Firewall\Index as FirewallIndex;
@@ -30,6 +29,7 @@ use App\Web\Pages\Servers\Sites\Index as SitesIndex;
 use App\Web\Pages\Servers\SSHKeys\Index as SshKeysIndex;
 use App\Web\Pages\Servers\View as ServerView;
 use App\Web\Pages\Servers\Widgets\ServerSummary;
+use App\Web\Pages\Servers\Workers\Index as WorkersIndex;
 use Filament\Navigation\NavigationItem;
 
 abstract class Page extends BasePage

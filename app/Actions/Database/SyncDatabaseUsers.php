@@ -12,7 +12,7 @@ class SyncDatabaseUsers
     public function sync(Server $server): void
     {
         $service = $server->database();
-        if (!$service instanceof \App\Models\Service) {
+        if (! $service instanceof \App\Models\Service) {
             return;
         }
         /** @var Database $handler */

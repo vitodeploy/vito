@@ -18,7 +18,7 @@ class WorkerPolicy
         return ($user->isAdmin() || $server->project->users->contains($user)) &&
             $server->isReady() &&
             (
-                !$site instanceof \App\Models\Site ||
+                ! $site instanceof \App\Models\Site ||
                 (
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady()
@@ -32,7 +32,7 @@ class WorkerPolicy
             $site->server_id === $server->id &&
             $server->isReady() &&
             (
-                !$site instanceof \App\Models\Site ||
+                ! $site instanceof \App\Models\Site ||
                 (
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady() &&
@@ -46,7 +46,7 @@ class WorkerPolicy
         return ($user->isAdmin() || $server->project->users->contains($user)) &&
             $server->isReady() &&
             (
-                !$site instanceof \App\Models\Site ||
+                ! $site instanceof \App\Models\Site ||
                 (
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady()
@@ -60,7 +60,7 @@ class WorkerPolicy
             $site->server_id === $server->id &&
             $server->isReady() &&
             (
-                !$site instanceof \App\Models\Site ||
+                ! $site instanceof \App\Models\Site ||
                 (
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady() &&
@@ -75,7 +75,7 @@ class WorkerPolicy
             $site->server_id === $server->id &&
             $server->isReady() &&
             (
-                !$site instanceof \App\Models\Site ||
+                ! $site instanceof \App\Models\Site ||
                 (
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady() &&

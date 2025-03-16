@@ -2,8 +2,8 @@
 
 namespace App\Actions\Worker;
 
-use App\Models\Worker;
 use App\Models\Service;
+use App\Models\Worker;
 use App\SSH\Services\ProcessManager\ProcessManager;
 
 class GetWorkerLogs
