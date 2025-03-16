@@ -38,8 +38,8 @@ class Users extends Page implements HasSecondSubNav
                 ->requiresConfirmation()
                 ->modalDescription('This will create db users that exist on the server but not in Vito.')
                 ->modalSubmitActionLabel('Sync')
-                ->action(function () {
-                    run_action($this, function () {
+                ->action(function (): void {
+                    run_action($this, function (): void {
                         app(SyncDatabaseUsers::class)->sync($this->server);
 
                         $this->dispatch('$refresh');

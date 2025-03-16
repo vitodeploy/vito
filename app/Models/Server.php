@@ -58,7 +58,7 @@ use Throwable;
  * @property Collection<int, DatabaseUser> $databaseUsers
  * @property Collection<int, FirewallRule> $firewallRules
  * @property Collection<int, CronJob> $cronJobs
- * @property Collection<int, Queue> $queues
+ * @property Collection<int, Worker> $queues
  * @property Collection<int, Backup> $backups
  * @property Collection<int, SshKey> $sshKeys
  * @property Collection<int, Tag> $tags
@@ -125,7 +125,7 @@ class Server extends AbstractModel
             try {
                 $server->sites()->each(function ($site): void {
                     /** @var Site $site */
-                    $site->queues()->delete();
+                    $site->workers()->delete();
                     $site->ssls()->delete();
                     $site->deployments()->delete();
                     $site->deploymentScript()->delete();
@@ -140,7 +140,7 @@ class Server extends AbstractModel
                 $server->databaseUsers()->delete();
                 $server->firewallRules()->delete();
                 $server->cronJobs()->delete();
-                $server->queues()->delete();
+                $server->workers()->delete();
                 $server->daemons()->delete();
                 $server->sshKeys()->detach();
                 if (File::exists($server->sshKey()['public_key_path'])) {
@@ -265,11 +265,11 @@ class Server extends AbstractModel
     }
 
     /**
-     * @return HasMany<Queue, covariant $this>
+     * @return HasMany<Worker, covariant $this>
      */
-    public function queues(): HasMany
+    public function workers(): HasMany
     {
-        return $this->hasMany(Queue::class);
+        return $this->hasMany(Worker::class);
     }
 
     /**
@@ -281,11 +281,11 @@ class Server extends AbstractModel
     }
 
     /**
-     * @return HasMany<Queue, covariant $this>
+     * @return HasMany<Worker, covariant $this>
      */
     public function daemons(): HasMany
     {
-        return $this->queues()->whereNull('site_id');
+        return $this->workers()->whereNull('site_id');
     }
 
     /**

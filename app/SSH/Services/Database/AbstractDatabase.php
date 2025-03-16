@@ -286,7 +286,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
             }
         }
 
-        foreach ($results as $charset => $value) {
+        foreach (array_keys($results) as $charset) {
             $results[$charset]['list'] = $charsetCollations[$charset];
         }
 
@@ -310,9 +310,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $databases = $this->tableToArray($data);
 
-        return array_values(array_filter($databases, function ($database) {
-            return ! in_array($database[0], $this->systemDbs);
-        }));
+        return array_values(array_filter($databases, fn($database): bool => ! in_array($database[0], $this->systemDbs)));
     }
 
     /**
@@ -327,15 +325,11 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $users = $this->tableToArray($data);
 
-        $users = array_values(array_filter($users, function ($users) {
-            return ! in_array($users[0], $this->systemUsers);
-        }));
+        $users = array_values(array_filter($users, fn($users): bool => ! in_array($users[0], $this->systemUsers)));
 
         foreach ($users as $key => $user) {
             $databases = explode(',', $user[2]);
-            $databases = array_values(array_filter($databases, function ($database) {
-                return ! in_array($database, $this->systemDbs);
-            }));
+            $databases = array_values(array_filter($databases, fn($database): bool => ! in_array($database, $this->systemDbs)));
             $users[$key][2] = implode(',', $databases);
         }
 

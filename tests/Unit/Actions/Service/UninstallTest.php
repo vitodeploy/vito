@@ -6,7 +6,7 @@ use App\Actions\Service\Uninstall;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Database;
-use App\Models\Queue;
+use App\Models\Worker;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -74,7 +74,7 @@ class UninstallTest extends TestCase
     {
         SSH::fake();
 
-        Queue::factory()->create([
+        Worker::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
         ]);

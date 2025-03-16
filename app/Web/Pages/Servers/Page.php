@@ -12,9 +12,11 @@ use App\Models\Service;
 use App\Models\Site;
 use App\Models\SshKey;
 use App\Models\User;
+use App\Models\Worker;
 use App\Web\Components\Page as BasePage;
 use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
+use App\Web\Pages\Servers\Workers\Index as WorkersIndex;
 use App\Web\Pages\Servers\Databases\Index as DatabasesIndex;
 use App\Web\Pages\Servers\FileManager\Index as FileManagerIndex;
 use App\Web\Pages\Servers\Firewall\Index as FirewallIndex;
@@ -97,6 +99,13 @@ abstract class Page extends BasePage
                 ->icon('heroicon-o-clock')
                 ->isActiveWhen(fn () => request()->routeIs(CronJobsIndex::getRouteName().'*'))
                 ->url(CronJobsIndex::getUrl(parameters: ['server' => $this->server]));
+        }
+
+        if ($user->can('viewAny', [Worker::class, $this->server])) {
+            $items[] = NavigationItem::make(WorkersIndex::getNavigationLabel())
+                ->icon('heroicon-o-queue-list')
+                ->isActiveWhen(fn () => request()->routeIs(WorkersIndex::getRouteName().'*'))
+                ->url(WorkersIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if ($user->can('viewAnyServer', [SshKey::class, $this->server])) {

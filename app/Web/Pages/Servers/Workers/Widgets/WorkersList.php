@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Web\Pages\Servers\Sites\Pages\Queues\Widgets;
+namespace App\Web\Pages\Servers\Workers\Widgets;
 
-use App\Actions\Queue\DeleteQueue;
-use App\Actions\Queue\EditQueue;
-use App\Actions\Queue\GetQueueLogs;
-use App\Actions\Queue\ManageQueue;
-use App\Models\Queue;
+use App\Actions\Worker\DeleteWorker;
+use App\Actions\Worker\EditWorker;
+use App\Actions\Worker\GetWorkerLogs;
+use App\Actions\Worker\ManageWorker;
+use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
+use App\Models\Worker;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
@@ -24,9 +25,11 @@ use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\ComponentAttributeBag;
 
-class QueuesList extends Widget
+class WorkersList extends Widget
 {
-    public Site $site;
+    public Server $server;
+
+    public ?Site $site = null;
 
     /**
      * @var array<string>
@@ -34,11 +37,17 @@ class QueuesList extends Widget
     protected $listeners = ['$refresh'];
 
     /**
-     * @return Builder<Queue>
+     * @return Builder<Worker>
      */
     protected function getTableQuery(): Builder
     {
-        return Queue::query()->where('site_id', $this->site->id);
+        return Worker::query()
+            ->where('server_id', $this->server->id)
+            ->where(function (Builder $query): void {
+                if ($this->site instanceof \App\Models\Site) {
+                    $query->where('site_id', $this->site->id);
+                }
+            });
     }
 
     protected function getTableColumns(): array
@@ -47,16 +56,16 @@ class QueuesList extends Widget
             TextColumn::make('command')
                 ->limit(20)
                 ->copyable()
-                ->tooltip(fn (Queue $record) => $record->command)
+                ->tooltip(fn (Worker $record) => $record->command)
                 ->searchable()
                 ->sortable(),
             TextColumn::make('created_at')
-                ->formatStateUsing(fn (Queue $record) => $record->created_at_by_timezone)
+                ->formatStateUsing(fn (Worker $record) => $record->created_at_by_timezone)
                 ->sortable(),
             TextColumn::make('status')
                 ->label('Status')
                 ->badge()
-                ->color(fn (Queue $record) => Queue::$statusColors[$record->status])
+                ->color(fn (Worker $record) => Worker::$statusColors[$record->status])
                 ->searchable()
                 ->sortable(),
         ];
@@ -86,12 +95,12 @@ class QueuesList extends Widget
         $user = auth()->user();
 
         return Action::make($type)
-            ->authorize(fn (Queue $record) => $user->can('update', [$record, $this->site, $this->site->server]))
-            ->label(ucfirst($type).' queue')
+            ->authorize(fn (Worker $record) => $user->can('update', [$record, $this->server, $this->site]))
+            ->label(ucfirst($type).' worker')
             ->icon($icon)
-            ->action(function (Queue $record) use ($type): void {
+            ->action(function (Worker $record) use ($type): void {
                 run_action($this, function () use ($record, $type): void {
-                    app(ManageQueue::class)->$type($record);
+                    app(ManageWorker::class)->$type($record);
                     $this->dispatch('$refresh');
                 });
             });
@@ -104,10 +113,10 @@ class QueuesList extends Widget
 
         return Action::make('logs')
             ->icon('heroicon-o-eye')
-            ->authorize(fn (Queue $record) => $user->can('view', [$record, $this->site, $this->site->server]))
+            ->authorize(fn (Worker $record) => $user->can('view', [$record, $this->server, $this->site]))
             ->modalHeading('View Log')
-            ->modalContent(fn (Queue $record) => view('components.console-view', [
-                'slot' => app(GetQueueLogs::class)->getLogs($record),
+            ->modalContent(fn (Worker $record) => view('components.console-view', [
+                'slot' => app(GetWorkerLogs::class)->getLogs($record),
                 'attributes' => new ComponentAttributeBag,
             ]))
             ->modalSubmitAction(false)
@@ -121,9 +130,9 @@ class QueuesList extends Widget
 
         return EditAction::make('edit')
             ->icon('heroicon-o-pencil-square')
-            ->authorize(fn (Queue $record) => $user->can('update', [$record, $this->site, $this->site->server]))
+            ->authorize(fn (Worker $record) => $user->can('update', [$record, $this->server, $this->site]))
             ->modalWidth(MaxWidth::ExtraLarge)
-            ->fillForm(fn (Queue $record): array => [
+            ->fillForm(fn (Worker $record): array => [
                 'command' => $record->command,
                 'user' => $record->user,
                 'numprocs' => $record->numprocs,
@@ -132,17 +141,17 @@ class QueuesList extends Widget
             ])
             ->form([
                 TextInput::make('command')
-                    ->rules(EditQueue::rules($this->site->server)['command'])
+                    ->rules(EditWorker::rules($this->server, $this->site)['command'])
                     ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
                 Select::make('user')
-                    ->rules(fn (callable $get) => EditQueue::rules($this->site->server)['user'])
+                    ->rules(fn (callable $get) => EditWorker::rules($this->server, $this->site)['user'])
                     ->options([
-                        'vito' => $this->site->server->ssh_user,
+                        'vito' => $this->server->ssh_user,
                         'root' => 'root',
                     ]),
                 TextInput::make('numprocs')
                     ->default(1)
-                    ->rules(EditQueue::rules($this->site->server)['numprocs'])
+                    ->rules(EditWorker::rules($this->server, $this->site)['numprocs'])
                     ->helperText('Number of processes'),
                 Grid::make()
                     ->schema([
@@ -152,9 +161,9 @@ class QueuesList extends Widget
                             ->default(false),
                     ]),
             ])
-            ->using(function (Queue $record, array $data): void {
+            ->using(function (Worker $record, array $data): void {
                 run_action($this, function () use ($record, $data): void {
-                    app(EditQueue::class)->edit($record, $data);
+                    app(EditWorker::class)->edit($record, $data);
                     $this->dispatch('$refresh');
                 });
             });
@@ -167,10 +176,10 @@ class QueuesList extends Widget
 
         return DeleteAction::make('delete')
             ->icon('heroicon-o-trash')
-            ->authorize(fn (Queue $record) => $user->can('delete', [$record, $this->site, $this->site->server]))
-            ->using(function (Queue $record): void {
+            ->authorize(fn (Worker $record) => $user->can('delete', [$record, $this->server, $this->site]))
+            ->using(function (Worker $record): void {
                 run_action($this, function () use ($record): void {
-                    app(DeleteQueue::class)->delete($record);
+                    app(DeleteWorker::class)->delete($record);
                     $this->dispatch('$refresh');
                 });
             });

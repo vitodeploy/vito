@@ -2,25 +2,25 @@
 
 namespace Tests\Feature;
 
-use App\Enums\QueueStatus;
+use App\Enums\WorkerStatus;
 use App\Facades\SSH;
-use App\Models\Queue;
+use App\Models\Worker;
 use App\Models\Site;
-use App\Web\Pages\Servers\Sites\Pages\Queues\Index;
-use App\Web\Pages\Servers\Sites\Pages\Queues\Widgets\QueuesList;
+use App\Web\Pages\Servers\Sites\Pages\Workers\Index;
+use App\Web\Pages\Servers\Sites\Pages\Workers\Widgets\WorkersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-class QueuesTest extends TestCase
+class WorkersTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_see_queues()
+    public function test_see_workers(): void
     {
         $this->actingAs($this->user);
 
-        $queue = Queue::factory()->create([
+        $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
         ]);
@@ -32,33 +32,33 @@ class QueuesTest extends TestCase
             ])
         )
             ->assertSuccessful()
-            ->assertSee($queue->command);
+            ->assertSee($worker->command);
     }
 
-    public function test_delete_queue()
+    public function test_delete_worker(): void
     {
         SSH::fake();
 
         $this->actingAs($this->user);
 
-        $queue = Queue::factory()->create([
+        $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
         ]);
 
-        Livewire::test(QueuesList::class, [
+        Livewire::test(WorkersList::class, [
             'server' => $this->server,
             'site' => $this->site,
         ])
-            ->callTableAction('delete', $queue->id)
+            ->callTableAction('delete', $worker->id)
             ->assertSuccessful();
 
-        $this->assertDatabaseMissing('queues', [
-            'id' => $queue->id,
+        $this->assertDatabaseMissing('workers', [
+            'id' => $worker->id,
         ]);
     }
 
-    public function test_create_queue()
+    public function test_create_worker(): void
     {
         SSH::fake();
 
@@ -69,7 +69,7 @@ class QueuesTest extends TestCase
             'site' => $this->site,
         ])
             ->callAction('create', [
-                'command' => 'php artisan queue:work',
+                'command' => 'php artisan worker:work',
                 'user' => 'vito',
                 'auto_start' => 1,
                 'auto_restart' => 1,
@@ -77,19 +77,19 @@ class QueuesTest extends TestCase
             ])
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('queues', [
+        $this->assertDatabaseHas('workers', [
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
-            'command' => 'php artisan queue:work',
+            'command' => 'php artisan worker:work',
             'user' => 'vito',
             'auto_start' => 1,
             'auto_restart' => 1,
             'numprocs' => 1,
-            'status' => QueueStatus::RUNNING,
+            'status' => WorkerStatus::RUNNING,
         ]);
     }
 
-    public function test_create_queue_as_isolated_user(): void
+    public function test_create_worker_as_isolated_user(): void
     {
         SSH::fake();
 
@@ -111,7 +111,7 @@ class QueuesTest extends TestCase
             ])
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('queues', [
+        $this->assertDatabaseHas('workers', [
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
             'command' => 'php artisan queue:work',
@@ -119,11 +119,11 @@ class QueuesTest extends TestCase
             'auto_start' => 1,
             'auto_restart' => 1,
             'numprocs' => 1,
-            'status' => QueueStatus::RUNNING,
+            'status' => WorkerStatus::RUNNING,
         ]);
     }
 
-    public function test_cannot_create_queue_as_invalid_user(): void
+    public function test_cannot_create_worker_as_invalid_user(): void
     {
         SSH::fake();
 
@@ -142,14 +142,14 @@ class QueuesTest extends TestCase
             ])
             ->assertHasActionErrors();
 
-        $this->assertDatabaseMissing('queues', [
+        $this->assertDatabaseMissing('workers', [
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
             'user' => 'example',
         ]);
     }
 
-    public function test_cannot_create_queue_on_another_sites_user(): void
+    public function test_cannot_create_worker_on_another_sites_user(): void
     {
         SSH::fake();
 
@@ -173,85 +173,85 @@ class QueuesTest extends TestCase
             ])
             ->assertHasActionErrors();
 
-        $this->assertDatabaseMissing('queues', [
+        $this->assertDatabaseMissing('workers', [
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
             'user' => 'example',
         ]);
     }
 
-    public function test_start_queue(): void
+    public function test_start_worker(): void
     {
         SSH::fake();
 
         $this->actingAs($this->user);
 
-        $queue = Queue::factory()->create([
+        $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
-            'status' => QueueStatus::STOPPED,
+            'status' => WorkerStatus::STOPPED,
         ]);
 
-        Livewire::test(QueuesList::class, [
+        Livewire::test(WorkersList::class, [
             'server' => $this->server,
             'site' => $this->site,
         ])
-            ->callTableAction('start', $queue->id)
+            ->callTableAction('start', $worker->id)
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('queues', [
-            'id' => $queue->id,
-            'status' => QueueStatus::RUNNING,
+        $this->assertDatabaseHas('workers', [
+            'id' => $worker->id,
+            'status' => WorkerStatus::RUNNING,
         ]);
     }
 
-    public function test_stop_queue(): void
+    public function test_stop_worker(): void
     {
         SSH::fake();
 
         $this->actingAs($this->user);
 
-        $queue = Queue::factory()->create([
+        $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
-            'status' => QueueStatus::RUNNING,
+            'status' => WorkerStatus::RUNNING,
         ]);
 
-        Livewire::test(QueuesList::class, [
+        Livewire::test(WorkersList::class, [
             'server' => $this->server,
             'site' => $this->site,
         ])
-            ->callTableAction('stop', $queue->id)
+            ->callTableAction('stop', $worker->id)
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('queues', [
-            'id' => $queue->id,
-            'status' => QueueStatus::STOPPED,
+        $this->assertDatabaseHas('workers', [
+            'id' => $worker->id,
+            'status' => WorkerStatus::STOPPED,
         ]);
     }
 
-    public function test_restart_queue(): void
+    public function test_restart_worker(): void
     {
         SSH::fake();
 
         $this->actingAs($this->user);
 
-        $queue = Queue::factory()->create([
+        $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
-            'status' => QueueStatus::RUNNING,
+            'status' => WorkerStatus::RUNNING,
         ]);
 
-        Livewire::test(QueuesList::class, [
+        Livewire::test(WorkersList::class, [
             'server' => $this->server,
             'site' => $this->site,
         ])
-            ->callTableAction('restart', $queue->id)
+            ->callTableAction('restart', $worker->id)
             ->assertSuccessful();
 
-        $this->assertDatabaseHas('queues', [
-            'id' => $queue->id,
-            'status' => QueueStatus::RUNNING,
+        $this->assertDatabaseHas('workers', [
+            'id' => $worker->id,
+            'status' => WorkerStatus::RUNNING,
         ]);
     }
 
@@ -261,17 +261,17 @@ class QueuesTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $queue = Queue::factory()->create([
+        $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
-            'status' => QueueStatus::RUNNING,
+            'status' => WorkerStatus::RUNNING,
         ]);
 
-        Livewire::test(QueuesList::class, [
+        Livewire::test(WorkersList::class, [
             'server' => $this->server,
             'site' => $this->site,
         ])
-            ->callTableAction('logs', $queue->id)
+            ->callTableAction('logs', $worker->id)
             ->assertSuccessful();
     }
 }

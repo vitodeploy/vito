@@ -34,9 +34,9 @@ class Laravel extends PHPSite
                 'name' => 'Clear Application Cache Only',
                 'command' => 'php artisan cache:clear',
             ],
-            // Queue Commands
+            // Worker Commands
             [
-                'name' => 'Restart Queue Workers',
+                'name' => 'Restart Workers',
                 'command' => 'php artisan queue:restart',
             ],
             [

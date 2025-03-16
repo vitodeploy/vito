@@ -2,16 +2,16 @@
 
 namespace Database\Factories;
 
-use App\Enums\QueueStatus;
-use App\Models\Queue;
+use App\Enums\WorkerStatus;
+use App\Models\Worker;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\Queue>
+ * @extends Factory<Worker>
  */
-class QueueFactory extends Factory
+class WorkerFactory extends Factory
 {
-    protected $model = Queue::class;
+    protected $model = Worker::class;
 
     public function definition(): array
     {
@@ -23,7 +23,7 @@ class QueueFactory extends Factory
             'numprocs' => 1,
             'redirect_stderr' => 1,
             'stdout_logfile' => 'file.log',
-            'status' => QueueStatus::CREATING,
+            'status' => WorkerStatus::CREATING,
         ];
     }
 }

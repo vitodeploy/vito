@@ -2,7 +2,7 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
-use App\Models\Queue;
+use App\Models\Worker;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -45,11 +45,11 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ]));
         }
 
-        if ($user->can('viewAny', [Queue::class, $this->site, $this->server])) {
-            $items[] = NavigationItem::make(Pages\Queues\Index::getNavigationLabel())
+        if ($user->can('viewAny', [Worker::class, $this->server, $this->site])) {
+            $items[] = NavigationItem::make(Pages\Workers\Index::getNavigationLabel())
                 ->icon('heroicon-o-queue-list')
-                ->isActiveWhen(fn () => request()->routeIs(Pages\Queues\Index::getRouteName()))
-                ->url(Pages\Queues\Index::getUrl(parameters: [
+                ->isActiveWhen(fn () => request()->routeIs(Pages\Workers\Index::getRouteName()))
+                ->url(Pages\Workers\Index::getUrl(parameters: [
                     'server' => $this->server,
                     'site' => $this->site,
                 ]));

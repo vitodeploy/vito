@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Actions\Queue;
+namespace App\Actions\Worker;
 
-use App\Enums\QueueStatus;
-use App\Models\Queue;
+use App\Enums\WorkerStatus;
+use App\Models\Worker;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
@@ -11,54 +11,53 @@ use App\SSH\Services\ProcessManager\ProcessManager;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class CreateQueue
+class CreateWorker
 {
     /**
-     * @param  Server|Site  $queueable
      * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
      */
-    public function create(mixed $queueable, array $input): void
+    public function create(Server $server, array $input, ?Site $site = null): void
     {
-        $queue = new Queue([
-            'server_id' => $queueable instanceof Server ? $queueable->id : $queueable->server_id,
-            'site_id' => $queueable instanceof Site ? $queueable->id : null,
+        $worker = new Worker([
+            'server_id' => $server->id,
+            'site_id' => $site?->id,
             'command' => $input['command'],
             'user' => $input['user'],
             'auto_start' => $input['auto_start'] ? 1 : 0,
             'auto_restart' => $input['auto_restart'] ? 1 : 0,
             'numprocs' => $input['numprocs'],
-            'status' => QueueStatus::CREATING,
+            'status' => WorkerStatus::CREATING,
         ]);
-        $queue->save();
+        $worker->save();
 
-        dispatch(function () use ($queue): void {
+        dispatch(function () use ($worker): void {
             /** @var Service $service */
-            $service = $queue->server->processManager();
+            $service = $worker->server->processManager();
             /** @var ProcessManager $processManager */
             $processManager = $service->handler();
             $processManager->create(
-                $queue->id,
-                $queue->command,
-                $queue->user,
-                $queue->auto_start,
-                $queue->auto_restart,
-                $queue->numprocs,
-                $queue->getLogFile(),
-                $queue->site_id
+                $worker->id,
+                $worker->command,
+                $worker->user,
+                $worker->auto_start,
+                $worker->auto_restart,
+                $worker->numprocs,
+                $worker->getLogFile(),
+                $worker->site_id
             );
-            $queue->status = QueueStatus::RUNNING;
-            $queue->save();
-        })->catch(function () use ($queue): void {
-            $queue->delete();
+            $worker->status = WorkerStatus::RUNNING;
+            $worker->save();
+        })->catch(function () use ($worker): void {
+            $worker->delete();
         })->onConnection('ssh');
     }
 
     /**
      * @return array<string, array<string>>
      */
-    public static function rules(Site $site): array
+    public static function rules(Server $server, ?Site $site = null): array
     {
         return [
             'command' => [
@@ -66,10 +65,7 @@ class CreateQueue
             ],
             'user' => [
                 'required',
-                Rule::in([
-                    'root',
-                    $site->user,
-                ]),
+                Rule::in($site?->getSshUsers() ?? $server->getSshUsers()),
             ],
             'numprocs' => [
                 'required',

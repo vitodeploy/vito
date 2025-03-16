@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Enums\QueueStatus;
+use App\Enums\WorkerStatus;
 use App\Enums\SiteType;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
-use App\Models\Queue;
+use App\Models\Worker;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -36,10 +36,10 @@ class SitesSeeder extends Seeder
                 'aliases' => ['www.'.$server->project->name.'.com'],
             ]);
             $app->tags()->attach($server->tags()->first());
-            Queue::factory()->create([
+            Worker::factory()->create([
                 'site_id' => $app->id,
                 'command' => 'php artisan queue:work',
-                'status' => QueueStatus::RUNNING,
+                'status' => WorkerStatus::RUNNING,
             ]);
             Ssl::factory()->create([
                 'site_id' => $app->id,

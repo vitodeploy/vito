@@ -1,63 +1,64 @@
 <?php
 
-namespace App\Actions\Queue;
+namespace App\Actions\Worker;
 
-use App\Enums\QueueStatus;
-use App\Models\Queue;
+use App\Enums\WorkerStatus;
+use App\Models\Site;
+use App\Models\Worker;
 use App\Models\Server;
 use App\Models\Service;
 use App\SSH\Services\ProcessManager\ProcessManager;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class EditQueue
+class EditWorker
 {
     /**
      * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
      */
-    public function edit(Queue $queue, array $input): void
+    public function edit(Worker $worker, array $input): void
     {
-        $queue->fill([
+        $worker->fill([
             'command' => $input['command'],
             'user' => $input['user'],
             'auto_start' => $input['auto_start'] ? 1 : 0,
             'auto_restart' => $input['auto_restart'] ? 1 : 0,
             'numprocs' => $input['numprocs'],
-            'status' => QueueStatus::RESTARTING,
+            'status' => WorkerStatus::RESTARTING,
         ]);
-        $queue->save();
+        $worker->save();
 
-        dispatch(function () use ($queue): void {
+        dispatch(function () use ($worker): void {
             /** @var Service $service */
-            $service = $queue->server->processManager();
+            $service = $worker->server->processManager();
             /** @var ProcessManager $processManager */
             $processManager = $service->handler();
-            $processManager->delete($queue->id, $queue->site_id);
+            $processManager->delete($worker->id, $worker->site_id);
 
             $processManager->create(
-                $queue->id,
-                $queue->command,
-                $queue->user,
-                $queue->auto_start,
-                $queue->auto_restart,
-                $queue->numprocs,
-                $queue->getLogFile(),
-                $queue->site_id
+                $worker->id,
+                $worker->command,
+                $worker->user,
+                $worker->auto_start,
+                $worker->auto_restart,
+                $worker->numprocs,
+                $worker->getLogFile(),
+                $worker->site_id
             );
-            $queue->status = QueueStatus::RUNNING;
-            $queue->save();
-        })->catch(function () use ($queue): void {
-            $queue->status = QueueStatus::FAILED;
-            $queue->save();
+            $worker->status = WorkerStatus::RUNNING;
+            $worker->save();
+        })->catch(function () use ($worker): void {
+            $worker->status = WorkerStatus::FAILED;
+            $worker->save();
         })->onConnection('ssh');
     }
 
     /**
      * @return array<string, array<string>>
      */
-    public static function rules(Server $server): array
+    public static function rules(Server $server, ?Site $site = null): array
     {
         return [
             'command' => [
@@ -65,10 +66,7 @@ class EditQueue
             ],
             'user' => [
                 'required',
-                Rule::in([
-                    'root',
-                    $server->ssh_user,
-                ]),
+                Rule::in($site?->getSshUsers() ?? $server->getSshUsers()),
             ],
             'numprocs' => [
                 'required',
