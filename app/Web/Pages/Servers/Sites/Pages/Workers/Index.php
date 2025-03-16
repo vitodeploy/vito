@@ -37,7 +37,7 @@ class Index extends Page
                 ->label('Read the Docs')
                 ->icon('heroicon-o-document-text')
                 ->color('gray')
-                ->url('https://vitodeploy.com/sites/workers')
+                ->url('https://vitodeploy.com/servers/workers')
                 ->openUrlInNewTab(),
             CreateAction::make('create')
                 ->icon('heroicon-o-plus')
