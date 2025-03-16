@@ -44,8 +44,10 @@ class WorkersList extends Widget
         return Worker::query()
             ->where('server_id', $this->server->id)
             ->where(function (Builder $query): void {
-                if ($this->site instanceof \App\Models\Site) {
+                if ($this->site instanceof Site) {
                     $query->where('site_id', $this->site->id);
+                } else {
+                    $query->whereNull('site_id');
                 }
             });
     }

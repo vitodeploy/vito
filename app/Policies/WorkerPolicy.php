@@ -18,7 +18,7 @@ class WorkerPolicy
         return ($user->isAdmin() || $server->project->users->contains($user)) &&
             $server->isReady() &&
             (
-                ! $site instanceof \App\Models\Site ||
+                ! $site instanceof Site ||
                 (
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady()
@@ -29,11 +29,11 @@ class WorkerPolicy
     public function view(User $user, Worker $worker, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $server->project->users->contains($user)) &&
-            $site->server_id === $server->id &&
             $server->isReady() &&
             (
-                ! $site instanceof \App\Models\Site ||
+                ! $site instanceof Site ||
                 (
+                    $site->server_id === $server->id &&
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady() &&
                     $worker->site_id === $site->id
@@ -46,7 +46,7 @@ class WorkerPolicy
         return ($user->isAdmin() || $server->project->users->contains($user)) &&
             $server->isReady() &&
             (
-                ! $site instanceof \App\Models\Site ||
+                ! $site instanceof Site ||
                 (
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady()
@@ -57,11 +57,11 @@ class WorkerPolicy
     public function update(User $user, Worker $worker, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $server->project->users->contains($user)) &&
-            $site->server_id === $server->id &&
             $server->isReady() &&
             (
-                ! $site instanceof \App\Models\Site ||
+                ! $site instanceof Site ||
                 (
+                    $site->server_id === $server->id &&
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady() &&
                     $worker->site_id === $site->id
@@ -72,11 +72,11 @@ class WorkerPolicy
     public function delete(User $user, Worker $worker, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $server->project->users->contains($user)) &&
-            $site->server_id === $server->id &&
             $server->isReady() &&
             (
-                ! $site instanceof \App\Models\Site ||
+                ! $site instanceof Site ||
                 (
+                    $site->server_id === $server->id &&
                     $site->hasFeature(SiteFeature::WORKERS) &&
                     $site->isReady() &&
                     $worker->site_id === $site->id
