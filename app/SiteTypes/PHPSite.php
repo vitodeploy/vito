@@ -23,7 +23,7 @@ class PHPSite extends AbstractSiteType
             SiteFeature::COMMANDS,
             SiteFeature::ENV,
             SiteFeature::SSL,
-            SiteFeature::QUEUES,
+            SiteFeature::WORKERS,
         ];
     }
 

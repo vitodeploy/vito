@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-final class QueueStatus
+final class WorkerStatus
 {
     const RUNNING = 'running';
 

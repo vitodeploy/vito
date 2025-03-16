@@ -12,6 +12,7 @@ use App\Models\Service;
 use App\Models\Site;
 use App\Models\SshKey;
 use App\Models\User;
+use App\Models\Worker;
 use App\Web\Components\Page as BasePage;
 use App\Web\Pages\Servers\Console\Index as ConsoleIndex;
 use App\Web\Pages\Servers\CronJobs\Index as CronJobsIndex;
@@ -28,6 +29,7 @@ use App\Web\Pages\Servers\Sites\Index as SitesIndex;
 use App\Web\Pages\Servers\SSHKeys\Index as SshKeysIndex;
 use App\Web\Pages\Servers\View as ServerView;
 use App\Web\Pages\Servers\Widgets\ServerSummary;
+use App\Web\Pages\Servers\Workers\Index as WorkersIndex;
 use Filament\Navigation\NavigationItem;
 
 abstract class Page extends BasePage
@@ -97,6 +99,13 @@ abstract class Page extends BasePage
                 ->icon('heroicon-o-clock')
                 ->isActiveWhen(fn () => request()->routeIs(CronJobsIndex::getRouteName().'*'))
                 ->url(CronJobsIndex::getUrl(parameters: ['server' => $this->server]));
+        }
+
+        if ($user->can('viewAny', [Worker::class, $this->server])) {
+            $items[] = NavigationItem::make(WorkersIndex::getNavigationLabel())
+                ->icon('heroicon-o-queue-list')
+                ->isActiveWhen(fn () => request()->routeIs(WorkersIndex::getRouteName().'*'))
+                ->url(WorkersIndex::getUrl(parameters: ['server' => $this->server]));
         }
 
         if ($user->can('viewAnyServer', [SshKey::class, $this->server])) {
