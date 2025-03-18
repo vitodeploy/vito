@@ -419,4 +419,12 @@ class Site extends AbstractModel
 
         return $users;
     }
+
+    /**
+     * @return HasMany<Redirect, covariant $this>
+     */
+    public function redirects(): HasMany
+    {
+        return $this->hasMany(Redirect::class);
+    }
 }
