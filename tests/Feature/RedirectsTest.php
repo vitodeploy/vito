@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Facades\SSH;
 use App\Models\Redirect;
-use App\Models\Site;
 use App\Web\Pages\Servers\Sites\Pages\Redirects\Index;
 use App\Web\Pages\Servers\Sites\Pages\Redirects\Widgets\RedirectsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -3,7 +3,6 @@
 namespace App\Web\Pages\Servers\Sites\Pages\Redirects\Actions;
 
 use App\Actions\Redirect\CreateRedirect;
-use App\Models\Server;
 use App\Models\Site;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;

@@ -10,7 +10,7 @@ class CreateRedirect
 {
     public function create(Site $site, array $input): Redirect
     {
-        $redirect = new Redirect();
+        $redirect = new Redirect;
 
         $redirect->site_id = $site->id;
         $redirect->from = $input['from'];
@@ -35,7 +35,7 @@ class CreateRedirect
         return [
             'from' => ['required', 'string', 'max:255', 'not_regex:/^http(s)?:\/\//', Rule::unique('redirects', 'from')->where('site_id', $site->id)],
             'to' => ['required', 'url:http,https'],
-            'mode' => ['required', 'integer', 'in:' . implode(',', [
+            'mode' => ['required', 'integer', 'in:'.implode(',', [
                 301,
                 302,
                 307,

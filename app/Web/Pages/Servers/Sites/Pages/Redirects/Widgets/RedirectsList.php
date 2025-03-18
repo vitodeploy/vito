@@ -3,18 +3,14 @@
 namespace App\Web\Pages\Servers\Sites\Pages\Redirects\Widgets;
 
 use App\Actions\Redirect\DeleteRedirect;
-use App\Models\Site;
 use App\Models\Redirect;
+use App\Models\Site;
 use App\Models\User;
-use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\View\ComponentAttributeBag;
 
 class RedirectsList extends Widget
 {
@@ -49,7 +45,7 @@ class RedirectsList extends Widget
                 ->sortable(),
             TextColumn::make('created_at')
                 ->formatStateUsing(fn (Redirect $record) => $record->created_at)
-                ->sortable()
+                ->sortable(),
         ];
     }
 

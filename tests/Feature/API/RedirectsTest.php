@@ -4,7 +4,6 @@ namespace Tests\Feature\API;
 
 use App\Facades\SSH;
 use App\Models\Redirect;
-use App\Models\Site;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -23,7 +22,7 @@ class RedirectsTest extends TestCase
         ]), [
             'from' => 'testing/path',
             'to' => 'https://example.com',
-            'mode' => 301
+            'mode' => 301,
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
@@ -69,7 +68,7 @@ class RedirectsTest extends TestCase
         ]))
             ->assertSuccessful()
             ->assertNoContent();
-            
+
         $this->assertDatabaseMissing('redirects', [
             'id' => $this->redirect->id,
         ]);

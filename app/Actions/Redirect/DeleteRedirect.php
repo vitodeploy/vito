@@ -18,7 +18,7 @@ class DeleteRedirect
         $webserver = $service->handler();
         $webserver->updateVHost($site);
     }
-    
+
     public static function rules(): array
     {
         return [];
