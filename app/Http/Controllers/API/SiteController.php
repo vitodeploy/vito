@@ -125,7 +125,7 @@ class SiteController extends Controller
 
         $this->validateRoute($project, $server, $site);
 
-        $this->validate($request, UpdateAliases::rules($site));
+        $this->validate($request, UpdateAliases::rules());
 
         app(UpdateAliases::class)->update($site, $request->all());
 
