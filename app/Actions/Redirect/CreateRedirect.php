@@ -3,14 +3,19 @@
 namespace App\Actions\Redirect;
 
 use App\Models\Redirect;
+use App\Models\Service;
 use App\Models\Site;
+use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Validation\Rule;
 
 class CreateRedirect
 {
+    /**
+     * @param array<string, mixed> $input
+     */
     public function create(Site $site, array $input): Redirect
     {
-        $redirect = new Redirect;
+        $redirect = new Redirect();
 
         $redirect->site_id = $site->id;
         $redirect->from = $input['from'];
@@ -30,6 +35,9 @@ class CreateRedirect
         return $redirect;
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Site $site): array
     {
         return [

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Redirect extends Model
 {
+    /** @use HasFactory<\Database\Factories\RedirectFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -18,7 +19,7 @@ class Redirect extends Model
     ];
 
     /**
-     * @return BelongsTo<Site, Redirect>
+     * @return BelongsTo<Site, covariant $this>
      */
     public function site(): BelongsTo
     {

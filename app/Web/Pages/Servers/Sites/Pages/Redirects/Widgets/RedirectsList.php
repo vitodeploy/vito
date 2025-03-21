@@ -11,6 +11,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Column;
+use Filament\Tables\Columns\Component;
 
 class RedirectsList extends Widget
 {
@@ -22,7 +24,7 @@ class RedirectsList extends Widget
     protected $listeners = ['$refresh'];
 
     /**
-     * @return Builder<Ssl>
+     * @return Builder<Redirect>
      */
     protected function getTableQuery(): Builder
     {

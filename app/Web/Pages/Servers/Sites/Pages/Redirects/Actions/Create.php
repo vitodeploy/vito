@@ -10,6 +10,9 @@ use Livewire\Component;
 
 class Create
 {
+    /**
+     * @return array<int, mixed>
+     */
     public static function form(Site $site): array
     {
         return [
@@ -28,6 +31,9 @@ class Create
         ];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function action(Component $component, array $data, Site $site): void
     {
         app(CreateRedirect::class)->create($site, $data);
