@@ -4,11 +4,14 @@ namespace Tests\Feature\API;
 
 use App\Facades\SSH;
 use App\Models\Redirect;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class RedirectsTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_create_redirect(): void
     {
         SSH::fake();
