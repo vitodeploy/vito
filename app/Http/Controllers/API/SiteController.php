@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
@@ -23,6 +24,7 @@ use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Spatie\RouteAttributes\Attributes\Put;
 
 #[Prefix('api/projects/{project}/servers/{server}/sites')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
@@ -109,6 +111,23 @@ class SiteController extends Controller
         $this->validate($request, UpdateLoadBalancer::rules($site));
 
         app(UpdateLoadBalancer::class)->update($site, $request->all());
+
+        return new SiteResource($site);
+    }
+
+    #[Put('{site}/aliases', name: 'api.projects.servers.sites.aliases', middleware: 'ability:write')]
+    #[Endpoint(title: 'aliases', description: 'Update aliases.')]
+    #[BodyParam(name: 'aliases', type: 'array', description: 'Array of aliases')]
+    #[Response(status: 200)]
+    public function updateAliases(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, UpdateAliases::rules());
+
+        app(UpdateAliases::class)->update($site, $request->all());
 
         return new SiteResource($site);
     }
