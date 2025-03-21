@@ -11,11 +11,11 @@ use Illuminate\Validation\Rule;
 class CreateRedirect
 {
     /**
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      */
     public function create(Site $site, array $input): Redirect
     {
-        $redirect = new Redirect();
+        $redirect = new Redirect;
 
         $redirect->site_id = $site->id;
         $redirect->from = $input['from'];

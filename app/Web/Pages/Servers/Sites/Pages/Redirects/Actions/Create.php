@@ -32,7 +32,7 @@ class Create
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function action(Component $component, array $data, Site $site): void
     {
