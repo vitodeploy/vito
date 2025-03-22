@@ -95,7 +95,7 @@ class DatabaseTest extends TestCase
             ->assertNoContent();
     }
 
-    public function test_duplicate_database(): void
+    public function test_clone_database(): void
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
@@ -109,28 +109,28 @@ class DatabaseTest extends TestCase
             'collation' => 'utf8mb4_unicode_ci',
         ]);
 
-        $this->json('POST', route('api.projects.servers.databases.duplicate', [
+        $this->json('POST', route('api.projects.servers.databases.clone', [
             'project' => $this->server->project,
             'server' => $this->server,
             'database' => $database,
         ]), [
-            'name' => 'duplicated_db',
+            'name' => 'cloned_db',
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
-                'name' => 'duplicated_db',
+                'name' => 'cloned_db',
                 'status' => DatabaseStatus::READY,
             ]);
 
         $this->assertDatabaseHas('databases', [
             'server_id' => $this->server->id,
-            'name' => 'duplicated_db',
+            'name' => 'cloned_db',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
         ]);
     }
 
-    public function test_duplicate_database_with_existing_name(): void
+    public function test_clone_database_with_existing_name(): void
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
@@ -147,7 +147,7 @@ class DatabaseTest extends TestCase
             'name' => 'existing_db',
         ]);
 
-        $this->json('POST', route('api.projects.servers.databases.duplicate', [
+        $this->json('POST', route('api.projects.servers.databases.clone', [
             'project' => $this->server->project,
             'server' => $this->server,
             'database' => $database,

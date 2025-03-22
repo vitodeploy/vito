@@ -2,8 +2,8 @@
 
 namespace App\Web\Pages\Servers\Databases\Widgets;
 
+use App\Actions\Database\CloneDatabase;
 use App\Actions\Database\DeleteDatabase;
-use App\Actions\Database\DuplicateDatabase;
 use App\Models\Database;
 use App\Models\Server;
 use App\Models\User;
@@ -64,26 +64,26 @@ class DatabasesList extends Widget
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
             ->actions([
-                Action::make('duplicate')
+                Action::make('clone')
                     ->hiddenLabel()
                     ->icon('heroicon-o-square-2-stack')
-                    ->modalHeading('Duplicate Database')
-                    ->tooltip('Duplicate')
+                    ->modalHeading('Clone Database')
+                    ->tooltip('Clone')
                     ->authorize(fn ($record) => $user->can('create', [Database::class, $this->server]))
                     ->form([
                         \Filament\Forms\Components\TextInput::make('name')
                             ->label('New Database Name')
                             ->required()
-                            ->helperText('The name for the duplicated database')
-                            ->rules(fn (Database $record) => DuplicateDatabase::rules($record)['name']),
+                            ->helperText('The name for the cloned database')
+                            ->rules(fn (Database $record) => CloneDatabase::rules($record)['name']),
                     ])
                     ->action(function (Database $record, array $data): void {
                         run_action($this, function () use ($record, $data): void {
                             try {
-                                app(DuplicateDatabase::class)->duplicate($record, $data);
+                                app(CloneDatabase::class)->clone($record, $data);
                                 Notification::make()
                                     ->success()
-                                    ->title('Databases duplicated!')
+                                    ->title('Databases cloned!')
                                     ->send();
                             } catch (\Throwable $e) {
                                 Notification::make()

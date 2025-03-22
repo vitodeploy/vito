@@ -123,7 +123,7 @@ class DatabaseTest extends TestCase
             ->assertSuccessful();
     }
 
-    public function test_duplicate_database(): void
+    public function test_clone_database(): void
     {
         $this->actingAs($this->user);
 
@@ -151,14 +151,14 @@ class DatabaseTest extends TestCase
         Livewire::test(DatabasesList::class, [
             'server' => $this->server,
         ])
-            ->callTableAction('duplicate', $database, [
-                'name' => 'duplicated_db',
+            ->callTableAction('clone', $database, [
+                'name' => 'cloned_db',
             ])
             ->assertSuccessful();
 
         $this->assertDatabaseHas('databases', [
             'server_id' => $this->server->id,
-            'name' => 'duplicated_db',
+            'name' => 'cloned_db',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'status' => DatabaseStatus::READY,

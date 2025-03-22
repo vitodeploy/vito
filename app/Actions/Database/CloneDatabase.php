@@ -8,7 +8,7 @@ use App\Models\DatabaseUser;
 use App\Models\StorageProvider;
 use Illuminate\Validation\Rule;
 
-class DuplicateDatabase
+class CloneDatabase
 {
     public function __construct(
         private readonly RunBackup $runBackup,
@@ -19,7 +19,7 @@ class DuplicateDatabase
     /**
      * @param  array<string, mixed>  $input
      */
-    public function duplicate(Database $sourceDatabase, array $input): Database
+    public function clone(Database $sourceDatabase, array $input): Database
     {
         // Check if there is a local storage provider and get it
         $storageProvider = StorageProvider::getByProjectId($sourceDatabase->server->project_id)
