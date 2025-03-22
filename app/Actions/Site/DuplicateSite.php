@@ -42,9 +42,9 @@ class DuplicateSite
                 'source_control_id' => $sourceSite->source_control_id,
             ]);
 
-            // duplicate type data
+            // duplicate type data and add copied from site id
             $type_data = $sourceSite->type_data;
-            $type_data['copied_from_site_id'] = $sourceSite->id;
+            $type_data['copied_from_site_id'] = (string) $sourceSite->id;
             $duplicatedSite->type_data = $type_data;
 
             // Check repository access
@@ -80,7 +80,6 @@ class DuplicateSite
                 return [
                     'name' => $command->name,
                     'command' => $command->command,
-                    'user' => $command->user,
                 ];
             })->toArray();
 
