@@ -79,12 +79,19 @@ class DatabasesList extends Widget
                     ])
                     ->action(function (Database $record, array $data): void {
                         run_action($this, function () use ($record, $data): void {
-                            app(DuplicateDatabase::class)->duplicate($record, $data);
+                            try {
+                                app(DuplicateDatabase::class)->duplicate($record, $data);
+                                Notification::make()
+                                    ->success()
+                                    ->title('Databases duplicated!')
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title($e->getMessage())
+                                    ->send();
+                            }
                             $this->dispatch('$refresh');
-                            Notification::make()
-                                ->success()
-                                ->title('Databases duplicated!')
-                                ->send();
                         });
                     }),
                 Action::make('delete')

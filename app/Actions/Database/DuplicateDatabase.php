@@ -21,6 +21,15 @@ class DuplicateDatabase
      */
     public function duplicate(Database $sourceDatabase, array $input): Database
     {
+        // Check if there is a local storage provider and get it
+        $storageProvider = StorageProvider::getByProjectId($sourceDatabase->server->project_id)
+            ->where('provider', 'local')
+            ->first();
+
+        if (! $storageProvider) {
+            throw new \RuntimeException('No local storage provider found for this project. To use this feature, add at least one local storage provider.');
+        }
+
         // Create new database with same settings
         $newDatabase = app(CreateDatabase::class)->create($sourceDatabase->server, [
             'name' => $input['name'],
@@ -44,14 +53,6 @@ class DuplicateDatabase
         }
 
         // Create backup of source database
-        $storageProvider = StorageProvider::getByProjectId($sourceDatabase->server->project_id)
-            ->where('provider', 'local')
-            ->first();
-
-        if (! $storageProvider) {
-            throw new \RuntimeException('No local storage provider found for this project. To use this feature, add at least one local storage provider.');
-        }
-
         $backup = $sourceDatabase->backups()->create([
             'type' => 'database',
             'server_id' => $sourceDatabase->server_id,
