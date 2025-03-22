@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Database\CreateDatabase;
+use App\Actions\Database\DuplicateDatabase;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DatabaseResource;
 use App\Models\Database;
@@ -81,6 +82,23 @@ class DatabaseController extends Controller
         $database->delete();
 
         return response()->noContent();
+    }
+
+    #[Post('{database}/duplicate', name: 'api.projects.servers.databases.duplicate', middleware: 'ability:write')]
+    #[Endpoint(title: 'duplicate', description: 'Duplicate a database.')]
+    #[BodyParam(name: 'name', description: 'Name for the new database', required: true)]
+    #[ResponseFromApiResource(DatabaseResource::class, Database::class)]
+    public function duplicate(Request $request, Project $project, Server $server, Database $database): DatabaseResource
+    {
+        $this->authorize('create', [Database::class, $server]);
+
+        $this->validateRoute($project, $server, $database);
+
+        $this->validate($request, DuplicateDatabase::rules($database));
+
+        $newDatabase = app(DuplicateDatabase::class)->duplicate($database, $request->all());
+
+        return new DatabaseResource($newDatabase);
     }
 
     private function validateRoute(Project $project, Server $server, ?Database $database = null): void

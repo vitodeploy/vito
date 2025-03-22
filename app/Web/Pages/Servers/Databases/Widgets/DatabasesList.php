@@ -3,9 +3,11 @@
 namespace App\Web\Pages\Servers\Databases\Widgets;
 
 use App\Actions\Database\DeleteDatabase;
+use App\Actions\Database\DuplicateDatabase;
 use App\Models\Database;
 use App\Models\Server;
 use App\Models\User;
+use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -62,6 +64,29 @@ class DatabasesList extends Widget
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
             ->actions([
+                Action::make('duplicate')
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-square-2-stack')
+                    ->modalHeading('Duplicate Database')
+                    ->tooltip('Duplicate')
+                    ->authorize(fn ($record) => $user->can('create', [Database::class, $this->server]))
+                    ->form([
+                        \Filament\Forms\Components\TextInput::make('name')
+                            ->label('New Database Name')
+                            ->required()
+                            ->helperText('The name for the duplicated database')
+                            ->rules(fn (Database $record) => DuplicateDatabase::rules($record)['name']),
+                    ])
+                    ->action(function (Database $record, array $data): void {
+                        run_action($this, function () use ($record, $data): void {
+                            app(DuplicateDatabase::class)->duplicate($record, $data);
+                            $this->dispatch('$refresh');
+                            Notification::make()
+                                ->success()
+                                ->title('Databases duplicated!')
+                                ->send();
+                        });
+                    }),
                 Action::make('delete')
                     ->hiddenLabel()
                     ->icon('heroicon-o-trash')
@@ -74,6 +99,10 @@ class DatabasesList extends Widget
                         run_action($this, function () use ($record): void {
                             app(DeleteDatabase::class)->delete($this->server, $record);
                             $this->dispatch('$refresh');
+                            Notification::make()
+                                ->success()
+                                ->title('Databases deleted!')
+                                ->send();
                         });
                     }),
             ]);
