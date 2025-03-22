@@ -25,7 +25,7 @@ class PHPSite extends AbstractSiteType
             SiteFeature::ENV,
             SiteFeature::SSL,
             SiteFeature::WORKERS,
-            SiteFeature::DUPLICATION,
+            SiteFeature::CLONING,
         ];
     }
 
@@ -117,7 +117,7 @@ class PHPSite extends AbstractSiteType
      * @throws FailedToDeployGitKey
      * @throws SSHError
      */
-    public function duplicateSite(): void
+    public function cloneSite(): void
     {
         $this->site->webserver()->createVHost($this->site);
         $this->progress(15);
@@ -125,7 +125,7 @@ class PHPSite extends AbstractSiteType
         $this->progress(30);
         $sourceSite = Site::query()->findOrFail($this->site->type_data['copied_from_site_id']);
         $this->progress(40);
-        $this->site->webserver()->duplicateSite($sourceSite, $this->site);
+        $this->site->webserver()->cloneSite($sourceSite, $this->site);
         if ($this->site->sourceControl) {
             app(Git::class)->fetchOrigin($this->site);
             app(Git::class)->checkout($this->site);

@@ -16,20 +16,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class DuplicateSite
+class CloneSite
 {
     /**
      * @param  array<string, mixed>  $input
      *
      * @throws ValidationException
      */
-    public function duplicate(Site $sourceSite, array $input): Site
+    public function clone(Site $sourceSite, array $input): Site
     {
         DB::beginTransaction();
         try {
             $server = $sourceSite->server;
 
-            $duplicatedSite = new Site([
+            $clonedSite = new Site([
                 'server_id' => $server->id,
                 'type' => $sourceSite->type,
                 'domain' => $input['domain'],
@@ -42,15 +42,15 @@ class DuplicateSite
                 'source_control_id' => $sourceSite->source_control_id,
             ]);
 
-            // duplicate type data and add copied from site id
+            // clone type data and add copied from site id
             $type_data = $sourceSite->type_data;
             $type_data['copied_from_site_id'] = (string) $sourceSite->id;
-            $duplicatedSite->type_data = $type_data;
+            $clonedSite->type_data = $type_data;
 
             // Check repository access
             try {
-                if ($duplicatedSite->sourceControl) {
-                    $duplicatedSite->sourceControl->getRepo($duplicatedSite->repository);
+                if ($clonedSite->sourceControl) {
+                    $clonedSite->sourceControl->getRepo($clonedSite->repository);
                 }
             } catch (SourceControlIsNotConnected) {
                 throw ValidationException::withMessages([
@@ -66,16 +66,16 @@ class DuplicateSite
                 ]);
             }
 
-            // Save the duplicated site
-            $duplicatedSite->save();
+            // Save the cloned site
+            $clonedSite->save();
 
-            // duplicate deployment script
-            $duplicatedSite->deploymentScript()->create([
+            // clone deployment script
+            $clonedSite->deploymentScript()->create([
                 'name' => 'default',
                 'content' => $sourceSite->deploymentScript->content ?? '',
             ]);
 
-            // duplicate commands
+            // clone commands
             $commands = $sourceSite->commands->map(function ($command) {
                 return [
                     'name' => $command->name,
@@ -83,25 +83,25 @@ class DuplicateSite
                 ];
             })->toArray();
 
-            $duplicatedSite->commands()->createMany($commands);
+            $clonedSite->commands()->createMany($commands);
 
-            // Setup duplicated site
-            dispatch(function () use ($duplicatedSite): void {
-                $duplicatedSite->type()->duplicateSite();
-                $duplicatedSite->update([
+            // Setup cloned site
+            dispatch(function () use ($clonedSite): void {
+                $clonedSite->type()->cloneSite();
+                $clonedSite->update([
                     'status' => SiteStatus::READY,
                     'progress' => 100,
                 ]);
-                Notifier::send($duplicatedSite, new SiteInstallationSucceed($duplicatedSite));
-            })->catch(function () use ($duplicatedSite): void {
-                $duplicatedSite->status = SiteStatus::INSTALLATION_FAILED;
-                $duplicatedSite->save();
-                Notifier::send($duplicatedSite, new SiteInstallationFailed($duplicatedSite));
+                Notifier::send($clonedSite, new SiteInstallationSucceed($clonedSite));
+            })->catch(function () use ($clonedSite): void {
+                $clonedSite->status = SiteStatus::INSTALLATION_FAILED;
+                $clonedSite->save();
+                Notifier::send($clonedSite, new SiteInstallationFailed($clonedSite));
             })->onConnection('ssh');
 
             DB::commit();
 
-            return $duplicatedSite;
+            return $clonedSite;
         } catch (Exception $e) {
             DB::rollBack();
             throw ValidationException::withMessages([

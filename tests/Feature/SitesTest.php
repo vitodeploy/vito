@@ -266,7 +266,7 @@ class SitesTest extends TestCase
             ->assertSee('Logs');
     }
 
-    public function test_duplicate_site(): void
+    public function test_clone_site(): void
     {
         SSH::fake();
 
@@ -288,18 +288,18 @@ class SitesTest extends TestCase
             'server' => $this->server,
             'site' => $site,
         ])
-            ->callAction('duplicate-site', [
-                'domain' => 'duplicate.com',
+            ->callAction('clone-site', [
+                'domain' => 'clone.com',
                 'branch' => 'develop',
             ])
             ->assertHasNoActionErrors()
             ->assertSuccessful();
 
         $this->assertDatabaseHas('sites', [
-            'domain' => 'duplicate.com',
+            'domain' => 'clone.com',
             'status' => SiteStatus::READY,
             'user' => $site->user,
-            'path' => '/home/'.$site->user.'/duplicate.com',
+            'path' => '/home/'.$site->user.'/clone.com',
         ]);
     }
 

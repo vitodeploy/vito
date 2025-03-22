@@ -190,7 +190,7 @@ class SitesTest extends TestCase
         ]);
     }
 
-    public function test_duplicate_site(): void
+    public function test_clone_site(): void
     {
         SSH::fake();
 
@@ -201,17 +201,17 @@ class SitesTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->json('POST', route('api.projects.servers.sites.duplicate', [
+        $this->json('POST', route('api.projects.servers.sites.clone', [
             'project' => $this->server->project,
             'server' => $this->server,
             'site' => $site,
         ]), [
-            'domain' => 'duplicate.com',
-            'aliases' => ['www.duplicate.com'],
+            'domain' => 'clone.com',
+            'aliases' => ['www.clone.com'],
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
-                'domain' => 'duplicate.com',
+                'domain' => 'clone.com',
             ]);
     }
 

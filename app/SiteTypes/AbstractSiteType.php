@@ -91,7 +91,7 @@ abstract class AbstractSiteType implements SiteType
         }
     }
 
-    public function duplicateSite(): void
+    public function cloneSite(): void
     {
         // not supported
     }

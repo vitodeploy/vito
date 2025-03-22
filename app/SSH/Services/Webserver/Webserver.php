@@ -22,5 +22,5 @@ interface Webserver extends ServiceInterface
 
     public function removeSSL(Ssl $ssl): void;
 
-    public function duplicateSite(Site $sourceSite, Site $targetSite): void;
+    public function cloneSite(Site $sourceSite, Site $targetSite): void;
 }

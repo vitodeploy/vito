@@ -145,14 +145,14 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function duplicateSite(Site $sourceSite, Site $targetSite): void
+    public function cloneSite(Site $sourceSite, Site $targetSite): void
     {
         $this->service->server->ssh($sourceSite->user)->exec(
-            view('ssh.services.webserver.nginx.duplicate-site', [
+            view('ssh.services.webserver.nginx.clone-site', [
                 'sourcePath' => $sourceSite->path,
                 'targetPath' => $targetSite->path,
             ]),
-            'duplicate-site',
+            'clone-site',
             $targetSite->id
         );
         $this->service->restart();

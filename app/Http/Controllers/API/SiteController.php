@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Site\CloneSite;
 use App\Actions\Site\CreateSite;
-use App\Actions\Site\DuplicateSite;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
@@ -144,21 +144,21 @@ class SiteController extends Controller
         }
     }
 
-    #[Post('{site}/duplicate', name: 'api.projects.servers.sites.duplicate', middleware: 'ability:write')]
-    #[Endpoint(title: 'duplicate', description: 'Duplicate a site.')]
+    #[Post('{site}/clone', name: 'api.projects.servers.sites.clone', middleware: 'ability:write')]
+    #[Endpoint(title: 'clone', description: 'clone a site.')]
     #[BodyParam(name: 'domain', required: true)]
     #[BodyParam(name: 'aliases', type: 'array')]
     #[BodyParam(name: 'branch', description: 'Branch, Required for Sites which support source control', example: 'main')]
     #[ResponseFromApiResource(SiteResource::class, Site::class)]
-    public function duplicate(Request $request, Project $project, Server $server, Site $site): SiteResource
+    public function clone(Request $request, Project $project, Server $server, Site $site): SiteResource
     {
-        $this->authorize('duplicate', [Site::class, $server]);
+        $this->authorize('clone', [Site::class, $server]);
 
         $this->validateRoute($project, $server);
 
-        $this->validate($request, DuplicateSite::rules($site, $request->input()));
+        $this->validate($request, cloneSite::rules($site, $request->input()));
 
-        $site = app(DuplicateSite::class)->duplicate($site, $request->all());
+        $site = app(cloneSite::class)->clone($site, $request->all());
 
         return new SiteResource($site);
     }

@@ -49,7 +49,7 @@ class SitePolicy
             && $site->server->webserver();
     }
 
-    public function duplicate(User $user, Server $server): bool
+    public function clone(User $user, Server $server): bool
     {
         return ($user->isAdmin() || $server->project->users->contains($user))
             && $server->isReady()

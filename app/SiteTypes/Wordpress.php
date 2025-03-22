@@ -25,7 +25,7 @@ class Wordpress extends AbstractSiteType
         return [
             SiteFeature::SSL,
             SiteFeature::COMMANDS,
-            SiteFeature::DUPLICATION,
+            SiteFeature::CLONING,
         ];
     }
 
@@ -136,12 +136,12 @@ class Wordpress extends AbstractSiteType
     /**
      * @throws SSHError
      */
-    public function duplicateSite(): void
+    public function cloneSite(): void
     {
         $this->site->webserver()->createVHost($this->site);
         $sourceSite = Site::query()->findOrFail($this->site->type_data['copied_from_site_id']);
         $this->progress(35);
-        $this->site->webserver()->duplicateSite($sourceSite, $this->site);
+        $this->site->webserver()->cloneSite($sourceSite, $this->site);
         $this->progress(65);
         $this->site->php()?->restart();
     }

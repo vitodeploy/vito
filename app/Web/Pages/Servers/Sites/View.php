@@ -2,15 +2,15 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
+use App\Actions\Site\CloneSite;
 use App\Actions\Site\Deploy;
-use App\Actions\Site\DuplicateSite;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Enums\SiteFeature;
 use App\Enums\SiteType;
 use App\Facades\Notifier;
-use App\Notifications\SiteDuplicationSucceed;
+use App\Notifications\SiteCloningSucceed;
 use App\ValidationRules\DomainRule;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
@@ -106,8 +106,8 @@ class View extends Page
             $actionsGroup[] = $this->branchAction();
         }
 
-        if (in_array(SiteFeature::DUPLICATION, $this->site->type()->supportedFeatures())) {
-            $actionsGroup[] = $this->duplicateSiteAction();
+        if (in_array(SiteFeature::CLONING, $this->site->type()->supportedFeatures())) {
+            $actionsGroup[] = $this->cloneSiteAction();
         }
 
         $actions[] = ActionGroup::make($actionsGroup)
@@ -239,12 +239,12 @@ class View extends Page
             });
     }
 
-    private function duplicateSiteAction(): Action
+    private function cloneSiteAction(): Action
     {
-        return Action::make('duplicate-site')
-            ->label('Duplicate Site')
-            ->modalSubmitActionLabel('Duplicate')
-            ->modalHeading('Duplicate Site')
+        return Action::make('clone-site')
+            ->label('Clone Site')
+            ->modalSubmitActionLabel('Clone')
+            ->modalHeading('Clone Site')
             ->modalWidth(MaxWidth::Medium)
             ->form([
                 TextInput::make('domain')
@@ -274,13 +274,13 @@ class View extends Page
             ])
             ->action(function (array $data): void {
                 run_action($this, function () use ($data): void {
-                    $duplicatedSite = app(DuplicateSite::class)->duplicate($this->site, $data);
+                    $clonedSite = app(cloneSite::class)->clone($this->site, $data);
 
-                    Notifier::send($duplicatedSite, new SiteDuplicationSucceed($duplicatedSite));
+                    Notifier::send($clonedSite, new SiteCloningSucceed($clonedSite));
 
                     $this->redirect(static::getUrl(parameters: [
                         'server' => $this->server,
-                        'site' => $duplicatedSite,
+                        'site' => $clonedSite,
                     ]));
                 });
             });

@@ -14,5 +14,5 @@ final class SiteFeature
 
     const COMMANDS = 'commands';
 
-    const DUPLICATION = 'duplication';
+    const CLONING = 'cloning';
 }
