@@ -190,6 +190,53 @@ class SitesTest extends TestCase
         ]);
     }
 
+    public function test_show_env(): void
+    {
+        $envContent = "APP_NAME=Laravel\nAPP_ENV=production";
+        SSH::fake($envContent);
+
+        Sanctum::actingAs($this->user, ['read']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.env.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'data' => [
+                    'env',
+                ],
+            ])
+            ->assertJsonFragment([
+                'env' => $envContent,
+            ]);
+    }
+
+    public function test_show_env_unauthorized(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, []); // no abilities
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.env.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertForbidden();
+    }
+
     public static function create_data(): array
     {
         return \Tests\Feature\SitesTest::create_data();
