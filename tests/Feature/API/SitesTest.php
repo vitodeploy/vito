@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\API;
 
+use App\Enums\DeploymentStatus;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SourceControl;
 use App\Facades\SSH;
@@ -187,6 +188,54 @@ class SitesTest extends TestCase
             'port' => 80,
             'weight' => 1,
             'backup' => false,
+        ]);
+    }
+
+    public function test_deploy_site(): void
+    {
+        SSH::fake();
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+                'commit' => [
+                    'sha' => 'abc123',
+                    'commit' => [
+                        'message' => 'Test commit',
+                        'author' => [
+                            'name' => 'Test Author',
+                            'email' => 'test@example.com',
+                            'date' => now()->toIso8601String(),
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $script = $site->deploymentScript;
+        $script->content = 'git pull';
+        $script->save();
+
+        $this->json('POST', route('api.projects.servers.sites.deploy', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'id',
+                'status',
+            ]);
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $site->id,
+            'status' => DeploymentStatus::FINISHED,
         ]);
     }
 
