@@ -12,6 +12,8 @@ interface Webserver extends ServiceInterface
 
     public function updateVHost(Site $site, ?string $vhost = null): void;
 
+    public function createOrUpdateAdditionalConfig(Site $site, string $configName, ?string $configContent = null): void;
+
     public function getVHost(Site $site): string;
 
     public function deleteSite(Site $site): void;

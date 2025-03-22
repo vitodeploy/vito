@@ -30,7 +30,7 @@ class CreateRedirect
 
         /** @var Webserver $webserver */
         $webserver = $service->handler();
-        $webserver->updateVHost($site);
+        $webserver->createOrUpdateAdditionalConfig($site, 'redirects');
 
         return $redirect;
     }

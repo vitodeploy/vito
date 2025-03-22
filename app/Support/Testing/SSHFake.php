@@ -80,6 +80,14 @@ class SSHFake extends SSH
         return $output;
     }
 
+    public function ensurePathExists(string $path, ?string $owner = null): void
+    {
+        $this->exec(
+            'sudo mkdir -p '.$path.' && sudo chown -R '.$owner.':'.$owner.' '.$path,
+            ''
+        );
+    }
+
     public function upload(string $local, string $remote, ?string $owner = null): void
     {
         $this->uploadedLocalPath = $local;

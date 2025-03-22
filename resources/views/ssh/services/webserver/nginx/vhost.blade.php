@@ -88,11 +88,6 @@ server {
         deny all;
     }
 
-    @if ($site->redirects()->count() > 0)
-        @foreach($site->redirects as $redirect)
-            location {{ $redirect->from }} {
-                return {{ $redirect->mode }} {{ $redirect->to }};
-            }
-        @endforeach
-    @endif
+    include /etc/nginx/conf.d/extension-configs/{{ $site->id }}/*.conf;
+    include /etc/nginx/conf.d/custom-configs/{{ $site->id }}/*.conf;
 }
