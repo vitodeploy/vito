@@ -3,18 +3,24 @@
 namespace App\Web\Pages\Servers\Sites;
 
 use App\Actions\Site\Deploy;
+use App\Actions\Site\DuplicateSite;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Enums\SiteFeature;
 use App\Enums\SiteType;
+use App\Facades\Notifier;
+use App\Notifications\SiteDuplicationSucceed;
+use App\ValidationRules\DomainRule;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconPosition;
 use Filament\Support\Enums\MaxWidth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\On;
 
 class View extends Page
@@ -98,6 +104,10 @@ class View extends Page
 
         if ($this->site->sourceControl) {
             $actionsGroup[] = $this->branchAction();
+        }
+
+        if (in_array(SiteFeature::DUPLICATION, $this->site->type()->supportedFeatures())) {
+            $actionsGroup[] = $this->duplicateSiteAction();
         }
 
         $actions[] = ActionGroup::make($actionsGroup)
@@ -225,6 +235,53 @@ class View extends Page
                         ->success()
                         ->title('Branch updated!')
                         ->send();
+                });
+            });
+    }
+
+    private function duplicateSiteAction(): Action
+    {
+        return Action::make('duplicate-site')
+            ->label('Duplicate Site')
+            ->modalSubmitActionLabel('Duplicate')
+            ->modalHeading('Duplicate Site')
+            ->modalWidth(MaxWidth::Medium)
+            ->form([
+                TextInput::make('domain')
+                    ->label('Domain')
+                    ->placeholder('example.com')
+                    ->required()
+                    ->rules([
+                        'required', new DomainRule,
+                        Rule::unique('sites', 'domain')->where(fn ($query) => $query->where('server_id', $this->server->id)),
+                    ]),
+
+                TagsInput::make('aliases')
+                    ->label('Aliases')
+                    ->splitKeys(['Enter', 'Tab', ' ', ','])
+                    ->placeholder('Type and press enter to add an alias')
+                    ->helperText('Comma separated domains')
+                    ->nestedRecursiveRules([
+                        new DomainRule,
+                    ]),
+
+                TextInput::make('branch')
+                    ->label('Branch')
+                    ->default($this->site->branch)
+                    ->visible(fn () => $this->site->sourceControl !== null)
+                    ->helperText('Leave empty to use the same branch as the original site')
+                    ->rules(['nullable', 'string']),
+            ])
+            ->action(function (array $data): void {
+                run_action($this, function () use ($data): void {
+                    $duplicatedSite = app(DuplicateSite::class)->duplicate($this->site, $data);
+
+                    Notifier::send($duplicatedSite, new SiteDuplicationSucceed($duplicatedSite));
+
+                    $this->redirect(static::getUrl(parameters: [
+                        'server' => $this->server,
+                        'site' => $duplicatedSite,
+                    ]));
                 });
             });
     }

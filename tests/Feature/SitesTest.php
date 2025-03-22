@@ -266,6 +266,43 @@ class SitesTest extends TestCase
             ->assertSee('Logs');
     }
 
+    public function test_duplicate_site(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $sshUser = $this->server->getSshUser();
+
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'domain' => 'original.com',
+            'repository' => 'test/test',
+            'path' => '/home/'.$sshUser.'/original.com',
+            'aliases' => ['www.original.com'],
+            'branch' => 'main',
+        ]);
+
+        // something is wrong here, it doesn't create the site
+        Livewire::test(View::class, [
+            'server' => $this->server,
+            'site' => $site,
+        ])
+            ->callAction('duplicate-site', [
+                'domain' => 'duplicate.com',
+                'branch' => 'develop',
+            ])
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'duplicate.com',
+            'status' => SiteStatus::READY,
+            'user' => $site->user,
+            'path' => '/home/'.$site->user.'/duplicate.com',
+        ]);
+    }
+
     public static function failure_create_data(): array
     {
         return [

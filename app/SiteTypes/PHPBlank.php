@@ -4,6 +4,7 @@ namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
 use App\Exceptions\SSHError;
+use App\Models\Site;
 use Illuminate\Validation\Rule;
 
 class PHPBlank extends PHPSite
@@ -16,6 +17,7 @@ class PHPBlank extends PHPSite
             SiteFeature::ENV,
             SiteFeature::SSL,
             SiteFeature::WORKERS,
+            SiteFeature::DUPLICATION,
         ];
     }
 
@@ -56,5 +58,18 @@ class PHPBlank extends PHPSite
     public function baseCommands(): array
     {
         return [];
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function duplicateSite(): void
+    {
+        $this->site->webserver()->createVHost($this->site);
+        $sourceSite = Site::query()->findOrFail($this->site->type_data['copied_from_site_id']);
+        $this->progress(35);
+        $this->site->webserver()->duplicateSite($sourceSite, $this->site);
+        $this->progress(65);
+        $this->site->php()?->restart();
     }
 }

@@ -9,6 +9,7 @@ use App\Enums\SiteFeature;
 use App\Exceptions\SSHError;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\Site;
 use Closure;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +25,7 @@ class Wordpress extends AbstractSiteType
         return [
             SiteFeature::SSL,
             SiteFeature::COMMANDS,
+            SiteFeature::DUPLICATION,
         ];
     }
 
@@ -129,5 +131,18 @@ class Wordpress extends AbstractSiteType
     public function edit(): void
     {
         //
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function duplicateSite(): void
+    {
+        $this->site->webserver()->createVHost($this->site);
+        $sourceSite = Site::query()->findOrFail($this->site->type_data['copied_from_site_id']);
+        $this->progress(35);
+        $this->site->webserver()->duplicateSite($sourceSite, $this->site);
+        $this->progress(65);
+        $this->site->php()?->restart();
     }
 }

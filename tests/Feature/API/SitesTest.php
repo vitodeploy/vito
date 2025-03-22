@@ -190,6 +190,31 @@ class SitesTest extends TestCase
         ]);
     }
 
+    public function test_duplicate_site(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('POST', route('api.projects.servers.sites.duplicate', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'domain' => 'duplicate.com',
+            'aliases' => ['www.duplicate.com'],
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'domain' => 'duplicate.com',
+            ]);
+    }
+
     public static function create_data(): array
     {
         return \Tests\Feature\SitesTest::create_data();

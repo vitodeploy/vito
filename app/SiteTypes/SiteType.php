@@ -31,6 +31,8 @@ interface SiteType
 
     public function install(): void;
 
+    public function duplicateSite(): void;
+
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\DuplicateSite;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
@@ -141,5 +142,24 @@ class SiteController extends Controller
         if ($site && $site->server_id !== $server->id) {
             abort(404, 'Site not found in server');
         }
+    }
+
+    #[Post('{site}/duplicate', name: 'api.projects.servers.sites.duplicate', middleware: 'ability:write')]
+    #[Endpoint(title: 'duplicate', description: 'Duplicate a site.')]
+    #[BodyParam(name: 'domain', required: true)]
+    #[BodyParam(name: 'aliases', type: 'array')]
+    #[BodyParam(name: 'branch', description: 'Branch, Required for Sites which support source control', example: 'main')]
+    #[ResponseFromApiResource(SiteResource::class, Site::class)]
+    public function duplicate(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('duplicate', [Site::class, $server]);
+
+        $this->validateRoute($project, $server);
+
+        $this->validate($request, DuplicateSite::rules($site, $request->input()));
+
+        $site = app(DuplicateSite::class)->duplicate($site, $request->all());
+
+        return new SiteResource($site);
     }
 }
