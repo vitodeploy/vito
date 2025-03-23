@@ -132,6 +132,26 @@ class SiteController extends Controller
         return new SiteResource($site);
     }
 
+    #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'env', description: 'Get site .env file content')]
+    #[Response(content: [
+        'data' => [
+            'env' => 'APP_NAME=Laravel\nAPP_ENV=production',
+        ],
+    ], status: 200)]
+    public function showEnv(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        return response()->json([
+            'data' => [
+                'env' => $site->getEnv(),
+            ],
+        ]);
+    }
+
     private function validateRoute(Project $project, Server $server, ?Site $site = null): void
     {
         if ($project->id !== $server->project_id) {
