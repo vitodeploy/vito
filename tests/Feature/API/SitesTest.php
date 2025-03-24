@@ -237,6 +237,34 @@ class SitesTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_update_env(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $envContent = "APP_NAME=Laravel\nAPP_ENV=production";
+
+        $this->json('PUT', route('api.projects.servers.sites.env', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'env' => $envContent,
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'domain' => $site->domain,
+            ]);
+
+        SSH::assertExecuted('edit-file');
+    }
+
     public static function create_data(): array
     {
         return \Tests\Feature\SitesTest::create_data();

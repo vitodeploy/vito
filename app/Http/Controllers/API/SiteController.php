@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\UpdateAliases;
+use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
@@ -150,6 +151,25 @@ class SiteController extends Controller
                 'env' => $site->getEnv(),
             ],
         ]);
+    }
+
+    #[Put('{site}/env', name: 'api.projects.servers.sites.env', middleware: 'ability:write')]
+    #[Endpoint(title: 'env', description: 'Update site .env file')]
+    #[BodyParam(name: 'env', type: 'string', description: 'Content of the .env file')]
+    #[Response(status: 200)]
+    public function updateEnv(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, [
+            'env' => ['required', 'string'],
+        ]);
+
+        app(UpdateEnv::class)->update($site, $request->all());
+
+        return new SiteResource($site);
     }
 
     private function validateRoute(Project $project, Server $server, ?Site $site = null): void
