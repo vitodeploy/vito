@@ -133,7 +133,6 @@ class SiteController extends Controller
         return new SiteResource($site);
     }
 
-
     #[Put('{site}/env', name: 'api.projects.servers.sites.env', middleware: 'ability:write')]
     #[Endpoint(title: 'env', description: 'Update site .env file')]
     #[BodyParam(name: 'env', type: 'string', description: 'Content of the .env file')]
@@ -152,7 +151,7 @@ class SiteController extends Controller
 
         return new SiteResource($site);
     }
-  
+
     #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
     #[Endpoint(title: 'env', description: 'Get site .env file content')]
     #[Response(content: [
