@@ -150,6 +150,20 @@ class SiteController extends Controller
         return new SiteResource($site);
     }
 
+    #[Get('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'deployment-script', description: 'Get site deployment script content')]
+    #[Response(status: 200)]
+    public function showDeploymentScript(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        return response()->json([
+            'script' => $site->deploymentScript?->content,
+        ]);
+    }
+
     private function validateRoute(Project $project, Server $server, ?Site $site = null): void
     {
         if ($project->id !== $server->project_id) {

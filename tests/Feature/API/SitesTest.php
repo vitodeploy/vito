@@ -241,6 +241,30 @@ class SitesTest extends TestCase
             ->assertJsonValidationErrors(['script']);
     }
 
+    public function test_show_deployment_script(): void
+    {
+        Sanctum::actingAs($this->user, ['read']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $scriptContent = "git pull\ncomposer install";
+
+        $site->deploymentScript->update([
+            'content' => $scriptContent,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.deployment-script.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonPath('script', $scriptContent);
+    }
+
     public static function create_data(): array
     {
         return \Tests\Feature\SitesTest::create_data();
