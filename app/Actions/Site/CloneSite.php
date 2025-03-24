@@ -70,8 +70,7 @@ class CloneSite
             $clonedSite->save();
 
             // clone deployment script
-            $clonedSite->deploymentScript()->create([
-                'name' => 'default',
+            $clonedSite->deploymentScript->update([
                 'content' => $sourceSite->deploymentScript->content ?? '',
             ]);
 

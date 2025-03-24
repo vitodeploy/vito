@@ -274,7 +274,7 @@ class View extends Page
             ])
             ->action(function (array $data): void {
                 run_action($this, function () use ($data): void {
-                    $clonedSite = app(cloneSite::class)->clone($this->site, $data);
+                    $clonedSite = app(CloneSite::class)->clone($this->site, $data);
 
                     Notifier::send($clonedSite, new SiteCloningSucceed($clonedSite));
 

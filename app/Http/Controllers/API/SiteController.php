@@ -156,9 +156,9 @@ class SiteController extends Controller
 
         $this->validateRoute($project, $server);
 
-        $this->validate($request, cloneSite::rules($site, $request->input()));
+        $this->validate($request, CloneSite::rules($site, $request->input()));
 
-        $site = app(cloneSite::class)->clone($site, $request->all());
+        $site = app(CloneSite::class)->clone($site, $request->all());
 
         return new SiteResource($site);
     }
