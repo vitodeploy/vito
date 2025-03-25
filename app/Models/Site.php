@@ -47,7 +47,7 @@ use Illuminate\Support\Str;
  * @property ?DeploymentScript $deploymentScript
  * @property Collection<int, Worker> $workers
  * @property Collection<int, Ssl> $ssls
- * @property ?Ssl $activeSsl
+ * @property Collection<int, Ssl> $activeSsl
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
  * @property Collection<int, LoadBalancerServer> $loadBalancerServers
@@ -273,11 +273,11 @@ class Site extends AbstractModel
     }
 
     /**
-     * @return HasOne<Ssl, covariant $this>
+     * @return HasMany<Ssl, covariant $this>
      */
-    public function activeSsl(): HasOne
+    public function activeSsl(): HasMany
     {
-        return $this->hasOne(Ssl::class)
+        return $this->hasMany(Ssl::class)
             ->where('expires_at', '>=', now())
             ->where('status', SslStatus::CREATED)
             ->where('is_active', true)
@@ -286,7 +286,7 @@ class Site extends AbstractModel
 
     public function getUrl(): string
     {
-        if ($this->activeSsl) {
+        if ($this->activeSsl()->whereJsonContains('domains', $this->domain)->first()) {
             return 'https://'.$this->domain;
         }
 
@@ -418,5 +418,21 @@ class Site extends AbstractModel
         }
 
         return $users;
+    }
+
+    /**
+     * @param  array<string>  $domains
+     */
+    public function resetSslDomains(array $domains): void
+    {
+        foreach ($this->activeSsl as $existingSsl) {
+            $existingSsl->domains = array_filter($existingSsl->getDomains(), function ($domain) use ($domains) {
+                return ! in_array($domain, $domains);
+            });
+
+            if ($existingSsl->isDirty('domains')) {
+                $existingSsl->save();
+            }
+        }
     }
 }

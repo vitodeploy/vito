@@ -9,8 +9,9 @@ use App\Web\Fields\AlertField;
 use App\Web\Pages\Servers\Sites\Page;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
-use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -76,6 +77,18 @@ class Index extends Page
                         )
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['type'])
                         ->reactive(),
+                    Section::make('Domains')
+                        ->schema([
+                            CheckboxList::make('domains')
+                                ->options(function (): array {
+                                    $domains = [$this->site->domain];
+                                    foreach ($this->site->aliases as $alias) {
+                                        $domains[] = $alias;
+                                    }
+
+                                    return \array_combine($domains, $domains);
+                                }),
+                        ]),
                     TextInput::make('email')
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['email'] ?? [])
                         ->visible(fn (Get $get): bool => $get('type') === SslType::LETSENCRYPT)
@@ -93,8 +106,6 @@ class Index extends Page
                         ->format('Y-m-d')
                         ->rules(fn (Get $get) => CreateSSL::rules($get())['expires_at'])
                         ->visible(fn (Get $get): bool => $get('type') === SslType::CUSTOM),
-                    Checkbox::make('aliases')
-                        ->label("Set SSL for site's aliases as well"),
                 ])
                 ->createAnother(false)
                 ->modalWidth(MaxWidth::Large)

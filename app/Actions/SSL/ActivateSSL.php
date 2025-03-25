@@ -8,7 +8,8 @@ class ActivateSSL
 {
     public function activate(Ssl $ssl): void
     {
-        $ssl->site->ssls()->update(['is_active' => false]);
+        $ssl->site->resetSslDomains($ssl->getDomains());
+
         $ssl->is_active = true;
         $ssl->save();
         $ssl->site->webserver()->updateVHost($ssl->site);
