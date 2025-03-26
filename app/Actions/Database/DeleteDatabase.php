@@ -2,6 +2,7 @@
 
 namespace App\Actions\Database;
 
+use App\Models\Backup;
 use App\Models\Database;
 use App\Models\Server;
 use App\Models\Service;
@@ -16,5 +17,9 @@ class DeleteDatabase
         $handler = $service->handler();
         $handler->delete($database->name);
         $database->delete();
+
+        $database->backups()->each(function (Backup $backup): void {
+            app(ManageBackup::class)->stop($backup);
+        });
     }
 }

@@ -9,4 +9,6 @@ final class BackupStatus
     const FAILED = 'failed';
 
     const DELETING = 'deleting';
+
+    const STOPPED = 'stopped';
 }
