@@ -2,6 +2,7 @@
 
 namespace App\Actions\Redirect;
 
+use App\Enums\RedirectStatus;
 use App\Models\Redirect;
 use App\Models\Service;
 use App\Models\Site;
@@ -11,21 +12,19 @@ class DeleteRedirect
 {
     public function delete(Site $site, Redirect $redirect): void
     {
-        $redirect->delete();
+        $redirect->status = RedirectStatus::DELETING;
+        $redirect->save();
 
-        /** @var Service $service */
-        $service = $site->server->webserver();
-
-        /** @var Webserver $webserver */
-        $webserver = $service->handler();
-        $webserver->createOrUpdateAdditionalConfig($site, 'redirects');
-    }
-
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
-    {
-        return [];
+        dispatch(function () use ($site, $redirect): void {
+            /** @var Service $service */
+            $service = $site->server->webserver();
+            /** @var Webserver $webserver */
+            $webserver = $service->handler();
+            $webserver->updateVHost($site);
+            $redirect->delete();
+        })->catch(function () use ($redirect): void {
+            $redirect->status = RedirectStatus::FAILED;
+            $redirect->save();
+        })->onConnection('ssh');
     }
 }

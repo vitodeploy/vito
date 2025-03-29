@@ -35,12 +35,22 @@ class RedirectsList extends Widget
 
         return [
             TextColumn::make('from')
+                ->limit(40)
+                ->tooltip(fn (Redirect $redirect) => $redirect->from)
                 ->searchable()
-                ->sortable(),
+                ->copyable(),
             TextColumn::make('to')
+                ->limit(40)
+                ->tooltip(fn (Redirect $redirect) => $redirect->to)
+                ->searchable()
+                ->copyable(),
+            TextColumn::make('mode')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('mode')
+            TextColumn::make('status')
+                ->label('Status')
+                ->badge()
+                ->color(fn (Redirect $redirect) => Redirect::$statusColors[$redirect->status])
                 ->searchable()
                 ->sortable(),
             TextColumn::make('created_at')

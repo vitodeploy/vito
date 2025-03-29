@@ -4,7 +4,6 @@ namespace App\SSH\Services\Webserver;
 
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
-use App\Exceptions\ViewNotFoundException;
 use App\Models\Site;
 use App\Models\Ssl;
 use Closure;
@@ -62,12 +61,6 @@ class Nginx extends AbstractWebserver
         $this->service->server->os()->cleanup();
     }
 
-    public function ensureConfigPathsExist(Site $site): void
-    {
-        $this->service->server->ssh()->ensurePathExists('/etc/nginx/conf.d/custom-configs/'.$site->id, 'root');
-        $this->service->server->ssh()->ensurePathExists('/etc/nginx/conf.d/extension-configs/'.$site->id, 'root');
-    }
-
     /**
      * @throws SSHError
      */
@@ -87,59 +80,18 @@ class Nginx extends AbstractWebserver
 
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            view('ssh.services.webserver.nginx.vhost', [
-                'site' => $site,
-            ]),
+            $this->generateVhost($site),
             'root'
         );
 
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.create-vhost', [
                 'domain' => $site->domain,
-                'vhost' => view('ssh.services.webserver.nginx.vhost', [
-                    'site' => $site,
-                ]),
+                'vhost' => $this->generateVhost($site),
             ]),
             'create-vhost',
             $site->id
         );
-
-        $this->ensureConfigPathsExist($site);
-    }
-
-    /**
-     * @param  string  $configName  The name of the config file to create or update, without the .conf extension. If $configContent is null, the config file will be created with the contents of the view file.
-     *
-     * @throws SSHError|ViewNotFoundException
-     */
-    public function createOrUpdateAdditionalConfig(Site $site, string $configName, ?string $configContent = null, bool $restart = true): void
-    {
-        $this->ensureConfigPathsExist($site);
-
-        if ($configContent) {
-            $this->service->server->ssh()->write(
-                '/etc/nginx/conf.d/custom-configs/'.$site->id.'/'.$configName.'.conf',
-                $configContent,
-                'root'
-            );
-        } else {
-            $view = 'ssh.services.webserver.nginx.extensions.'.$configName;
-            if (view()->exists($view)) {
-                $this->service->server->ssh()->write(
-                    '/etc/nginx/conf.d/extension-configs/'.$site->id.'/'.$configName.'.conf',
-                    view($view, [
-                        'site' => $site,
-                    ]),
-                    'root'
-                );
-            } else {
-                throw new ViewNotFoundException($view);
-            }
-        }
-
-        if ($restart) {
-            $this->service->server->systemd()->restart('nginx');
-        }
     }
 
     /**
@@ -147,13 +99,9 @@ class Nginx extends AbstractWebserver
      */
     public function updateVHost(Site $site, ?string $vhost = null): void
     {
-        $this->ensureConfigPathsExist($site);
-
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            $vhost ?? view('ssh.services.webserver.nginx.vhost', [
-                'site' => $site,
-            ]),
+            $vhost ?? $this->generateVhost($site),
             'root'
         );
 
@@ -254,5 +202,14 @@ class Nginx extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
+    }
+
+    private function generateVhost(Site $site): string
+    {
+        $vhost = view('ssh.services.webserver.nginx.vhost', [
+            'site' => $site,
+        ]);
+
+        return format_nginx_config($vhost);
     }
 }

@@ -218,3 +218,36 @@ function home_path(string $user): string
 
     return '/home/'.$user;
 }
+
+function format_nginx_config(string $config): string
+{
+    $lines = explode("\n", trim($config));
+    $indent = 0;
+    $formattedLines = [];
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+
+        // Preserve empty lines exactly as they are
+        if ($trimmed === '') {
+            $formattedLines[] = '';
+
+            continue;
+        }
+
+        // If line is a closing brace, decrease indentation first
+        if ($trimmed === '}') {
+            $indent--;
+        }
+
+        // Apply indentation
+        $formattedLines[] = str_repeat('    ', max(0, $indent)).$trimmed;
+
+        // If line contains an opening brace, increase indentation
+        if (str_ends_with($trimmed, '{')) {
+            $indent++;
+        }
+    }
+
+    return implode("\n", $formattedLines)."\n";
+}

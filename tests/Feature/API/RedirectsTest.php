@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\API;
 
+use App\Enums\RedirectStatus;
 use App\Facades\SSH;
 use App\Models\Redirect;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,6 +33,7 @@ class RedirectsTest extends TestCase
                 'from' => 'testing/path',
                 'to' => 'https://example.com',
                 'mode' => 301,
+                'status' => RedirectStatus::READY,
             ]);
     }
 
@@ -54,6 +56,7 @@ class RedirectsTest extends TestCase
                 'from' => $redirect->from,
                 'to' => $redirect->to,
                 'mode' => $redirect->mode,
+                'status' => $redirect->status,
             ]);
     }
 

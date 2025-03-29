@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RedirectStatus;
 use App\Facades\SSH;
 use App\Models\Redirect;
 use App\Web\Pages\Servers\Sites\Pages\Redirects\Index;
@@ -75,6 +76,7 @@ class RedirectsTest extends TestCase
             'from' => 'some-path',
             'to' => 'https://example.com/redirect',
             'mode' => 301,
+            'status' => RedirectStatus::READY,
         ]);
     }
 }

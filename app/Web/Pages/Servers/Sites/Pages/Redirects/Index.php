@@ -6,6 +6,7 @@ use App\Models\Redirect;
 use App\Web\Pages\Servers\Sites\Page;
 use App\Web\Pages\Servers\Sites\Pages\Redirects\Actions\Create;
 use App\Web\Pages\Servers\Sites\Pages\Redirects\Widgets\RedirectsList;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Support\Enums\MaxWidth;
 
@@ -25,9 +26,7 @@ class Index extends Page
         return [
             [
                 RedirectsList::class, [
-                    'server' => $this->server,
                     'site' => $this->site,
-                    'label' => 'Redirects',
                 ],
             ],
         ];
@@ -36,6 +35,12 @@ class Index extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('read-the-docs')
+                ->label('Read the Docs')
+                ->icon('heroicon-o-document-text')
+                ->color('gray')
+                ->url('https://vitodeploy.com/docs/sites/redirects')
+                ->openUrlInNewTab(),
             CreateAction::make('create')
                 ->icon('heroicon-o-plus')
                 ->createAnother(false)

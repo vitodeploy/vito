@@ -10,7 +10,11 @@ class RedirectPolicy
 {
     public function view(User $user, Site $site, Server $server): bool
     {
-        return $user->isAdmin() || $site->server->project->users->contains($user);
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $site->server->project->users->contains($user);
     }
 
     public function create(User $user, Site $site, Server $server): bool

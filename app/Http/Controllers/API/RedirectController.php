@@ -47,7 +47,7 @@ class RedirectController extends Controller
     #[BodyParam(name: 'to', required: true)]
     #[BodyParam(name: 'mode', required: true, enum: [301, 302, 307, 308])]
     #[Response(status: 200)]
-    public function createRedirect(Request $request, Project $project, Server $server, Site $site): RedirectResource
+    public function create(Request $request, Project $project, Server $server, Site $site): RedirectResource
     {
         $this->authorize('create', [Redirect::class, $site, $server]);
 
@@ -63,7 +63,7 @@ class RedirectController extends Controller
     #[Delete('/{redirect}', name: 'api.projects.servers.sites.redirects.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete a redirect.')]
     #[Response(status: 204)]
-    public function deleteRedirect(Project $project, Server $server, Site $site, Redirect $redirect): HttpResponse
+    public function delete(Project $project, Server $server, Site $site, Redirect $redirect): HttpResponse
     {
         $this->authorize('delete', [Redirect::class, $site, $server]);
 

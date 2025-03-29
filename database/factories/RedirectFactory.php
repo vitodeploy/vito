@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\RedirectStatus;
 use App\Models\Redirect;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,8 +14,6 @@ class RedirectFactory extends Factory
     protected $model = Redirect::class;
 
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -23,6 +22,7 @@ class RedirectFactory extends Factory
             'from' => $this->faker->word,
             'to' => $this->faker->url,
             'mode' => $this->faker->randomElement([301, 302, 307, 308]),
+            'status' => RedirectStatus::READY,
         ];
     }
 }

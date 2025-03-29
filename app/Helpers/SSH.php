@@ -153,14 +153,6 @@ class SSH
         }
     }
 
-    public function ensurePathExists(string $path, ?string $owner = null): void
-    {
-        $this->exec(
-            'sudo mkdir -p '.$path.' && sudo chown -R '.$owner.':'.$owner.' '.$path,
-            ''
-        );
-    }
-
     /**
      * @throws Throwable
      */
