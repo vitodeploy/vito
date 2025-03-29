@@ -211,9 +211,7 @@ class SitesTest extends TestCase
             'script' => $scriptContent,
         ])
             ->assertSuccessful()
-            ->assertJsonFragment([
-                'domain' => $site->domain,
-            ]);
+            ->assertNoContent();
 
         $this->assertDatabaseHas('deployment_scripts', [
             'site_id' => $site->id,
