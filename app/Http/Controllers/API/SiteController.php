@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\UpdateAliases;
+use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
@@ -130,6 +131,37 @@ class SiteController extends Controller
         app(UpdateAliases::class)->update($site, $request->all());
 
         return new SiteResource($site);
+    }
+
+    #[Put('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script', middleware: 'ability:write')]
+    #[Endpoint(title: 'deployment-script', description: 'Update site deployment script')]
+    #[BodyParam(name: 'script', type: 'string', description: 'Content of the deployment script')]
+    #[Response(status: 204)]
+    public function updateDeploymentScript(Request $request, Project $project, Server $server, Site $site): \Illuminate\Http\Response
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, UpdateDeploymentScript::rules());
+
+        app(UpdateDeploymentScript::class)->update($site, $request->all());
+
+        return response()->noContent();
+    }
+
+    #[Get('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'deployment-script', description: 'Get site deployment script content')]
+    #[Response(status: 200)]
+    public function showDeploymentScript(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        return response()->json([
+            'script' => $site->deploymentScript?->content,
+        ]);
     }
 
     private function validateRoute(Project $project, Server $server, ?Site $site = null): void
