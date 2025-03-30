@@ -4,9 +4,13 @@ namespace App\Web\Pages\Servers\Sites\Pages\SSL\Widgets;
 
 use App\Actions\SSL\ActivateSSL;
 use App\Actions\SSL\DeleteSSL;
+use App\Actions\SSL\UpdateSSL;
+use App\Enums\SslType;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\Models\User;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Section;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
@@ -45,6 +49,9 @@ class SslsList extends Widget
             TextColumn::make('type')
                 ->searchable()
                 ->sortable(),
+            TextColumn::make('domains')
+                ->badge()
+                ->wrap(),
             TextColumn::make('created_at')
                 ->formatStateUsing(fn (Ssl $record) => $record->created_at_by_timezone)
                 ->sortable(),
@@ -101,6 +108,38 @@ class SslsList extends Widget
                     ]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
+                Action::make('edit-ssl')
+                    ->hiddenLabel()
+                    ->tooltip('Edit')
+                    ->icon('heroicon-o-pencil')
+                    ->authorize(fn (Ssl $record) => $user->can('update', [$record, $this->site, $this->site->server]) && $record->type === SslType::CUSTOM)
+                    ->modalHeading('Edit SSL')
+                    ->form([
+                        Section::make('Domains')
+                            ->schema([
+                                CheckboxList::make('domains')
+                                    ->options(function (): array {
+                                        $domains = [$this->site->domain];
+                                        foreach ($this->site->aliases as $alias) {
+                                            $domains[] = $alias;
+                                        }
+
+                                        return array_combine($domains, $domains);
+                                    })
+                                    ->required()
+                                    ->default(function (Ssl $record): array {
+                                        return array_values($record->getDomains());
+                                    })
+                                    ->disabled(fn (Ssl $record) => $record->type !== SslType::CUSTOM),
+                            ]),
+                    ])
+                    ->modalSubmitActionLabel('Save')
+                    ->action(function (Ssl $record, array $data): void {
+                        run_action($this, function () use ($record, $data): void {
+                            app(UpdateSSL::class)->update($record, $data);
+                            $this->dispatch('$refresh');
+                        });
+                    }),
                 DeleteAction::make('delete')
                     ->hiddenLabel()
                     ->tooltip('Delete')

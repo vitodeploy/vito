@@ -45,6 +45,7 @@ class SslTest extends TestCase
             ->callAction('create', [
                 'type' => SslType::LETSENCRYPT,
                 'email' => 'ssl@example.com',
+                'domains' => [$this->site->domain],
             ])
             ->assertSuccessful();
 
@@ -75,7 +76,7 @@ class SslTest extends TestCase
             ->callAction('create', [
                 'type' => SslType::LETSENCRYPT,
                 'email' => 'ssl@example.com',
-                'aliases' => true,
+                'domains' => array_merge([$this->site->domain], $this->site->aliases),
             ])
             ->assertSuccessful();
 
@@ -103,6 +104,7 @@ class SslTest extends TestCase
                 'certificate' => 'certificate',
                 'private' => 'private',
                 'expires_at' => now()->addYear()->format('Y-m-d'),
+                'domains' => [$this->site->domain],
             ])
             ->assertSuccessful();
 

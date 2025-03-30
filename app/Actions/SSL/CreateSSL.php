@@ -34,12 +34,9 @@ class CreateSSL
             'expires_at' => $input['type'] === SslType::LETSENCRYPT ? now()->addMonths(3) : $input['expires_at'],
             'status' => SslStatus::CREATING,
             'email' => $input['email'] ?? null,
-            'is_active' => ! $site->activeSsl,
+            'is_active' => false,
+            'domains' => $input['domains'],
         ]);
-        $ssl->domains = [$site->domain];
-        if (isset($input['aliases']) && $input['aliases']) {
-            $ssl->domains = array_merge($ssl->domains, $site->aliases);
-        }
         $ssl->log_id = ServerLog::log($site->server, 'create-ssl', '', $site)->id;
         $ssl->save();
 
@@ -68,6 +65,16 @@ class CreateSSL
             'type' => [
                 'required',
                 Rule::in(config('core.ssl_types')),
+            ],
+            'domains' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+            'domains.*' => [
+                'required',
+                'string',
+                'max:255',
             ],
         ];
         if (isset($input['type']) && $input['type'] == SslType::CUSTOM) {
