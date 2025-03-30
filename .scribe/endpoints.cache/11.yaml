@@ -41,7 +41,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Mr. Reuben Schimmel","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Ms. Brandy Mraz V","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Amya Jones","provider":"github","created_at":"2025-03-29T20:43:56.000000Z","updated_at":"2025-03-29T20:43:56.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Jerry Donnelly","provider":"github","created_at":"2025-03-29T20:43:56.000000Z","updated_at":"2025-03-29T20:43:56.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -49,7 +49,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer g4kDa1vV6cdfPe3baZ8h5E6'
+      - 'Bearer Pvgec6k58a4fZa6D1Vd3hEb'
     controller: null
     method: null
     route: null
@@ -104,7 +104,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: dignissimos
+        example: eligendi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -114,7 +114,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: voluptates
+        example: debitis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -124,7 +124,7 @@ endpoints:
         name: url
         description: 'The URL if the provider is Gitlab and it is self-hosted'
         required: true
-        example: 'https://www.hamill.net/culpa-non-qui-suscipit-dolores-id-aliquam'
+        example: 'http://fahey.com/aliquid-sapiente-labore-adipisci-eum-laborum'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -134,7 +134,7 @@ endpoints:
         name: username
         description: 'The username if the provider is Bitbucket'
         required: true
-        example: nisi
+        example: rerum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -144,7 +144,7 @@ endpoints:
         name: password
         description: 'The password if the provider is Bitbucket'
         required: true
-        example: W~19Z0
+        example: 'wBK}NHxV:x'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -152,16 +152,16 @@ endpoints:
         custom: []
     cleanBodyParameters:
       provider: bitbucket
-      name: dignissimos
-      token: voluptates
-      url: 'https://www.hamill.net/culpa-non-qui-suscipit-dolores-id-aliquam'
-      username: nisi
-      password: W~19Z0
+      name: eligendi
+      token: debitis
+      url: 'http://fahey.com/aliquid-sapiente-labore-adipisci-eum-laborum'
+      username: rerum
+      password: 'wBK}NHxV:x'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Harmony Koss DVM","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Dr. Janae Tremblay PhD","provider":"github","created_at":"2025-03-29T20:43:56.000000Z","updated_at":"2025-03-29T20:43:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -169,7 +169,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fhEkg836V6cbd5ZPva4Dae1'
+      - 'Bearer eaD3hgavbcE61f46VdkZP58'
     controller: null
     method: null
     route: null
@@ -223,7 +223,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Martin Welch","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Marguerite Aufderhar","provider":"github","created_at":"2025-03-29T20:43:56.000000Z","updated_at":"2025-03-29T20:43:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -231,7 +231,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 458gPbv6deEfkcZ13ahaD6V'
+      - 'Bearer g653Ph4VaebdE1Z6cakfDv8'
     controller: null
     method: null
     route: null
@@ -284,7 +284,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: aut
+        example: blanditiis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -294,7 +294,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: repudiandae
+        example: non
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -304,7 +304,7 @@ endpoints:
         name: url
         description: 'The URL if the provider is Gitlab and it is self-hosted'
         required: true
-        example: 'http://howe.net/eaque-assumenda-voluptatem-quo-libero-eius.html'
+        example: 'https://www.veum.com/eum-voluptas-non-rem-non-rerum-tempora-quam'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -314,7 +314,7 @@ endpoints:
         name: username
         description: 'The username if the provider is Bitbucket'
         required: true
-        example: consequatur
+        example: porro
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -324,7 +324,7 @@ endpoints:
         name: password
         description: 'The password if the provider is Bitbucket'
         required: true
-        example: 'oX/H"pAIt7R2"'
+        example: '>BW~{`#d,}=U!XxC!t]'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -343,17 +343,17 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: aut
-      token: repudiandae
-      url: 'http://howe.net/eaque-assumenda-voluptatem-quo-libero-eius.html'
-      username: consequatur
-      password: 'oX/H"pAIt7R2"'
+      name: blanditiis
+      token: non
+      url: 'https://www.veum.com/eum-voluptas-non-rem-non-rerum-tempora-quam'
+      username: porro
+      password: '>BW~{`#d,}=U!XxC!t]'
       global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Miss Dulce Nicolas III","provider":"github","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Johan Crooks","provider":"github","created_at":"2025-03-29T20:43:56.000000Z","updated_at":"2025-03-29T20:43:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -361,7 +361,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer De1a4dEaV5v3Zgh8fPk66bc'
+      - 'Bearer 1g3ZV5haeEa8dD6kcv6bf4P'
     controller: null
     method: null
     route: null
@@ -423,7 +423,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer EZhd63eafgcV4a651PvkDb8'
+      - 'Bearer de684Vav1kf3PbaDg6hEZc5'
     controller: null
     method: null
     route: null

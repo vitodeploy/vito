@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -50,7 +50,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"user":null,"name":"Godfrey Mills","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Donato Streich","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"user":null,"name":"Dr. Virgie Reilly","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Horace Gutmann","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1gEva8Z6e6abPDhk453fdVc'
+      - 'Bearer vPhZkafdEa8b665e134cgVD'
     controller: null
     method: null
     route: null
@@ -95,7 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +103,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +111,7 @@ endpoints:
         name: key_id
         description: 'The ID of the key.'
         required: true
-        example: numquam
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: name
         description: 'Key name, required if key_id is not provided.'
         required: true
-        example: alias
+        example: provident
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -131,21 +131,21 @@ endpoints:
         name: public_key
         description: 'Public Key, required if key_id is not provided.'
         required: true
-        example: voluptate
+        example: incidunt
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      key_id: numquam
-      name: alias
-      public_key: voluptate
+      key_id: et
+      name: provident
+      public_key: incidunt
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"user":null,"name":"Mr. Stanton Bergnaum","created_at":null,"updated_at":null}'
+        content: '{"id":null,"user":null,"name":"Miss Penelope Sipes IV","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -153,7 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer V64Z86fEdbavh1PgackDe53'
+      - 'Bearer 5aah3b6PdVkc4efv6Eg81ZD'
     controller: null
     method: null
     route: null
@@ -190,7 +190,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -208,7 +208,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
       sshKey_id: 1
     queryParameters: []
     cleanQueryParameters: []
@@ -226,7 +226,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3deg1vc65k8D6abahfZVPE4'
+      - 'Bearer Dh8a1gacZ366k5Pev4fbEdV'
     controller: null
     method: null
     route: null
