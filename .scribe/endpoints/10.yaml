@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3gE54ahkea166PfvbVD8Zdc'
+      - 'Bearer 3V64fhkdgEvD5Z1cP6aea8b'
     controller: null
     method: null
     route: null
@@ -95,7 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +103,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +111,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: php
+        example: php-blank
         type: string
         enumValues:
           - php
@@ -127,7 +127,7 @@ endpoints:
         name: domain
         description: ''
         required: true
-        example: rem
+        example: harum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -138,7 +138,7 @@ endpoints:
         description: ''
         required: true
         example:
-          - libero
+          - voluptatem
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -168,7 +168,7 @@ endpoints:
         name: source_control
         description: 'Source control ID, Required for Sites which support source control'
         required: true
-        example: dolor
+        example: amet
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -218,7 +218,7 @@ endpoints:
         name: user
         description: 'user, to isolate the website under a new user'
         required: true
-        example: vitae
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -228,7 +228,7 @@ endpoints:
         name: method
         description: 'Load balancer method, Required if the site type is Load balancer'
         required: true
-        example: ip-hash
+        example: least-connections
         type: string
         enumValues:
           - round-robin
@@ -238,19 +238,19 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      type: php
-      domain: rem
+      type: php-blank
+      domain: harum
       aliases:
-        - libero
+        - voluptatem
       php_version: '7.4'
       web_directory: public
-      source_control: dolor
+      source_control: amet
       repository: organization/repository
       branch: main
       composer: true
       version: 5.2.1
-      user: vitae
-      method: ip-hash
+      user: et
+      method: least-connections
     fileParameters: []
     responses:
       -
@@ -263,7 +263,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer e1V4ga3Pavk6ch6b5E8fZdD'
+      - 'Bearer EVDP3fa1vga8Zk5cd466ebh'
     controller: null
     method: null
     route: null
@@ -300,7 +300,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -310,7 +310,7 @@ endpoints:
         name: id
         description: 'The ID of the site.'
         required: true
-        example: 26
+        example: 43
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -318,8 +318,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      id: 26
+      server_id: 29
+      id: 43
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -336,7 +336,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8gZkEaehfd4v3bac615DVP6'
+      - 'Bearer b3h4Zegva1kEcdVfD8P5a66'
     controller: null
     method: null
     route: null
@@ -373,7 +373,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -383,7 +383,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 26
+        example: 43
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -391,8 +391,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      site_id: 26
+      server_id: 29
+      site_id: 43
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -409,7 +409,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aadb1h6f6kD4V8vePZgcE35'
+      - 'Bearer cDe1b4f6a63EagP5vkdZ8Vh'
     controller: null
     method: null
     route: null
@@ -446,7 +446,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -456,7 +456,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 26
+        example: 43
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -464,8 +464,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      site_id: 26
+      server_id: 29
+      site_id: 43
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -473,7 +473,7 @@ endpoints:
         name: method
         description: 'Load balancer method, Required if the site type is Load balancer'
         required: true
-        example: least-connections
+        example: ip-hash
         type: string
         enumValues:
           - round-robin
@@ -487,16 +487,16 @@ endpoints:
         description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)'
         required: true
         example:
-          - deleniti
+          - accusantium
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      method: least-connections
+      method: ip-hash
       servers:
-        - deleniti
+        - accusantium
     fileParameters: []
     responses:
       -
@@ -509,7 +509,250 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5E6hZa64bka1cV3Pdvf8Deg'
+      - 'Bearer e65dDaaP6V4E3Zcf8hgvkb1'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/aliases'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: aliases
+      description: 'Update aliases.'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 43
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 29
+      site_id: 43
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      aliases:
+        name: aliases
+        description: 'Array of aliases'
+        required: true
+        example:
+          - ut
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      aliases:
+        - ut
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer aedPZ4ah68c3Ef1kDVbvg65'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployment-script'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: deployment-script
+      description: 'Update site deployment script'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 43
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 29
+      site_id: 43
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      script:
+        name: script
+        description: 'Content of the deployment script'
+        required: true
+        example: culpa
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      script: culpa
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer fhVea1a3cPdk6g5Ev468DZb'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployment-script'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: deployment-script
+      description: 'Get site deployment script content'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 43
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 29
+      site_id: 43
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 1g3bfhd6c8aPV6aZD45eEvk'
     controller: null
     method: null
     route: null
