@@ -268,7 +268,7 @@ class View extends Page
                 TextInput::make('branch')
                     ->label('Branch')
                     ->default($this->site->branch)
-                    ->visible(fn () => $this->site->sourceControl !== null)
+                    ->visible(fn (): bool => $this->site->sourceControl !== null)
                     ->helperText('Leave empty to use the same branch as the original site')
                     ->rules(['nullable', 'string']),
 
