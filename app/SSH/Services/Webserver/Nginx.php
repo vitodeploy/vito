@@ -139,6 +139,22 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
+    public function cloneSite(Site $sourceSite, Site $targetSite): void
+    {
+        $this->service->server->ssh($sourceSite->user)->exec(
+            view('ssh.services.webserver.nginx.clone-site', [
+                'sourcePath' => $sourceSite->path,
+                'targetPath' => $targetSite->path,
+            ]),
+            'clone-site',
+            $targetSite->id
+        );
+        $this->service->restart();
+    }
+
+    /**
+     * @throws SSHError
+     */
     public function changePHPVersion(Site $site, string $version): void
     {
         $this->service->server->ssh()->exec(

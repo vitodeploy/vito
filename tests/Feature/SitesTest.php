@@ -266,6 +266,64 @@ class SitesTest extends TestCase
             ->assertSee('Logs');
     }
 
+    public function test_clone_site(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $sshUser = $this->server->getSshUser();
+
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'domain' => 'original.com',
+            'repository' => 'test/test',
+            'path' => '/home/'.$sshUser.'/original.com',
+            'aliases' => ['www.original.com'],
+            'branch' => 'main',
+            'user' => 'original_user',
+        ]);
+
+        // Test cloning without custom username
+        Livewire::test(View::class, [
+            'server' => $this->server,
+            'site' => $site,
+        ])
+            ->callAction('clone-site', [
+                'domain' => 'clone1.com',
+                'branch' => 'develop',
+            ])
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'clone1.com',
+            'status' => SiteStatus::READY,
+            'user' => 'original_user',
+            'path' => '/home/original_user/clone1.com',
+        ]);
+
+        // Test cloning with custom username
+        Livewire::test(View::class, [
+            'server' => $this->server,
+            'site' => $site,
+        ])
+            ->callAction('clone-site', [
+                'domain' => 'clone2.com',
+                'branch' => 'develop',
+                'user' => 'custom_user',
+            ])
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'clone2.com',
+            'status' => SiteStatus::READY,
+            'user' => 'custom_user',
+            'path' => '/home/custom_user/clone2.com',
+        ]);
+    }
+
     public static function failure_create_data(): array
     {
         return [

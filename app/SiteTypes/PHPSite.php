@@ -5,6 +5,7 @@ namespace App\SiteTypes;
 use App\Enums\SiteFeature;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
+use App\Models\Site;
 use App\SSH\Composer\Composer;
 use App\SSH\Git\Git;
 use Illuminate\Validation\Rule;
@@ -24,6 +25,7 @@ class PHPSite extends AbstractSiteType
             SiteFeature::ENV,
             SiteFeature::SSL,
             SiteFeature::WORKERS,
+            SiteFeature::CLONING,
         ];
     }
 
@@ -109,5 +111,26 @@ class PHPSite extends AbstractSiteType
     public function edit(): void
     {
         //
+    }
+
+    /**
+     * @throws FailedToDeployGitKey
+     * @throws SSHError
+     */
+    public function cloneSite(): void
+    {
+        $this->site->webserver()->createVHost($this->site);
+        $this->progress(15);
+        $this->deployKey();
+        $this->progress(30);
+        $sourceSite = Site::query()->findOrFail($this->site->type_data['copied_from_site_id']);
+        $this->progress(40);
+        $this->site->webserver()->cloneSite($sourceSite, $this->site);
+        if ($this->site->sourceControl) {
+            app(Git::class)->fetchOrigin($this->site);
+            app(Git::class)->checkout($this->site);
+        }
+        $this->progress(65);
+        $this->site->php()?->restart();
     }
 }

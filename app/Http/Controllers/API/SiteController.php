@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Site\CloneSite;
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateDeploymentScript;
@@ -173,5 +174,25 @@ class SiteController extends Controller
         if ($site && $site->server_id !== $server->id) {
             abort(404, 'Site not found in server');
         }
+    }
+
+    #[Post('{site}/clone', name: 'api.projects.servers.sites.clone', middleware: 'ability:write')]
+    #[Endpoint(title: 'clone', description: 'clone a site.')]
+    #[BodyParam(name: 'domain', required: true)]
+    #[BodyParam(name: 'aliases', type: 'array')]
+    #[BodyParam(name: 'branch', description: 'Branch, Required for Sites which support source control', example: 'main')]
+    #[BodyParam(name: 'user', description: 'Username for the cloned site. If not provided, uses the same user as the source site')]
+    #[ResponseFromApiResource(SiteResource::class, Site::class)]
+    public function clone(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('clone', [Site::class, $server]);
+
+        $this->validateRoute($project, $server);
+
+        $this->validate($request, CloneSite::rules($site, $request->input()));
+
+        $site = app(CloneSite::class)->clone($site, $request->all());
+
+        return new SiteResource($site);
     }
 }

@@ -13,4 +13,6 @@ final class SiteFeature
     const WORKERS = 'workers';
 
     const COMMANDS = 'commands';
+
+    const CLONING = 'cloning';
 }

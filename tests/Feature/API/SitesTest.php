@@ -190,6 +190,50 @@ class SitesTest extends TestCase
         ]);
     }
 
+    public function test_clone_site(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'original_user',
+        ]);
+
+        // Test cloning without custom username
+        $this->json('POST', route('api.projects.servers.sites.clone', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'domain' => 'clone1.com',
+            'aliases' => ['www.clone1.com'],
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'domain' => 'clone1.com',
+                'user' => 'original_user',
+            ]);
+
+        // Test cloning with custom username
+        $this->json('POST', route('api.projects.servers.sites.clone', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'domain' => 'clone2.com',
+            'aliases' => ['www.clone2.com'],
+            'user' => 'custom_user',
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'domain' => 'clone2.com',
+                'user' => 'custom_user',
+            ]);
+    }
+
     public function test_update_deployment_script(): void
     {
         SSH::fake();

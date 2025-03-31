@@ -2,19 +2,25 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
+use App\Actions\Site\CloneSite;
 use App\Actions\Site\Deploy;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Enums\SiteFeature;
 use App\Enums\SiteType;
+use App\Facades\Notifier;
+use App\Notifications\SiteCloningSucceed;
+use App\ValidationRules\DomainRule;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconPosition;
 use Filament\Support\Enums\MaxWidth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\On;
 
 class View extends Page
@@ -98,6 +104,10 @@ class View extends Page
 
         if ($this->site->sourceControl) {
             $actionsGroup[] = $this->branchAction();
+        }
+
+        if (in_array(SiteFeature::CLONING, $this->site->type()->supportedFeatures())) {
+            $actionsGroup[] = $this->cloneSiteAction();
         }
 
         $actions[] = ActionGroup::make($actionsGroup)
@@ -225,6 +235,64 @@ class View extends Page
                         ->success()
                         ->title('Branch updated!')
                         ->send();
+                });
+            });
+    }
+
+    private function cloneSiteAction(): Action
+    {
+        return Action::make('clone-site')
+            ->label('Clone Site')
+            ->modalSubmitActionLabel('Clone')
+            ->modalHeading('Clone Site')
+            ->modalWidth(MaxWidth::Medium)
+            ->form([
+                TextInput::make('domain')
+                    ->label('Domain')
+                    ->placeholder('example.com')
+                    ->required()
+                    ->rules([
+                        'required', new DomainRule,
+                        Rule::unique('sites', 'domain')->where(fn ($query) => $query->where('server_id', $this->server->id)),
+                    ]),
+
+                TagsInput::make('aliases')
+                    ->label('Aliases')
+                    ->splitKeys(['Enter', 'Tab', ' ', ','])
+                    ->placeholder('Type and press enter to add an alias')
+                    ->helperText('Comma separated domains')
+                    ->nestedRecursiveRules([
+                        new DomainRule,
+                    ]),
+
+                TextInput::make('branch')
+                    ->label('Branch')
+                    ->default($this->site->branch)
+                    ->visible(fn (): bool => $this->site->sourceControl !== null)
+                    ->helperText('Leave empty to use the same branch as the original site')
+                    ->rules(['nullable', 'string']),
+
+                TextInput::make('user')
+                    ->label('Username')
+                    ->placeholder('Leave empty to use the same user as the source site')
+                    ->helperText('Only lowercase letters, numbers, underscores, and hyphens are allowed')
+                    ->rules([
+                        'nullable',
+                        'string',
+                        'regex:/^[a-z_][a-z0-9_-]*[$]?$/',
+                        Rule::unique('sites', 'user')->where(fn ($query) => $query->where('server_id', $this->server->id)),
+                    ]),
+            ])
+            ->action(function (array $data): void {
+                run_action($this, function () use ($data): void {
+                    $clonedSite = app(CloneSite::class)->clone($this->site, $data);
+
+                    Notifier::send($clonedSite, new SiteCloningSucceed($clonedSite));
+
+                    $this->redirect(static::getUrl(parameters: [
+                        'server' => $this->server,
+                        'site' => $clonedSite,
+                    ]));
                 });
             });
     }
