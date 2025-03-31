@@ -80,7 +80,7 @@ class CloneSite
             ]);
 
             // clone commands
-            $commands = $sourceSite->commands->map(fn($command): array => [
+            $commands = $sourceSite->commands->map(fn ($command): array => [
                 'name' => $command->name,
                 'command' => $command->command,
             ])->toArray();
