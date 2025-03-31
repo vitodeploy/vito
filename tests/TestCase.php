@@ -7,6 +7,7 @@ use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
 use App\Enums\Webserver;
 use App\Models\NotificationChannel;
+use App\Models\Redirect;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -23,6 +24,8 @@ abstract class TestCase extends BaseTestCase
     protected Server $server;
 
     protected Site $site;
+
+    protected Redirect $redirect;
 
     protected NotificationChannel $notificationChannel;
 
@@ -107,6 +110,10 @@ abstract class TestCase extends BaseTestCase
             'path' => '/home/vito/vito.test',
             'web_directory' => 'public',
             'branch' => 'main',
+        ]);
+
+        $this->redirect = Redirect::factory()->create([
+            'site_id' => $this->site->id,
         ]);
     }
 

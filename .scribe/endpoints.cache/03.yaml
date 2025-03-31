@@ -52,7 +52,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"name":"ea","server_id":null,"type":"allow","protocol":"tcp","port":41910,"source":"202.183.211.242","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null},{"id":null,"name":"iusto","server_id":null,"type":"allow","protocol":"tcp","port":60689,"source":"227.149.61.57","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"name":"optio","server_id":null,"type":"allow","protocol":"tcp","port":52674,"source":"142.10.115.135","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null},{"id":null,"name":"dolores","server_id":null,"type":"allow","protocol":"tcp","port":34607,"source":"20.175.64.76","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8g15h66aPf3ZdvkEab4ceVD'
+      - 'Bearer vhcgVk5aa8de6fP3Z4E1Db6'
     controller: null
     method: null
     route: null
@@ -113,7 +113,7 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: autem
+        example: voluptas
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -123,7 +123,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: allow
+        example: deny
         type: string
         enumValues:
           - allow
@@ -135,7 +135,7 @@ endpoints:
         name: protocol
         description: ''
         required: true
-        example: tcp
+        example: udp
         type: string
         enumValues:
           - tcp
@@ -147,7 +147,7 @@ endpoints:
         name: port
         description: ''
         required: true
-        example: quas
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -157,7 +157,7 @@ endpoints:
         name: source
         description: ''
         required: false
-        example: blanditiis
+        example: amet
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -174,17 +174,17 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: autem
-      type: allow
-      protocol: tcp
-      port: quas
-      source: blanditiis
+      name: voluptas
+      type: deny
+      protocol: udp
+      port: qui
+      source: amet
       mask: '0'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"name":"in","server_id":null,"type":"allow","protocol":"tcp","port":13253,"source":"245.228.81.208","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"name":"molestiae","server_id":null,"type":"allow","protocol":"tcp","port":26783,"source":"190.202.255.27","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -192,7 +192,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8dhcE436Zbk6fgVDP1aa5ev'
+      - 'Bearer Z166cP5kab3eEhgD48Vvafd'
     controller: null
     method: null
     route: null
@@ -256,7 +256,7 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: earum
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -290,7 +290,7 @@ endpoints:
         name: port
         description: ''
         required: true
-        example: ab
+        example: rerum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -300,7 +300,7 @@ endpoints:
         name: source
         description: ''
         required: false
-        example: possimus
+        example: sed
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -317,17 +317,17 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: earum
+      name: et
       type: allow
       protocol: tcp
-      port: ab
-      source: possimus
+      port: rerum
+      source: sed
       mask: '0'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"name":"repudiandae","server_id":null,"type":"allow","protocol":"tcp","port":44250,"source":"243.200.88.169","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"name":"labore","server_id":null,"type":"allow","protocol":"tcp","port":29044,"source":"113.132.217.224","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -335,7 +335,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ag6ebf3456hVkd8ca1PvEDZ'
+      - 'Bearer 6P31Vc845vhEbkaagZdDfe6'
     controller: null
     method: null
     route: null
@@ -400,7 +400,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"name":"quam","server_id":null,"type":"allow","protocol":"tcp","port":62505,"source":"73.254.77.244","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"name":"ipsa","server_id":null,"type":"allow","protocol":"tcp","port":50679,"source":"42.114.67.31","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -408,7 +408,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Paagd6D6fV5v4kZ31ebc8hE'
+      - 'Bearer VdDb3eEaagvh68Z1kc5fP46'
     controller: null
     method: null
     route: null
@@ -481,7 +481,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer avf16Vhb43dacPZge6D5k8E'
+      - 'Bearer ak3db6vef1DVEhacZ85g64P'
     controller: null
     method: null
     route: null
