@@ -13,6 +13,7 @@ use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -29,13 +30,17 @@ class CloneSite
         try {
             $server = $sourceSite->server;
 
+            // Use provided username or fallback to source site's user
+            $user = $input['user'] ?? $sourceSite->user;
+            $path = '/home/'.$user.'/'.$input['domain'];
+
             $clonedSite = new Site([
                 'server_id' => $server->id,
                 'type' => $sourceSite->type,
                 'domain' => $input['domain'],
                 'aliases' => $input['aliases'] ?? [],
-                'user' => $sourceSite->user,
-                'path' => '/home/'.$sourceSite->user.'/'.$input['domain'],
+                'user' => $user,
+                'path' => $path,
                 'status' => SiteStatus::INSTALLING,
                 'repository' => $sourceSite->repository,
                 'branch' => $input['branch'] ?? $sourceSite->branch,
@@ -86,6 +91,13 @@ class CloneSite
 
             // Setup cloned site
             dispatch(function () use ($clonedSite): void {
+                if ($clonedSite->isIsolated()) {
+                    $clonedSite->server->os()->createIsolatedUser(
+                        $clonedSite->user,
+                        Str::random(15),
+                        $clonedSite->id
+                    );
+                }
                 $clonedSite->type()->cloneSite();
                 $clonedSite->update([
                     'status' => SiteStatus::READY,
@@ -129,6 +141,12 @@ class CloneSite
             'branch' => [
                 'sometimes',
                 'string',
+            ],
+            'user' => [
+                'sometimes',
+                'string',
+                'regex:/^[a-z_][a-z0-9_-]*[$]?$/',
+                Rule::unique('sites', 'user')->where(fn ($query) => $query->where('server_id', $server->id)),
             ],
         ];
     }

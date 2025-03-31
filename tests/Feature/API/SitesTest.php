@@ -199,19 +199,38 @@ class SitesTest extends TestCase
         /** @var Site $site */
         $site = Site::factory()->create([
             'server_id' => $this->server->id,
+            'user' => 'original_user',
         ]);
 
+        // Test cloning without custom username
         $this->json('POST', route('api.projects.servers.sites.clone', [
             'project' => $this->server->project,
             'server' => $this->server,
             'site' => $site,
         ]), [
-            'domain' => 'clone.com',
-            'aliases' => ['www.clone.com'],
+            'domain' => 'clone1.com',
+            'aliases' => ['www.clone1.com'],
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
-                'domain' => 'clone.com',
+                'domain' => 'clone1.com',
+                'user' => 'original_user',
+            ]);
+
+        // Test cloning with custom username
+        $this->json('POST', route('api.projects.servers.sites.clone', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'domain' => 'clone2.com',
+            'aliases' => ['www.clone2.com'],
+            'user' => 'custom_user',
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'domain' => 'clone2.com',
+                'user' => 'custom_user',
             ]);
     }
 

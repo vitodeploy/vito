@@ -149,6 +149,7 @@ class SiteController extends Controller
     #[BodyParam(name: 'domain', required: true)]
     #[BodyParam(name: 'aliases', type: 'array')]
     #[BodyParam(name: 'branch', description: 'Branch, Required for Sites which support source control', example: 'main')]
+    #[BodyParam(name: 'user', description: 'Username for the cloned site. If not provided, uses the same user as the source site')]
     #[ResponseFromApiResource(SiteResource::class, Site::class)]
     public function clone(Request $request, Project $project, Server $server, Site $site): SiteResource
     {

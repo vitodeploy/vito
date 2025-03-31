@@ -271,6 +271,17 @@ class View extends Page
                     ->visible(fn () => $this->site->sourceControl !== null)
                     ->helperText('Leave empty to use the same branch as the original site')
                     ->rules(['nullable', 'string']),
+
+                TextInput::make('user')
+                    ->label('Username')
+                    ->placeholder('Leave empty to use the same user as the source site')
+                    ->helperText('Only lowercase letters, numbers, underscores, and hyphens are allowed')
+                    ->rules([
+                        'nullable',
+                        'string',
+                        'regex:/^[a-z_][a-z0-9_-]*[$]?$/',
+                        Rule::unique('sites', 'user')->where(fn ($query) => $query->where('server_id', $this->server->id)),
+                    ]),
             ])
             ->action(function (array $data): void {
                 run_action($this, function () use ($data): void {

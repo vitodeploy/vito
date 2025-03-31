@@ -281,25 +281,46 @@ class SitesTest extends TestCase
             'path' => '/home/'.$sshUser.'/original.com',
             'aliases' => ['www.original.com'],
             'branch' => 'main',
+            'user' => 'original_user',
         ]);
 
-        // something is wrong here, it doesn't create the site
+        // Test cloning without custom username
         Livewire::test(View::class, [
             'server' => $this->server,
             'site' => $site,
         ])
             ->callAction('clone-site', [
-                'domain' => 'clone.com',
+                'domain' => 'clone1.com',
                 'branch' => 'develop',
             ])
             ->assertHasNoActionErrors()
             ->assertSuccessful();
 
         $this->assertDatabaseHas('sites', [
-            'domain' => 'clone.com',
+            'domain' => 'clone1.com',
             'status' => SiteStatus::READY,
-            'user' => $site->user,
-            'path' => '/home/'.$site->user.'/clone.com',
+            'user' => 'original_user',
+            'path' => '/home/original_user/clone1.com',
+        ]);
+
+        // Test cloning with custom username
+        Livewire::test(View::class, [
+            'server' => $this->server,
+            'site' => $site,
+        ])
+            ->callAction('clone-site', [
+                'domain' => 'clone2.com',
+                'branch' => 'develop',
+                'user' => 'custom_user',
+            ])
+            ->assertHasNoActionErrors()
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'clone2.com',
+            'status' => SiteStatus::READY,
+            'user' => 'custom_user',
+            'path' => '/home/custom_user/clone2.com',
         ]);
     }
 
