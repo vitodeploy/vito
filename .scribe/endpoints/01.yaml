@@ -50,7 +50,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"name":"joyce53","status":"ready","created_at":null,"updated_at":null},{"id":null,"server_id":null,"name":"eric55","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":null,"name":"fkrajcik","status":"ready","created_at":null,"updated_at":null},{"id":null,"server_id":null,"name":"critchie","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer vegcPa1dk6f435E68ZbhaVD'
+      - 'Bearer aZvgeV364fd8b6a5EDchP1k'
     controller: null
     method: null
     route: null
@@ -111,7 +111,7 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: debitis
+        example: esse
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: charset
         description: ''
         required: true
-        example: maxime
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -131,21 +131,21 @@ endpoints:
         name: collation
         description: ''
         required: true
-        example: sed
+        example: labore
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: debitis
-      charset: maxime
-      collation: sed
+      name: esse
+      charset: ut
+      collation: labore
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"name":"brekke.isabell","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"name":"cory33","status":"ready","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -153,7 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Vk1fhea8caEg4dvD35PbZ66'
+      - 'Bearer fVvDPc64eaEk5bd36hgZ18a'
     controller: null
     method: null
     route: null
@@ -200,7 +200,7 @@ endpoints:
         name: id
         description: 'The ID of the database.'
         required: true
-        example: 11
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -209,7 +209,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      id: 11
+      id: 9
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -218,7 +218,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"name":"vandervort.emmalee","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"name":"walter.jacey","status":"ready","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -226,7 +226,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer av45D6PehEdbZVgc381akf6'
+      - 'Bearer bvcEZgDaPfd564V18ahek63'
     controller: null
     method: null
     route: null
@@ -273,7 +273,7 @@ endpoints:
         name: database_id
         description: 'The ID of the database.'
         required: true
-        example: 5
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -282,7 +282,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      database_id: 5
+      database_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -299,7 +299,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer hDa6EdgkP84fcV61baZ3v5e'
+      - 'Bearer 4a68DgeP6vcZbfVkh5a3d1E'
     controller: null
     method: null
     route: null

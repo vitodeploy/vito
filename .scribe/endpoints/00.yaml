@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer PahVdEb56Z3f14kDgc68aev'
+      - 'Bearer 46fadkVc1vP5Ea8hg3bZeD6'
     controller: null
     method: null
     route: null
@@ -111,7 +111,7 @@ endpoints:
         name: command
         description: ''
         required: true
-        example: qui
+        example: sit
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: user
         description: ''
         required: true
-        example: vito
+        example: root
         type: string
         enumValues:
           - root
@@ -140,8 +140,8 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      command: qui
-      user: vito
+      command: sit
+      user: root
       frequency: '* * * * *'
     fileParameters: []
     responses:
@@ -155,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer agkPEVc3h6D1d6a8evfZb54'
+      - 'Bearer eaEVDZ1ka5v4hf6Pgcd386b'
     controller: null
     method: null
     route: null
@@ -202,7 +202,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 17
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -211,7 +211,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      cronJob_id: 17
+      cronJob_id: 13
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -228,7 +228,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer b518EePkVcdhDvZaf6643ga'
+      - 'Bearer gZkc1Vh568badDefE64vPa3'
     controller: null
     method: null
     route: null
@@ -275,7 +275,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 11
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -284,7 +284,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      cronJob_id: 11
+      cronJob_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -301,7 +301,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3cak566dDhPvV8eZafg4bE1'
+      - 'Bearer PceD65b61vaV8Eg3a4dkfhZ'
     controller: null
     method: null
     route: null
