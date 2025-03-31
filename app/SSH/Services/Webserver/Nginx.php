@@ -80,18 +80,14 @@ class Nginx extends AbstractWebserver
 
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            view('ssh.services.webserver.nginx.vhost', [
-                'site' => $site,
-            ]),
+            $this->generateVhost($site),
             'root'
         );
 
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.create-vhost', [
                 'domain' => $site->domain,
-                'vhost' => view('ssh.services.webserver.nginx.vhost', [
-                    'site' => $site,
-                ]),
+                'vhost' => $this->generateVhost($site),
             ]),
             'create-vhost',
             $site->id
@@ -105,9 +101,7 @@ class Nginx extends AbstractWebserver
     {
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            $vhost ?? view('ssh.services.webserver.nginx.vhost', [
-                'site' => $site,
-            ]),
+            $vhost ?? $this->generateVhost($site),
             'root'
         );
 
@@ -224,5 +218,14 @@ class Nginx extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
+    }
+
+    private function generateVhost(Site $site): string
+    {
+        $vhost = view('ssh.services.webserver.nginx.vhost', [
+            'site' => $site,
+        ]);
+
+        return format_nginx_config($vhost);
     }
 }

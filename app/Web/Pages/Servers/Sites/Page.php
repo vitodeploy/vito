@@ -2,6 +2,7 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
+use App\Models\Redirect;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -70,6 +71,16 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->isActiveWhen(fn () => request()->routeIs(Settings::getRouteName()))
                 ->url(Settings::getUrl(parameters: [
+                    'server' => $this->server,
+                    'site' => $this->site,
+                ]));
+        }
+
+        if ($user->can('view', [Redirect::class, $this->site, $this->server])) {
+            $items[] = NavigationItem::make(Pages\Redirects\Index::getNavigationLabel())
+                ->icon('heroicon-o-arrows-right-left')
+                ->isActiveWhen(fn () => request()->routeIs(Pages\Redirects\Index::getRouteName()))
+                ->url(Pages\Redirects\Index::getUrl(parameters: [
                     'server' => $this->server,
                     'site' => $this->site,
                 ]));

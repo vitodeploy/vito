@@ -234,6 +234,79 @@ class SitesTest extends TestCase
             ]);
     }
 
+    public function test_update_deployment_script(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $scriptContent = "git pull\ncomposer install\nphp artisan migrate";
+
+        $this->json('PUT', route('api.projects.servers.sites.deployment-script', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'script' => $scriptContent,
+        ])
+            ->assertSuccessful()
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('deployment_scripts', [
+            'site_id' => $site->id,
+            'content' => $scriptContent,
+        ]);
+    }
+
+    public function test_update_deployment_script_without_content(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('PUT', route('api.projects.servers.sites.deployment-script', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['script']);
+    }
+
+    public function test_show_deployment_script(): void
+    {
+        Sanctum::actingAs($this->user, ['read']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $scriptContent = "git pull\ncomposer install";
+
+        $site->deploymentScript->update([
+            'content' => $scriptContent,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.deployment-script.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonPath('script', $scriptContent);
+    }
+
     public static function create_data(): array
     {
         return \Tests\Feature\SitesTest::create_data();
