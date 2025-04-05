@@ -100,4 +100,10 @@ class ManageBackup
 
         return $rules;
     }
+
+    public function stop(Backup $backup): void
+    {
+        $backup->status = BackupStatus::STOPPED;
+        $backup->save();
+    }
 }
