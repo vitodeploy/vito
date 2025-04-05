@@ -159,6 +159,10 @@ class SiteController extends Controller
     #[Response(status: 204)]
     public function updateDeploymentScript(Request $request, Project $project, Server $server, Site $site): \Illuminate\Http\Response
     {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
         $this->validate($request, UpdateDeploymentScript::rules());
 
         app(UpdateDeploymentScript::class)->update($site, $request->all());
