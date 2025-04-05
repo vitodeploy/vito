@@ -147,7 +147,11 @@ class WorkersList extends Widget
                     ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
                 Select::make('user')
                     ->rules(fn (callable $get) => EditWorker::rules($this->server, $this->site)['user'])
-                    ->options(array_combine($this->server->getSshUsers(), $this->server->getSshUsers())),
+                    ->options(
+                        $this->site instanceof Site ?
+                            array_combine($this->site->getSshUsers(), $this->site->getSshUsers()) :
+                            array_combine($this->server->getSshUsers(), $this->server->getSshUsers())
+                    ),
                 TextInput::make('numprocs')
                     ->default(1)
                     ->rules(EditWorker::rules($this->server, $this->site)['numprocs'])
