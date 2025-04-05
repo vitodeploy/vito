@@ -24,7 +24,11 @@ class Create
                 ->helperText('Example: php /home/vito/your-site/artisan queue:work'),
             Select::make('user')
                 ->rules(fn (callable $get) => CreateWorker::rules($server, $site)['user'])
-                ->options(array_combine($server->getSshUsers(), $server->getSshUsers())),
+                ->options(
+                    $site instanceof Site ?
+                        array_combine($site->getSshUsers(), $site->getSshUsers()) :
+                        array_combine($server->getSshUsers(), $server->getSshUsers())
+                ),
             TextInput::make('numprocs')
                 ->default(1)
                 ->rules(CreateWorker::rules($server, $site)['numprocs'])
