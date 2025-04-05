@@ -185,7 +185,7 @@ class SiteController extends Controller
         ]);
     }
 
-        #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
+    #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
     #[Endpoint(title: 'env', description: 'Get site .env file content')]
     #[Response(content: [
         'data' => [
