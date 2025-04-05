@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -50,7 +50,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"name":"amalia38","status":"ready","created_at":null,"updated_at":null},{"id":null,"server_id":null,"name":"troy.rippin","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":null,"name":"fkrajcik","status":"ready","created_at":null,"updated_at":null},{"id":null,"server_id":null,"name":"critchie","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Z641ebPacDV6f38kEgdah5v'
+      - 'Bearer aZvgeV364fd8b6a5EDchP1k'
     controller: null
     method: null
     route: null
@@ -95,7 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +103,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,19 +111,41 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: et
+        example: esse
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      charset:
+        name: charset
+        description: ''
+        required: true
+        example: ut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      collation:
+        name: collation
+        description: ''
+        required: true
+        example: labore
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: et
+      name: esse
+      charset: ut
+      collation: labore
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"name":"harvey.haskell","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"name":"cory33","status":"ready","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -131,7 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer d4gbv56caV3aZ8D1h6kfEPe'
+      - 'Bearer fVvDPc64eaEk5bd36hgZ18a'
     controller: null
     method: null
     route: null
@@ -168,7 +190,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -178,7 +200,7 @@ endpoints:
         name: id
         description: 'The ID of the database.'
         required: true
-        example: 19
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -186,8 +208,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      id: 19
+      server_id: 29
+      id: 9
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -196,7 +218,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"name":"ruthie.koepp","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"name":"walter.jacey","status":"ready","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -204,7 +226,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer P68VgDcaEZvk63f4b5aed1h'
+      - 'Bearer bvcEZgDaPfd564V18ahek63'
     controller: null
     method: null
     route: null
@@ -241,7 +263,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -251,7 +273,7 @@ endpoints:
         name: database_id
         description: 'The ID of the database.'
         required: true
-        example: 15
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -259,8 +281,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      database_id: 15
+      server_id: 29
+      database_id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -277,7 +299,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer DkPc6d1heEv5a8fb4V63agZ'
+      - 'Bearer 4a68DgeP6vcZbfVkh5a3d1E'
     controller: null
     method: null
     route: null

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -52,6 +53,8 @@ use Illuminate\Support\Str;
  * @property ?SourceControl $sourceControl
  * @property Collection<int, LoadBalancerServer> $loadBalancerServers
  * @property Project $project
+ * @property Collection<int, Redirect> $redirects
+ * @property Collection<int, Redirect> $activeRedirects
  */
 class Site extends AbstractModel
 {
@@ -418,5 +421,21 @@ class Site extends AbstractModel
         }
 
         return $users;
+    }
+
+    /**
+     * @return HasMany<Redirect, covariant $this>
+     */
+    public function redirects(): HasMany
+    {
+        return $this->hasMany(Redirect::class);
+    }
+
+    /**
+     * @return HasMany<Redirect, covariant $this>
+     */
+    public function activeRedirects(): HasMany
+    {
+        return $this->redirects()->whereIn('status', [RedirectStatus::CREATING, RedirectStatus::READY]);
     }
 }

@@ -1,12 +1,12 @@
-name: storage-providers
+name: source-controls
 description: ''
 endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/projects/{project_id}/storage-providers'
+    uri: 'api/projects/{project_id}/source-controls'
     metadata:
-      groupName: storage-providers
+      groupName: source-controls
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
@@ -39,7 +39,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"dolorem","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"},{"id":6,"project_id":null,"global":true,"name":"itaque","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Emil Leannon","provider":"github","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Eleazar Pacocha Sr.","provider":"github","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -47,7 +47,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer D16Vg58E6Pfkh3Zveab4dca'
+      - 'Bearer a34dVDE5ak8ceZvfh1Pb66g'
     controller: null
     method: null
     route: null
@@ -55,9 +55,9 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: 'api/projects/{project_id}/storage-providers'
+    uri: 'api/projects/{project_id}/source-controls'
     metadata:
-      groupName: storage-providers
+      groupName: source-controls
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
@@ -87,11 +87,14 @@ endpoints:
     bodyParameters:
       provider:
         name: provider
-        description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
+        description: 'The provider'
         required: true
-        example: alias
+        example: github
         type: string
-        enumValues: []
+        enumValues:
+          - gitlab
+          - github
+          - bitbucket
         exampleWasSpecified: false
         nullable: false
         custom: []
@@ -99,7 +102,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: explicabo
+        example: aliquam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -109,43 +112,54 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: ut
+        example: voluptatem
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
-      key:
-        name: key
-        description: 'The key if provider requires key'
+      url:
+        name: url
+        description: 'The URL if the provider is Gitlab and it is self-hosted'
         required: true
-        example: libero
+        example: 'https://brown.org/placeat-optio-illum-eius-ipsa.html'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
-      secret:
-        name: secret
-        description: 'The secret if provider requires key'
+      username:
+        name: username
+        description: 'The username if the provider is Bitbucket'
         required: true
-        example: consequatur
+        example: a
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      password:
+        name: password
+        description: 'The password if the provider is Bitbucket'
+        required: true
+        example: "_/_,9'/6z;9"
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: alias
-      name: explicabo
-      token: ut
-      key: libero
-      secret: consequatur
+      provider: github
+      name: aliquam
+      token: voluptatem
+      url: 'https://brown.org/placeat-optio-illum-eius-ipsa.html'
+      username: a
+      password: "_/_,9'/6z;9"
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"quos","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Ahmad Kulas","provider":"github","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -153,7 +167,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer DaZ6d6Eck1bhVe3g4aP85vf'
+      - 'Bearer 65dacDVh4kevfZ8P1bEga36'
     controller: null
     method: null
     route: null
@@ -161,9 +175,9 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/projects/{project_id}/storage-providers/{storageProvider_id}'
+    uri: 'api/projects/{project_id}/source-controls/{sourceControl_id}'
     metadata:
-      groupName: storage-providers
+      groupName: source-controls
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
@@ -186,11 +200,11 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      storageProvider_id:
-        name: storageProvider_id
-        description: 'The ID of the storageProvider.'
+      sourceControl_id:
+        name: sourceControl_id
+        description: 'The ID of the sourceControl.'
         required: true
-        example: 3
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -198,7 +212,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 3
+      sourceControl_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -207,7 +221,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"id","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Mr. Marquis Kunde IV","provider":"github","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -215,7 +229,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1dekD4gva56bc683VPEhZfa'
+      - 'Bearer a8hf6adecDkVbEZ6P1g54v3'
     controller: null
     method: null
     route: null
@@ -223,9 +237,9 @@ endpoints:
   -
     httpMethods:
       - PUT
-    uri: 'api/projects/{project_id}/storage-providers/{storageProvider_id}'
+    uri: 'api/projects/{project_id}/source-controls/{sourceControl_id}'
     metadata:
-      groupName: storage-providers
+      groupName: source-controls
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
@@ -248,11 +262,11 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      storageProvider_id:
-        name: storageProvider_id
-        description: 'The ID of the storageProvider.'
+      sourceControl_id:
+        name: sourceControl_id
+        description: 'The ID of the sourceControl.'
         required: true
-        example: 3
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -260,7 +274,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 3
+      sourceControl_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -268,7 +282,47 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: sequi
+        example: laudantium
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      token:
+        name: token
+        description: 'The token if provider requires api token'
+        required: true
+        example: nulla
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      url:
+        name: url
+        description: 'The URL if the provider is Gitlab and it is self-hosted'
+        required: true
+        example: 'http://wiza.com/'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      username:
+        name: username
+        description: 'The username if the provider is Bitbucket'
+        required: true
+        example: numquam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      password:
+        name: password
+        description: 'The password if the provider is Bitbucket'
+        required: true
+        example: 'MlD,$m:8^A'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -287,13 +341,17 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: sequi
+      name: laudantium
+      token: nulla
+      url: 'http://wiza.com/'
+      username: numquam
+      password: 'MlD,$m:8^A'
       global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"velit","provider":"s3","created_at":"2025-01-30T22:42:49.000000Z","updated_at":"2025-01-30T22:42:49.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Mrs. Arvilla Mitchell","provider":"github","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -301,7 +359,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer V65g18Pca4v3hDEkbZfe6da'
+      - 'Bearer Z36EdDbavkeVPch68a1g45f'
     controller: null
     method: null
     route: null
@@ -309,9 +367,9 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/projects/{project_id}/storage-providers/{storageProvider_id}'
+    uri: 'api/projects/{project_id}/source-controls/{sourceControl_id}'
     metadata:
-      groupName: storage-providers
+      groupName: source-controls
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
@@ -334,11 +392,11 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      storageProvider_id:
-        name: storageProvider_id
-        description: 'The ID of the storageProvider.'
+      sourceControl_id:
+        name: sourceControl_id
+        description: 'The ID of the sourceControl.'
         required: true
-        example: 3
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -346,7 +404,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      storageProvider_id: 3
+      sourceControl_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -363,7 +421,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1v6a6efgch3DbZ4aVE5d8kP'
+      - 'Bearer gaadhb6Ev6Dk8fc4P1eV53Z'
     controller: null
     method: null
     route: null
