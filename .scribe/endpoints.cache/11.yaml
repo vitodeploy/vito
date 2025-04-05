@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer veV66fcbdaaEhZg3k5P148D'
+      - 'Bearer aD138EgdPf4Vhav5c6bke6Z'
     controller: null
     method: null
     route: null
@@ -113,7 +113,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: wordpress
+        example: php-blank
         type: string
         enumValues:
           - php
@@ -129,7 +129,7 @@ endpoints:
         name: domain
         description: ''
         required: true
-        example: ut
+        example: impedit
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -140,7 +140,7 @@ endpoints:
         description: ''
         required: true
         example:
-          - vitae
+          - cum
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -170,7 +170,7 @@ endpoints:
         name: source_control
         description: 'Source control ID, Required for Sites which support source control'
         required: true
-        example: animi
+        example: non
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -220,7 +220,7 @@ endpoints:
         name: user
         description: 'user, to isolate the website under a new user'
         required: true
-        example: est
+        example: voluptate
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -230,7 +230,7 @@ endpoints:
         name: method
         description: 'Load balancer method, Required if the site type is Load balancer'
         required: true
-        example: least-connections
+        example: ip-hash
         type: string
         enumValues:
           - round-robin
@@ -240,19 +240,19 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      type: wordpress
-      domain: ut
+      type: php-blank
+      domain: impedit
       aliases:
-        - vitae
+        - cum
       php_version: '7.4'
       web_directory: public
-      source_control: animi
+      source_control: non
       repository: organization/repository
       branch: main
       composer: true
       version: 5.2.1
-      user: est
-      method: least-connections
+      user: voluptate
+      method: ip-hash
     fileParameters: []
     responses:
       -
@@ -265,7 +265,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer b1a8cEahVek364vPfD6gdZ5'
+      - 'Bearer 6V3D5c4g6hZaEfb81evPadk'
     controller: null
     method: null
     route: null
@@ -338,7 +338,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer dvh6k4EaV16a3Zefb5c8DPg'
+      - 'Bearer gE86bZ6vfcd3hVP15ka4Dea'
     controller: null
     method: null
     route: null
@@ -411,7 +411,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ZVP56aavDg3f8ek1c4E6hdb'
+      - 'Bearer 8kEb6Dd613a5afZhcg4VvPe'
     controller: null
     method: null
     route: null
@@ -489,7 +489,7 @@ endpoints:
         description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)'
         required: true
         example:
-          - eaque
+          - omnis
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -498,7 +498,7 @@ endpoints:
     cleanBodyParameters:
       method: round-robin
       servers:
-        - eaque
+        - omnis
     fileParameters: []
     responses:
       -
@@ -511,7 +511,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ekaVDdgZh1ca58vE34b6P6f'
+      - 'Bearer 8Da4P1c6d6gfbhZvaE3k5Ve'
     controller: null
     method: null
     route: null
@@ -576,7 +576,7 @@ endpoints:
         description: 'Array of aliases'
         required: true
         example:
-          - pariatur
+          - doloremque
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -584,7 +584,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       aliases:
-        - pariatur
+        - doloremque
     fileParameters: []
     responses:
       -
@@ -597,7 +597,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8gaaebDd641ck6V5vP3fZhE'
+      - 'Bearer d4EVa8Zkfvg1Dcbe53P6a6h'
     controller: null
     method: null
     route: null
@@ -670,7 +670,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ka634ZEfbgdevD56c1aVP8h'
+      - 'Bearer dkcV5EZa8fD6vgaP1b36e4h'
     controller: null
     method: null
     route: null
@@ -734,14 +734,14 @@ endpoints:
         name: script
         description: 'Content of the deployment script'
         required: true
-        example: culpa
+        example: voluptatem
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      script: culpa
+      script: voluptatem
     fileParameters: []
     responses:
       -
@@ -754,7 +754,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 68a6cfD4e1g3dvPVkbEaZh5'
+      - 'Bearer hevV81bfZE6cdkaa453gDP6'
     controller: null
     method: null
     route: null
@@ -827,7 +827,164 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 568gb3fdca1PDek4vZEVa6h'
+      - 'Bearer a1EbvhePag4f5dk6ZV368Dc'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/env'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: env
+      description: 'Get site .env file content'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 44
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 29
+      site_id: 44
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"data":{"env":"APP_NAME=Laravel\\nAPP_ENV=production"}}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer P8Zvch3DgV654abeaE6f1kd'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/env'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: env
+      description: 'Update site .env file'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 44
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 29
+      site_id: 44
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      env:
+        name: env
+        description: 'Content of the .env file'
+        required: true
+        example: quam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      env: quam
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 45acbP1h6eg6kDVdZf8E3av'
     controller: null
     method: null
     route: null
