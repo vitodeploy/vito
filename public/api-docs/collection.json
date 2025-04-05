@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "API Documentation",
-        "_postman_id": "b4316c5d-00b9-4733-9e7b-cbd38f7bd90a",
+        "_postman_id": "a3f834cc-c09b-4ca3-8824-6310bbb83f4e",
         "description": "VitoDeploy's API documentation.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -101,7 +101,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"command\":\"qui\",\"user\":\"vito\",\"frequency\":\"* * * * *\"}"
+                            "raw": "{\"command\":\"nisi\",\"user\":\"vito\",\"frequency\":\"* * * * *\"}"
                         },
                         "description": "Create a new cron job."
                     },
@@ -138,7 +138,7 @@
                                 {
                                     "id": "cronJob_id",
                                     "key": "cronJob_id",
-                                    "value": "17",
+                                    "value": "14",
                                     "description": "The ID of the cronJob."
                                 }
                             ]
@@ -190,7 +190,7 @@
                                 {
                                     "id": "cronJob_id",
                                     "key": "cronJob_id",
-                                    "value": "11",
+                                    "value": "9",
                                     "description": "The ID of the cronJob."
                                 }
                             ]
@@ -265,7 +265,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"username\":\"lehner.eloy\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"username\":\"rlowe\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"username\":\"lavina.zemlak\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"username\":\"hill.cassidy\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -306,7 +306,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"username\":\"voluptas\",\"password\":\":D+e=\\\/;H,\",\"host\":\"%\"}"
+                            "raw": "{\"username\":\"tempore\",\"password\":\"!jUv.BBc]X\",\"host\":\"%\"}"
                         },
                         "description": "Create a new database user."
                     },
@@ -314,7 +314,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"fahey.joseph\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"irwin45\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -343,7 +343,7 @@
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "19",
+                                    "value": "3",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -366,7 +366,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"szboncak\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"frederic.koss\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -395,7 +395,7 @@
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "11",
+                                    "value": "12",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -413,7 +413,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"databases\":\"accusantium\"}"
+                            "raw": "{\"databases\":\"numquam\"}"
                         },
                         "description": "Link to databases"
                     },
@@ -421,7 +421,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"smith.liliana\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"georgiana.hand\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -450,7 +450,7 @@
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "18",
+                                    "value": "6",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -525,7 +525,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"name\":\"joyce53\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"name\":\"eric55\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"name\":\"conn.bridget\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"name\":\"aiden47\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -566,7 +566,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"debitis\",\"charset\":\"maxime\",\"collation\":\"sed\"}"
+                            "raw": "{\"name\":\"vel\",\"charset\":\"qui\",\"collation\":\"autem\"}"
                         },
                         "description": "Create a new database."
                     },
@@ -574,7 +574,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"brekke.isabell\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"rodolfo.bradtke\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -603,7 +603,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "11",
+                                    "value": "17",
                                     "description": "The ID of the database."
                                 }
                             ]
@@ -626,7 +626,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"vandervort.emmalee\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"rhane\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -730,7 +730,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"name\":\"ea\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":41910,\"source\":\"202.183.211.242\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"name\":\"iusto\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":60689,\"source\":\"227.149.61.57\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"name\":\"sit\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":59225,\"source\":\"130.41.114.80\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"name\":\"sequi\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":17864,\"source\":\"170.103.31.60\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -771,7 +771,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"autem\",\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":\"quas\",\"source\":\"blanditiis\",\"mask\":\"0\"}"
+                            "raw": "{\"name\":\"eum\",\"type\":\"deny\",\"protocol\":\"udp\",\"port\":\"incidunt\",\"source\":\"quisquam\",\"mask\":\"0\"}"
                         },
                         "description": "Create a new firewall rule."
                     },
@@ -779,7 +779,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"name\":\"in\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":13253,\"source\":\"245.228.81.208\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"name\":\"consequuntur\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":50101,\"source\":\"133.245.21.1\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -826,7 +826,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"earum\",\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":\"ab\",\"source\":\"possimus\",\"mask\":\"0\"}"
+                            "raw": "{\"name\":\"dolor\",\"type\":\"deny\",\"protocol\":\"tcp\",\"port\":\"qui\",\"source\":\"porro\",\"mask\":\"0\"}"
                         },
                         "description": "Update an existing firewall rule."
                     },
@@ -834,7 +834,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"name\":\"repudiandae\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":44250,\"source\":\"243.200.88.169\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"name\":\"numquam\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":52010,\"source\":\"159.227.119.185\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -886,7 +886,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"name\":\"quam\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":62505,\"source\":\"73.254.77.244\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"name\":\"voluptatem\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":5812,\"source\":\"122.105.250.56\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -1038,7 +1038,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":3,\"name\":\"Amara Jaskolski\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"},{\"id\":4,\"name\":\"Christy Kohler\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":3,\"name\":\"Selina Wintheiser DDS\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"},{\"id\":4,\"name\":\"Shanna Deckow\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1065,7 +1065,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"temporibus\"}"
+                            "raw": "{\"name\":\"quibusdam\"}"
                         },
                         "description": "Create a new project."
                     },
@@ -1073,7 +1073,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Prof. Enrico Wehner Sr.\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Mr. Johathan Koch\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1113,7 +1113,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Zoie Feest\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Jorge Schulist V\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1148,7 +1148,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"sit\"}"
+                            "raw": "{\"name\":\"enim\"}"
                         },
                         "description": "Update project."
                     },
@@ -1156,7 +1156,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Mr. Jayme Kuhlman DVM\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Annie Windler\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1191,6 +1191,177 @@
                         ],
                         "body": null,
                         "description": "Delete project."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": null,
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "redirects",
+            "description": "",
+            "item": [
+                {
+                    "name": "index",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/redirects",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/redirects",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "29",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "site_id",
+                                    "key": "site_id",
+                                    "value": "44",
+                                    "description": "The ID of the site."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Get all redirects."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":null,\"site_id\":null,\"mode\":301,\"from\":\"eaque\",\"to\":\"http:\\\/\\\/www.windler.info\\\/delectus-facilis-assumenda-consequatur-impedit-hic-dolorem-non-dolore.html\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"site_id\":null,\"mode\":308,\"from\":\"neque\",\"to\":\"http:\\\/\\\/raynor.biz\\\/velit-a-tempore-quas-explicabo-doloremque\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "create",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/redirects",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/redirects",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "29",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "site_id",
+                                    "key": "site_id",
+                                    "value": "44",
+                                    "description": "The ID of the site."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"from\":\"qui\",\"to\":\"voluptatum\",\"mode\":302}"
+                        },
+                        "description": "Create a new redirect."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": null,
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "delete",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/redirects\/:redirect_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/redirects\/:redirect_id",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "29",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "site_id",
+                                    "key": "site_id",
+                                    "value": "44",
+                                    "description": "The ID of the site."
+                                },
+                                {
+                                    "id": "redirect_id",
+                                    "key": "redirect_id",
+                                    "value": "9",
+                                    "description": "The ID of the redirect."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Delete a redirect."
                     },
                     "response": [
                         {
@@ -1242,7 +1413,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"quaerat\",\"provider\":\"aws\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"quas\",\"provider\":\"vultr\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"ducimus\",\"provider\":\"digitalocean\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"nesciunt\",\"provider\":\"hetzner\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1277,7 +1448,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"exercitationem\",\"name\":\"similique\",\"token\":\"nisi\",\"key\":\"tempora\",\"secret\":\"earum\"}"
+                            "raw": "{\"provider\":\"sunt\",\"name\":\"aut\",\"token\":\"id\",\"key\":\"porro\",\"secret\":\"voluptas\"}"
                         },
                         "description": ""
                     },
@@ -1285,7 +1456,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"iure\",\"provider\":\"hetzner\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"nemo\",\"provider\":\"linode\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1331,7 +1502,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"vultr\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"ut\",\"provider\":\"aws\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1372,7 +1543,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"porro\",\"global\":false}"
+                            "raw": "{\"name\":\"aliquam\",\"global\":true}"
                         },
                         "description": ""
                     },
@@ -1380,7 +1551,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"aliquam\",\"provider\":\"hetzner\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"digitalocean\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1472,7 +1643,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Prof. Wyatt Powlowski IV\",\"ssh_user\":\"vito\",\"ip\":\"33.53.217.82\",\"local_ip\":\"227.155.11.76\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Guiseppe D'Amore\",\"ssh_user\":\"vito\",\"ip\":\"41.138.98.159\",\"local_ip\":\"78.178.81.109\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Marcelino Rodriguez\",\"ssh_user\":\"vito\",\"ip\":\"128.182.22.13\",\"local_ip\":\"19.119.134.124\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Everardo Conn\",\"ssh_user\":\"vito\",\"ip\":\"62.215.59.124\",\"local_ip\":\"32.153.141.12\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1507,7 +1678,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"vel\",\"server_provider\":\"hetzner\",\"region\":\"voluptatibus\",\"plan\":\"ducimus\",\"ip\":\"dolores\",\"port\":\"ratione\",\"name\":\"in\",\"os\":\"cumque\",\"webserver\":\"nginx\",\"database\":\"mysql80\",\"php\":\"7.4\"}"
+                            "raw": "{\"provider\":\"ut\",\"server_provider\":\"hetzner\",\"region\":\"consectetur\",\"plan\":\"voluptatum\",\"ip\":\"quisquam\",\"port\":\"sapiente\",\"name\":\"itaque\",\"os\":\"aut\",\"webserver\":\"nginx\",\"database\":\"postgresql13\",\"php\":\"7.4\"}"
                         },
                         "description": "Create a new server."
                     },
@@ -1515,7 +1686,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Anissa McDermott\",\"ssh_user\":\"vito\",\"ip\":\"212.15.34.173\",\"local_ip\":\"142.201.95.242\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Sidney Grant\",\"ssh_user\":\"vito\",\"ip\":\"22.232.10.97\",\"local_ip\":\"107.107.187.150\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -1561,7 +1732,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Prof. Newton Wintheiser Jr.\",\"ssh_user\":\"vito\",\"ip\":\"243.154.251.36\",\"local_ip\":\"198.224.194.65\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Maria Zemlak\",\"ssh_user\":\"vito\",\"ip\":\"4.166.233.247\",\"local_ip\":\"92.197.44.184\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -2208,7 +2379,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"type\":\"php-blank\",\"domain\":\"harum\",\"aliases\":[\"voluptatem\"],\"php_version\":\"7.4\",\"web_directory\":\"public\",\"source_control\":\"amet\",\"repository\":\"organization\\\/repository\",\"branch\":\"main\",\"composer\":true,\"version\":\"5.2.1\",\"user\":\"et\",\"method\":\"least-connections\"}"
+                            "raw": "{\"type\":\"wordpress\",\"domain\":\"ut\",\"aliases\":[\"vitae\"],\"php_version\":\"7.4\",\"web_directory\":\"public\",\"source_control\":\"animi\",\"repository\":\"organization\\\/repository\",\"branch\":\"main\",\"composer\":true,\"version\":\"5.2.1\",\"user\":\"est\",\"method\":\"least-connections\"}"
                         },
                         "description": "Create a new site."
                     },
@@ -2245,7 +2416,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "43",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2297,7 +2468,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "43",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2349,7 +2520,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "43",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2367,7 +2538,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"method\":\"ip-hash\",\"servers\":[\"accusantium\"]}"
+                            "raw": "{\"method\":\"round-robin\",\"servers\":[\"eaque\"]}"
                         },
                         "description": "Update load balancer."
                     },
@@ -2404,7 +2575,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "43",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2422,9 +2593,61 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"aliases\":[\"ut\"]}"
+                            "raw": "{\"aliases\":[\"pariatur\"]}"
                         },
                         "description": "Update aliases."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": null,
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "deploy",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/deploy",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/deploy",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "29",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "site_id",
+                                    "key": "site_id",
+                                    "value": "44",
+                                    "description": "The ID of the site."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Run site deployment script"
                     },
                     "response": [
                         {
@@ -2459,7 +2682,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "43",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2514,7 +2737,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "43",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2583,7 +2806,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Amya Jones\",\"provider\":\"github\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"Jerry Donnelly\",\"provider\":\"github\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Dawson Ratke IV\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"Miss Caterina Mann DVM\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2618,7 +2841,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"bitbucket\",\"name\":\"eligendi\",\"token\":\"debitis\",\"url\":\"http:\\\/\\\/fahey.com\\\/aliquid-sapiente-labore-adipisci-eum-laborum\",\"username\":\"rerum\",\"password\":\"wBK}NHxV:x\"}"
+                            "raw": "{\"provider\":\"github\",\"name\":\"est\",\"token\":\"ea\",\"url\":\"http:\\\/\\\/koepp.info\\\/maiores-nostrum-consequuntur-dicta-iure-ullam\",\"username\":\"ducimus\",\"password\":\"S#AHlt\\\"?l6SDU^b?T6\"}"
                         },
                         "description": ""
                     },
@@ -2626,7 +2849,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Dr. Janae Tremblay PhD\",\"provider\":\"github\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Dr. Adella Greenholt\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2672,7 +2895,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Marguerite Aufderhar\",\"provider\":\"github\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Hettie Farrell\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2713,7 +2936,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"blanditiis\",\"token\":\"non\",\"url\":\"https:\\\/\\\/www.veum.com\\\/eum-voluptas-non-rem-non-rerum-tempora-quam\",\"username\":\"porro\",\"password\":\">BW~{`#d,}=U!XxC!t]\",\"global\":false}"
+                            "raw": "{\"name\":\"sunt\",\"token\":\"est\",\"url\":\"http:\\\/\\\/www.fay.com\\\/quisquam-autem-illum-omnis-quo-enim-eligendi-velit\",\"username\":\"ab\",\"password\":\"M@-*%?(B(UNE~Ibc#\",\"global\":false}"
                         },
                         "description": ""
                     },
@@ -2721,7 +2944,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Johan Crooks\",\"provider\":\"github\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Jadyn Hyatt\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2819,7 +3042,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"user\":null,\"name\":\"Dr. Virgie Reilly\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"user\":null,\"name\":\"Horace Gutmann\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"user\":null,\"name\":\"Moriah Kemmer\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"user\":null,\"name\":\"Delilah Gaylord\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2860,7 +3083,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"key_id\":\"et\",\"name\":\"provident\",\"public_key\":\"incidunt\"}"
+                            "raw": "{\"key_id\":\"id\",\"name\":\"qui\",\"public_key\":\"vitae\"}"
                         },
                         "description": "Deploy ssh key to server."
                     },
@@ -2868,7 +3091,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"user\":null,\"name\":\"Miss Penelope Sipes IV\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"user\":null,\"name\":\"Jesse Gleason\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -2966,7 +3189,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"sit\",\"provider\":\"ftp\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"repudiandae\",\"provider\":\"local\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"dropbox\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"sed\",\"provider\":\"dropbox\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -3001,7 +3224,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"est\",\"name\":\"id\",\"token\":\"repellendus\",\"key\":\"ducimus\",\"secret\":\"possimus\"}"
+                            "raw": "{\"provider\":\"quia\",\"name\":\"rerum\",\"token\":\"hic\",\"key\":\"repellat\",\"secret\":\"maiores\"}"
                         },
                         "description": ""
                     },
@@ -3009,7 +3232,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"sequi\",\"provider\":\"dropbox\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"veritatis\",\"provider\":\"ftp\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3055,7 +3278,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"alias\",\"provider\":\"ftp\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"fuga\",\"provider\":\"local\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3096,7 +3319,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"ullam\",\"global\":true}"
+                            "raw": "{\"name\":\"est\",\"global\":true}"
                         },
                         "description": ""
                     },
@@ -3104,7 +3327,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"at\",\"provider\":\"ftp\",\"created_at\":\"2025-03-29T20:43:56.000000Z\",\"updated_at\":\"2025-03-29T20:43:56.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"ut\",\"provider\":\"ftp\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]

@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer PahVdEb56Z3f14kDgc68aev'
+      - 'Bearer Pg1hVfEvc3e5kada68Z6b4D'
     controller: null
     method: null
     route: null
@@ -113,7 +113,7 @@ endpoints:
         name: command
         description: ''
         required: true
-        example: qui
+        example: nisi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -142,7 +142,7 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      command: qui
+      command: nisi
       user: vito
       frequency: '* * * * *'
     fileParameters: []
@@ -157,7 +157,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer agkPEVc3h6D1d6a8evfZb54'
+      - 'Bearer 5E3Vv4cah8D6bZa1kgPfe6d'
     controller: null
     method: null
     route: null
@@ -204,7 +204,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 17
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -213,7 +213,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      cronJob_id: 17
+      cronJob_id: 14
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -230,7 +230,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer b518EePkVcdhDvZaf6643ga'
+      - 'Bearer e68fh451vcb6Zd3DEVaaPgk'
     controller: null
     method: null
     route: null
@@ -277,7 +277,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 11
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -286,7 +286,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      cronJob_id: 11
+      cronJob_id: 9
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -303,7 +303,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3cak566dDhPvV8eZafg4bE1'
+      - 'Bearer hEkD1b3a845fVPZg6ecad6v'
     controller: null
     method: null
     route: null

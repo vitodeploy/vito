@@ -182,6 +182,22 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-redirects" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="redirects">
+                    <a href="#redirects">redirects</a>
+                </li>
+                                    <ul id="tocify-subheader-redirects" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="redirects-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+                                <a href="#redirects-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects">index</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="redirects-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+                                <a href="#redirects-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects">create</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="redirects-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-">
+                                <a href="#redirects-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-">delete</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
                     <ul id="tocify-header-server-providers" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="server-providers">
                     <a href="#server-providers">server-providers</a>
@@ -283,6 +299,9 @@
                                                                                 <li class="tocify-item level-2" data-unique="sites-PUTapi-projects--project_id--servers--server_id--sites--site_id--aliases">
                                 <a href="#sites-PUTapi-projects--project_id--servers--server_id--sites--site_id--aliases">aliases</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="sites-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy">
+                                <a href="#sites-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy">deploy</a>
+                            </li>
                                                                                 <li class="tocify-item level-2" data-unique="sites-PUTapi-projects--project_id--servers--server_id--sites--site_id--deployment-script">
                                 <a href="#sites-PUTapi-projects--project_id--servers--server_id--sites--site_id--deployment-script">deployment-script</a>
                             </li>
@@ -360,7 +379,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: March 29, 2025</li>
+        <li>Last updated: April 5, 2025</li>
     </ul>
 </div>
 
@@ -628,7 +647,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"command\": \"qui\",
+    \"command\": \"nisi\",
     \"user\": \"vito\",
     \"frequency\": \"* * * * *\"
 }"
@@ -647,7 +666,7 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'command' =&gt; 'qui',
+            'command' =&gt; 'nisi',
             'user' =&gt; 'vito',
             'frequency' =&gt; '* * * * *',
         ],
@@ -669,7 +688,7 @@ const headers = {
 };
 
 let body = {
-    "command": "qui",
+    "command": "nisi",
     "user": "vito",
     "frequency": "* * * * *"
 };
@@ -810,10 +829,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="command"                data-endpoint="POSTapi-projects--project_id--servers--server_id--cron-jobs"
-               value="qui"
+               value="nisi"
                data-component="body">
     <br>
-<p>Example: <code>qui</code></p>
+<p>Example: <code>nisi</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>user</code></b>&nbsp;&nbsp;
@@ -855,7 +874,7 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://your-vito-url/api/projects/1/servers/29/cron-jobs/17" \
+    --get "https://your-vito-url/api/projects/1/servers/29/cron-jobs/14" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -863,7 +882,7 @@ Must be one of:
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/cron-jobs/17';
+$url = 'https://your-vito-url/api/projects/1/servers/29/cron-jobs/14';
 $response = $client-&gt;get(
     $url,
     [
@@ -880,7 +899,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/cron-jobs/17"
+    "https://your-vito-url/api/projects/1/servers/29/cron-jobs/14"
 );
 
 const headers = {
@@ -1023,10 +1042,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="cronJob_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--cron-jobs--cronJob_id-"
-               value="17"
+               value="14"
                data-component="url">
     <br>
-<p>The ID of the cronJob. Example: <code>17</code></p>
+<p>The ID of the cronJob. Example: <code>14</code></p>
             </div>
                     </form>
 
@@ -1044,7 +1063,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://your-vito-url/api/projects/1/servers/29/cron-jobs/11" \
+    "https://your-vito-url/api/projects/1/servers/29/cron-jobs/9" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1052,7 +1071,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/cron-jobs/11';
+$url = 'https://your-vito-url/api/projects/1/servers/29/cron-jobs/9';
 $response = $client-&gt;delete(
     $url,
     [
@@ -1069,7 +1088,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/cron-jobs/11"
+    "https://your-vito-url/api/projects/1/servers/29/cron-jobs/9"
 );
 
 const headers = {
@@ -1202,10 +1221,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="cronJob_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--cron-jobs--cronJob_id-"
-               value="11"
+               value="9"
                data-component="url">
     <br>
-<p>The ID of the cronJob. Example: <code>11</code></p>
+<p>The ID of the cronJob. Example: <code>9</code></p>
             </div>
                     </form>
 
@@ -1279,7 +1298,7 @@ fetch(url, {
         {
             &quot;id&quot;: null,
             &quot;server_id&quot;: null,
-            &quot;username&quot;: &quot;lehner.eloy&quot;,
+            &quot;username&quot;: &quot;lavina.zemlak&quot;,
             &quot;databases&quot;: [],
             &quot;host&quot;: &quot;%&quot;,
             &quot;status&quot;: null,
@@ -1289,7 +1308,7 @@ fetch(url, {
         {
             &quot;id&quot;: null,
             &quot;server_id&quot;: null,
-            &quot;username&quot;: &quot;rlowe&quot;,
+            &quot;username&quot;: &quot;hill.cassidy&quot;,
             &quot;databases&quot;: [],
             &quot;host&quot;: &quot;%&quot;,
             &quot;status&quot;: null,
@@ -1456,8 +1475,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"username\": \"voluptas\",
-    \"password\": \":D+e=\\/;H,\",
+    \"username\": \"tempore\",
+    \"password\": \"!jUv.BBc]X\",
     \"host\": \"%\"
 }"
 </code></pre></div>
@@ -1475,8 +1494,8 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'username' =&gt; 'voluptas',
-            'password' =&gt; ':D+e=/;H,',
+            'username' =&gt; 'tempore',
+            'password' =&gt; '!jUv.BBc]X',
             'host' =&gt; '%',
         ],
     ]
@@ -1497,8 +1516,8 @@ const headers = {
 };
 
 let body = {
-    "username": "voluptas",
-    "password": ":D+e=\/;H,",
+    "username": "tempore",
+    "password": "!jUv.BBc]X",
     "host": "%"
 };
 
@@ -1519,7 +1538,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
     &quot;server_id&quot;: null,
-    &quot;username&quot;: &quot;fahey.joseph&quot;,
+    &quot;username&quot;: &quot;irwin45&quot;,
     &quot;databases&quot;: [],
     &quot;host&quot;: &quot;%&quot;,
     &quot;status&quot;: null,
@@ -1638,10 +1657,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="username"                data-endpoint="POSTapi-projects--project_id--servers--server_id--database-users"
-               value="voluptas"
+               value="tempore"
                data-component="body">
     <br>
-<p>Example: <code>voluptas</code></p>
+<p>Example: <code>tempore</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -1649,10 +1668,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-projects--project_id--servers--server_id--database-users"
-               value=":D+e=/;H,"
+               value="!jUv.BBc]X"
                data-component="body">
     <br>
-<p>Example: <code>:D+e=/;H,</code></p>
+<p>Example: <code>!jUv.BBc]X</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>host</code></b>&nbsp;&nbsp;
@@ -1681,7 +1700,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://your-vito-url/api/projects/1/servers/29/database-users/19" \
+    --get "https://your-vito-url/api/projects/1/servers/29/database-users/3" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1689,7 +1708,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/database-users/19';
+$url = 'https://your-vito-url/api/projects/1/servers/29/database-users/3';
 $response = $client-&gt;get(
     $url,
     [
@@ -1706,7 +1725,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/database-users/19"
+    "https://your-vito-url/api/projects/1/servers/29/database-users/3"
 );
 
 const headers = {
@@ -1731,7 +1750,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
     &quot;server_id&quot;: null,
-    &quot;username&quot;: &quot;szboncak&quot;,
+    &quot;username&quot;: &quot;frederic.koss&quot;,
     &quot;databases&quot;: [],
     &quot;host&quot;: &quot;%&quot;,
     &quot;status&quot;: null,
@@ -1849,10 +1868,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="databaseUser_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--database-users--databaseUser_id-"
-               value="19"
+               value="3"
                data-component="url">
     <br>
-<p>The ID of the databaseUser. Example: <code>19</code></p>
+<p>The ID of the databaseUser. Example: <code>3</code></p>
             </div>
                     </form>
 
@@ -1870,19 +1889,19 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://your-vito-url/api/projects/1/servers/29/database-users/11/link" \
+    "https://your-vito-url/api/projects/1/servers/29/database-users/12/link" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"databases\": \"accusantium\"
+    \"databases\": \"numquam\"
 }"
 </code></pre></div>
 
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/database-users/11/link';
+$url = 'https://your-vito-url/api/projects/1/servers/29/database-users/12/link';
 $response = $client-&gt;post(
     $url,
     [
@@ -1892,7 +1911,7 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'databases' =&gt; 'accusantium',
+            'databases' =&gt; 'numquam',
         ],
     ]
 );
@@ -1902,7 +1921,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/database-users/11/link"
+    "https://your-vito-url/api/projects/1/servers/29/database-users/12/link"
 );
 
 const headers = {
@@ -1912,7 +1931,7 @@ const headers = {
 };
 
 let body = {
-    "databases": "accusantium"
+    "databases": "numquam"
 };
 
 fetch(url, {
@@ -1932,7 +1951,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
     &quot;server_id&quot;: null,
-    &quot;username&quot;: &quot;smith.liliana&quot;,
+    &quot;username&quot;: &quot;georgiana.hand&quot;,
     &quot;databases&quot;: [],
     &quot;host&quot;: &quot;%&quot;,
     &quot;status&quot;: null,
@@ -2050,10 +2069,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="databaseUser_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--database-users--databaseUser_id--link"
-               value="11"
+               value="12"
                data-component="url">
     <br>
-<p>The ID of the databaseUser. Example: <code>11</code></p>
+<p>The ID of the databaseUser. Example: <code>12</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -2062,10 +2081,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="databases"                data-endpoint="POSTapi-projects--project_id--servers--server_id--database-users--databaseUser_id--link"
-               value="accusantium"
+               value="numquam"
                data-component="body">
     <br>
-<p>Array of database names to link to the user. Example: <code>accusantium</code></p>
+<p>Array of database names to link to the user. Example: <code>numquam</code></p>
         </div>
         </form>
 
@@ -2083,7 +2102,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://your-vito-url/api/projects/1/servers/29/database-users/18" \
+    "https://your-vito-url/api/projects/1/servers/29/database-users/6" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -2091,7 +2110,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/database-users/18';
+$url = 'https://your-vito-url/api/projects/1/servers/29/database-users/6';
 $response = $client-&gt;delete(
     $url,
     [
@@ -2108,7 +2127,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/database-users/18"
+    "https://your-vito-url/api/projects/1/servers/29/database-users/6"
 );
 
 const headers = {
@@ -2241,10 +2260,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="databaseUser_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--database-users--databaseUser_id-"
-               value="18"
+               value="6"
                data-component="url">
     <br>
-<p>The ID of the databaseUser. Example: <code>18</code></p>
+<p>The ID of the databaseUser. Example: <code>6</code></p>
             </div>
                     </form>
 
@@ -2318,7 +2337,7 @@ fetch(url, {
         {
             &quot;id&quot;: null,
             &quot;server_id&quot;: null,
-            &quot;name&quot;: &quot;joyce53&quot;,
+            &quot;name&quot;: &quot;conn.bridget&quot;,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;created_at&quot;: null,
             &quot;updated_at&quot;: null
@@ -2326,7 +2345,7 @@ fetch(url, {
         {
             &quot;id&quot;: null,
             &quot;server_id&quot;: null,
-            &quot;name&quot;: &quot;eric55&quot;,
+            &quot;name&quot;: &quot;aiden47&quot;,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;created_at&quot;: null,
             &quot;updated_at&quot;: null
@@ -2491,9 +2510,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"debitis\",
-    \"charset\": \"maxime\",
-    \"collation\": \"sed\"
+    \"name\": \"vel\",
+    \"charset\": \"qui\",
+    \"collation\": \"autem\"
 }"
 </code></pre></div>
 
@@ -2510,9 +2529,9 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'debitis',
-            'charset' =&gt; 'maxime',
-            'collation' =&gt; 'sed',
+            'name' =&gt; 'vel',
+            'charset' =&gt; 'qui',
+            'collation' =&gt; 'autem',
         ],
     ]
 );
@@ -2532,9 +2551,9 @@ const headers = {
 };
 
 let body = {
-    "name": "debitis",
-    "charset": "maxime",
-    "collation": "sed"
+    "name": "vel",
+    "charset": "qui",
+    "collation": "autem"
 };
 
 fetch(url, {
@@ -2554,7 +2573,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
     &quot;server_id&quot;: null,
-    &quot;name&quot;: &quot;brekke.isabell&quot;,
+    &quot;name&quot;: &quot;rodolfo.bradtke&quot;,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;created_at&quot;: null,
     &quot;updated_at&quot;: null
@@ -2671,10 +2690,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects--project_id--servers--server_id--databases"
-               value="debitis"
+               value="vel"
                data-component="body">
     <br>
-<p>Example: <code>debitis</code></p>
+<p>Example: <code>vel</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>charset</code></b>&nbsp;&nbsp;
@@ -2682,10 +2701,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="charset"                data-endpoint="POSTapi-projects--project_id--servers--server_id--databases"
-               value="maxime"
+               value="qui"
                data-component="body">
     <br>
-<p>Example: <code>maxime</code></p>
+<p>Example: <code>qui</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>collation</code></b>&nbsp;&nbsp;
@@ -2693,10 +2712,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="collation"                data-endpoint="POSTapi-projects--project_id--servers--server_id--databases"
-               value="sed"
+               value="autem"
                data-component="body">
     <br>
-<p>Example: <code>sed</code></p>
+<p>Example: <code>autem</code></p>
         </div>
         </form>
 
@@ -2714,7 +2733,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://your-vito-url/api/projects/1/servers/29/databases/11" \
+    --get "https://your-vito-url/api/projects/1/servers/29/databases/17" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -2722,7 +2741,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/databases/11';
+$url = 'https://your-vito-url/api/projects/1/servers/29/databases/17';
 $response = $client-&gt;get(
     $url,
     [
@@ -2739,7 +2758,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/databases/11"
+    "https://your-vito-url/api/projects/1/servers/29/databases/17"
 );
 
 const headers = {
@@ -2764,7 +2783,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
     &quot;server_id&quot;: null,
-    &quot;name&quot;: &quot;vandervort.emmalee&quot;,
+    &quot;name&quot;: &quot;rhane&quot;,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;created_at&quot;: null,
     &quot;updated_at&quot;: null
@@ -2880,10 +2899,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="id"                data-endpoint="GETapi-projects--project_id--servers--server_id--databases--id-"
-               value="11"
+               value="17"
                data-component="url">
     <br>
-<p>The ID of the database. Example: <code>11</code></p>
+<p>The ID of the database. Example: <code>17</code></p>
             </div>
                     </form>
 
@@ -3135,12 +3154,12 @@ fetch(url, {
     &quot;data&quot;: [
         {
             &quot;id&quot;: null,
-            &quot;name&quot;: &quot;ea&quot;,
+            &quot;name&quot;: &quot;sit&quot;,
             &quot;server_id&quot;: null,
             &quot;type&quot;: &quot;allow&quot;,
             &quot;protocol&quot;: &quot;tcp&quot;,
-            &quot;port&quot;: 41910,
-            &quot;source&quot;: &quot;202.183.211.242&quot;,
+            &quot;port&quot;: 59225,
+            &quot;source&quot;: &quot;130.41.114.80&quot;,
             &quot;mask&quot;: 24,
             &quot;note&quot;: &quot;test&quot;,
             &quot;status&quot;: null,
@@ -3149,12 +3168,12 @@ fetch(url, {
         },
         {
             &quot;id&quot;: null,
-            &quot;name&quot;: &quot;iusto&quot;,
+            &quot;name&quot;: &quot;sequi&quot;,
             &quot;server_id&quot;: null,
             &quot;type&quot;: &quot;allow&quot;,
             &quot;protocol&quot;: &quot;tcp&quot;,
-            &quot;port&quot;: 60689,
-            &quot;source&quot;: &quot;227.149.61.57&quot;,
+            &quot;port&quot;: 17864,
+            &quot;source&quot;: &quot;170.103.31.60&quot;,
             &quot;mask&quot;: 24,
             &quot;note&quot;: &quot;test&quot;,
             &quot;status&quot;: null,
@@ -3321,11 +3340,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"autem\",
-    \"type\": \"allow\",
-    \"protocol\": \"tcp\",
-    \"port\": \"quas\",
-    \"source\": \"blanditiis\",
+    \"name\": \"eum\",
+    \"type\": \"deny\",
+    \"protocol\": \"udp\",
+    \"port\": \"incidunt\",
+    \"source\": \"quisquam\",
     \"mask\": \"0\"
 }"
 </code></pre></div>
@@ -3343,11 +3362,11 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'autem',
-            'type' =&gt; 'allow',
-            'protocol' =&gt; 'tcp',
-            'port' =&gt; 'quas',
-            'source' =&gt; 'blanditiis',
+            'name' =&gt; 'eum',
+            'type' =&gt; 'deny',
+            'protocol' =&gt; 'udp',
+            'port' =&gt; 'incidunt',
+            'source' =&gt; 'quisquam',
             'mask' =&gt; '0',
         ],
     ]
@@ -3368,11 +3387,11 @@ const headers = {
 };
 
 let body = {
-    "name": "autem",
-    "type": "allow",
-    "protocol": "tcp",
-    "port": "quas",
-    "source": "blanditiis",
+    "name": "eum",
+    "type": "deny",
+    "protocol": "udp",
+    "port": "incidunt",
+    "source": "quisquam",
     "mask": "0"
 };
 
@@ -3392,12 +3411,12 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
-    &quot;name&quot;: &quot;in&quot;,
+    &quot;name&quot;: &quot;consequuntur&quot;,
     &quot;server_id&quot;: null,
     &quot;type&quot;: &quot;allow&quot;,
     &quot;protocol&quot;: &quot;tcp&quot;,
-    &quot;port&quot;: 13253,
-    &quot;source&quot;: &quot;245.228.81.208&quot;,
+    &quot;port&quot;: 50101,
+    &quot;source&quot;: &quot;133.245.21.1&quot;,
     &quot;mask&quot;: 24,
     &quot;note&quot;: &quot;test&quot;,
     &quot;status&quot;: null,
@@ -3516,10 +3535,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects--project_id--servers--server_id--firewall-rules"
-               value="autem"
+               value="eum"
                data-component="body">
     <br>
-<p>Example: <code>autem</code></p>
+<p>Example: <code>eum</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>type</code></b>&nbsp;&nbsp;
@@ -3527,10 +3546,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="type"                data-endpoint="POSTapi-projects--project_id--servers--server_id--firewall-rules"
-               value="allow"
+               value="deny"
                data-component="body">
     <br>
-<p>Example: <code>allow</code></p>
+<p>Example: <code>deny</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>allow</code></li> <li><code>deny</code></li></ul>
         </div>
@@ -3540,10 +3559,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="protocol"                data-endpoint="POSTapi-projects--project_id--servers--server_id--firewall-rules"
-               value="tcp"
+               value="udp"
                data-component="body">
     <br>
-<p>Example: <code>tcp</code></p>
+<p>Example: <code>udp</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>tcp</code></li> <li><code>udp</code></li></ul>
         </div>
@@ -3553,10 +3572,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="port"                data-endpoint="POSTapi-projects--project_id--servers--server_id--firewall-rules"
-               value="quas"
+               value="incidunt"
                data-component="body">
     <br>
-<p>Example: <code>quas</code></p>
+<p>Example: <code>incidunt</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>source</code></b>&nbsp;&nbsp;
@@ -3564,10 +3583,10 @@ Must be one of:
 <i>optional</i> &nbsp;
                 <input type="text" style="display: none"
                               name="source"                data-endpoint="POSTapi-projects--project_id--servers--server_id--firewall-rules"
-               value="blanditiis"
+               value="quisquam"
                data-component="body">
     <br>
-<p>Example: <code>blanditiis</code></p>
+<p>Example: <code>quisquam</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>mask</code></b>&nbsp;&nbsp;
@@ -3601,11 +3620,11 @@ Must be one of:
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"earum\",
-    \"type\": \"allow\",
+    \"name\": \"dolor\",
+    \"type\": \"deny\",
     \"protocol\": \"tcp\",
-    \"port\": \"ab\",
-    \"source\": \"possimus\",
+    \"port\": \"qui\",
+    \"source\": \"porro\",
     \"mask\": \"0\"
 }"
 </code></pre></div>
@@ -3623,11 +3642,11 @@ $response = $client-&gt;put(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'earum',
-            'type' =&gt; 'allow',
+            'name' =&gt; 'dolor',
+            'type' =&gt; 'deny',
             'protocol' =&gt; 'tcp',
-            'port' =&gt; 'ab',
-            'source' =&gt; 'possimus',
+            'port' =&gt; 'qui',
+            'source' =&gt; 'porro',
             'mask' =&gt; '0',
         ],
     ]
@@ -3648,11 +3667,11 @@ const headers = {
 };
 
 let body = {
-    "name": "earum",
-    "type": "allow",
+    "name": "dolor",
+    "type": "deny",
     "protocol": "tcp",
-    "port": "ab",
-    "source": "possimus",
+    "port": "qui",
+    "source": "porro",
     "mask": "0"
 };
 
@@ -3672,12 +3691,12 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
-    &quot;name&quot;: &quot;repudiandae&quot;,
+    &quot;name&quot;: &quot;numquam&quot;,
     &quot;server_id&quot;: null,
     &quot;type&quot;: &quot;allow&quot;,
     &quot;protocol&quot;: &quot;tcp&quot;,
-    &quot;port&quot;: 44250,
-    &quot;source&quot;: &quot;243.200.88.169&quot;,
+    &quot;port&quot;: 52010,
+    &quot;source&quot;: &quot;159.227.119.185&quot;,
     &quot;mask&quot;: 24,
     &quot;note&quot;: &quot;test&quot;,
     &quot;status&quot;: null,
@@ -3807,10 +3826,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="PUTapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="earum"
+               value="dolor"
                data-component="body">
     <br>
-<p>Example: <code>earum</code></p>
+<p>Example: <code>dolor</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>type</code></b>&nbsp;&nbsp;
@@ -3818,10 +3837,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="type"                data-endpoint="PUTapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="allow"
+               value="deny"
                data-component="body">
     <br>
-<p>Example: <code>allow</code></p>
+<p>Example: <code>deny</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>allow</code></li> <li><code>deny</code></li></ul>
         </div>
@@ -3844,10 +3863,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="port"                data-endpoint="PUTapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="ab"
+               value="qui"
                data-component="body">
     <br>
-<p>Example: <code>ab</code></p>
+<p>Example: <code>qui</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>source</code></b>&nbsp;&nbsp;
@@ -3855,10 +3874,10 @@ Must be one of:
 <i>optional</i> &nbsp;
                 <input type="text" style="display: none"
                               name="source"                data-endpoint="PUTapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="possimus"
+               value="porro"
                data-component="body">
     <br>
-<p>Example: <code>possimus</code></p>
+<p>Example: <code>porro</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>mask</code></b>&nbsp;&nbsp;
@@ -3936,12 +3955,12 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
-    &quot;name&quot;: &quot;quam&quot;,
+    &quot;name&quot;: &quot;voluptatem&quot;,
     &quot;server_id&quot;: null,
     &quot;type&quot;: &quot;allow&quot;,
     &quot;protocol&quot;: &quot;tcp&quot;,
-    &quot;port&quot;: 62505,
-    &quot;source&quot;: &quot;73.254.77.244&quot;,
+    &quot;port&quot;: 5812,
+    &quot;source&quot;: &quot;122.105.250.56&quot;,
     &quot;mask&quot;: 24,
     &quot;note&quot;: &quot;test&quot;,
     &quot;status&quot;: null,
@@ -4461,15 +4480,15 @@ fetch(url, {
     &quot;data&quot;: [
         {
             &quot;id&quot;: 3,
-            &quot;name&quot;: &quot;Amara Jaskolski&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;name&quot;: &quot;Selina Wintheiser DDS&quot;,
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;
         },
         {
             &quot;id&quot;: 4,
-            &quot;name&quot;: &quot;Christy Kohler&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;name&quot;: &quot;Shanna Deckow&quot;,
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -4608,7 +4627,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"temporibus\"
+    \"name\": \"quibusdam\"
 }"
 </code></pre></div>
 
@@ -4625,7 +4644,7 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'temporibus',
+            'name' =&gt; 'quibusdam',
         ],
     ]
 );
@@ -4645,7 +4664,7 @@ const headers = {
 };
 
 let body = {
-    "name": "temporibus"
+    "name": "quibusdam"
 };
 
 fetch(url, {
@@ -4664,9 +4683,9 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: 3,
-    &quot;name&quot;: &quot;Prof. Enrico Wehner Sr.&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;Mr. Johathan Koch&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -4757,10 +4776,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects"
-               value="temporibus"
+               value="quibusdam"
                data-component="body">
     <br>
-<p>The name of the project. Example: <code>temporibus</code></p>
+<p>The name of the project. Example: <code>quibusdam</code></p>
         </div>
         </form>
 
@@ -4827,9 +4846,9 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: 3,
-    &quot;name&quot;: &quot;Zoie Feest&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;Jorge Schulist V&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -4946,7 +4965,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"sit\"
+    \"name\": \"enim\"
 }"
 </code></pre></div>
 
@@ -4963,7 +4982,7 @@ $response = $client-&gt;put(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'sit',
+            'name' =&gt; 'enim',
         ],
     ]
 );
@@ -4983,7 +5002,7 @@ const headers = {
 };
 
 let body = {
-    "name": "sit"
+    "name": "enim"
 };
 
 fetch(url, {
@@ -5002,9 +5021,9 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: 3,
-    &quot;name&quot;: &quot;Mr. Jayme Kuhlman DVM&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;Annie Windler&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -5107,10 +5126,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="PUTapi-projects--id-"
-               value="sit"
+               value="enim"
                data-component="body">
     <br>
-<p>The name of the project. Example: <code>sit</code></p>
+<p>The name of the project. Example: <code>enim</code></p>
         </div>
         </form>
 
@@ -5271,6 +5290,669 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
+                <h1 id="redirects">redirects</h1>
+
+    
+
+                                <h2 id="redirects-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects">index</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Get all redirects.</p>
+
+<span id="example-requests-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://your-vito-url/api/projects/1/servers/29/sites/44/redirects" \
+    --header "Authorization: Bearer YOUR-API-KEY" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/redirects';
+$response = $client-&gt;get(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer YOUR-API-KEY',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/redirects"
+);
+
+const headers = {
+    "Authorization": "Bearer YOUR-API-KEY",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;data&quot;: [
+        {
+            &quot;id&quot;: null,
+            &quot;site_id&quot;: null,
+            &quot;mode&quot;: 301,
+            &quot;from&quot;: &quot;eaque&quot;,
+            &quot;to&quot;: &quot;http://www.windler.info/delectus-facilis-assumenda-consequatur-impedit-hic-dolorem-non-dolore.html&quot;,
+            &quot;status&quot;: &quot;ready&quot;,
+            &quot;created_at&quot;: null,
+            &quot;updated_at&quot;: null
+        },
+        {
+            &quot;id&quot;: null,
+            &quot;site_id&quot;: null,
+            &quot;mode&quot;: 308,
+            &quot;from&quot;: &quot;neque&quot;,
+            &quot;to&quot;: &quot;http://raynor.biz/velit-a-tempore-quas-explicabo-doloremque&quot;,
+            &quot;status&quot;: &quot;ready&quot;,
+            &quot;created_at&quot;: null,
+            &quot;updated_at&quot;: null
+        }
+    ],
+    &quot;links&quot;: {
+        &quot;first&quot;: &quot;/?page=1&quot;,
+        &quot;last&quot;: &quot;/?page=1&quot;,
+        &quot;prev&quot;: null,
+        &quot;next&quot;: null
+    },
+    &quot;meta&quot;: {
+        &quot;current_page&quot;: 1,
+        &quot;from&quot;: 1,
+        &quot;last_page&quot;: 1,
+        &quot;links&quot;: [
+            {
+                &quot;url&quot;: null,
+                &quot;label&quot;: &quot;&amp;laquo; Previous&quot;,
+                &quot;active&quot;: false
+            },
+            {
+                &quot;url&quot;: &quot;/?page=1&quot;,
+                &quot;label&quot;: &quot;1&quot;,
+                &quot;active&quot;: true
+            },
+            {
+                &quot;url&quot;: null,
+                &quot;label&quot;: &quot;Next &amp;raquo;&quot;,
+                &quot;active&quot;: false
+            }
+        ],
+        &quot;path&quot;: &quot;/&quot;,
+        &quot;per_page&quot;: 25,
+        &quot;to&quot;: 2,
+        &quot;total&quot;: 2
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects" data-method="GET"
+      data-path="api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-projects--project_id--servers--server_id--sites--site_id--redirects', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+                    onclick="tryItOut('GETapi-projects--project_id--servers--server_id--sites--site_id--redirects');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+                    onclick="cancelTryOut('GETapi-projects--project_id--servers--server_id--sites--site_id--redirects');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="Bearer YOUR-API-KEY"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer YOUR-API-KEY</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>server_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="29"
+               data-component="url">
+    <br>
+<p>The ID of the server. Example: <code>29</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="site_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="44"
+               data-component="url">
+    <br>
+<p>The ID of the site. Example: <code>44</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="redirects-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects">create</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Create a new redirect.</p>
+
+<span id="example-requests-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/redirects" \
+    --header "Authorization: Bearer YOUR-API-KEY" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --data "{
+    \"from\": \"qui\",
+    \"to\": \"voluptatum\",
+    \"mode\": 302
+}"
+</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/redirects';
+$response = $client-&gt;post(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer YOUR-API-KEY',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+        'json' =&gt; [
+            'from' =&gt; 'qui',
+            'to' =&gt; 'voluptatum',
+            'mode' =&gt; 302,
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/redirects"
+);
+
+const headers = {
+    "Authorization": "Bearer YOUR-API-KEY",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+let body = {
+    "from": "qui",
+    "to": "voluptatum",
+    "mode": 302
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;"></code>
+ </pre>
+    </span>
+<span id="execution-results-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects" data-method="POST"
+      data-path="api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+                    onclick="tryItOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+                    onclick="cancelTryOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="Bearer YOUR-API-KEY"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer YOUR-API-KEY</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>server_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="29"
+               data-component="url">
+    <br>
+<p>The ID of the server. Example: <code>29</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="site_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="44"
+               data-component="url">
+    <br>
+<p>The ID of the site. Example: <code>44</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>from</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="from"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="qui"
+               data-component="body">
+    <br>
+<p>Example: <code>qui</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>to</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="to"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="voluptatum"
+               data-component="body">
+    <br>
+<p>Example: <code>voluptatum</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>mode</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="mode"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
+               value="302"
+               data-component="body">
+    <br>
+<p>Example: <code>302</code></p>
+Must be one of:
+<ul style="list-style-type: square;"><li><code>301</code></li> <li><code>302</code></li> <li><code>307</code></li> <li><code>308</code></li></ul>
+        </div>
+        </form>
+
+                    <h2 id="redirects-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-">delete</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Delete a redirect.</p>
+
+<span id="example-requests-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request DELETE \
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/redirects/9" \
+    --header "Authorization: Bearer YOUR-API-KEY" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/redirects/9';
+$response = $client-&gt;delete(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer YOUR-API-KEY',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/redirects/9"
+);
+
+const headers = {
+    "Authorization": "Bearer YOUR-API-KEY",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "DELETE",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-">
+            <blockquote>
+            <p>Example response (204):</p>
+        </blockquote>
+                <pre>
+<code>Empty response</code>
+ </pre>
+    </span>
+<span id="execution-results-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-" data-method="DELETE"
+      data-path="api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects/{redirect_id}"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+                    onclick="tryItOut('DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+                    onclick="cancelTryOut('DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-red">DELETE</small>
+            <b><code>api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects/{redirect_id}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+               value="Bearer YOUR-API-KEY"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer YOUR-API-KEY</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>server_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+               value="29"
+               data-component="url">
+    <br>
+<p>The ID of the server. Example: <code>29</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="site_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+               value="44"
+               data-component="url">
+    <br>
+<p>The ID of the site. Example: <code>44</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>redirect_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="redirect_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
+               value="9"
+               data-component="url">
+    <br>
+<p>The ID of the redirect. Example: <code>9</code></p>
+            </div>
+                    </form>
+
                 <h1 id="server-providers">server-providers</h1>
 
     
@@ -5342,19 +6024,19 @@ fetch(url, {
             &quot;id&quot;: 3,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
-            &quot;name&quot;: &quot;quaerat&quot;,
-            &quot;provider&quot;: &quot;aws&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;name&quot;: &quot;ducimus&quot;,
+            &quot;provider&quot;: &quot;digitalocean&quot;,
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;
         },
         {
             &quot;id&quot;: 4,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
-            &quot;name&quot;: &quot;quas&quot;,
-            &quot;provider&quot;: &quot;vultr&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;name&quot;: &quot;nesciunt&quot;,
+            &quot;provider&quot;: &quot;hetzner&quot;,
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:55.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -5505,11 +6187,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"provider\": \"exercitationem\",
-    \"name\": \"similique\",
-    \"token\": \"nisi\",
-    \"key\": \"tempora\",
-    \"secret\": \"earum\"
+    \"provider\": \"sunt\",
+    \"name\": \"aut\",
+    \"token\": \"id\",
+    \"key\": \"porro\",
+    \"secret\": \"voluptas\"
 }"
 </code></pre></div>
 
@@ -5526,11 +6208,11 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'provider' =&gt; 'exercitationem',
-            'name' =&gt; 'similique',
-            'token' =&gt; 'nisi',
-            'key' =&gt; 'tempora',
-            'secret' =&gt; 'earum',
+            'provider' =&gt; 'sunt',
+            'name' =&gt; 'aut',
+            'token' =&gt; 'id',
+            'key' =&gt; 'porro',
+            'secret' =&gt; 'voluptas',
         ],
     ]
 );
@@ -5550,11 +6232,11 @@ const headers = {
 };
 
 let body = {
-    "provider": "exercitationem",
-    "name": "similique",
-    "token": "nisi",
-    "key": "tempora",
-    "secret": "earum"
+    "provider": "sunt",
+    "name": "aut",
+    "token": "id",
+    "key": "porro",
+    "secret": "voluptas"
 };
 
 fetch(url, {
@@ -5575,10 +6257,10 @@ fetch(url, {
     &quot;id&quot;: 3,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;iure&quot;,
-    &quot;provider&quot;: &quot;hetzner&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;nemo&quot;,
+    &quot;provider&quot;: &quot;linode&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -5681,10 +6363,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="provider"                data-endpoint="POSTapi-projects--project_id--server-providers"
-               value="exercitationem"
+               value="sunt"
                data-component="body">
     <br>
-<p>The provider (aws, linode, hetzner, digitalocean, vultr, ...) Example: <code>exercitationem</code></p>
+<p>The provider (aws, linode, hetzner, digitalocean, vultr, ...) Example: <code>sunt</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>name</code></b>&nbsp;&nbsp;
@@ -5692,10 +6374,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects--project_id--server-providers"
-               value="similique"
+               value="aut"
                data-component="body">
     <br>
-<p>The name of the server provider. Example: <code>similique</code></p>
+<p>The name of the server provider. Example: <code>aut</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
@@ -5703,10 +6385,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="token"                data-endpoint="POSTapi-projects--project_id--server-providers"
-               value="nisi"
+               value="id"
                data-component="body">
     <br>
-<p>The token if provider requires api token Example: <code>nisi</code></p>
+<p>The token if provider requires api token Example: <code>id</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>key</code></b>&nbsp;&nbsp;
@@ -5714,10 +6396,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="key"                data-endpoint="POSTapi-projects--project_id--server-providers"
-               value="tempora"
+               value="porro"
                data-component="body">
     <br>
-<p>The key if provider requires key Example: <code>tempora</code></p>
+<p>The key if provider requires key Example: <code>porro</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>secret</code></b>&nbsp;&nbsp;
@@ -5725,10 +6407,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="secret"                data-endpoint="POSTapi-projects--project_id--server-providers"
-               value="earum"
+               value="voluptas"
                data-component="body">
     <br>
-<p>The secret if provider requires key Example: <code>earum</code></p>
+<p>The secret if provider requires key Example: <code>voluptas</code></p>
         </div>
         </form>
 
@@ -5797,10 +6479,10 @@ fetch(url, {
     &quot;id&quot;: 3,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;et&quot;,
-    &quot;provider&quot;: &quot;vultr&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;ut&quot;,
+    &quot;provider&quot;: &quot;aws&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -5928,8 +6610,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"porro\",
-    \"global\": false
+    \"name\": \"aliquam\",
+    \"global\": true
 }"
 </code></pre></div>
 
@@ -5946,8 +6628,8 @@ $response = $client-&gt;put(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'porro',
-            'global' =&gt; false,
+            'name' =&gt; 'aliquam',
+            'global' =&gt; true,
         ],
     ]
 );
@@ -5967,8 +6649,8 @@ const headers = {
 };
 
 let body = {
-    "name": "porro",
-    "global": false
+    "name": "aliquam",
+    "global": true
 };
 
 fetch(url, {
@@ -5989,10 +6671,10 @@ fetch(url, {
     &quot;id&quot;: 3,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;aliquam&quot;,
-    &quot;provider&quot;: &quot;hetzner&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;et&quot;,
+    &quot;provider&quot;: &quot;digitalocean&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -6106,10 +6788,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="PUTapi-projects--project_id--server-providers--serverProvider_id-"
-               value="porro"
+               value="aliquam"
                data-component="body">
     <br>
-<p>The name of the server provider. Example: <code>porro</code></p>
+<p>The name of the server provider. Example: <code>aliquam</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>global</code></b>&nbsp;&nbsp;
@@ -6120,7 +6802,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Accessible in all projects Example: <code>false</code></p>
+<p>Accessible in all projects Example: <code>true</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>1</code></li> <li><code></code></li></ul>
         </div>
@@ -6366,10 +7048,10 @@ fetch(url, {
             &quot;project_id&quot;: null,
             &quot;user_id&quot;: null,
             &quot;provider_id&quot;: null,
-            &quot;name&quot;: &quot;Prof. Wyatt Powlowski IV&quot;,
+            &quot;name&quot;: &quot;Marcelino Rodriguez&quot;,
             &quot;ssh_user&quot;: &quot;vito&quot;,
-            &quot;ip&quot;: &quot;33.53.217.82&quot;,
-            &quot;local_ip&quot;: &quot;227.155.11.76&quot;,
+            &quot;ip&quot;: &quot;128.182.22.13&quot;,
+            &quot;local_ip&quot;: &quot;19.119.134.124&quot;,
             &quot;port&quot;: 22,
             &quot;os&quot;: &quot;ubuntu_22&quot;,
             &quot;type&quot;: &quot;regular&quot;,
@@ -6393,10 +7075,10 @@ fetch(url, {
             &quot;project_id&quot;: null,
             &quot;user_id&quot;: null,
             &quot;provider_id&quot;: null,
-            &quot;name&quot;: &quot;Guiseppe D&#039;Amore&quot;,
+            &quot;name&quot;: &quot;Everardo Conn&quot;,
             &quot;ssh_user&quot;: &quot;vito&quot;,
-            &quot;ip&quot;: &quot;41.138.98.159&quot;,
-            &quot;local_ip&quot;: &quot;78.178.81.109&quot;,
+            &quot;ip&quot;: &quot;62.215.59.124&quot;,
+            &quot;local_ip&quot;: &quot;32.153.141.12&quot;,
             &quot;port&quot;: 22,
             &quot;os&quot;: &quot;ubuntu_22&quot;,
             &quot;type&quot;: &quot;regular&quot;,
@@ -6564,16 +7246,16 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"provider\": \"vel\",
+    \"provider\": \"ut\",
     \"server_provider\": \"hetzner\",
-    \"region\": \"voluptatibus\",
-    \"plan\": \"ducimus\",
-    \"ip\": \"dolores\",
-    \"port\": \"ratione\",
-    \"name\": \"in\",
-    \"os\": \"cumque\",
+    \"region\": \"consectetur\",
+    \"plan\": \"voluptatum\",
+    \"ip\": \"quisquam\",
+    \"port\": \"sapiente\",
+    \"name\": \"itaque\",
+    \"os\": \"aut\",
     \"webserver\": \"nginx\",
-    \"database\": \"mysql80\",
+    \"database\": \"postgresql13\",
     \"php\": \"7.4\"
 }"
 </code></pre></div>
@@ -6591,16 +7273,16 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'provider' =&gt; 'vel',
+            'provider' =&gt; 'ut',
             'server_provider' =&gt; 'hetzner',
-            'region' =&gt; 'voluptatibus',
-            'plan' =&gt; 'ducimus',
-            'ip' =&gt; 'dolores',
-            'port' =&gt; 'ratione',
-            'name' =&gt; 'in',
-            'os' =&gt; 'cumque',
+            'region' =&gt; 'consectetur',
+            'plan' =&gt; 'voluptatum',
+            'ip' =&gt; 'quisquam',
+            'port' =&gt; 'sapiente',
+            'name' =&gt; 'itaque',
+            'os' =&gt; 'aut',
             'webserver' =&gt; 'nginx',
-            'database' =&gt; 'mysql80',
+            'database' =&gt; 'postgresql13',
             'php' =&gt; '7.4',
         ],
     ]
@@ -6621,16 +7303,16 @@ const headers = {
 };
 
 let body = {
-    "provider": "vel",
+    "provider": "ut",
     "server_provider": "hetzner",
-    "region": "voluptatibus",
-    "plan": "ducimus",
-    "ip": "dolores",
-    "port": "ratione",
-    "name": "in",
-    "os": "cumque",
+    "region": "consectetur",
+    "plan": "voluptatum",
+    "ip": "quisquam",
+    "port": "sapiente",
+    "name": "itaque",
+    "os": "aut",
     "webserver": "nginx",
-    "database": "mysql80",
+    "database": "postgresql13",
     "php": "7.4"
 };
 
@@ -6653,10 +7335,10 @@ fetch(url, {
     &quot;project_id&quot;: null,
     &quot;user_id&quot;: null,
     &quot;provider_id&quot;: null,
-    &quot;name&quot;: &quot;Anissa McDermott&quot;,
+    &quot;name&quot;: &quot;Sidney Grant&quot;,
     &quot;ssh_user&quot;: &quot;vito&quot;,
-    &quot;ip&quot;: &quot;212.15.34.173&quot;,
-    &quot;local_ip&quot;: &quot;142.201.95.242&quot;,
+    &quot;ip&quot;: &quot;22.232.10.97&quot;,
+    &quot;local_ip&quot;: &quot;107.107.187.150&quot;,
     &quot;port&quot;: 22,
     &quot;os&quot;: &quot;ubuntu_22&quot;,
     &quot;type&quot;: &quot;regular&quot;,
@@ -6776,10 +7458,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="provider"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="vel"
+               value="ut"
                data-component="body">
     <br>
-<p>The server provider type Example: <code>vel</code></p>
+<p>The server provider type Example: <code>ut</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>server_provider</code></b>&nbsp;&nbsp;
@@ -6800,10 +7482,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="region"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="voluptatibus"
+               value="consectetur"
                data-component="body">
     <br>
-<p>Provider region if the provider is not custom Example: <code>voluptatibus</code></p>
+<p>Provider region if the provider is not custom Example: <code>consectetur</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>plan</code></b>&nbsp;&nbsp;
@@ -6811,10 +7493,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="plan"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="ducimus"
+               value="voluptatum"
                data-component="body">
     <br>
-<p>Provider plan if the provider is not custom Example: <code>ducimus</code></p>
+<p>Provider plan if the provider is not custom Example: <code>voluptatum</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>ip</code></b>&nbsp;&nbsp;
@@ -6822,10 +7504,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="ip"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="dolores"
+               value="quisquam"
                data-component="body">
     <br>
-<p>SSH IP address if the provider is custom Example: <code>dolores</code></p>
+<p>SSH IP address if the provider is custom Example: <code>quisquam</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>port</code></b>&nbsp;&nbsp;
@@ -6833,10 +7515,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="port"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="ratione"
+               value="sapiente"
                data-component="body">
     <br>
-<p>SSH Port if the provider is custom Example: <code>ratione</code></p>
+<p>SSH Port if the provider is custom Example: <code>sapiente</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>name</code></b>&nbsp;&nbsp;
@@ -6844,10 +7526,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="in"
+               value="itaque"
                data-component="body">
     <br>
-<p>The name of the server. Example: <code>in</code></p>
+<p>The name of the server. Example: <code>itaque</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>os</code></b>&nbsp;&nbsp;
@@ -6855,10 +7537,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="os"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="cumque"
+               value="aut"
                data-component="body">
     <br>
-<p>The os of the server Example: <code>cumque</code></p>
+<p>The os of the server Example: <code>aut</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>webserver</code></b>&nbsp;&nbsp;
@@ -6879,10 +7561,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="database"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="mysql80"
+               value="postgresql13"
                data-component="body">
     <br>
-<p>Database Example: <code>mysql80</code></p>
+<p>Database Example: <code>postgresql13</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>none</code></li> <li><code>mysql57</code></li> <li><code>mysql80</code></li> <li><code>mariadb103</code></li> <li><code>mariadb104</code></li> <li><code>mariadb103</code></li> <li><code>postgresql12</code></li> <li><code>postgresql13</code></li> <li><code>postgresql14</code></li> <li><code>postgresql15</code></li> <li><code>postgresql16</code></li></ul>
         </div>
@@ -6967,10 +7649,10 @@ fetch(url, {
     &quot;project_id&quot;: null,
     &quot;user_id&quot;: null,
     &quot;provider_id&quot;: null,
-    &quot;name&quot;: &quot;Prof. Newton Wintheiser Jr.&quot;,
+    &quot;name&quot;: &quot;Maria Zemlak&quot;,
     &quot;ssh_user&quot;: &quot;vito&quot;,
-    &quot;ip&quot;: &quot;243.154.251.36&quot;,
-    &quot;local_ip&quot;: &quot;198.224.194.65&quot;,
+    &quot;ip&quot;: &quot;4.166.233.247&quot;,
+    &quot;local_ip&quot;: &quot;92.197.44.184&quot;,
     &quot;port&quot;: 22,
     &quot;os&quot;: &quot;ubuntu_22&quot;,
     &quot;type&quot;: &quot;regular&quot;,
@@ -9367,19 +10049,19 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"type\": \"php-blank\",
-    \"domain\": \"harum\",
+    \"type\": \"wordpress\",
+    \"domain\": \"ut\",
     \"aliases\": [
-        \"voluptatem\"
+        \"vitae\"
     ],
     \"php_version\": \"7.4\",
     \"web_directory\": \"public\",
-    \"source_control\": \"amet\",
+    \"source_control\": \"animi\",
     \"repository\": \"organization\\/repository\",
     \"branch\": \"main\",
     \"composer\": true,
     \"version\": \"5.2.1\",
-    \"user\": \"et\",
+    \"user\": \"est\",
     \"method\": \"least-connections\"
 }"
 </code></pre></div>
@@ -9397,19 +10079,19 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'type' =&gt; 'php-blank',
-            'domain' =&gt; 'harum',
+            'type' =&gt; 'wordpress',
+            'domain' =&gt; 'ut',
             'aliases' =&gt; [
-                'voluptatem',
+                'vitae',
             ],
             'php_version' =&gt; '7.4',
             'web_directory' =&gt; 'public',
-            'source_control' =&gt; 'amet',
+            'source_control' =&gt; 'animi',
             'repository' =&gt; 'organization/repository',
             'branch' =&gt; 'main',
             'composer' =&gt; true,
             'version' =&gt; '5.2.1',
-            'user' =&gt; 'et',
+            'user' =&gt; 'est',
             'method' =&gt; 'least-connections',
         ],
     ]
@@ -9430,19 +10112,19 @@ const headers = {
 };
 
 let body = {
-    "type": "php-blank",
-    "domain": "harum",
+    "type": "wordpress",
+    "domain": "ut",
     "aliases": [
-        "voluptatem"
+        "vitae"
     ],
     "php_version": "7.4",
     "web_directory": "public",
-    "source_control": "amet",
+    "source_control": "animi",
     "repository": "organization\/repository",
     "branch": "main",
     "composer": true,
     "version": "5.2.1",
-    "user": "et",
+    "user": "est",
     "method": "least-connections"
 };
 
@@ -9592,10 +10274,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="type"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites"
-               value="php-blank"
+               value="wordpress"
                data-component="body">
     <br>
-<p>Example: <code>php-blank</code></p>
+<p>Example: <code>wordpress</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>php</code></li> <li><code>php-blank</code></li> <li><code>phpmyadmin</code></li> <li><code>laravel</code></li> <li><code>wordpress</code></li> <li><code>load-balancer</code></li></ul>
         </div>
@@ -9605,10 +10287,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="domain"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites"
-               value="harum"
+               value="ut"
                data-component="body">
     <br>
-<p>Example: <code>harum</code></p>
+<p>Example: <code>ut</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>aliases</code></b>&nbsp;&nbsp;
@@ -9651,10 +10333,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="source_control"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites"
-               value="amet"
+               value="animi"
                data-component="body">
     <br>
-<p>Source control ID, Required for Sites which support source control Example: <code>amet</code></p>
+<p>Source control ID, Required for Sites which support source control Example: <code>animi</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>repository</code></b>&nbsp;&nbsp;
@@ -9716,10 +10398,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="user"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites"
-               value="et"
+               value="est"
                data-component="body">
     <br>
-<p>user, to isolate the website under a new user Example: <code>et</code></p>
+<p>user, to isolate the website under a new user Example: <code>est</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>method</code></b>&nbsp;&nbsp;
@@ -9750,7 +10432,7 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://your-vito-url/api/projects/1/servers/29/sites/43" \
+    --get "https://your-vito-url/api/projects/1/servers/29/sites/44" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -9758,7 +10440,7 @@ Must be one of:
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/sites/43';
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44';
 $response = $client-&gt;get(
     $url,
     [
@@ -9775,7 +10457,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/sites/43"
+    "https://your-vito-url/api/projects/1/servers/29/sites/44"
 );
 
 const headers = {
@@ -9928,10 +10610,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--id-"
-               value="43"
+               value="44"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>43</code></p>
+<p>The ID of the site. Example: <code>44</code></p>
             </div>
                     </form>
 
@@ -9949,7 +10631,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://your-vito-url/api/projects/1/servers/29/sites/43" \
+    "https://your-vito-url/api/projects/1/servers/29/sites/44" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -9957,7 +10639,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/sites/43';
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44';
 $response = $client-&gt;delete(
     $url,
     [
@@ -9974,7 +10656,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/sites/43"
+    "https://your-vito-url/api/projects/1/servers/29/sites/44"
 );
 
 const headers = {
@@ -10107,10 +10789,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id-"
-               value="43"
+               value="44"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>43</code></p>
+<p>The ID of the site. Example: <code>44</code></p>
             </div>
                     </form>
 
@@ -10128,14 +10810,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://your-vito-url/api/projects/1/servers/29/sites/43/load-balancer" \
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/load-balancer" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"method\": \"ip-hash\",
+    \"method\": \"round-robin\",
     \"servers\": [
-        \"accusantium\"
+        \"eaque\"
     ]
 }"
 </code></pre></div>
@@ -10143,7 +10825,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/sites/43/load-balancer';
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/load-balancer';
 $response = $client-&gt;post(
     $url,
     [
@@ -10153,9 +10835,9 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'method' =&gt; 'ip-hash',
+            'method' =&gt; 'round-robin',
             'servers' =&gt; [
-                'accusantium',
+                'eaque',
             ],
         ],
     ]
@@ -10166,7 +10848,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/sites/43/load-balancer"
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/load-balancer"
 );
 
 const headers = {
@@ -10176,9 +10858,9 @@ const headers = {
 };
 
 let body = {
-    "method": "ip-hash",
+    "method": "round-robin",
     "servers": [
-        "accusantium"
+        "eaque"
     ]
 };
 
@@ -10308,10 +10990,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--load-balancer"
-               value="43"
+               value="44"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>43</code></p>
+<p>The ID of the site. Example: <code>44</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -10320,10 +11002,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="method"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--load-balancer"
-               value="ip-hash"
+               value="round-robin"
                data-component="body">
     <br>
-<p>Load balancer method, Required if the site type is Load balancer Example: <code>ip-hash</code></p>
+<p>Load balancer method, Required if the site type is Load balancer Example: <code>round-robin</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>round-robin</code></li> <li><code>least-connections</code></li> <li><code>ip-hash</code></li></ul>
         </div>
@@ -10356,13 +11038,13 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://your-vito-url/api/projects/1/servers/29/sites/43/aliases" \
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/aliases" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
     \"aliases\": [
-        \"ut\"
+        \"pariatur\"
     ]
 }"
 </code></pre></div>
@@ -10370,7 +11052,7 @@ Must be one of:
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/sites/43/aliases';
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/aliases';
 $response = $client-&gt;put(
     $url,
     [
@@ -10381,7 +11063,7 @@ $response = $client-&gt;put(
         ],
         'json' =&gt; [
             'aliases' =&gt; [
-                'ut',
+                'pariatur',
             ],
         ],
     ]
@@ -10392,7 +11074,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/sites/43/aliases"
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/aliases"
 );
 
 const headers = {
@@ -10403,7 +11085,7 @@ const headers = {
 
 let body = {
     "aliases": [
-        "ut"
+        "pariatur"
     ]
 };
 
@@ -10533,10 +11215,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--aliases"
-               value="43"
+               value="44"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>43</code></p>
+<p>The ID of the site. Example: <code>44</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -10554,6 +11236,186 @@ You can check the Dev Tools console for debugging information.</code></pre>
         </div>
         </form>
 
+                    <h2 id="sites-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy">deploy</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Run site deployment script</p>
+
+<span id="example-requests-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/deploy" \
+    --header "Authorization: Bearer YOUR-API-KEY" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/deploy';
+$response = $client-&gt;post(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer YOUR-API-KEY',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/deploy"
+);
+
+const headers = {
+    "Authorization": "Bearer YOUR-API-KEY",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;"></code>
+ </pre>
+    </span>
+<span id="execution-results-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy" data-method="POST"
+      data-path="api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deploy"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+                    onclick="tryItOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+                    onclick="cancelTryOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deploy</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+               value="Bearer YOUR-API-KEY"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer YOUR-API-KEY</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>server_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+               value="29"
+               data-component="url">
+    <br>
+<p>The ID of the server. Example: <code>29</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="site_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
+               value="44"
+               data-component="url">
+    <br>
+<p>The ID of the site. Example: <code>44</code></p>
+            </div>
+                    </form>
+
                     <h2 id="sites-PUTapi-projects--project_id--servers--server_id--sites--site_id--deployment-script">deployment-script</h2>
 
 <p>
@@ -10568,7 +11430,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://your-vito-url/api/projects/1/servers/29/sites/43/deployment-script" \
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/deployment-script" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
@@ -10580,7 +11442,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/sites/43/deployment-script';
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/deployment-script';
 $response = $client-&gt;put(
     $url,
     [
@@ -10600,7 +11462,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/sites/43/deployment-script"
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/deployment-script"
 );
 
 const headers = {
@@ -10738,10 +11600,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--deployment-script"
-               value="43"
+               value="44"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>43</code></p>
+<p>The ID of the site. Example: <code>44</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -10771,7 +11633,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://your-vito-url/api/projects/1/servers/29/sites/43/deployment-script" \
+    --get "https://your-vito-url/api/projects/1/servers/29/sites/44/deployment-script" \
     --header "Authorization: Bearer YOUR-API-KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -10779,7 +11641,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://your-vito-url/api/projects/1/servers/29/sites/43/deployment-script';
+$url = 'https://your-vito-url/api/projects/1/servers/29/sites/44/deployment-script';
 $response = $client-&gt;get(
     $url,
     [
@@ -10796,7 +11658,7 @@ print_r(json_decode((string) $body));</code></pre></div>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://your-vito-url/api/projects/1/servers/29/sites/43/deployment-script"
+    "https://your-vito-url/api/projects/1/servers/29/sites/44/deployment-script"
 );
 
 const headers = {
@@ -10930,10 +11792,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployment-script"
-               value="43"
+               value="44"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>43</code></p>
+<p>The ID of the site. Example: <code>44</code></p>
             </div>
                     </form>
 
@@ -11008,19 +11870,19 @@ fetch(url, {
             &quot;id&quot;: 5,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
-            &quot;name&quot;: &quot;Amya Jones&quot;,
+            &quot;name&quot;: &quot;Dawson Ratke IV&quot;,
             &quot;provider&quot;: &quot;github&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
         },
         {
             &quot;id&quot;: 6,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
-            &quot;name&quot;: &quot;Jerry Donnelly&quot;,
+            &quot;name&quot;: &quot;Miss Caterina Mann DVM&quot;,
             &quot;provider&quot;: &quot;github&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -11171,12 +12033,12 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"provider\": \"bitbucket\",
-    \"name\": \"eligendi\",
-    \"token\": \"debitis\",
-    \"url\": \"http:\\/\\/fahey.com\\/aliquid-sapiente-labore-adipisci-eum-laborum\",
-    \"username\": \"rerum\",
-    \"password\": \"wBK}NHxV:x\"
+    \"provider\": \"github\",
+    \"name\": \"est\",
+    \"token\": \"ea\",
+    \"url\": \"http:\\/\\/koepp.info\\/maiores-nostrum-consequuntur-dicta-iure-ullam\",
+    \"username\": \"ducimus\",
+    \"password\": \"S#AHlt\\\"?l6SDU^b?T6\"
 }"
 </code></pre></div>
 
@@ -11193,12 +12055,12 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'provider' =&gt; 'bitbucket',
-            'name' =&gt; 'eligendi',
-            'token' =&gt; 'debitis',
-            'url' =&gt; 'http://fahey.com/aliquid-sapiente-labore-adipisci-eum-laborum',
-            'username' =&gt; 'rerum',
-            'password' =&gt; 'wBK}NHxV:x',
+            'provider' =&gt; 'github',
+            'name' =&gt; 'est',
+            'token' =&gt; 'ea',
+            'url' =&gt; 'http://koepp.info/maiores-nostrum-consequuntur-dicta-iure-ullam',
+            'username' =&gt; 'ducimus',
+            'password' =&gt; 'S#AHlt"?l6SDU^b?T6',
         ],
     ]
 );
@@ -11218,12 +12080,12 @@ const headers = {
 };
 
 let body = {
-    "provider": "bitbucket",
-    "name": "eligendi",
-    "token": "debitis",
-    "url": "http:\/\/fahey.com\/aliquid-sapiente-labore-adipisci-eum-laborum",
-    "username": "rerum",
-    "password": "wBK}NHxV:x"
+    "provider": "github",
+    "name": "est",
+    "token": "ea",
+    "url": "http:\/\/koepp.info\/maiores-nostrum-consequuntur-dicta-iure-ullam",
+    "username": "ducimus",
+    "password": "S#AHlt\"?l6SDU^b?T6"
 };
 
 fetch(url, {
@@ -11244,10 +12106,10 @@ fetch(url, {
     &quot;id&quot;: 5,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;Dr. Janae Tremblay PhD&quot;,
+    &quot;name&quot;: &quot;Dr. Adella Greenholt&quot;,
     &quot;provider&quot;: &quot;github&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -11350,10 +12212,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="provider"                data-endpoint="POSTapi-projects--project_id--source-controls"
-               value="bitbucket"
+               value="github"
                data-component="body">
     <br>
-<p>The provider Example: <code>bitbucket</code></p>
+<p>The provider Example: <code>github</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>gitlab</code></li> <li><code>github</code></li> <li><code>bitbucket</code></li></ul>
         </div>
@@ -11363,10 +12225,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects--project_id--source-controls"
-               value="eligendi"
+               value="est"
                data-component="body">
     <br>
-<p>The name of the storage provider. Example: <code>eligendi</code></p>
+<p>The name of the storage provider. Example: <code>est</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
@@ -11374,10 +12236,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="token"                data-endpoint="POSTapi-projects--project_id--source-controls"
-               value="debitis"
+               value="ea"
                data-component="body">
     <br>
-<p>The token if provider requires api token Example: <code>debitis</code></p>
+<p>The token if provider requires api token Example: <code>ea</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>url</code></b>&nbsp;&nbsp;
@@ -11385,10 +12247,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="url"                data-endpoint="POSTapi-projects--project_id--source-controls"
-               value="http://fahey.com/aliquid-sapiente-labore-adipisci-eum-laborum"
+               value="http://koepp.info/maiores-nostrum-consequuntur-dicta-iure-ullam"
                data-component="body">
     <br>
-<p>The URL if the provider is Gitlab and it is self-hosted Example: <code>http://fahey.com/aliquid-sapiente-labore-adipisci-eum-laborum</code></p>
+<p>The URL if the provider is Gitlab and it is self-hosted Example: <code>http://koepp.info/maiores-nostrum-consequuntur-dicta-iure-ullam</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>username</code></b>&nbsp;&nbsp;
@@ -11396,10 +12258,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="username"                data-endpoint="POSTapi-projects--project_id--source-controls"
-               value="rerum"
+               value="ducimus"
                data-component="body">
     <br>
-<p>The username if the provider is Bitbucket Example: <code>rerum</code></p>
+<p>The username if the provider is Bitbucket Example: <code>ducimus</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -11407,10 +12269,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="POSTapi-projects--project_id--source-controls"
-               value="wBK}NHxV:x"
+               value="S#AHlt"?l6SDU^b?T6"
                data-component="body">
     <br>
-<p>The password if the provider is Bitbucket Example: <code>wBK}NHxV:x</code></p>
+<p>The password if the provider is Bitbucket Example: <code>S#AHlt"?l6SDU^b?T6</code></p>
         </div>
         </form>
 
@@ -11479,10 +12341,10 @@ fetch(url, {
     &quot;id&quot;: 5,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;Marguerite Aufderhar&quot;,
+    &quot;name&quot;: &quot;Hettie Farrell&quot;,
     &quot;provider&quot;: &quot;github&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -11610,11 +12472,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"blanditiis\",
-    \"token\": \"non\",
-    \"url\": \"https:\\/\\/www.veum.com\\/eum-voluptas-non-rem-non-rerum-tempora-quam\",
-    \"username\": \"porro\",
-    \"password\": \"&gt;BW~{`#d,}=U!XxC!t]\",
+    \"name\": \"sunt\",
+    \"token\": \"est\",
+    \"url\": \"http:\\/\\/www.fay.com\\/quisquam-autem-illum-omnis-quo-enim-eligendi-velit\",
+    \"username\": \"ab\",
+    \"password\": \"M@-*%?(B(UNE~Ibc#\",
     \"global\": false
 }"
 </code></pre></div>
@@ -11632,11 +12494,11 @@ $response = $client-&gt;put(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'blanditiis',
-            'token' =&gt; 'non',
-            'url' =&gt; 'https://www.veum.com/eum-voluptas-non-rem-non-rerum-tempora-quam',
-            'username' =&gt; 'porro',
-            'password' =&gt; '&gt;BW~{`#d,}=U!XxC!t]',
+            'name' =&gt; 'sunt',
+            'token' =&gt; 'est',
+            'url' =&gt; 'http://www.fay.com/quisquam-autem-illum-omnis-quo-enim-eligendi-velit',
+            'username' =&gt; 'ab',
+            'password' =&gt; 'M@-*%?(B(UNE~Ibc#',
             'global' =&gt; false,
         ],
     ]
@@ -11657,11 +12519,11 @@ const headers = {
 };
 
 let body = {
-    "name": "blanditiis",
-    "token": "non",
-    "url": "https:\/\/www.veum.com\/eum-voluptas-non-rem-non-rerum-tempora-quam",
-    "username": "porro",
-    "password": "&gt;BW~{`#d,}=U!XxC!t]",
+    "name": "sunt",
+    "token": "est",
+    "url": "http:\/\/www.fay.com\/quisquam-autem-illum-omnis-quo-enim-eligendi-velit",
+    "username": "ab",
+    "password": "M@-*%?(B(UNE~Ibc#",
     "global": false
 };
 
@@ -11683,10 +12545,10 @@ fetch(url, {
     &quot;id&quot;: 5,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;Johan Crooks&quot;,
+    &quot;name&quot;: &quot;Jadyn Hyatt&quot;,
     &quot;provider&quot;: &quot;github&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -11800,10 +12662,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="PUTapi-projects--project_id--source-controls--sourceControl_id-"
-               value="blanditiis"
+               value="sunt"
                data-component="body">
     <br>
-<p>The name of the storage provider. Example: <code>blanditiis</code></p>
+<p>The name of the storage provider. Example: <code>sunt</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
@@ -11811,10 +12673,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="token"                data-endpoint="PUTapi-projects--project_id--source-controls--sourceControl_id-"
-               value="non"
+               value="est"
                data-component="body">
     <br>
-<p>The token if provider requires api token Example: <code>non</code></p>
+<p>The token if provider requires api token Example: <code>est</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>url</code></b>&nbsp;&nbsp;
@@ -11822,10 +12684,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="url"                data-endpoint="PUTapi-projects--project_id--source-controls--sourceControl_id-"
-               value="https://www.veum.com/eum-voluptas-non-rem-non-rerum-tempora-quam"
+               value="http://www.fay.com/quisquam-autem-illum-omnis-quo-enim-eligendi-velit"
                data-component="body">
     <br>
-<p>The URL if the provider is Gitlab and it is self-hosted Example: <code>https://www.veum.com/eum-voluptas-non-rem-non-rerum-tempora-quam</code></p>
+<p>The URL if the provider is Gitlab and it is self-hosted Example: <code>http://www.fay.com/quisquam-autem-illum-omnis-quo-enim-eligendi-velit</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>username</code></b>&nbsp;&nbsp;
@@ -11833,10 +12695,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="username"                data-endpoint="PUTapi-projects--project_id--source-controls--sourceControl_id-"
-               value="porro"
+               value="ab"
                data-component="body">
     <br>
-<p>The username if the provider is Bitbucket Example: <code>porro</code></p>
+<p>The username if the provider is Bitbucket Example: <code>ab</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -11844,10 +12706,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="password"                data-endpoint="PUTapi-projects--project_id--source-controls--sourceControl_id-"
-               value=">BW~{`#d,}=U!XxC!t]"
+               value="M@-*%?(B(UNE~Ibc#"
                data-component="body">
     <br>
-<p>The password if the provider is Bitbucket Example: <code>&gt;BW~{</code>#d,}=U!XxC!t]`</p>
+<p>The password if the provider is Bitbucket Example: <code>M@-*%?(B(UNE~Ibc#</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>global</code></b>&nbsp;&nbsp;
@@ -12102,14 +12964,14 @@ fetch(url, {
         {
             &quot;id&quot;: null,
             &quot;user&quot;: null,
-            &quot;name&quot;: &quot;Dr. Virgie Reilly&quot;,
+            &quot;name&quot;: &quot;Moriah Kemmer&quot;,
             &quot;created_at&quot;: null,
             &quot;updated_at&quot;: null
         },
         {
             &quot;id&quot;: null,
             &quot;user&quot;: null,
-            &quot;name&quot;: &quot;Horace Gutmann&quot;,
+            &quot;name&quot;: &quot;Delilah Gaylord&quot;,
             &quot;created_at&quot;: null,
             &quot;updated_at&quot;: null
         }
@@ -12273,9 +13135,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"key_id\": \"et\",
-    \"name\": \"provident\",
-    \"public_key\": \"incidunt\"
+    \"key_id\": \"id\",
+    \"name\": \"qui\",
+    \"public_key\": \"vitae\"
 }"
 </code></pre></div>
 
@@ -12292,9 +13154,9 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'key_id' =&gt; 'et',
-            'name' =&gt; 'provident',
-            'public_key' =&gt; 'incidunt',
+            'key_id' =&gt; 'id',
+            'name' =&gt; 'qui',
+            'public_key' =&gt; 'vitae',
         ],
     ]
 );
@@ -12314,9 +13176,9 @@ const headers = {
 };
 
 let body = {
-    "key_id": "et",
-    "name": "provident",
-    "public_key": "incidunt"
+    "key_id": "id",
+    "name": "qui",
+    "public_key": "vitae"
 };
 
 fetch(url, {
@@ -12336,7 +13198,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: null,
     &quot;user&quot;: null,
-    &quot;name&quot;: &quot;Miss Penelope Sipes IV&quot;,
+    &quot;name&quot;: &quot;Jesse Gleason&quot;,
     &quot;created_at&quot;: null,
     &quot;updated_at&quot;: null
 }</code>
@@ -12452,10 +13314,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="key_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--ssh-keys"
-               value="et"
+               value="id"
                data-component="body">
     <br>
-<p>The ID of the key. Example: <code>et</code></p>
+<p>The ID of the key. Example: <code>id</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>name</code></b>&nbsp;&nbsp;
@@ -12463,10 +13325,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects--project_id--servers--server_id--ssh-keys"
-               value="provident"
+               value="qui"
                data-component="body">
     <br>
-<p>Key name, required if key_id is not provided. Example: <code>provident</code></p>
+<p>Key name, required if key_id is not provided. Example: <code>qui</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>public_key</code></b>&nbsp;&nbsp;
@@ -12474,10 +13336,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="public_key"                data-endpoint="POSTapi-projects--project_id--servers--server_id--ssh-keys"
-               value="incidunt"
+               value="vitae"
                data-component="body">
     <br>
-<p>Public Key, required if key_id is not provided. Example: <code>incidunt</code></p>
+<p>Public Key, required if key_id is not provided. Example: <code>vitae</code></p>
         </div>
         </form>
 
@@ -12731,19 +13593,19 @@ fetch(url, {
             &quot;id&quot;: 5,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
-            &quot;name&quot;: &quot;sit&quot;,
-            &quot;provider&quot;: &quot;ftp&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;name&quot;: &quot;et&quot;,
+            &quot;provider&quot;: &quot;dropbox&quot;,
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
         },
         {
             &quot;id&quot;: 6,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
-            &quot;name&quot;: &quot;repudiandae&quot;,
-            &quot;provider&quot;: &quot;local&quot;,
-            &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+            &quot;name&quot;: &quot;sed&quot;,
+            &quot;provider&quot;: &quot;dropbox&quot;,
+            &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -12894,11 +13756,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"provider\": \"est\",
-    \"name\": \"id\",
-    \"token\": \"repellendus\",
-    \"key\": \"ducimus\",
-    \"secret\": \"possimus\"
+    \"provider\": \"quia\",
+    \"name\": \"rerum\",
+    \"token\": \"hic\",
+    \"key\": \"repellat\",
+    \"secret\": \"maiores\"
 }"
 </code></pre></div>
 
@@ -12915,11 +13777,11 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'provider' =&gt; 'est',
-            'name' =&gt; 'id',
-            'token' =&gt; 'repellendus',
-            'key' =&gt; 'ducimus',
-            'secret' =&gt; 'possimus',
+            'provider' =&gt; 'quia',
+            'name' =&gt; 'rerum',
+            'token' =&gt; 'hic',
+            'key' =&gt; 'repellat',
+            'secret' =&gt; 'maiores',
         ],
     ]
 );
@@ -12939,11 +13801,11 @@ const headers = {
 };
 
 let body = {
-    "provider": "est",
-    "name": "id",
-    "token": "repellendus",
-    "key": "ducimus",
-    "secret": "possimus"
+    "provider": "quia",
+    "name": "rerum",
+    "token": "hic",
+    "key": "repellat",
+    "secret": "maiores"
 };
 
 fetch(url, {
@@ -12964,10 +13826,10 @@ fetch(url, {
     &quot;id&quot;: 5,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;sequi&quot;,
-    &quot;provider&quot;: &quot;dropbox&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;veritatis&quot;,
+    &quot;provider&quot;: &quot;ftp&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -13070,10 +13932,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="provider"                data-endpoint="POSTapi-projects--project_id--storage-providers"
-               value="est"
+               value="quia"
                data-component="body">
     <br>
-<p>The provider (aws, linode, hetzner, digitalocean, vultr, ...) Example: <code>est</code></p>
+<p>The provider (aws, linode, hetzner, digitalocean, vultr, ...) Example: <code>quia</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>name</code></b>&nbsp;&nbsp;
@@ -13081,10 +13943,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="POSTapi-projects--project_id--storage-providers"
-               value="id"
+               value="rerum"
                data-component="body">
     <br>
-<p>The name of the storage provider. Example: <code>id</code></p>
+<p>The name of the storage provider. Example: <code>rerum</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
@@ -13092,10 +13954,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="token"                data-endpoint="POSTapi-projects--project_id--storage-providers"
-               value="repellendus"
+               value="hic"
                data-component="body">
     <br>
-<p>The token if provider requires api token Example: <code>repellendus</code></p>
+<p>The token if provider requires api token Example: <code>hic</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>key</code></b>&nbsp;&nbsp;
@@ -13103,10 +13965,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="key"                data-endpoint="POSTapi-projects--project_id--storage-providers"
-               value="ducimus"
+               value="repellat"
                data-component="body">
     <br>
-<p>The key if provider requires key Example: <code>ducimus</code></p>
+<p>The key if provider requires key Example: <code>repellat</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>secret</code></b>&nbsp;&nbsp;
@@ -13114,10 +13976,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="secret"                data-endpoint="POSTapi-projects--project_id--storage-providers"
-               value="possimus"
+               value="maiores"
                data-component="body">
     <br>
-<p>The secret if provider requires key Example: <code>possimus</code></p>
+<p>The secret if provider requires key Example: <code>maiores</code></p>
         </div>
         </form>
 
@@ -13186,10 +14048,10 @@ fetch(url, {
     &quot;id&quot;: 5,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;alias&quot;,
-    &quot;provider&quot;: &quot;ftp&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;name&quot;: &quot;fuga&quot;,
+    &quot;provider&quot;: &quot;local&quot;,
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -13317,7 +14179,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"name\": \"ullam\",
+    \"name\": \"est\",
     \"global\": true
 }"
 </code></pre></div>
@@ -13335,7 +14197,7 @@ $response = $client-&gt;put(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'name' =&gt; 'ullam',
+            'name' =&gt; 'est',
             'global' =&gt; true,
         ],
     ]
@@ -13356,7 +14218,7 @@ const headers = {
 };
 
 let body = {
-    "name": "ullam",
+    "name": "est",
     "global": true
 };
 
@@ -13378,10 +14240,10 @@ fetch(url, {
     &quot;id&quot;: 5,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;at&quot;,
+    &quot;name&quot;: &quot;ut&quot;,
     &quot;provider&quot;: &quot;ftp&quot;,
-    &quot;created_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-03-29T20:43:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-04-05T17:35:56.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -13495,10 +14357,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="name"                data-endpoint="PUTapi-projects--project_id--storage-providers--storageProvider_id-"
-               value="ullam"
+               value="est"
                data-component="body">
     <br>
-<p>The name of the storage provider. Example: <code>ullam</code></p>
+<p>The name of the storage provider. Example: <code>est</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>global</code></b>&nbsp;&nbsp;
