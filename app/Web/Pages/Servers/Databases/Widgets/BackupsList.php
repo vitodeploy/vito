@@ -40,6 +40,7 @@ class BackupsList extends Widget
         return [
             TextColumn::make('database.name')
                 ->label('Database')
+                ->tooltip(fn (Backup $record) => $record->database->deleted_at ? 'Deleted at '.$record->database->deleted_at->format('Y-m-d H:i:s') : null)
                 ->searchable(),
             TextColumn::make('storage.profile')
                 ->label('Storage')

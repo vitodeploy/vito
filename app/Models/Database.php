@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $status
  * @property Server $server
  * @property Backup[] $backups
- * @property Carbon $deleted_at
+ * @property ?Carbon $deleted_at
  */
 class Database extends AbstractModel
 {

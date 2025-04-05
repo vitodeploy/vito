@@ -63,6 +63,7 @@ class Backup extends AbstractModel
         BackupStatus::RUNNING => 'success',
         BackupStatus::FAILED => 'danger',
         BackupStatus::DELETING => 'warning',
+        BackupStatus::STOPPED => 'danger',
     ];
 
     public function isCustomInterval(): bool

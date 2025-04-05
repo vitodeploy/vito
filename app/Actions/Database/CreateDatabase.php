@@ -53,7 +53,7 @@ class CreateDatabase
             'name' => [
                 'required',
                 'alpha_dash',
-                Rule::unique('databases', 'name')->where('server_id', $server->id),
+                Rule::unique('databases', 'name')->where('server_id', $server->id)->whereNull('deleted_at'),
             ],
             'charset' => [
                 'required',
