@@ -1,17 +1,17 @@
-name: services
+name: ssh-keys
 description: ''
 endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/projects/{project_id}/servers/{server_id}/services'
+    uri: 'api/projects/{project_id}/servers/{server_id}/ssh-keys'
     metadata:
-      groupName: services
+      groupName: ssh-keys
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: list
-      description: 'Get all services.'
+      description: 'Get all ssh keys.'
       authenticated: true
       custom: []
     headers:
@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -50,7 +50,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"type":null,"type_data":null,"name":null,"version":null,"unit":null,"status":null,"is_default":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"type":null,"type_data":null,"name":null,"version":null,"unit":null,"status":null,"is_default":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"user":null,"name":"Moriah Kemmer","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Delilah Gaylord","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -58,22 +58,22 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer cdhb5VevgkZ6DafP6184a3E'
+      - 'Bearer k6fva48dh5VgP3a61EbceZD'
     controller: null
     method: null
     route: null
     custom: []
   -
     httpMethods:
-      - GET
-    uri: 'api/projects/{project_id}/servers/{server_id}/services/{id}'
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/ssh-keys'
     metadata:
-      groupName: services
+      groupName: ssh-keys
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: show
-      description: 'Get a service by ID.'
+      title: create
+      description: 'Deploy ssh key to server.'
       authenticated: true
       custom: []
     headers:
@@ -95,17 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      id:
-        name: id
-        description: 'The ID of the service.'
-        required: true
-        example: 53
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -113,17 +103,49 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      id: 53
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
+    bodyParameters:
+      key_id:
+        name: key_id
+        description: 'The ID of the key.'
+        required: true
+        example: id
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      name:
+        name: name
+        description: 'Key name, required if key_id is not provided.'
+        required: true
+        example: qui
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      public_key:
+        name: public_key
+        description: 'Public Key, required if key_id is not provided.'
+        required: true
+        example: vitae
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      key_id: id
+      name: qui
+      public_key: vitae
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"type":null,"type_data":null,"name":null,"version":null,"unit":null,"status":null,"is_default":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"user":null,"name":"Jesse Gleason","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -131,372 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3vDaE6Pc51Zg8kbheadVf64'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/start'
-    metadata:
-      groupName: services
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: start
-      description: 'Start service.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      service_id:
-        name: service_id
-        description: 'The ID of the service.'
-        required: true
-        example: 53
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 8
-      service_id: 53
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer a6e6Db5VcP314EgZdka8vhf'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/stop'
-    metadata:
-      groupName: services
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: stop
-      description: 'Stop service.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      service_id:
-        name: service_id
-        description: 'The ID of the service.'
-        required: true
-        example: 53
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 8
-      service_id: 53
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer kefg56PEc4a18aDdvVZb3h6'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/restart'
-    metadata:
-      groupName: services
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: restart
-      description: 'Restart service.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      service_id:
-        name: service_id
-        description: 'The ID of the service.'
-        required: true
-        example: 53
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 8
-      service_id: 53
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer edhaE164avZ6gbVDPf3k8c5'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/enable'
-    metadata:
-      groupName: services
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: enable
-      description: 'Enable service.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      service_id:
-        name: service_id
-        description: 'The ID of the service.'
-        required: true
-        example: 53
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 8
-      service_id: 53
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer D4c1hbfV6Pad68v3gEkaeZ5'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/disable'
-    metadata:
-      groupName: services
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: disable
-      description: 'Disable service.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      service_id:
-        name: service_id
-        description: 'The ID of the service.'
-        required: true
-        example: 53
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 8
-      service_id: 53
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer be41fvh6a8d5PkDVEgZ36ca'
+      - 'Bearer 5D4PZfcbeVkaE61d8h36gav'
     controller: null
     method: null
     route: null
@@ -504,14 +161,14 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}'
+    uri: 'api/projects/{project_id}/servers/{server_id}/ssh-keys/{sshKey_id}'
     metadata:
-      groupName: services
+      groupName: ssh-keys
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: delete
-      description: 'Delete service.'
+      description: 'Delete ssh key from server.'
       authenticated: true
       custom: []
     headers:
@@ -533,17 +190,17 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
-      service_id:
-        name: service_id
-        description: 'The ID of the service.'
+      sshKey_id:
+        name: sshKey_id
+        description: 'The ID of the sshKey.'
         required: true
-        example: 53
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -551,8 +208,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      service_id: 53
+      server_id: 29
+      sshKey_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -569,7 +226,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer dcb68hg634P1DaZvef5VakE'
+      - 'Bearer 5D1e8gZPbVf63kvhaac46dE'
     controller: null
     method: null
     route: null

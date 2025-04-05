@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\Deploy;
 use App\Actions\Site\UpdateAliases;
+use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
+use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SiteResource;
 use App\Models\Project;
@@ -133,7 +136,56 @@ class SiteController extends Controller
         return new SiteResource($site);
     }
 
-    #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
+    #[Post('{site}/deploy', name: 'api.projects.servers.sites.deploy', middleware: 'ability:write')]
+    #[Endpoint(title: 'deploy', description: 'Run site deployment script')]
+    #[Response(status: 200)]
+    public function deploy(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        try {
+            app(Deploy::class)->run($site);
+
+            return new SiteResource($site);
+        } catch (DeploymentScriptIsEmptyException) {
+            abort(422, 'Deployment script is empty');
+        }
+    }
+
+    #[Put('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script', middleware: 'ability:write')]
+    #[Endpoint(title: 'deployment-script', description: 'Update site deployment script')]
+    #[BodyParam(name: 'script', type: 'string', description: 'Content of the deployment script')]
+    #[Response(status: 204)]
+    public function updateDeploymentScript(Request $request, Project $project, Server $server, Site $site): \Illuminate\Http\Response
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, UpdateDeploymentScript::rules());
+
+        app(UpdateDeploymentScript::class)->update($site, $request->all());
+
+        return response()->noContent();
+    }
+
+    #[Get('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'deployment-script', description: 'Get site deployment script content')]
+    #[Response(status: 200)]
+    public function showDeploymentScript(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        return response()->json([
+            'script' => $site->deploymentScript?->content,
+        ]);
+    }
+
+        #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
     #[Endpoint(title: 'env', description: 'Get site .env file content')]
     #[Response(content: [
         'data' => [

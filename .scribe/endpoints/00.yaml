@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ge6ZVa4kfD86hdv5a31EcbP'
+      - 'Bearer Pg1hVfEvc3e5kada68Z6b4D'
     controller: null
     method: null
     route: null
@@ -95,7 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +103,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +111,7 @@ endpoints:
         name: command
         description: ''
         required: true
-        example: itaque
+        example: nisi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: user
         description: ''
         required: true
-        example: root
+        example: vito
         type: string
         enumValues:
           - root
@@ -140,8 +140,8 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      command: itaque
-      user: root
+      command: nisi
+      user: vito
       frequency: '* * * * *'
     fileParameters: []
     responses:
@@ -155,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer cdh5bD8gVPkf34e1ZEva6a6'
+      - 'Bearer 5E3Vv4cah8D6bZa1kgPfe6d'
     controller: null
     method: null
     route: null
@@ -192,7 +192,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -202,7 +202,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 18
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -210,8 +210,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      cronJob_id: 18
+      server_id: 29
+      cronJob_id: 14
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -228,7 +228,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fa5VgdkaD8cZ6vh34Pb16eE'
+      - 'Bearer e68fh451vcb6Zd3DEVaaPgk'
     controller: null
     method: null
     route: null
@@ -265,7 +265,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -275,7 +275,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 10
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -283,8 +283,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      cronJob_id: 10
+      server_id: 29
+      cronJob_id: 9
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -301,7 +301,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer P8hkva3ZD4fgb166adEVce5'
+      - 'Bearer hEkD1b3a845fVPZg6ecad6v'
     controller: null
     method: null
     route: null

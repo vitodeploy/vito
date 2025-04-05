@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\API;
 
+use App\Enums\DeploymentStatus;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SourceControl;
 use App\Facades\SSH;
@@ -188,6 +189,127 @@ class SitesTest extends TestCase
             'weight' => 1,
             'backup' => false,
         ]);
+    }
+
+    public function test_deploy_site(): void
+    {
+        SSH::fake();
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+                'commit' => [
+                    'sha' => 'abc123',
+                    'commit' => [
+                        'message' => 'Test commit',
+                        'author' => [
+                            'name' => 'Test Author',
+                            'email' => 'test@example.com',
+                            'date' => now()->toIso8601String(),
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $script = $site->deploymentScript;
+        $script->content = 'git pull';
+        $script->save();
+
+        $this->json('POST', route('api.projects.servers.sites.deploy', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'id',
+                'status',
+            ]);
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $site->id,
+            'status' => DeploymentStatus::FINISHED,
+        ]);
+    }
+
+    public function test_update_deployment_script(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $scriptContent = "git pull\ncomposer install\nphp artisan migrate";
+
+        $this->json('PUT', route('api.projects.servers.sites.deployment-script', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'script' => $scriptContent,
+        ])
+            ->assertSuccessful()
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('deployment_scripts', [
+            'site_id' => $site->id,
+            'content' => $scriptContent,
+        ]);
+    }
+
+    public function test_update_deployment_script_without_content(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('PUT', route('api.projects.servers.sites.deployment-script', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['script']);
+    }
+
+    public function test_show_deployment_script(): void
+    {
+        Sanctum::actingAs($this->user, ['read']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $scriptContent = "git pull\ncomposer install";
+
+        $site->deploymentScript->update([
+            'content' => $scriptContent,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.deployment-script.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonPath('script', $scriptContent);
     }
 
     public function test_show_env(): void
