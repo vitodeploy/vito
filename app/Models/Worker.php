@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\QueueStatus;
+use App\Enums\WorkerStatus;
 use App\SSH\Services\ProcessManager\ProcessManager;
-use Database\Factories\QueueFactory;
+use Database\Factories\WorkerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
@@ -24,9 +24,9 @@ use Throwable;
  * @property Server $server
  * @property Site $site
  */
-class Queue extends AbstractModel
+class Worker extends AbstractModel
 {
-    /** @use HasFactory<QueueFactory> */
+    /** @use HasFactory<WorkerFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -55,28 +55,28 @@ class Queue extends AbstractModel
      * @var array<string, string>
      */
     public static array $statusColors = [
-        QueueStatus::RUNNING => 'success',
-        QueueStatus::CREATING => 'warning',
-        QueueStatus::DELETING => 'warning',
-        QueueStatus::FAILED => 'danger',
-        QueueStatus::STARTING => 'warning',
-        QueueStatus::STOPPING => 'warning',
-        QueueStatus::RESTARTING => 'warning',
-        QueueStatus::STOPPED => 'gray',
+        WorkerStatus::RUNNING => 'success',
+        WorkerStatus::CREATING => 'warning',
+        WorkerStatus::DELETING => 'warning',
+        WorkerStatus::FAILED => 'danger',
+        WorkerStatus::STARTING => 'warning',
+        WorkerStatus::STOPPING => 'warning',
+        WorkerStatus::RESTARTING => 'warning',
+        WorkerStatus::STOPPED => 'gray',
     ];
 
     public static function boot(): void
     {
         parent::boot();
 
-        static::deleting(function (Queue $queue): void {
+        static::deleting(function (Worker $worker): void {
             try {
                 /** @var Service $service */
-                $service = $queue->server->processManager();
+                $service = $worker->server->processManager();
                 /** @var ProcessManager $handler */
                 $handler = $service->handler();
 
-                $handler->delete($queue->id, $queue->site_id);
+                $handler->delete($worker->id, $worker->site_id);
             } catch (Throwable $e) {
                 Log::error($e);
             }

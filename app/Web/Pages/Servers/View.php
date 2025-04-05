@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers;
 
 use App\Models\ServerLog;
+use App\Models\User;
 use App\Web\Pages\Servers\Logs\Widgets\LogsList;
 use App\Web\Pages\Servers\Widgets\Installing;
 use App\Web\Pages\Servers\Widgets\ServerStats;
@@ -18,7 +19,7 @@ class View extends Page
 
     public function mount(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $this->authorize('view', [$this->server, $user->currentProject]);
@@ -39,7 +40,7 @@ class View extends Page
 
     public function getWidgets(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $widgets = [];

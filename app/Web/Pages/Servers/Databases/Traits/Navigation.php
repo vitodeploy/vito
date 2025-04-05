@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Databases\Traits;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\User;
 use App\Web\Pages\Servers\Databases\Backups;
 use App\Web\Pages\Servers\Databases\Index as Databases;
 use App\Web\Pages\Servers\Databases\Users;
@@ -15,7 +16,7 @@ trait Navigation
 {
     public function getSecondSubNavigation(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $items = [];

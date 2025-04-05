@@ -6,6 +6,7 @@ use App\Actions\FileManager\FetchFiles;
 use App\Exceptions\SSHError;
 use App\Models\File;
 use App\Models\Server;
+use App\Models\User;
 use App\Web\Fields\CodeEditorField;
 use App\Web\Pages\Servers\FileManager\Index;
 use Filament\Forms\Components\FileUpload;
@@ -145,7 +146,7 @@ class FilesList extends Widget
 
     public function refresh(): void
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         try {

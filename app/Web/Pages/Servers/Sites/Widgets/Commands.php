@@ -8,6 +8,7 @@ use App\Actions\Site\ExecuteCommand;
 use App\Models\Command;
 use App\Models\CommandExecution;
 use App\Models\Site;
+use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -69,7 +70,7 @@ class Commands extends Widget
 
     protected function getTableHeaderActions(): array
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return [
@@ -107,7 +108,7 @@ class Commands extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

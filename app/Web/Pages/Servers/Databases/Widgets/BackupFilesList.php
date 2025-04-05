@@ -7,6 +7,7 @@ use App\Actions\Database\RestoreBackup;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Database;
+use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
@@ -68,7 +69,7 @@ class BackupFilesList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

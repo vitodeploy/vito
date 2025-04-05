@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\NotificationChannels\Actions;
 
 use App\Actions\NotificationChannels\AddChannel;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
@@ -57,7 +58,7 @@ class Create
     public static function action(array $data): void
     {
         try {
-            /** @var \App\Models\User $user */
+            /** @var User $user */
             $user = auth()->user();
             app(AddChannel::class)->add($user, $data);
         } catch (Exception $e) {

@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\Projects\Widgets;
 
 use App\Models\Project;
+use App\Models\User;
 use App\Web\Pages\Settings\Projects\Settings;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -41,7 +42,7 @@ class ProjectsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

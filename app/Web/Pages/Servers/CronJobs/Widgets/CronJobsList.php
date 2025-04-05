@@ -7,6 +7,8 @@ use App\Actions\CronJob\DisableCronJob;
 use App\Actions\CronJob\EnableCronJob;
 use App\Models\CronJob;
 use App\Models\Server;
+use App\Models\User;
+use Exception;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
@@ -58,7 +60,7 @@ class CronJobsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table
@@ -100,7 +102,7 @@ class CronJobsList extends Widget
                     ->action(function (CronJob $record): void {
                         try {
                             app(DeleteCronJob::class)->delete($this->server, $record);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             Notification::make()
                                 ->danger()
                                 ->title($e->getMessage())

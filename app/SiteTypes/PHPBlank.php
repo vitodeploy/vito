@@ -15,7 +15,7 @@ class PHPBlank extends PHPSite
             SiteFeature::COMMANDS,
             SiteFeature::ENV,
             SiteFeature::SSL,
-            SiteFeature::QUEUES,
+            SiteFeature::WORKERS,
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Widgets;
 
 use App\Models\Server;
+use App\Models\User;
 use App\Web\Pages\Servers\Settings;
 use App\Web\Pages\Servers\View;
 use Filament\Tables\Actions\Action;
@@ -19,7 +20,7 @@ class ServersList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return Server::query()->where('project_id', $user->current_project_id);
@@ -59,7 +60,7 @@ class ServersList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

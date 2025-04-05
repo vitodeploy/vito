@@ -27,9 +27,9 @@ abstract class AbstractProcessManager extends AbstractService implements Process
         return [
             'service' => [
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    $hasQueue = $this->service->server->queues()->exists();
-                    if ($hasQueue) {
-                        $fail('You have queue(s) on the server.');
+                    $hasWorker = $this->service->server->workers()->exists();
+                    if ($hasWorker) {
+                        $fail('You have worker(s) on the server.');
                     }
                 },
             ],

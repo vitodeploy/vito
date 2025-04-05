@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\SSHKeys;
 
 use App\Actions\SshKey\CreateSshKey;
 use App\Models\SshKey;
+use App\Models\User;
 use App\Web\Components\Page;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Textarea;
@@ -24,7 +25,7 @@ class Index extends Page
 
     public static function canAccess(): bool
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $user->can('viewAny', SshKey::class);
@@ -39,7 +40,7 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return [

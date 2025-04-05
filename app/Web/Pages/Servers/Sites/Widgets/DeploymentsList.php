@@ -4,6 +4,7 @@ namespace App\Web\Pages\Servers\Sites\Widgets;
 
 use App\Models\Deployment;
 use App\Models\Site;
+use App\Models\User;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -63,7 +64,7 @@ class DeploymentsList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

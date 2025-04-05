@@ -2,6 +2,7 @@
 
 namespace App\Web\Pages\Settings\Profile\Widgets;
 
+use App\Models\User;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\Actions\Action;
@@ -37,7 +38,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function mount(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         if ($user->two_factor_secret) {
@@ -47,7 +48,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function infolist(Infolist $infolist): Infolist
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $infolist->schema([
@@ -105,7 +106,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function enableTwoFactor(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         app(EnableTwoFactorAuthentication::class)($user);
@@ -123,7 +124,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function disableTwoFactor(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         app(DisableTwoFactorAuthentication::class)($user);
@@ -141,7 +142,7 @@ class TwoFactor extends Widget implements HasForms, HasInfolists
 
     public function regenerateRecoveryCodes(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         app(GenerateNewRecoveryCodes::class)($user);

@@ -1,17 +1,17 @@
-name: servers
+name: redirects
 description: ''
 endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/projects/{project_id}/servers'
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects'
     metadata:
-      groupName: servers
+      groupName: redirects
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: list
-      description: 'Get all servers in a project.'
+      title: index
+      description: 'Get all redirects.'
       authenticated: true
       custom: []
     headers:
@@ -29,8 +29,30 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 44
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
     cleanUrlParameters:
       project_id: 1
+      server_id: 29
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -39,7 +61,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Amina DuBuque","ssh_user":"vito","ip":"163.77.69.73","local_ip":"137.139.200.70","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null},{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Floy Cummerata","ssh_user":"vito","ip":"62.53.140.25","local_ip":"34.59.35.195","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"site_id":null,"mode":307,"from":"ipsum","to":"http:\/\/fritsch.biz\/","status":"ready","created_at":null,"updated_at":null},{"id":null,"site_id":null,"mode":302,"from":"culpa","to":"http:\/\/www.huels.net\/aut-ut-ut-porro-non-rerum-voluptatum.html","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -47,7 +69,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer E81avahec6365dbZfgD4kPV'
+      - 'Bearer cV16fevgEZhPadD43685akb'
     controller: null
     method: null
     route: null
@@ -55,14 +77,14 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: 'api/projects/{project_id}/servers'
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects'
     metadata:
-      groupName: servers
+      groupName: redirects
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: create
-      description: 'Create a new server.'
+      description: 'Create a new redirect.'
       authenticated: true
       custom: []
     headers:
@@ -80,288 +102,75 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 44
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
     cleanUrlParameters:
       project_id: 1
+      server_id: 29
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      provider:
-        name: provider
-        description: 'The server provider type'
+      from:
+        name: from
+        description: ''
         required: true
-        example: iste
+        example: odit
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
-      server_provider:
-        name: server_provider
-        description: 'If the provider is not custom, the ID of the server provider profile'
+      to:
+        name: to
+        description: ''
         required: true
-        example: custom
+        example: incidunt
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      mode:
+        name: mode
+        description: ''
+        required: true
+        example: 301
         type: string
         enumValues:
-          - custom
-          - hetzner
-          - digitalocean
-          - linode
-          - vultr
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      region:
-        name: region
-        description: 'Provider region if the provider is not custom'
-        required: true
-        example: libero
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      plan:
-        name: plan
-        description: 'Provider plan if the provider is not custom'
-        required: true
-        example: ut
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      ip:
-        name: ip
-        description: 'SSH IP address if the provider is custom'
-        required: true
-        example: molestias
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      port:
-        name: port
-        description: 'SSH Port if the provider is custom'
-        required: true
-        example: laudantium
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      name:
-        name: name
-        description: 'The name of the server.'
-        required: true
-        example: illum
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      os:
-        name: os
-        description: 'The os of the server'
-        required: true
-        example: autem
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      webserver:
-        name: webserver
-        description: 'Web server'
-        required: true
-        example: none
-        type: string
-        enumValues:
-          - none
-          - nginx
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      database:
-        name: database
-        description: Database
-        required: true
-        example: postgresql12
-        type: string
-        enumValues:
-          - none
-          - mysql57
-          - mysql80
-          - mariadb103
-          - mariadb104
-          - mariadb103
-          - postgresql12
-          - postgresql13
-          - postgresql14
-          - postgresql15
-          - postgresql16
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      php:
-        name: php
-        description: 'PHP version'
-        required: true
-        example: '7.4'
-        type: string
-        enumValues:
-          - '7.0'
-          - '7.1'
-          - '7.2'
-          - '7.3'
-          - '7.4'
-          - '8.0'
-          - '8.1'
-          - '8.2'
-          - '8.3'
+          - 301
+          - 302
+          - 307
+          - 308
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: iste
-      server_provider: custom
-      region: libero
-      plan: ut
-      ip: molestias
-      port: laudantium
-      name: illum
-      os: autem
-      webserver: none
-      database: postgresql12
-      php: '7.4'
+      from: odit
+      to: incidunt
+      mode: 301
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Archibald Nolan","ssh_user":"vito","ip":"226.168.13.177","local_ip":"143.14.43.182","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer aad3Pvc4e65DghZVEk8f1b6'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: 'api/projects/{project_id}/servers/{id}'
-    metadata:
-      groupName: servers
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: show
-      description: 'Get a server by ID.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      id:
-        name: id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      id: 8
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Tevin Sipes","ssh_user":"vito","ip":"61.41.183.152","local_ip":"197.160.239.147","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 5EhD3v6Z8Vdakfg46eP1cab'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/reboot'
-    metadata:
-      groupName: servers
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: reboot
-      description: 'Reboot a server.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 8
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 204
         content: null
         headers: []
         description: ''
@@ -370,69 +179,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Pc5Da6Vhdk1vag6fE84e3Zb'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/upgrade'
-    metadata:
-      groupName: servers
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: upgrade
-      description: 'Upgrade server.'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer YOUR-API-KEY'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 8
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 8
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer a61v48DfkeEbcg3a6hd5PZV'
+      - 'Bearer ZD45hPk638abev61EVcagdf'
     controller: null
     method: null
     route: null
@@ -440,14 +187,14 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/projects/{project_id}/servers/{server_id}'
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/redirects/{redirect_id}'
     metadata:
-      groupName: servers
+      groupName: redirects
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: delete
-      description: 'Delete server.'
+      description: 'Delete a redirect.'
       authenticated: true
       custom: []
     headers:
@@ -469,7 +216,27 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 44
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      redirect_id:
+        name: redirect_id
+        description: 'The ID of the redirect.'
+        required: true
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -477,7 +244,9 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
+      site_id: 44
+      redirect_id: 9
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -494,7 +263,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer haE8D6Z6gePk1vadVb53c4f'
+      - 'Bearer Ec3fDgdbae615aPh8k6vV4Z'
     controller: null
     method: null
     route: null

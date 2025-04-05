@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\StorageProviderResource;
 use App\Models\Project;
 use App\Models\StorageProvider;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -54,7 +55,7 @@ class StorageProviderController extends Controller
 
         $this->validate($request, CreateStorageProvider::rules($request->all()));
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
         $storageProvider = app(CreateStorageProvider::class)->create($user, $project, $request->all());
 
@@ -64,7 +65,7 @@ class StorageProviderController extends Controller
     #[Get('{storageProvider}', name: 'api.projects.storage-providers.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show')]
     #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class)]
-    public function show(Project $project, StorageProvider $storageProvider): \App\Http\Resources\StorageProviderResource
+    public function show(Project $project, StorageProvider $storageProvider): StorageProviderResource
     {
         $this->authorize('view', $storageProvider);
 
@@ -78,7 +79,7 @@ class StorageProviderController extends Controller
     #[BodyParam(name: 'name', description: 'The name of the storage provider.', required: true)]
     #[BodyParam(name: 'global', description: 'Accessible in all projects', enum: [true, false])]
     #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class)]
-    public function update(Request $request, Project $project, StorageProvider $storageProvider): \App\Http\Resources\StorageProviderResource
+    public function update(Request $request, Project $project, StorageProvider $storageProvider): StorageProviderResource
     {
         $this->authorize('update', $storageProvider);
 

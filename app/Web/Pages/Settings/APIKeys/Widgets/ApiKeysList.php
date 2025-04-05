@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\APIKeys\Widgets;
 
 use App\Models\PersonalAccessToken;
+use App\Models\User;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -22,7 +23,7 @@ class ApiKeysList extends Widget
      */
     protected function getTableQuery(): Builder
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         /** @var Builder<PersonalAccessToken> $query */
@@ -55,7 +56,7 @@ class ApiKeysList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

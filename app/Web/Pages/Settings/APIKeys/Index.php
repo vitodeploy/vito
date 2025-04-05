@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\APIKeys;
 
 use App\Models\PersonalAccessToken;
+use App\Models\User;
 use App\Web\Components\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
@@ -31,7 +32,7 @@ class Index extends Page
 
     public static function canAccess(): bool
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $user->can('viewAny', PersonalAccessToken::class);
@@ -53,7 +54,7 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return [

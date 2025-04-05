@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Databases\Widgets;
 use App\Actions\Database\DeleteDatabase;
 use App\Models\Database;
 use App\Models\Server;
+use App\Models\User;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -53,7 +54,7 @@ class DatabasesList extends Widget
 
     public function table(Table $table): Table
     {
-        /** @var \App\Models\User */
+        /** @var User $user */
         $user = auth()->user();
 
         return $table

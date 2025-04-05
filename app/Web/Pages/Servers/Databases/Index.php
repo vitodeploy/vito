@@ -94,8 +94,8 @@ class Index extends Page implements HasSecondSubNav
                 ->requiresConfirmation()
                 ->modalDescription('This will create databases that exist on the server but not in Vito.')
                 ->modalSubmitActionLabel('Sync')
-                ->action(function () {
-                    run_action($this, function () {
+                ->action(function (): void {
+                    run_action($this, function (): void {
                         app(SyncDatabases::class)->sync($this->server);
 
                         $this->dispatch('$refresh');

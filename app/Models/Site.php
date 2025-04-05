@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -11,6 +12,7 @@ use App\SiteTypes\SiteType;
 use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\Webserver\Webserver;
 use App\Traits\HasProjectThroughServer;
+use Database\Factories\SiteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,17 +46,19 @@ use Illuminate\Support\Str;
  * @property Collection<int, Command> $commands
  * @property ?GitHook $gitHook
  * @property ?DeploymentScript $deploymentScript
- * @property Collection<int, Queue> $queues
+ * @property Collection<int, Worker> $workers
  * @property Collection<int, Ssl> $ssls
  * @property ?Ssl $activeSsl
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
  * @property Collection<int, LoadBalancerServer> $loadBalancerServers
  * @property Project $project
+ * @property Collection<int, Redirect> $redirects
+ * @property Collection<int, Redirect> $activeRedirects
  */
 class Site extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\SiteFactory> */
+    /** @use HasFactory<SiteFactory> */
     use HasFactory;
 
     use HasProjectThroughServer;
@@ -105,9 +109,9 @@ class Site extends AbstractModel
         parent::boot();
 
         static::deleting(function (Site $site): void {
-            $site->queues()->each(function ($queue): void {
-                /** @var Queue $queue */
-                $queue->delete();
+            $site->workers()->each(function ($worker): void {
+                /** @var Worker $worker */
+                $worker->delete();
             });
             $site->ssls()->delete();
             $site->deployments()->delete();
@@ -186,11 +190,11 @@ class Site extends AbstractModel
     }
 
     /**
-     * @return HasMany<Queue, covariant $this>
+     * @return HasMany<Worker, covariant $this>
      */
-    public function queues(): HasMany
+    public function workers(): HasMany
     {
-        return $this->hasMany(Queue::class);
+        return $this->hasMany(Worker::class);
     }
 
     /**
@@ -400,5 +404,38 @@ class Site extends AbstractModel
     public function loadBalancerServers(): HasMany
     {
         return $this->hasMany(LoadBalancerServer::class, 'load_balancer_id');
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getSshUsers(): array
+    {
+        $users = [
+            'root',
+            $this->server->getSshUser(),
+        ];
+
+        if ($this->isIsolated()) {
+            $users[] = $this->user;
+        }
+
+        return $users;
+    }
+
+    /**
+     * @return HasMany<Redirect, covariant $this>
+     */
+    public function redirects(): HasMany
+    {
+        return $this->hasMany(Redirect::class);
+    }
+
+    /**
+     * @return HasMany<Redirect, covariant $this>
+     */
+    public function activeRedirects(): HasMany
+    {
+        return $this->redirects()->whereIn('status', [RedirectStatus::CREATING, RedirectStatus::READY]);
     }
 }

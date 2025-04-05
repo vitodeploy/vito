@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Logs\Traits;
 
 use App\Models\ServerLog;
+use App\Models\User;
 use App\Web\Pages\Servers\Logs\Index;
 use App\Web\Pages\Servers\Logs\RemoteLogs;
 use Filament\Navigation\NavigationGroup;
@@ -12,7 +13,7 @@ trait Navigation
 {
     public function getSecondSubNavigation(): array
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $items = [];

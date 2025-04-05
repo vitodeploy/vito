@@ -10,6 +10,7 @@ use App\Http\Resources\SshKeyResource;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\SshKey;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -52,7 +53,7 @@ class ServerSSHKeyController extends Controller
 
         $this->validateRoute($project, $server);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         $sshKey = null;

@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\Tags\Actions;
 
 use App\Actions\Tag\CreateTag;
 use App\Models\Tag;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -41,7 +42,7 @@ class Create
     public static function action(array $data): Tag
     {
         try {
-            /** @var \App\Models\User $user */
+            /** @var User $user */
             $user = auth()->user();
 
             return app(CreateTag::class)->create($user, $data);
