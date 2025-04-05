@@ -30,7 +30,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":3,"name":"Selina Wintheiser DDS","created_at":"2025-04-05T17:35:55.000000Z","updated_at":"2025-04-05T17:35:55.000000Z"},{"id":4,"name":"Shanna Deckow","created_at":"2025-04-05T17:35:55.000000Z","updated_at":"2025-04-05T17:35:55.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":3,"name":"Mr. Drake Nader","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"},{"id":4,"name":"Wilhelmine Jacobson","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -38,7 +38,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1D5bhvV64c38gPfad6EkZea'
+      - 'Bearer fbPE6haeDZ8v1gV5ak463dc'
     controller: null
     method: null
     route: null
@@ -69,19 +69,19 @@ endpoints:
         name: name
         description: 'The name of the project.'
         required: true
-        example: quibusdam
+        example: dignissimos
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: quibusdam
+      name: dignissimos
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"name":"Mr. Johathan Koch","created_at":"2025-04-05T17:35:55.000000Z","updated_at":"2025-04-05T17:35:55.000000Z"}'
+        content: '{"id":3,"name":"Pattie Cole","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -89,7 +89,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer hVDkvZ3d84aE6cf1ebgaP65'
+      - 'Bearer 6ZkedcEfa5V6Dv4ab8P3g1h'
     controller: null
     method: null
     route: null
@@ -132,7 +132,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":3,"name":"Jorge Schulist V","created_at":"2025-04-05T17:35:55.000000Z","updated_at":"2025-04-05T17:35:55.000000Z"}'
+        content: '{"id":3,"name":"Mr. Elias Bauch","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -140,7 +140,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer h4c16VZ8D5vkged63aaEbfP'
+      - 'Bearer P6ka4Zaefgh8Ec3dV15v6bD'
     controller: null
     method: null
     route: null
@@ -182,19 +182,19 @@ endpoints:
         name: name
         description: 'The name of the project.'
         required: true
-        example: enim
+        example: sunt
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: enim
+      name: sunt
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"name":"Annie Windler","created_at":"2025-04-05T17:35:55.000000Z","updated_at":"2025-04-05T17:35:55.000000Z"}'
+        content: '{"id":3,"name":"Elfrieda Jakubowski","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -202,7 +202,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer b8c4k3aPdhZev6a1Df6EVg5'
+      - 'Bearer ecaDZkf5E4vgP1V86d6hb3a'
     controller: null
     method: null
     route: null
@@ -253,7 +253,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer bd6cva815EZek3hPfD4aV6g'
+      - 'Bearer h5gZ63DPVbcevE4faka86d1'
     controller: null
     method: null
     route: null

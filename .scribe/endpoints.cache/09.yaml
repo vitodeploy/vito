@@ -52,7 +52,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"user":null,"name":"Moriah Kemmer","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Delilah Gaylord","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"user":null,"name":"Santa Goyette","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Cecil Cummings","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -60,7 +60,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer k6fva48dh5VgP3a61EbceZD'
+      - 'Bearer 165aZvb46PhacEfke83dVgD'
     controller: null
     method: null
     route: null
@@ -113,7 +113,7 @@ endpoints:
         name: key_id
         description: 'The ID of the key.'
         required: true
-        example: id
+        example: explicabo
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -123,7 +123,7 @@ endpoints:
         name: name
         description: 'Key name, required if key_id is not provided.'
         required: true
-        example: qui
+        example: deleniti
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -133,21 +133,21 @@ endpoints:
         name: public_key
         description: 'Public Key, required if key_id is not provided.'
         required: true
-        example: vitae
+        example: sapiente
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      key_id: id
-      name: qui
-      public_key: vitae
+      key_id: explicabo
+      name: deleniti
+      public_key: sapiente
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"user":null,"name":"Jesse Gleason","created_at":null,"updated_at":null}'
+        content: '{"id":null,"user":null,"name":"Mr. Reagan Jacobson V","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -155,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5D4PZfcbeVkaE61d8h36gav'
+      - 'Bearer deDkf4E13PZb6cgaV58ha6v'
     controller: null
     method: null
     route: null
@@ -228,7 +228,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5D1e8gZPbVf63kvhaac46dE'
+      - 'Bearer ec48fgVdZ6ah3kvPD16E5ab'
     controller: null
     method: null
     route: null
