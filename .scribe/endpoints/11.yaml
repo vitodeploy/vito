@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer d8Ev3Pce54gkZ6h6faVb1Da'
+      - 'Bearer veV66fcbdaaEhZg3k5P148D'
     controller: null
     method: null
     route: null
@@ -111,7 +111,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: phpmyadmin
+        example: wordpress
         type: string
         enumValues:
           - php
@@ -127,7 +127,7 @@ endpoints:
         name: domain
         description: ''
         required: true
-        example: tenetur
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -138,7 +138,7 @@ endpoints:
         description: ''
         required: true
         example:
-          - aut
+          - vitae
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -168,7 +168,7 @@ endpoints:
         name: source_control
         description: 'Source control ID, Required for Sites which support source control'
         required: true
-        example: quasi
+        example: animi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -218,7 +218,7 @@ endpoints:
         name: user
         description: 'user, to isolate the website under a new user'
         required: true
-        example: deleniti
+        example: est
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -228,7 +228,7 @@ endpoints:
         name: method
         description: 'Load balancer method, Required if the site type is Load balancer'
         required: true
-        example: round-robin
+        example: least-connections
         type: string
         enumValues:
           - round-robin
@@ -238,19 +238,19 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      type: phpmyadmin
-      domain: tenetur
+      type: wordpress
+      domain: ut
       aliases:
-        - aut
+        - vitae
       php_version: '7.4'
       web_directory: public
-      source_control: quasi
+      source_control: animi
       repository: organization/repository
       branch: main
       composer: true
       version: 5.2.1
-      user: deleniti
-      method: round-robin
+      user: est
+      method: least-connections
     fileParameters: []
     responses:
       -
@@ -263,7 +263,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ge6VPfkE8cah6Dv34bda15Z'
+      - 'Bearer b1a8cEahVek364vPfD6gdZ5'
     controller: null
     method: null
     route: null
@@ -310,7 +310,7 @@ endpoints:
         name: id
         description: 'The ID of the site.'
         required: true
-        example: 12
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -319,7 +319,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      id: 12
+      id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -336,7 +336,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer a14kPe3b6fvd6ZgahEVc58D'
+      - 'Bearer dvh6k4EaV16a3Zefb5c8DPg'
     controller: null
     method: null
     route: null
@@ -383,7 +383,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 9
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -392,7 +392,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 9
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -409,7 +409,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer cvfD853h4EZae6dab6gVPk1'
+      - 'Bearer ZVP56aavDg3f8ek1c4E6hdb'
     controller: null
     method: null
     route: null
@@ -456,7 +456,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 19
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -465,7 +465,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 19
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -473,7 +473,7 @@ endpoints:
         name: method
         description: 'Load balancer method, Required if the site type is Load balancer'
         required: true
-        example: ip-hash
+        example: round-robin
         type: string
         enumValues:
           - round-robin
@@ -487,16 +487,16 @@ endpoints:
         description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)'
         required: true
         example:
-          - dolores
+          - eaque
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      method: ip-hash
+      method: round-robin
       servers:
-        - dolores
+        - eaque
     fileParameters: []
     responses:
       -
@@ -509,7 +509,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer de5Vka1avb6Zg36fDE8Ph4c'
+      - 'Bearer ekaVDdgZh1ca58vE34b6P6f'
     controller: null
     method: null
     route: null
@@ -556,7 +556,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 16
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -565,7 +565,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 16
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -574,7 +574,7 @@ endpoints:
         description: 'Array of aliases'
         required: true
         example:
-          - aut
+          - pariatur
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -582,7 +582,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       aliases:
-        - aut
+        - pariatur
     fileParameters: []
     responses:
       -
@@ -595,7 +595,80 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6f6kVD153hEgPdZacva4b8e'
+      - 'Bearer 8gaaebDd641ck6V5vP3fZhE'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deploy'
+    metadata:
+      groupName: sites
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: deploy
+      description: 'Run site deployment script'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer YOUR-API-KEY'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 29
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      site_id:
+        name: site_id
+        description: 'The ID of the site.'
+        required: true
+        example: 44
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 29
+      site_id: 44
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer ka634ZEfbgdevD56c1aVP8h'
     controller: null
     method: null
     route: null
@@ -642,7 +715,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 3
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -651,7 +724,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 3
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -659,14 +732,14 @@ endpoints:
         name: script
         description: 'Content of the deployment script'
         required: true
-        example: qui
+        example: culpa
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      script: qui
+      script: culpa
     fileParameters: []
     responses:
       -
@@ -679,7 +752,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3b6Eh5eaf1d48DZvPgk6cVa'
+      - 'Bearer 68a6cfD4e1g3dvPVkbEaZh5'
     controller: null
     method: null
     route: null
@@ -726,7 +799,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 16
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -735,7 +808,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 16
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -752,7 +825,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer v1kEa3hgb664dfD5Z8VePac'
+      - 'Bearer 568gb3fdca1PDek4vZEVa6h'
     controller: null
     method: null
     route: null

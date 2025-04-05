@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "API Documentation",
-        "_postman_id": "89857b10-bb5c-40a2-b503-98e891d9ebef",
+        "_postman_id": "a3f834cc-c09b-4ca3-8824-6310bbb83f4e",
         "description": "VitoDeploy's API documentation.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -101,7 +101,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"command\":\"sit\",\"user\":\"root\",\"frequency\":\"* * * * *\"}"
+                            "raw": "{\"command\":\"nisi\",\"user\":\"vito\",\"frequency\":\"* * * * *\"}"
                         },
                         "description": "Create a new cron job."
                     },
@@ -138,7 +138,7 @@
                                 {
                                     "id": "cronJob_id",
                                     "key": "cronJob_id",
-                                    "value": "13",
+                                    "value": "14",
                                     "description": "The ID of the cronJob."
                                 }
                             ]
@@ -190,7 +190,7 @@
                                 {
                                     "id": "cronJob_id",
                                     "key": "cronJob_id",
-                                    "value": "16",
+                                    "value": "9",
                                     "description": "The ID of the cronJob."
                                 }
                             ]
@@ -265,7 +265,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"username\":\"imurray\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"username\":\"raleigh.heidenreich\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"username\":\"lavina.zemlak\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"username\":\"hill.cassidy\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -306,7 +306,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"username\":\"ut\",\"password\":\"L&1)4X-w>&T=:'Y2#x\",\"host\":\"%\"}"
+                            "raw": "{\"username\":\"tempore\",\"password\":\"!jUv.BBc]X\",\"host\":\"%\"}"
                         },
                         "description": "Create a new database user."
                     },
@@ -314,7 +314,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"kbernhard\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"irwin45\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -343,7 +343,7 @@
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "8",
+                                    "value": "3",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -366,7 +366,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"lavada.casper\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"frederic.koss\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -395,7 +395,7 @@
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "3",
+                                    "value": "12",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -413,7 +413,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"databases\":\"laboriosam\"}"
+                            "raw": "{\"databases\":\"numquam\"}"
                         },
                         "description": "Link to databases"
                     },
@@ -421,7 +421,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"ojerde\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"username\":\"georgiana.hand\",\"databases\":[],\"host\":\"%\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -450,7 +450,7 @@
                                 {
                                     "id": "databaseUser_id",
                                     "key": "databaseUser_id",
-                                    "value": "8",
+                                    "value": "6",
                                     "description": "The ID of the databaseUser."
                                 }
                             ]
@@ -525,7 +525,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"name\":\"fkrajcik\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"name\":\"critchie\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"server_id\":null,\"name\":\"conn.bridget\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"server_id\":null,\"name\":\"aiden47\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -566,7 +566,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"esse\",\"charset\":\"ut\",\"collation\":\"labore\"}"
+                            "raw": "{\"name\":\"vel\",\"charset\":\"qui\",\"collation\":\"autem\"}"
                         },
                         "description": "Create a new database."
                     },
@@ -574,7 +574,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"cory33\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"rodolfo.bradtke\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -603,7 +603,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "9",
+                                    "value": "17",
                                     "description": "The ID of the database."
                                 }
                             ]
@@ -626,7 +626,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"walter.jacey\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"server_id\":null,\"name\":\"rhane\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -655,7 +655,7 @@
                                 {
                                     "id": "database_id",
                                     "key": "database_id",
-                                    "value": "16",
+                                    "value": "5",
                                     "description": "The ID of the database."
                                 }
                             ]
@@ -730,7 +730,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"name\":\"optio\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":52674,\"source\":\"142.10.115.135\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"name\":\"dolores\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":34607,\"source\":\"20.175.64.76\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"name\":\"sit\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":59225,\"source\":\"130.41.114.80\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"name\":\"sequi\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":17864,\"source\":\"170.103.31.60\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -771,7 +771,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"voluptas\",\"type\":\"deny\",\"protocol\":\"udp\",\"port\":\"qui\",\"source\":\"amet\",\"mask\":\"0\"}"
+                            "raw": "{\"name\":\"eum\",\"type\":\"deny\",\"protocol\":\"udp\",\"port\":\"incidunt\",\"source\":\"quisquam\",\"mask\":\"0\"}"
                         },
                         "description": "Create a new firewall rule."
                     },
@@ -779,7 +779,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"name\":\"molestiae\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":26783,\"source\":\"190.202.255.27\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"name\":\"consequuntur\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":50101,\"source\":\"133.245.21.1\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -826,7 +826,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"et\",\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":\"rerum\",\"source\":\"sed\",\"mask\":\"0\"}"
+                            "raw": "{\"name\":\"dolor\",\"type\":\"deny\",\"protocol\":\"tcp\",\"port\":\"qui\",\"source\":\"porro\",\"mask\":\"0\"}"
                         },
                         "description": "Update an existing firewall rule."
                     },
@@ -834,7 +834,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"name\":\"labore\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":29044,\"source\":\"113.132.217.224\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"name\":\"numquam\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":52010,\"source\":\"159.227.119.185\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -886,7 +886,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"name\":\"ipsa\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":50679,\"source\":\"42.114.67.31\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"name\":\"voluptatem\",\"server_id\":null,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":5812,\"source\":\"122.105.250.56\",\"mask\":24,\"note\":\"test\",\"status\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -992,7 +992,7 @@
                                 },
                                 {
                                     "key": "x-ratelimit-remaining",
-                                    "value": "58"
+                                    "value": "59"
                                 },
                                 {
                                     "key": "access-control-allow-origin",
@@ -1038,7 +1038,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":3,\"name\":\"Kattie Haley\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"},{\"id\":4,\"name\":\"Kailyn Kiehn\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":3,\"name\":\"Selina Wintheiser DDS\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"},{\"id\":4,\"name\":\"Shanna Deckow\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1065,7 +1065,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"excepturi\"}"
+                            "raw": "{\"name\":\"quibusdam\"}"
                         },
                         "description": "Create a new project."
                     },
@@ -1073,7 +1073,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Dayne White\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Mr. Johathan Koch\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1113,7 +1113,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Cheyenne Ankunding III\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Jorge Schulist V\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1148,7 +1148,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"mollitia\"}"
+                            "raw": "{\"name\":\"enim\"}"
                         },
                         "description": "Update project."
                     },
@@ -1156,7 +1156,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Susanna Stark\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Annie Windler\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1231,7 +1231,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "11",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -1254,7 +1254,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"site_id\":null,\"mode\":301,\"from\":\"error\",\"to\":\"https:\\\/\\\/www.pfannerstill.com\\\/facere-est-totam-laudantium-in-illo-sequi\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"site_id\":null,\"mode\":301,\"from\":\"repellat\",\"to\":\"http:\\\/\\\/gislason.biz\\\/sed-corrupti-et-id-earum-qui-consequatur-quis-voluptas.html\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"site_id\":null,\"mode\":301,\"from\":\"eaque\",\"to\":\"http:\\\/\\\/www.windler.info\\\/delectus-facilis-assumenda-consequatur-impedit-hic-dolorem-non-dolore.html\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"site_id\":null,\"mode\":308,\"from\":\"neque\",\"to\":\"http:\\\/\\\/raynor.biz\\\/velit-a-tempore-quas-explicabo-doloremque\",\"status\":\"ready\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1283,7 +1283,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "11",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -1301,7 +1301,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"from\":\"vel\",\"to\":\"ea\",\"mode\":307}"
+                            "raw": "{\"from\":\"qui\",\"to\":\"voluptatum\",\"mode\":302}"
                         },
                         "description": "Create a new redirect."
                     },
@@ -1338,7 +1338,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "11",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 },
                                 {
@@ -1413,7 +1413,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"id\",\"provider\":\"custom\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"culpa\",\"provider\":\"linode\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"ducimus\",\"provider\":\"digitalocean\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"nesciunt\",\"provider\":\"hetzner\",\"created_at\":\"2025-04-05T17:35:55.000000Z\",\"updated_at\":\"2025-04-05T17:35:55.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1448,7 +1448,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"mollitia\",\"name\":\"adipisci\",\"token\":\"animi\",\"key\":\"provident\",\"secret\":\"deserunt\"}"
+                            "raw": "{\"provider\":\"sunt\",\"name\":\"aut\",\"token\":\"id\",\"key\":\"porro\",\"secret\":\"voluptas\"}"
                         },
                         "description": ""
                     },
@@ -1456,7 +1456,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"vultr\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"nemo\",\"provider\":\"linode\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1502,7 +1502,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"ab\",\"provider\":\"digitalocean\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"ut\",\"provider\":\"aws\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1543,7 +1543,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"eveniet\",\"global\":false}"
+                            "raw": "{\"name\":\"aliquam\",\"global\":true}"
                         },
                         "description": ""
                     },
@@ -1551,7 +1551,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"expedita\",\"provider\":\"aws\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"digitalocean\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1643,7 +1643,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Consuelo Connelly\",\"ssh_user\":\"vito\",\"ip\":\"80.154.83.232\",\"local_ip\":\"45.31.117.65\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Rodolfo Fadel\",\"ssh_user\":\"vito\",\"ip\":\"103.227.79.93\",\"local_ip\":\"33.49.217.56\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Marcelino Rodriguez\",\"ssh_user\":\"vito\",\"ip\":\"128.182.22.13\",\"local_ip\":\"19.119.134.124\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null},{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Everardo Conn\",\"ssh_user\":\"vito\",\"ip\":\"62.215.59.124\",\"local_ip\":\"32.153.141.12\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1678,7 +1678,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"incidunt\",\"server_provider\":\"hetzner\",\"region\":\"ut\",\"plan\":\"ullam\",\"ip\":\"architecto\",\"port\":\"praesentium\",\"name\":\"facere\",\"os\":\"illo\",\"webserver\":\"none\",\"database\":\"none\",\"php\":\"8.1\"}"
+                            "raw": "{\"provider\":\"ut\",\"server_provider\":\"hetzner\",\"region\":\"consectetur\",\"plan\":\"voluptatum\",\"ip\":\"quisquam\",\"port\":\"sapiente\",\"name\":\"itaque\",\"os\":\"aut\",\"webserver\":\"nginx\",\"database\":\"postgresql13\",\"php\":\"7.4\"}"
                         },
                         "description": "Create a new server."
                     },
@@ -1686,7 +1686,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Herbert VonRueden\",\"ssh_user\":\"vito\",\"ip\":\"91.154.105.143\",\"local_ip\":\"62.75.177.7\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Sidney Grant\",\"ssh_user\":\"vito\",\"ip\":\"22.232.10.97\",\"local_ip\":\"107.107.187.150\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -1732,7 +1732,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Connie Simonis\",\"ssh_user\":\"vito\",\"ip\":\"202.119.26.253\",\"local_ip\":\"112.75.79.203\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"project_id\":null,\"user_id\":null,\"provider_id\":null,\"name\":\"Maria Zemlak\",\"ssh_user\":\"vito\",\"ip\":\"4.166.233.247\",\"local_ip\":\"92.197.44.184\",\"port\":22,\"os\":\"ubuntu_22\",\"type\":\"regular\",\"type_data\":null,\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"available_updates\":0,\"security_updates\":null,\"progress\":100,\"progress_step\":null,\"updates\":null,\"last_update_check\":null,\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -2379,7 +2379,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"type\":\"phpmyadmin\",\"domain\":\"tenetur\",\"aliases\":[\"aut\"],\"php_version\":\"7.4\",\"web_directory\":\"public\",\"source_control\":\"quasi\",\"repository\":\"organization\\\/repository\",\"branch\":\"main\",\"composer\":true,\"version\":\"5.2.1\",\"user\":\"deleniti\",\"method\":\"round-robin\"}"
+                            "raw": "{\"type\":\"wordpress\",\"domain\":\"ut\",\"aliases\":[\"vitae\"],\"php_version\":\"7.4\",\"web_directory\":\"public\",\"source_control\":\"animi\",\"repository\":\"organization\\\/repository\",\"branch\":\"main\",\"composer\":true,\"version\":\"5.2.1\",\"user\":\"est\",\"method\":\"least-connections\"}"
                         },
                         "description": "Create a new site."
                     },
@@ -2416,7 +2416,7 @@
                                 {
                                     "id": "id",
                                     "key": "id",
-                                    "value": "12",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2468,7 +2468,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "9",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2520,7 +2520,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "19",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2538,7 +2538,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"method\":\"ip-hash\",\"servers\":[\"dolores\"]}"
+                            "raw": "{\"method\":\"round-robin\",\"servers\":[\"eaque\"]}"
                         },
                         "description": "Update load balancer."
                     },
@@ -2575,7 +2575,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "16",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2593,9 +2593,61 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"aliases\":[\"aut\"]}"
+                            "raw": "{\"aliases\":[\"pariatur\"]}"
                         },
                         "description": "Update aliases."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": null,
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "deploy",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/deploy",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/projects\/:project_id\/servers\/:server_id\/sites\/:site_id\/deploy",
+                            "variable": [
+                                {
+                                    "id": "project_id",
+                                    "key": "project_id",
+                                    "value": "1",
+                                    "description": "The ID of the project."
+                                },
+                                {
+                                    "id": "server_id",
+                                    "key": "server_id",
+                                    "value": "29",
+                                    "description": "The ID of the server."
+                                },
+                                {
+                                    "id": "site_id",
+                                    "key": "site_id",
+                                    "value": "44",
+                                    "description": "The ID of the site."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Run site deployment script"
                     },
                     "response": [
                         {
@@ -2630,7 +2682,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "3",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2648,7 +2700,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"script\":\"qui\"}"
+                            "raw": "{\"script\":\"culpa\"}"
                         },
                         "description": "Update site deployment script"
                     },
@@ -2685,7 +2737,7 @@
                                 {
                                     "id": "site_id",
                                     "key": "site_id",
-                                    "value": "16",
+                                    "value": "44",
                                     "description": "The ID of the site."
                                 }
                             ]
@@ -2754,7 +2806,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Emil Leannon\",\"provider\":\"github\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"Eleazar Pacocha Sr.\",\"provider\":\"github\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Dawson Ratke IV\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"Miss Caterina Mann DVM\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2789,7 +2841,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"github\",\"name\":\"aliquam\",\"token\":\"voluptatem\",\"url\":\"https:\\\/\\\/brown.org\\\/placeat-optio-illum-eius-ipsa.html\",\"username\":\"a\",\"password\":\"_\\\/_,9'\\\/6z;9\"}"
+                            "raw": "{\"provider\":\"github\",\"name\":\"est\",\"token\":\"ea\",\"url\":\"http:\\\/\\\/koepp.info\\\/maiores-nostrum-consequuntur-dicta-iure-ullam\",\"username\":\"ducimus\",\"password\":\"S#AHlt\\\"?l6SDU^b?T6\"}"
                         },
                         "description": ""
                     },
@@ -2797,7 +2849,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Ahmad Kulas\",\"provider\":\"github\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Dr. Adella Greenholt\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2843,7 +2895,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Mr. Marquis Kunde IV\",\"provider\":\"github\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Hettie Farrell\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2884,7 +2936,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"laudantium\",\"token\":\"nulla\",\"url\":\"http:\\\/\\\/wiza.com\\\/\",\"username\":\"numquam\",\"password\":\"MlD,$m:8^A\",\"global\":false}"
+                            "raw": "{\"name\":\"sunt\",\"token\":\"est\",\"url\":\"http:\\\/\\\/www.fay.com\\\/quisquam-autem-illum-omnis-quo-enim-eligendi-velit\",\"username\":\"ab\",\"password\":\"M@-*%?(B(UNE~Ibc#\",\"global\":false}"
                         },
                         "description": ""
                     },
@@ -2892,7 +2944,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Mrs. Arvilla Mitchell\",\"provider\":\"github\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Jadyn Hyatt\",\"provider\":\"github\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2990,7 +3042,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":null,\"user\":null,\"name\":\"Dr. Pansy Kunde DVM\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"user\":null,\"name\":\"Ms. Maximillia DuBuque Sr.\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":null,\"user\":null,\"name\":\"Moriah Kemmer\",\"created_at\":null,\"updated_at\":null},{\"id\":null,\"user\":null,\"name\":\"Delilah Gaylord\",\"created_at\":null,\"updated_at\":null}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -3031,7 +3083,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"key_id\":\"debitis\",\"name\":\"illum\",\"public_key\":\"dignissimos\"}"
+                            "raw": "{\"key_id\":\"id\",\"name\":\"qui\",\"public_key\":\"vitae\"}"
                         },
                         "description": "Deploy ssh key to server."
                     },
@@ -3039,7 +3091,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":null,\"user\":null,\"name\":\"Uriah Harvey\",\"created_at\":null,\"updated_at\":null}",
+                            "body": "{\"id\":null,\"user\":null,\"name\":\"Jesse Gleason\",\"created_at\":null,\"updated_at\":null}",
                             "name": ""
                         }
                     ]
@@ -3137,7 +3189,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"autem\",\"provider\":\"s3\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"nihil\",\"provider\":\"ftp\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"et\",\"provider\":\"dropbox\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"},{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"sed\",\"provider\":\"dropbox\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -3172,7 +3224,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"provider\":\"est\",\"name\":\"voluptatem\",\"token\":\"delectus\",\"key\":\"natus\",\"secret\":\"saepe\"}"
+                            "raw": "{\"provider\":\"quia\",\"name\":\"rerum\",\"token\":\"hic\",\"key\":\"repellat\",\"secret\":\"maiores\"}"
                         },
                         "description": ""
                     },
@@ -3180,7 +3232,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"omnis\",\"provider\":\"local\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"veritatis\",\"provider\":\"ftp\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3226,7 +3278,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"molestiae\",\"provider\":\"dropbox\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"fuga\",\"provider\":\"local\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3267,7 +3319,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"exercitationem\",\"global\":true}"
+                            "raw": "{\"name\":\"est\",\"global\":true}"
                         },
                         "description": ""
                     },
@@ -3275,7 +3327,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"dolorum\",\"provider\":\"s3\",\"created_at\":\"2025-03-31T15:27:17.000000Z\",\"updated_at\":\"2025-03-31T15:27:17.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"ut\",\"provider\":\"ftp\",\"created_at\":\"2025-04-05T17:35:56.000000Z\",\"updated_at\":\"2025-04-05T17:35:56.000000Z\"}",
                             "name": ""
                         }
                     ]

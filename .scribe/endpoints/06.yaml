@@ -43,7 +43,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 11
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -52,7 +52,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 11
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -61,7 +61,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"site_id":null,"mode":301,"from":"error","to":"https:\/\/www.pfannerstill.com\/facere-est-totam-laudantium-in-illo-sequi","status":"ready","created_at":null,"updated_at":null},{"id":null,"site_id":null,"mode":301,"from":"repellat","to":"http:\/\/gislason.biz\/sed-corrupti-et-id-earum-qui-consequatur-quis-voluptas.html","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"site_id":null,"mode":301,"from":"eaque","to":"http:\/\/www.windler.info\/delectus-facilis-assumenda-consequatur-impedit-hic-dolorem-non-dolore.html","status":"ready","created_at":null,"updated_at":null},{"id":null,"site_id":null,"mode":308,"from":"neque","to":"http:\/\/raynor.biz\/velit-a-tempore-quas-explicabo-doloremque","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -69,7 +69,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Pava668DdZfk4cVEg3eb5h1'
+      - 'Bearer 4fD5a38caEk1vZPdbVh66ge'
     controller: null
     method: null
     route: null
@@ -116,7 +116,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 11
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -125,7 +125,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 11
+      site_id: 44
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -133,7 +133,7 @@ endpoints:
         name: from
         description: ''
         required: true
-        example: vel
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -143,7 +143,7 @@ endpoints:
         name: to
         description: ''
         required: true
-        example: ea
+        example: voluptatum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -153,7 +153,7 @@ endpoints:
         name: mode
         description: ''
         required: true
-        example: 307
+        example: 302
         type: string
         enumValues:
           - 301
@@ -164,9 +164,9 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      from: vel
-      to: ea
-      mode: 307
+      from: qui
+      to: voluptatum
+      mode: 302
     fileParameters: []
     responses:
       -
@@ -179,7 +179,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 14Vg6Dce6aEh8kPbav5Z3fd'
+      - 'Bearer haPda6v1be64V8gcf3Dk5EZ'
     controller: null
     method: null
     route: null
@@ -226,7 +226,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 11
+        example: 44
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -245,7 +245,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 29
-      site_id: 11
+      site_id: 44
       redirect_id: 9
     queryParameters: []
     cleanQueryParameters: []
@@ -263,7 +263,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer vabZDk1c6fV46Ea3edhP8g5'
+      - 'Bearer DVP8ve46k3dfhga5Z61bcEa'
     controller: null
     method: null
     route: null

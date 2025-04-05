@@ -152,12 +152,13 @@ class SiteController extends Controller
             abort(422, 'Deployment script is empty');
         }
     }
-  
+
     #[Put('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script', middleware: 'ability:write')]
     #[Endpoint(title: 'deployment-script', description: 'Update site deployment script')]
     #[BodyParam(name: 'script', type: 'string', description: 'Content of the deployment script')]
     #[Response(status: 204)]
     public function updateDeploymentScript(Request $request, Project $project, Server $server, Site $site): \Illuminate\Http\Response
+    {
         $this->validate($request, UpdateDeploymentScript::rules());
 
         app(UpdateDeploymentScript::class)->update($site, $request->all());

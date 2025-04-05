@@ -211,6 +211,13 @@ class SitesTest extends TestCase
             ], 200),
         ]);
 
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
         $script = $site->deploymentScript;
         $script->content = 'git pull';
         $script->save();
