@@ -7,12 +7,15 @@ use App\Actions\Database\DeleteDatabase;
 use App\Models\Database;
 use App\Models\Server;
 use App\Models\User;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
+use Throwable;
 
 class DatabasesList extends Widget
 {
@@ -69,9 +72,12 @@ class DatabasesList extends Widget
                     ->icon('heroicon-o-square-2-stack')
                     ->modalHeading('Clone Database')
                     ->tooltip('Clone')
+                    ->modalDescription('This will clone (copy) the database and all its contents.')
+                    ->modalWidth(MaxWidth::Large)
+                    ->modalSubmitActionLabel('Clone')
                     ->authorize(fn ($record) => $user->can('create', [Database::class, $this->server]))
                     ->form([
-                        \Filament\Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('New Database Name')
                             ->required()
                             ->helperText('The name for the cloned database')
@@ -85,7 +91,7 @@ class DatabasesList extends Widget
                                     ->success()
                                     ->title('Databases cloned!')
                                     ->send();
-                            } catch (\Throwable $e) {
+                            } catch (Throwable $e) {
                                 Notification::make()
                                     ->danger()
                                     ->title($e->getMessage())
