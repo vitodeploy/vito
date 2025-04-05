@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\Deploy;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
+use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SiteResource;
 use App\Models\Project;
@@ -131,6 +133,24 @@ class SiteController extends Controller
         app(UpdateAliases::class)->update($site, $request->all());
 
         return new SiteResource($site);
+    }
+
+    #[Post('{site}/deploy', name: 'api.projects.servers.sites.deploy', middleware: 'ability:write')]
+    #[Endpoint(title: 'deploy', description: 'Run site deployment script')]
+    #[Response(status: 200)]
+    public function deploy(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        try {
+            app(Deploy::class)->run($site);
+
+            return new SiteResource($site);
+        } catch (DeploymentScriptIsEmptyException) {
+            abort(422, 'Deployment script is empty');
+        }
     }
 
     #[Put('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script', middleware: 'ability:write')]

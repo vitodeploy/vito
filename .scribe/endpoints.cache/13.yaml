@@ -41,7 +41,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"autem","provider":"s3","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"},{"id":6,"project_id":null,"global":true,"name":"nihil","provider":"ftp","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"et","provider":"dropbox","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"},{"id":6,"project_id":null,"global":true,"name":"sed","provider":"dropbox","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -49,7 +49,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer c8gDkZ1563Va4dvb6EaefPh'
+      - 'Bearer vk63dEVe6PD5af4gZcbh1a8'
     controller: null
     method: null
     route: null
@@ -91,7 +91,7 @@ endpoints:
         name: provider
         description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
         required: true
-        example: est
+        example: quia
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -101,7 +101,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: voluptatem
+        example: rerum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -111,7 +111,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: delectus
+        example: hic
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: key
         description: 'The key if provider requires key'
         required: true
-        example: natus
+        example: repellat
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -131,23 +131,23 @@ endpoints:
         name: secret
         description: 'The secret if provider requires key'
         required: true
-        example: saepe
+        example: maiores
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: est
-      name: voluptatem
-      token: delectus
-      key: natus
-      secret: saepe
+      provider: quia
+      name: rerum
+      token: hic
+      key: repellat
+      secret: maiores
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"omnis","provider":"local","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"veritatis","provider":"ftp","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -155,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer g8aVh3evPZ5dkDfac14b66E'
+      - 'Bearer 5ekD6EPbhdvVa84f31aZcg6'
     controller: null
     method: null
     route: null
@@ -209,7 +209,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"molestiae","provider":"dropbox","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"fuga","provider":"local","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -217,7 +217,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 184aP6ce6b5VfdZv3hDakEg'
+      - 'Bearer 3fb86PcgDZadkhV1aEv4e56'
     controller: null
     method: null
     route: null
@@ -270,7 +270,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: exercitationem
+        example: est
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -289,13 +289,13 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: exercitationem
+      name: est
       global: true
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"dolorum","provider":"s3","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"ut","provider":"ftp","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -303,7 +303,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer dav4Dh6Pgb35ckEa81f6VZe'
+      - 'Bearer 8E6g3aDZcafV465bdkPe1vh'
     controller: null
     method: null
     route: null
@@ -365,7 +365,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 84vcE35a6dDZgak1ehVP6fb'
+      - 'Bearer vf34Dch58Va6bZgk61PaeEd'
     controller: null
     method: null
     route: null

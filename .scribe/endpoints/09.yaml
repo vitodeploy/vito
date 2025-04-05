@@ -50,7 +50,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"user":null,"name":"Dr. Pansy Kunde DVM","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Ms. Maximillia DuBuque Sr.","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"user":null,"name":"Moriah Kemmer","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Delilah Gaylord","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3Dah456fdP8kVbZ6vEag1ec'
+      - 'Bearer k6fva48dh5VgP3a61EbceZD'
     controller: null
     method: null
     route: null
@@ -111,7 +111,7 @@ endpoints:
         name: key_id
         description: 'The ID of the key.'
         required: true
-        example: debitis
+        example: id
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: name
         description: 'Key name, required if key_id is not provided.'
         required: true
-        example: illum
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -131,21 +131,21 @@ endpoints:
         name: public_key
         description: 'Public Key, required if key_id is not provided.'
         required: true
-        example: dignissimos
+        example: vitae
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      key_id: debitis
-      name: illum
-      public_key: dignissimos
+      key_id: id
+      name: qui
+      public_key: vitae
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"user":null,"name":"Uriah Harvey","created_at":null,"updated_at":null}'
+        content: '{"id":null,"user":null,"name":"Jesse Gleason","created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -153,7 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8bkv164ZVPcE5gde3faa6Dh'
+      - 'Bearer 5D4PZfcbeVkaE61d8h36gav'
     controller: null
     method: null
     route: null
@@ -226,7 +226,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 18P65Da6Vdh3e4cZgfkvabE'
+      - 'Bearer 5D1e8gZPbVf63kvhaac46dE'
     controller: null
     method: null
     route: null

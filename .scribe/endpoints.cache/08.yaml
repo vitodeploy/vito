@@ -41,7 +41,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":3,"project_id":null,"global":true,"name":"id","provider":"custom","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"},{"id":4,"project_id":null,"global":true,"name":"culpa","provider":"linode","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":3,"project_id":null,"global":true,"name":"ducimus","provider":"digitalocean","created_at":"2025-04-05T17:35:55.000000Z","updated_at":"2025-04-05T17:35:55.000000Z"},{"id":4,"project_id":null,"global":true,"name":"nesciunt","provider":"hetzner","created_at":"2025-04-05T17:35:55.000000Z","updated_at":"2025-04-05T17:35:55.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -49,7 +49,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer f1ebaVgEP3vahDk6dc58Z64'
+      - 'Bearer 6vkc3Ed6ebga48aPVfZ5D1h'
     controller: null
     method: null
     route: null
@@ -91,7 +91,7 @@ endpoints:
         name: provider
         description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
         required: true
-        example: mollitia
+        example: sunt
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -101,7 +101,7 @@ endpoints:
         name: name
         description: 'The name of the server provider.'
         required: true
-        example: adipisci
+        example: aut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -111,7 +111,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: animi
+        example: id
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: key
         description: 'The key if provider requires key'
         required: true
-        example: provident
+        example: porro
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -131,23 +131,23 @@ endpoints:
         name: secret
         description: 'The secret if provider requires key'
         required: true
-        example: deserunt
+        example: voluptas
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: mollitia
-      name: adipisci
-      token: animi
-      key: provident
-      secret: deserunt
+      provider: sunt
+      name: aut
+      token: id
+      key: porro
+      secret: voluptas
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"et","provider":"vultr","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
+        content: '{"id":3,"project_id":null,"global":true,"name":"nemo","provider":"linode","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -155,7 +155,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer agE4kv6Zc1d36PVhDaf5e8b'
+      - 'Bearer v634eED6kgab1c5PaVdhZf8'
     controller: null
     method: null
     route: null
@@ -209,7 +209,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"ab","provider":"digitalocean","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
+        content: '{"id":3,"project_id":null,"global":true,"name":"ut","provider":"aws","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -217,7 +217,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 815vc6eDEgZVPkah4fdba36'
+      - 'Bearer ckv4P5E8g663abheVfaZdD1'
     controller: null
     method: null
     route: null
@@ -270,7 +270,7 @@ endpoints:
         name: name
         description: 'The name of the server provider.'
         required: true
-        example: eveniet
+        example: aliquam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -280,7 +280,7 @@ endpoints:
         name: global
         description: 'Accessible in all projects'
         required: true
-        example: false
+        example: true
         type: string
         enumValues:
           - true
@@ -289,13 +289,13 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: eveniet
-      global: false
+      name: aliquam
+      global: true
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"expedita","provider":"aws","created_at":"2025-03-31T15:27:17.000000Z","updated_at":"2025-03-31T15:27:17.000000Z"}'
+        content: '{"id":3,"project_id":null,"global":true,"name":"et","provider":"digitalocean","created_at":"2025-04-05T17:35:56.000000Z","updated_at":"2025-04-05T17:35:56.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -303,7 +303,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 48kfEV6ahDaP63bgcZ51evd'
+      - 'Bearer kD53eZ6h8PEvbd1gfcaaV64'
     controller: null
     method: null
     route: null
@@ -365,7 +365,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer P6g4av8DcaV6fdZ3k1hb5eE'
+      - 'Bearer ebcf146dDhP3Z5a6vg8kVEa'
     controller: null
     method: null
     route: null

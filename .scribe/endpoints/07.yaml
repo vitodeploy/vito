@@ -39,7 +39,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Consuelo Connelly","ssh_user":"vito","ip":"80.154.83.232","local_ip":"45.31.117.65","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null},{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Rodolfo Fadel","ssh_user":"vito","ip":"103.227.79.93","local_ip":"33.49.217.56","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Marcelino Rodriguez","ssh_user":"vito","ip":"128.182.22.13","local_ip":"19.119.134.124","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null},{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Everardo Conn","ssh_user":"vito","ip":"62.215.59.124","local_ip":"32.153.141.12","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -47,7 +47,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 4kecVbv5Zaa3dE8D6fgP6h1'
+      - 'Bearer 8V6gP6cZk143he5EadfbDva'
     controller: null
     method: null
     route: null
@@ -89,7 +89,7 @@ endpoints:
         name: provider
         description: 'The server provider type'
         required: true
-        example: incidunt
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -114,7 +114,7 @@ endpoints:
         name: region
         description: 'Provider region if the provider is not custom'
         required: true
-        example: ut
+        example: consectetur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -124,7 +124,7 @@ endpoints:
         name: plan
         description: 'Provider plan if the provider is not custom'
         required: true
-        example: ullam
+        example: voluptatum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -134,7 +134,7 @@ endpoints:
         name: ip
         description: 'SSH IP address if the provider is custom'
         required: true
-        example: architecto
+        example: quisquam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -144,7 +144,7 @@ endpoints:
         name: port
         description: 'SSH Port if the provider is custom'
         required: true
-        example: praesentium
+        example: sapiente
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -154,7 +154,7 @@ endpoints:
         name: name
         description: 'The name of the server.'
         required: true
-        example: facere
+        example: itaque
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -164,7 +164,7 @@ endpoints:
         name: os
         description: 'The os of the server'
         required: true
-        example: illo
+        example: aut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -174,7 +174,7 @@ endpoints:
         name: webserver
         description: 'Web server'
         required: true
-        example: none
+        example: nginx
         type: string
         enumValues:
           - none
@@ -186,7 +186,7 @@ endpoints:
         name: database
         description: Database
         required: true
-        example: none
+        example: postgresql13
         type: string
         enumValues:
           - none
@@ -207,7 +207,7 @@ endpoints:
         name: php
         description: 'PHP version'
         required: true
-        example: '8.1'
+        example: '7.4'
         type: string
         enumValues:
           - '7.0'
@@ -223,22 +223,22 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: incidunt
+      provider: ut
       server_provider: hetzner
-      region: ut
-      plan: ullam
-      ip: architecto
-      port: praesentium
-      name: facere
-      os: illo
-      webserver: none
-      database: none
-      php: '8.1'
+      region: consectetur
+      plan: voluptatum
+      ip: quisquam
+      port: sapiente
+      name: itaque
+      os: aut
+      webserver: nginx
+      database: postgresql13
+      php: '7.4'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Herbert VonRueden","ssh_user":"vito","ip":"91.154.105.143","local_ip":"62.75.177.7","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Sidney Grant","ssh_user":"vito","ip":"22.232.10.97","local_ip":"107.107.187.150","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -246,7 +246,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1d43hZc6VagPaEe5bDvf86k'
+      - 'Bearer Pg86vcedaD3V5EbZh4a61fk'
     controller: null
     method: null
     route: null
@@ -300,7 +300,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Connie Simonis","ssh_user":"vito","ip":"202.119.26.253","local_ip":"112.75.79.203","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"project_id":null,"user_id":null,"provider_id":null,"name":"Maria Zemlak","ssh_user":"vito","ip":"4.166.233.247","local_ip":"92.197.44.184","port":22,"os":"ubuntu_22","type":"regular","type_data":null,"provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"available_updates":0,"security_updates":null,"progress":100,"progress_step":null,"updates":null,"last_update_check":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -308,7 +308,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6648eab1kafVPDh5vEcgd3Z'
+      - 'Bearer ka4ebad163EchfgV6v8ZP5D'
     controller: null
     method: null
     route: null
@@ -370,7 +370,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer heE6bdfa18v5Pa6kg4cZVD3'
+      - 'Bearer VP68EZbe351gf64avDdhkac'
     controller: null
     method: null
     route: null
@@ -432,7 +432,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 4Ege66vbc1hka8DPaV5Zfd3'
+      - 'Bearer 64dDea1v3g6aVZc5b8fEkPh'
     controller: null
     method: null
     route: null
@@ -494,7 +494,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer v3ceb6d6V1aDk584EhgfaZP'
+      - 'Bearer 5Pg3vec6Zbh1f8VD6Ea4dak'
     controller: null
     method: null
     route: null
