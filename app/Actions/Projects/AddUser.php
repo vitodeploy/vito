@@ -9,6 +9,9 @@ use Illuminate\Validation\Rule;
 
 class AddUser
 {
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function add(Project $project, array $input): void
     {
         /** @var User $user */
@@ -18,13 +21,16 @@ class AddUser
         $project->users()->attach($user);
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(Project $project): array
     {
         return [
             'user' => [
                 'required',
                 Rule::exists('users', 'id'),
-                Rule::unique('user_project', 'user_id')->where(function (Builder $query) use ($project) {
+                Rule::unique('user_project', 'user_id')->where(function (Builder $query) use ($project): void {
                     $query->where('project_id', $project->id);
                 }),
             ],

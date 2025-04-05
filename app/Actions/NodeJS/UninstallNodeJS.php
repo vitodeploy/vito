@@ -10,6 +10,11 @@ use Illuminate\Validation\ValidationException;
 
 class UninstallNodeJS
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function uninstall(Server $server, array $input): void
     {
         $this->validate($server, $input);
@@ -19,16 +24,18 @@ class UninstallNodeJS
         $nodejs->status = ServiceStatus::UNINSTALLING;
         $nodejs->save();
 
-        dispatch(function () use ($nodejs) {
+        dispatch(function () use ($nodejs): void {
             $nodejs->handler()->uninstall();
             $nodejs->delete();
-        })->catch(function () use ($nodejs) {
+        })->catch(function () use ($nodejs): void {
             $nodejs->status = ServiceStatus::FAILED;
             $nodejs->save();
         })->onConnection('ssh');
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws ValidationException
      */
     private function validate(Server $server, array $input): void

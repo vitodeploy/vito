@@ -3,18 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Server;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Middleware('auth')]
 class ConsoleController extends Controller
 {
     #[Post('servers/{server}/console/run', name: 'servers.console.run')]
-    public function run(Server $server, Request $request)
+    public function run(Server $server, Request $request): StreamedResponse
     {
         $this->authorize('update', $server);
 
@@ -36,10 +38,10 @@ class ConsoleController extends Controller
         }
 
         return response()->stream(
-            function () use ($server, $request, $ssh, $log, $currentDir) {
+            function () use ($server, $request, $ssh, $log, $currentDir): void {
                 $command = 'cd '.$currentDir.' && '.$request->command.' && echo -n "VITO_WORKING_DIR: " && pwd';
                 $output = '';
-                $ssh->exec(command: $command, log: $log, stream: true, streamCallback: function ($out) use (&$output) {
+                $ssh->exec(command: $command, log: $log, stream: true, streamCallback: function (string $out) use (&$output): void {
                     echo preg_replace('/^VITO_WORKING_DIR:.*(\r?\n)?/m', '', $out);
                     $output .= $out;
                     ob_flush();
@@ -60,7 +62,7 @@ class ConsoleController extends Controller
     }
 
     #[Get('servers/{server}/console/working-dir', name: 'servers.console.working-dir')]
-    public function workingDir(Server $server)
+    public function workingDir(Server $server): JsonResponse
     {
         return response()->json([
             'dir' => Cache::get('console.'.$server->id.'.dir', '~'),

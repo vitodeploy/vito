@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Enums\QueueStatus;
 use App\Enums\SiteType;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
-use App\Models\Queue;
+use App\Enums\WorkerStatus;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Ssl;
+use App\Models\Worker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 
@@ -18,7 +18,7 @@ class SitesSeeder extends Seeder
 {
     public function run(): void
     {
-        $servers = Server::query()->whereHas('services', function (Builder $query) {
+        $servers = Server::query()->whereHas('services', function (Builder $query): void {
             $query->where('type', 'webserver');
         })->get();
 
@@ -36,10 +36,10 @@ class SitesSeeder extends Seeder
                 'aliases' => ['www.'.$server->project->name.'.com'],
             ]);
             $app->tags()->attach($server->tags()->first());
-            Queue::factory()->create([
+            Worker::factory()->create([
                 'site_id' => $app->id,
                 'command' => 'php artisan queue:work',
-                'status' => QueueStatus::RUNNING,
+                'status' => WorkerStatus::RUNNING,
             ]);
             Ssl::factory()->create([
                 'site_id' => $app->id,
@@ -53,8 +53,8 @@ class SitesSeeder extends Seeder
                 'server_id' => $server->id,
                 'domain' => 'blog.'.$server->project->name.'.com',
                 'type' => SiteType::WORDPRESS,
-                'path' => '/home/vito/'.'blog.'.$server->project->name.'.com',
-                'aliases' => ['www.'.'blog.'.$server->project->name.'.com'],
+                'path' => '/home/vito/blog.'.$server->project->name.'.com',
+                'aliases' => ['www.blog.'.$server->project->name.'.com'],
             ]);
             $blog->tags()->attach($server->tags()->first());
             Ssl::factory()->create([

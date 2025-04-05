@@ -2,7 +2,9 @@
 
 namespace App\SSH\Services\ProcessManager;
 
-interface ProcessManager
+use App\SSH\Services\ServiceInterface;
+
+interface ProcessManager extends ServiceInterface
 {
     public function create(
         int $id,

@@ -16,9 +16,9 @@ class MigrateFromMysqlToSqlite extends Command
     {
         $this->info('Migrating from Mysql to SQLite...');
 
-        File::exists(storage_path('database.sqlite'))
-            ? File::delete(storage_path('database.sqlite'))
-            : null;
+        if (File::exists(storage_path('database.sqlite'))) {
+            File::delete(storage_path('database.sqlite'));
+        }
 
         File::put(storage_path('database.sqlite'), '');
 
@@ -37,7 +37,7 @@ class MigrateFromMysqlToSqlite extends Command
         $this->migrateModel(\App\Models\GitHook::class);
         $this->migrateModel(\App\Models\NotificationChannel::class);
         $this->migrateModel(\App\Models\Project::class);
-        $this->migrateModel(\App\Models\Queue::class);
+        $this->migrateModel(\App\Models\Worker::class);
         $this->migrateModel(\App\Models\Server::class);
         $this->migrateModel(\App\Models\ServerLog::class);
         $this->migrateModel(\App\Models\ServerProvider::class);

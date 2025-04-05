@@ -18,6 +18,9 @@ class SiteSummary extends Widget implements HasForms, HasInfolists
     use InteractsWithForms;
     use InteractsWithInfolists;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     protected static bool $isLazy = false;
@@ -44,9 +47,7 @@ class SiteSummary extends Widget implements HasForms, HasInfolists
                         TextEntry::make('status')
                             ->label('Status')
                             ->badge()
-                            ->color(static function ($state): string {
-                                return Site::$statusColors[$state];
-                            }),
+                            ->color(static fn ($state): string => Site::$statusColors[$state]),
                     ])
                     ->columns(3),
             ])

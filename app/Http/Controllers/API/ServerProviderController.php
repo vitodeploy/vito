@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\Project;
 use App\Models\ServerProvider;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -54,7 +55,9 @@ class ServerProviderController extends Controller
 
         $this->validate($request, CreateServerProvider::rules($request->all()));
 
-        $serverProvider = app(CreateServerProvider::class)->create(auth()->user(), $project, $request->all());
+        /** @var User $user */
+        $user = auth()->user();
+        $serverProvider = app(CreateServerProvider::class)->create($user, $project, $request->all());
 
         return new ServerProviderResource($serverProvider);
     }
@@ -62,7 +65,7 @@ class ServerProviderController extends Controller
     #[Get('{serverProvider}', name: 'api.projects.server-providers.show', middleware: 'ability:read')]
     #[Endpoint(title: 'show')]
     #[ResponseFromApiResource(ServerProviderResource::class, ServerProvider::class)]
-    public function show(Project $project, ServerProvider $serverProvider)
+    public function show(Project $project, ServerProvider $serverProvider): ServerProviderResource
     {
         $this->authorize('view', $serverProvider);
 
@@ -76,7 +79,7 @@ class ServerProviderController extends Controller
     #[BodyParam(name: 'name', description: 'The name of the server provider.', required: true)]
     #[BodyParam(name: 'global', description: 'Accessible in all projects', enum: [true, false])]
     #[ResponseFromApiResource(ServerProviderResource::class, ServerProvider::class)]
-    public function update(Request $request, Project $project, ServerProvider $serverProvider)
+    public function update(Request $request, Project $project, ServerProvider $serverProvider): ServerProviderResource
     {
         $this->authorize('update', $serverProvider);
 
@@ -92,7 +95,7 @@ class ServerProviderController extends Controller
     #[Delete('{serverProvider}', name: 'api.projects.server-providers.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete')]
     #[Response(status: 204)]
-    public function delete(Project $project, ServerProvider $serverProvider)
+    public function delete(Project $project, ServerProvider $serverProvider): \Illuminate\Http\Response
     {
         $this->authorize('delete', $serverProvider);
 

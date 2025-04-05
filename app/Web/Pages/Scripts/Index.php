@@ -4,6 +4,7 @@ namespace App\Web\Pages\Scripts;
 
 use App\Actions\Script\CreateScript;
 use App\Models\Script;
+use App\Models\User;
 use App\Web\Components\Page;
 use App\Web\Fields\CodeEditorField;
 use Filament\Actions\Action;
@@ -40,6 +41,9 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return [
             Action::make('read-the-docs')
                 ->label('Read the Docs')
@@ -62,9 +66,9 @@ class Index extends Page
                         ->label('Is Global (Accessible in all projects)'),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
-                        app(CreateScript::class)->create(auth()->user(), $data);
+                ->action(function (array $data) use ($user): void {
+                    run_action($this, function () use ($data, $user): void {
+                        app(CreateScript::class)->create($user, $data);
 
                         $this->dispatch('$refresh');
                     });

@@ -9,6 +9,9 @@ class Index extends Page
 {
     protected ?string $live = '';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = [];
 
     protected static ?string $slug = 'servers/{server}/console';

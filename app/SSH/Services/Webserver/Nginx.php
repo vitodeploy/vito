@@ -38,7 +38,7 @@ class Nginx extends AbstractWebserver
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasSite = $this->service->server->sites()
                         ->exists();
                     if ($hasSite) {
@@ -80,18 +80,14 @@ class Nginx extends AbstractWebserver
 
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            view('ssh.services.webserver.nginx.vhost', [
-                'site' => $site,
-            ]),
+            $this->generateVhost($site),
             'root'
         );
 
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.create-vhost', [
                 'domain' => $site->domain,
-                'vhost' => view('ssh.services.webserver.nginx.vhost', [
-                    'site' => $site,
-                ]),
+                'vhost' => $this->generateVhost($site),
             ]),
             'create-vhost',
             $site->id
@@ -105,9 +101,7 @@ class Nginx extends AbstractWebserver
     {
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            $vhost ?? view('ssh.services.webserver.nginx.vhost', [
-                'site' => $site,
-            ]),
+            $vhost ?? $this->generateVhost($site),
             'root'
         );
 
@@ -145,7 +139,7 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function changePHPVersion(Site $site, $version): void
+    public function changePHPVersion(Site $site, string $version): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.change-php-version', [
@@ -208,5 +202,14 @@ class Nginx extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
+    }
+
+    private function generateVhost(Site $site): string
+    {
+        $vhost = view('ssh.services.webserver.nginx.vhost', [
+            'site' => $site,
+        ]);
+
+        return format_nginx_config($vhost);
     }
 }

@@ -7,12 +7,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 class CronRule implements ValidationRule
 {
-    private bool $acceptCustom;
-
-    public function __construct(bool $acceptCustom = false)
-    {
-        $this->acceptCustom = $acceptCustom;
-    }
+    public function __construct(private readonly bool $acceptCustom = false) {}
 
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {

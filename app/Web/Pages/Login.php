@@ -39,7 +39,7 @@ class Login extends \Filament\Pages\Auth\Login
             ->label('Logout')
             ->color('danger')
             ->link()
-            ->action(function () {
+            ->action(function (): void {
                 Filament::auth()->logout();
 
                 session()->forget('login.id');
@@ -96,15 +96,21 @@ class Login extends \Filament\Pages\Auth\Login
         return $loginResponse;
     }
 
-    private function confirmTwoFactor(): ?LoginResponse
+    private function confirmTwoFactor(): LoginResponse
     {
         $request = TwoFactorLoginRequest::createFrom(request())->merge([
-            'code' => $this->data['code'],
-            'recovery_code' => $this->data['recovery_code'],
+            'code' => $this->data['code'] ?? null,
+            'recovery_code' => $this->data['recovery_code'] ?? null,
         ]);
 
         /** @var ?User $user */
         $user = $request->challengedUser();
+
+        if (! $user) {
+            $this->redirect(Filament::getLoginUrl());
+
+            return app(LoginResponse::class);
+        }
 
         if ($code = $request->validRecoveryCode()) {
             $user->replaceRecoveryCode($code);
@@ -141,7 +147,7 @@ class Login extends \Filament\Pages\Auth\Login
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn (): string => Blade::render(
                     <<<BLADE
-                        <x-slot name="subheading">{$this->logoutAction()->render()}</x-slot>
+                        <x-slot name="subheading">{$this->logoutAction()->render()->render()}</x-slot>
                     BLADE
                 ),
             );

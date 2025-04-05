@@ -6,6 +6,7 @@ use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Models\Backup;
 use App\Models\BackupFile;
+use App\Models\Service;
 use App\SSH\Services\Database\Database;
 use Illuminate\Support\Str;
 
@@ -20,9 +21,11 @@ class RunBackup
         ]);
         $file->save();
 
-        dispatch(function () use ($file, $backup) {
+        dispatch(function () use ($file, $backup): void {
+            /** @var Service $service */
+            $service = $backup->server->database();
             /** @var Database $databaseHandler */
-            $databaseHandler = $file->backup->server->database()->handler();
+            $databaseHandler = $service->handler();
             $databaseHandler->runBackup($file);
             $file->status = BackupFileStatus::CREATED;
             $file->save();
@@ -31,7 +34,7 @@ class RunBackup
                 $backup->status = BackupStatus::RUNNING;
                 $backup->save();
             }
-        })->catch(function () use ($file, $backup) {
+        })->catch(function () use ($file, $backup): void {
             $backup->status = BackupStatus::FAILED;
             $backup->save();
             $file->status = BackupFileStatus::FAILED;

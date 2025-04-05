@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Widgets;
 
 use App\Models\Server;
+use App\Models\User;
 use App\Web\Pages\Servers\Settings;
 use App\Web\Pages\Servers\View;
 use Filament\Tables\Actions\Action;
@@ -14,16 +15,22 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ServersList extends Widget
 {
+    /**
+     * @return Builder<Server>
+     */
     protected function getTableQuery(): Builder
     {
-        return Server::query()->where('project_id', auth()->user()->current_project_id);
+        /** @var User $user */
+        $user = auth()->user();
+
+        return Server::query()->where('project_id', $user->current_project_id);
     }
 
     protected function getTableColumns(): array
     {
         return [
             IconColumn::make('provider')
-                ->icon(fn (Server $record) => 'icon-'.$record->provider)
+                ->icon(fn (Server $record): string => 'icon-'.$record->provider)
                 ->tooltip(fn (Server $record) => $record->provider)
                 ->width(24),
             TextColumn::make('name')
@@ -53,17 +60,20 @@ class ServersList extends Widget
 
     public function table(Table $table): Table
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
             ->columns($this->getTableColumns())
-            ->recordUrl(fn (Server $record) => View::getUrl(parameters: ['server' => $record]))
+            ->recordUrl(fn (Server $record): string => View::getUrl(parameters: ['server' => $record]))
             ->actions([
                 Action::make('settings')
                     ->label('Settings')
                     ->icon('heroicon-o-cog-6-tooth')
-                    ->authorize(fn ($record) => auth()->user()->can('update', $record))
-                    ->url(fn (Server $record) => Settings::getUrl(parameters: ['server' => $record])),
+                    ->authorize(fn ($record) => $user->can('update', $record))
+                    ->url(fn (Server $record): string => Settings::getUrl(parameters: ['server' => $record])),
             ]);
     }
 }

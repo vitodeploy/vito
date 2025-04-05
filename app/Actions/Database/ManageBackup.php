@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 class ManageBackup
 {
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @throws AuthorizationException
      * @throws ValidationException
      */
@@ -35,6 +37,9 @@ class ManageBackup
         return $backup;
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     */
     public function update(Backup $backup, array $input): void
     {
         $backup->interval = $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'];
@@ -47,7 +52,7 @@ class ManageBackup
         $backup->status = BackupStatus::DELETING;
         $backup->save();
 
-        dispatch(function () use ($backup) {
+        dispatch(function () use ($backup): void {
             $files = $backup->files;
             foreach ($files as $file) {
                 $file->status = BackupFileStatus::DELETING;
@@ -60,6 +65,10 @@ class ManageBackup
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     public static function rules(Server $server, array $input): array
     {
         $rules = [
@@ -90,5 +99,11 @@ class ManageBackup
         }
 
         return $rules;
+    }
+
+    public function stop(Backup $backup): void
+    {
+        $backup->status = BackupStatus::STOPPED;
+        $backup->save();
     }
 }

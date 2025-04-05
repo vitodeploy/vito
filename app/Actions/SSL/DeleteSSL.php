@@ -3,6 +3,7 @@
 namespace App\Actions\SSL;
 
 use App\Enums\SslStatus;
+use App\Models\Service;
 use App\Models\Ssl;
 use App\SSH\Services\Webserver\Webserver;
 
@@ -12,8 +13,10 @@ class DeleteSSL
     {
         $ssl->status = SslStatus::DELETING;
         $ssl->save();
+        /** @var Service $service */
+        $service = $ssl->site->server->webserver();
         /** @var Webserver $webserver */
-        $webserver = $ssl->site->server->webserver()->handler();
+        $webserver = $service->handler();
         $webserver->removeSSL($ssl);
         $ssl->delete();
     }

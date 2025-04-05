@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
 use App\Exceptions\FailedToDestroyGitHook;
@@ -11,6 +12,7 @@ use App\SiteTypes\SiteType;
 use App\SSH\Services\PHP\PHP;
 use App\SSH\Services\Webserver\Webserver;
 use App\Traits\HasProjectThroughServer;
+use Database\Factories\SiteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,9 +24,9 @@ use Illuminate\Support\Str;
 /**
  * @property int $server_id
  * @property string $type
- * @property array $type_data
+ * @property array<string, string> $type_data
  * @property string $domain
- * @property array $aliases
+ * @property array<int, string> $aliases
  * @property string $web_directory
  * @property string $path
  * @property string $php_version
@@ -39,23 +41,26 @@ use Illuminate\Support\Str;
  * @property string $user
  * @property bool $force_ssl
  * @property Server $server
- * @property ServerLog[] $logs
- * @property Deployment[] $deployments
- * @property Command[] $commands
+ * @property Collection<int, ServerLog> $logs
+ * @property Collection<int, Deployment> $deployments
+ * @property Collection<int, Command> $commands
  * @property ?GitHook $gitHook
- * @property DeploymentScript $deploymentScript
- * @property Queue[] $queues
- * @property Ssl[] $ssls
+ * @property ?DeploymentScript $deploymentScript
+ * @property Collection<int, Worker> $workers
+ * @property Collection<int, Ssl> $ssls
  * @property ?Ssl $activeSsl
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
- * @property Collection<LoadBalancerServer> $loadBalancerServers
- *
- * @TODO: Add nodejs_version column
+ * @property Collection<int, LoadBalancerServer> $loadBalancerServers
+ * @property Project $project
+ * @property Collection<int, Redirect> $redirects
+ * @property Collection<int, Redirect> $activeRedirects
  */
 class Site extends AbstractModel
 {
+    /** @use HasFactory<SiteFactory> */
     use HasFactory;
+
     use HasProjectThroughServer;
 
     protected $fillable = [
@@ -89,6 +94,9 @@ class Site extends AbstractModel
         'force_ssl' => 'boolean',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         SiteStatus::READY => 'success',
         SiteStatus::INSTALLING => 'warning',
@@ -100,14 +108,17 @@ class Site extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (Site $site) {
-            $site->queues()->each(fn (Queue $queue) => $queue->delete());
+        static::deleting(function (Site $site): void {
+            $site->workers()->each(function ($worker): void {
+                /** @var Worker $worker */
+                $worker->delete();
+            });
             $site->ssls()->delete();
             $site->deployments()->delete();
             $site->deploymentScript()->delete();
         });
 
-        static::created(function (Site $site) {
+        static::created(function (Site $site): void {
             $site->deploymentScript()->create([
                 'name' => 'default',
                 'content' => '',
@@ -130,51 +141,81 @@ class Site extends AbstractModel
         return $this->status === SiteStatus::INSTALLATION_FAILED;
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return HasMany<ServerLog, covariant $this>
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(ServerLog::class);
     }
 
+    /**
+     * @return HasMany<Deployment, covariant $this>
+     */
     public function deployments(): HasMany
     {
         return $this->hasMany(Deployment::class);
     }
 
+    /**
+     * @return HasMany<Command, covariant $this>
+     */
     public function commands(): HasMany
     {
         return $this->hasMany(Command::class);
     }
 
+    /**
+     * @return HasOne<GitHook, covariant $this>
+     */
     public function gitHook(): HasOne
     {
         return $this->hasOne(GitHook::class);
     }
 
+    /**
+     * @return HasOne<DeploymentScript, covariant $this>
+     */
     public function deploymentScript(): HasOne
     {
         return $this->hasOne(DeploymentScript::class);
     }
 
-    public function queues(): HasMany
+    /**
+     * @return HasMany<Worker, covariant $this>
+     */
+    public function workers(): HasMany
     {
-        return $this->hasMany(Queue::class);
+        return $this->hasMany(Worker::class);
     }
 
+    /**
+     * @return HasMany<Ssl, covariant $this>
+     */
     public function ssls(): HasMany
     {
         return $this->hasMany(Ssl::class);
     }
 
+    /**
+     * @return MorphToMany<Tag, covariant $this>
+     */
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
+    /**
+     * @return BelongsTo<SourceControl, covariant $this>
+     */
     public function sourceControl(): BelongsTo
     {
         return $this->belongsTo(SourceControl::class)->withTrashed();
@@ -198,7 +239,10 @@ class Site extends AbstractModel
     {
         $typeClass = config('core.site_types_class.'.$this->type);
 
-        return new $typeClass($this);
+        /** @var SiteType $type */
+        $type = new $typeClass($this);
+
+        return $type;
     }
 
     public function php(): ?Service
@@ -213,23 +257,27 @@ class Site extends AbstractModel
     /**
      * @throws SSHError
      */
-    public function changePHPVersion($version): void
+    public function changePHPVersion(string $version): void
     {
-        /** @var Webserver $handler */
-        $handler = $this->server->webserver()->handler();
-        $handler->changePHPVersion($this, $version);
+        $webserver = $this->webserver();
+        $webserver->changePHPVersion($this, $version);
 
         if ($this->isIsolated()) {
-            /** @var PHP $php */
-            $php = $this->server->php()->handler();
-            $php->removeFpmPool($this->user, $this->php_version, $this->id);
-            $php->createFpmPool($this->user, $version, $this->id);
+            /** @var Service $php */
+            $php = $this->server->php();
+            /** @var PHP $phpHandler */
+            $phpHandler = $php->handler();
+            $phpHandler->removeFpmPool($this->user, $this->php_version, $this->id);
+            $phpHandler->createFpmPool($this->user, $version);
         }
 
         $this->php_version = $version;
         $this->save();
     }
 
+    /**
+     * @return HasOne<Ssl, covariant $this>
+     */
     public function activeSsl(): HasOne
     {
         return $this->hasOne(Ssl::class)
@@ -318,6 +366,9 @@ class Site extends AbstractModel
         }
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function environmentVariables(?Deployment $deployment = null): array
     {
         return [
@@ -325,7 +376,7 @@ class Site extends AbstractModel
             'DOMAIN' => $this->domain,
             'BRANCH' => $this->branch ?? '',
             'REPOSITORY' => $this->repository ?? '',
-            'COMMIT_ID' => $deployment?->commit_id ?? '',
+            'COMMIT_ID' => $deployment->commit_id ?? '',
             'PHP_VERSION' => $this->php_version,
             'PHP_PATH' => '/usr/bin/php'.$this->php_version,
         ];
@@ -338,14 +389,53 @@ class Site extends AbstractModel
 
     public function webserver(): Webserver
     {
-        /** @var Webserver $webserver */
-        $webserver = $this->server->webserver()->handler();
+        /** @var Service $webserver */
+        $webserver = $this->server->webserver();
 
-        return $webserver;
+        /** @var Webserver $handler */
+        $handler = $webserver->handler();
+
+        return $handler;
     }
 
+    /**
+     * @return HasMany<LoadBalancerServer, covariant $this>
+     */
     public function loadBalancerServers(): HasMany
     {
         return $this->hasMany(LoadBalancerServer::class, 'load_balancer_id');
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getSshUsers(): array
+    {
+        $users = [
+            'root',
+            $this->server->getSshUser(),
+        ];
+
+        if ($this->isIsolated()) {
+            $users[] = $this->user;
+        }
+
+        return $users;
+    }
+
+    /**
+     * @return HasMany<Redirect, covariant $this>
+     */
+    public function redirects(): HasMany
+    {
+        return $this->hasMany(Redirect::class);
+    }
+
+    /**
+     * @return HasMany<Redirect, covariant $this>
+     */
+    public function activeRedirects(): HasMany
+    {
+        return $this->redirects()->whereIn('status', [RedirectStatus::CREATING, RedirectStatus::READY]);
     }
 }

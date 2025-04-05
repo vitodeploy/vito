@@ -7,15 +7,11 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\SSH\Services\PHP\PHP;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 abstract class AbstractSiteType implements SiteType
 {
-    protected Site $site;
-
-    public function __construct(Site $site)
-    {
-        $this->site = $site;
-    }
+    public function __construct(protected Site $site) {}
 
     public function createRules(array $input): array
     {
@@ -82,12 +78,15 @@ abstract class AbstractSiteType implements SiteType
 
         // Generate the FPM pool
         if ($this->site->php_version) {
+            $service = $this->site->php();
+            if (! $service instanceof \App\Models\Service) {
+                throw new RuntimeException('PHP service not found');
+            }
             /** @var PHP $php */
-            $php = $this->site->php()->handler();
+            $php = $service->handler();
             $php->createFpmPool(
                 $this->site->user,
-                $this->site->php_version,
-                $this->site->id
+                $this->site->php_version
             );
         }
     }

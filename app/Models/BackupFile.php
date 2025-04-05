@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class BackupFile extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\BackupFileFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -38,15 +39,16 @@ class BackupFile extends AbstractModel
 
     protected static function booted(): void
     {
-        static::created(function (BackupFile $backupFile) {
+        static::created(function (BackupFile $backupFile): void {
             $keep = $backupFile->backup->keep_backups;
             if ($backupFile->backup->files()->count() > $keep) {
-                /* @var BackupFile $lastFileToKeep */
+                /** @var ?BackupFile $lastFileToKeep */
                 $lastFileToKeep = $backupFile->backup->files()->orderByDesc('id')->skip($keep)->first();
                 if ($lastFileToKeep) {
                     $files = $backupFile->backup->files()
                         ->where('id', '<=', $lastFileToKeep->id)
                         ->get();
+                    /** @var BackupFile $file */
                     foreach ($files as $file) {
                         app(ManageBackupFile::class)->delete($file);
                     }
@@ -55,6 +57,9 @@ class BackupFile extends AbstractModel
         });
     }
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         BackupFileStatus::CREATED => 'success',
         BackupFileStatus::CREATING => 'warning',
@@ -78,6 +83,9 @@ class BackupFile extends AbstractModel
         return $this->backup->storage->provider === StorageProviderAlias::LOCAL;
     }
 
+    /**
+     * @return BelongsTo<Backup, covariant $this>
+     */
     public function backup(): BelongsTo
     {
         return $this->belongsTo(Backup::class);
@@ -96,7 +104,7 @@ class BackupFile extends AbstractModel
         return match ($storage->provider) {
             StorageProviderAlias::DROPBOX => '/'.$databaseName.'/'.$this->name.'.zip',
             StorageProviderAlias::S3, StorageProviderAlias::FTP, StorageProviderAlias::LOCAL => implode('/', [
-                rtrim($storage->credentials['path'], '/'),
+                rtrim((string) $storage->credentials['path'], '/'),
                 $databaseName,
                 $this->name.'.zip',
             ]),

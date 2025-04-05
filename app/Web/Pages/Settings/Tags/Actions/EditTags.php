@@ -5,6 +5,8 @@ namespace App\Web\Pages\Settings\Tags\Actions;
 use App\Actions\Tag\SyncTags;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\User;
+use Closure;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
@@ -26,8 +28,8 @@ class EditTags
             ->modalSubmitActionLabel('Save')
             ->modalHeading('Edit Tags')
             ->modalWidth(MaxWidth::Medium)
-            ->form(static::form($taggable))
-            ->action(static::action($taggable));
+            ->form(self::form($taggable))
+            ->action(self::action($taggable));
     }
 
     /**
@@ -42,22 +44,23 @@ class EditTags
             ->modalSubmitActionLabel('Save')
             ->modalHeading('Edit Tags')
             ->modalWidth(MaxWidth::Medium)
-            ->form(static::form($taggable))
-            ->action(static::action($taggable));
+            ->form(self::form($taggable))
+            ->action(self::action($taggable));
     }
 
     /**
-     * @param  Site|Server  $taggable
+     * @return array<int, mixed>
      */
-    private static function form(mixed $taggable): array
+    private static function form(Site|Server $taggable): array
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return [
             Select::make('tags')
                 ->default($taggable->tags()->pluck('tags.id')->toArray())
-                ->options(function () {
-                    return auth()->user()->currentProject->tags()->pluck('name', 'id')->toArray();
-                })
-                ->nestedRecursiveRules(SyncTags::rules(auth()->user()->currentProject->id)['tags.*'])
+                ->options(fn () => $user->currentProject->tags()->pluck('name', 'id')->toArray())
+                ->nestedRecursiveRules(SyncTags::rules($user->currentProject->id)['tags.*'])
                 ->suffixAction(
                     FormAction::make('create_tag')
                         ->icon('heroicon-o-plus')
@@ -66,7 +69,7 @@ class EditTags
                         ->modalHeading('Create Tag')
                         ->modalWidth(MaxWidth::Medium)
                         ->form(Create::form())
-                        ->action(function (array $data) {
+                        ->action(function (array $data): void {
                             Create::action($data);
                         }),
                 )
@@ -77,12 +80,12 @@ class EditTags
     /**
      * @param  Site|Server  $taggable
      */
-    private static function action(mixed $taggable): \Closure
+    private static function action(mixed $taggable): Closure
     {
-        return function (array $data) use ($taggable) {
-            app(SyncTags::class)->sync(auth()->user(), [
+        return function (array $data) use ($taggable): void {
+            app(SyncTags::class)->sync([
                 'taggable_id' => $taggable->id,
-                'taggable_type' => get_class($taggable),
+                'taggable_type' => $taggable::class,
                 'tags' => $data['tags'],
             ]);
 

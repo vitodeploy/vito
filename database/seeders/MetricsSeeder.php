@@ -13,7 +13,7 @@ class MetricsSeeder extends Seeder
 {
     public function run(): void
     {
-        $servers = Server::query()->whereHas('services', function (Builder $query) {
+        $servers = Server::query()->whereHas('services', function (Builder $query): void {
             $query->where('type', 'monitoring');
         })->get();
 

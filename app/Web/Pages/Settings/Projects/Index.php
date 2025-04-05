@@ -4,6 +4,7 @@ namespace App\Web\Pages\Settings\Projects;
 
 use App\Actions\Projects\CreateProject;
 use App\Models\Project;
+use App\Models\User;
 use App\Web\Components\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -29,7 +30,10 @@ class Index extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('viewAny', Project::class) ?? false;
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $user->can('viewAny', Project::class);
     }
 
     public function getWidgets(): array
@@ -47,15 +51,13 @@ class Index extends Page
                 ->icon('heroicon-o-plus')
                 ->authorize('create', Project::class)
                 ->modalWidth(MaxWidth::Large)
-                ->form(function (Form $form) {
-                    return $form->schema([
-                        TextInput::make('name')
-                            ->name('name')
-                            ->rules(CreateProject::rules()['name']),
-                    ])->columns(1);
-                })
-                ->action(function (array $data) {
-                    app(CreateProject::class)->create(auth()->user(), $data);
+                ->form(fn (Form $form): Form => $form->schema([
+                    TextInput::make('name')
+                        ->name('name')
+                        ->rules(CreateProject::rules()['name']),
+                ])->columns(1))
+                ->action(function (array $data): void {
+                    app(CreateProject::class)->create($this->getUser(), $data);
 
                     $this->dispatch('$refresh');
                 }),

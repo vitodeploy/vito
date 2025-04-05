@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers\Logs\Traits;
 
 use App\Models\ServerLog;
+use App\Models\User;
 use App\Web\Pages\Servers\Logs\Index;
 use App\Web\Pages\Servers\Logs\RemoteLogs;
 use Filament\Navigation\NavigationGroup;
@@ -12,9 +13,12 @@ trait Navigation
 {
     public function getSecondSubNavigation(): array
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         $items = [];
 
-        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
+        if ($user->can('viewAny', [ServerLog::class, $this->server])) {
             $items[] = NavigationItem::make(Index::getNavigationLabel())
                 ->icon('heroicon-o-square-3-stack-3d')
                 ->isActiveWhen(fn () => request()->routeIs(Index::getRouteName()))

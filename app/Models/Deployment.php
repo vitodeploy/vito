@@ -12,14 +12,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $log_id
  * @property string $commit_id
  * @property string $commit_id_short
- * @property array $commit_data
+ * @property array<string, mixed> $commit_data
  * @property string $status
  * @property Site $site
  * @property DeploymentScript $deploymentScript
- * @property ServerLog $log
+ * @property ?ServerLog $log
  */
 class Deployment extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\DeploymentFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -38,22 +39,34 @@ class Deployment extends AbstractModel
         'commit_data' => 'json',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         DeploymentStatus::DEPLOYING => 'warning',
         DeploymentStatus::FINISHED => 'success',
         DeploymentStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Site, covariant $this>
+     */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
     }
 
+    /**
+     * @return BelongsTo<DeploymentScript, covariant $this>
+     */
     public function deploymentScript(): BelongsTo
     {
         return $this->belongsTo(DeploymentScript::class);
     }
 
+    /**
+     * @return BelongsTo<ServerLog, covariant $this>
+     */
     public function log(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class, 'log_id');

@@ -14,7 +14,7 @@ class HealthController extends Controller
     #[Get('api/health', name: 'api.health')]
     #[Unauthenticated]
     #[Endpoint(title: 'health-check')]
-    public function __invoke()
+    public function __invoke(): \Illuminate\Http\JsonResponse
     {
         return response()->json([
             'success' => true,

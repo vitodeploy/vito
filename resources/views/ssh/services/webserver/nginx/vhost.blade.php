@@ -1,9 +1,9 @@
 @if ($site->activeSsl && $site->force_ssl)
-    server {
-        listen 80;
-        server_name {{ $site->domain }} {{ $site->getAliasesString() }};
-        return 301 https://$host$request_uri;
-    }
+server {
+    listen 80;
+    server_name {{ $site->domain }} {{ $site->getAliasesString() }};
+    return 301 https://$host$request_uri;
+}
 @endif
 
 @php
@@ -12,22 +12,22 @@
 
 @if ($site->type === \App\Enums\SiteType::LOAD_BALANCER)
     upstream {{ $backendName }} {
-        @switch($site->type_data['method'] ?? \App\Enums\LoadBalancerMethod::ROUND_ROBIN)
-            @case(\App\Enums\LoadBalancerMethod::LEAST_CONNECTIONS)
-                least_conn;
-                @break
-            @case(\App\Enums\LoadBalancerMethod::IP_HASH)
-                ip_hash;
-                @break
-            @default
-        @endswitch
-        @if ($site->loadBalancerServers()->count() > 0)
-            @foreach($site->loadBalancerServers as $server)
-                server {{ $server->ip }}:{{ $server->port }} {{ $server->backup ? 'backup' : '' }} {{ $server->weight ? 'weight='.$server->weight : '' }};
-            @endforeach
-        @else
-            server 127.0.0.1;
-        @endif
+    @switch($site->type_data['method'] ?? \App\Enums\LoadBalancerMethod::ROUND_ROBIN)
+        @case(\App\Enums\LoadBalancerMethod::LEAST_CONNECTIONS)
+            least_conn;
+            @break
+        @case(\App\Enums\LoadBalancerMethod::IP_HASH)
+            ip_hash;
+            @break
+        @default
+    @endswitch
+    @if ($site->loadBalancerServers()->count() > 0)
+        @foreach($site->loadBalancerServers as $server)
+            server {{ $server->ip }}:{{ $server->port }} {{ $server->backup ? 'backup' : '' }} {{ $server->weight ? 'weight='.$server->weight : '' }};
+        @endforeach
+    @else
+        server 127.0.0.1;
+    @endif
     }
 @endif
 
@@ -71,11 +71,11 @@ server {
 
     @if ($site->type === \App\Enums\SiteType::LOAD_BALANCER)
         location / {
-            proxy_pass http://{{ $backendName }}$request_uri;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://{{ $backendName }}$request_uri;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         }
     @endif
 
@@ -87,4 +87,6 @@ server {
     location ~ /\.(?!well-known).* {
         deny all;
     }
+
+    @include('ssh.services.webserver.nginx.redirects', ['site' => $site])
 }

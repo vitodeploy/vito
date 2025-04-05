@@ -17,11 +17,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $status
  * @property Server $server
  * @property Backup[] $backups
- * @property Carbon $deleted_at
+ * @property ?Carbon $deleted_at
  */
 class Database extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\DatabaseFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -40,8 +42,9 @@ class Database extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (Database $database) {
-            $database->server->databaseUsers()->each(function (DatabaseUser $user) use ($database) {
+        static::deleting(function (Database $database): void {
+            $database->server->databaseUsers()->each(function ($user) use ($database): void {
+                /** @var DatabaseUser $user */
                 $databases = $user->databases;
                 if ($databases && in_array($database->name, $databases)) {
                     unset($databases[array_search($database->name, $databases)]);
@@ -52,6 +55,9 @@ class Database extends AbstractModel
         });
     }
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         DatabaseStatus::READY => 'success',
         DatabaseStatus::CREATING => 'warning',
@@ -59,11 +65,17 @@ class Database extends AbstractModel
         DatabaseStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return HasMany<Backup, covariant $this>
+     */
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class)->where('type', 'database');

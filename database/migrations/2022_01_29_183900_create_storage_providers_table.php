@@ -8,7 +8,7 @@ class CreateStorageProvidersTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('storage_providers', function (Blueprint $table) {
+        Schema::create('storage_providers', function (Blueprint $table): void {
             $table->id();
             $table->string('provider');
             $table->string('label')->nullable();

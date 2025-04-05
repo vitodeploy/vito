@@ -10,12 +10,7 @@ class FailedToDeleteServerFromProvider extends AbstractNotification
 {
     use Queueable;
 
-    protected Server $server;
-
-    public function __construct(Server $server)
-    {
-        $this->server = $server;
-    }
+    public function __construct(protected Server $server) {}
 
     public function rawText(): string
     {

@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\Profile\Widgets;
 
 use App\Actions\User\UpdateUserProfileInformation;
+use App\Models\User;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -29,14 +30,19 @@ class ProfileInformation extends Widget implements HasForms
 
     public function mount(): void
     {
-        $this->name = auth()->user()->name;
-        $this->email = auth()->user()->email;
-        $this->timezone = auth()->user()->timezone;
+        /** @var User $user */
+        $user = auth()->user();
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->timezone = $user->timezone;
     }
 
     public function form(Form $form): Form
     {
-        $rules = UpdateUserProfileInformation::rules(auth()->user());
+        /** @var User $user */
+        $user = auth()->user();
+
+        $rules = UpdateUserProfileInformation::rules($user);
 
         return $form
             ->schema([
@@ -69,9 +75,12 @@ class ProfileInformation extends Widget implements HasForms
 
     public function submit(): void
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         $this->validate();
 
-        app(UpdateUserProfileInformation::class)->update(auth()->user(), $this->all());
+        app(UpdateUserProfileInformation::class)->update($user, $this->all());
 
         Notification::make()
             ->success()

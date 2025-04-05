@@ -33,7 +33,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +41,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -50,7 +50,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"username":"xgaylord","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"username":"una37","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":null,"username":"letha64","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"username":"hagenes.lurline","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -58,7 +58,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer P4gD36fZeckvVh5ab86Ead1'
+      - 'Bearer d4g15bV3Pa6hDvck6eaEf8Z'
     controller: null
     method: null
     route: null
@@ -95,7 +95,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +103,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +111,7 @@ endpoints:
         name: username
         description: ''
         required: true
-        example: consequuntur
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +121,7 @@ endpoints:
         name: password
         description: ''
         required: true
-        example: 'fI/i2.O4u&dla?eXvR2'
+        example: 'xYv*3,#HQ=5<w!'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -138,14 +138,14 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      username: consequuntur
-      password: 'fI/i2.O4u&dla?eXvR2'
+      username: qui
+      password: 'xYv*3,#HQ=5<w!'
       host: '%'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"kari.farrell","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"username":"marcelle95","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -153,7 +153,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5k8Vced1baaE6f4ZvDPgh36'
+      - 'Bearer 3vZ6f6kagacDEhV1Pde5b84'
     controller: null
     method: null
     route: null
@@ -190,7 +190,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -200,7 +200,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 18
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -208,8 +208,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      databaseUser_id: 18
+      server_id: 29
+      databaseUser_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -218,7 +218,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"caterina.mosciski","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"username":"brandi53","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -226,7 +226,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3kDveP5V8a6dghfa4E16cbZ'
+      - 'Bearer af3b5ac6dP8ZV4vE1hk6eDg'
     controller: null
     method: null
     route: null
@@ -263,7 +263,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -281,7 +281,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
+      server_id: 29
       databaseUser_id: 4
     queryParameters: []
     cleanQueryParameters: []
@@ -290,19 +290,19 @@ endpoints:
         name: databases
         description: 'Array of database names to link to the user.'
         required: true
-        example: non
+        example: maiores
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      databases: non
+      databases: maiores
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"kurtis05","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":null,"username":"kschmidt","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
@@ -310,7 +310,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer DgPea43EvV51a866dfbZckh'
+      - 'Bearer b6f3Ed641gaZDcVa5k8vePh'
     controller: null
     method: null
     route: null
@@ -347,7 +347,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 8
+        example: 29
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -357,7 +357,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 6
+        example: 20
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -365,8 +365,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 8
-      databaseUser_id: 6
+      server_id: 29
+      databaseUser_id: 20
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -383,7 +383,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6ackVP8hEZd3164gD5evafb'
+      - 'Bearer Zka6fh15g6eaV8vE34cDPdb'
     controller: null
     method: null
     route: null

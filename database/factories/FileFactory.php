@@ -6,6 +6,9 @@ use App\Models\File;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<\App\Models\File>
+ */
 class FileFactory extends Factory
 {
     protected $model = File::class;

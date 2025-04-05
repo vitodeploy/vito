@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Hash;
 
 class UpdateUserPassword
 {
+    /**
+     * @param  mixed  $user
+     * @param  array<string, mixed>  $input
+     */
     public function update($user, array $input): void
     {
         $user->forceFill([
@@ -13,6 +17,9 @@ class UpdateUserPassword
         ])->save();
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public static function rules(): array
     {
         return [

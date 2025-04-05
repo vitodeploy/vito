@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class File extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\FileFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -53,7 +54,7 @@ class File extends AbstractModel
     {
         parent::boot();
 
-        static::deleting(function (File $file) {
+        static::deleting(function (File $file): bool {
             if ($file->name === '.' || $file->name === '..') {
                 return false;
             }
@@ -64,11 +65,17 @@ class File extends AbstractModel
         });
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

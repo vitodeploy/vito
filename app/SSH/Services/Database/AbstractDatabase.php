@@ -2,6 +2,7 @@
 
 namespace App\SSH\Services\Database;
 
+use App\Actions\Database\SyncDatabases;
 use App\Enums\BackupStatus;
 use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
@@ -11,7 +12,15 @@ use Closure;
 
 abstract class AbstractDatabase extends AbstractService implements Database
 {
+    /**
+     * @var array<string>
+     */
     protected array $systemDbs = [];
+
+    /**
+     * @var array<string>
+     */
+    protected array $systemUsers = [];
 
     protected string $defaultCharset;
 
@@ -21,8 +30,12 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     protected bool $removeLastRow = false;
 
+    /**
+     * @phpstan-return view-string
+     */
     protected function getScriptView(string $script): string
     {
+        /** @phpstan-ignore-next-line */
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
     }
 
@@ -31,7 +44,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         return [
             'type' => [
                 'required',
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $databaseExists = $this->service->server->database();
                     if ($databaseExists) {
                         $fail('You already have a database service on the server.');
@@ -53,16 +66,15 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $status = $this->service->server->systemd()->status($this->service->unit);
         $this->service->validateInstall($status);
         $this->service->server->os()->cleanup();
-
-        $this->updateCharsets();
-        $this->syncDatabases();
+        /** @TODO implement post-install for services and move it there */
+        app(SyncDatabases::class)->sync($this->service->server);
     }
 
     public function deletionRules(): array
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasDatabase = $this->service->server->databases()->exists();
                     if ($hasDatabase) {
                         $fail('You have database(s) on the server.');
@@ -238,7 +250,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     /**
      * @throws SSHError
      */
-    public function updateCharsets(): void
+    public function getCharsets(): array
     {
         $data = $this->service->server->ssh()->exec(
             view($this->getScriptView('get-charsets')),
@@ -274,25 +286,22 @@ abstract class AbstractDatabase extends AbstractService implements Database
             }
         }
 
-        foreach ($results as $charset => $data) {
+        foreach (array_keys($results) as $charset) {
             $results[$charset]['list'] = $charsetCollations[$charset];
         }
 
         ksort($results);
 
-        $data = array_merge(
-            $this->service->type_data ?? [],
-            ['charsets' => $results, 'defaultCharset' => $this->defaultCharset]
-        );
-
-        $this->service->update(['type_data' => $data]);
-
+        return [
+            'charsets' => $results,
+            'defaultCharset' => $this->defaultCharset,
+        ];
     }
 
     /**
      * @throws SSHError
      */
-    public function syncDatabases(bool $createNew = true): void
+    public function getDatabases(): array
     {
         $data = $this->service->server->ssh()->exec(
             view($this->getScriptView('get-db-list')),
@@ -301,36 +310,35 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $databases = $this->tableToArray($data);
 
-        foreach ($databases as $database) {
-            if (in_array($database[0], $this->systemDbs)) {
-                continue;
-            }
-
-            $db = $this->service->server->databases()
-                ->where('name', $database[0])
-                ->first();
-
-            if ($db === null) {
-                if ($createNew) {
-                    $this->service->server->databases()->create([
-                        'name' => $database[0],
-                        'collation' => $database[2],
-                        'charset' => $database[1],
-                    ]);
-                }
-
-                continue;
-            }
-
-            if ($db->collation !== $database[2] || $db->charset !== $database[1]) {
-                $db->update([
-                    'collation' => $database[2],
-                    'charset' => $database[1],
-                ]);
-            }
-        }
+        return array_values(array_filter($databases, fn ($database): bool => ! in_array($database[0], $this->systemDbs)));
     }
 
+    /**
+     * @throws SSHError
+     */
+    public function getUsers(): array
+    {
+        $data = $this->service->server->ssh()->exec(
+            view($this->getScriptView('get-users-list')),
+            'get-users-list'
+        );
+
+        $users = $this->tableToArray($data);
+
+        $users = array_values(array_filter($users, fn ($users): bool => ! in_array($users[0], $this->systemUsers)));
+
+        foreach ($users as $key => $user) {
+            $databases = explode(',', $user[2]);
+            $databases = array_values(array_filter($databases, fn ($database): bool => ! in_array($database, $this->systemDbs)));
+            $users[$key][2] = implode(',', $databases);
+        }
+
+        return $users;
+    }
+
+    /**
+     * @return array<array<string>>
+     */
     protected function tableToArray(string $data, bool $keepHeader = false): array
     {
         $lines = explode("\n", trim($data));
@@ -347,7 +355,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
         $rows = [];
         foreach ($lines as $line) {
-            $row = explode($this->separator, $line);
+            $separator = $this->separator === '' || $this->separator === '0' ? "\t" : $this->separator;
+            $row = explode($separator, $line);
             $row = array_map('trim', $row);
             $rows[] = $row;
         }

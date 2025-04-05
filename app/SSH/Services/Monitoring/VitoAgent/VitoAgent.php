@@ -21,7 +21,7 @@ class VitoAgent extends AbstractService
     {
         return [
             'type' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $monitoringExists = $this->service->server->monitoring();
                     if ($monitoringExists) {
                         $fail('You already have a monitoring service on the server.');

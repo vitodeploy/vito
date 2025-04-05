@@ -57,13 +57,13 @@ class Index extends Page
                                 return [];
                             }
 
-                            return collect(config("core.service_versions.{$get('name')}"))
+                            return collect((array) config("core.service_versions.{$get('name')}"))
                                 ->mapWithKeys(fn ($version) => [$version => $version]);
                         })
                         ->rules(fn ($get) => Install::rules($get())['version'])
                         ->reactive(),
                 ])
-                ->action(function (array $data) {
+                ->action(function (array $data): void {
                     $this->validate();
 
                     try {

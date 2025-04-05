@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\Deploy;
+use App\Actions\Site\UpdateAliases;
+use App\Actions\Site\UpdateDeploymentScript;
+use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteType;
+use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SiteResource;
 use App\Models\Project;
@@ -23,6 +28,7 @@ use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Spatie\RouteAttributes\Attributes\Put;
 
 #[Prefix('api/projects/{project}/servers/{server}/sites')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
@@ -84,7 +90,7 @@ class SiteController extends Controller
     #[Delete('{site}', name: 'api.projects.servers.sites.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete site.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, Site $site)
+    public function delete(Project $project, Server $server, Site $site): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$site, $server]);
 
@@ -109,6 +115,111 @@ class SiteController extends Controller
         $this->validate($request, UpdateLoadBalancer::rules($site));
 
         app(UpdateLoadBalancer::class)->update($site, $request->all());
+
+        return new SiteResource($site);
+    }
+
+    #[Put('{site}/aliases', name: 'api.projects.servers.sites.aliases', middleware: 'ability:write')]
+    #[Endpoint(title: 'aliases', description: 'Update aliases.')]
+    #[BodyParam(name: 'aliases', type: 'array', description: 'Array of aliases')]
+    #[Response(status: 200)]
+    public function updateAliases(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, UpdateAliases::rules());
+
+        app(UpdateAliases::class)->update($site, $request->all());
+
+        return new SiteResource($site);
+    }
+
+    #[Post('{site}/deploy', name: 'api.projects.servers.sites.deploy', middleware: 'ability:write')]
+    #[Endpoint(title: 'deploy', description: 'Run site deployment script')]
+    #[Response(status: 200)]
+    public function deploy(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        try {
+            app(Deploy::class)->run($site);
+
+            return new SiteResource($site);
+        } catch (DeploymentScriptIsEmptyException) {
+            abort(422, 'Deployment script is empty');
+        }
+    }
+
+    #[Put('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script', middleware: 'ability:write')]
+    #[Endpoint(title: 'deployment-script', description: 'Update site deployment script')]
+    #[BodyParam(name: 'script', type: 'string', description: 'Content of the deployment script')]
+    #[Response(status: 204)]
+    public function updateDeploymentScript(Request $request, Project $project, Server $server, Site $site): \Illuminate\Http\Response
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, UpdateDeploymentScript::rules());
+
+        app(UpdateDeploymentScript::class)->update($site, $request->all());
+
+        return response()->noContent();
+    }
+
+    #[Get('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'deployment-script', description: 'Get site deployment script content')]
+    #[Response(status: 200)]
+    public function showDeploymentScript(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        return response()->json([
+            'script' => $site->deploymentScript?->content,
+        ]);
+    }
+
+    #[Get('{site}/env', name: 'api.projects.servers.sites.env.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'env', description: 'Get site .env file content')]
+    #[Response(content: [
+        'data' => [
+            'env' => 'APP_NAME=Laravel\nAPP_ENV=production',
+        ],
+    ], status: 200)]
+    public function showEnv(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        return response()->json([
+            'data' => [
+                'env' => $site->getEnv(),
+            ],
+        ]);
+    }
+
+    #[Put('{site}/env', name: 'api.projects.servers.sites.env', middleware: 'ability:write')]
+    #[Endpoint(title: 'env', description: 'Update site .env file')]
+    #[BodyParam(name: 'env', type: 'string', description: 'Content of the .env file')]
+    #[Response(status: 200)]
+    public function updateEnv(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $this->validate($request, [
+            'env' => ['required', 'string'],
+        ]);
+
+        app(UpdateEnv::class)->update($site, $request->all());
 
         return new SiteResource($site);
     }

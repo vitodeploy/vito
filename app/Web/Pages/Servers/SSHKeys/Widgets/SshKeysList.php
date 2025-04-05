@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\SSHKeys\Widgets;
 use App\Actions\SshKey\DeleteKeyFromServer;
 use App\Models\Server;
 use App\Models\SshKey;
+use App\Models\User;
 use Exception;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\DeleteAction;
@@ -17,8 +18,14 @@ class SshKeysList extends TableWidget
 {
     public Server $server;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<SshKey>
+     */
     protected function getTableQuery(): Builder
     {
         return SshKey::withTrashed()
@@ -44,6 +51,9 @@ class SshKeysList extends TableWidget
 
     public function table(Table $table): Table
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -51,8 +61,8 @@ class SshKeysList extends TableWidget
             ->actions([
                 DeleteAction::make('delete')
                     ->hiddenLabel()
-                    ->authorize(fn (SshKey $record) => auth()->user()->can('deleteServer', [SshKey::class, $this->server]))
-                    ->using(function (SshKey $record) {
+                    ->authorize(fn (SshKey $record) => $user->can('deleteServer', [SshKey::class, $this->server]))
+                    ->using(function (SshKey $record): void {
                         try {
                             app(DeleteKeyFromServer::class)->delete($this->server, $record);
                         } catch (Exception $e) {

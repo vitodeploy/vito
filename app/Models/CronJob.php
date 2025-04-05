@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CronJob extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\CronJobFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -34,6 +35,9 @@ class CronJob extends AbstractModel
         'hidden' => 'boolean',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         CronjobStatus::CREATING => 'warning',
         CronjobStatus::READY => 'success',
@@ -43,6 +47,9 @@ class CronJob extends AbstractModel
         CronjobStatus::DISABLED => 'gray',
     ];
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
@@ -59,6 +66,7 @@ class CronJob extends AbstractModel
                 CronjobStatus::ENABLING,
             ])
             ->get();
+        /** @var CronJob $cronJob */
         foreach ($cronJobs as $key => $cronJob) {
             $data .= $cronJob->frequency.' '.$cronJob->command;
             if ($key != count($cronJobs) - 1) {
@@ -78,11 +86,8 @@ class CronJob extends AbstractModel
             '0 0 * * 0' => 'Weekly',
             '0 0 1 * *' => 'Monthly',
         ];
-        if (isset($labels[$this->frequency])) {
-            return $labels[$this->frequency];
-        }
 
-        return $this->frequency;
+        return $labels[$this->frequency] ?? $this->frequency;
     }
 
     public function isEnabled(): bool

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\API;
 
+use App\Enums\DeploymentStatus;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SourceControl;
 use App\Facades\SSH;
@@ -118,6 +119,30 @@ class SitesTest extends TestCase
             ->assertNoContent();
     }
 
+    public function test_update_aliases(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('PUT', route('api.projects.servers.sites.aliases', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'aliases' => ['example.com', 'example.net'],
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'aliases' => ['example.com', 'example.net'],
+            ]);
+    }
+
     public function test_update_load_balancer(): void
     {
         SSH::fake();
@@ -164,6 +189,202 @@ class SitesTest extends TestCase
             'weight' => 1,
             'backup' => false,
         ]);
+    }
+
+    public function test_deploy_site(): void
+    {
+        SSH::fake();
+
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([
+                'commit' => [
+                    'sha' => 'abc123',
+                    'commit' => [
+                        'message' => 'Test commit',
+                        'author' => [
+                            'name' => 'Test Author',
+                            'email' => 'test@example.com',
+                            'date' => now()->toIso8601String(),
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $script = $site->deploymentScript;
+        $script->content = 'git pull';
+        $script->save();
+
+        $this->json('POST', route('api.projects.servers.sites.deploy', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'id',
+                'status',
+            ]);
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $site->id,
+            'status' => DeploymentStatus::FINISHED,
+        ]);
+    }
+
+    public function test_update_deployment_script(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $scriptContent = "git pull\ncomposer install\nphp artisan migrate";
+
+        $this->json('PUT', route('api.projects.servers.sites.deployment-script', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'script' => $scriptContent,
+        ])
+            ->assertSuccessful()
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('deployment_scripts', [
+            'site_id' => $site->id,
+            'content' => $scriptContent,
+        ]);
+    }
+
+    public function test_update_deployment_script_without_content(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('PUT', route('api.projects.servers.sites.deployment-script', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['script']);
+    }
+
+    public function test_show_deployment_script(): void
+    {
+        Sanctum::actingAs($this->user, ['read']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $scriptContent = "git pull\ncomposer install";
+
+        $site->deploymentScript->update([
+            'content' => $scriptContent,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.deployment-script.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonPath('script', $scriptContent);
+    }
+
+    public function test_show_env(): void
+    {
+        $envContent = "APP_NAME=Laravel\nAPP_ENV=production";
+        SSH::fake($envContent);
+
+        Sanctum::actingAs($this->user, ['read']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.env.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'data' => [
+                    'env',
+                ],
+            ])
+            ->assertJsonFragment([
+                'env' => $envContent,
+            ]);
+    }
+
+    public function test_show_env_unauthorized(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, []); // no abilities
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.env.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]))
+            ->assertForbidden();
+    }
+
+    public function test_update_env(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $envContent = "APP_NAME=Laravel\nAPP_ENV=production";
+
+        $this->json('PUT', route('api.projects.servers.sites.env', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'env' => $envContent,
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'domain' => $site->domain,
+            ]);
+
+        SSH::assertExecuted('edit-file');
     }
 
     public static function create_data(): array

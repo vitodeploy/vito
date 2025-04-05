@@ -4,17 +4,25 @@ namespace App\Actions\PHP;
 
 use App\Enums\PHPIniType;
 use App\Models\Server;
+use App\Models\Service;
 use App\SSH\Services\PHP\PHP;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class GetPHPIni
 {
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function getIni(Server $server, array $input): string
     {
         $this->validate($server, $input);
 
+        /** @var Service $php */
         $php = $server->php($input['version']);
 
         try {
@@ -22,13 +30,18 @@ class GetPHPIni
             $handler = $php->handler();
 
             return $handler->getPHPIni($input['type']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw ValidationException::withMessages(
                 ['ini' => $e->getMessage()]
             );
         }
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws ValidationException
+     */
     public function validate(Server $server, array $input): void
     {
         Validator::make($input, [

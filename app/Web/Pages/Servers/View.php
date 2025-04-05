@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Servers;
 
 use App\Models\ServerLog;
+use App\Models\User;
 use App\Web\Pages\Servers\Logs\Widgets\LogsList;
 use App\Web\Pages\Servers\Widgets\Installing;
 use App\Web\Pages\Servers\Widgets\ServerStats;
@@ -18,7 +19,10 @@ class View extends Page
 
     public function mount(): void
     {
-        $this->authorize('view', [$this->server, auth()->user()->currentProject]);
+        /** @var User $user */
+        $user = auth()->user();
+
+        $this->authorize('view', [$this->server, $user->currentProject]);
         $this->previousStatus = $this->server->status;
     }
 
@@ -36,6 +40,9 @@ class View extends Page
 
     public function getWidgets(): array
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         $widgets = [];
 
         if ($this->server->isInstalling()) {
@@ -44,7 +51,7 @@ class View extends Page
             $widgets[] = [ServerStats::class, ['server' => $this->server]];
         }
 
-        if (auth()->user()->can('viewAny', [ServerLog::class, $this->server])) {
+        if ($user->can('viewAny', [ServerLog::class, $this->server])) {
             $widgets[] = [
                 LogsList::class, [
                     'server' => $this->server,

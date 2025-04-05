@@ -90,7 +90,7 @@ class DatabaseUserController extends Controller
     #[Delete('{databaseUser}', name: 'api.projects.servers.database-users.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete database user.')]
     #[Response(status: 204)]
-    public function delete(Project $project, Server $server, DatabaseUser $databaseUser)
+    public function delete(Project $project, Server $server, DatabaseUser $databaseUser): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$databaseUser, $server]);
 

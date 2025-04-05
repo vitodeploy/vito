@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 class HasProjectMiddleware
 {
+    /**
+     * @return mixed
+     */
     public function handle(Request $request, Closure $next)
     {
         /** @var ?User $user */
@@ -18,10 +21,12 @@ class HasProjectMiddleware
 
         if (! $user->currentProject) {
             if ($user->allProjects()->count() > 0) {
-                $user->current_project_id = $user->allProjects()->first()->id;
+                /** @var \App\Models\Project $firstProject */
+                $firstProject = $user->allProjects()->first();
+                $user->current_project_id = $firstProject->id;
                 $user->save();
 
-                $request->user()->refresh();
+                $user->refresh();
 
                 return $next($request);
             }

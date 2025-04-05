@@ -4,7 +4,6 @@ namespace App\SiteTypes;
 
 use App\Enums\SiteFeature;
 use App\Exceptions\SSHError;
-use App\SSH\Services\Webserver\Webserver;
 use Illuminate\Validation\Rule;
 
 class PHPBlank extends PHPSite
@@ -16,7 +15,7 @@ class PHPBlank extends PHPSite
             SiteFeature::COMMANDS,
             SiteFeature::ENV,
             SiteFeature::SSL,
-            SiteFeature::QUEUES,
+            SiteFeature::WORKERS,
         ];
     }
 
@@ -49,10 +48,7 @@ class PHPBlank extends PHPSite
     public function install(): void
     {
         $this->isolate();
-
-        /** @var Webserver $webserver */
-        $webserver = $this->site->server->webserver()->handler();
-        $webserver->createVHost($this->site);
+        $this->site->webserver()->createVHost($this->site);
         $this->progress(65);
         $this->site->php()?->restart();
     }

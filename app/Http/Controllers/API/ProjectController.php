@@ -8,6 +8,7 @@ use App\Actions\Projects\UpdateProject;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
@@ -45,7 +46,9 @@ class ProjectController extends Controller
 
         $this->validate($request, CreateProject::rules());
 
-        $project = app(CreateProject::class)->create(auth()->user(), $request->all());
+        /** @var User $user */
+        $user = auth()->user();
+        $project = app(CreateProject::class)->create($user, $request->all());
 
         return new ProjectResource($project);
     }
@@ -82,7 +85,9 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        app(DeleteProject::class)->delete(auth()->user(), $project);
+        /** @var User $user */
+        $user = auth()->user();
+        app(DeleteProject::class)->delete($user, $project);
 
         return response()->noContent();
     }

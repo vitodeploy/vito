@@ -4,10 +4,12 @@ namespace App\Web\Pages\Servers;
 
 use App\Actions\Server\RebootServer;
 use App\Models\Server;
+use App\Models\User;
 use App\Web\Pages\Servers\Widgets\ServerDetails;
 use App\Web\Pages\Servers\Widgets\UpdateServerInfo;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Throwable;
 
 class Settings extends Page
 {
@@ -17,11 +19,17 @@ class Settings extends Page
 
     protected static ?string $title = 'Settings';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public function mount(): void
     {
-        $this->authorize('update', [$this->server, auth()->user()->currentProject]);
+        /** @var User $user */
+        $user = auth()->user();
+
+        $this->authorize('update', [$this->server, $user->currentProject]);
     }
 
     public function getWidgets(): array
@@ -46,7 +54,7 @@ class Settings extends Page
                 ->modalHeading('Delete Server')
                 ->modalDescription('Once your server is deleted, all of its resources and data will be permanently deleted and can\'t be restored')
                 ->authorize('delete', $this->server)
-                ->action(function () {
+                ->action(function (): void {
                     try {
                         $this->server->delete();
 
@@ -56,7 +64,7 @@ class Settings extends Page
                             ->send();
 
                         $this->redirect(Index::getUrl());
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         Notification::make()
                             ->danger()
                             ->title($e->getMessage())
@@ -68,7 +76,7 @@ class Settings extends Page
                 ->icon('heroicon-o-arrow-path')
                 ->label('Reboot')
                 ->requiresConfirmation()
-                ->action(function () {
+                ->action(function (): void {
                     app(RebootServer::class)->reboot($this->server);
 
                     $this->dispatch('$refresh');

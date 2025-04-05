@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('server_logs', function (Blueprint $table) {
+        Schema::table('server_logs', function (Blueprint $table): void {
             $table->boolean('is_remote')->default(false);
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('server_logs', function (Blueprint $table) {
+        Schema::table('server_logs', function (Blueprint $table): void {
             $table->dropColumn('is_remote');
         });
     }

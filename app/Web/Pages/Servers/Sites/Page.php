@@ -2,10 +2,12 @@
 
 namespace App\Web\Pages\Servers\Sites;
 
-use App\Models\Queue;
+use App\Models\Redirect;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Models\User;
+use App\Models\Worker;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page as BasePage;
 use App\Web\Pages\Servers\Sites\Widgets\SiteSummary;
@@ -20,6 +22,7 @@ abstract class Page extends BasePage implements HasSecondSubNav
 
     public function getSecondSubNavigation(): array
     {
+        /** @var User $user */
         $user = auth()->user();
         $items = [];
 
@@ -43,11 +46,11 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ]));
         }
 
-        if ($user->can('viewAny', [Queue::class, $this->site, $this->server])) {
-            $items[] = NavigationItem::make(Pages\Queues\Index::getNavigationLabel())
+        if ($user->can('viewAny', [Worker::class, $this->server, $this->site])) {
+            $items[] = NavigationItem::make(Pages\Workers\Index::getNavigationLabel())
                 ->icon('heroicon-o-queue-list')
-                ->isActiveWhen(fn () => request()->routeIs(Pages\Queues\Index::getRouteName()))
-                ->url(Pages\Queues\Index::getUrl(parameters: [
+                ->isActiveWhen(fn () => request()->routeIs(Pages\Workers\Index::getRouteName()))
+                ->url(Pages\Workers\Index::getUrl(parameters: [
                     'server' => $this->server,
                     'site' => $this->site,
                 ]));
@@ -68,6 +71,16 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->isActiveWhen(fn () => request()->routeIs(Settings::getRouteName()))
                 ->url(Settings::getUrl(parameters: [
+                    'server' => $this->server,
+                    'site' => $this->site,
+                ]));
+        }
+
+        if ($user->can('view', [Redirect::class, $this->site, $this->server])) {
+            $items[] = NavigationItem::make(Pages\Redirects\Index::getNavigationLabel())
+                ->icon('heroicon-o-arrows-right-left')
+                ->isActiveWhen(fn () => request()->routeIs(Pages\Redirects\Index::getRouteName()))
+                ->url(Pages\Redirects\Index::getUrl(parameters: [
                     'server' => $this->server,
                     'site' => $this->site,
                 ]));
@@ -99,7 +112,10 @@ abstract class Page extends BasePage implements HasSecondSubNav
         }
 
         if ($site) {
-            return Site::query()->find($site);
+            /** @var Site $site */
+            $site = Site::query()->findOrFail($site);
+
+            return $site;
         }
 
         return null;

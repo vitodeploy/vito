@@ -10,7 +10,7 @@ final class SiteFeature
 
     const SSL = 'ssl';
 
-    const QUEUES = 'queues';
+    const WORKERS = 'workers';
 
     const COMMANDS = 'commands';
 }

@@ -11,7 +11,7 @@ class Manage
     {
         $service->status = ServiceStatus::STARTING;
         $service->save();
-        dispatch(function () use ($service) {
+        dispatch(function () use ($service): void {
             $status = $service->server->systemd()->start($service->unit);
             if (str($status)->contains('Active: active')) {
                 $service->status = ServiceStatus::READY;
@@ -26,7 +26,7 @@ class Manage
     {
         $service->status = ServiceStatus::STOPPING;
         $service->save();
-        dispatch(function () use ($service) {
+        dispatch(function () use ($service): void {
             $status = $service->server->systemd()->stop($service->unit);
             if (str($status)->contains('Active: inactive')) {
                 $service->status = ServiceStatus::STOPPED;
@@ -41,7 +41,7 @@ class Manage
     {
         $service->status = ServiceStatus::RESTARTING;
         $service->save();
-        dispatch(function () use ($service) {
+        dispatch(function () use ($service): void {
             $status = $service->server->systemd()->restart($service->unit);
             if (str($status)->contains('Active: active')) {
                 $service->status = ServiceStatus::READY;
@@ -56,7 +56,7 @@ class Manage
     {
         $service->status = ServiceStatus::ENABLING;
         $service->save();
-        dispatch(function () use ($service) {
+        dispatch(function () use ($service): void {
             $status = $service->server->systemd()->enable($service->unit);
             if (str($status)->contains('Active: active')) {
                 $service->status = ServiceStatus::READY;
@@ -71,7 +71,7 @@ class Manage
     {
         $service->status = ServiceStatus::DISABLING;
         $service->save();
-        dispatch(function () use ($service) {
+        dispatch(function () use ($service): void {
             $status = $service->server->systemd()->disable($service->unit);
             if (str($status)->contains('Active: inactive')) {
                 $service->status = ServiceStatus::DISABLED;

@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Logs\Widgets;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Site;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\Action;
@@ -16,6 +17,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\ComponentAttributeBag;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LogsList extends Widget
 {
@@ -25,14 +27,20 @@ class LogsList extends Widget
 
     public bool $remote = false;
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
+    /**
+     * @return Builder<ServerLog>
+     */
     protected function getTableQuery(): Builder
     {
         return ServerLog::query()
             ->where('server_id', $this->server->id)
-            ->where(function (Builder $query) {
-                if ($this->site) {
+            ->where(function (Builder $query): void {
+                if ($this->site instanceof Site) {
                     $query->where('site_id', $this->site->id);
                 }
             })
@@ -53,6 +61,10 @@ class LogsList extends Widget
         ];
     }
 
+    /**
+     * @param  Builder<ServerLog>  $query
+     * @return Builder<ServerLog>
+     */
     protected function applyDefaultSortingToTableQuery(Builder $query): Builder
     {
         return $query->latest('created_at');
@@ -63,6 +75,9 @@ class LogsList extends Widget
      */
     public function table(Table $table): Table
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return $table
             ->heading(null)
             ->query($this->getTableQuery())
@@ -73,31 +88,27 @@ class LogsList extends Widget
                         DatePicker::make('created_from'),
                         DatePicker::make('created_until'),
                     ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
-                            );
-                    }),
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when(
+                            $data['created_from'],
+                            fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                        )
+                        ->when(
+                            $data['created_until'],
+                            fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                        )),
             ])
             ->actions([
                 Action::make('view')
                     ->hiddenLabel()
                     ->tooltip('View')
                     ->icon('heroicon-o-eye')
-                    ->authorize(fn ($record) => auth()->user()->can('view', $record))
+                    ->authorize(fn ($record) => $user->can('view', $record))
                     ->modalHeading('View Log')
-                    ->modalContent(function (ServerLog $record) {
-                        return view('components.console-view', [
-                            'slot' => $record->getContent(),
-                            'attributes' => new ComponentAttributeBag,
-                        ]);
-                    })
+                    ->modalContent(fn (ServerLog $record) => view('components.console-view', [
+                        'slot' => $record->getContent(),
+                        'attributes' => new ComponentAttributeBag,
+                    ]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close'),
                 Action::make('download')
@@ -105,19 +116,19 @@ class LogsList extends Widget
                     ->tooltip('Download')
                     ->color('gray')
                     ->icon('heroicon-o-archive-box-arrow-down')
-                    ->authorize(fn ($record) => auth()->user()->can('view', $record))
-                    ->action(fn (ServerLog $record) => $record->download()),
+                    ->authorize(fn ($record) => $user->can('view', $record))
+                    ->action(fn (ServerLog $record): StreamedResponse => $record->download()),
                 DeleteAction::make()
                     ->hiddenLabel()
                     ->tooltip('Delete')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
-                    ->authorize(fn ($record) => auth()->user()->can('delete', $record)),
+                    ->authorize(fn ($record) => $user->can('delete', $record)),
             ])
             ->bulkActions([
                 DeleteBulkAction::make()
                     ->requiresConfirmation()
-                    ->authorize(auth()->user()->can('deleteMany', [ServerLog::class, $this->server])),
+                    ->authorize($user->can('deleteMany', [ServerLog::class, $this->server])),
             ]);
     }
 }

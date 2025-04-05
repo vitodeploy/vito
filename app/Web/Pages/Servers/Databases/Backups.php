@@ -5,6 +5,7 @@ namespace App\Web\Pages\Servers\Databases;
 use App\Actions\Database\ManageBackup;
 use App\Models\Backup;
 use App\Models\StorageProvider;
+use App\Models\User;
 use App\Web\Contracts\HasSecondSubNav;
 use App\Web\Pages\Servers\Page;
 use App\Web\Pages\Settings\StorageProviders\Actions\Create;
@@ -29,11 +30,14 @@ class Backups extends Page implements HasSecondSubNav
 
     protected function getHeaderActions(): array
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return [
             Action::make('create')
                 ->icon('heroicon-o-plus')
                 ->modalWidth(MaxWidth::Large)
-                ->authorize(fn () => auth()->user()?->can('create', [Backup::class, $this->server]))
+                ->authorize(fn () => $user->can('create', [Backup::class, $this->server]))
                 ->form([
                     Select::make('database')
                         ->label('Database')
@@ -52,7 +56,7 @@ class Backups extends Page implements HasSecondSubNav
                                 ->icon('heroicon-o-wifi')
                                 ->tooltip('Connect to a new storage provider')
                                 ->modalWidth(MaxWidth::Medium)
-                                ->authorize(fn () => auth()->user()->can('create', StorageProvider::class))
+                                ->authorize(fn () => $user->can('create', StorageProvider::class))
                                 ->action(fn (array $data) => Create::action($data))
                         ),
                     Select::make('interval')
@@ -63,7 +67,7 @@ class Backups extends Page implements HasSecondSubNav
                     TextInput::make('custom_interval')
                         ->label('Custom Interval (Cron)')
                         ->rules(fn (callable $get) => ManageBackup::rules($this->server, $get())['custom_interval'])
-                        ->visible(fn (callable $get) => $get('interval') === 'custom')
+                        ->visible(fn (callable $get): bool => $get('interval') === 'custom')
                         ->placeholder('0 * * * *'),
                     TextInput::make('keep')
                         ->label('Backups to Keep')
@@ -71,8 +75,8 @@ class Backups extends Page implements HasSecondSubNav
                         ->helperText('How many backups to keep before deleting the oldest one'),
                 ])
                 ->modalSubmitActionLabel('Create')
-                ->action(function (array $data) {
-                    run_action($this, function () use ($data) {
+                ->action(function (array $data): void {
+                    run_action($this, function () use ($data): void {
                         app(ManageBackup::class)->create($this->server, $data);
 
                         $this->dispatch('$refresh');

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $server_log_id
  * @property ?int $server_id
  * @property string $user
- * @property array $variables
+ * @property array<mixed> $variables
  * @property string $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ScriptExecution extends AbstractModel
 {
+    /** @use HasFactory<\Database\Factories\ScriptExecutionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -41,12 +42,18 @@ class ScriptExecution extends AbstractModel
         'variables' => 'array',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     public static array $statusColors = [
         ScriptExecutionStatus::EXECUTING => 'warning',
         ScriptExecutionStatus::COMPLETED => 'success',
         ScriptExecutionStatus::FAILED => 'danger',
     ];
 
+    /**
+     * @return BelongsTo<Script, covariant $this>
+     */
     public function script(): BelongsTo
     {
         return $this->belongsTo(Script::class);
@@ -56,7 +63,7 @@ class ScriptExecution extends AbstractModel
     {
         $content = $this->script->content;
         foreach ($this->variables as $variable => $value) {
-            if (is_string($value) && ! empty($value)) {
+            if (is_string($value) && ($value !== '' && $value !== '0')) {
                 $content = str_replace('${'.$variable.'}', $value, $content);
             }
         }
@@ -64,11 +71,17 @@ class ScriptExecution extends AbstractModel
         return $content;
     }
 
+    /**
+     * @return BelongsTo<ServerLog, covariant $this>
+     */
     public function serverLog(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class);
     }
 
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

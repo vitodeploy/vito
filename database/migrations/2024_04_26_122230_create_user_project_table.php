@@ -13,16 +13,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_project', function (Blueprint $table) {
+        Schema::create('user_project', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('project_id');
             $table->timestamps();
         });
-        Project::all()->each(function (Project $project) {
+        Project::all()->each(function (Project $project): void {
             $project->users()->attach($project->user_id);
         });
-        User::all()->each(function (User $user) {
+        User::all()->each(function (User $user): void {
             $user->current_project_id = $user->projects()->first()?->id;
             $user->save();
         });

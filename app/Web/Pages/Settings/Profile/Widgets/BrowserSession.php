@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\Profile\Widgets;
 
 use App\Helpers\Agent;
+use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -54,7 +55,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
                                     ->label('Password')
                                     ->required(),
                             ])
-                            ->action(function (array $data) {
+                            ->action(function (array $data): void {
                                 self::logoutOtherBrowserSessions($data['password']);
                             })
                             ->modalWidth('2xl'),
@@ -62,6 +63,9 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
             ]);
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     private function getDynamicSchema(): array
     {
         $sections = [];
@@ -71,8 +75,8 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
                 ->schema([
                     TextEntry::make('device')
                         ->hiddenLabel()
-                        ->icon($session->device['desktop'] ? 'heroicon-o-computer-desktop' : 'heroicon-o-device-phone-mobile')
-                        ->state($session->device['platform'].' - '.$session->device['browser']),
+                        ->icon(isset($session->device['desktop']) ? 'heroicon-o-computer-desktop' : 'heroicon-o-device-phone-mobile')
+                        ->state(($session->device['platform'] ?? 'Platform').' - '.($session->device['browser'] ?? 'Browser')),
                     TextEntry::make('browser')
                         ->hiddenLabel()
                         ->icon('heroicon-o-map-pin')
@@ -92,15 +96,32 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         return $sections;
     }
 
+    /**
+     * @return array<int, object{
+     *     device: array{
+     *         browser: string,
+     *         desktop: bool,
+     *         mobile: bool,
+     *         tablet: bool,
+     *         platform: string
+     *     },
+     *     ip_address: string|null,
+     *     is_current_device: bool,
+     *     last_active: string
+     * }>
+     */
     private function getSessions(): array
     {
+        /** @var User $user */
+        $user = Auth::user();
+
         if (config(key: 'session.driver') !== 'database') {
             return [];
         }
 
         return collect(
             value: DB::connection(config(key: 'session.connection'))->table(table: config(key: 'session.table', default: 'sessions'))
-                ->where(column: 'user_id', operator: Auth::user()->getAuthIdentifier())
+                ->where(column: 'user_id', operator: $user->getAuthIdentifier())
                 ->latest(column: 'last_activity')
                 ->get()
         )->map(callback: function ($session): object {
@@ -121,17 +142,20 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         })->toArray();
     }
 
-    private function createAgent(mixed $session)
+    private function createAgent(mixed $session): Agent
     {
         return tap(
             value: new Agent,
-            callback: fn ($agent) => $agent->setUserAgent(userAgent: $session->user_agent)
+            callback: fn ($agent): string => $agent->setUserAgent(userAgent: $session->user_agent)
         );
     }
 
-    private function logoutOtherBrowserSessions($password): void
+    private function logoutOtherBrowserSessions(string $password): void
     {
-        if (! Hash::check($password, Auth::user()->password)) {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (! Hash::check($password, $user->password)) {
             Notification::make()
                 ->danger()
                 ->title('The password you entered was incorrect. Please try again.')
@@ -143,7 +167,7 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
         Auth::guard()->logoutOtherDevices($password);
 
         request()->session()->put([
-            'password_hash_'.Auth::getDefaultDriver() => Auth::user()->getAuthPassword(),
+            'password_hash_'.Auth::getDefaultDriver() => $user->getAuthPassword(),
         ]);
 
         $this->deleteOtherSessionRecords();
@@ -156,12 +180,15 @@ class BrowserSession extends Widget implements HasForms, HasInfolists
 
     private function deleteOtherSessionRecords(): void
     {
+        /** @var User $user */
+        $user = Auth::user();
+
         if (config(key: 'session.driver') !== 'database') {
             return;
         }
 
         DB::connection(config(key: 'session.connection'))->table(table: config(key: 'session.table', default: 'sessions'))
-            ->where('user_id', Auth::user()->getAuthIdentifier())
+            ->where('user_id', $user->getAuthIdentifier())
             ->where('id', '!=', request()->session()->getId())
             ->delete();
     }

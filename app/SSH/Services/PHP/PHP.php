@@ -29,7 +29,7 @@ class PHP extends AbstractService
     {
         return [
             'service' => [
-                function (string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $hasSite = $this->service->server->sites()
                         ->where('php_version', $this->service->version)
                         ->exists();
@@ -88,7 +88,7 @@ class PHP extends AbstractService
     /**
      * @throws SSHError
      */
-    public function installExtension($name): void
+    public function installExtension(string $name): void
     {
         $result = $this->service->server->ssh()->exec(
             view('ssh.services.php.install-php-extension', [
@@ -97,7 +97,11 @@ class PHP extends AbstractService
             ]),
             'install-php-extension-'.$name
         );
-        $result = Str::substr($result, strpos($result, '[PHP Modules]'));
+        $pos = strpos($result, '[PHP Modules]');
+        if ($pos === false) {
+            throw new SSHCommandError('Failed to install extension');
+        }
+        $result = Str::substr($result, $pos);
         if (! Str::contains($result, $name)) {
             throw new SSHCommandError('Failed to install extension');
         }
@@ -127,7 +131,7 @@ class PHP extends AbstractService
     /**
      * @throws SSHError
      */
-    public function createFpmPool(string $user, string $version, $site_id): void
+    public function createFpmPool(string $user, string $version): void
     {
         $this->service->server->ssh()->write(
             "/etc/php/{$version}/fpm/pool.d/{$user}.conf",
@@ -144,7 +148,7 @@ class PHP extends AbstractService
     /**
      * @throws SSHError
      */
-    public function removeFpmPool(string $user, string $version, $site_id): void
+    public function removeFpmPool(string $user, string $version, ?int $siteId): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.php.remove-fpm-pool', [
@@ -152,7 +156,7 @@ class PHP extends AbstractService
                 'version' => $version,
             ]),
             "remove-{$version}fpm-pool-{$user}",
-            $site_id
+            $siteId
         );
     }
 }

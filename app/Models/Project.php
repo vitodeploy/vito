@@ -18,14 +18,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property User $user
- * @property Collection<Server> $servers
- * @property Collection<User> $users
- * @property Collection<NotificationChannel> $notificationChannels
- * @property Collection<SourceControl> $sourceControls
+ * @property Collection<int, Server> $servers
+ * @property Collection<int, User> $users
+ * @property Collection<int, NotificationChannel> $notificationChannels
+ * @property Collection<int, SourceControl> $sourceControls
  */
 class Project extends Model
 {
+    /** @use HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
+
     use HasTimezoneTimestamps;
 
     protected $fillable = [
@@ -37,38 +39,57 @@ class Project extends Model
     {
         parent::boot();
 
-        static::deleting(function (Project $project) {
-            $project->servers()->each(function (Server $server) {
+        static::deleting(function (Project $project): void {
+            $project->servers()->each(function ($server): void {
+                /** @var Server $server */
                 $server->delete();
             });
         });
     }
 
+    /**
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return HasMany<Server, covariant $this>
+     */
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class);
     }
 
+    /**
+     * @return HasMany<NotificationChannel, covariant $this>
+     */
     public function notificationChannels(): HasMany
     {
         return $this->hasMany(NotificationChannel::class);
     }
 
+    /**
+     * @return BelongsToMany<User, covariant $this>
+     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_project')->withTimestamps();
     }
 
+    /**
+     * @return HasMany<SourceControl, covariant $this>
+     */
     public function sourceControls(): HasMany
     {
         return $this->hasMany(SourceControl::class);
     }
 
+    /**
+     * @return HasMany<Tag, covariant $this>
+     */
     public function tags(): HasMany
     {
         return $this->hasMany(Tag::class);

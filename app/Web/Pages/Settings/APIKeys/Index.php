@@ -3,6 +3,7 @@
 namespace App\Web\Pages\Settings\APIKeys;
 
 use App\Models\PersonalAccessToken;
+use App\Models\User;
 use App\Web\Components\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
@@ -24,11 +25,17 @@ class Index extends Page
 
     public string $token = '';
 
+    /**
+     * @var array<string>
+     */
     protected $listeners = ['$refresh'];
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('viewAny', PersonalAccessToken::class) ?? false;
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $user->can('viewAny', PersonalAccessToken::class);
     }
 
     public function getWidgets(): array
@@ -47,6 +54,9 @@ class Index extends Page
 
     protected function getHeaderActions(): array
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return [
             Action::make('read-the-docs')
                 ->label('Read the Docs')
@@ -59,8 +69,8 @@ class Index extends Page
                 ->icon('heroicon-o-plus')
                 ->modalHeading('Create a new Key')
                 ->modalSubmitActionLabel('Create')
-                ->form(function () {
-                    if ($this->token) {
+                ->form(function (): array {
+                    if ($this->token !== '' && $this->token !== '0') {
                         return [];
                     }
 
@@ -76,8 +86,8 @@ class Index extends Page
                             ->required(),
                     ];
                 })
-                ->infolist(function () {
-                    if ($this->token) {
+                ->infolist(function (): array {
+                    if ($this->token !== '' && $this->token !== '0') {
                         return [
                             TextEntry::make('token')
                                 ->state($this->token)
@@ -91,12 +101,12 @@ class Index extends Page
                 })
                 ->authorize('create', PersonalAccessToken::class)
                 ->modalWidth(MaxWidth::Large)
-                ->action(function (array $data) {
+                ->action(function (array $data) use ($user): void {
                     $permissions = ['read'];
                     if ($data['permission'] === 'write') {
                         $permissions[] = 'write';
                     }
-                    $token = auth()->user()->createToken($data['name'], $permissions);
+                    $token = $user->createToken($data['name'], $permissions);
 
                     $this->dispatch('$refresh');
 
@@ -105,11 +115,11 @@ class Index extends Page
                     $this->halt();
                 })
                 ->modalSubmitAction(function () {
-                    if ($this->token) {
+                    if ($this->token !== '' && $this->token !== '0') {
                         return false;
                     }
                 })
-                ->closeModalByClickingAway(fn () => ! $this->token),
+                ->closeModalByClickingAway(fn (): bool => $this->token === '' || $this->token === '0'),
         ];
     }
 }
