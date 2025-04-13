@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Enums\DatabaseStatus;
 use App\Enums\DatabaseUserStatus;
+use App\Enums\StorageProvider;
 use App\Facades\SSH;
 use App\Models\Database;
+use App\Models\StorageProvider as StorageProviderModel;
 use App\Web\Pages\Servers\Databases\Index;
 use App\Web\Pages\Servers\Databases\Widgets\DatabasesList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -119,5 +121,47 @@ class DatabaseTest extends TestCase
         ])
             ->callAction('sync')
             ->assertSuccessful();
+    }
+
+    public function test_clone_database(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        /** @var Database $database */
+        $database = Database::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'source_db',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+        ]);
+
+        // Create storage provider
+        StorageProviderModel::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->server->project_id,
+            'provider' => StorageProvider::LOCAL,
+            'profile' => 'local-test',
+            'credentials' => [
+                'path' => '/home/vito/backups',
+            ],
+        ]);
+
+        Livewire::test(DatabasesList::class, [
+            'server' => $this->server,
+        ])
+            ->callTableAction('clone', $database, [
+                'name' => 'cloned_db',
+            ])
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('databases', [
+            'server_id' => $this->server->id,
+            'name' => 'cloned_db',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'status' => DatabaseStatus::READY,
+        ]);
     }
 }
