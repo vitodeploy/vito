@@ -15,6 +15,7 @@ class DatabaseUserFactory extends Factory
     public function definition(): array
     {
         return [
+            'server_id' => 1,
             'username' => $this->faker->userName,
             'password' => 'password',
             'databases' => [],

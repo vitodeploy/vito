@@ -12,10 +12,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -39,15 +38,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":3,"project_id":null,"global":true,"name":"aut","provider":"hetzner","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"},{"id":4,"project_id":null,"global":true,"name":"qui","provider":"aws","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":4,"project_id":null,"global":true,"name":"quo","provider":"custom","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"},{"id":5,"project_id":null,"global":true,"name":"sed","provider":"digitalocean","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 3evaP8h6VEZkbfgaD6d1c45'
+    auth: []
     controller: null
     method: null
     route: null
@@ -63,10 +59,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -89,7 +84,7 @@ endpoints:
         name: provider
         description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
         required: true
-        example: corrupti
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -99,7 +94,7 @@ endpoints:
         name: name
         description: 'The name of the server provider.'
         required: true
-        example: est
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -109,7 +104,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: rerum
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -119,7 +114,7 @@ endpoints:
         name: key
         description: 'The key if provider requires key'
         required: true
-        example: ut
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -129,31 +124,28 @@ endpoints:
         name: secret
         description: 'The secret if provider requires key'
         required: true
-        example: sed
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      provider: corrupti
-      name: est
-      token: rerum
-      key: ut
-      secret: sed
+      provider: consequatur
+      name: consequatur
+      token: consequatur
+      key: consequatur
+      secret: consequatur
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"voluptas","provider":"vultr","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":4,"project_id":null,"global":true,"name":"dolores","provider":"digitalocean","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g6vfEck83VaPhd5Zabe1D4'
+    auth: []
     controller: null
     method: null
     route: null
@@ -169,10 +161,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -207,15 +198,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"et","provider":"digitalocean","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":4,"project_id":null,"global":true,"name":"voluptatem","provider":"vultr","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer va63cDe8dPf5Z4Vahb1E6kg'
+    auth: []
     controller: null
     method: null
     route: null
@@ -231,10 +219,9 @@ endpoints:
       subgroupDescription: ''
       title: update
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -268,7 +255,7 @@ endpoints:
         name: name
         description: 'The name of the server provider.'
         required: true
-        example: earum
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -287,21 +274,18 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: earum
+      name: consequatur
       global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"project_id":null,"global":true,"name":"architecto","provider":"digitalocean","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":4,"project_id":null,"global":true,"name":"dolores","provider":"digitalocean","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 4e1dghaV6D856P3ZbfkcEva'
+    auth: []
     controller: null
     method: null
     route: null
@@ -317,10 +301,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -360,10 +343,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer fcVa8ev63gP5DaZbkdhE461'
+    auth: []
     controller: null
     method: null
     route: null

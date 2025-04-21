@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ServiceStatus;
 use App\Models\Service;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,6 +16,10 @@ class ServiceFactory extends Factory
     public function definition(): array
     {
         return [
+            'server_id' => 1,
+            'type' => 'webserver',
+            'name' => 'nginx',
+            'status' => ServiceStatus::READY,
         ];
     }
 }

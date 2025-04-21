@@ -14,10 +14,9 @@ endpoints:
       subgroupDescription: ''
       title: index
       description: 'Get all redirects.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -35,7 +34,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -45,7 +44,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -53,8 +52,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -63,15 +62,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"site_id":null,"mode":307,"from":"ipsum","to":"http:\/\/fritsch.biz\/","status":"ready","created_at":null,"updated_at":null},{"id":null,"site_id":null,"mode":302,"from":"culpa","to":"http:\/\/www.huels.net\/aut-ut-ut-porro-non-rerum-voluptatum.html","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":11,"site_id":1,"mode":308,"from":"dolores","to":"http:\/\/dibbert.com\/eius-est-dolor-dolores-minus-voluptatem-quisquam","status":"ready","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"},{"id":12,"site_id":1,"mode":302,"from":"sed","to":"http:\/\/williamson.net\/fugit-facilis-perferendis-dolores-molestias.html","status":"ready","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer cV16fevgEZhPadD43685akb'
+    auth: []
     controller: null
     method: null
     route: null
@@ -87,10 +83,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: 'Create a new redirect.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -108,7 +103,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -118,7 +113,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -126,8 +121,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -135,7 +130,7 @@ endpoints:
         name: from
         description: ''
         required: true
-        example: odit
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -145,7 +140,7 @@ endpoints:
         name: to
         description: ''
         required: true
-        example: incidunt
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -155,7 +150,7 @@ endpoints:
         name: mode
         description: ''
         required: true
-        example: 301
+        example: 302
         type: string
         enumValues:
           - 301
@@ -166,9 +161,9 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      from: odit
-      to: incidunt
-      mode: 301
+      from: consequatur
+      to: consequatur
+      mode: 302
     fileParameters: []
     responses:
       -
@@ -178,10 +173,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer ZD45hPk638abev61EVcagdf'
+    auth: []
     controller: null
     method: null
     route: null
@@ -197,10 +189,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete a redirect.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -218,7 +209,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -228,7 +219,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -246,8 +237,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
       redirect_id: 9
     queryParameters: []
     cleanQueryParameters: []
@@ -262,10 +253,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer Ec3fDgdbae615aPh8k6vV4Z'
+    auth: []
     controller: null
     method: null
     route: null

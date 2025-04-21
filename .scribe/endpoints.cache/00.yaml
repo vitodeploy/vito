@@ -14,10 +14,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: 'Get all cron jobs.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -35,7 +34,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +42,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -52,15 +51,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":null,"updated_at":null},{"id":null,"server_id":null,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"server_id":1,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"},{"id":6,"server_id":1,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer eDa6Vdh1Z4vc35bP8E6gafk'
+    auth: []
     controller: null
     method: null
     route: null
@@ -76,10 +72,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: 'Create a new cron job.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -97,7 +92,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -105,7 +100,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -113,7 +108,7 @@ endpoints:
         name: command
         description: ''
         required: true
-        example: quia
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -123,7 +118,7 @@ endpoints:
         name: user
         description: ''
         required: true
-        example: root
+        example: vito
         type: string
         enumValues:
           - root
@@ -142,22 +137,19 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      command: quia
-      user: root
+      command: consequatur
+      user: vito
       frequency: '* * * * *'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":5,"server_id":1,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 66EeZvdh3kVaDP8f4ga5c1b'
+    auth: []
     controller: null
     method: null
     route: null
@@ -173,10 +165,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: 'Get a cron job by ID.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -194,7 +185,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -204,7 +195,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 6
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -212,8 +203,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      cronJob_id: 6
+      server_id: 32
+      cronJob_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -222,15 +213,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":null,"updated_at":null}'
+        content: '{"id":5,"server_id":1,"command":"ls -la","user":"root","frequency":"* * * * *","status":"ready","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer D4c3Z65ebv8E16fahaVgPdk'
+    auth: []
     controller: null
     method: null
     route: null
@@ -246,10 +234,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete cron job.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -267,7 +254,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -277,7 +264,7 @@ endpoints:
         name: cronJob_id
         description: 'The ID of the cronJob.'
         required: true
-        example: 13
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -285,8 +272,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      cronJob_id: 13
+      server_id: 32
+      cronJob_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -300,10 +287,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer h3cP4aZa1v8feDdEg5b6k6V'
+    auth: []
     controller: null
     method: null
     route: null

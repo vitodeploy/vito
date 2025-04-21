@@ -14,10 +14,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -41,15 +40,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Zella Robel","provider":"github","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Jairo Williamson","provider":"github","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"project_id":null,"global":true,"name":"Dr. Cornelius Luettgen V","provider":"github","created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"},{"id":6,"project_id":null,"global":true,"name":"Orville Satterfield","provider":"github","created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer e3f4ag8hkb5vZcDadPEV661'
+    auth: []
     controller: null
     method: null
     route: null
@@ -65,10 +61,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -104,7 +99,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: molestias
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -114,7 +109,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: in
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -124,7 +119,7 @@ endpoints:
         name: url
         description: 'The URL if the provider is Gitlab and it is self-hosted'
         required: true
-        example: 'https://www.white.com/aperiam-dolor-nemo-qui-rerum-quod-quas'
+        example: 'http://kunze.biz/iste-laborum-eius-est-dolor.html'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -134,7 +129,7 @@ endpoints:
         name: username
         description: 'The username if the provider is Bitbucket'
         required: true
-        example: consectetur
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -144,7 +139,7 @@ endpoints:
         name: password
         description: 'The password if the provider is Bitbucket'
         required: true
-        example: 'y*P4_]ZdjE_:'
+        example: 'O[2UZ5ij-e/dl4m{o,'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -152,24 +147,21 @@ endpoints:
         custom: []
     cleanBodyParameters:
       provider: gitlab
-      name: molestias
-      token: in
-      url: 'https://www.white.com/aperiam-dolor-nemo-qui-rerum-quod-quas'
-      username: consectetur
-      password: 'y*P4_]ZdjE_:'
+      name: consequatur
+      token: consequatur
+      url: 'http://kunze.biz/iste-laborum-eius-est-dolor.html'
+      username: consequatur
+      password: 'O[2UZ5ij-e/dl4m{o,'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Miss Claudine Goyette","provider":"github","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Lonny Ankunding","provider":"github","created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer DfegP56vkEa364Zbhda8V1c'
+    auth: []
     controller: null
     method: null
     route: null
@@ -185,10 +177,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -223,15 +214,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Mona Stark","provider":"github","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Dr. Enoch Harber II","provider":"github","created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer ePc6fb65vh1Z4aakE3Dgd8V'
+    auth: []
     controller: null
     method: null
     route: null
@@ -247,10 +235,9 @@ endpoints:
       subgroupDescription: ''
       title: update
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -284,7 +271,7 @@ endpoints:
         name: name
         description: 'The name of the storage provider.'
         required: true
-        example: non
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -294,7 +281,7 @@ endpoints:
         name: token
         description: 'The token if provider requires api token'
         required: true
-        example: sunt
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -304,7 +291,7 @@ endpoints:
         name: url
         description: 'The URL if the provider is Gitlab and it is self-hosted'
         required: true
-        example: 'https://www.frami.org/ex-at-minus-rerum-quo-minus-ea'
+        example: 'http://kunze.biz/iste-laborum-eius-est-dolor.html'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -314,7 +301,7 @@ endpoints:
         name: username
         description: 'The username if the provider is Bitbucket'
         required: true
-        example: natus
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -324,7 +311,7 @@ endpoints:
         name: password
         description: 'The password if the provider is Bitbucket'
         required: true
-        example: 'A^">*m{p]DI'
+        example: 'O[2UZ5ij-e/dl4m{o,'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -334,7 +321,7 @@ endpoints:
         name: global
         description: 'Accessible in all projects'
         required: true
-        example: true
+        example: false
         type: string
         enumValues:
           - true
@@ -343,25 +330,22 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: non
-      token: sunt
-      url: 'https://www.frami.org/ex-at-minus-rerum-quo-minus-ea'
-      username: natus
-      password: 'A^">*m{p]DI'
-      global: true
+      name: consequatur
+      token: consequatur
+      url: 'http://kunze.biz/iste-laborum-eius-est-dolor.html'
+      username: consequatur
+      password: 'O[2UZ5ij-e/dl4m{o,'
+      global: false
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":5,"project_id":null,"global":true,"name":"Neha Little","provider":"github","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":5,"project_id":null,"global":true,"name":"Lonny Ankunding","provider":"github","created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer v3f6aaPk61Ze8hVdDbE5g4c'
+    auth: []
     controller: null
     method: null
     route: null
@@ -377,10 +361,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: ''
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -420,10 +403,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer fgk61vD68E4cZhP3bV5adea'
+    auth: []
     controller: null
     method: null
     route: null

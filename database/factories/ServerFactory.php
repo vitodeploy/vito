@@ -19,6 +19,8 @@ class ServerFactory extends Factory
     public function definition(): array
     {
         return [
+            'project_id' => 1,
+            'user_id' => 1,
             'name' => $this->faker->name(),
             'ssh_user' => 'vito',
             'ip' => $this->faker->ipv4(),

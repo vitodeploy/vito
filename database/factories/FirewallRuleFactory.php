@@ -15,6 +15,7 @@ class FirewallRuleFactory extends Factory
     public function definition(): array
     {
         return [
+            'server_id' => 1,
             'name' => $this->faker->word,
             'type' => 'allow',
             'protocol' => 'tcp',

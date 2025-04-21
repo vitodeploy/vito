@@ -19,6 +19,7 @@ class RedirectFactory extends Factory
     public function definition(): array
     {
         return [
+            'site_id' => 1,
             'from' => $this->faker->word,
             'to' => $this->faker->url,
             'mode' => $this->faker->randomElement([301, 302, 307, 308]),
