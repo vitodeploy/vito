@@ -16,6 +16,7 @@ class SiteFactory extends Factory
     public function definition(): array
     {
         return [
+            'server_id' => 1,
             'type' => SiteType::LARAVEL,
             'domain' => 'test.com',
             'web_directory' => '/',

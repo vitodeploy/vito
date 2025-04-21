@@ -14,10 +14,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: 'Get all services.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -35,7 +34,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +42,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -52,15 +51,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"type":null,"type_data":null,"name":null,"version":null,"unit":null,"status":null,"is_default":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"type":null,"type_data":null,"name":null,"version":null,"unit":null,"status":null,"is_default":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":null,"server_id":1,"type":"webserver","type_data":null,"name":"nginx","version":null,"unit":null,"status":"ready","is_default":null,"created_at":null,"updated_at":null},{"id":null,"server_id":1,"type":"webserver","type_data":null,"name":"nginx","version":null,"unit":null,"status":"ready","is_default":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer gVEce46k8aZfaP3d15vbhD6'
+    auth: []
     controller: null
     method: null
     route: null
@@ -76,10 +72,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: 'Get a service by ID.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -97,7 +92,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -107,7 +102,7 @@ endpoints:
         name: id
         description: 'The ID of the service.'
         required: true
-        example: 169
+        example: 184
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -115,8 +110,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      id: 169
+      server_id: 32
+      id: 184
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -125,15 +120,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"type":null,"type_data":null,"name":null,"version":null,"unit":null,"status":null,"is_default":null,"created_at":null,"updated_at":null}'
+        content: '{"id":null,"server_id":1,"type":"webserver","type_data":null,"name":"nginx","version":null,"unit":null,"status":"ready","is_default":null,"created_at":null,"updated_at":null}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer Ef8D5gbV6cadk3Zh1vP46ea'
+    auth: []
     controller: null
     method: null
     route: null
@@ -149,10 +141,9 @@ endpoints:
       subgroupDescription: ''
       title: start
       description: 'Start service.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -170,7 +161,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -180,7 +171,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 169
+        example: 184
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -188,8 +179,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      service_id: 169
+      server_id: 32
+      service_id: 184
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -203,10 +194,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer b3DckZ8g6ha6aPe4f5V1vdE'
+    auth: []
     controller: null
     method: null
     route: null
@@ -222,10 +210,9 @@ endpoints:
       subgroupDescription: ''
       title: stop
       description: 'Stop service.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -243,7 +230,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -253,7 +240,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 169
+        example: 184
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -261,8 +248,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      service_id: 169
+      server_id: 32
+      service_id: 184
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -276,10 +263,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 1e8aZbfvE5643DacgkPhdV6'
+    auth: []
     controller: null
     method: null
     route: null
@@ -295,10 +279,9 @@ endpoints:
       subgroupDescription: ''
       title: restart
       description: 'Restart service.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -316,7 +299,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -326,7 +309,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 169
+        example: 184
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -334,8 +317,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      service_id: 169
+      server_id: 32
+      service_id: 184
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -349,10 +332,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer c46baVZEg5dv1Pfe8Dha6k3'
+    auth: []
     controller: null
     method: null
     route: null
@@ -368,10 +348,9 @@ endpoints:
       subgroupDescription: ''
       title: enable
       description: 'Enable service.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -389,7 +368,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -399,7 +378,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 169
+        example: 184
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -407,8 +386,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      service_id: 169
+      server_id: 32
+      service_id: 184
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -422,10 +401,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer EvcehkDbdV43f61P86Za5ga'
+    auth: []
     controller: null
     method: null
     route: null
@@ -441,10 +417,9 @@ endpoints:
       subgroupDescription: ''
       title: disable
       description: 'Disable service.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -462,7 +437,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -472,7 +447,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 169
+        example: 184
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -480,8 +455,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      service_id: 169
+      server_id: 32
+      service_id: 184
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -495,10 +470,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer k8E5gf6d4h31bevaa6cVPZD'
+    auth: []
     controller: null
     method: null
     route: null
@@ -514,10 +486,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete service.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -535,7 +506,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -545,7 +516,7 @@ endpoints:
         name: service_id
         description: 'The ID of the service.'
         required: true
-        example: 169
+        example: 184
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -553,8 +524,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      service_id: 169
+      server_id: 32
+      service_id: 184
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -568,10 +539,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer Pekav16cd5ag486ZfD3EVbh'
+    auth: []
     controller: null
     method: null
     route: null

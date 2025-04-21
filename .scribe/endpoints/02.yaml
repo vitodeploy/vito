@@ -12,10 +12,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: 'Get all database users.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -33,7 +32,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +40,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -50,15 +49,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"username":"letha64","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"username":"hagenes.lurline","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":19,"server_id":1,"username":"graciela37","databases":[],"host":"%","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"},{"id":20,"server_id":1,"username":"vconn","databases":[],"host":"%","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer d4g15bV3Pa6hDvck6eaEf8Z'
+    auth: []
     controller: null
     method: null
     route: null
@@ -74,10 +70,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: 'Create a new database user.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -95,7 +90,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +98,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +106,7 @@ endpoints:
         name: username
         description: ''
         required: true
-        example: qui
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +116,7 @@ endpoints:
         name: password
         description: ''
         required: true
-        example: 'xYv*3,#HQ=5<w!'
+        example: 'O[2UZ5ij-e/dl4m{o,'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -138,22 +133,19 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      username: qui
-      password: 'xYv*3,#HQ=5<w!'
+      username: consequatur
+      password: 'O[2UZ5ij-e/dl4m{o,'
       host: '%'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"marcelle95","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":19,"server_id":1,"username":"nolan.jaylan","databases":[],"host":"%","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 3vZ6f6kagacDEhV1Pde5b84'
+    auth: []
     controller: null
     method: null
     route: null
@@ -169,10 +161,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: 'Get a database user by ID.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -190,7 +181,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -200,7 +191,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 1
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -208,8 +199,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      databaseUser_id: 1
+      server_id: 32
+      databaseUser_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -218,15 +209,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"brandi53","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":19,"server_id":1,"username":"carolyne.luettgen","databases":[],"host":"%","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer af3b5ac6dP8ZV4vE1hk6eDg'
+    auth: []
     controller: null
     method: null
     route: null
@@ -242,10 +230,9 @@ endpoints:
       subgroupDescription: ''
       title: link
       description: 'Link to databases'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -263,7 +250,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -273,7 +260,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 4
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -281,8 +268,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      databaseUser_id: 4
+      server_id: 32
+      databaseUser_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -290,27 +277,24 @@ endpoints:
         name: databases
         description: 'Array of database names to link to the user.'
         required: true
-        example: maiores
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      databases: maiores
+      databases: consequatur
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"username":"kschmidt","databases":[],"host":"%","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":19,"server_id":1,"username":"carolyne.luettgen","databases":[],"host":"%","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer b6f3Ed641gaZDcVa5k8vePh'
+    auth: []
     controller: null
     method: null
     route: null
@@ -326,10 +310,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete database user.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -347,7 +330,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -357,7 +340,7 @@ endpoints:
         name: databaseUser_id
         description: 'The ID of the databaseUser.'
         required: true
-        example: 20
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -365,8 +348,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      databaseUser_id: 20
+      server_id: 32
+      databaseUser_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -380,10 +363,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer Zka6fh15g6eaV8vE34cDPdb'
+    auth: []
     controller: null
     method: null
     route: null

@@ -16,6 +16,7 @@ class CronJobFactory extends Factory
     public function definition(): array
     {
         return [
+            'server_id' => 1,
             'command' => 'ls -la',
             'user' => 'root',
             'frequency' => '* * * * *',

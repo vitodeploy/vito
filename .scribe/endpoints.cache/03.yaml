@@ -14,10 +14,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: 'Get all firewall rules.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -35,7 +34,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +42,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -52,15 +51,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"name":"ut","server_id":null,"type":"allow","protocol":"tcp","port":35499,"source":"177.130.54.250","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null},{"id":null,"name":"totam","server_id":null,"type":"allow","protocol":"tcp","port":29448,"source":"181.194.26.13","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":97,"name":"dolores","server_id":1,"type":"allow","protocol":"tcp","port":40770,"source":"199.76.131.15","mask":"24","note":"test","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"},{"id":98,"name":"laborum","server_id":1,"type":"allow","protocol":"tcp","port":14235,"source":"100.14.146.200","mask":"24","note":"test","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer eD368kaZfVEab4v61ghdP5c'
+    auth: []
     controller: null
     method: null
     route: null
@@ -76,10 +72,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: 'Create a new firewall rule.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -97,7 +92,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -105,7 +100,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -113,7 +108,7 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: sapiente
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -147,7 +142,7 @@ endpoints:
         name: port
         description: ''
         required: true
-        example: et
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -157,7 +152,7 @@ endpoints:
         name: source
         description: ''
         required: false
-        example: doloribus
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -174,25 +169,22 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: sapiente
+      name: consequatur
       type: allow
       protocol: tcp
-      port: et
-      source: doloribus
+      port: consequatur
+      source: consequatur
       mask: '0'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"name":"omnis","server_id":null,"type":"allow","protocol":"tcp","port":54634,"source":"246.242.9.65","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":97,"name":"dolores","server_id":1,"type":"allow","protocol":"tcp","port":40770,"source":"199.76.131.15","mask":"24","note":"test","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 3184PbED6aacZveV6hf5dgk'
+    auth: []
     controller: null
     method: null
     route: null
@@ -208,10 +200,9 @@ endpoints:
       subgroupDescription: ''
       title: edit
       description: 'Update an existing firewall rule.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -229,7 +220,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -239,7 +230,7 @@ endpoints:
         name: firewallRule_id
         description: 'The ID of the firewallRule.'
         required: true
-        example: 85
+        example: 94
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -247,8 +238,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      firewallRule_id: 85
+      server_id: 32
+      firewallRule_id: 94
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -256,7 +247,7 @@ endpoints:
         name: name
         description: ''
         required: true
-        example: et
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -290,7 +281,7 @@ endpoints:
         name: port
         description: ''
         required: true
-        example: aut
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -300,7 +291,7 @@ endpoints:
         name: source
         description: ''
         required: false
-        example: et
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -317,25 +308,22 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: et
+      name: consequatur
       type: allow
       protocol: tcp
-      port: aut
-      source: et
+      port: consequatur
+      source: consequatur
       mask: '0'
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"name":"consequatur","server_id":null,"type":"allow","protocol":"tcp","port":879,"source":"206.106.27.116","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":97,"name":"dolores","server_id":1,"type":"allow","protocol":"tcp","port":40770,"source":"199.76.131.15","mask":"24","note":"test","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer ad46E3egPDc51aV6hb8vkZf'
+    auth: []
     controller: null
     method: null
     route: null
@@ -351,10 +339,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: 'Get a firewall rule by ID.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -372,7 +359,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -382,7 +369,7 @@ endpoints:
         name: firewallRule_id
         description: 'The ID of the firewallRule.'
         required: true
-        example: 85
+        example: 94
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -390,8 +377,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      firewallRule_id: 85
+      server_id: 32
+      firewallRule_id: 94
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -400,15 +387,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"name":"dolores","server_id":null,"type":"allow","protocol":"tcp","port":4691,"source":"147.108.28.144","mask":24,"note":"test","status":null,"created_at":null,"updated_at":null}'
+        content: '{"id":97,"name":"laborum","server_id":1,"type":"allow","protocol":"tcp","port":14235,"source":"100.14.146.200","mask":"24","note":"test","status":"creating","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6gkvbDae15a6f43EVPdZh8c'
+    auth: []
     controller: null
     method: null
     route: null
@@ -424,10 +408,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete firewall rule.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -445,7 +428,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -455,7 +438,7 @@ endpoints:
         name: firewallRule_id
         description: 'The ID of the firewallRule.'
         required: true
-        example: 85
+        example: 94
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -463,8 +446,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      firewallRule_id: 85
+      server_id: 32
+      firewallRule_id: 94
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -478,10 +461,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer ZVd1fk5E3e48hDvaa6g6cPb'
+    auth: []
     controller: null
     method: null
     route: null

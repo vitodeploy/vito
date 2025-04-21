@@ -29,12 +29,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"success":true,"version":"2.4.0"}'
+        content: '{"success":true,"version":"2.5.0"}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
           x-ratelimit-limit: '60'
-          x-ratelimit-remaining: '59'
+          x-ratelimit-remaining: '57'
           access-control-allow-origin: '*'
         description: null
         custom: []

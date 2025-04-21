@@ -14,10 +14,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: 'Get all projects.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -30,15 +29,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":3,"name":"Mr. Drake Nader","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"},{"id":4,"name":"Wilhelmine Jacobson","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":3,"name":"Nash Corwin","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"},{"id":4,"name":"Patience Douglas","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer fbPE6haeDZ8v1gV5ak463dc'
+    auth: []
     controller: null
     method: null
     route: null
@@ -54,10 +50,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: 'Create a new project.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -69,27 +64,24 @@ endpoints:
         name: name
         description: 'The name of the project.'
         required: true
-        example: dignissimos
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: dignissimos
+      name: consequatur
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"name":"Pattie Cole","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":3,"name":"Dr. Cornelius Luettgen V","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6ZkedcEfa5V6Dv4ab8P3g1h'
+    auth: []
     controller: null
     method: null
     route: null
@@ -105,10 +97,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: 'Get a project by ID.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -132,15 +123,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":3,"name":"Mr. Elias Bauch","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":3,"name":"Orville Satterfield","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer P6ka4Zaefgh8Ec3dV15v6bD'
+    auth: []
     controller: null
     method: null
     route: null
@@ -156,10 +144,9 @@ endpoints:
       subgroupDescription: ''
       title: update
       description: 'Update project.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -182,27 +169,24 @@ endpoints:
         name: name
         description: 'The name of the project.'
         required: true
-        example: sunt
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      name: sunt
+      name: consequatur
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"name":"Elfrieda Jakubowski","created_at":"2025-04-05T17:48:03.000000Z","updated_at":"2025-04-05T17:48:03.000000Z"}'
+        content: '{"id":3,"name":"Dr. Cornelius Luettgen V","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer ecaDZkf5E4vgP1V86d6hb3a'
+    auth: []
     controller: null
     method: null
     route: null
@@ -218,10 +202,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete project.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -250,10 +233,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer h5gZ63DPVbcevE4faka86d1'
+    auth: []
     controller: null
     method: null
     route: null

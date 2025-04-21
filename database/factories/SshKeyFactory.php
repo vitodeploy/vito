@@ -15,6 +15,7 @@ class SshKeyFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => 1,
             'name' => $this->faker->name(),
             'public_key' => 'public-key-content',
         ];

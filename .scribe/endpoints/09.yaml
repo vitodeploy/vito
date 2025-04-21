@@ -12,10 +12,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: 'Get all ssh keys.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -33,7 +32,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -41,7 +40,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -50,15 +49,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"user":null,"name":"Santa Goyette","created_at":null,"updated_at":null},{"id":null,"user":null,"name":"Cecil Cummings","created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":2,"user":{"id":1,"name":"Saeed Vaziry","email":"demo@vitodeploy.com","created_at":"2024-12-19T23:19:20.000000Z","updated_at":"2025-04-19T21:24:56.000000Z"},"name":"Prof. Aurelia Buckridge MD","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"},{"id":3,"user":{"id":1,"name":"Saeed Vaziry","email":"demo@vitodeploy.com","created_at":"2024-12-19T23:19:20.000000Z","updated_at":"2025-04-19T21:24:56.000000Z"},"name":"Jaylan Lakin","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 165aZvb46PhacEfke83dVgD'
+    auth: []
     controller: null
     method: null
     route: null
@@ -74,10 +70,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: 'Deploy ssh key to server.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -95,7 +90,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -103,7 +98,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -111,7 +106,7 @@ endpoints:
         name: key_id
         description: 'The ID of the key.'
         required: true
-        example: explicabo
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -121,7 +116,7 @@ endpoints:
         name: name
         description: 'Key name, required if key_id is not provided.'
         required: true
-        example: deleniti
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -131,29 +126,26 @@ endpoints:
         name: public_key
         description: 'Public Key, required if key_id is not provided.'
         required: true
-        example: sapiente
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      key_id: explicabo
-      name: deleniti
-      public_key: sapiente
+      key_id: consequatur
+      name: consequatur
+      public_key: consequatur
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"user":null,"name":"Mr. Reagan Jacobson V","created_at":null,"updated_at":null}'
+        content: '{"id":2,"user":{"id":1,"name":"Saeed Vaziry","email":"demo@vitodeploy.com","created_at":"2024-12-19T23:19:20.000000Z","updated_at":"2025-04-19T21:24:56.000000Z"},"name":"Dr. Cornelius Luettgen V","created_at":"2025-04-21T18:40:19.000000Z","updated_at":"2025-04-21T18:40:19.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer deDkf4E13PZb6cgaV58ha6v'
+    auth: []
     controller: null
     method: null
     route: null
@@ -169,10 +161,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete ssh key from server.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -190,7 +181,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -208,7 +199,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
       sshKey_id: 1
     queryParameters: []
     cleanQueryParameters: []
@@ -223,10 +214,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer ec48fgVdZ6ah3kvPD16E5ab'
+    auth: []
     controller: null
     method: null
     route: null

@@ -14,10 +14,9 @@ endpoints:
       subgroupDescription: ''
       title: list
       description: 'Get all sites.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -35,7 +34,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -43,7 +42,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -52,15 +51,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null},{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":50,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"},{"id":51,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer aD138EgdPf4Vhav5c6bke6Z'
+    auth: []
     controller: null
     method: null
     route: null
@@ -76,10 +72,9 @@ endpoints:
       subgroupDescription: ''
       title: create
       description: 'Create a new site.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -97,7 +92,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -105,7 +100,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
+      server_id: 32
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -113,7 +108,7 @@ endpoints:
         name: type
         description: ''
         required: true
-        example: php-blank
+        example: load-balancer
         type: string
         enumValues:
           - php
@@ -129,7 +124,7 @@ endpoints:
         name: domain
         description: ''
         required: true
-        example: impedit
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -140,7 +135,7 @@ endpoints:
         description: ''
         required: true
         example:
-          - cum
+          - consequatur
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -170,7 +165,7 @@ endpoints:
         name: source_control
         description: 'Source control ID, Required for Sites which support source control'
         required: true
-        example: non
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -220,7 +215,7 @@ endpoints:
         name: user
         description: 'user, to isolate the website under a new user'
         required: true
-        example: voluptate
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -240,32 +235,29 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      type: php-blank
-      domain: impedit
+      type: load-balancer
+      domain: consequatur
       aliases:
-        - cum
+        - consequatur
       php_version: '7.4'
       web_directory: public
-      source_control: non
+      source_control: consequatur
       repository: organization/repository
       branch: main
       composer: true
       version: 5.2.1
-      user: voluptate
+      user: consequatur
       method: ip-hash
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null}'
+        content: '{"id":50,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6V3D5c4g6hZaEfb81evPadk'
+    auth: []
     controller: null
     method: null
     route: null
@@ -281,10 +273,9 @@ endpoints:
       subgroupDescription: ''
       title: show
       description: 'Get a site by ID.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -302,7 +293,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -312,7 +303,7 @@ endpoints:
         name: id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -320,8 +311,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      id: 44
+      server_id: 32
+      id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -330,15 +321,12 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":null,"server_id":null,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":null,"updated_at":null}'
+        content: '{"id":50,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","port":null,"user":"vito","progress":100,"created_at":"2025-04-21T18:40:20.000000Z","updated_at":"2025-04-21T18:40:20.000000Z"}'
         headers: []
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer gE86bZ6vfcd3hVP15ka4Dea'
+    auth: []
     controller: null
     method: null
     route: null
@@ -354,10 +342,9 @@ endpoints:
       subgroupDescription: ''
       title: delete
       description: 'Delete site.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -375,7 +362,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -385,7 +372,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -393,8 +380,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -408,10 +395,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 8kEb6Dd613a5afZhcg4VvPe'
+    auth: []
     controller: null
     method: null
     route: null
@@ -427,10 +411,9 @@ endpoints:
       subgroupDescription: ''
       title: load-balancer
       description: 'Update load balancer.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -448,7 +431,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -458,7 +441,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -466,8 +449,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -475,7 +458,7 @@ endpoints:
         name: method
         description: 'Load balancer method, Required if the site type is Load balancer'
         required: true
-        example: round-robin
+        example: ip-hash
         type: string
         enumValues:
           - round-robin
@@ -489,16 +472,16 @@ endpoints:
         description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)'
         required: true
         example:
-          - omnis
+          - consequatur
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      method: round-robin
+      method: ip-hash
       servers:
-        - omnis
+        - consequatur
     fileParameters: []
     responses:
       -
@@ -508,10 +491,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 8Da4P1c6d6gfbhZvaE3k5Ve'
+    auth: []
     controller: null
     method: null
     route: null
@@ -527,10 +507,9 @@ endpoints:
       subgroupDescription: ''
       title: aliases
       description: 'Update aliases.'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -548,7 +527,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -558,7 +537,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -566,8 +545,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -576,7 +555,7 @@ endpoints:
         description: 'Array of aliases'
         required: true
         example:
-          - doloremque
+          - consequatur
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -584,7 +563,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       aliases:
-        - doloremque
+        - consequatur
     fileParameters: []
     responses:
       -
@@ -594,10 +573,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer d4EVa8Zkfvg1Dcbe53P6a6h'
+    auth: []
     controller: null
     method: null
     route: null
@@ -613,10 +589,9 @@ endpoints:
       subgroupDescription: ''
       title: deploy
       description: 'Run site deployment script'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -634,7 +609,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -644,7 +619,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -652,8 +627,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -667,10 +642,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer dkcV5EZa8fD6vgaP1b36e4h'
+    auth: []
     controller: null
     method: null
     route: null
@@ -686,10 +658,9 @@ endpoints:
       subgroupDescription: ''
       title: deployment-script
       description: 'Update site deployment script'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -707,7 +678,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -717,7 +688,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -725,8 +696,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -734,14 +705,14 @@ endpoints:
         name: script
         description: 'Content of the deployment script'
         required: true
-        example: voluptatem
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      script: voluptatem
+      script: consequatur
     fileParameters: []
     responses:
       -
@@ -751,10 +722,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer hevV81bfZE6cdkaa453gDP6'
+    auth: []
     controller: null
     method: null
     route: null
@@ -770,10 +738,9 @@ endpoints:
       subgroupDescription: ''
       title: deployment-script
       description: 'Get site deployment script content'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -791,7 +758,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -801,7 +768,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -809,8 +776,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -824,10 +791,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer a1EbvhePag4f5dk6ZV368Dc'
+    auth: []
     controller: null
     method: null
     route: null
@@ -843,10 +807,9 @@ endpoints:
       subgroupDescription: ''
       title: env
       description: 'Get site .env file content'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -864,7 +827,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -874,7 +837,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -882,8 +845,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -897,10 +860,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer P8Zvch3DgV654abeaE6f1kd'
+    auth: []
     controller: null
     method: null
     route: null
@@ -916,10 +876,9 @@ endpoints:
       subgroupDescription: ''
       title: env
       description: 'Update site .env file'
-      authenticated: true
+      authenticated: false
       custom: []
     headers:
-      Authorization: 'Bearer YOUR-API-KEY'
       Content-Type: application/json
       Accept: application/json
     urlParameters:
@@ -937,7 +896,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 29
+        example: 32
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -947,7 +906,7 @@ endpoints:
         name: site_id
         description: 'The ID of the site.'
         required: true
-        example: 44
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -955,8 +914,8 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 29
-      site_id: 44
+      server_id: 32
+      site_id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -964,14 +923,14 @@ endpoints:
         name: env
         description: 'Content of the .env file'
         required: true
-        example: quam
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      env: quam
+      env: consequatur
     fileParameters: []
     responses:
       -
@@ -981,10 +940,7 @@ endpoints:
         description: ''
         custom: []
     responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 45acbP1h6eg6kDVdZf8E3av'
+    auth: []
     controller: null
     method: null
     route: null
