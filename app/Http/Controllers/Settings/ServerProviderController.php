@@ -17,10 +17,7 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 #[Middleware(['auth'])]
 class ServerProviderController extends Controller
 {
-    public function index(): void
-    {
-
-    }
+    public function index(): void {}
 
     #[Post('/', name: 'server-providers.store')]
     public function store(Request $request): RedirectResponse

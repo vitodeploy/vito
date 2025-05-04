@@ -1,14 +1,9 @@
 <?php
 
-use App\Exceptions\SSHError;
-use App\Models\ServerLog;
 use App\Models\User;
-use Filament\Notifications\Actions\Action;
-use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\ValidationException;
 
 function generate_public_key(string $privateKeyPath, string $publicKeyPath): void
 {
@@ -72,43 +67,6 @@ function get_public_key_content(): string
     return str($content)
         ->replace("\n", '')
         ->toString();
-}
-
-function run_action(object $static, Closure $callback): void
-{
-    try {
-        $callback();
-    } catch (SSHError $e) {
-        $actions = [];
-        if ($e->getLog() instanceof ServerLog) {
-            $actions[] = Action::make('View Logs')
-                ->url(App\Web\Pages\Servers\Logs\Index::getUrl([
-                    'server' => $e->getLog()->server_id,
-                ]))
-                ->openUrlInNewTab();
-        }
-        Notification::make()
-            ->danger()
-            ->title($e->getMessage())
-            ->body($e->getLog()?->getContent(30))
-            ->actions($actions)
-            ->send();
-
-        if (method_exists($static, 'halt')) {
-            $reflectionMethod = new ReflectionMethod($static, 'halt');
-            $reflectionMethod->invoke($static);
-        }
-    } catch (ValidationException $e) {
-        Notification::make()
-            ->danger()
-            ->title($e->getMessage())
-            ->send();
-
-        if (method_exists($static, 'halt')) {
-            $reflectionMethod = new ReflectionMethod($static, 'halt');
-            $reflectionMethod->invoke($static);
-        }
-    }
 }
 
 /**

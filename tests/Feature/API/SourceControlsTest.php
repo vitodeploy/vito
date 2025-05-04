@@ -3,11 +3,9 @@
 namespace Tests\Feature\API;
 
 use App\Models\SourceControl;
-use App\Web\Pages\Settings\SourceControls\Widgets\SourceControlsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class SourceControlsTest extends TestCase
