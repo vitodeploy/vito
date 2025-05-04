@@ -8,6 +8,7 @@ use App\Models\ServerProvider;
 use App\Models\User;
 use App\ServerProviders\ServerProvider as ServerProviderContract;
 use Exception;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -20,6 +21,8 @@ class CreateServerProvider
      */
     public function create(User $user, Project $project, array $input): ServerProvider
     {
+        Validator::make($input, self::rules($input))->validate();
+
         $provider = self::getProvider($input['provider']);
 
         try {

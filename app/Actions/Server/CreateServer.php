@@ -17,6 +17,7 @@ use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -29,6 +30,8 @@ class CreateServer
      */
     public function create(User $creator, Project $project, array $input): Server
     {
+        Validator::make($input, self::rules($project, $input))->validate();
+
         $server = new Server([
             'project_id' => $project->id,
             'user_id' => $creator->id,

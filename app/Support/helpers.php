@@ -1,6 +1,8 @@
 <?php
 
 use App\Exceptions\SSHError;
+use App\Models\ServerLog;
+use App\Models\User;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
@@ -78,7 +80,7 @@ function run_action(object $static, Closure $callback): void
         $callback();
     } catch (SSHError $e) {
         $actions = [];
-        if ($e->getLog() instanceof \App\Models\ServerLog) {
+        if ($e->getLog() instanceof ServerLog) {
             $actions[] = Action::make('View Logs')
                 ->url(App\Web\Pages\Servers\Logs\Index::getUrl([
                     'server' => $e->getLog()->server_id,
@@ -250,4 +252,12 @@ function format_nginx_config(string $config): string
     }
 
     return implode("\n", $formattedLines)."\n";
+}
+
+function user(): User
+{
+    /** @var User $user */
+    $user = auth()->user();
+
+    return $user;
 }

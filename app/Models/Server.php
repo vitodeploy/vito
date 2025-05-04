@@ -13,6 +13,7 @@ use App\SSH\OS\OS;
 use App\SSH\Systemd\Systemd;
 use App\Support\Testing\SSHFake;
 use Carbon\Carbon;
+use Database\Factories\ServerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -68,7 +69,7 @@ use Throwable;
  */
 class Server extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\ServerFactory> */
+    /** @use HasFactory<ServerFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -569,5 +570,14 @@ class Server extends AbstractModel
             Storage::disk($disk)->path(basename($path)),
             $path
         );
+    }
+
+    public function getStatusColor(): string
+    {
+        if (isset(self::$statusColors[$this->status])) {
+            return self::$statusColors[$this->status];
+        }
+
+        return 'gray';
     }
 }

@@ -12,14 +12,15 @@
         "ext-ftp": "*",
         "ext-intl": "*",
         "aws/aws-sdk-php": "^3.158",
-        "filament/filament": "^3.2",
+        "inertiajs/inertia-laravel": "^2.0",
         "laravel/fortify": "^1.17",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.8",
         "mobiledetect/mobiledetectlib": "^4.8",
         "phpseclib/phpseclib": "~3.0",
-        "spatie/laravel-route-attributes": "^1.24"
+        "spatie/laravel-route-attributes": "^1.24",
+        "tightenco/ziggy": "^2.5"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -52,8 +53,7 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Http\Controllers\Settings;
+
+use App\Actions\ServerProvider\CreateServerProvider;
+use App\Http\Controllers\Controller;
+use App\Models\ServerProvider;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Spatie\RouteAttributes\Attributes\Get;
+use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Post;
+use Spatie\RouteAttributes\Attributes\Prefix;
+
+#[Prefix('settings/server-providers')]
+#[Middleware(['auth'])]
+class ServerProviderController extends Controller
+{
+    public function index(): void
+    {
+
+    }
+
+    #[Post('/', name: 'server-providers.store')]
+    public function store(Request $request): RedirectResponse
+    {
+        $this->authorize('create', ServerProvider::class);
+
+        app(CreateServerProvider::class)->create(user(), user()->currentProject, $request->all());
+
+        return back()->with('success', 'Server provider created.');
+    }
+
+    #[Get('regions', name: 'server-providers.regions')]
+    public function regions(ServerProvider $serverProvider): JsonResponse
+    {
+        $this->authorize('view', $serverProvider);
+
+        return response()->json($serverProvider->provider()->regions());
+    }
+
+    #[Get('plans/{region}', name: 'server-providers.plans')]
+    public function plans(ServerProvider $serverProvider, string $region): JsonResponse
+    {
+        $this->authorize('view', $serverProvider);
+
+        return response()->json($serverProvider->provider()->plans($region));
+    }
+}

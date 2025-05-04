@@ -50,10 +50,7 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        Livewire::test(Settings::class, [
-            'project' => $project,
-        ])
-            ->callAction('delete')
+        $this->json('DELETE', '/api/projects/' . $project->id)
             ->assertSuccessful();
 
         $this->assertDatabaseMissing('projects', [

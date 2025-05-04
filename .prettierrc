@@ -1,26 +1,46 @@
 {
-    "plugins": [
-        "prettier-plugin-blade",
-        "prettier-plugin-tailwindcss",
-        "prettier-plugin-sh"
-    ],
-    "overrides": [
-        {
-            "files": ["*.blade.php"],
-            "options": {
-                "parser": "blade",
-                "printWidth": 120,
-                "htmlWhitespaceSensitivity": "ignore",
-                "tabWidth": 4,
-                "quoteProps": "consistent",
-                "trailingComma": "none"
-            }
-        },
-        {
-            "files": ["*.sh"],
-            "options": {
-                "parser": "sh"
-            }
-        }
-    ]
+  "semi": true,
+  "singleQuote": true,
+  "singleAttributePerLine": false,
+  "htmlWhitespaceSensitivity": "css",
+  "printWidth": 150,
+  "tailwindFunctions": [
+    "clsx",
+    "cn"
+  ],
+  "tabWidth": 2,
+  "plugins": [
+    "prettier-plugin-blade",
+    "prettier-plugin-tailwindcss",
+    "prettier-plugin-sh"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.blade.php"
+      ],
+      "options": {
+        "parser": "blade",
+        "printWidth": 120,
+        "htmlWhitespaceSensitivity": "ignore",
+        "tabWidth": 4,
+        "quoteProps": "consistent",
+        "trailingComma": "none"
+      }
+    },
+    {
+      "files": [
+        "*.sh"
+      ],
+      "options": {
+        "parser": "sh"
+      }
+    },
+    {
+      "files": "**/*.yml",
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
 }

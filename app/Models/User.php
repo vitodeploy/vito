@@ -5,8 +5,7 @@ namespace App\Models;
 use App\Enums\UserRole;
 use App\Traits\HasTimezoneTimestamps;
 use Carbon\Carbon;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -43,11 +42,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable
 {
     use HasApiTokens;
 
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
 
     use HasTimezoneTimestamps;
@@ -70,8 +69,7 @@ class User extends Authenticatable implements FilamentUser
         'two_factor_secret',
     ];
 
-    protected $appends = [
-    ];
+    protected $appends = [];
 
     /**
      * @return HasMany<Server, covariant $this>
@@ -203,10 +201,5 @@ class User extends Authenticatable implements FilamentUser
                 $query->where('user_id', $this->id);
             });
         });
-    }
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return true;
     }
 }

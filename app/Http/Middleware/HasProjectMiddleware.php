@@ -2,16 +2,14 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Project;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 
 class HasProjectMiddleware
 {
-    /**
-     * @return mixed
-     */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         /** @var ?User $user */
         $user = $request->user();
@@ -21,7 +19,7 @@ class HasProjectMiddleware
 
         if (! $user->currentProject) {
             if ($user->allProjects()->count() > 0) {
-                /** @var \App\Models\Project $firstProject */
+                /** @var Project $firstProject */
                 $firstProject = $user->allProjects()->first();
                 $user->current_project_id = $firstProject->id;
                 $user->save();
