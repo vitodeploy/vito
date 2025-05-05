@@ -29,7 +29,7 @@ class ServerProviderController extends Controller
         return back()->with('success', 'Server provider created.');
     }
 
-    #[Get('regions', name: 'server-providers.regions')]
+    #[Get('/{serverProvider}/regions', name: 'server-providers.regions')]
     public function regions(ServerProvider $serverProvider): JsonResponse
     {
         $this->authorize('view', $serverProvider);
@@ -37,7 +37,7 @@ class ServerProviderController extends Controller
         return response()->json($serverProvider->provider()->regions());
     }
 
-    #[Get('plans/{region}', name: 'server-providers.plans')]
+    #[Get('{serverProvider}/regions/{region}/plans', name: 'server-providers.plans')]
     public function plans(ServerProvider $serverProvider, string $region): JsonResponse
     {
         $this->authorize('view', $serverProvider);

@@ -30,6 +30,7 @@ export interface Configs {
   server_providers_custom_fields: {
     [provider: string]: string[];
   };
+  operating_systems: string[];
 
   [key: string]: unknown;
 }

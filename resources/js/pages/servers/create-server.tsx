@@ -10,18 +10,25 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ServerProvider } from '@/types/server-provider';
 import CreateServerProvider from '@/pages/server-providers/create-server-provider';
+import axios from 'axios';
+import { Form, FormField, FormFields } from '@/components/ui/form';
+import { Configs } from '@/types';
 
 export default function CreateServer({ providers, public_key }: { providers: string[]; public_key: string }) {
   const page = usePage<{
     server_providers: ServerProvider[];
+    configs: Configs;
   }>();
 
   const form = useForm({
     provider: 'custom',
-    server_provider: '',
+    server_provider: 0,
     name: '',
+    os: '',
     ip: '',
     port: 22,
+    region: '',
+    plan: '',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -43,26 +50,52 @@ export default function CreateServer({ providers, public_key }: { providers: str
     form.setData('provider', provider);
     form.clearErrors();
     if (provider !== 'custom') {
-      form.setData('server_provider', '');
+      form.setData('server_provider', 0);
+      form.setData('region', '');
+      form.setData('plan', '');
     }
+  };
+
+  const selectServerProvider = async (serverProvider: string) => {
+    form.setData('server_provider', parseInt(serverProvider));
+    await fetchRegions(parseInt(serverProvider));
+  };
+
+  const [regions, setRegions] = useState<{ [key: string]: string }>({});
+  const fetchRegions = async (serverProvider: number) => {
+    const regions = await axios.get(route('server-providers.regions', { serverProvider: serverProvider }));
+    setRegions(regions.data);
+  };
+  const selectRegion = async (region: string) => {
+    form.setData('region', region);
+    if (region !== '') {
+      await fetchPlans(form.data.server_provider, region);
+    }
+  };
+
+  const [plans, setPlans] = useState<{ [key: string]: string }>({});
+  const fetchPlans = async (serverProvider: number, region: string) => {
+    const plans = await axios.get(route('server-providers.plans', { serverProvider: serverProvider, region: region }));
+    setPlans(plans.data);
+  };
+  const selectPlan = (plan: string) => {
+    form.setData('plan', plan);
   };
 
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="outline">
-          <PlusIcon />
-          Create new server
+          <PlusIcon /> Create new server
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full lg:max-w-4xl">
         <SheetHeader>
-          <SheetTitle>Create new server</SheetTitle>
-          <SheetDescription>Fill in the details to create a new server.</SheetDescription>
+          <SheetTitle>Create new server</SheetTitle> <SheetDescription>Fill in the details to create a new server.</SheetDescription>
         </SheetHeader>
-        <form id="create-server-form" className="flex w-full flex-col gap-6 p-4" onSubmit={submit}>
-          <div className="grid gap-6">
-            <div className="grid gap-2">
+        <Form id="create-server-form" className="p-4" onSubmit={submit}>
+          <FormFields>
+            <FormField>
               <Label htmlFor="provider">Provider</Label>
               <Select value={form.data.provider} onValueChange={(value) => selectProvider(value)}>
                 <SelectTrigger id="provider">
@@ -79,13 +112,13 @@ export default function CreateServer({ providers, public_key }: { providers: str
                 </SelectContent>
               </Select>
               <InputError />
-            </div>
+            </FormField>
 
             {form.data.provider && form.data.provider !== 'custom' && (
-              <div className="grid gap-2">
+              <FormField>
                 <Label htmlFor="server-provider">Server provider connection</Label>
                 <div className="flex items-center gap-2">
-                  <Select value={form.data.server_provider} onValueChange={(value) => form.setData('server_provider', value)}>
+                  <Select value={form.data.server_provider.toString()} onValueChange={selectServerProvider}>
                     <SelectTrigger id="provider">
                       <SelectValue placeholder="Select a provider" />
                     </SelectTrigger>
@@ -108,6 +141,48 @@ export default function CreateServer({ providers, public_key }: { providers: str
                   />
                 </div>
                 <InputError />
+              </FormField>
+            )}
+
+            {form.data.provider && form.data.provider !== 'custom' && (
+              <div className="grid grid-cols-2 gap-6">
+                <FormField>
+                  <Label htmlFor="region">Region</Label>
+                  <Select value={form.data.region} onValueChange={selectRegion} disabled={form.data.server_provider === 0}>
+                    <SelectTrigger id="region">
+                      <SelectValue placeholder="Select a region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {Object.entries(regions).map(([key, value]) => (
+                          <SelectItem key={`region-${key}`} value={key}>
+                            {value}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <InputError message={form.errors.region} />
+                </FormField>
+
+                <FormField>
+                  <Label htmlFor="plan">Plan</Label>
+                  <Select value={form.data.plan} onValueChange={selectPlan} disabled={form.data.region === ''}>
+                    <SelectTrigger id="plan">
+                      <SelectValue placeholder="Select a plan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {Object.entries(plans).map(([key, value]) => (
+                          <SelectItem key={`plan-${key}`} value={key}>
+                            {value}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <InputError message={form.errors.plan} />
+                </FormField>
               </div>
             )}
 
@@ -120,7 +195,7 @@ export default function CreateServer({ providers, public_key }: { providers: str
                     our public key to /root/.ssh/authorized_keys file by running the bellow command on your server as root.
                   </AlertDescription>
                 </Alert>
-                <div className="grid gap-2">
+                <FormField>
                   <Label htmlFor="public_key">Public Key</Label>
                   <Button
                     onClick={copyToClipboard}
@@ -133,25 +208,45 @@ export default function CreateServer({ providers, public_key }: { providers: str
                     <span className="w-full max-w-2/3 overflow-x-hidden overflow-ellipsis">{public_key}</span>
                     {copySuccess ? <ClipboardCheckIcon size={5} className="text-success!" /> : <ClipboardIcon size={5} />}
                   </Button>
-                </div>
+                </FormField>
               </>
             )}
 
-            <div className="grid gap-2">
-              <Label htmlFor="name">Server Name</Label>
-              <Input id="name" type="text" autoComplete="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-              <InputError message={form.errors.name} />
+            <div className="grid grid-cols-2 items-start gap-6">
+              <FormField>
+                <Label htmlFor="name">Server Name</Label>
+                <Input id="name" type="text" autoComplete="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                <InputError message={form.errors.name} />
+              </FormField>
+              <FormField>
+                <Label htmlFor="os">Operating System</Label>
+                <Select value={form.data.os} onValueChange={(value) => form.setData('os', value)}>
+                  <SelectTrigger id="os">
+                    <SelectValue placeholder="Select an operating system" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {page.props.configs.operating_systems.map((value) => (
+                        <SelectItem key={`os-${value}`} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <InputError message={form.errors.os} />
+              </FormField>
             </div>
 
             {form.data.provider === 'custom' && (
-              <div className="grid grid-cols-2 gap-6">
-                <div className="grid gap-2">
+              <div className="grid grid-cols-2 items-start gap-6">
+                <FormField>
                   <Label htmlFor="ip">SSH IP</Label>
                   <Input id="ip" type="text" autoComplete="ip" value={form.data.ip} onChange={(e) => form.setData('ip', e.target.value)} />
                   <InputError message={form.errors.ip} />
-                </div>
+                </FormField>
 
-                <div className="grid gap-2">
+                <FormField>
                   <Label htmlFor="port">SSH Port</Label>
                   <Input
                     id="port"
@@ -161,16 +256,17 @@ export default function CreateServer({ providers, public_key }: { providers: str
                     onChange={(e) => form.setData('port', parseInt(e.target.value))}
                   />
                   <InputError message={form.errors.port} />
-                </div>
+                </FormField>
               </div>
             )}
-          </div>
-        </form>
+
+            {/* services */}
+          </FormFields>
+        </Form>
         <SheetFooter>
           <div className="flex items-center">
             <Button type="submit" form="create-server-form" tabIndex={4} disabled={form.processing}>
-              {form.processing && <LoaderCircle className="animate-spin" />}
-              Create
+              {form.processing && <LoaderCircle className="animate-spin" />} Create
             </Button>
           </div>
         </SheetFooter>
