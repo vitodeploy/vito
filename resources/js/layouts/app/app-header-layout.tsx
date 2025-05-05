@@ -4,6 +4,7 @@ import { AppShell } from '@/components/app-shell';
 import { type BreadcrumbItem } from '@/types';
 import type { PropsWithChildren } from 'react';
 import { usePoll } from '@inertiajs/react';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function AppHeaderLayout({ children }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
   usePoll(10000);
@@ -12,6 +13,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren<{ breadc
     <AppShell>
       <AppHeader />
       <AppContent>{children}</AppContent>
+      <Toaster />
     </AppShell>
   );
 }

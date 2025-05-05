@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\ServerResource;
+use App\Models\Server;
 use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
@@ -43,6 +45,12 @@ class HandleInertiaRequests extends Middleware
         /** @var ?User $user */
         $user = $request->user();
 
+        // servers
+        $servers = [];
+        if ($user && $user->can('viewAny', [Server::class, $user->currentProject])) {
+            $servers = ServerResource::collection($user->currentProject?->servers);
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -52,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                 'projects' => $user?->allProjects()->get(),
                 'currentProject' => $user?->currentProject,
             ],
+            'projectServers' => $servers,
             'configs' => config('core'),
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

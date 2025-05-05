@@ -14,13 +14,27 @@ import axios from 'axios';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Configs } from '@/types';
 
+type CreateServerForm = {
+  provider: string;
+  server_provider: number;
+  name: string;
+  os: string;
+  ip: string;
+  port: number;
+  region: string;
+  plan: string;
+  webserver: string;
+  database: string;
+  php: string;
+};
+
 export default function CreateServer({ providers, public_key }: { providers: string[]; public_key: string }) {
   const page = usePage<{
     server_providers: ServerProvider[];
     configs: Configs;
   }>();
 
-  const form = useForm({
+  const form = useForm<Required<CreateServerForm>>({
     provider: 'custom',
     server_provider: 0,
     name: '',
@@ -29,6 +43,9 @@ export default function CreateServer({ providers, public_key }: { providers: str
     port: 22,
     region: '',
     plan: '',
+    webserver: '',
+    database: '',
+    php: '',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -260,7 +277,62 @@ export default function CreateServer({ providers, public_key }: { providers: str
               </div>
             )}
 
-            {/* services */}
+            <div className="grid grid-cols-3 items-start gap-6">
+              <FormField>
+                <Label htmlFor="webserver">Webserver</Label>
+                <Select value={form.data.webserver} onValueChange={(value) => form.setData('webserver', value)}>
+                  <SelectTrigger id="webserver">
+                    <SelectValue placeholder="Select webserver" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {page.props.configs.webservers.map((value) => (
+                        <SelectItem key={`webserver-${value}`} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <InputError message={form.errors.webserver} />
+              </FormField>
+              <FormField>
+                <Label htmlFor="database">Database</Label>
+                <Select value={form.data.database} onValueChange={(value) => form.setData('database', value)}>
+                  <SelectTrigger id="database">
+                    <SelectValue placeholder="Select database" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {page.props.configs.databases.map((value) => (
+                        <SelectItem key={`database-${value}`} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <InputError message={form.errors.database} />
+              </FormField>
+              <FormField>
+                <Label htmlFor="php">PHP</Label>
+                <Select value={form.data.php} onValueChange={(value) => form.setData('php', value)}>
+                  <SelectTrigger id="php">
+                    <SelectValue placeholder="Select PHP version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {page.props.configs.php_versions.map((value) => (
+                        <SelectItem key={`php-${value}`} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <InputError message={form.errors.php} />
+              </FormField>
+            </div>
           </FormFields>
         </Form>
         <SheetFooter>

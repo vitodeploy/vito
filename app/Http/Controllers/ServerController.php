@@ -45,6 +45,24 @@ class ServerController extends Controller
 
         $server = app(CreateServer::class)->create(user(), $project, $request->all());
 
-        return redirect()->route('servers');
+        return redirect()->route('servers.show', ['server' => $server->id]);
+    }
+
+    #[Get('/{server}', name: 'servers.show')]
+    public function show(Server $server): Response|ResponseFactory
+    {
+        $this->authorize('view', $server);
+
+        return inertia('servers/show', [
+            'server' => ServerResource::make($server),
+        ]);
+    }
+
+    #[Post('/{server}/switch', name: 'servers.switch')]
+    public function switch(Server $server): RedirectResponse
+    {
+        $this->authorize('view', $server);
+
+        return redirect()->route('servers.show', ['server' => $server->id]);
     }
 }

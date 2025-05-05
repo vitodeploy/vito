@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 
-import { type BreadcrumbItem, Configs } from '@/types';
+import { type Configs } from '@/types';
 
 import AppLayout from '@/layouts/app-layout';
 import { DataTable } from '@/components/data-table';
@@ -8,6 +8,7 @@ import { columns } from '@/pages/servers/columns';
 import { Server } from '@/types/server';
 import Heading from '@/components/heading';
 import CreateServer from '@/pages/servers/create-server';
+import Container from '@/components/container';
 
 type Response = {
   servers: {
@@ -17,20 +18,13 @@ type Response = {
   configs: Configs;
 };
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Home',
-    href: '/',
-  },
-];
-
 export default function Servers() {
   const page = usePage<Response>();
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout>
       <Head title="Servers" />
 
-      <div className="container mx-auto py-10">
+      <Container>
         <div className="flex items-start justify-between">
           <Heading title="Servers" description="All of the servers on your project are here" />
           <div className="flex items-center gap-2">
@@ -38,7 +32,7 @@ export default function Servers() {
           </div>
         </div>
         <DataTable columns={columns} data={page.props.servers.data} />
-      </div>
+      </Container>
     </AppLayout>
   );
 }

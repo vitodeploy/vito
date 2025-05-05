@@ -10,10 +10,12 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, CogIcon, Folder, Menu, Search, ServerIcon } from 'lucide-react';
+import { BookOpen, CogIcon, Folder, Menu, Search, ServerIcon, SlashIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import { ProjectSwitch } from '@/components/project-switch';
+import { ServerSwitch } from '@/components/server-switch';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 
 const mainNavItems: NavItem[] = [
   {
@@ -103,7 +105,19 @@ export function AppHeader() {
 
           {/* Desktop Navigation */}
           <div className="ml-6 flex h-full items-center space-x-6">
-            <ProjectSwitch />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <ProjectSwitch />
+                </BreadcrumbItem>
+                <BreadcrumbSeparator>
+                  <SlashIcon />
+                </BreadcrumbSeparator>
+                <BreadcrumbItem>
+                  <ServerSwitch />
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
 
           <div className="ml-auto flex items-center space-x-2">

@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
+import type { Server } from '@/types/server';
 
 export interface Auth {
   user: User;
@@ -31,6 +32,12 @@ export interface Configs {
     [provider: string]: string[];
   };
   operating_systems: string[];
+  service_versions: {
+    [service: string]: string[];
+  };
+  webservers: string[];
+  databases: string[];
+  php_versions: string[];
 
   [key: string]: unknown;
 }
@@ -42,6 +49,8 @@ export interface SharedData {
   ziggy: Config & { location: string };
   sidebarOpen: boolean;
   configs: Configs;
+  projectServers: Server[];
+  server?: Server;
 
   [key: string]: unknown;
 }

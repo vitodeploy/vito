@@ -28,3 +28,8 @@ export interface Server {
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   [key: string]: unknown;
 }
+
+export type CreateServerService = {
+  name: string;
+  version: string;
+};
