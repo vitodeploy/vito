@@ -1,4 +1,3 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
+import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, CogIcon, Folder, Menu, Search, ServerIcon } from 'lucide-react';
 import AppLogo from './app-logo';
@@ -46,11 +45,7 @@ const rightNavItems: NavItem[] = [
 
 const activeItemStyles = '';
 
-interface AppHeaderProps {
-  breadcrumbs?: BreadcrumbItem[];
-}
-
-export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
+export function AppHeader() {
   const page = usePage<SharedData>();
   const { auth } = page.props;
   const getInitials = useInitials();

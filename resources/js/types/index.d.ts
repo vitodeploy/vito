@@ -26,6 +26,7 @@ export interface NavItem {
 }
 
 export interface Configs {
+  server_providers: string[];
   server_providers_custom_fields: {
     [provider: string]: string[];
   };

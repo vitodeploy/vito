@@ -1,4 +1,4 @@
-import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, PlusIcon, TriangleAlert, WifiIcon } from 'lucide-react';
+import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, PlusIcon, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useForm, usePage } from '@inertiajs/react';

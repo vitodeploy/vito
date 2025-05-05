@@ -1,6 +1,6 @@
-import { Head, usePage, usePoll } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, Configs } from '@/types';
 
 import AppLayout from '@/layouts/app-layout';
 import { DataTable } from '@/components/data-table';
@@ -13,8 +13,8 @@ type Response = {
   servers: {
     data: Server[];
   };
-  providers: string[];
   public_key: string;
+  configs: Configs;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -34,7 +34,7 @@ export default function Servers() {
         <div className="flex items-start justify-between">
           <Heading title="Servers" description="All of the servers on your project are here" />
           <div className="flex items-center gap-2">
-            <CreateServer providers={page.props.providers} public_key={page.props.public_key} />
+            <CreateServer providers={page.props.configs.server_providers} public_key={page.props.public_key} />
           </div>
         </div>
         <DataTable columns={columns} data={page.props.servers.data} />
