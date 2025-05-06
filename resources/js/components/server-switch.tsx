@@ -40,7 +40,7 @@ export function ServerSwitch() {
       )}
 
       {!selectedServer && (
-        <Button variant="ghost" className="px-2">
+        <Button variant="ghost" className="cursor-default px-2">
           <Avatar className="size-7 rounded-md">
             <AvatarFallback className="rounded-md">S</AvatarFallback>
           </Avatar>
@@ -66,8 +66,12 @@ export function ServerSwitch() {
           ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem className="gap-0">
-            <PlusIcon size={5} />
-            <span className="ml-2">Create new server</span>
+            <Link href={route('servers', { action: 'create' })}>
+              <div className="flex items-center">
+                <PlusIcon size={5} />
+                <span className="ml-2">Create new server</span>
+              </div>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

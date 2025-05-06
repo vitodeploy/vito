@@ -60,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                 'projects' => $user?->allProjects()->get(),
                 'currentProject' => $user?->currentProject,
             ],
+            'publicKeyText' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
             'projectServers' => $servers,
             'configs' => config('core'),
             'ziggy' => fn (): array => [

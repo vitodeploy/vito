@@ -51,6 +51,7 @@ export interface SharedData {
   configs: Configs;
   projectServers: Server[];
   server?: Server;
+  publicKeyText: string;
 
   [key: string]: unknown;
 }

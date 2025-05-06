@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Settings;
 
 use App\Actions\ServerProvider\CreateServerProvider;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -18,6 +20,14 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 class ServerProviderController extends Controller
 {
     public function index(): void {}
+
+    #[Get('/', name: 'server-providers.all')]
+    public function all(): ResourceCollection
+    {
+        $this->authorize('viewAny', ServerProvider::class);
+
+        return ServerProviderResource::collection(ServerProvider::getByProjectId(user()->current_project_id)->get());
+    }
 
     #[Post('/', name: 'server-providers.store')]
     public function store(Request $request): RedirectResponse

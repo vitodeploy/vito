@@ -9,6 +9,9 @@ import { Server } from '@/types/server';
 import Heading from '@/components/heading';
 import CreateServer from '@/pages/servers/create-server';
 import Container from '@/components/container';
+import { PlusIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import React from 'react';
 
 type Response = {
   servers: {
@@ -28,7 +31,11 @@ export default function Servers() {
         <div className="flex items-start justify-between">
           <Heading title="Servers" description="All of the servers on your project are here" />
           <div className="flex items-center gap-2">
-            <CreateServer providers={page.props.configs.server_providers} public_key={page.props.public_key} />
+            <CreateServer>
+              <Button variant="outline">
+                <PlusIcon /> Create new server
+              </Button>
+            </CreateServer>
           </div>
         </div>
         <DataTable columns={columns} data={page.props.servers.data} />

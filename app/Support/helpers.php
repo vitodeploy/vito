@@ -54,6 +54,10 @@ function convert_time_format(string $string): string
 
 function get_public_key_content(): string
 {
+    if (cache()->has('ssh_public_key_content')) {
+        return cache()->get('ssh_public_key_content');
+    }
+
     if (! file_exists(storage_path(config('core.ssh_public_key_name')))) {
         Artisan::call('ssh-key:generate --force');
     }
@@ -64,9 +68,13 @@ function get_public_key_content(): string
         return '';
     }
 
-    return str($content)
+    $content = str($content)
         ->replace("\n", '')
         ->toString();
+
+    cache()->put('ssh_public_key_content', $content, 60 * 60 * 24);
+
+    return $content;
 }
 
 /**

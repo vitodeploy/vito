@@ -30,10 +30,12 @@ export default function CreateServerProvider({
   trigger,
   providers,
   defaultProvider,
+  onProviderAdded,
 }: {
   trigger: 'icon' | 'button';
   providers: string[];
   defaultProvider?: string;
+  onProviderAdded?: () => void;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -50,6 +52,9 @@ export default function CreateServerProvider({
     form.post(route('server-providers.store'), {
       onSuccess: () => {
         setOpen(false);
+        if (onProviderAdded) {
+          onProviderAdded();
+        }
       },
     });
   };

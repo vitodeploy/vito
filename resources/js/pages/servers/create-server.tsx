@@ -2,7 +2,7 @@ import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, PlusIcon, TriangleAler
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import React, { FormEventHandler, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
@@ -12,7 +12,7 @@ import { ServerProvider } from '@/types/server-provider';
 import CreateServerProvider from '@/pages/server-providers/create-server-provider';
 import axios from 'axios';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import { Configs } from '@/types';
+import type { SharedData } from '@/types';
 
 type CreateServerForm = {
   provider: string;
@@ -28,11 +28,8 @@ type CreateServerForm = {
   php: string;
 };
 
-export default function CreateServer({ providers, public_key }: { providers: string[]; public_key: string }) {
-  const page = usePage<{
-    server_providers: ServerProvider[];
-    configs: Configs;
-  }>();
+export default function CreateServer({ children }: { children: React.ReactNode }) {
+  const page = usePage<SharedData>();
 
   const form = useForm<Required<CreateServerForm>>({
     provider: 'custom',
@@ -55,7 +52,7 @@ export default function CreateServer({ providers, public_key }: { providers: str
 
   const [copySuccess, setCopySuccess] = useState(false);
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(public_key).then(() => {
+    navigator.clipboard.writeText(page.props.publicKeyText).then(() => {
       setCopySuccess(true);
       setTimeout(() => {
         setCopySuccess(false);
@@ -63,6 +60,11 @@ export default function CreateServer({ providers, public_key }: { providers: str
     });
   };
 
+  const [serverProviders, setServerProviders] = useState<ServerProvider[]>([]);
+  const fetchServerProviders = async () => {
+    const serverProviders = await axios.get(route('server-providers.all'));
+    setServerProviders(serverProviders.data);
+  };
   const selectProvider = (provider: string) => {
     form.setData('provider', provider);
     form.clearErrors();
@@ -70,6 +72,7 @@ export default function CreateServer({ providers, public_key }: { providers: str
       form.setData('server_provider', 0);
       form.setData('region', '');
       form.setData('plan', '');
+      fetchServerProviders();
     }
   };
 
@@ -101,11 +104,7 @@ export default function CreateServer({ providers, public_key }: { providers: str
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">
-          <PlusIcon /> Create new server
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="w-full lg:max-w-4xl">
         <SheetHeader>
           <SheetTitle>Create new server</SheetTitle> <SheetDescription>Fill in the details to create a new server.</SheetDescription>
@@ -120,7 +119,7 @@ export default function CreateServer({ providers, public_key }: { providers: str
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {providers.map((provider) => (
+                    {page.props.configs.server_providers.map((provider) => (
                       <SelectItem key={provider} value={provider}>
                         {provider}
                       </SelectItem>
@@ -141,7 +140,7 @@ export default function CreateServer({ providers, public_key }: { providers: str
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {page.props.server_providers
+                        {serverProviders
                           .filter((item: ServerProvider) => item.provider === form.data.provider)
                           .map((provider) => (
                             <SelectItem key={`server-provider-${provider.id}`} value={provider.id.toString()}>
@@ -153,8 +152,9 @@ export default function CreateServer({ providers, public_key }: { providers: str
                   </Select>
                   <CreateServerProvider
                     trigger="icon"
-                    providers={providers.filter((item) => item !== 'custom')}
+                    providers={page.props.configs.server_providers.filter((item) => item !== 'custom')}
                     defaultProvider={form.data.provider}
+                    onProviderAdded={fetchServerProviders}
                   />
                 </div>
                 <InputError />
@@ -219,10 +219,10 @@ export default function CreateServer({ providers, public_key }: { providers: str
                     variant="outline"
                     id="public_key"
                     type="button"
-                    value={public_key}
+                    value={page.props.publicKeyText}
                     className="justify-between truncate font-normal"
                   >
-                    <span className="w-full max-w-2/3 overflow-x-hidden overflow-ellipsis">{public_key}</span>
+                    <span className="w-full max-w-2/3 overflow-x-hidden overflow-ellipsis">{page.props.publicKeyText}</span>
                     {copySuccess ? <ClipboardCheckIcon size={5} className="text-success!" /> : <ClipboardIcon size={5} />}
                   </Button>
                 </FormField>
