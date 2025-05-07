@@ -25,11 +25,8 @@ export interface Server {
   last_update_check?: string;
   created_at: string;
   updated_at: string;
+  created_at_by_timezone: string;
+  updated_at_by_timezone: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   [key: string]: unknown;
 }
-
-export type CreateServerService = {
-  name: string;
-  version: string;
-};

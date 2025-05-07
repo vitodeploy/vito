@@ -2,12 +2,12 @@
 
 namespace App\Http\Resources;
 
-use App\Models\ServerProvider;
+use App\Models\ServerLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin ServerProvider */
-class ServerProviderResource extends JsonResource
+/** @mixin ServerLog */
+class ServerLogResource extends JsonResource
 {
     /**
      * @return array<string, mixed>
@@ -16,10 +16,12 @@ class ServerProviderResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'project_id' => $this->project_id,
-            'global' => is_null($this->project_id),
-            'name' => $this->profile,
-            'provider' => $this->provider,
+            'server_id' => $this->server_id,
+            'site_id' => $this->site_id,
+            'type' => $this->type,
+            'name' => $this->name,
+            'disk' => $this->disk,
+            'is_remote' => $this->is_remote,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'created_at_by_timezone' => $this->created_at_by_timezone,

@@ -4,12 +4,15 @@ import { type Configs } from '@/types';
 
 import AppLayout from '@/layouts/app-layout';
 import { type Server } from '@/types/server';
-import Container from '@/components/container';
-import Heading from '@/components/heading';
+import InstallingServer from '@/pages/servers/installing';
+import type { ServerLog } from '@/types/server-log';
 
 type Response = {
   servers: {
     data: Server[];
+  };
+  logs: {
+    data: ServerLog[];
   };
   server: Server;
   public_key: string;
@@ -22,11 +25,7 @@ export default function ShowServer() {
     <AppLayout>
       <Head title={page.props.server.name} />
 
-      <Container>
-        <div className="flex items-start justify-between">
-          <Heading title={page.props.server.name} />
-        </div>
-      </Container>
+      {['installing', 'installation_failed'].includes(page.props.server.status) && <InstallingServer />}
     </AppLayout>
   );
 }

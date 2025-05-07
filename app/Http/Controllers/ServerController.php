@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Server\CreateServer;
+use App\Http\Resources\ServerLogResource;
 use App\Http\Resources\ServerProviderResource;
 use App\Http\Resources\ServerResource;
 use App\Models\Server;
@@ -55,6 +56,7 @@ class ServerController extends Controller
 
         return inertia('servers/show', [
             'server' => ServerResource::make($server),
+            'logs' => ServerLogResource::collection($server->logs()->latest()->paginate(config('web.pagination_size')))
         ]);
     }
 
