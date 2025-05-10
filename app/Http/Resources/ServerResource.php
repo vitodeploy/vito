@@ -38,8 +38,11 @@ class ServerResource extends JsonResource
             'progress_step' => $this->progress_step,
             'updates' => $this->updates,
             'last_update_check' => $this->last_update_check,
+            'status_color' => $this->getStatusColor(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'created_at_by_timezone' => $this->created_at_by_timezone,
+            'updated_at_by_timezone' => $this->updated_at_by_timezone,
         ];
     }
 }

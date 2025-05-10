@@ -192,7 +192,6 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\WebServiceProvider::class,
         App\Providers\DemoServiceProvider::class,
     ],
 

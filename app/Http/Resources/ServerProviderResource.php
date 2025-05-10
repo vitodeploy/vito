@@ -22,6 +22,8 @@ class ServerProviderResource extends JsonResource
             'provider' => $this->provider,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'created_at_by_timezone' => $this->created_at_by_timezone,
+            'updated_at_by_timezone' => $this->updated_at_by_timezone,
         ];
     }
 }

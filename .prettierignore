@@ -13,3 +13,6 @@ sail
 !*.blade.php
 !*.sh
 resources/views/ssh/
+resources/views/scribe/
+resources/js/ziggy.js
+resources/views/mail/*

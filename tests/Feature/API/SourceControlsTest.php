@@ -3,11 +3,9 @@
 namespace Tests\Feature\API;
 
 use App\Models\SourceControl;
-use App\Web\Pages\Settings\SourceControls\Widgets\SourceControlsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class SourceControlsTest extends TestCase
@@ -76,9 +74,14 @@ class SourceControlsTest extends TestCase
             'source_control_id' => $sourceControl->id,
         ]);
 
-        Livewire::test(SourceControlsList::class)
-            ->callTableAction('delete', $sourceControl->id)
-            ->assertNotified('This source control is being used by a site.');
+        $this->json('DELETE', route('api.projects.source-controls.delete', [
+            'project' => $this->user->current_project_id,
+            'sourceControl' => $sourceControl->id,
+        ]))
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'This source control is being used by a site.',
+            ]);
 
         $this->assertNotSoftDeleted('source_controls', [
             'id' => $sourceControl->id,

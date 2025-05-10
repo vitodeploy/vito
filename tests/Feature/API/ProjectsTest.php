@@ -3,10 +3,8 @@
 namespace Tests\Feature\API;
 
 use App\Models\Project;
-use App\Web\Pages\Settings\Projects\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProjectsTest extends TestCase
@@ -50,10 +48,7 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        Livewire::test(Settings::class, [
-            'project' => $project,
-        ])
-            ->callAction('delete')
+        $this->json('DELETE', '/api/projects/'.$project->id)
             ->assertSuccessful();
 
         $this->assertDatabaseMissing('projects', [

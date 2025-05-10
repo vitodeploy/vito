@@ -167,6 +167,13 @@ return [
             \App\Enums\OperatingSystem::UBUNTU24 => 'root',
         ],
     ],
+    'server_providers_custom_fields' => [
+        \App\Enums\ServerProvider::AWS => ['key', 'secret'],
+        \App\Enums\ServerProvider::LINODE => ['token'],
+        \App\Enums\ServerProvider::DIGITALOCEAN => ['token'],
+        \App\Enums\ServerProvider::VULTR => ['token'],
+        \App\Enums\ServerProvider::HETZNER => ['token'],
+    ],
 
     /*
      * Service
