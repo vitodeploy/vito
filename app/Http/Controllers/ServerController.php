@@ -56,7 +56,7 @@ class ServerController extends Controller
 
         return inertia('servers/show', [
             'server' => ServerResource::make($server),
-            'logs' => ServerLogResource::collection($server->logs()->latest()->paginate(config('web.pagination_size')))
+            'logs' => ServerLogResource::collection($server->logs()->latest()->paginate(config('web.pagination_size'))),
         ]);
     }
 

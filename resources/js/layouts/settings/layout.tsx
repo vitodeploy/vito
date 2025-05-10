@@ -1,21 +1,27 @@
-import Heading from '@/components/heading';
+import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
+import { ListIcon, LockIcon, UserIcon } from 'lucide-react';
 import { type PropsWithChildren } from 'react';
 
 const sidebarNavItems: NavItem[] = [
   {
     title: 'Profile',
     href: '/settings/profile',
-    icon: null,
+    icon: UserIcon,
+  },
+  {
+    title: 'Projects',
+    href: '/',
+    icon: ListIcon,
   },
   {
     title: 'Password',
     href: '/settings/password',
-    icon: null,
+    icon: LockIcon,
   },
 ];
 
@@ -28,11 +34,9 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
   const currentPath = window.location.pathname;
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-6">
-      <Heading title="Settings" description="Manage your profile and account settings" />
-
+    <Container>
       <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
-        <aside className="w-full max-w-xl lg:w-48">
+        <aside className="w-full max-w-xl lg:w-60">
           <nav className="flex flex-col space-y-1 space-x-0">
             {sidebarNavItems.map((item, index) => (
               <Button
@@ -45,6 +49,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 })}
               >
                 <Link href={item.href} prefetch>
+                  {item.icon && <item.icon />}
                   {item.title}
                 </Link>
               </Button>
@@ -58,6 +63,6 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
           <section className="space-y-12">{children}</section>
         </div>
       </div>
-    </div>
+    </Container>
   );
 }
