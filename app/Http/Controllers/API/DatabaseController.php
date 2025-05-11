@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Database\CloneDatabase;
 use App\Actions\Database\CreateDatabase;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DatabaseResource;
@@ -81,6 +82,23 @@ class DatabaseController extends Controller
         $database->delete();
 
         return response()->noContent();
+    }
+
+    #[Post('{database}/clone', name: 'api.projects.servers.databases.clone', middleware: 'ability:write')]
+    #[Endpoint(title: 'clone', description: 'Clone a database.')]
+    #[BodyParam(name: 'name', description: 'Name for the new database', required: true)]
+    #[ResponseFromApiResource(DatabaseResource::class, Database::class)]
+    public function clone(Request $request, Project $project, Server $server, Database $database): DatabaseResource
+    {
+        $this->authorize('create', [Database::class, $server]);
+
+        $this->validateRoute($project, $server, $database);
+
+        $this->validate($request, CloneDatabase::rules($database));
+
+        $newDatabase = app(CloneDatabase::class)->clone($database, $request->all());
+
+        return new DatabaseResource($newDatabase);
     }
 
     private function validateRoute(Project $project, Server $server, ?Database $database = null): void
