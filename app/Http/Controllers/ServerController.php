@@ -10,8 +10,10 @@ use App\Models\Server;
 use App\Models\ServerProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Response;
 use Inertia\ResponseFactory;
+use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -66,5 +68,23 @@ class ServerController extends Controller
         $this->authorize('view', $server);
 
         return redirect()->route('servers.show', ['server' => $server->id]);
+    }
+
+    #[Delete('/{server}', name: 'servers.destroy')]
+    public function destroy(Server $server, Request $request): RedirectResponse
+    {
+        $this->authorize('delete', $server);
+
+        $this->validate($request, [
+            'name' => [
+                'required',
+                Rule::in([$server->name]),
+            ],
+        ]);
+
+        $server->delete();
+
+        return redirect()->route('servers')
+            ->with('success', __('Server deleted successfully.'));
     }
 }

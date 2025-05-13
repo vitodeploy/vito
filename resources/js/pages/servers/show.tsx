@@ -2,10 +2,11 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { type Configs } from '@/types';
 
-import AppLayout from '@/layouts/app-layout';
 import { type Server } from '@/types/server';
 import InstallingServer from '@/pages/servers/installing';
 import type { ServerLog } from '@/types/server-log';
+import ServerOverview from '@/pages/servers/overview';
+import ServerLayout from '@/layouts/server/layout';
 
 type Response = {
   servers: {
@@ -22,10 +23,10 @@ type Response = {
 export default function ShowServer() {
   const page = usePage<Response>();
   return (
-    <AppLayout>
+    <ServerLayout server={page.props.server}>
       <Head title={page.props.server.name} />
 
-      {['installing', 'installation_failed'].includes(page.props.server.status) && <InstallingServer />}
-    </AppLayout>
+      {['installing', 'installation_failed'].includes(page.props.server.status) ? <InstallingServer /> : <ServerOverview />}
+    </ServerLayout>
   );
 }

@@ -33,8 +33,8 @@ export function ProjectSwitch() {
     <div className="flex items-center">
       <Link href={route('servers')}>
         <Button variant="ghost" className="px-2">
-          <Avatar className="size-7 rounded-md">
-            <AvatarFallback className="rounded-md">{initials(auth.currentProject?.name ?? '')}</AvatarFallback>
+          <Avatar className="size-6 rounded-sm">
+            <AvatarFallback className="rounded-sm">{initials(auth.currentProject?.name ?? '')}</AvatarFallback>
           </Avatar>
           <span className="hidden lg:flex">{auth.currentProject?.name}</span>
         </Button>

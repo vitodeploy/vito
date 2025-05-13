@@ -31,8 +31,8 @@ export function ServerSwitch() {
       {selectedServer && (
         <Link href={route('servers.show', { server: selectedServer?.id || '' })}>
           <Button variant="ghost" className="px-2">
-            <Avatar className="size-7 rounded-md">
-              <AvatarFallback className="rounded-md">{initials(selectedServer?.name ?? '')}</AvatarFallback>
+            <Avatar className="size-6 rounded-sm">
+              <AvatarFallback className="rounded-sm">{initials(selectedServer?.name ?? '')}</AvatarFallback>
             </Avatar>
             <span className="hidden lg:flex">{selectedServer?.name}</span>
           </Button>
@@ -41,8 +41,8 @@ export function ServerSwitch() {
 
       {!selectedServer && (
         <Button variant="ghost" className="cursor-default px-2">
-          <Avatar className="size-7 rounded-md">
-            <AvatarFallback className="rounded-md">S</AvatarFallback>
+          <Avatar className="size-6 rounded-sm">
+            <AvatarFallback className="rounded-sm">S</AvatarFallback>
           </Avatar>
           <span className="hidden lg:flex">Select a server</span>
         </Button>

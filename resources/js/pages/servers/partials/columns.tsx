@@ -2,10 +2,10 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Server } from '@/types/server';
-import { Badge } from '@/components/ui/badge';
 import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { EyeIcon } from 'lucide-react';
+import ServerStatus from '@/pages/servers/partials/status';
 
 export const columns: ColumnDef<Server>[] = [
   {
@@ -33,7 +33,7 @@ export const columns: ColumnDef<Server>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+      return <ServerStatus server={row.original} />;
     },
   },
   {
