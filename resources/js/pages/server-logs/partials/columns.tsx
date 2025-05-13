@@ -45,7 +45,7 @@ const LogActionCell = ({ row }: { row: Row<ServerLog> }) => {
             <DialogTitle>View Log</DialogTitle>
             <DialogDescription>This is all content of the log</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="border-border relative h-[500px] w-full rounded-md border bg-black p-3 font-mono text-sm whitespace-pre-line text-gray-50">
+          <ScrollArea className="border-border bg-accent text-accent-foreground relative h-[500px] w-full rounded-md border p-3 font-mono text-sm whitespace-pre-line">
             {content}
             <ScrollBar orientation="vertical" />
           </ScrollArea>
