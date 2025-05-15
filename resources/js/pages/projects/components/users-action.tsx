@@ -20,6 +20,17 @@ import InputError from '@/components/ui/input-error';
 import UserSelect from '@/components/user-select';
 import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon, TrashIcon } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 function AddUser({ project }: { project: Project }) {
   const [open, setOpen] = useState(false);
@@ -84,30 +95,27 @@ function RemoveUser({ project, user }: { project: Project; user: User }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm">
           <TrashIcon />
         </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Remove user</DialogTitle>
-          <DialogDescription>Remove user from {project.name}.</DialogDescription>
-        </DialogHeader>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove user</AlertDialogTitle>
+          <AlertDialogDescription>Remove user from {project.name}.</AlertDialogDescription>
+        </AlertDialogHeader>
 
-        <DialogFooter className="gap-2">
-          <DialogClose asChild>
-            <Button variant="secondary">Cancel</Button>
-          </DialogClose>
-
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <Button onClick={submit} variant="destructive" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             Remove user
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

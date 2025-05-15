@@ -3,24 +3,28 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from 
 import { ProjectSwitch } from '@/components/project-switch';
 import { SlashIcon } from 'lucide-react';
 import { ServerSwitch } from '@/components/server-switch';
+import AppCommand from '@/components/app-command';
 
 export function AppHeader() {
   return (
-    <header className="bg-background -ml-1 flex h-12 shrink-0 items-center gap-2 border-b p-4 md:-ml-2">
-      <SidebarTrigger className="-ml-1 md:hidden" />
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <ProjectSwitch />
-          </BreadcrumbItem>
-          <BreadcrumbSeparator>
-            <SlashIcon />
-          </BreadcrumbSeparator>
-          <BreadcrumbItem>
-            <ServerSwitch />
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <header className="bg-background -ml-1 flex h-12 shrink-0 items-center justify-between gap-2 border-b p-4 md:-ml-2">
+      <div className="flex items-center">
+        <SidebarTrigger className="-ml-1 md:hidden" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <ProjectSwitch />
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <SlashIcon />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <ServerSwitch />
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      <AppCommand />
     </header>
   );
 }
