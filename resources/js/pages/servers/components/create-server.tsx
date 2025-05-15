@@ -9,7 +9,7 @@ import InputError from '@/components/ui/input-error';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ServerProvider } from '@/types/server-provider';
-import CreateServerProvider from '@/pages/server-providers/partials/create-server-provider';
+import CreateServerProvider from '@/pages/server-providers/components/create-server-provider';
 import axios from 'axios';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import type { SharedData } from '@/types';

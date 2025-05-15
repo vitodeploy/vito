@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +26,7 @@ class ProfileController extends Controller
     #[Get('/', name: 'profile')]
     public function edit(Request $request): Response
     {
-        return Inertia::render('settings/profile/index', [
+        return Inertia::render('profile/index', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
         ]);

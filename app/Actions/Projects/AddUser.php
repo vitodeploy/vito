@@ -5,6 +5,7 @@ namespace App\Actions\Projects;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class AddUser
@@ -14,6 +15,8 @@ class AddUser
      */
     public function add(Project $project, array $input): void
     {
+        Validator::make($input, self::rules($project))->validate();
+
         /** @var User $user */
         $user = User::query()->findOrFail($input['user']);
 

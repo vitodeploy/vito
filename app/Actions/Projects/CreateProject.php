@@ -13,6 +13,8 @@ class CreateProject
      */
     public function create(User $user, array $input): Project
     {
+        Validator::make($input, self::rules())->validate();
+
         if (isset($input['name'])) {
             $input['name'] = strtolower((string) $input['name']);
         }

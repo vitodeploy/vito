@@ -1,6 +1,8 @@
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
 import type { Server } from '@/types/server';
+import { Project } from '@/types/project';
+import { User } from '@/types/user';
 
 export interface Auth {
   user: User;

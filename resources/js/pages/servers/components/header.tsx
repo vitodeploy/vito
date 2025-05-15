@@ -1,8 +1,8 @@
 import { Server } from '@/types/server';
 import { CloudIcon, IdCardIcon, LoaderCircleIcon, MapPinIcon, SlashIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import ServerStatus from '@/pages/servers/partials/status';
-import ServerActions from '@/pages/servers/partials/actions';
+import ServerStatus from '@/pages/servers/components/status';
+import ServerActions from '@/pages/servers/components/actions';
 import { cn } from '@/lib/utils';
 
 export default function ServerHeader({ server }: { server: Server }) {

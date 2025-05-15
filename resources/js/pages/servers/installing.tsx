@@ -2,7 +2,7 @@ import type { Server } from '@/types/server';
 import type { ServerLog } from '@/types/server-log';
 import Container from '@/components/container';
 import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/server-logs/partials/columns';
+import { columns } from '@/pages/server-logs/components/columns';
 import { usePage } from '@inertiajs/react';
 
 export default function InstallingServer() {

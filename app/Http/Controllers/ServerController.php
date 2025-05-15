@@ -11,8 +11,8 @@ use App\Models\ServerProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 use Inertia\Response;
-use Inertia\ResponseFactory;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -24,7 +24,7 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 class ServerController extends Controller
 {
     #[Get('/', name: 'servers')]
-    public function index(): Response|ResponseFactory
+    public function index(): Response
     {
         $project = user()->currentProject;
 
@@ -32,7 +32,7 @@ class ServerController extends Controller
 
         $servers = $project->servers()->simplePaginate(config('web.pagination_size'));
 
-        return inertia('servers/index', [
+        return Inertia::render('servers/index', [
             'servers' => ServerResource::collection($servers),
             'public_key' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
             'server_providers' => ServerProviderResource::collection(ServerProvider::getByProjectId($project->id)->get()),
@@ -52,11 +52,11 @@ class ServerController extends Controller
     }
 
     #[Get('/{server}', name: 'servers.show')]
-    public function show(Server $server): Response|ResponseFactory
+    public function show(Server $server): Response
     {
         $this->authorize('view', $server);
 
-        return inertia('servers/show', [
+        return Inertia::render('servers/show', [
             'server' => ServerResource::make($server),
             'logs' => ServerLogResource::collection($server->logs()->latest()->paginate(config('web.pagination_size'))),
         ]);

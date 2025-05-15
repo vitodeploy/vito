@@ -3,12 +3,11 @@ import { Head, usePage } from '@inertiajs/react';
 import { type Configs } from '@/types';
 
 import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/servers/partials/columns';
+import { columns } from '@/pages/servers/components/columns';
 import { Server } from '@/types/server';
 import Heading from '@/components/heading';
-import CreateServer from '@/pages/servers/partials/create-server';
+import CreateServer from '@/pages/servers/components/create-server';
 import Container from '@/components/container';
-import { PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import React from 'react';
 import Layout from '@/layouts/app/layout';
@@ -29,12 +28,10 @@ export default function Servers() {
 
       <Container className="max-w-5xl">
         <div className="flex items-start justify-between">
-          <Heading title="Servers" />
+          <Heading title="Servers" description="All of the servers of your project listed here" />
           <div className="flex items-center gap-2">
             <CreateServer>
-              <Button variant="outline">
-                <PlusIcon /> Create new server
-              </Button>
+              <Button variant="outline">Create server</Button>
             </CreateServer>
           </div>
         </div>

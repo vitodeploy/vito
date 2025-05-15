@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Server } from '@/types/server';
-import ServerHeader from '@/pages/servers/partials/header';
+import ServerHeader from '@/pages/servers/components/header';
 import Layout from '@/layouts/app/layout';
 
 export default function ServerLayout({ server, children }: { server: Server; children: ReactNode }) {
@@ -96,7 +96,7 @@ export default function ServerLayout({ server, children }: { server: Server; chi
     <Layout secondNavItems={sidebarNavItems} secondNavTitle={server.name}>
       <ServerHeader server={server} />
 
-      <div className="p-4">{children}</div>
+      <div>{children}</div>
     </Layout>
   );
 }

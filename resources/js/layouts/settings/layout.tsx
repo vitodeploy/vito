@@ -11,7 +11,7 @@ const sidebarNavItems: NavItem[] = [
   },
   {
     title: 'Projects',
-    href: '/',
+    href: route('projects'),
     icon: ListIcon,
   },
 ];

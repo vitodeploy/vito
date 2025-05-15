@@ -2,11 +2,11 @@ import { Server } from '@/types/server';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreVerticalIcon } from 'lucide-react';
-import DeleteServer from '@/pages/servers/partials/delete-server';
+import DeleteServer from '@/pages/servers/components/delete-server';
 
 export default function ServerActions({ server }: { server: Server }) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open menu</span>

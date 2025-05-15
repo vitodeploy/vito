@@ -5,7 +5,7 @@ import { Server } from '@/types/server';
 import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { EyeIcon } from 'lucide-react';
-import ServerStatus from '@/pages/servers/partials/status';
+import ServerStatus from '@/pages/servers/components/status';
 
 export const columns: ColumnDef<Server>[] = [
   {

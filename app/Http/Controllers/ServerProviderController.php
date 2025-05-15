@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers;
 
 use App\Actions\ServerProvider\CreateServerProvider;
-use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
 use Illuminate\Http\JsonResponse;

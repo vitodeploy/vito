@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronsUpDownIcon, PlusIcon } from 'lucide-react';
 import { useInitials } from '@/hooks/use-initials';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import CreateProject from '@/pages/projects/components/create-project';
 
 export function ProjectSwitch() {
   const page = usePage<SharedData>();
@@ -25,7 +26,7 @@ export function ProjectSwitch() {
     const selectedProject = auth.projects.find((project) => project.id.toString() === projectId);
     if (selectedProject) {
       setSelectedProject(selectedProject.id.toString());
-      form.post(route('projects.switch', { project: projectId }));
+      form.post(route('projects.switch', { project: projectId, currentPath: window.location.pathname }));
     }
   };
 
@@ -39,7 +40,7 @@ export function ProjectSwitch() {
           <span className="hidden lg:flex">{auth.currentProject?.name}</span>
         </Button>
       </Link>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="px-1!">
             <ChevronsUpDownIcon size={5} />
@@ -56,10 +57,14 @@ export function ProjectSwitch() {
             </DropdownMenuCheckboxItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="gap-0">
-            <PlusIcon size={5} />
-            <span className="ml-2">Create new project</span>
-          </DropdownMenuItem>
+          <CreateProject>
+            <DropdownMenuItem className="gap-0" asChild onSelect={(e) => e.preventDefault()}>
+              <div className="flex items-center">
+                <PlusIcon size={5} />
+                <span className="ml-2">Create new project</span>
+              </div>
+            </DropdownMenuItem>
+          </CreateProject>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

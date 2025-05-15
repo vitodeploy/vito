@@ -14,6 +14,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { type Server } from '@/types/server';
 import type { SharedData } from '@/types';
+import CreateServer from '@/pages/servers/components/create-server';
 
 export function ServerSwitch() {
   const page = usePage<SharedData>();
@@ -48,31 +49,35 @@ export function ServerSwitch() {
         </Button>
       )}
 
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="px-1!">
             <ChevronsUpDownIcon size={5} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
-          {page.props.projectServers.map((server) => (
-            <DropdownMenuCheckboxItem
-              key={`server-${server.id.toString()}`}
-              checked={selectedServer?.id === server.id}
-              onCheckedChange={() => handleServerChange(server)}
-            >
-              {server.name}
-            </DropdownMenuCheckboxItem>
-          ))}
+          {page.props.projectServers.length > 0 ? (
+            page.props.projectServers.map((server) => (
+              <DropdownMenuCheckboxItem
+                key={`server-${server.id.toString()}`}
+                checked={selectedServer?.id === server.id}
+                onCheckedChange={() => handleServerChange(server)}
+              >
+                {server.name}
+              </DropdownMenuCheckboxItem>
+            ))
+          ) : (
+            <DropdownMenuItem disabled>No servers</DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="gap-0">
-            <Link href={route('servers', { action: 'create' })}>
+          <CreateServer>
+            <DropdownMenuItem className="gap-0" onSelect={(e) => e.preventDefault()}>
               <div className="flex items-center">
                 <PlusIcon size={5} />
                 <span className="ml-2">Create new server</span>
               </div>
-            </Link>
-          </DropdownMenuItem>
+            </DropdownMenuItem>
+          </CreateServer>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
