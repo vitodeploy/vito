@@ -7,11 +7,9 @@ use App\Facades\FTP;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider as StorageProviderModel;
-use App\Web\Pages\Settings\StorageProviders\Index;
-use App\Web\Pages\Settings\StorageProviders\Widgets\StorageProvidersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class StorageProvidersTest extends TestCase
@@ -19,6 +17,8 @@ class StorageProvidersTest extends TestCase
     use RefreshDatabase;
 
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @dataProvider createData
      */
     public function test_create(array $input): void
@@ -33,9 +33,7 @@ class StorageProvidersTest extends TestCase
             FTP::fake();
         }
 
-        Livewire::test(Index::class)
-            ->callAction('connect', $input)
-            ->assertSuccessful();
+        $this->post(route('storage-providers.store'), $input);
 
         if ($input['provider'] === StorageProvider::FTP) {
             FTP::assertConnected($input['host']);
@@ -52,29 +50,14 @@ class StorageProvidersTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        /** @var StorageProviderModel $provider */
-        $provider = StorageProviderModel::factory()->create([
+        StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
             'provider' => StorageProvider::DROPBOX,
         ]);
 
-        $this->get(Index::getUrl())
+        $this->get(route('storage-providers'))
             ->assertSuccessful()
-            ->assertSee($provider->profile);
-
-        /** @var StorageProviderModel $provider */
-        $provider = StorageProviderModel::factory()->create([
-            'user_id' => $this->user->id,
-            'provider' => StorageProvider::S3,
-        ]);
-
-        $this->get(Index::getUrl())
-            ->assertSuccessful()
-            ->assertSee($provider->profile);
-
-        $this->get(Index::getUrl())
-            ->assertSuccessful()
-            ->assertSee($provider->profile);
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('storage-providers/index'));
     }
 
     public function test_delete_provider(): void
@@ -85,9 +68,7 @@ class StorageProvidersTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(StorageProvidersList::class)
-            ->callTableAction('delete', $provider->id)
-            ->assertSuccessful();
+        $this->delete(route('storage-providers.destroy', ['storageProvider' => $provider->id]));
 
         $this->assertDatabaseMissing('storage_providers', [
             'id' => $provider->id,
@@ -112,9 +93,10 @@ class StorageProvidersTest extends TestCase
             'storage_id' => $provider->id,
         ]);
 
-        Livewire::test(StorageProvidersList::class)
-            ->callTableAction('delete', $provider->id)
-            ->assertNotified('This storage provider is being used by a backup.');
+        $this->delete(route('storage-providers.destroy', ['storageProvider' => $provider->id]))
+            ->assertSessionHasErrors([
+                'provider' => 'This storage provider is being used by a backup.',
+            ]);
 
         $this->assertDatabaseHas('storage_providers', [
             'id' => $provider->id,
@@ -123,6 +105,8 @@ class StorageProvidersTest extends TestCase
 
     /**
      * @TODO: complete FTP tests
+     *
+     * @return array<int, mixed>
      */
     public static function createData(): array
     {

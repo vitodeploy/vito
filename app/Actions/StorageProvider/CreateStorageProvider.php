@@ -5,6 +5,7 @@ namespace App\Actions\StorageProvider;
 use App\Models\Project;
 use App\Models\StorageProvider;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -17,6 +18,8 @@ class CreateStorageProvider
      */
     public function create(User $user, Project $project, array $input): StorageProvider
     {
+        Validator::make($input, self::rules($input))->validate();
+
         $storageProvider = new StorageProvider([
             'user_id' => $user->id,
             'provider' => $input['provider'],

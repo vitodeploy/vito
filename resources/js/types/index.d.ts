@@ -37,6 +37,10 @@ export interface Configs {
   source_control_providers_custom_fields: {
     [provider: string]: string[];
   };
+  storage_providers: string[];
+  storage_providers_custom_fields: {
+    [provider: string]: string[];
+  };
   operating_systems: string[];
   service_versions: {
     [service: string]: string[];

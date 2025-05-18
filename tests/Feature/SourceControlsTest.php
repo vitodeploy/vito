@@ -132,7 +132,7 @@ class SourceControlsTest extends TestCase
     }
 
     /**
-     * @return array<string, array<int, mixed>>
+     * @return array<int, mixed>
      */
     public static function data(): array
     {

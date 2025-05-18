@@ -536,6 +536,27 @@ return [
         \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
         \App\Enums\StorageProvider::S3 => \App\StorageProviders\S3::class,
     ],
+    'storage_providers_custom_fields' => [
+        \App\Enums\StorageProvider::DROPBOX => ['token'],
+        \App\Enums\StorageProvider::FTP => [
+            'host',
+            'port',
+            'path',
+            'username',
+            'password',
+            'ssl',
+            'passive',
+        ],
+        \App\Enums\StorageProvider::S3 => [
+            'api_url',
+            'key',
+            'secret',
+            'region',
+            'bucket',
+            'path',
+        ],
+        \App\Enums\StorageProvider::LOCAL => ['path'],
+    ],
 
     'ssl_types' => [
         \App\Enums\SslType::LETSENCRYPT,

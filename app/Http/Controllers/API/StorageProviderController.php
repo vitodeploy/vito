@@ -53,8 +53,6 @@ class StorageProviderController extends Controller
     {
         $this->authorize('create', StorageProvider::class);
 
-        $this->validate($request, CreateStorageProvider::rules($request->all()));
-
         /** @var User $user */
         $user = auth()->user();
         $storageProvider = app(CreateStorageProvider::class)->create($user, $project, $request->all());
@@ -84,8 +82,6 @@ class StorageProviderController extends Controller
         $this->authorize('update', $storageProvider);
 
         $this->validateRoute($project, $storageProvider);
-
-        $this->validate($request, EditStorageProvider::rules());
 
         $storageProvider = app(EditStorageProvider::class)->edit($storageProvider, $project, $request->all());
 

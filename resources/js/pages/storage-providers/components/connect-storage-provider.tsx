@@ -20,13 +20,13 @@ import { Input } from '@/components/ui/input';
 import { SharedData } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 
-type ServerProviderForm = {
+type StorageProviderForm = {
   provider: string;
   name: string;
   global: boolean;
 };
 
-export default function ConnectServerProvider({
+export default function ConnectStorageProvider({
   providers,
   defaultProvider,
   onProviderAdded,
@@ -41,15 +41,15 @@ export default function ConnectServerProvider({
 
   const page = usePage<SharedData>();
 
-  const form = useForm<Required<ServerProviderForm>>({
-    provider: 'aws',
+  const form = useForm<Required<StorageProviderForm>>({
+    provider: 's3',
     name: '',
     global: false,
   });
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('server-providers.store'), {
+    form.post(route('storage-providers.store'), {
       onSuccess: () => {
         setOpen(false);
         if (onProviderAdded) {
@@ -60,18 +60,18 @@ export default function ConnectServerProvider({
   };
 
   useEffect(() => {
-    form.setData('provider', defaultProvider ?? 'aws');
+    form.setData('provider', defaultProvider ?? 's3');
   }, [defaultProvider]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Connect to server provider</DialogTitle>
-          <DialogDescription className="sr-only">Connect to a new server provider</DialogDescription>
+          <DialogTitle>Connect to storage provider</DialogTitle>
+          <DialogDescription className="sr-only">Connect to a new storage provider</DialogDescription>
         </DialogHeader>
-        <Form id="create-server-provider-form" onSubmit={submit} className="p-4">
+        <Form id="create-storage-provider-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
               <Label htmlFor="provider">Provider</Label>
@@ -109,7 +109,7 @@ export default function ConnectServerProvider({
               />
               <InputError message={form.errors.name} />
             </FormField>
-            {page.props.configs.server_providers_custom_fields[form.data.provider]?.map((item: string) => (
+            {page.props.configs.storage_providers_custom_fields[form.data.provider]?.map((item: string) => (
               <FormField key={item}>
                 <Label htmlFor={item} className="capitalize">
                   {item.replaceAll('_', ' ')}
@@ -118,10 +118,10 @@ export default function ConnectServerProvider({
                   type="text"
                   name={item}
                   id={item}
-                  value={(form.data[item as keyof ServerProviderForm] as string) ?? ''}
-                  onChange={(e) => form.setData(item as keyof ServerProviderForm, e.target.value)}
+                  value={(form.data[item as keyof StorageProviderForm] as string) ?? ''}
+                  onChange={(e) => form.setData(item as keyof StorageProviderForm, e.target.value)}
                 />
-                <InputError message={form.errors[item as keyof ServerProviderForm]} />
+                <InputError message={form.errors[item as keyof StorageProviderForm]} />
               </FormField>
             ))}
             <FormField>

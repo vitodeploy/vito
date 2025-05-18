@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\StorageProviderFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class StorageProvider extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\StorageProviderFactory> */
+    /** @use HasFactory<StorageProviderFactory> */
     use HasFactory;
 
     protected $fillable = [
