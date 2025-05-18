@@ -4,6 +4,7 @@ namespace App\Actions\ServerProvider;
 
 use App\Models\Project;
 use App\Models\ServerProvider;
+use Illuminate\Support\Facades\Validator;
 
 class EditServerProvider
 {
@@ -12,6 +13,8 @@ class EditServerProvider
      */
     public function edit(ServerProvider $serverProvider, Project $project, array $input): ServerProvider
     {
+        Validator::make($input, self::rules())->validate();
+
         $serverProvider->profile = $input['name'];
         $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $project->id;
 

@@ -13,6 +13,7 @@
         "ext-intl": "*",
         "aws/aws-sdk-php": "^3.158",
         "inertiajs/inertia-laravel": "^2.0",
+        "laradumps/laradumps": "^4.2",
         "laravel/fortify": "^1.17",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
@@ -25,7 +26,6 @@
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "knuckleswtf/scribe": "^5.0",
-        "laradumps/laradumps": "^3.0",
         "larastan/larastan": "^3.1",
         "laravel/pint": "^1.10",
         "laravel/sail": "^1.18",

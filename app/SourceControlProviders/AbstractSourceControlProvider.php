@@ -26,16 +26,6 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         ];
     }
 
-    public function editRules(array $input): array
-    {
-        return $this->createRules($input);
-    }
-
-    public function editData(array $input): array
-    {
-        return $this->createData($input);
-    }
-
     public function data(): array
     {
         // support for older data

@@ -4,7 +4,7 @@ namespace App\Actions\SourceControl;
 
 use App\Models\Project;
 use App\Models\SourceControl;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -17,10 +17,12 @@ class ConnectSourceControl
      */
     public function connect(Project $project, array $input): SourceControl
     {
+        Validator::make($input, self::rules($input))->validate();
+
         $sourceControl = new SourceControl([
             'provider' => $input['provider'],
             'profile' => $input['name'],
-            'url' => Arr::has($input, 'url') ? $input['url'] : null,
+            'url' => isset($input['url']) && $input['url'] ? $input['url'] : null,
             'project_id' => isset($input['global']) && $input['global'] ? null : $project->id,
         ]);
 
@@ -28,8 +30,7 @@ class ConnectSourceControl
 
         if (! $sourceControl->provider()->connect()) {
             throw ValidationException::withMessages([
-                'token' => __('Cannot connect to :provider or invalid token!', ['provider' => $sourceControl->provider]
-                ),
+                'token' => __('Cannot connect to :provider or invalid token!', ['provider' => $sourceControl->provider]),
             ]);
         }
 

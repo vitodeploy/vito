@@ -462,6 +462,11 @@ return [
         'gitlab' => \App\SourceControlProviders\Gitlab::class,
         'bitbucket' => \App\SourceControlProviders\Bitbucket::class,
     ],
+    'source_control_providers_custom_fields' => [
+        \App\Enums\SourceControl::GITHUB => ['token'],
+        \App\Enums\SourceControl::GITLAB => ['token', 'url'],
+        \App\Enums\SourceControl::BITBUCKET => ['username', 'password'],
+    ],
 
     /*
      * available php extensions

@@ -33,6 +33,10 @@ export interface Configs {
   server_providers_custom_fields: {
     [provider: string]: string[];
   };
+  source_control_providers: string[];
+  source_control_providers_custom_fields: {
+    [provider: string]: string[];
+  };
   operating_systems: string[];
   service_versions: {
     [service: string]: string[];

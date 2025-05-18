@@ -29,11 +29,14 @@ class Gitlab extends AbstractSourceControlProvider
     public function connect(): bool
     {
         try {
+            ds($this->getApiUrl());
             $res = Http::withToken($this->data()['token'])
-                ->get($this->getApiUrl().'/projects');
+                ->get($this->getApiUrl().'/version');
         } catch (Exception) {
             return false;
         }
+
+        ds($res->status());
 
         return $res->successful();
     }

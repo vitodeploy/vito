@@ -53,8 +53,6 @@ class SourceControlController extends Controller
     {
         $this->authorize('create', SourceControl::class);
 
-        $this->validate($request, ConnectSourceControl::rules($request->all()));
-
         $sourceControl = app(ConnectSourceControl::class)->connect($project, $request->all());
 
         return new SourceControlResource($sourceControl);
@@ -86,8 +84,6 @@ class SourceControlController extends Controller
         $this->authorize('update', $sourceControl);
 
         $this->validateRoute($project, $sourceControl);
-
-        $this->validate($request, EditSourceControl::rules($sourceControl, $request->all()));
 
         $sourceControl = app(EditSourceControl::class)->edit($sourceControl, $project, $request->all());
 

@@ -2,6 +2,7 @@
 
 namespace App\SourceControlProviders;
 
+use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
 
@@ -20,18 +21,6 @@ interface SourceControlProvider
     public function createData(array $input): array;
 
     /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public function editRules(array $input): array;
-
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public function editData(array $input): array;
-
-    /**
      * @return array<string, mixed>
      */
     public function data(): array;
@@ -43,10 +32,10 @@ interface SourceControlProvider
     public function fullRepoUrl(string $repo, string $key): string;
 
     /**
-     * @param  array<mixed>  $events
+     * @param  array<int, mixed>  $events
      * @return array<string, mixed>
      *
-     * @throws \App\Exceptions\FailedToDeployGitHook
+     * @throws FailedToDeployGitHook
      */
     public function deployHook(string $repo, array $events, string $secret): array;
 
@@ -56,7 +45,7 @@ interface SourceControlProvider
     public function destroyHook(string $repo, string $hookId): void;
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
     public function getLastCommit(string $repo, string $branch): ?array;
 

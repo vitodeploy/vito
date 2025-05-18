@@ -53,8 +53,6 @@ class ServerProviderController extends Controller
     {
         $this->authorize('create', ServerProvider::class);
 
-        $this->validate($request, CreateServerProvider::rules($request->all()));
-
         /** @var User $user */
         $user = auth()->user();
         $serverProvider = app(CreateServerProvider::class)->create($user, $project, $request->all());
@@ -84,8 +82,6 @@ class ServerProviderController extends Controller
         $this->authorize('update', $serverProvider);
 
         $this->validateRoute($project, $serverProvider);
-
-        $this->validate($request, EditServerProvider::rules());
 
         $serverProvider = app(EditServerProvider::class)->edit($serverProvider, $project, $request->all());
 
