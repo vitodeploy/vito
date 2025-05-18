@@ -3,11 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\ServerProvider;
-use App\Web\Pages\Settings\ServerProviders\Index;
-use App\Web\Pages\Settings\ServerProviders\Widgets\ServerProvidersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
+use Inertia\Testing\AssertableInertia;
+use JsonException;
 use Tests\TestCase;
 
 class ServerProvidersTest extends TestCase
@@ -15,7 +14,11 @@ class ServerProvidersTest extends TestCase
     use RefreshDatabase;
 
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @dataProvider data
+     *
+     * @throws JsonException
      */
     public function test_connect_provider(string $provider, array $input): void
     {
@@ -30,10 +33,8 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        Livewire::test(Index::class)
-            ->callAction('create', $data)
-            ->assertHasNoActionErrors()
-            ->assertSuccessful();
+        $this->post(route('server-providers.store'), $data)
+            ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('server_providers', [
             'provider' => $provider,
@@ -43,6 +44,8 @@ class ServerProvidersTest extends TestCase
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     *
      * @dataProvider data
      */
     public function test_cannot_connect_to_provider(string $provider, array $input): void
@@ -60,10 +63,8 @@ class ServerProvidersTest extends TestCase
             ],
             $input
         );
-        Livewire::test(Index::class)
-            ->callAction('create', $data)
-            ->assertActionHalted('create')
-            ->assertNotified();
+        $this->post(route('server-providers.store'), $data)
+            ->assertSessionHasErrors('provider');
 
         $this->assertDatabaseMissing('server_providers', [
             'provider' => $provider,
@@ -75,17 +76,19 @@ class ServerProvidersTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $provider = \App\Models\ServerProvider::factory()->create([
+        \App\Models\ServerProvider::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
-        $this->get(Index::getUrl())
+        $this->get(route('server-providers'))
             ->assertSuccessful()
-            ->assertSee($provider->profile);
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('server-providers/index'));
     }
 
     /**
      * @dataProvider data
+     *
+     * @throws JsonException
      */
     public function test_delete_provider(string $provider): void
     {
@@ -96,9 +99,9 @@ class ServerProvidersTest extends TestCase
             'provider' => $provider,
         ]);
 
-        Livewire::test(ServerProvidersList::class)
-            ->callTableAction('delete', $provider->id)
-            ->assertSuccessful();
+        $this->delete(route('server-providers.destroy', $provider))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('server-providers'));
 
         $this->assertDatabaseMissing('server_providers', [
             'id' => $provider->id,
@@ -121,15 +124,19 @@ class ServerProvidersTest extends TestCase
             'provider_id' => $provider->id,
         ]);
 
-        Livewire::test(ServerProvidersList::class)
-            ->callTableAction('delete', $provider->id)
-            ->assertNotified('This server provider is being used by a server.');
+        $this->delete(route('server-providers.destroy', $provider))
+            ->assertSessionHasErrors([
+                'provider' => 'This server provider is being used by a server.',
+            ]);
 
         $this->assertDatabaseHas('server_providers', [
             'id' => $provider->id,
         ]);
     }
 
+    /**
+     * @return array<string, array<int, array<string, mixed>>>
+     */
     public static function data(): array
     {
         return [

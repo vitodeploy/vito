@@ -1,8 +1,9 @@
 export interface ServerProvider {
   id: number;
   user_id: number;
-  name: string;
   provider: string;
+  name: string;
+  global: boolean;
   connected: boolean;
   project_id?: number;
   created_at: string;

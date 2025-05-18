@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ServerProvider\CreateServerProvider;
+use App\Actions\ServerProvider\DeleteServerProvider;
+use App\Actions\ServerProvider\EditServerProvider;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Inertia\Inertia;
+use Inertia\Response;
+use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
@@ -18,10 +24,18 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 #[Middleware(['auth'])]
 class ServerProviderController extends Controller
 {
-    public function index(): void {}
+    #[Get('/', name: 'server-providers')]
+    public function index(): Response
+    {
+        $this->authorize('viewAny', ServerProvider::class);
 
-    #[Get('/', name: 'server-providers.all')]
-    public function all(): ResourceCollection
+        return Inertia::render('server-providers/index', [
+            'serverProviders' => ServerProviderResource::collection(ServerProvider::getByProjectId(user()->current_project_id)->simplePaginate(config('web.pagination_size'))),
+        ]);
+    }
+
+    #[Get('/json', name: 'server-providers.json')]
+    public function json(): ResourceCollection
     {
         $this->authorize('viewAny', ServerProvider::class);
 
@@ -38,6 +52,16 @@ class ServerProviderController extends Controller
         return back()->with('success', 'Server provider created.');
     }
 
+    #[Patch('/{serverProvider}', name: 'server-providers.update')]
+    public function update(Request $request, ServerProvider $serverProvider): RedirectResponse
+    {
+        $this->authorize('update', $serverProvider);
+
+        app(EditServerProvider::class)->edit($serverProvider, user()->currentProject, $request->all());
+
+        return back()->with('success', 'Server provider updated.');
+    }
+
     #[Get('/{serverProvider}/regions', name: 'server-providers.regions')]
     public function regions(ServerProvider $serverProvider): JsonResponse
     {
@@ -52,5 +76,15 @@ class ServerProviderController extends Controller
         $this->authorize('view', $serverProvider);
 
         return response()->json($serverProvider->provider()->plans($region));
+    }
+
+    #[Delete('{serverProvider}', name: 'server-providers.destroy')]
+    public function destroy(ServerProvider $serverProvider): RedirectResponse
+    {
+        $this->authorize('delete', $serverProvider);
+
+        app(DeleteServerProvider::class)->delete($serverProvider);
+
+        return to_route('server-providers')->with('success', 'Server provider deleted.');
     }
 }

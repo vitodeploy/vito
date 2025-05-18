@@ -1,4 +1,4 @@
-import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, TriangleAlert } from 'lucide-react';
+import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, TriangleAlert, WifiIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useForm, usePage } from '@inertiajs/react';
@@ -9,7 +9,7 @@ import InputError from '@/components/ui/input-error';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ServerProvider } from '@/types/server-provider';
-import CreateServerProvider from '@/pages/server-providers/components/create-server-provider';
+import ConnectServerProvider from '@/pages/server-providers/components/connect-server-provider';
 import axios from 'axios';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import type { SharedData } from '@/types';
@@ -40,9 +40,9 @@ export default function CreateServer({ children }: { children: React.ReactNode }
     port: 22,
     region: '',
     plan: '',
-    webserver: '',
-    database: '',
-    php: '',
+    webserver: 'nginx',
+    database: 'none',
+    php: 'none',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -62,7 +62,7 @@ export default function CreateServer({ children }: { children: React.ReactNode }
 
   const [serverProviders, setServerProviders] = useState<ServerProvider[]>([]);
   const fetchServerProviders = async () => {
-    const serverProviders = await axios.get(route('server-providers.all'));
+    const serverProviders = await axios.get(route('server-providers.json'));
     setServerProviders(serverProviders.data);
   };
   const selectProvider = (provider: string) => {
@@ -150,12 +150,15 @@ export default function CreateServer({ children }: { children: React.ReactNode }
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  <CreateServerProvider
-                    trigger="icon"
+                  <ConnectServerProvider
                     providers={page.props.configs.server_providers.filter((item) => item !== 'custom')}
                     defaultProvider={form.data.provider}
                     onProviderAdded={fetchServerProviders}
-                  />
+                  >
+                    <Button variant="outline">
+                      <WifiIcon />
+                    </Button>
+                  </ConnectServerProvider>
                 </div>
                 <InputError />
               </FormField>

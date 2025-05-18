@@ -6,7 +6,7 @@ use App\Enums\UserRole;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia as Assert;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class UserTest extends TestCase
@@ -41,7 +41,7 @@ class UserTest extends TestCase
 
         $this->get(route('users'))
             ->assertSuccessful()
-            ->assertInertia(fn (Assert $page) => $page->component('users/index'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('users/index'));
     }
 
     public function test_must_be_admin_to_see_users_list(): void

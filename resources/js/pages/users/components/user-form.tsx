@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { FormEventHandler, ReactNode, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckIcon, LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User } from '@/types/user';
-import { Transition } from '@headlessui/react';
+import FormSuccessful from '@/components/form-successful';
 
 export default function UserForm({ user, children }: { user?: User; children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -100,15 +100,6 @@ export default function UserForm({ user, children }: { user?: User; children: Re
           </FormFields>
         </Form>
         <DialogFooter className="items-center">
-          <Transition
-            show={form.recentlySuccessful}
-            enter="transition ease-in-out"
-            enterFrom="opacity-0"
-            leave="transition ease-in-out"
-            leaveTo="opacity-0"
-          >
-            <CheckIcon className="text-success" />
-          </Transition>
           <DialogClose asChild>
             <Button type="button" variant="outline">
               Cancel
@@ -116,6 +107,7 @@ export default function UserForm({ user, children }: { user?: User; children: Re
           </DialogClose>
           <Button form="create-user-form" type="button" onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircle className="animate-spin" />}
+            <FormSuccessful successful={form.recentlySuccessful} />
             Save
           </Button>
         </DialogFooter>

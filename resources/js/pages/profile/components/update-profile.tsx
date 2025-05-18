@@ -4,18 +4,18 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Transition } from '@headlessui/react';
 import type { SharedData } from '@/types';
 import { FormEventHandler } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import { CheckIcon, LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
+import FormSuccessful from '@/components/form-successful';
 
 type ProfileForm = {
   name: string;
   email: string;
 };
 
-export default function UpdateUser() {
+export default function UpdateProfile() {
   const { auth } = usePage<SharedData>().props;
 
   const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
@@ -71,11 +71,9 @@ export default function UpdateUser() {
       <CardFooter className="gap-2">
         <Button form="update-profile-form" disabled={processing}>
           {processing && <LoaderCircleIcon className="animate-spin" />}
+          <FormSuccessful successful={recentlySuccessful} />
           Save
         </Button>
-        <Transition show={recentlySuccessful} enter="transition ease-in-out" enterFrom="opacity-0" leave="transition ease-in-out" leaveTo="opacity-0">
-          <CheckIcon className="text-success" />
-        </Transition>
       </CardFooter>
     </Card>
   );

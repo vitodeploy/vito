@@ -1,5 +1,4 @@
 import InputError from '@/components/ui/input-error';
-import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 
@@ -8,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import { CheckIcon, LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
+import FormSuccessful from '@/components/form-successful';
 
 export default function UpdatePassword() {
   const passwordInput = useRef<HTMLInputElement>(null);
@@ -96,11 +96,9 @@ export default function UpdatePassword() {
       <CardFooter className="gap-2">
         <Button form="update-password-form" disabled={processing}>
           {processing && <LoaderCircleIcon className="animate-spin" />}
+          <FormSuccessful successful={recentlySuccessful} />
           Save password
         </Button>
-        <Transition show={recentlySuccessful} enter="transition ease-in-out" enterFrom="opacity-0" leave="transition ease-in-out" leaveTo="opacity-0">
-          <CheckIcon className="text-success" />
-        </Transition>
       </CardFooter>
     </Card>
   );

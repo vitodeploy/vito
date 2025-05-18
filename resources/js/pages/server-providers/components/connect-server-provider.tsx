@@ -1,4 +1,4 @@
-import { LoaderCircle, PlusIcon, WifiIcon } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, useEffect, useState } from 'react';
+import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -26,16 +26,16 @@ type ServerProviderForm = {
   global: boolean;
 };
 
-export default function CreateServerProvider({
-  trigger,
+export default function ConnectServerProvider({
   providers,
   defaultProvider,
   onProviderAdded,
+  children,
 }: {
-  trigger: 'icon' | 'button';
   providers: string[];
   defaultProvider?: string;
   onProviderAdded?: () => void;
+  children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -65,21 +65,11 @@ export default function CreateServerProvider({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button type="button" variant="outline">
-          {trigger === 'icon' && <WifiIcon />}
-          {trigger === 'button' && (
-            <>
-              <PlusIcon />
-              Connect
-            </>
-          )}
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Connect</DialogTitle>
-          <DialogDescription>Connect to a new server provider</DialogDescription>
+          <DialogTitle>Connect to server provider</DialogTitle>
+          <DialogDescription className="sr-only">Connect to a new server provider</DialogDescription>
         </DialogHeader>
         <Form id="create-server-provider-form" onSubmit={submit} className="p-4">
           <FormFields>
