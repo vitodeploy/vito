@@ -18,7 +18,6 @@ class UpdateUser
 
         $user->name = $input['name'];
         $user->email = $input['email'];
-        $user->timezone = $input['timezone'];
         $user->role = $input['role'];
 
         if (isset($input['password'])) {
@@ -49,10 +48,6 @@ class UpdateUser
                 'required',
                 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
-            ],
-            'timezone' => [
-                'required',
-                Rule::in(timezone_identifiers_list()),
             ],
             'role' => [
                 'required',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Projects\AddUser;
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\DeleteProject;
+use App\Actions\Projects\UpdateProject;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use App\Models\User;
@@ -16,6 +17,7 @@ use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
@@ -30,7 +32,7 @@ class ProjectController extends Controller
 
         return Inertia::render('projects/index', [
             'projects' => ProjectResource::collection(
-                Project::query()->simplePaginate(config('web.pagination_size'))
+                Project::query()->with('users')->simplePaginate(config('web.pagination_size'))
             ),
         ]);
     }
@@ -50,7 +52,18 @@ class ProjectController extends Controller
             ->with('success', 'Project created successfully.');
     }
 
-    #[Post('switch/{project}', name: 'projects.switch')]
+    #[Patch('/{project}', name: 'projects.update')]
+    public function update(Request $request, Project $project): RedirectResponse
+    {
+        $this->authorize('update', $project);
+
+        app(UpdateProject::class)->update($project, $request->all());
+
+        return redirect()->route('projects')
+            ->with('success', 'Project updated successfully.');
+    }
+
+    #[Patch('switch/{project}', name: 'projects.switch')]
     public function switch(Project $project): RedirectResponse
     {
         $this->authorize('view', $project);
@@ -70,7 +83,7 @@ class ProjectController extends Controller
         return redirect()->route($previousRoute->getName());
     }
 
-    #[Post('/{project}/users', name: 'projects.users')]
+    #[Post('/{project}/users', name: 'projects.users.store')]
     public function storeUser(Request $request, Project $project): RedirectResponse
     {
         $this->authorize('update', $project);
@@ -81,19 +94,10 @@ class ProjectController extends Controller
             ->with('success', 'User added to project successfully.');
     }
 
-    #[Delete('{project}/users', name: 'projects.users')]
-    public function destroyUser(Request $request, Project $project): RedirectResponse
+    #[Delete('{project}/users/{user}', name: 'projects.users.destroy')]
+    public function destroyUser(Project $project, User $user): RedirectResponse
     {
         $this->authorize('update', $project);
-
-        $this->validate($request, [
-            'user' => [
-                'required',
-                'exists:users,id',
-            ],
-        ]);
-
-        $user = User::query()->find($request->input('user'));
 
         $project->users()->detach($user);
 

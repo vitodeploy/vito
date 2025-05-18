@@ -17,11 +17,11 @@ class ProjectResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'users' => UserResource::collection($this->users),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'created_at_by_timezone' => $this->created_at_by_timezone,
-            'updated_at_by_timezone' => $this->updated_at_by_timezone,
+            'users' => UserResource::collection(
+                $this->whenLoaded('users')
+            ),
         ];
     }
 }

@@ -1,12 +1,12 @@
+import { User } from '@/types/user';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreVerticalIcon } from 'lucide-react';
-import { Project } from '@/types/project';
-import DeleteProject from '@/pages/projects/components/delete-project';
-import UsersAction from '@/pages/projects/components/users-action';
-import ProjectForm from '@/pages/projects/components/project-form';
+import DeleteUser from '@/pages/users/components/delete-user';
+import Projects from '@/pages/users/components/projects';
+import UserForm from '@/pages/users/components/form';
 
-export default function ProjectActions({ project }: { project: Project }) {
+export default function UserActions({ user }: { user: User }) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -16,18 +16,18 @@ export default function ProjectActions({ project }: { project: Project }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <ProjectForm project={project}>
+        <UserForm user={user}>
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-        </ProjectForm>
-        <UsersAction project={project}>
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Users</DropdownMenuItem>
-        </UsersAction>
+        </UserForm>
+        <Projects user={user}>
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Projects</DropdownMenuItem>
+        </Projects>
         <DropdownMenuSeparator />
-        <DeleteProject project={project}>
+        <DeleteUser user={user}>
           <DropdownMenuItem onSelect={(e) => e.preventDefault()} variant="destructive">
-            Delete Project
+            Delete
           </DropdownMenuItem>
-        </DeleteProject>
+        </DeleteUser>
       </DropdownMenuContent>
     </DropdownMenu>
   );

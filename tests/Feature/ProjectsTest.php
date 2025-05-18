@@ -3,11 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
-use App\Web\Pages\Settings\Projects\Index;
-use App\Web\Pages\Settings\Projects\Settings;
-use App\Web\Pages\Settings\Projects\Widgets\UpdateProject;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class ProjectsTest extends TestCase
@@ -18,15 +15,17 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(Index::class)
-            ->callAction('create', [
-                'name' => 'test',
-            ])
-            ->assertSuccessful();
+        $this->post(route('projects.store'), [
+            'name' => 'create-project-test',
+        ])
+            ->assertSessionDoesntHaveErrors()
+            ->assertRedirect(route('projects'));
 
         $this->assertDatabaseHas('projects', [
-            'name' => 'test',
+            'name' => 'create-project-test',
         ]);
+
+        $this->assertEquals($this->user->refresh()->current_project_id, Project::query()->where('name', 'create-project-test')->first()->id);
     }
 
     public function test_see_projects_list(): void
@@ -37,9 +36,10 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        $this->get(Index::getUrl())
+        $this->get(route('projects'))
             ->assertSuccessful()
-            ->assertSee($project->name);
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('projects/index'));
+
     }
 
     public function test_delete_project(): void
@@ -50,11 +50,11 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        Livewire::test(Settings::class, [
-            'project' => $project,
+        $this->delete(route('projects.destroy', $project), [
+            'name' => $project->name,
         ])
-            ->callAction('delete')
-            ->assertSuccessful();
+            ->assertSessionDoesntHaveErrors()
+            ->assertRedirect(route('projects'));
 
         $this->assertDatabaseMissing('projects', [
             'id' => $project->id,
@@ -69,14 +69,11 @@ class ProjectsTest extends TestCase
 
         $this->user->projects()->attach($project);
 
-        Livewire::test(UpdateProject::class, [
-            'project' => $project,
+        $this->patch(route('projects.update', $project), [
+            'name' => 'new-name',
         ])
-            ->fill([
-                'name' => 'new-name',
-            ])
-            ->call('submit')
-            ->assertSuccessful();
+            ->assertSessionDoesntHaveErrors()
+            ->assertRedirect(route('projects'));
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
@@ -88,11 +85,12 @@ class ProjectsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(Settings::class, [
-            'project' => $this->user->currentProject,
+        $this->delete(route('projects.destroy', $this->user->currentProject->id), [
+            'name' => $this->user->currentProject->name,
         ])
-            ->callAction('delete')
-            ->assertNotified('Cannot delete the last project.');
+            ->assertSessionHasErrors([
+                'name' => 'Cannot delete the last project.',
+            ]);
 
         $this->assertDatabaseHas('projects', [
             'id' => $this->user->currentProject->id,

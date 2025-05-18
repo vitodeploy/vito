@@ -1,23 +1,26 @@
-'use client';
-
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  className?: string;
+  modal?: boolean;
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, className, modal }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const extraClasses = modal && 'border-none shadow-none';
+
   return (
-    <div className="rounded-md border">
+    <div className={cn('rounded-md border shadow-xs', className, extraClasses)}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

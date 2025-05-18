@@ -1,11 +1,10 @@
-'use client';
-
 import { ColumnDef } from '@tanstack/react-table';
 import type { Project } from '@/types/project';
 import ProjectActions from '@/pages/projects/components/actions';
 import { usePage } from '@inertiajs/react';
 import { SharedData } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import DateTime from '@/components/date-time';
 
 const CurrentProject = ({ project }: { project: Project }) => {
   const page = usePage<SharedData>();
@@ -34,10 +33,13 @@ export const columns: ColumnDef<Project>[] = [
     },
   },
   {
-    accessorKey: 'created_at_by_timezone',
+    accessorKey: 'created_at',
     header: 'Created at',
     enableColumnFilter: true,
     enableSorting: true,
+    cell: ({ row }) => {
+      return <DateTime date={row.original.created_at} />;
+    },
   },
   {
     id: 'actions',

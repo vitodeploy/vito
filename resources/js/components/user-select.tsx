@@ -14,7 +14,7 @@ export default function UserSelect({ onChange }: { onChange: (selectedUser: User
   const [value, setValue] = useState<string>();
 
   const fetchUsers = async () => {
-    const response = await axios.get(route('users', { query: query }));
+    const response = await axios.get(route('users.json', { query: query }));
 
     if (response.status === 200) {
       setUsers(response.data as User[]);

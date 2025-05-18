@@ -1,5 +1,5 @@
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { ListIcon, UserIcon } from 'lucide-react';
+import { ListIcon, UserIcon, UsersIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Layout from '@/layouts/app/layout';
 
@@ -8,6 +8,11 @@ const sidebarNavItems: NavItem[] = [
     title: 'Profile',
     href: route('profile'),
     icon: UserIcon,
+  },
+  {
+    title: 'Users',
+    href: route('users'),
+    icon: UsersIcon,
   },
   {
     title: 'Projects',

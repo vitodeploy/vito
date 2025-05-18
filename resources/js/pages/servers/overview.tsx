@@ -15,7 +15,7 @@ export default function ServerOverview() {
   }>();
 
   return (
-    <Container className="max-w-3xl">
+    <Container className="max-w-5xl">
       <Heading title="Overview" description="Here you can see an overview of your server" />
       <DataTable columns={columns} data={page.props.logs.data} />
     </Container>

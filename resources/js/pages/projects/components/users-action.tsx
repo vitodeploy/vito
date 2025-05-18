@@ -20,17 +20,7 @@ import InputError from '@/components/ui/input-error';
 import UserSelect from '@/components/user-select';
 import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon, TrashIcon } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from '@/components/ui/alert-dialog';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 function AddUser({ project }: { project: Project }) {
   const [open, setOpen] = useState(false);
@@ -41,7 +31,7 @@ function AddUser({ project }: { project: Project }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('projects.users', project.id), {
+    form.post(route('projects.users.store', { project: project.id }), {
       onSuccess: () => {
         setOpen(false);
       },
@@ -51,14 +41,14 @@ function AddUser({ project }: { project: Project }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Add user</Button>
+        <Button>Add user</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Add user</DialogTitle>
-          <DialogDescription>Here you can add new user to {project.name}</DialogDescription>
+          <DialogDescription className="sr-only">Here you can add new user to {project.name}</DialogDescription>
         </DialogHeader>
-        <Form id="add-user-form" onSubmit={submit}>
+        <Form id="add-user-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
               <Label htmlFor="user">User</Label>
@@ -71,7 +61,10 @@ function AddUser({ project }: { project: Project }) {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="add-user-form">Add</Button>
+          <Button form="add-user-form" disabled={form.processing}>
+            {form.processing && <LoaderCircleIcon className="animate-spin" />}
+            Add
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -81,13 +74,11 @@ function AddUser({ project }: { project: Project }) {
 function RemoveUser({ project, user }: { project: Project; user: User }) {
   const [open, setOpen] = useState(false);
 
-  const form = useForm({
-    user: user.id,
-  });
+  const form = useForm();
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.delete(route('projects.users', project.id), {
+    form.delete(route('projects.users.destroy', { project: project.id, user: user.id }), {
       onSuccess: () => {
         setOpen(false);
       },
@@ -95,27 +86,33 @@ function RemoveUser({ project, user }: { project: Project; user: User }) {
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <TrashIcon />
         </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Remove user</AlertDialogTitle>
-          <AlertDialogDescription>Remove user from {project.name}.</AlertDialogDescription>
-        </AlertDialogHeader>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Remove user</DialogTitle>
+          <DialogDescription className="sr-only">Remove user from {project.name}.</DialogDescription>
+        </DialogHeader>
 
-        <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <p className="p-4">
+          Are you sure you want to remove <b>{user.name}</b> from this project?
+        </p>
+
+        <DialogFooter className="gap-2">
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
           <Button onClick={submit} variant="destructive" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             Remove user
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -155,18 +152,20 @@ const getColumns = (project: Project): ColumnDef<User>[] => [
 
 export default function UsersAction({ project, children }: { project: Project; children: ReactNode }) {
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Users</DialogTitle>
-          <DialogDescription>Users assigned to this project</DialogDescription>
-        </DialogHeader>
-        <DataTable columns={getColumns(project)} data={project.users} />
-        <DialogFooter className="gap-2">
-          <AddUser project={project} />
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <Sheet>
+      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetContent className="sm:max-w-3xl">
+        <SheetHeader>
+          <SheetTitle>Project users</SheetTitle>
+          <SheetDescription className="sr-only">Users assigned to this project</SheetDescription>
+        </SheetHeader>
+        <DataTable columns={getColumns(project)} data={project.users} modal />
+        <SheetFooter className="gap-2">
+          <div className="flex items-center">
+            <AddUser project={project} />
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -37,7 +37,7 @@ export default function DeleteServer({ server, children }: { server: Server; chi
           <DialogDescription>Delete server and its resources.</DialogDescription>
         </DialogHeader>
 
-        <Form id="delete-server-form" onSubmit={submit}>
+        <Form id="delete-server-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
               <Label htmlFor="server-name">Name</Label>
@@ -49,7 +49,7 @@ export default function DeleteServer({ server, children }: { server: Server; chi
 
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button variant="secondary">Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
 
           <Button form="delete-server-form" variant="destructive" disabled={form.processing}>

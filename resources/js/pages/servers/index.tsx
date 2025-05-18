@@ -31,7 +31,7 @@ export default function Servers() {
           <Heading title="Servers" description="All of the servers of your project listed here" />
           <div className="flex items-center gap-2">
             <CreateServer>
-              <Button variant="outline">Create server</Button>
+              <Button>Create server</Button>
             </CreateServer>
           </div>
         </div>

@@ -10,22 +10,29 @@ import {
 } from '@/components/ui/dialog';
 import { FormEventHandler, ReactNode, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { LoaderCircle } from 'lucide-react';
+import { CheckIcon, LoaderCircle } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
+import { Project } from '@/types/project';
+import { Transition } from '@headlessui/react';
 
-export default function CreateProject({ children }: { children: ReactNode }) {
+export default function ProjectForm({ project, children }: { project?: Project; children: ReactNode }) {
   const [open, setOpen] = useState(false);
 
   const form = useForm({
-    name: '',
+    name: project?.name || '',
   });
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
+
+    if (project) {
+      form.patch(route('projects.update', project.id));
+      return;
+    }
 
     form.post(route('projects.store'), {
       onSuccess() {
@@ -39,10 +46,10 @@ export default function CreateProject({ children }: { children: ReactNode }) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create project</DialogTitle>
-          <DialogDescription>Fill the form to create a new project</DialogDescription>
+          <DialogTitle>{project ? 'Edit Project' : 'Create Project'}</DialogTitle>
+          <DialogDescription className="sr-only">{project ? 'Edit the project details.' : 'Create a new project.'}</DialogDescription>
         </DialogHeader>
-        <Form id="create-project-form" onSubmit={submit}>
+        <Form id="project-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
@@ -51,15 +58,24 @@ export default function CreateProject({ children }: { children: ReactNode }) {
             </FormField>
           </FormFields>
         </Form>
-        <DialogFooter>
+        <DialogFooter className="items-center">
+          <Transition
+            show={form.recentlySuccessful}
+            enter="transition ease-in-out"
+            enterFrom="opacity-0"
+            leave="transition ease-in-out"
+            leaveTo="opacity-0"
+          >
+            <CheckIcon className="text-success" />
+          </Transition>
           <DialogClose asChild>
             <Button type="button" variant="outline">
               Cancel
             </Button>
           </DialogClose>
-          <Button form="create-project-form" type="button" onClick={submit} disabled={form.processing}>
+          <Button form="project-form" type="button" onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircle className="animate-spin" />}
-            Create
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

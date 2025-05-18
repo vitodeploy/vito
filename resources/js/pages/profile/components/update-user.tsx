@@ -1,19 +1,21 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Transition } from '@headlessui/react';
 import type { SharedData } from '@/types';
 import { FormEventHandler } from 'react';
+import { Form, FormField, FormFields } from '@/components/ui/form';
+import { CheckIcon, LoaderCircleIcon } from 'lucide-react';
 
 type ProfileForm = {
   name: string;
   email: string;
 };
 
-export default function UpdateUser({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
+export default function UpdateUser() {
   const { auth } = usePage<SharedData>().props;
 
   const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
@@ -35,76 +37,46 @@ export default function UpdateUser({ mustVerifyEmail, status }: { mustVerifyEmai
         <CardTitle>Profile information</CardTitle>
         <CardDescription>Update your profile information and email address.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={submit} className="space-y-6">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
-
-            <Input
-              id="name"
-              className="mt-1 block w-full"
-              value={data.name}
-              onChange={(e) => setData('name', e.target.value)}
-              required
-              autoComplete="name"
-              placeholder="Full name"
-            />
-
-            <InputError className="mt-2" message={errors.name} />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email address</Label>
-
-            <Input
-              id="email"
-              type="email"
-              className="mt-1 block w-full"
-              value={data.email}
-              onChange={(e) => setData('email', e.target.value)}
-              required
-              autoComplete="username"
-              placeholder="Email address"
-            />
-
-            <InputError className="mt-2" message={errors.email} />
-          </div>
-
-          {mustVerifyEmail && auth.user.email_verified_at === null && (
-            <div>
-              <p className="text-muted-foreground -mt-4 text-sm">
-                Your email address is unverified.{' '}
-                <Link
-                  href={route('verification.send')}
-                  method="post"
-                  as="button"
-                  className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                >
-                  Click here to resend the verification email.
-                </Link>
-              </p>
-
-              {status === 'verification-link-sent' && (
-                <div className="mt-2 text-sm font-medium text-green-600">A new verification link has been sent to your email address.</div>
-              )}
-            </div>
-          )}
-
-          <div className="flex items-center gap-4">
-            <Button disabled={processing}>Save</Button>
-
-            <Transition
-              show={recentlySuccessful}
-              enter="transition ease-in-out"
-              enterFrom="opacity-0"
-              leave="transition ease-in-out"
-              leaveTo="opacity-0"
-            >
-              <p className="text-sm text-neutral-600">Saved</p>
-            </Transition>
-          </div>
-        </form>
+      <CardContent className="p-4">
+        <Form id="update-profile-form" onSubmit={submit}>
+          <FormFields>
+            <FormField>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={data.name}
+                onChange={(e) => setData('name', e.target.value)}
+                required
+                autoComplete="name"
+                placeholder="Full name"
+              />
+              <InputError message={errors.name} />
+            </FormField>
+            <FormField>
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={data.email}
+                onChange={(e) => setData('email', e.target.value)}
+                required
+                autoComplete="username"
+                placeholder="Email address"
+              />
+              <InputError message={errors.email} />
+            </FormField>
+          </FormFields>
+        </Form>
       </CardContent>
+      <CardFooter className="gap-2">
+        <Button form="update-profile-form" disabled={processing}>
+          {processing && <LoaderCircleIcon className="animate-spin" />}
+          Save
+        </Button>
+        <Transition show={recentlySuccessful} enter="transition ease-in-out" enterFrom="opacity-0" leave="transition ease-in-out" leaveTo="opacity-0">
+          <CheckIcon className="text-success" />
+        </Transition>
+      </CardFooter>
     </Card>
   );
 }

@@ -9,7 +9,7 @@ export default function ServerHeader({ server }: { server: Server }) {
   return (
     <div className="flex items-center justify-between border-b px-4 py-2">
       <div className="space-y-2">
-        <div className="text-accent-foreground/50 flex items-center space-x-2 text-xs">
+        <div className="flex items-center space-x-2 text-xs">
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center space-x-1">

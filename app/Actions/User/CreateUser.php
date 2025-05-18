@@ -14,7 +14,7 @@ class CreateUser
      */
     public function create(array $input): User
     {
-        $this->validate($input);
+        Validator::make($input, self::rules())->validate();
 
         /** @var User $user */
         $user = User::query()->create([
@@ -26,14 +26,6 @@ class CreateUser
         ]);
 
         return $user;
-    }
-
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    private function validate(array $input): void
-    {
-        Validator::make($input, self::rules())->validate();
     }
 
     /**

@@ -81,7 +81,7 @@ export default function CreateServerProvider({
           <DialogTitle>Connect</DialogTitle>
           <DialogDescription>Connect to a new server provider</DialogDescription>
         </DialogHeader>
-        <Form id="create-server-provider-form" onSubmit={submit} className="py-4">
+        <Form id="create-server-provider-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
               <Label htmlFor="provider">Provider</Label>

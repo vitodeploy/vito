@@ -1,13 +1,12 @@
-'use client';
-
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { EyeIcon, LoaderCircleIcon } from 'lucide-react';
 import type { ServerLog } from '@/types/server-log';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useState } from 'react';
 import axios from 'axios';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import DateTime from '@/components/date-time';
 
 const LogActionCell = ({ row }: { row: Row<ServerLog> }) => {
   const [open, setOpen] = useState(false);
@@ -40,15 +39,18 @@ const LogActionCell = ({ row }: { row: Row<ServerLog> }) => {
             {loading ? <LoaderCircleIcon className="animate-spin" /> : <EyeIcon />}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>View Log</DialogTitle>
-            <DialogDescription>This is all content of the log</DialogDescription>
+            <DialogDescription className="sr-only">This is all content of the log</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="border-border bg-accent text-accent-foreground relative h-[500px] w-full rounded-md border p-3 font-mono text-sm whitespace-pre-line">
+          <ScrollArea className="bg-accent text-accent-foreground relative h-[500px] w-full p-4 font-mono text-sm whitespace-pre-line">
             {content}
             <ScrollBar orientation="vertical" />
           </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline">Download</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -62,9 +64,12 @@ export const columns: ColumnDef<ServerLog>[] = [
     enableColumnFilter: true,
   },
   {
-    accessorKey: 'created_at_by_timezone',
+    accessorKey: 'created_at',
     header: 'Created At',
     enableSorting: true,
+    cell: ({ row }) => {
+      return <DateTime date={row.original.created_at} />;
+    },
   },
   {
     id: 'actions',

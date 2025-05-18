@@ -14,7 +14,7 @@ export default function InstallingServer() {
   }>();
 
   return (
-    <Container className="max-w-3xl">
+    <Container className="max-w-5xl">
       <DataTable columns={columns} data={page.props.logs.data} />{' '}
     </Container>
   );

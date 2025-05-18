@@ -6,7 +6,7 @@ import { Project } from '@/types/project';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import React from 'react';
-import CreateProject from '@/pages/projects/components/create-project';
+import ProjectForm from '@/pages/projects/components/project-form';
 import { Button } from '@/components/ui/button';
 
 export default function Projects() {
@@ -20,13 +20,13 @@ export default function Projects() {
     <SettingsLayout>
       <Head title="Projects" />
 
-      <Container className="max-w-3xl">
+      <Container className="max-w-5xl">
         <div className="flex items-start justify-between">
           <Heading title="Projects" description="Here you can manage your projects" />
           <div className="flex items-center gap-2">
-            <CreateProject>
-              <Button variant="outline">Create project</Button>
-            </CreateProject>
+            <ProjectForm>
+              <Button>Create project</Button>
+            </ProjectForm>
           </div>
         </div>
         <DataTable columns={columns} data={page.props.projects.data} />

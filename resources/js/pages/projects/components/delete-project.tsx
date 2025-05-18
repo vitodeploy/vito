@@ -34,10 +34,11 @@ export default function DeleteProject({ project, children }: { project: Project;
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete {project.name}</DialogTitle>
-          <DialogDescription>Delete project and all its resources.</DialogDescription>
+          <DialogDescription className="sr-only">Delete project and all its resources.</DialogDescription>
         </DialogHeader>
 
-        <Form id="delete-project-form" onSubmit={submit}>
+        <Form id="delete-project-form" onSubmit={submit} className="p-4">
+          <p>Are you sure you want to delete this project? This action cannot be undone.</p>
           <FormFields>
             <FormField>
               <Label htmlFor="project-name">Name</Label>
@@ -49,7 +50,7 @@ export default function DeleteProject({ project, children }: { project: Project;
 
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button variant="secondary">Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
 
           <Button form="delete-project-form" variant="destructive" disabled={form.processing}>
