@@ -4,6 +4,7 @@ namespace App\Actions\Tag;
 
 use App\Models\Tag;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -16,10 +17,13 @@ class CreateTag
      */
     public function create(User $user, array $input): Tag
     {
+        Validator::make($input, self::rules())->validate();
+
         $tag = Tag::query()
             ->where('project_id', $user->current_project_id)
             ->where('name', $input['name'])
             ->first();
+
         if ($tag) {
             throw ValidationException::withMessages([
                 'name' => ['Tag with this name already exists.'],
@@ -47,7 +51,7 @@ class CreateTag
             ],
             'color' => [
                 'required',
-                Rule::in(config('core.tag_colors')),
+                Rule::in(config('core.colors')),
             ],
         ];
     }

@@ -20,7 +20,7 @@ class TagFactory extends Factory
             'created_at' => Carbon::now(), //
             'updated_at' => Carbon::now(),
             'name' => $this->faker->randomElement(['production', 'staging', 'development']),
-            'color' => $this->faker->randomElement(config('core.tag_colors')),
+            'color' => $this->faker->randomElement(config('core.colors')),
         ];
     }
 }

@@ -71,6 +71,26 @@
   --color-badge-danger-foreground: var(--badge-danger-foreground);
   --color-badge-gray: var(--badge-gray);
   --color-badge-gray-foreground: var(--badge-gray-foreground);
+
+  --color-slate: var(--color-slate-500);
+  --color-gray: var(--color-gray-500);
+  --color-red: var(--color-red-500);
+  --color-orange: var(--color-orange-500);
+  --color-amber: var(--color-amber-500);
+  --color-yellow: var(--color-yellow-500);
+  --color-lime: var(--color-lime-500);
+  --color-green: var(--color-green-500);
+  --color-emerald: var(--color-emerald-500);
+  --color-teal: var(--color-teal-500);
+  --color-cyan: var(--color-cyan-500);
+  --color-sky: var(--color-sky-500);
+  --color-blue: var(--color-blue-500);
+  --color-indigo: var(--color-indigo-500);
+  --color-violet: var(--color-violet-500);
+  --color-purple: var(--color-purple-500);
+  --color-fuchsia: var(--color-fuchsia-500);
+  --color-pink: var(--color-pink-500);
+  --color-rose: var(--color-rose-500);
 }
 
 /*

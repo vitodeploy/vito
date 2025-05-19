@@ -3,6 +3,7 @@
 namespace App\Actions\Tag;
 
 use App\Models\Tag;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class EditTag
@@ -12,6 +13,8 @@ class EditTag
      */
     public function edit(Tag $tag, array $input): void
     {
+        Validator::make($input, self::rules())->validate();
+
         $tag->name = $input['name'];
         $tag->color = $input['color'];
 
@@ -29,7 +32,7 @@ class EditTag
             ],
             'color' => [
                 'required',
-                Rule::in(config('core.tag_colors')),
+                Rule::in(config('core.colors')),
             ],
         ];
     }

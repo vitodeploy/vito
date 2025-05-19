@@ -49,6 +49,7 @@ export interface Configs {
   service_versions: {
     [service: string]: string[];
   };
+  colors: string[];
   webservers: string[];
   databases: string[];
   php_versions: string[];

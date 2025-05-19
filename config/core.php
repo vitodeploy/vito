@@ -576,7 +576,26 @@ return [
         90,
     ],
 
-    'tag_colors' => [
+    'taggable_types' => [
+        \App\Models\Server::class,
+        \App\Models\Site::class,
+    ],
+
+    'user_roles' => [
+        \App\Enums\UserRole::USER,
+        \App\Enums\UserRole::ADMIN,
+    ],
+
+    'cronjob_intervals' => [
+        '* * * * *' => 'Every Minute',
+        '0 * * * *' => 'Hourly',
+        '0 0 * * *' => 'Daily',
+        '0 0 * * 0' => 'Weekly',
+        '0 0 1 * *' => 'Monthly',
+        'custom' => 'Custom',
+    ],
+
+    'colors' => [
         'slate',
         'gray',
         'red',
@@ -596,23 +615,5 @@ return [
         'fuchsia',
         'pink',
         'rose',
-    ],
-    'taggable_types' => [
-        \App\Models\Server::class,
-        \App\Models\Site::class,
-    ],
-
-    'user_roles' => [
-        \App\Enums\UserRole::USER,
-        \App\Enums\UserRole::ADMIN,
-    ],
-
-    'cronjob_intervals' => [
-        '* * * * *' => 'Every Minute',
-        '0 * * * *' => 'Hourly',
-        '0 0 * * *' => 'Daily',
-        '0 0 * * 0' => 'Weekly',
-        '0 0 1 * *' => 'Monthly',
-        'custom' => 'Custom',
     ],
 ];
