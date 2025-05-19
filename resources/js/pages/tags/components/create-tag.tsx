@@ -45,8 +45,8 @@ export default function CreateTag({ children }: { children: ReactNode }) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-h-screen overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Connect to storage provider</DialogTitle>
-          <DialogDescription className="sr-only">Connect to a new storage provider</DialogDescription>
+          <DialogTitle>Create a tag</DialogTitle>
+          <DialogDescription className="sr-only">Create a new tag</DialogDescription>
         </DialogHeader>
         <Form id="create-tag-form" onSubmit={submit} className="p-4">
           <FormFields>
@@ -70,7 +70,7 @@ export default function CreateTag({ children }: { children: ReactNode }) {
           </DialogClose>
           <Button type="button" onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircle className="animate-spin" />}
-            Connect
+            Create
           </Button>
         </DialogFooter>
       </DialogContent>

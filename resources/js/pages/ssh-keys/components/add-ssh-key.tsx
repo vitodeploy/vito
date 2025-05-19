@@ -70,7 +70,7 @@ export default function AddSshKey({ children }: { children: ReactNode }) {
           </DialogClose>
           <Button type="button" onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircle className="animate-spin" />}
-            Connect
+            Add
           </Button>
         </DialogFooter>
       </DialogContent>
