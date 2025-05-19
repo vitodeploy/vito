@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationChannel;
-use App\Web\Pages\Settings\NotificationChannels\Index;
-use App\Web\Pages\Settings\NotificationChannels\Widgets\NotificationChannelsList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Http;
-use Livewire\Livewire;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class NotificationChannelsTest extends TestCase
@@ -20,14 +18,13 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::EMAIL,
-                'email' => 'email@example.com',
-                'label' => 'Email',
-                'global' => true,
-            ])
-            ->assertSuccessful();
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::EMAIL,
+            'email' => 'email@example.com',
+            'name' => 'Email',
+            'global' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -47,16 +44,14 @@ class NotificationChannelsTest extends TestCase
 
         $this->actingAs($this->user);
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::EMAIL,
-                'email' => 'email@example.com',
-                'label' => 'Email',
-                'global' => true,
-            ])
-            ->assertNotified('Could not connect! Make sure you configured `.env` file correctly.');
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::EMAIL,
+            'email' => 'email@example.com',
+            'name' => 'Email',
+            'global' => true,
+        ]);
 
-        /** @var \App\Models\NotificationChannel $channel */
+        /** @var ?\App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::EMAIL)
             ->where('label', 'Email')
@@ -71,13 +66,12 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::SLACK,
-                'webhook_url' => 'https://hooks.slack.com/services/123/token',
-                'label' => 'Slack',
-            ])
-            ->assertSuccessful();
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::SLACK,
+            'webhook_url' => 'https://hooks.slack.com/services/123/token',
+            'name' => 'Slack',
+        ])
+            ->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -96,15 +90,16 @@ class NotificationChannelsTest extends TestCase
             'slack.com/*' => Http::response(['ok' => false], 401),
         ]);
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::SLACK,
-                'webhook_url' => 'https://hooks.slack.com/services/123/token',
-                'label' => 'Slack',
-            ])
-            ->assertNotified('Could not connect');
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::SLACK,
+            'webhook_url' => 'https://hooks.slack.com/services/123/token',
+            'name' => 'Slack',
+        ])
+            ->assertSessionHasErrors([
+                'provider' => 'Could not connect',
+            ]);
 
-        /** @var \App\Models\NotificationChannel $channel */
+        /** @var ?\App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::SLACK)
             ->first();
@@ -118,13 +113,12 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::DISCORD,
-                'webhook_url' => 'https://discord.com/api/webhooks/123/token',
-                'label' => 'Discord',
-            ])
-            ->assertSuccessful();
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::DISCORD,
+            'webhook_url' => 'https://discord.com/api/webhooks/123/token',
+            'name' => 'Discord',
+        ])
+            ->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -143,15 +137,16 @@ class NotificationChannelsTest extends TestCase
             'discord.com/*' => Http::response(['ok' => false], 401),
         ]);
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::DISCORD,
-                'webhook_url' => 'https://discord.com/api/webhooks/123/token',
-                'label' => 'Discord',
-            ])
-            ->assertNotified('Could not connect');
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::DISCORD,
+            'webhook_url' => 'https://discord.com/api/webhooks/123/token',
+            'name' => 'Slack',
+        ])
+            ->assertSessionHasErrors([
+                'provider' => 'Could not connect',
+            ]);
 
-        /** @var \App\Models\NotificationChannel $channel */
+        /** @var ?\App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::DISCORD)
             ->first();
@@ -165,14 +160,13 @@ class NotificationChannelsTest extends TestCase
 
         Http::fake();
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::TELEGRAM,
-                'bot_token' => 'token',
-                'chat_id' => '123',
-                'label' => 'Telegram',
-            ])
-            ->assertSuccessful();
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::TELEGRAM,
+            'bot_token' => 'token',
+            'chat_id' => '123',
+            'name' => 'Telegram',
+        ])
+            ->assertSessionDoesntHaveErrors();
 
         /** @var \App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
@@ -192,16 +186,17 @@ class NotificationChannelsTest extends TestCase
             'api.telegram.org/*' => Http::response(['ok' => false], 401),
         ]);
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'provider' => NotificationChannel::TELEGRAM,
-                'bot_token' => 'token',
-                'chat_id' => '123',
-                'label' => 'Telegram',
-            ])
-            ->assertNotified('Could not connect');
+        $this->post(route('notification-channels.store'), [
+            'provider' => NotificationChannel::TELEGRAM,
+            'bot_token' => 'token',
+            'chat_id' => '123',
+            'name' => 'Telegram',
+        ])
+            ->assertSessionHasErrors([
+                'provider' => 'Could not connect',
+            ]);
 
-        /** @var \App\Models\NotificationChannel $channel */
+        /** @var ?\App\Models\NotificationChannel $channel */
         $channel = \App\Models\NotificationChannel::query()
             ->where('provider', NotificationChannel::TELEGRAM)
             ->first();
@@ -213,12 +208,10 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        /** @var \App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::factory()->create();
+        \App\Models\NotificationChannel::factory()->create();
 
-        $this->get(Index::getUrl())
-            ->assertSuccessful()
-            ->assertSee($channel->label);
+        $this->get(route('notification-channels'))
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('notification-channels/index'));
     }
 
     public function test_delete_channel(): void
@@ -227,9 +220,9 @@ class NotificationChannelsTest extends TestCase
 
         $channel = \App\Models\NotificationChannel::factory()->create();
 
-        Livewire::test(NotificationChannelsList::class)
-            ->callTableAction('delete', $channel->id)
-            ->assertSuccessful();
+        $this->delete(route('notification-channels.destroy', [
+            'notificationChannel' => $channel->id,
+        ]));
 
         $this->assertDatabaseMissing('notification_channels', [
             'id' => $channel->id,

@@ -20,13 +20,13 @@ import { Input } from '@/components/ui/input';
 import { SharedData } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 
-type StorageProviderForm = {
+type NotificationChannelForm = {
   provider: string;
   name: string;
   global: boolean;
 };
 
-export default function ConnectStorageProvider({
+export default function ConnectNotificationChannel({
   providers,
   defaultProvider,
   onProviderAdded,
@@ -41,15 +41,15 @@ export default function ConnectStorageProvider({
 
   const page = usePage<SharedData>();
 
-  const form = useForm<Required<StorageProviderForm>>({
-    provider: 's3',
+  const form = useForm<Required<NotificationChannelForm>>({
+    provider: 'email',
     name: '',
     global: false,
   });
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('storage-providers.store'), {
+    form.post(route('notification-channels.store'), {
       onSuccess: () => {
         setOpen(false);
         if (onProviderAdded) {
@@ -60,7 +60,7 @@ export default function ConnectStorageProvider({
   };
 
   useEffect(() => {
-    form.setData('provider', defaultProvider ?? 's3');
+    form.setData('provider', defaultProvider ?? 'email');
   }, [defaultProvider]);
 
   return (
@@ -68,10 +68,10 @@ export default function ConnectStorageProvider({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-h-screen overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Connect to storage provider</DialogTitle>
-          <DialogDescription className="sr-only">Connect to a new storage provider</DialogDescription>
+          <DialogTitle>Connect to notification channel</DialogTitle>
+          <DialogDescription className="sr-only">Connect to a new notification channel</DialogDescription>
         </DialogHeader>
-        <Form id="create-storage-provider-form" onSubmit={submit} className="p-4">
+        <Form id="create-notification-channel-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
               <Label htmlFor="provider">Provider</Label>
@@ -111,10 +111,12 @@ export default function ConnectStorageProvider({
             </FormField>
             <div
               className={
-                page.props.configs.storage_providers_custom_fields[form.data.provider].length > 1 ? 'grid grid-cols-2 items-start gap-6' : ''
+                page.props.configs.notification_channels_providers_custom_fields[form.data.provider].length > 1
+                  ? 'grid grid-cols-2 items-start gap-6'
+                  : ''
               }
             >
-              {page.props.configs.storage_providers_custom_fields[form.data.provider]?.map((item: string) => (
+              {page.props.configs.notification_channels_providers_custom_fields[form.data.provider]?.map((item: string) => (
                 <FormField key={item}>
                   <Label htmlFor={item} className="capitalize">
                     {item.replaceAll('_', ' ')}
@@ -123,10 +125,10 @@ export default function ConnectStorageProvider({
                     type="text"
                     name={item}
                     id={item}
-                    value={(form.data[item as keyof StorageProviderForm] as string) ?? ''}
-                    onChange={(e) => form.setData(item as keyof StorageProviderForm, e.target.value)}
+                    value={(form.data[item as keyof NotificationChannelForm] as string) ?? ''}
+                    onChange={(e) => form.setData(item as keyof NotificationChannelForm, e.target.value)}
                   />
-                  <InputError message={form.errors[item as keyof StorageProviderForm]} />
+                  <InputError message={form.errors[item as keyof NotificationChannelForm]} />
                 </FormField>
               ))}
             </div>

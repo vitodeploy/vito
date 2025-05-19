@@ -41,6 +41,10 @@ export interface Configs {
   storage_providers_custom_fields: {
     [provider: string]: string[];
   };
+  notification_channels_providers: string[];
+  notification_channels_providers_custom_fields: {
+    [provider: string]: string[];
+  };
   operating_systems: string[];
   service_versions: {
     [service: string]: string[];

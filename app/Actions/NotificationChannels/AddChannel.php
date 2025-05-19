@@ -5,6 +5,7 @@ namespace App\Actions\NotificationChannels;
 use App\Models\NotificationChannel;
 use App\Models\User;
 use Exception;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -17,10 +18,12 @@ class AddChannel
      */
     public function add(User $user, array $input): void
     {
+        Validator::make($input, self::rules($input))->validate();
+
         $channel = new NotificationChannel([
             'user_id' => $user->id,
             'provider' => $input['provider'],
-            'label' => $input['label'],
+            'label' => $input['name'],
             'project_id' => isset($input['global']) && $input['global'] ? null : $user->current_project_id,
         ]);
         $channel->data = $channel->provider()->createData($input);
@@ -63,7 +66,7 @@ class AddChannel
                 'required',
                 Rule::in(config('core.notification_channels_providers')),
             ],
-            'label' => 'required',
+            'name' => 'required',
         ];
 
         return array_merge($rules, self::providerRules($input));

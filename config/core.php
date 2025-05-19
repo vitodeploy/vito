@@ -520,6 +520,12 @@ return [
         \App\Enums\NotificationChannel::EMAIL => \App\NotificationChannels\Email::class,
         \App\Enums\NotificationChannel::TELEGRAM => \App\NotificationChannels\Telegram::class,
     ],
+    'notification_channels_providers_custom_fields' => [
+        \App\Enums\NotificationChannel::SLACK => ['webhook_url'],
+        \App\Enums\NotificationChannel::DISCORD => ['webhook_url'],
+        \App\Enums\NotificationChannel::EMAIL => ['email'],
+        \App\Enums\NotificationChannel::TELEGRAM => ['bot_token', 'chat_id'],
+    ],
 
     /*
      * storage providers

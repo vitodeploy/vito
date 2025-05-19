@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Notifications\NotificationInterface;
+use Database\Factories\NotificationChannelFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,11 +15,11 @@ use Illuminate\Notifications\Notifiable;
  * @property array<string, mixed> $data
  * @property string $label
  * @property bool $connected
- * @property int $project_id
+ * @property ?int $project_id
  */
 class NotificationChannel extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\NotificationChannelFactory> */
+    /** @use HasFactory<NotificationChannelFactory> */
     use HasFactory;
 
     use Notifiable;
