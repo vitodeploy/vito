@@ -3,10 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\SshKey;
-use App\Web\Pages\Settings\SSHKeys\Index;
-use App\Web\Pages\Settings\SSHKeys\Widgets\SshKeysList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class SshKeysTest extends TestCase
@@ -17,25 +15,28 @@ class SshKeysTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Livewire::test(Index::class)
-            ->callAction('add', [
-                'name' => 'test',
-                'public_key' => 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSUGPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3Pbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XAt3FaoJoAsncM1Q9x5+3V0Ww68/eIFmb1zuUFljQJKprrX88XypNDvjYNby6vw/Pb0rwert/EnmZ+AW4OZPnTPI89ZPmVMLuayrD2cE86Z/il8b+gw3r3+1nKatmIkjn2so1d01QraTlMqVSsbxNrRFi9wrf+M7Q== test@test.local',
-            ])
-            ->assertSuccessful();
+        $this->post(route('ssh-keys.store'), [
+            'name' => 'test',
+            'public_key' => 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSUGPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3Pbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XAt3FaoJoAsncM1Q9x5+3V0Ww68/eIFmb1zuUFljQJKprrX88XypNDvjYNby6vw/Pb0rwert/EnmZ+AW4OZPnTPI89ZPmVMLuayrD2cE86Z/il8b+gw3r3+1nKatmIkjn2so1d01QraTlMqVSsbxNrRFi9wrf+M7Q== test@test.local',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('ssh_keys', [
+            'name' => 'test',
+        ]);
     }
 
     public function test_get_public_keys_list(): void
     {
         $this->actingAs($this->user);
 
-        $key = SshKey::factory()->create([
+        SshKey::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
-        $this->get(Index::getUrl())
+        $this->get(route('ssh-keys'))
             ->assertSuccessful()
-            ->assertSee($key->name);
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('ssh-keys/index'));
     }
 
     public function test_delete_key(): void
@@ -46,9 +47,7 @@ class SshKeysTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        Livewire::test(SshKeysList::class)
-            ->callTableAction('delete', $key->id)
-            ->assertSuccessful();
+        $this->delete(route('ssh-keys.destroy', ['sshKey' => $key->id]));
 
         $this->assertSoftDeleted('ssh_keys', [
             'id' => $key->id,
@@ -56,6 +55,8 @@ class SshKeysTest extends TestCase
     }
 
     /**
+     * @param  array<string, string>  $postBody
+     *
      * @dataProvider ssh_key_data_provider
      */
     public function test_create_ssh_key_handles_invalid_or_partial_keys(array $postBody, bool $expectedToSucceed): void
@@ -69,16 +70,18 @@ class SshKeysTest extends TestCase
             'public_key' => 'public-key-content',
         ]);
 
-        $response = Livewire::test(Index::class)
-            ->callAction('add', $postBody);
+        $response = $this->post(route('ssh-keys.store'), $postBody);
 
         if ($expectedToSucceed) {
-            $response->assertHasNoActionErrors();
+            $response->assertSessionDoesntHaveErrors();
         } else {
-            $response->assertHasActionErrors();
+            $response->assertSessionHasErrors();
         }
     }
 
+    /**
+     * @return array<array{0: array<string, string>, 1: bool}>
+     */
     public static function ssh_key_data_provider(): array
     {
         return [

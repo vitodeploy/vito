@@ -1,5 +1,5 @@
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { BellIcon, CloudIcon, CodeIcon, DatabaseIcon, ListIcon, UserIcon, UsersIcon } from 'lucide-react';
+import { BellIcon, CloudIcon, CodeIcon, DatabaseIcon, KeyIcon, ListIcon, UserIcon, UsersIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Layout from '@/layouts/app/layout';
 
@@ -38,6 +38,11 @@ const sidebarNavItems: NavItem[] = [
     title: 'Notification Channels',
     href: route('notification-channels'),
     icon: BellIcon,
+  },
+  {
+    title: 'SSH Keys',
+    href: route('ssh-keys'),
+    icon: KeyIcon,
   },
 ];
 
