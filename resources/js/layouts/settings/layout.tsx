@@ -1,5 +1,5 @@
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { BellIcon, CloudIcon, CodeIcon, DatabaseIcon, KeyIcon, ListIcon, TagIcon, UserIcon, UsersIcon } from 'lucide-react';
+import { BellIcon, CloudIcon, CodeIcon, DatabaseIcon, KeyIcon, ListIcon, PlugIcon, TagIcon, UserIcon, UsersIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Layout from '@/layouts/app/layout';
 
@@ -48,6 +48,11 @@ const sidebarNavItems: NavItem[] = [
     title: 'Tags',
     href: route('tags'),
     icon: TagIcon,
+  },
+  {
+    title: 'API Keys',
+    href: route('api-keys'),
+    icon: PlugIcon,
   },
 ];
 
