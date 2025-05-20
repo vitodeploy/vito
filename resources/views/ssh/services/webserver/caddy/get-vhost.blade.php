@@ -1,0 +1,1 @@
+cat /etc/caddy/sites-available/{{ $domain }}
