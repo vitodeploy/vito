@@ -1,21 +1,14 @@
 {{ $site->domain }} {{ $site->getAliasesString() }} {
-
     @if ($site->activeSsl)
     tls {{ $site->activeSsl->certificate_path }} {{ $site->activeSsl->pk_path }}
     @endif
-
     @if ($site->activeSsl && $site->force_ssl)
     redir @http https://{host}{uri} permanent
     @endif
-
     import compression
-
     import security_headers
-
     @if ($site->type()->language() === 'php')
-
         root * {{ $site->getWebDirectoryPath() }}
-
         @php
             $phpSocket = "unix//var/run/php/php{$site->php_version}-fpm.sock";
             if ($site->isIsolated()) {
@@ -23,9 +16,7 @@
             }
         @endphp
         try_files {path} {path}/ /index.php?{query}
-        
         php_fastcgi {{ $phpSocket }}
-
         file_server
     @endif
 
@@ -38,7 +29,6 @@
             @else
                 to 127.0.0.1
             @endif
-
             @switch($site->type_data['method'] ?? \App\Enums\LoadBalancerMethod::ROUND_ROBIN)
                 @case(\App\Enums\LoadBalancerMethod::LEAST_CONNECTIONS)
                     lb_policy least_conn
@@ -49,11 +39,9 @@
                 @default
                     lb_policy round_robin
             @endswitch
-
             header_up Host {host}
             header_up X-Real-IP {remote}
         }
     @endif
-
     @include('ssh.services.webserver.caddy.redirects', ['site' => $site])
 }
