@@ -23,17 +23,13 @@ class Caddy extends AbstractWebserver
 
         $this->service->server->ssh()->write(
             '/etc/caddy/Caddyfile',
-            view('ssh.services.webserver.caddy.caddy', [
-                'user' => $this->service->server->getSshUser()
-            ]),
+            view('ssh.services.webserver.caddy.caddy'),
             'root'
         );
 
         $this->service->server->ssh()->write(
             '/etc/systemd/system/caddy.service',
-            view('ssh.services.webserver.caddy.caddy-systemd', [
-                'user' => $this->service->server->getSshUser()
-            ]),
+            view('ssh.services.webserver.caddy.caddy-systemd'),
             'root'
         );
 
@@ -94,8 +90,7 @@ class Caddy extends AbstractWebserver
 
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.caddy.create-vhost', [
-                'domain' => $site->domain,
-                'vhost' => $this->generateVhost($site),
+                'domain' => $site->domain
             ]),
             'create-vhost',
             $site->id
