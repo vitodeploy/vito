@@ -6,6 +6,7 @@ use App\Enums\DatabaseStatus;
 use App\Models\Database;
 use App\Models\Server;
 use App\Models\Service;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -16,6 +17,8 @@ class CreateDatabase
      */
     public function create(Server $server, array $input): Database
     {
+        Validator::make($input, self::rules($server, $input))->validate();
+
         $database = new Database([
             'server_id' => $server->id,
             'charset' => $input['charset'],

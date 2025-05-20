@@ -10,6 +10,7 @@ use App\Models\Server;
 use App\Models\ServerProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -57,8 +58,7 @@ class ServerController extends Controller
         $this->authorize('view', $server);
 
         return Inertia::render('servers/show', [
-            'server' => ServerResource::make($server),
-            'logs' => ServerLogResource::collection($server->logs()->latest()->paginate(config('web.pagination_size'))),
+            'logs' => ServerLogResource::collection($server->logs()->latest()->simplePaginate(config('web.pagination_size'))),
         ]);
     }
 
@@ -66,6 +66,18 @@ class ServerController extends Controller
     public function switch(Server $server): RedirectResponse
     {
         $this->authorize('view', $server);
+
+        $previousUrl = URL::previous();
+        $previousRequest = Request::create($previousUrl);
+        $previousRoute = app('router')->getRoutes()->match($previousRequest);
+
+        if ($previousRoute->hasParameter('server')) {
+            if (count($previousRoute->parameters()) > 1) {
+                return redirect()->route('servers.show', ['server' => $server->id]);
+            }
+
+            return redirect()->route($previousRoute->getName(), ['server' => $server]);
+        }
 
         return redirect()->route('servers.show', ['server' => $server->id]);
     }

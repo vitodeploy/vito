@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'pagination_size' => 20,
+    'pagination_size' => 10,
 
     'controllers' => [
         'servers' => \App\Http\Controllers\ServerController::class,

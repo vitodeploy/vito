@@ -24,7 +24,7 @@ export default function ShowServer() {
   const page = usePage<Response>();
   return (
     <ServerLayout server={page.props.server}>
-      <Head title={page.props.server.name} />
+      <Head title={`Overview - ${page.props.server.name}`} />
 
       {['installing', 'installation_failed'].includes(page.props.server.status) ? <InstallingServer /> : <ServerOverview />}
     </ServerLayout>

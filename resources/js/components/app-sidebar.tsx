@@ -9,12 +9,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, CogIcon, Folder, ServerIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useState } from 'react';
 
 const mainNavItems: NavItem[] = [
   {
@@ -43,6 +47,8 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
+  const [open, setOpen] = useState<NavItem>();
+
   return (
     <Sidebar collapsible="icon" className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row">
       {/* This is the first sidebar */}
@@ -65,10 +71,10 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
             <SidebarGroupContent className="md:px-0">
               <SidebarMenu>
                 {mainNavItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={`${item.title}-${item.href}`}>
                     <SidebarMenuButton
                       asChild
-                      isActive={window.location.href.startsWith(item.href)}
+                      isActive={item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href)}
                       tooltip={{ children: item.title, hidden: false }}
                     >
                       <Link href={item.href} prefetch>
@@ -85,7 +91,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
         <SidebarFooter className="hidden md:flex">
           <SidebarMenu>
             {footerNavItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem key={`${item.title}-${item.href}`}>
                 <SidebarMenuButton asChild tooltip={{ children: item.title, hidden: false }}>
                   <a href={item.href} target="_blank" rel="noopener noreferrer">
                     {item.icon && <Icon iconNode={item.icon} />}
@@ -113,16 +119,60 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {secondNavItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={window.location.href.startsWith(item.href)}>
-                        <Link href={item.href} prefetch>
-                          {item.icon && <item.icon />}
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {secondNavItems.map((item) => {
+                    const isActive = item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href);
+
+                    if (item.children && item.children.length > 0) {
+                      return (
+                        <Collapsible
+                          key={`${item.title}-${item.href}`}
+                          open={isActive || open === item}
+                          onOpenChange={() => setOpen(item)}
+                          className="group/collapsible"
+                        >
+                          <SidebarMenuItem>
+                            <CollapsibleTrigger asChild>
+                              <SidebarMenuButton>
+                                {item.icon && <item.icon />}
+                                <span>{item.title}</span>
+                              </SidebarMenuButton>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <SidebarMenuSub>
+                                {item.children.map((childItem) => (
+                                  <SidebarMenuSubItem key={`${childItem.title}-${childItem.href}`}>
+                                    <SidebarMenuButton
+                                      asChild
+                                      isActive={
+                                        childItem.onlyActivePath
+                                          ? window.location.href === childItem.href
+                                          : window.location.href.startsWith(childItem.href)
+                                      }
+                                    >
+                                      <Link href={childItem.href} prefetch>
+                                        <span>{childItem.title}</span>
+                                      </Link>
+                                    </SidebarMenuButton>
+                                  </SidebarMenuSubItem>
+                                ))}
+                              </SidebarMenuSub>
+                            </CollapsibleContent>
+                          </SidebarMenuItem>
+                        </Collapsible>
+                      );
+                    }
+
+                    return (
+                      <SidebarMenuItem key={`${item.title}-${item.href}`}>
+                        <SidebarMenuButton asChild isActive={isActive}>
+                          <Link href={item.href} prefetch>
+                            {item.icon && <item.icon />}
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

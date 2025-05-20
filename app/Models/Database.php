@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\DatabaseStatus;
 use Carbon\Carbon;
+use Database\Factories\DatabaseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Database extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\DatabaseFactory> */
+    /** @use HasFactory<DatabaseFactory> */
     use HasFactory;
 
     use SoftDeletes;

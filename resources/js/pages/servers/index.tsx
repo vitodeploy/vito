@@ -11,6 +11,7 @@ import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import React from 'react';
 import Layout from '@/layouts/app/layout';
+import { PlusIcon } from 'lucide-react';
 
 type Response = {
   servers: {
@@ -31,7 +32,10 @@ export default function Servers() {
           <Heading title="Servers" description="All of the servers of your project listed here" />
           <div className="flex items-center gap-2">
             <CreateServer>
-              <Button>Create server</Button>
+              <Button>
+                <PlusIcon />
+                Create server
+              </Button>
             </CreateServer>
           </div>
         </div>

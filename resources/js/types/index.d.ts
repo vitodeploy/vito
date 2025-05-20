@@ -23,9 +23,10 @@ export interface NavGroup {
 export interface NavItem {
   title: string;
   href: string;
-  activePath?: string;
+  onlyActivePath?: string;
   icon?: LucideIcon | null;
   isActive?: boolean;
+  children?: NavItem[];
 }
 
 export interface Configs {

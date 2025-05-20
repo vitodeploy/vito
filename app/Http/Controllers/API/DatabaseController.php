@@ -50,8 +50,6 @@ class DatabaseController extends Controller
 
         $this->validateRoute($project, $server);
 
-        $this->validate($request, CreateDatabase::rules($server, $request->input()));
-
         $database = app(CreateDatabase::class)->create($server, $request->all());
 
         return new DatabaseResource($database);

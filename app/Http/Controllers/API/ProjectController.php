@@ -87,7 +87,9 @@ class ProjectController extends Controller
 
         /** @var User $user */
         $user = auth()->user();
-        app(DeleteProject::class)->delete($user, $project);
+        app(DeleteProject::class)->delete($user, $project, [
+            'name' => $project->name,
+        ]);
 
         return response()->noContent();
     }

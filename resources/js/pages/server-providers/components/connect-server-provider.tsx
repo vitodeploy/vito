@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
+import { FormEventHandler, ReactNode, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -42,7 +42,7 @@ export default function ConnectServerProvider({
   const page = usePage<SharedData>();
 
   const form = useForm<Required<ServerProviderForm>>({
-    provider: 'aws',
+    provider: defaultProvider || 'aws',
     name: '',
     global: false,
   });
@@ -58,10 +58,6 @@ export default function ConnectServerProvider({
       },
     });
   };
-
-  useEffect(() => {
-    form.setData('provider', defaultProvider ?? 'aws');
-  }, [defaultProvider]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -87,11 +83,14 @@ export default function ConnectServerProvider({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {providers.map((provider) => (
-                      <SelectItem key={provider} value={provider}>
-                        {provider}
-                      </SelectItem>
-                    ))}
+                    {providers.map(
+                      (provider) =>
+                        provider !== 'custom' && (
+                          <SelectItem key={provider} value={provider}>
+                            {provider}
+                          </SelectItem>
+                        ),
+                    )}
                   </SelectGroup>
                 </SelectContent>
               </Select>

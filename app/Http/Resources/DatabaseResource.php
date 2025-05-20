@@ -18,7 +18,10 @@ class DatabaseResource extends JsonResource
             'id' => $this->id,
             'server_id' => $this->server_id,
             'name' => $this->name,
+            'collation' => $this->collation,
+            'charset' => $this->charset,
             'status' => $this->status,
+            'status_color' => $this::$statusColors[$this->status] ?? 'gray',
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

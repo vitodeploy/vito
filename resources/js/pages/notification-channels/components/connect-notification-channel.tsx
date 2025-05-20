@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
+import { FormEventHandler, ReactNode, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -42,7 +42,7 @@ export default function ConnectNotificationChannel({
   const page = usePage<SharedData>();
 
   const form = useForm<Required<NotificationChannelForm>>({
-    provider: 'email',
+    provider: defaultProvider || 'email',
     name: '',
     global: false,
   });
@@ -58,10 +58,6 @@ export default function ConnectNotificationChannel({
       },
     });
   };
-
-  useEffect(() => {
-    form.setData('provider', defaultProvider ?? 'email');
-  }, [defaultProvider]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

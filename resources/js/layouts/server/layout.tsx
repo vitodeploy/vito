@@ -1,19 +1,5 @@
 import { type NavItem } from '@/types';
-import {
-  ChartPieIcon,
-  ClockIcon,
-  CogIcon,
-  DatabaseIcon,
-  FlameIcon,
-  FolderOpenIcon,
-  HomeIcon,
-  KeyIcon,
-  ListEndIcon,
-  LogsIcon,
-  MousePointerClickIcon,
-  Settings2Icon,
-  TerminalSquareIcon,
-} from 'lucide-react';
+import { CloudUploadIcon, DatabaseIcon, HomeIcon, UsersIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Server } from '@/types/server';
 import ServerHeader from '@/pages/servers/components/header';
@@ -28,68 +14,81 @@ export default function ServerLayout({ server, children }: { server: Server; chi
     {
       title: 'Overview',
       href: route('servers.show', { server: server.id }),
+      onlyActivePath: route('servers.show', { server: server.id }),
       icon: HomeIcon,
     },
     {
-      title: 'Databases',
-      href: '#',
+      title: 'Database',
+      href: route('databases', { server: server.id }),
       icon: DatabaseIcon,
+      children: [
+        {
+          title: 'Databases',
+          href: route('databases', { server: server.id }),
+          icon: DatabaseIcon,
+        },
+        {
+          title: 'Users',
+          href: '/users',
+          icon: UsersIcon,
+        },
+        {
+          title: 'Backups',
+          href: '/backups',
+          icon: CloudUploadIcon,
+        },
+      ],
     },
-    {
-      title: 'Sites',
-      href: '#',
-      icon: MousePointerClickIcon,
-    },
-    {
-      title: 'File Manager',
-      href: '#',
-      icon: FolderOpenIcon,
-    },
-    {
-      title: 'Firewall',
-      href: '#',
-      icon: FlameIcon,
-    },
-    {
-      title: 'CronJobs',
-      href: '#',
-      icon: ClockIcon,
-    },
-    {
-      title: 'Workers',
-      href: '#',
-      icon: ListEndIcon,
-    },
-    {
-      title: 'SSH Keys',
-      href: '#',
-      icon: KeyIcon,
-    },
-    {
-      title: 'Services',
-      href: '#',
-      icon: CogIcon,
-    },
-    {
-      title: 'Metrics',
-      href: '#',
-      icon: ChartPieIcon,
-    },
-    {
-      title: 'Console',
-      href: '#',
-      icon: TerminalSquareIcon,
-    },
-    {
-      title: 'Logs',
-      href: '#',
-      icon: LogsIcon,
-    },
-    {
-      title: 'Settings',
-      href: '#',
-      icon: Settings2Icon,
-    },
+    // {
+    //   title: 'Sites',
+    //   href: '#',
+    //   icon: MousePointerClickIcon,
+    // },
+    // {
+    //   title: 'Firewall',
+    //   href: '#',
+    //   icon: FlameIcon,
+    // },
+    // {
+    //   title: 'CronJobs',
+    //   href: '#',
+    //   icon: ClockIcon,
+    // },
+    // {
+    //   title: 'Workers',
+    //   href: '#',
+    //   icon: ListEndIcon,
+    // },
+    // {
+    //   title: 'SSH Keys',
+    //   href: '#',
+    //   icon: KeyIcon,
+    // },
+    // {
+    //   title: 'Services',
+    //   href: '#',
+    //   icon: CogIcon,
+    // },
+    // {
+    //   title: 'Metrics',
+    //   href: '#',
+    //   icon: ChartPieIcon,
+    // },
+    // {
+    //   title: 'Console',
+    //   href: '#',
+    //   icon: TerminalSquareIcon,
+    // },
+    // {
+    //   title: 'Logs',
+    //   href: '#',
+    //   icon: LogsIcon,
+    // },
+    // {
+    //   title: 'Settings',
+    //   href: '#',
+    //   icon: Settings2Icon,
+    // },
   ];
 
   return (

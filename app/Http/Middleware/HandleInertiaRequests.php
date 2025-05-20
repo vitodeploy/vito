@@ -51,8 +51,14 @@ class HandleInertiaRequests extends Middleware
             $servers = ServerResource::collection($user->currentProject?->servers);
         }
 
+        $data = [];
+        if ($request->route('server')) {
+            $data['server'] = ServerResource::make($request->route('server'));
+        }
+
         return [
             ...parent::share($request),
+            ...$data,
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [

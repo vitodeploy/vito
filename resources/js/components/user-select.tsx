@@ -1,5 +1,5 @@
 import { User } from '@/types/user';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
@@ -13,6 +13,13 @@ export default function UserSelect({ onChange }: { onChange: (selectedUser: User
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>();
 
+  const onOpenChange = (open: boolean) => {
+    setOpen(open);
+    if (open) {
+      fetchUsers();
+    }
+  };
+
   const fetchUsers = async () => {
     const response = await axios.get(route('users.json', { query: query }));
 
@@ -24,12 +31,8 @@ export default function UserSelect({ onChange }: { onChange: (selectedUser: User
     setUsers([]);
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, [query]);
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
           {value ? users.find((user) => user.id === parseInt(value))?.name : 'Select user...'}

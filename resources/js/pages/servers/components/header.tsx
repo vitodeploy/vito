@@ -31,8 +31,10 @@ export default function ServerHeader({ server }: { server: Server }) {
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <span className="lg:hidden">{server.provider}</span>
-              <span className="hidden lg:inline-flex">Server Provider</span>
+              <div>
+                <span className="lg:hidden">{server.provider}</span>
+                <span className="hidden lg:inline-flex">Server Provider</span>
+              </div>
             </TooltipContent>
           </Tooltip>
           <SlashIcon className="size-3" />
@@ -55,7 +57,7 @@ export default function ServerHeader({ server }: { server: Server }) {
                 <TooltipTrigger asChild>
                   <div className="flex items-center space-x-1">
                     <LoaderCircleIcon className={cn('size-4', server.status === 'installing' ? 'animate-spin' : '')} />
-                    <div>%{server.progress}</div>
+                    <div>%{parseInt(server.progress || '0')}</div>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>Installation Progress</TooltipContent>
