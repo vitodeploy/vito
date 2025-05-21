@@ -6,7 +6,6 @@ use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
-use Closure;
 use Throwable;
 
 class Caddy extends AbstractWebserver
@@ -38,21 +37,6 @@ class Caddy extends AbstractWebserver
         $this->service->server->systemd()->restart('caddy');
 
         $this->service->server->os()->cleanup();
-    }
-
-    public function deletionRules(): array
-    {
-        return [
-            'service' => [
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    $hasSite = $this->service->server->sites()
-                        ->exists();
-                    if ($hasSite) {
-                        $fail('Cannot uninstall webserver while you have websites using it.');
-                    }
-                },
-            ],
-        ];
     }
 
     /**
