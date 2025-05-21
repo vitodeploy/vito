@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, CogIcon, Folder, ServerIcon } from 'lucide-react';
+import { BookOpen, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, CogIcon, Folder, MinusIcon, PlusIcon, ServerIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -126,8 +126,8 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                       return (
                         <Collapsible
                           key={`${item.title}-${item.href}`}
-                          open={isActive || open === item}
-                          onOpenChange={() => setOpen(item)}
+                          defaultOpen={isActive}
+                          onOpenChange={(value) => (value ? setOpen(item) : setOpen(undefined))}
                           className="group/collapsible"
                         >
                           <SidebarMenuItem>
@@ -135,6 +135,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                               <SidebarMenuButton>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>
+                                <ChevronRightIcon className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                               </SidebarMenuButton>
                             </CollapsibleTrigger>
                             <CollapsibleContent>

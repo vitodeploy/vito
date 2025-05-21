@@ -127,7 +127,7 @@ export default function CreateServer({ children }: { children: React.ReactNode }
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <InputError />
+              <InputError message={form.errors.provider} />
             </FormField>
 
             {form.data.provider && form.data.provider !== 'custom' && (
@@ -160,7 +160,7 @@ export default function CreateServer({ children }: { children: React.ReactNode }
                     </Button>
                   </ConnectServerProvider>
                 </div>
-                <InputError />
+                <InputError message={form.errors.server_provider} />
               </FormField>
             )}
 

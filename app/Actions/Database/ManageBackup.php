@@ -8,6 +8,7 @@ use App\Enums\DatabaseStatus;
 use App\Models\Backup;
 use App\Models\Server;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -21,6 +22,8 @@ class ManageBackup
      */
     public function create(Server $server, array $input): Backup
     {
+        Validator::make($input, self::rules($server, $input))->validate();
+
         $backup = new Backup([
             'type' => 'database',
             'server_id' => $server->id,
@@ -92,7 +95,7 @@ class ManageBackup
                     ->where('status', DatabaseStatus::READY),
             ],
         ];
-        if ($input['interval'] == 'custom') {
+        if (isset($input['interval']) && $input['interval'] == 'custom') {
             $rules['custom_interval'] = [
                 'required',
             ];

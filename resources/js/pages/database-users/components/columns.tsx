@@ -67,7 +67,6 @@ function Link({ databaseUser }: { databaseUser: DatabaseUser }) {
                 onValueChange={(value) => form.setData('databases', value)}
                 defaultValue={form.data.databases}
                 placeholder="Select database"
-                variant="default"
                 maxCount={5}
               />
               <InputError className="mt-2" message={form.errors.databases} />

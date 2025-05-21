@@ -27,12 +27,10 @@ type StorageProviderForm = {
 };
 
 export default function ConnectStorageProvider({
-  providers,
   defaultProvider,
   onProviderAdded,
   children,
 }: {
-  providers: string[];
   defaultProvider?: string;
   onProviderAdded?: () => void;
   children: ReactNode;
@@ -83,7 +81,7 @@ export default function ConnectStorageProvider({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {providers.map((provider) => (
+                    {page.props.configs.storage_providers.map((provider) => (
                       <SelectItem key={provider} value={provider}>
                         {provider}
                       </SelectItem>

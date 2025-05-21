@@ -22,6 +22,8 @@ export default function Layout({
 
   if (page.props.flash && page.props.flash.success) toast.success(page.props.flash.success);
   if (page.props.flash && page.props.flash.error) toast.error(page.props.flash.error);
+  if (page.props.flash && page.props.flash.info) toast.info(page.props.flash.info);
+  if (page.props.flash && page.props.flash.warning) toast.error(page.props.flash.warning);
 
   return (
     <SidebarProvider

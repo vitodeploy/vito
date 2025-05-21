@@ -11,6 +11,7 @@ use App\Models\Server;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -32,6 +33,14 @@ class DatabaseController extends Controller
         return Inertia::render('databases/index', [
             'databases' => DatabaseResource::collection($server->databases()->simplePaginate(config('web.pagination_size'))),
         ]);
+    }
+
+    #[Get('/json', name: 'databases.json')]
+    public function json(Server $server): ResourceCollection
+    {
+        $this->authorize('viewAny', [Database::class, $server]);
+
+        return DatabaseResource::collection($server->databases()->get());
     }
 
     #[Get('/charsets', name: 'databases.charsets')]

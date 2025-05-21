@@ -28,7 +28,7 @@ export default function StorageProviders() {
         <div className="flex items-start justify-between">
           <Heading title="Storage Providers" description="Here you can manage all of the storage provider connectinos" />
           <div className="flex items-center gap-2">
-            <ConnectStorageProvider providers={page.props.configs.storage_providers}>
+            <ConnectStorageProvider>
               <Button>Connect</Button>
             </ConnectStorageProvider>
           </div>

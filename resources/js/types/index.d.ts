@@ -54,6 +54,9 @@ export interface Configs {
   webservers: string[];
   databases: string[];
   php_versions: string[];
+  cronjob_intervals: {
+    [key: string]: string;
+  };
 
   [key: string]: unknown;
 }
@@ -71,6 +74,8 @@ export interface SharedData {
   flash?: {
     success: string;
     error: string;
+    info: string;
+    warning: string;
     data: unknown;
   };
 

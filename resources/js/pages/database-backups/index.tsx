@@ -5,31 +5,30 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
-import { DataTable } from '@/components/data-table';
 import React from 'react';
 import { BookOpenIcon, PlusIcon } from 'lucide-react';
-import CreateDatabaseUser from '@/pages/database-users/components/create-database-user';
-import SyncUsers from '@/pages/database-users/components/sync-users';
-import { DatabaseUser } from '@/types/database-user';
-import { columns } from '@/pages/database-users/components/columns';
+import { Backup } from '@/types/backup';
+import { DataTable } from '@/components/data-table';
+import { columns } from '@/pages/database-backups/components/columns';
+import CreateBackup from '@/pages/database-backups/components/create-backup';
 
 type Page = {
   server: Server;
-  databaseUsers: {
-    data: DatabaseUser[];
+  backups: {
+    data: Backup[];
   };
 };
 
-export default function Databases() {
+export default function Backups() {
   const page = usePage<Page>();
 
   return (
     <ServerLayout server={page.props.server}>
-      <Head title={`Users - ${page.props.server.name}`} />
+      <Head title={`Backups - ${page.props.server.name}`} />
 
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title="Users" description="Here you can manage the database users and their permissions" />
+          <Heading title="Backups" description="Here you can manage the backups of your database" />
           <div className="flex items-center gap-2">
             <a href="https://vitodeploy.com/docs/servers/database" target="_blank">
               <Button variant="outline">
@@ -37,17 +36,16 @@ export default function Databases() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <SyncUsers server={page.props.server} />
-            <CreateDatabaseUser server={page.props.server}>
+            <CreateBackup server={page.props.server}>
               <Button>
                 <PlusIcon />
                 <span className="hidden lg:block">Create</span>
               </Button>
-            </CreateDatabaseUser>
+            </CreateBackup>
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} data={page.props.databaseUsers.data} />
+        <DataTable columns={columns} data={page.props.backups.data} />
       </Container>
     </ServerLayout>
   );
