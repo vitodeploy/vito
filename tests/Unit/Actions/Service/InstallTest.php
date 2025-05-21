@@ -75,6 +75,29 @@ class InstallTest extends TestCase
         $this->assertNotNull($service->type_data);
     }
 
+    public function test_install_caddy(): void
+    {
+        $this->server->webserver()->delete();
+
+        SSH::fake('Active: active');
+
+        $service = app(Install::class)->install($this->server, [
+            'type' => 'webserver',
+            'name' => 'caddy',
+            'version' => 'latest',
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => $this->server->id,
+            'name' => 'caddy',
+            'type' => 'webserver',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->assertNotNull($service->type_data);
+    }
+
     public function test_install_mysql(): void
     {
         $this->server->database()->delete();

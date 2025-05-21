@@ -83,6 +83,63 @@ class ServerTest extends TestCase
         ]);
     }
 
+    public function test_create_regular_server_with_caddy(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake('Active: active'); // fake output for service installations
+
+        Livewire::test(Index::class)
+            ->callAction('create', [
+                'provider' => ServerProvider::CUSTOM,
+                'name' => 'caddy-test',
+                'ip' => '2.2.2.2',
+                'port' => '22',
+                'os' => OperatingSystem::UBUNTU22,
+                'webserver' => Webserver::CADDY,
+                'database' => Database::MYSQL80,
+                'php' => '8.2',
+            ])
+            ->assertSuccessful();
+
+        $this->assertDatabaseHas('servers', [
+            'name' => 'caddy-test',
+            'ip' => '2.2.2.2',
+            'status' => ServerStatus::READY,
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => 2,
+            'type' => 'php',
+            'version' => '8.2',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => 2,
+            'type' => 'webserver',
+            'name' => 'caddy',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => 2,
+            'type' => 'database',
+            'name' => 'mysql',
+            'version' => '8.0',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => 2,
+            'type' => 'firewall',
+            'name' => 'ufw',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+    }
+
     public function test_delete_server(): void
     {
         $this->actingAs($this->user);

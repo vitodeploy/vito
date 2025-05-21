@@ -52,6 +52,18 @@ class UninstallTest extends TestCase
     }
 
     /**
+     * Cannot uninstall caddy because some sites using it
+     */
+    public function test_cannot_uninstall_caddy(): void
+    {
+        SSH::fake();
+
+        $this->expectException(ValidationException::class);
+
+        app(Uninstall::class)->uninstall($this->server->webserver());
+    }
+
+    /**
      * Cannot uninstall mysql because some databases exist
      */
     public function test_cannot_uninstall_mysql(): void
