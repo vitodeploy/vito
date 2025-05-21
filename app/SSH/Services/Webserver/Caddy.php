@@ -33,6 +33,8 @@ class Caddy extends AbstractWebserver
             'root'
         );
 
+        $this->service->server->systemd()->reload();
+        
         $this->service->server->systemd()->restart('caddy');
 
         $this->service->server->os()->cleanup();

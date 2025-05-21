@@ -19,7 +19,6 @@
         php_fastcgi {{ $phpSocket }}
         file_server
     @endif
-
     @if ($site->type === \App\Enums\SiteType::LOAD_BALANCER)
         reverse_proxy {
             @if ($site->loadBalancerServers()->count() > 0)

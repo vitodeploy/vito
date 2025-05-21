@@ -17,8 +17,4 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install caddy -y
 
 sudo mkdir /etc/caddy/sites-available
 
-sudo chown -R caddy:caddy /etc/caddy/sites-available
-
 sudo mkdir /etc/caddy/sites-enabled
-
-sudo chown -R caddy:caddy /etc/caddy/sites-enabled
