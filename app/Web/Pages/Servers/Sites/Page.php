@@ -66,21 +66,21 @@ abstract class Page extends BasePage implements HasSecondSubNav
                 ]));
         }
 
-        if ($user->can('update', [$this->site, $this->server])) {
-            $items[] = NavigationItem::make(Settings::getNavigationLabel())
-                ->icon('heroicon-o-wrench-screwdriver')
-                ->isActiveWhen(fn () => request()->routeIs(Settings::getRouteName()))
-                ->url(Settings::getUrl(parameters: [
-                    'server' => $this->server,
-                    'site' => $this->site,
-                ]));
-        }
-
         if ($user->can('view', [Redirect::class, $this->site, $this->server])) {
             $items[] = NavigationItem::make(Pages\Redirects\Index::getNavigationLabel())
                 ->icon('heroicon-o-arrows-right-left')
                 ->isActiveWhen(fn () => request()->routeIs(Pages\Redirects\Index::getRouteName()))
                 ->url(Pages\Redirects\Index::getUrl(parameters: [
+                    'server' => $this->server,
+                    'site' => $this->site,
+                ]));
+        }
+
+        if ($user->can('update', [$this->site, $this->server])) {
+            $items[] = NavigationItem::make(Settings::getNavigationLabel())
+                ->icon('heroicon-o-wrench-screwdriver')
+                ->isActiveWhen(fn () => request()->routeIs(Settings::getRouteName()))
+                ->url(Settings::getUrl(parameters: [
                     'server' => $this->server,
                     'site' => $this->site,
                 ]));

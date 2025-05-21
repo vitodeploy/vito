@@ -20,6 +20,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
+use Illuminate\Support\HtmlString;
 use Throwable;
 
 class Index extends \App\Web\Pages\Servers\Page
@@ -84,6 +85,14 @@ class Index extends \App\Web\Pages\Servers\Page
                         ->options(collect($this->server->installedPHPVersions())->mapWithKeys(fn ($version) => [$version => $version]))
                         ->visible(fn (Get $get): bool => isset(CreateSite::rules($this->server, $get())['php_version']))
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['php_version']),
+                    TextInput::make('port')
+                        ->placeholder('Reverse Proxy Port')
+                        ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['port'])
+                        ->helperText(
+                            new HtmlString(
+                                'The port to use for the reverse proxy (<a href="https://vitodeploy.com/docs/sites/create" class="text-primary-500" target="_blank">Read more</a>)'
+                            )
+                        ),
                     TextInput::make('web_directory')
                         ->placeholder('For / leave empty')
                         ->rules(fn (Get $get) => CreateSite::rules($this->server, $get())['web_directory'])
