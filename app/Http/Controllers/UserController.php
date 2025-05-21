@@ -20,7 +20,7 @@ use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
-#[Prefix('users')]
+#[Prefix('settings/users')]
 #[Middleware(['auth'])]
 class UserController extends Controller
 {

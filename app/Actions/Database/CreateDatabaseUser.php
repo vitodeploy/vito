@@ -7,6 +7,7 @@ use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Models\Service;
 use App\SSH\Services\Database\Database;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -20,6 +21,8 @@ class CreateDatabaseUser
      */
     public function create(Server $server, array $input, array $links = []): DatabaseUser
     {
+        Validator::make($input, self::rules($server, $input))->validate();
+
         $databaseUser = new DatabaseUser([
             'server_id' => $server->id,
             'username' => $input['username'],

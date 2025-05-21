@@ -17,6 +17,7 @@ import { DatabaseIcon, LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { useState } from 'react';
 import { Database } from '@/types/database';
+import { Badge } from '@/components/ui/badge';
 
 function Delete({ database }: { database: Database }) {
   const [open, setOpen] = useState(false);
@@ -93,6 +94,15 @@ export const columns: ColumnDef<Database>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       return <DateTime date={row.original.created_at} />;
+    },
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    enableColumnFilter: true,
+    enableSorting: true,
+    cell: ({ row }) => {
+      return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
     },
   },
   {

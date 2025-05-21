@@ -97,7 +97,7 @@ export default function CreateDatabase({ server, children }: { server: Server; c
             <FormField>
               <Label htmlFor="charset">Charset</Label>
               <Select onValueChange={handleCharsetChange} defaultValue={form.data.charset}>
-                <SelectTrigger>
+                <SelectTrigger id="charset">
                   <SelectValue placeholder="Select charset" />
                 </SelectTrigger>
                 <SelectContent>
@@ -113,7 +113,7 @@ export default function CreateDatabase({ server, children }: { server: Server; c
             <FormField>
               <Label htmlFor="collation">Collation</Label>
               <Select onValueChange={(value) => form.setData('collation', value)} defaultValue={form.data.collation}>
-                <SelectTrigger>
+                <SelectTrigger id="collation">
                   <SelectValue placeholder="Select collation" />
                 </SelectTrigger>
                 <SelectContent>

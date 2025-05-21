@@ -5,10 +5,8 @@ namespace Tests\Feature;
 use App\Enums\DatabaseUserStatus;
 use App\Facades\SSH;
 use App\Models\DatabaseUser;
-use App\Web\Pages\Servers\Databases\Users;
-use App\Web\Pages\Servers\Databases\Widgets\DatabaseUsersList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class DatabaseUserTest extends TestCase
@@ -21,14 +19,13 @@ class DatabaseUserTest extends TestCase
 
         SSH::fake();
 
-        Livewire::test(Users::class, [
+        $this->post(route('database-users.store', [
             'server' => $this->server,
+        ]), [
+            'username' => 'user',
+            'password' => 'password',
         ])
-            ->callAction('create', [
-                'username' => 'user',
-                'password' => 'password',
-            ])
-            ->assertSuccessful();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('database_users', [
             'username' => 'user',
@@ -42,16 +39,15 @@ class DatabaseUserTest extends TestCase
 
         SSH::fake();
 
-        Livewire::test(Users::class, [
+        $this->post(route('database-users.store', [
             'server' => $this->server,
+        ]), [
+            'username' => 'user',
+            'password' => 'password',
+            'remote' => true,
+            'host' => '%',
         ])
-            ->callAction('create', [
-                'username' => 'user',
-                'password' => 'password',
-                'remote' => true,
-                'host' => '%',
-            ])
-            ->assertSuccessful();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('database_users', [
             'username' => 'user',
@@ -64,17 +60,13 @@ class DatabaseUserTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $databaseUser = DatabaseUser::factory()->create([
+        DatabaseUser::factory()->create([
             'server_id' => $this->server,
         ]);
 
-        $this->get(
-            Users::getUrl([
-                'server' => $this->server,
-            ])
-        )
+        $this->get(route('database-users', $this->server))
             ->assertSuccessful()
-            ->assertSee($databaseUser->username);
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('database-users/index'));
     }
 
     public function test_delete_database_user(): void
@@ -87,11 +79,10 @@ class DatabaseUserTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        Livewire::test(DatabaseUsersList::class, [
+        $this->delete(route('database-users.destroy', [
             'server' => $this->server,
-        ])
-            ->callTableAction('delete', $databaseUser->id)
-            ->assertSuccessful();
+            'databaseUser' => $databaseUser,
+        ]))->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('database_users', [
             'id' => $databaseUser->id,
@@ -108,13 +99,12 @@ class DatabaseUserTest extends TestCase
             'server_id' => $this->server,
         ]);
 
-        Livewire::test(DatabaseUsersList::class, [
+        $this->put(route('database-users.link', [
             'server' => $this->server,
-        ])
-            ->callTableAction('link', $databaseUser->id, [
-                'databases' => [],
-            ])
-            ->assertSuccessful();
+            'databaseUser' => $databaseUser,
+        ]), [
+            'databases' => [],
+        ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('database_users', [
             'username' => $databaseUser->username,

@@ -6,6 +6,7 @@ use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Models\Service;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -19,6 +20,8 @@ class LinkUser
      */
     public function link(DatabaseUser $databaseUser, array $input): DatabaseUser
     {
+        Validator::make($input, self::rules($databaseUser->server))->validate();
+
         if (! isset($input['databases']) || ! is_array($input['databases'])) {
             $input['databases'] = [];
         }
@@ -60,10 +63,9 @@ class LinkUser
     }
 
     /**
-     * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */
-    public static function rules(Server $server, array $input): array
+    public static function rules(Server $server): array
     {
         return [
             'databases.*' => [

@@ -21,7 +21,7 @@ class DatabaseResource extends JsonResource
             'collation' => $this->collation,
             'charset' => $this->charset,
             'status' => $this->status,
-            'status_color' => $this::$statusColors[$this->status] ?? 'gray',
+            'status_color' => Database::$statusColors[$this->status] ?? 'gray',
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -51,8 +51,6 @@ class DatabaseUserController extends Controller
 
         $this->validateRoute($project, $server);
 
-        $this->validate($request, CreateDatabaseUser::rules($server, $request->input()));
-
         $databaseUser = app(CreateDatabaseUser::class)->create($server, $request->all());
 
         return new DatabaseUserResource($databaseUser);
@@ -79,8 +77,6 @@ class DatabaseUserController extends Controller
         $this->authorize('update', [$databaseUser, $server]);
 
         $this->validateRoute($project, $server, $databaseUser);
-
-        $this->validate($request, LinkUser::rules($server, $request->all()));
 
         $databaseUser = app(LinkUser::class)->link($databaseUser, $request->all());
 

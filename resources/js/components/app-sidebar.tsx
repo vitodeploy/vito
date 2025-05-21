@@ -28,7 +28,7 @@ const mainNavItems: NavItem[] = [
   },
   {
     title: 'Settings',
-    href: route('profile'),
+    href: route('settings'),
     icon: CogIcon,
   },
 ];

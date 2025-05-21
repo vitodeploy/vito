@@ -68,6 +68,11 @@ export interface SharedData {
   projectServers: Server[];
   server?: Server;
   publicKeyText: string;
+  flash?: {
+    success: string;
+    error: string;
+    data: unknown;
+  };
 
   [key: string]: unknown;
 }

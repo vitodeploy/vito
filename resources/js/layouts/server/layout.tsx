@@ -25,11 +25,12 @@ export default function ServerLayout({ server, children }: { server: Server; chi
         {
           title: 'Databases',
           href: route('databases', { server: server.id }),
+          onlyActivePath: route('databases', { server: server.id }),
           icon: DatabaseIcon,
         },
         {
           title: 'Users',
-          href: '/users',
+          href: route('database-users', { server: server.id }),
           icon: UsersIcon,
         },
         {
