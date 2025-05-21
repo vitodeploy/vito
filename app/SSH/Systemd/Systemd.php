@@ -93,7 +93,7 @@ class Systemd
      */
     public function reload(): string
     {
-        $command = <<<EOD
+        $command = <<<'EOD'
             sudo systemctl daemon-reload
         EOD;
 

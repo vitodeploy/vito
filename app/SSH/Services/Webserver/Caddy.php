@@ -34,7 +34,7 @@ class Caddy extends AbstractWebserver
         );
 
         $this->service->server->systemd()->reload();
-        
+
         $this->service->server->systemd()->restart('caddy');
 
         $this->service->server->os()->cleanup();
@@ -92,7 +92,7 @@ class Caddy extends AbstractWebserver
 
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.caddy.create-vhost', [
-                'domain' => $site->domain
+                'domain' => $site->domain,
             ]),
             'create-vhost',
             $site->id
@@ -161,7 +161,7 @@ class Caddy extends AbstractWebserver
      * @throws SSHError
      */
     public function setupSSL(Ssl $ssl): void
-    { 
+    {
         if ($ssl->type == 'custom') {
             $ssl->certificate_path = '/etc/ssl/'.$ssl->id.'/cert.pem';
             $ssl->pk_path = '/etc/ssl/'.$ssl->id.'/privkey.pem';
