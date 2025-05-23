@@ -26,6 +26,7 @@ return [
     'webservers' => [
         \App\Enums\Webserver::NONE,
         \App\Enums\Webserver::NGINX,
+        \App\Enums\Webserver::CADDY,
     ],
     'php_versions' => [
         \App\Enums\PHP::NONE,
@@ -173,6 +174,7 @@ return [
      */
     'service_types' => [
         'nginx' => 'webserver',
+        'caddy' => 'webserver',
         'mysql' => 'database',
         'mariadb' => 'database',
         'postgresql' => 'database',
@@ -186,6 +188,7 @@ return [
     ],
     'service_handlers' => [
         'nginx' => \App\SSH\Services\Webserver\Nginx::class,
+        'caddy' => \App\SSH\Services\Webserver\Caddy::class,
         'mysql' => \App\SSH\Services\Database\Mysql::class,
         'mariadb' => \App\SSH\Services\Database\Mariadb::class,
         'postgresql' => \App\SSH\Services\Database\Postgresql::class,
@@ -199,6 +202,9 @@ return [
     ],
     'service_versions' => [
         'nginx' => [
+            'latest',
+        ],
+        'caddy' => [
             'latest',
         ],
         'mysql' => [
@@ -271,6 +277,17 @@ return [
             ],
             \App\Enums\OperatingSystem::UBUNTU24 => [
                 'latest' => 'nginx',
+            ],
+        ],
+        'caddy' => [
+            \App\Enums\OperatingSystem::UBUNTU20 => [
+                'latest' => 'caddy',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU22 => [
+                'latest' => 'caddy',
+            ],
+            \App\Enums\OperatingSystem::UBUNTU24 => [
+                'latest' => 'caddy',
             ],
         ],
         'mysql' => [

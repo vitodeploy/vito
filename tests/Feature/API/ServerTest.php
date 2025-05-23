@@ -68,6 +68,31 @@ class ServerTest extends TestCase
             ]);
     }
 
+    public function test_create_server_with_caddy(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        SSH::fake('Active: active'); // fake output for service installations
+
+        $this->json('POST', route('api.projects.servers.create', [
+            'project' => $this->user->current_project_id,
+        ]), [
+            'provider' => ServerProvider::CUSTOM,
+            'name' => 'test',
+            'ip' => '1.1.1.1',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22,
+            'webserver' => Webserver::CADDY,
+            'database' => Database::MYSQL80,
+            'php' => '8.2',
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'name' => 'test',
+                'type' => ServerType::REGULAR,
+            ]);
+    }
+
     public function test_delete_server(): void
     {
         Sanctum::actingAs($this->user, ['read', 'write']);

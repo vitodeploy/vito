@@ -8,7 +8,7 @@ use App\Models\Site;
 use App\Models\Ssl;
 use Throwable;
 
-class Nginx extends AbstractWebserver
+class Caddy extends AbstractWebserver
 {
     /**
      * @throws SSHError
@@ -16,19 +16,25 @@ class Nginx extends AbstractWebserver
     public function install(): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.install-nginx'),
-            'install-nginx'
+            view('ssh.services.webserver.caddy.install-caddy'),
+            'install-caddy'
         );
 
         $this->service->server->ssh()->write(
-            '/etc/nginx/nginx.conf',
-            view('ssh.services.webserver.nginx.nginx', [
-                'user' => $this->service->server->getSshUser(),
-            ]),
+            '/etc/caddy/Caddyfile',
+            view('ssh.services.webserver.caddy.caddy'),
             'root'
         );
 
-        $this->service->server->systemd()->restart('nginx');
+        $this->service->server->ssh()->write(
+            '/etc/systemd/system/caddy.service',
+            view('ssh.services.webserver.caddy.caddy-systemd'),
+            'root'
+        );
+
+        $this->service->server->systemd()->reload();
+
+        $this->service->server->systemd()->restart('caddy');
 
         $this->service->server->os()->cleanup();
     }
@@ -39,8 +45,8 @@ class Nginx extends AbstractWebserver
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.uninstall-nginx'),
-            'uninstall-nginx'
+            view('ssh.services.webserver.caddy.uninstall-caddy'),
+            'uninstall-caddy'
         );
         $this->service->server->os()->cleanup();
     }
@@ -55,7 +61,7 @@ class Nginx extends AbstractWebserver
         $ssh = $this->service->server->ssh($site->user);
 
         $ssh->exec(
-            view('ssh.services.webserver.nginx.create-path', [
+            view('ssh.services.webserver.caddy.create-path', [
                 'path' => $site->path,
             ]),
             'create-path',
@@ -63,15 +69,14 @@ class Nginx extends AbstractWebserver
         );
 
         $this->service->server->ssh()->write(
-            '/etc/nginx/sites-available/'.$site->domain,
+            '/etc/caddy/sites-available/'.$site->domain,
             $this->generateVhost($site),
             'root'
         );
 
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.create-vhost', [
+            view('ssh.services.webserver.caddy.create-vhost', [
                 'domain' => $site->domain,
-                'vhost' => $this->generateVhost($site),
             ]),
             'create-vhost',
             $site->id
@@ -84,12 +89,12 @@ class Nginx extends AbstractWebserver
     public function updateVHost(Site $site, ?string $vhost = null): void
     {
         $this->service->server->ssh()->write(
-            '/etc/nginx/sites-available/'.$site->domain,
+            '/etc/caddy/sites-available/'.$site->domain,
             $vhost ?? $this->generateVhost($site),
             'root'
         );
 
-        $this->service->server->systemd()->restart('nginx');
+        $this->service->server->systemd()->restart('caddy');
     }
 
     /**
@@ -98,7 +103,7 @@ class Nginx extends AbstractWebserver
     public function getVHost(Site $site): string
     {
         return $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.get-vhost', [
+            view('ssh.services.webserver.caddy.get-vhost', [
                 'domain' => $site->domain,
             ]),
         );
@@ -110,7 +115,7 @@ class Nginx extends AbstractWebserver
     public function deleteSite(Site $site): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.delete-site', [
+            view('ssh.services.webserver.caddy.delete-site', [
                 'domain' => $site->domain,
                 'path' => $site->path,
             ]),
@@ -126,7 +131,7 @@ class Nginx extends AbstractWebserver
     public function changePHPVersion(Site $site, string $version): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.change-php-version', [
+            view('ssh.services.webserver.caddy.change-php-version', [
                 'domain' => $site->domain,
                 'oldVersion' => $site->php_version,
                 'newVersion' => $version,
@@ -141,34 +146,25 @@ class Nginx extends AbstractWebserver
      */
     public function setupSSL(Ssl $ssl): void
     {
-        $domains = '';
-        foreach ($ssl->getDomains() as $domain) {
-            $domains .= ' -d '.$domain;
-        }
-        $command = view('ssh.services.webserver.nginx.create-letsencrypt-ssl', [
-            'email' => $ssl->email,
-            'name' => $ssl->id,
-            'domains' => $domains,
-        ]);
         if ($ssl->type == 'custom') {
             $ssl->certificate_path = '/etc/ssl/'.$ssl->id.'/cert.pem';
             $ssl->pk_path = '/etc/ssl/'.$ssl->id.'/privkey.pem';
             $ssl->save();
-            $command = view('ssh.services.webserver.nginx.create-custom-ssl', [
+            $command = view('ssh.services.webserver.caddy.create-custom-ssl', [
                 'path' => dirname($ssl->certificate_path),
                 'certificate' => $ssl->certificate,
                 'pk' => $ssl->pk,
                 'certificatePath' => $ssl->certificate_path,
                 'pkPath' => $ssl->pk_path,
             ]);
-        }
-        $result = $this->service->server->ssh()->setLog($ssl->log)->exec(
-            $command,
-            'create-ssl',
-            $ssl->site_id
-        );
-        if (! $ssl->validateSetup($result)) {
-            throw new SSLCreationException;
+            $result = $this->service->server->ssh()->setLog($ssl->log)->exec(
+                $command,
+                'create-ssl',
+                $ssl->site_id
+            );
+            if (! $ssl->validateSetup($result)) {
+                throw new SSLCreationException;
+            }
         }
     }
 
@@ -190,7 +186,7 @@ class Nginx extends AbstractWebserver
 
     private function generateVhost(Site $site): string
     {
-        $vhost = view('ssh.services.webserver.nginx.vhost', [
+        $vhost = view('ssh.services.webserver.caddy.vhost', [
             'site' => $site,
         ]);
 

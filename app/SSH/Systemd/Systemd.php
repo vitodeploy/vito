@@ -87,4 +87,16 @@ class Systemd
 
         return $this->server->ssh()->exec($command, sprintf('disable-%s', $unit));
     }
+
+    /**
+     * @throws SSHError
+     */
+    public function reload(): string
+    {
+        $command = <<<'EOD'
+            sudo systemctl daemon-reload
+        EOD;
+
+        return $this->server->ssh()->exec($command, 'reload-systemctl');
+    }
 }
