@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
@@ -18,13 +18,15 @@ import FormSuccessful from '@/components/form-successful';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
+import BackupFiles from '@/pages/backups/components/files';
+import EditBackup from '@/pages/backups/components/edit-backup';
 
 function Delete({ backup }: { backup: Backup }) {
   const [open, setOpen] = useState(false);
   const form = useForm();
 
   const submit = () => {
-    form.delete(route('database-backups.destroy', { server: backup.server_id, backup: backup.id }), {
+    form.delete(route('backups.destroy', { server: backup.server_id, backup: backup.id }), {
       onSuccess: () => {
         setOpen(false);
       },
@@ -122,6 +124,13 @@ export const columns: ColumnDef<Backup>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <EditBackup backup={row.original}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
+              </EditBackup>
+              <BackupFiles backup={row.original}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Files</DropdownMenuItem>
+              </BackupFiles>
+              <DropdownMenuSeparator />
               <Delete backup={row.original} />
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,6 +1,7 @@
 export interface BackupFile {
   id: number;
   backup_id: number;
+  server_id: number;
   name: string;
   size: number;
   restored_to: string;

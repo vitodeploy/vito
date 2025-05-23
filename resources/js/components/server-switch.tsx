@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -29,29 +29,27 @@ export function ServerSwitch() {
 
   return (
     <div className="flex items-center">
-      {selectedServer && (
-        <Link href={route('servers.show', { server: selectedServer?.id || '' })}>
-          <Button variant="ghost" className="px-2">
-            <Avatar className="size-6 rounded-sm">
-              <AvatarFallback className="rounded-sm">{initials(selectedServer?.name ?? '')}</AvatarFallback>
-            </Avatar>
-            <span className="hidden lg:flex">{selectedServer?.name}</span>
-          </Button>
-        </Link>
-      )}
-
-      {!selectedServer && (
-        <Button variant="ghost" className="cursor-default px-2">
-          <Avatar className="size-6 rounded-sm">
-            <AvatarFallback className="rounded-sm">S</AvatarFallback>
-          </Avatar>
-          <span className="hidden lg:flex">Select a server</span>
-        </Button>
-      )}
-
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="px-1!">
+            {selectedServer && (
+              <>
+                <Avatar className="size-6 rounded-sm">
+                  <AvatarFallback className="rounded-sm">{initials(selectedServer?.name ?? '')}</AvatarFallback>
+                </Avatar>
+                <span className="hidden lg:flex">{selectedServer?.name}</span>
+              </>
+            )}
+
+            {!selectedServer && (
+              <>
+                <Avatar className="size-6 rounded-sm">
+                  <AvatarFallback className="rounded-sm">S</AvatarFallback>
+                </Avatar>
+                <span className="hidden lg:flex">Select a server</span>
+              </>
+            )}
+
             <ChevronsUpDownIcon size={5} />
           </Button>
         </DropdownMenuTrigger>

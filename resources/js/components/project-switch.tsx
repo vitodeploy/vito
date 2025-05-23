@@ -1,5 +1,5 @@
 import { type SharedData } from '@/types';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -32,17 +32,13 @@ export function ProjectSwitch() {
 
   return (
     <div className="flex items-center">
-      <Link href={route('servers')}>
-        <Button variant="ghost" className="px-2">
-          <Avatar className="size-6 rounded-sm">
-            <AvatarFallback className="rounded-sm">{initials(auth.currentProject?.name ?? '')}</AvatarFallback>
-          </Avatar>
-          <span className="hidden lg:flex">{auth.currentProject?.name}</span>
-        </Button>
-      </Link>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="px-1!">
+            <Avatar className="size-6 rounded-sm">
+              <AvatarFallback className="rounded-sm">{initials(auth.currentProject?.name ?? '')}</AvatarFallback>
+            </Avatar>
+            <span className="hidden lg:flex">{auth.currentProject?.name}</span>
             <ChevronsUpDownIcon size={5} />
           </Button>
         </DropdownMenuTrigger>

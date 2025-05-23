@@ -1,6 +1,6 @@
 import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, TriangleAlert, WifiIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useForm, usePage } from '@inertiajs/react';
 import React, { FormEventHandler, useState } from 'react';
 import { Label } from '@/components/ui/label';
@@ -150,11 +150,7 @@ export default function CreateServer({ children }: { children: React.ReactNode }
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  <ConnectServerProvider
-                    providers={page.props.configs.server_providers.filter((item) => item !== 'custom')}
-                    defaultProvider={form.data.provider}
-                    onProviderAdded={fetchServerProviders}
-                  >
+                  <ConnectServerProvider defaultProvider={form.data.provider} onProviderAdded={fetchServerProviders}>
                     <Button variant="outline">
                       <WifiIcon />
                     </Button>
@@ -339,10 +335,15 @@ export default function CreateServer({ children }: { children: React.ReactNode }
           </FormFields>
         </Form>
         <SheetFooter>
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <Button type="submit" form="create-server-form" tabIndex={4} disabled={form.processing}>
               {form.processing && <LoaderCircle className="animate-spin" />} Create
             </Button>
+            <SheetClose asChild>
+              <Button variant="outline" disabled={form.processing}>
+                Cancel
+              </Button>
+            </SheetClose>
           </div>
         </SheetFooter>
       </SheetContent>

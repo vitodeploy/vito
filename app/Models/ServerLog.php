@@ -149,7 +149,7 @@ class ServerLog extends AbstractModel
             return $content ?? 'Empty log file!';
         }
 
-        return "Log file doesn't exist!";
+        return "Log file doesn't exist or is empty!";
     }
 
     public static function log(Server $server, string $type, string $content, ?Site $site = null): ServerLog

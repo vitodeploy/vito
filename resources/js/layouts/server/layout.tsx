@@ -35,7 +35,7 @@ export default function ServerLayout({ server, children }: { server: Server; chi
         },
         {
           title: 'Backups',
-          href: route('database-backups', { server: server.id }),
+          href: route('backups', { server: server.id }),
           icon: CloudUploadIcon,
         },
       ],

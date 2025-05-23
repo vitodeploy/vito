@@ -34,13 +34,18 @@ export default function DeleteServer({ server, children }: { server: Server; chi
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete {server.name}</DialogTitle>
-          <DialogDescription>Delete server and its resources.</DialogDescription>
+          <DialogDescription className="sr-only">Delete server and its resources.</DialogDescription>
         </DialogHeader>
+
+        <p className="p-4">
+          Are you sure you want to delete this server: <strong>{server.name}</strong>? All resources associated with this server will be deleted and
+          this action cannot be undone.
+        </p>
 
         <Form id="delete-server-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
-              <Label htmlFor="server-name">Name</Label>
+              <Label htmlFor="server-name">Server name</Label>
               <Input id="server-name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>

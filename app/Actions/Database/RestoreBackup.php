@@ -5,7 +5,10 @@ namespace App\Actions\Database;
 use App\Enums\BackupFileStatus;
 use App\Models\BackupFile;
 use App\Models\Database;
+use App\Models\Server;
 use App\Models\Service;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class RestoreBackup
 {
@@ -14,6 +17,8 @@ class RestoreBackup
      */
     public function restore(BackupFile $backupFile, array $input): void
     {
+        Validator::make($input, self::rules($backupFile->backup->server))->validate();
+
         /** @var Database $database */
         $database = Database::query()->findOrFail($input['database']);
         $backupFile->status = BackupFileStatus::RESTORING;
@@ -38,12 +43,12 @@ class RestoreBackup
     /**
      * @return array<string, array<string>>
      */
-    public static function rules(): array
+    public static function rules(Server $server): array
     {
         return [
             'database' => [
                 'required',
-                'exists:databases,id',
+                Rule::exists('databases', 'id')->where('server_id', $server->id),
             ],
         ];
     }

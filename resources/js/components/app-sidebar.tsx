@@ -14,11 +14,10 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, CogIcon, Folder, MinusIcon, PlusIcon, ServerIcon } from 'lucide-react';
+import { BookOpen, ChevronRightIcon, CogIcon, Folder, ServerIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useState } from 'react';
 
 const mainNavItems: NavItem[] = [
   {
@@ -47,8 +46,6 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
-  const [open, setOpen] = useState<NavItem>();
-
   return (
     <Sidebar collapsible="icon" className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row">
       {/* This is the first sidebar */}
@@ -124,12 +121,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
 
                     if (item.children && item.children.length > 0) {
                       return (
-                        <Collapsible
-                          key={`${item.title}-${item.href}`}
-                          defaultOpen={isActive}
-                          onOpenChange={(value) => (value ? setOpen(item) : setOpen(undefined))}
-                          className="group/collapsible"
-                        >
+                        <Collapsible key={`${item.title}-${item.href}`} defaultOpen={isActive} className="group/collapsible">
                           <SidebarMenuItem>
                             <CollapsibleTrigger asChild>
                               <SidebarMenuButton>

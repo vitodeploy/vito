@@ -27,12 +27,10 @@ type ServerProviderForm = {
 };
 
 export default function ConnectServerProvider({
-  providers,
   defaultProvider,
   onProviderAdded,
   children,
 }: {
-  providers: string[];
   defaultProvider?: string;
   onProviderAdded?: () => void;
   children: ReactNode;
@@ -62,7 +60,7 @@ export default function ConnectServerProvider({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Connect to server provider</DialogTitle>
           <DialogDescription className="sr-only">Connect to a new server provider</DialogDescription>
@@ -83,7 +81,7 @@ export default function ConnectServerProvider({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {providers.map(
+                    {page.props.configs.server_providers.map(
                       (provider) =>
                         provider !== 'custom' && (
                           <SelectItem key={provider} value={provider}>
@@ -108,21 +106,25 @@ export default function ConnectServerProvider({
               />
               <InputError message={form.errors.name} />
             </FormField>
-            {page.props.configs.server_providers_custom_fields[form.data.provider]?.map((item: string) => (
-              <FormField key={item}>
-                <Label htmlFor={item} className="capitalize">
-                  {item.replaceAll('_', ' ')}
-                </Label>
-                <Input
-                  type="text"
-                  name={item}
-                  id={item}
-                  value={(form.data[item as keyof ServerProviderForm] as string) ?? ''}
-                  onChange={(e) => form.setData(item as keyof ServerProviderForm, e.target.value)}
-                />
-                <InputError message={form.errors[item as keyof ServerProviderForm]} />
-              </FormField>
-            ))}
+            <div
+              className={page.props.configs.server_providers_custom_fields[form.data.provider].length > 1 ? 'grid grid-cols-2 items-start gap-6' : ''}
+            >
+              {page.props.configs.server_providers_custom_fields[form.data.provider]?.map((item: string) => (
+                <FormField key={item}>
+                  <Label htmlFor={item} className="capitalize">
+                    {item.replaceAll('_', ' ')}
+                  </Label>
+                  <Input
+                    type="text"
+                    name={item}
+                    id={item}
+                    value={(form.data[item as keyof ServerProviderForm] as string) ?? ''}
+                    onChange={(e) => form.setData(item as keyof ServerProviderForm, e.target.value)}
+                  />
+                  <InputError message={form.errors[item as keyof ServerProviderForm]} />
+                </FormField>
+              ))}
+            </div>
             <FormField>
               <div className="flex items-center space-x-3">
                 <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />

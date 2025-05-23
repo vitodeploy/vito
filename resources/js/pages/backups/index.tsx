@@ -9,8 +9,8 @@ import React from 'react';
 import { BookOpenIcon, PlusIcon } from 'lucide-react';
 import { Backup } from '@/types/backup';
 import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/database-backups/components/columns';
-import CreateBackup from '@/pages/database-backups/components/create-backup';
+import { columns } from '@/pages/backups/components/columns';
+import CreateBackup from '@/pages/backups/components/create-backup';
 
 type Page = {
   server: Server;

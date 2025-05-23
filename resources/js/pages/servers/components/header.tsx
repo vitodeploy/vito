@@ -17,7 +17,7 @@ export default function ServerHeader({ server }: { server: Server }) {
                 <div className="hidden lg:inline-flex">{server.name}</div>
               </div>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               <span className="lg:hidden">{server.name}</span>
               <span className="hidden lg:inline-flex">Server Name</span>
             </TooltipContent>
@@ -30,7 +30,7 @@ export default function ServerHeader({ server }: { server: Server }) {
                 <div className="hidden lg:inline-flex">{server.provider}</div>
               </div>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               <div>
                 <span className="lg:hidden">{server.provider}</span>
                 <span className="hidden lg:inline-flex">Server Provider</span>
@@ -45,7 +45,7 @@ export default function ServerHeader({ server }: { server: Server }) {
                 <div className="hidden lg:inline-flex">{server.ip}</div>
               </div>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               <span className="lg:hidden">{server.ip}</span>
               <span className="hidden lg:inline-flex">Server IP</span>
             </TooltipContent>
@@ -60,7 +60,7 @@ export default function ServerHeader({ server }: { server: Server }) {
                     <div>%{parseInt(server.progress || '0')}</div>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>Installation Progress</TooltipContent>
+                <TooltipContent side="bottom">Installation Progress</TooltipContent>
               </Tooltip>
             </>
           )}

@@ -28,7 +28,7 @@ export default function ServerProviders() {
         <div className="flex items-start justify-between">
           <Heading title="Server Providers" description="Here you can manage all of the server provider connectinos" />
           <div className="flex items-center gap-2">
-            <ConnectServerProvider providers={page.props.configs.server_providers}>
+            <ConnectServerProvider>
               <Button>Connect</Button>
             </ConnectServerProvider>
           </div>

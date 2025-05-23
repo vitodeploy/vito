@@ -4,21 +4,17 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHe
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { LoaderCircle, WifiIcon } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Database } from '@/types/database';
-import axios from 'axios';
 import InputError from '@/components/ui/input-error';
-import { StorageProvider } from '@/types/storage-provider';
-import ConnectStorageProvider from '@/pages/storage-providers/components/connect-storage-provider';
 import { SharedData } from '@/types';
 import { Input } from '@/components/ui/input';
+import DatabaseSelect from '@/pages/database-users/components/database-select';
+import StorageProviderSelect from '@/pages/storage-providers/components/storage-provider-select';
 
 export default function CreateBackup({ server, children }: { server: Server; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [databases, setDatabases] = useState<Database[]>([]);
-  const [storageProviders, setStorageProviders] = useState<StorageProvider[]>([]);
   const page = usePage<SharedData>();
 
   const form = useForm<{
@@ -37,87 +33,45 @@ export default function CreateBackup({ server, children }: { server: Server; chi
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('database-backups.store', { server: server.id }), {
+    form.post(route('backups.store', { server: server.id }), {
       onSuccess: () => {
         setOpen(false);
       },
     });
   };
 
-  const onOpenChange = (open: boolean) => {
-    setOpen(open);
-    if (open) {
-      fetchDatabases();
-      fetchStorageProviders();
-    }
-  };
-
-  const fetchDatabases = () => {
-    axios.get(route('databases.json', { server: server.id })).then((response) => {
-      setDatabases(response.data);
-    });
-  };
-
-  const fetchStorageProviders = () => {
-    axios.get(route('storage-providers.json')).then((response) => {
-      setStorageProviders(response.data);
-    });
-  };
-
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-3xl">
         <SheetHeader>
           <SheetTitle>Create backup</SheetTitle>
           <SheetDescription className="sr-only">Create a new backup</SheetDescription>
         </SheetHeader>
-        <Form id="create-backup" onSubmit={submit} className="p-4">
+        <Form id="create-backup-form" onSubmit={submit} className="p-4">
           <FormFields>
             {/*database*/}
             <FormField>
               <Label htmlFor="database">Database</Label>
-              <Select value={form.data.database} onValueChange={(value) => form.setData('database', value)}>
-                <SelectTrigger id="database">
-                  <SelectValue placeholder="Select a database" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {databases.map((database) => (
-                      <SelectItem key={`db-${database.name}`} value={database.id.toString()}>
-                        {database.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <DatabaseSelect
+                id="database"
+                name="database"
+                serverId={server.id}
+                value={form.data.database}
+                onValueChange={(value) => form.setData('database', value)}
+              />
               <InputError message={form.errors.database} />
             </FormField>
 
             {/*storage*/}
             <FormField>
               <Label htmlFor="storage">Storage</Label>
-              <div className="flex items-center gap-2">
-                <Select value={form.data.storage} onValueChange={(value) => form.setData('storage', value)}>
-                  <SelectTrigger id="storage">
-                    <SelectValue placeholder="Select a storage" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {storageProviders.map((storageProvider) => (
-                        <SelectItem key={`sp-${storageProvider.name}`} value={storageProvider.id.toString()}>
-                          {storageProvider.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <ConnectStorageProvider onProviderAdded={() => fetchStorageProviders()}>
-                  <Button variant="outline">
-                    <WifiIcon />
-                  </Button>
-                </ConnectStorageProvider>
-              </div>
+              <StorageProviderSelect
+                id="storage"
+                name="storage"
+                value={form.data.storage}
+                onValueChange={(value) => form.setData('storage', value)}
+              />
               <InputError message={form.errors.storage} />
             </FormField>
 
@@ -166,7 +120,7 @@ export default function CreateBackup({ server, children }: { server: Server; chi
         </Form>
         <SheetFooter>
           <div className="flex items-center gap-2">
-            <Button type="button" onClick={submit} disabled={form.processing}>
+            <Button form="create-backup-form" type="button" onClick={submit} disabled={form.processing}>
               {form.processing && <LoaderCircle className="animate-spin" />}
               Create
             </Button>

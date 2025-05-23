@@ -6,6 +6,7 @@ use App\Actions\Database\ManageBackupFile;
 use App\Enums\BackupFileStatus;
 use App\Enums\StorageProvider as StorageProviderAlias;
 use Carbon\Carbon;
+use Database\Factories\BackupFileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class BackupFile extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\BackupFileFactory> */
+    /** @use HasFactory<BackupFileFactory> */
     use HasFactory;
 
     protected $fillable = [
