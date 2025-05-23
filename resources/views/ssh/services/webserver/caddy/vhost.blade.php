@@ -5,6 +5,7 @@
     @if ($site->activeSsl && $site->force_ssl)
     redir @http https://{host}{uri} permanent
     @endif
+    import access_log {{ $site->domain }}
     import compression
     import security_headers
     @if ($site->type()->language() === 'php')
