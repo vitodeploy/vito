@@ -186,7 +186,7 @@ class AWS extends AbstractProvider
         $credentials = $this->serverProvider->getCredentials();
 
         if ($region === null || $region === '' || $region === '0') {
-            $region = $this->server->provider_data['region'];
+            $region = $this->server->provider_data['region'] ?? null;
         }
 
         $this->ec2Client = new Ec2Client([
