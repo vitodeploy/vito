@@ -2,6 +2,7 @@ import { type BreadcrumbItem, type NavItem } from '@/types';
 import { BellIcon, CloudIcon, CodeIcon, DatabaseIcon, KeyIcon, ListIcon, PlugIcon, TagIcon, UserIcon, UsersIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Layout from '@/layouts/app/layout';
+import VitoIcon from '@/icons/vito';
 
 const sidebarNavItems: NavItem[] = [
   {
@@ -53,6 +54,11 @@ const sidebarNavItems: NavItem[] = [
     title: 'API Keys',
     href: route('api-keys'),
     icon: PlugIcon,
+  },
+  {
+    title: 'Vito Settings',
+    href: route('vito-settings'),
+    icon: VitoIcon,
   },
 ];
 

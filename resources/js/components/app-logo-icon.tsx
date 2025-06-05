@@ -1,6 +1,6 @@
-import { SVGAttributes } from 'react';
+import { Ref, SVGAttributes } from 'react';
 
-export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
+export default function AppLogoIcon(props: SVGAttributes<SVGElement> & { ref?: Ref<SVGSVGElement> }) {
   return (
     <svg {...props} viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="1024" height="1024" rx="50" fill="#312E81" />
