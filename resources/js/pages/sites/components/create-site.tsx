@@ -38,6 +38,7 @@ export default function CreateSite({ server, children }: { server?: Server; chil
     aliases: [],
     php_version: '',
     source_control: '',
+    branch: 'main',
     user: '',
   });
 
