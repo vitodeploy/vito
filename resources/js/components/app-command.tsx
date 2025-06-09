@@ -2,6 +2,7 @@ import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, C
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CommandIcon, SearchIcon } from 'lucide-react';
+import CreateServer from '@/pages/servers/components/create-server';
 
 export default function AppCommand() {
   const [open, setOpen] = useState(false);
@@ -33,7 +34,9 @@ export default function AppCommand() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            <CommandItem>Create server</CommandItem>
+            <CreateServer>
+              <CommandItem>Create server</CommandItem>
+            </CreateServer>
             <CommandItem>Create project</CommandItem>
           </CommandGroup>
         </CommandList>

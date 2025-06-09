@@ -25,6 +25,7 @@ type CreateSiteForm = {
   php_version: string;
   source_control: string;
   user: string;
+  port: string;
 };
 
 export default function CreateSite({ server, children }: { server?: Server; children: ReactNode }) {
@@ -39,6 +40,7 @@ export default function CreateSite({ server, children }: { server?: Server; chil
     php_version: '',
     source_control: '',
     user: '',
+    port: '',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -152,6 +154,15 @@ export default function CreateSite({ server, children }: { server?: Server; chil
                     onValueChange={(value) => form.setData('aliases', value)}
                   />
                   <InputError message={form.errors.aliases} />
+                </FormField>
+
+                <FormField>
+                  <Label htmlFor="port">Reverse proxy port</Label>
+                  <Input id="port" type="text" value={form.data.port} onChange={(e) => form.setData('port', e.target.value)} placeholder="3000" />
+                  <p className="text-muted-foreground text-xs">
+                    This port will be used for reverse proxying the site. It should be unique across all sites on the server.
+                  </p>
+                  <InputError message={form.errors.port} />
                 </FormField>
 
                 {page.props.configs.site_types_custom_fields[form.data.type].map((config) => getFormField(config))}

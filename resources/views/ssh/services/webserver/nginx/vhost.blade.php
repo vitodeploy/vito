@@ -51,31 +51,41 @@ server {
 
     charset utf-8;
 
-    @if ($site->type()->language() === 'php')
-        @php
-            $phpSocket = "unix:/var/run/php/php{$site->php_version}-fpm.sock";
-            if ($site->isIsolated()) {
-                $phpSocket = "unix:/run/php/php{$site->php_version}-fpm-{$site->user}.sock";
-            }
-        @endphp
+    @if ($site->port)
         location / {
-            try_files $uri $uri/ /index.php?$query_string;
+            proxy_pass http://127.0.0.1:{{ $site->port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
         }
-        location ~ \.php$ {
-            fastcgi_pass {{ $phpSocket }};
-            fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-            include fastcgi_params;
-            fastcgi_hide_header X-Powered-By;
-        }
+    @else
+        @if ($site->type()->language() === 'php')
+            @php
+                $phpSocket = "unix:/var/run/php/php{$site->php_version}-fpm.sock";
+                if ($site->isIsolated()) {
+                    $phpSocket = "unix:/run/php/php{$site->php_version}-fpm-{$site->user}.sock";
+                }
+            @endphp
+            location / {
+                try_files $uri $uri/ /index.php?$query_string;
+            }
+            location ~ \.php$ {
+                fastcgi_pass {{ $phpSocket }};
+                fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+                include fastcgi_params;
+                fastcgi_hide_header X-Powered-By;
+            }
+        @endif
     @endif
 
     @if ($site->type === \App\Enums\SiteType::LOAD_BALANCER)
         location / {
-        proxy_pass http://{{ $backendName }}$request_uri;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://{{ $backendName }}$request_uri;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
         }
     @endif
 

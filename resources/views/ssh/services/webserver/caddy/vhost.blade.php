@@ -8,17 +8,21 @@
     import access_log {{ $site->domain }}
     import compression
     import security_headers
-    @if ($site->type()->language() === 'php')
-        root * {{ $site->getWebDirectoryPath() }}
-        @php
-            $phpSocket = "unix//var/run/php/php{$site->php_version}-fpm.sock";
-            if ($site->isIsolated()) {
-                $phpSocket = "unix//run/php/php{$site->php_version}-fpm-{$site->user}.sock";
-            }
-        @endphp
-        try_files {path} {path}/ /index.php?{query}
-        php_fastcgi {{ $phpSocket }}
-        file_server
+    @if ($site->port)
+        reverse_proxy 127.0.0.1:{{ $site->port }}
+    @else
+        @if ($site->type()->language() === 'php')
+            root * {{ $site->getWebDirectoryPath() }}
+            @php
+                $phpSocket = "unix//var/run/php/php{$site->php_version}-fpm.sock";
+                if ($site->isIsolated()) {
+                    $phpSocket = "unix//run/php/php{$site->php_version}-fpm-{$site->user}.sock";
+                }
+            @endphp
+            try_files {path} {path}/ /index.php?{query}
+            php_fastcgi {{ $phpSocket }}
+            file_server
+        @endif
     @endif
     @if ($site->type === \App\Enums\SiteType::LOAD_BALANCER)
         reverse_proxy {

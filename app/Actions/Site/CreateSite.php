@@ -13,6 +13,7 @@ use App\Notifications\SiteInstallationFailed;
 use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -38,6 +39,7 @@ class CreateSite
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'aliases' => $input['aliases'] ?? [],
+                'port' => $input['port'] ?? null,
                 'user' => $user,
                 'path' => '/home/'.$user.'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
@@ -131,6 +133,14 @@ class CreateSite
                 'max:32',
                 Rule::unique('sites', 'user')->where('server_id', $server->id),
                 Rule::notIn($server->getSshUsers()),
+            ],
+            'port' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:65535',
+                Rule::unique('sites', 'port')
+                    ->where(fn (Builder $query) => $query->where('server_id', $server->id)),
             ],
         ];
 
