@@ -11,6 +11,8 @@ class ActivateSSL
         $ssl->site->ssls()->update(['is_active' => false]);
         $ssl->is_active = true;
         $ssl->save();
-        $ssl->site->webserver()->updateVHost($ssl->site);
+        $ssl->site->webserver()->updateVHost($ssl->site, regenerate: [
+            'port',
+        ]);
     }
 }

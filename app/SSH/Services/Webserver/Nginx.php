@@ -6,6 +6,7 @@ use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
+use RuntimeException;
 use Throwable;
 
 class Nginx extends AbstractWebserver
@@ -86,11 +87,34 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function updateVHost(Site $site, ?string $vhost = null): void
+    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = []): void
     {
+        if (! $vhost) {
+            $vhost = $this->getVHost($site);
+        }
+        if (! $vhost) {
+            $vhost = $this->generateVhost($site);
+        }
+
+        foreach ($replace as $block => $replacement) {
+            $vhost = preg_replace(
+                '/#\['.$block.'](.*?)#\[\/'.$block.']/s',
+                $replacement,
+                $vhost
+            );
+        }
+
+        foreach ($regenerate as $block) {
+            $vhost = preg_replace(
+                '/#\['.$block.'](.*?)#\[\/'.$block.']/s',
+                $this->generateVhost($site, $block),
+                $vhost
+            );
+        }
+
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            $vhost ?? $this->generateVhost($site),
+            format_nginx_config($vhost),
             'root'
         );
 
@@ -193,11 +217,19 @@ class Nginx extends AbstractWebserver
         $this->updateVHost($ssl->site);
     }
 
-    private function generateVhost(Site $site): string
+    private function generateVhost(Site $site, ?string $block = null): string
     {
-        $vhost = view('ssh.services.webserver.nginx.vhost', [
-            'site' => $site,
-        ]);
+        $viewPath = 'ssh.services.webserver.nginx.vhost-blocks.'.$block;
+        if ($block) {
+            if (! view()->exists($viewPath)) {
+                throw new RuntimeException("View for block '{$block}' does not exist.");
+            }
+            $vhost = view($viewPath, [
+                'site' => $site,
+            ]);
+        } else {
+            $vhost = $site->type()->vhost(\App\Enums\Webserver::NGINX);
+        }
 
         return format_nginx_config($vhost);
     }

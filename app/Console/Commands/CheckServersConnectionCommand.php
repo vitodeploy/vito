@@ -18,9 +18,14 @@ class CheckServersConnectionCommand extends Command
             ServerStatus::READY,
             ServerStatus::DISCONNECTED,
         ])->chunk(50, function ($servers) {
+            $dispatchTime = now();
             /** @var Server $server */
             foreach ($servers as $server) {
-                dispatch(function () use ($server) {
+                dispatch(function () use ($server, $dispatchTime) {
+                    // check connection if dispatch time is less than 5 minutes ago
+                    if ($dispatchTime->diffInMinutes(now()) > 5) {
+                        return;
+                    }
                     $server->checkConnection();
                 })->onConnection('ssh');
             }

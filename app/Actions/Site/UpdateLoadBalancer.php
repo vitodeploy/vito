@@ -30,7 +30,10 @@ class UpdateLoadBalancer
             $loadBalancerServer->save();
         }
 
-        $site->webserver()->updateVHost($site);
+        $site->webserver()->updateVHost($site, regenerate: [
+            'load-balancer-upstream',
+            'load-balancer',
+        ]);
     }
 
     /**

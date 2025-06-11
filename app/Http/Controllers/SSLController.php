@@ -63,7 +63,9 @@ class SSLController extends Controller
 
         $site->force_ssl = true;
         $site->save();
-        $site->webserver()->updateVHost($site);
+        $site->webserver()->updateVHost($site, regenerate: [
+            'force-ssl',
+        ]);
 
         return back()
             ->with('success', 'Force SSL enabled successfully.');
@@ -76,7 +78,9 @@ class SSLController extends Controller
 
         $site->force_ssl = false;
         $site->save();
-        $site->webserver()->updateVHost($site);
+        $site->webserver()->updateVHost($site, regenerate: [
+            'force-ssl',
+        ]);
 
         return back()
             ->with('success', 'Force SSL disabled successfully.');

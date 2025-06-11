@@ -20,7 +20,9 @@ class DeleteRedirect
             $service = $site->server->webserver();
             /** @var Webserver $webserver */
             $webserver = $service->handler();
-            $webserver->updateVHost($site);
+            $webserver->updateVHost($site, regenerate: [
+                'redirects',
+            ]);
             $redirect->delete();
         })->catch(function () use ($redirect): void {
             $redirect->status = RedirectStatus::FAILED;

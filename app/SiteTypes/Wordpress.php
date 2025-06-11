@@ -5,9 +5,8 @@ namespace App\SiteTypes;
 use App\Actions\Database\CreateDatabase;
 use App\Actions\Database\CreateDatabaseUser;
 use App\Actions\Database\LinkUser;
-use App\DTOs\DynamicFieldDTO;
-use App\DTOs\DynamicFieldsCollectionDTO;
-use App\Enums\SiteFeature;
+use App\DTOs\DynamicField;
+use App\DTOs\DynamicForm;
 use App\Exceptions\SSHError;
 use App\Models\Database;
 use App\Models\DatabaseUser;
@@ -15,7 +14,7 @@ use App\Models\Site;
 use Closure;
 use Illuminate\Validation\Rule;
 
-class Wordpress extends AbstractSiteType
+class Wordpress extends PHPSite
 {
     public static function make(): self
     {
@@ -27,43 +26,35 @@ class Wordpress extends AbstractSiteType
         return 'php';
     }
 
-    public function supportedFeatures(): array
+    public function fields(): DynamicForm
     {
-        return [
-            SiteFeature::SSL,
-            SiteFeature::COMMANDS,
-        ];
-    }
-
-    public function fields(): DynamicFieldsCollectionDTO
-    {
-        return new DynamicFieldsCollectionDTO([
-            DynamicFieldDTO::make('php_version')
+        return new DynamicForm([
+            DynamicField::make('php_version')
                 ->component()
                 ->label('PHP Version'),
-            DynamicFieldDTO::make('title')
+            DynamicField::make('title')
                 ->text()
                 ->label('Site Title')
                 ->placeholder('My WordPress Site'),
-            DynamicFieldDTO::make('username')
+            DynamicField::make('username')
                 ->text()
                 ->label('Admin Username')
                 ->placeholder('admin'),
-            DynamicFieldDTO::make('password')
+            DynamicField::make('password')
                 ->text()
                 ->label('Admin Password'),
-            DynamicFieldDTO::make('email')
+            DynamicField::make('email')
                 ->text()
                 ->label('Admin Email'),
-            DynamicFieldDTO::make('database')
+            DynamicField::make('database')
                 ->text()
                 ->label('Database Name')
                 ->placeholder('wordpress'),
-            DynamicFieldDTO::make('database_user')
+            DynamicField::make('database_user')
                 ->text()
                 ->label('Database User')
                 ->placeholder('wp_user'),
-            DynamicFieldDTO::make('database_password')
+            DynamicField::make('database_password')
                 ->text()
                 ->label('Database Password'),
         ]);

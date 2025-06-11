@@ -2,9 +2,8 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicFieldDTO;
-use App\DTOs\DynamicFieldsCollectionDTO;
-use App\Enums\SiteFeature;
+use App\DTOs\DynamicField;
+use App\DTOs\DynamicForm;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use Illuminate\Validation\Rule;
@@ -16,17 +15,10 @@ class PHPMyAdmin extends PHPSite
         return new self(new Site(['type' => \App\Enums\SiteType::PHPMYADMIN]));
     }
 
-    public function supportedFeatures(): array
+    public function fields(): DynamicForm
     {
-        return [
-            SiteFeature::SSL,
-        ];
-    }
-
-    public function fields(): DynamicFieldsCollectionDTO
-    {
-        return new DynamicFieldsCollectionDTO([
-            DynamicFieldDTO::make('php_version')
+        return new DynamicForm([
+            DynamicField::make('php_version')
                 ->component()
                 ->label('PHP Version'),
         ]);

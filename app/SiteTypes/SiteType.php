@@ -2,18 +2,13 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicFieldsCollectionDTO;
+use App\DTOs\DynamicForm;
 
 interface SiteType
 {
     public function language(): string;
 
-    /**
-     * @return array<string>
-     */
-    public function supportedFeatures(): array;
-
-    public function fields(): DynamicFieldsCollectionDTO;
+    public function fields(): DynamicForm;
 
     /**
      * @param  array<string, mixed>  $input
@@ -39,4 +34,6 @@ interface SiteType
      * @return array<array<string, string>>
      */
     public function baseCommands(): array;
+
+    public function vhost(string $webserver): string;
 }

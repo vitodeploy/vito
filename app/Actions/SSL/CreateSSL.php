@@ -54,7 +54,9 @@ class CreateSSL
             $webserver->setupSSL($ssl);
             $ssl->status = SslStatus::CREATED;
             $ssl->save();
-            $webserver->updateVHost($site);
+            $webserver->updateVHost($site, regenerate: [
+                'port',
+            ]);
         })->catch(function () use ($ssl): void {
             $ssl->status = SslStatus::FAILED;
             $ssl->save();

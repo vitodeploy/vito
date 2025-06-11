@@ -10,7 +10,6 @@ export interface Site {
     method?: 'round-robin' | 'least-connections' | 'ip-hash';
     [key: string]: unknown;
   };
-  features: string[];
   domain: string;
   aliases?: string[];
   web_directory: string;

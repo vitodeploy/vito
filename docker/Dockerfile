@@ -22,6 +22,7 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
 
 # php
 COPY docker/php.ini /etc/php/8.4/cli/conf.d/99-vito.ini
+COPY docker/php.ini /etc/php/8.4/fpm/conf.d/99-vito.ini
 
 # composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

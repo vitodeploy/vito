@@ -25,7 +25,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('site-settings.update-vhost', { server: site.server_id, site: site.id }), {
+    form.put(route('site-settings.update-vhost', { server: site.server_id, site: site.id }), {
       onSuccess: () => {
         setOpen(false);
       },

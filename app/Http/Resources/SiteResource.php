@@ -21,7 +21,6 @@ class SiteResource extends JsonResource
             'source_control_id' => $this->source_control_id,
             'type' => $this->type,
             'type_data' => $this->type_data,
-            'features' => $this->type()->supportedFeatures(),
             'domain' => $this->domain,
             'aliases' => $this->aliases,
             'web_directory' => $this->web_directory,

@@ -2,14 +2,22 @@
 
 namespace App\DTOs;
 
-readonly class DynamicFieldsCollectionDTO
+readonly class DynamicForm
 {
     /**
-     * @param  array<int, DynamicFieldDTO>  $fields
+     * @param  array<int, DynamicField>  $fields
      */
     public function __construct(
         private array $fields = [],
     ) {}
+
+    /**
+     * @param  array<int, DynamicField>  $fields
+     */
+    public static function make(array $fields): self
+    {
+        return new self($fields);
+    }
 
     /**
      * @return array<int, mixed>

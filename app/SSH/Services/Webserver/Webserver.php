@@ -12,7 +12,11 @@ interface Webserver extends ServiceInterface
 
     public function createVHost(Site $site): void;
 
-    public function updateVHost(Site $site, ?string $vhost = null): void;
+    /**
+     * @param  array<string, string>  $replace  replace blocks
+     * @param  array<int, string>  $regenerate  regenerates the blocks
+     */
+    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = []): void;
 
     public function getVHost(Site $site): string;
 

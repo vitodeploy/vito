@@ -2,9 +2,9 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicFieldDTO;
-use App\DTOs\DynamicFieldsCollectionDTO;
-use App\Enums\SiteFeature;
+use App\DTOs\DynamicField;
+use App\DTOs\DynamicForm;
+use App\Enums\Webserver;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
@@ -24,40 +24,29 @@ class PHPSite extends AbstractSiteType
         return 'php';
     }
 
-    public function supportedFeatures(): array
+    public function fields(): DynamicForm
     {
-        return [
-            SiteFeature::DEPLOYMENT,
-            SiteFeature::COMMANDS,
-            SiteFeature::ENV,
-            SiteFeature::SSL,
-            SiteFeature::WORKERS,
-        ];
-    }
-
-    public function fields(): DynamicFieldsCollectionDTO
-    {
-        return new DynamicFieldsCollectionDTO([
-            DynamicFieldDTO::make('php_version')
+        return new DynamicForm([
+            DynamicField::make('php_version')
                 ->component()
                 ->label('PHP Version'),
-            DynamicFieldDTO::make('source_control')
+            DynamicField::make('source_control')
                 ->component()
                 ->label('Source Control'),
-            DynamicFieldDTO::make('web_directory')
+            DynamicField::make('web_directory')
                 ->text()
                 ->label('Web Directory')
                 ->placeholder('For / leave empty')
                 ->description('The relative path of your website from /home/vito/your-domain/'),
-            DynamicFieldDTO::make('repository')
+            DynamicField::make('repository')
                 ->text()
                 ->label('Repository')
                 ->placeholder('organization/repository'),
-            DynamicFieldDTO::make('branch')
+            DynamicField::make('branch')
                 ->text()
                 ->label('Branch')
                 ->default('main'),
-            DynamicFieldDTO::make('composer')
+            DynamicField::make('composer')
                 ->checkbox()
                 ->label('Run `composer install --no-dev`')
                 ->default(false),
@@ -132,9 +121,28 @@ class PHPSite extends AbstractSiteType
     {
         return [
             [
-                'name' => 'Install Composer Dependencies',
+                'name' => 'composer:install',
                 'command' => 'composer install --no-dev --no-interaction --no-progress',
             ],
         ];
+    }
+
+    public function vhost(string $webserver): string
+    {
+        if ($webserver === Webserver::NGINX) {
+            return view('ssh.services.webserver.nginx.vhost', [
+                'topBlocks' => [
+                    view('ssh.services.webserver.nginx.vhost-blocks.force-ssl', ['site' => $this->site]),
+                ],
+                'blocks' => [
+                    view('ssh.services.webserver.nginx.vhost-blocks.port', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.core', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.php', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.redirects', ['site' => $this->site]),
+                ],
+            ]);
+        }
+
+        return '';
     }
 }

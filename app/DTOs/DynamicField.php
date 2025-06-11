@@ -2,7 +2,7 @@
 
 namespace App\DTOs;
 
-class DynamicFieldDTO
+class DynamicField
 {
     /**
      * @param  array<int, mixed>|null  $options

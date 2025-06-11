@@ -352,11 +352,6 @@ class Site extends AbstractModel
         return str('site_'.$this->id)->toString();
     }
 
-    public function hasFeature(string $feature): bool
-    {
-        return in_array($feature, $this->type()->supportedFeatures());
-    }
-
     public function getEnv(): string
     {
         try {

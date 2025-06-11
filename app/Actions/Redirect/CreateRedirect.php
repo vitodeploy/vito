@@ -33,7 +33,9 @@ class CreateRedirect
             $service = $site->server->webserver();
             /** @var Webserver $webserver */
             $webserver = $service->handler();
-            $webserver->updateVHost($site);
+            $webserver->updateVHost($site, regenerate: [
+                'redirects',
+            ]);
             $redirect->status = RedirectStatus::READY;
             $redirect->save();
         })

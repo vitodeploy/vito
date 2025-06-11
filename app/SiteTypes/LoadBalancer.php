@@ -2,10 +2,10 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicFieldDTO;
-use App\DTOs\DynamicFieldsCollectionDTO;
+use App\DTOs\DynamicField;
+use App\DTOs\DynamicForm;
 use App\Enums\LoadBalancerMethod;
-use App\Enums\SiteFeature;
+use App\Enums\Webserver;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use Illuminate\Validation\Rule;
@@ -22,17 +22,10 @@ class LoadBalancer extends AbstractSiteType
         return 'yaml';
     }
 
-    public function supportedFeatures(): array
+    public function fields(): DynamicForm
     {
-        return [
-            SiteFeature::SSL,
-        ];
-    }
-
-    public function fields(): DynamicFieldsCollectionDTO
-    {
-        return new DynamicFieldsCollectionDTO([
-            DynamicFieldDTO::make('method')
+        return new DynamicForm([
+            DynamicField::make('method')
                 ->select()
                 ->label('Load Balancing Method')
                 ->options([
@@ -72,5 +65,25 @@ class LoadBalancer extends AbstractSiteType
         $this->isolate();
 
         $this->site->webserver()->createVHost($this->site);
+    }
+
+    public function vhost(string $webserver): string
+    {
+        if ($webserver === Webserver::NGINX) {
+            return view('ssh.services.webserver.nginx.vhost', [
+                'topBlocks' => [
+                    view('ssh.services.webserver.nginx.vhost-blocks.force-ssl', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.load-balancer-upstream', ['site' => $this->site]),
+                ],
+                'blocks' => [
+                    view('ssh.services.webserver.nginx.vhost-blocks.port', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.core', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.load-balancer', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.redirects', ['site' => $this->site]),
+                ],
+            ]);
+        }
+
+        return '';
     }
 }
