@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * @extends Factory<\App\Models\LoadBalancerServer>
+ * @extends Factory<LoadBalancerServer>
  */
 class LoadBalancerServerFactory extends Factory
 {

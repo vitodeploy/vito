@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\FileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class File extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\FileFactory> */
+    /** @use HasFactory<FileFactory> */
     use HasFactory;
 
     protected $fillable = [

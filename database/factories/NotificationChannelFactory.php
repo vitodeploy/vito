@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\NotificationChannel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\NotificationChannel>
+ * @extends Factory<NotificationChannel>
  */
 class NotificationChannelFactory extends Factory
 {

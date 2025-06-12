@@ -6,7 +6,7 @@ use App\Models\FirewallRule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\FirewallRule>
+ * @extends Factory<FirewallRule>
  */
 class FirewallRuleFactory extends Factory
 {

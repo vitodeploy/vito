@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * @extends Factory<\App\Models\GitHook>
+ * @extends Factory<GitHook>
  */
 class GitHookFactory extends Factory
 {

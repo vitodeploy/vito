@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use ReflectionClass;
+
 trait Enum
 {
     /**
@@ -9,7 +11,7 @@ trait Enum
      */
     public static function all(): array
     {
-        $reflection = new \ReflectionClass(self::class);
+        $reflection = new ReflectionClass(self::class);
 
         return $reflection->getConstants();
     }

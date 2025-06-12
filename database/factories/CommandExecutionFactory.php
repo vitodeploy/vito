@@ -8,7 +8,7 @@ use App\Models\CommandExecution;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\CommandExecution>
+ * @extends Factory<CommandExecution>
  */
 class CommandExecutionFactory extends Factory
 {

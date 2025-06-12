@@ -4,6 +4,7 @@ namespace App\SiteTypes;
 
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
+use App\Models\Service;
 use App\Models\Site;
 use App\SSH\Services\PHP\PHP;
 use Illuminate\Support\Str;
@@ -76,7 +77,7 @@ abstract class AbstractSiteType implements SiteType
         // Generate the FPM pool
         if ($this->site->php_version) {
             $service = $this->site->php();
-            if (! $service instanceof \App\Models\Service) {
+            if (! $service instanceof Service) {
                 throw new RuntimeException('PHP service not found');
             }
             /** @var PHP $php */

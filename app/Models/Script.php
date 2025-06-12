@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\ScriptFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,7 +26,7 @@ use Illuminate\Support\Collection;
  */
 class Script extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\ScriptFactory> */
+    /** @use HasFactory<ScriptFactory> */
     use HasFactory;
 
     protected $fillable = [

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * @extends Factory<\App\Models\Tag>
+ * @extends Factory<Tag>
  */
 class TagFactory extends Factory
 {

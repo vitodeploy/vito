@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * @extends Factory<\App\Models\Script>
+ * @extends Factory<Script>
  */
 class ScriptFactory extends Factory
 {

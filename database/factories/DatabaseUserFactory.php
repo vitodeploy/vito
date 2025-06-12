@@ -6,7 +6,7 @@ use App\Models\DatabaseUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\DatabaseUser>
+ * @extends Factory<DatabaseUser>
  */
 class DatabaseUserFactory extends Factory
 {

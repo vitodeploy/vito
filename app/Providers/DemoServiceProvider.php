@@ -3,6 +3,11 @@
 namespace App\Providers;
 
 use App\Facades\SSH;
+use App\Models\FirewallRule;
+use App\Models\PersonalAccessToken;
+use App\Models\Script;
+use App\Models\ScriptExecution;
+use App\Models\ServerLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
@@ -22,20 +27,20 @@ class DemoServiceProvider extends ServiceProvider
      * @var string[]
      */
     protected array $canUpdate = [
-        \App\Models\ServerLog::class,
-        \App\Models\Script::class,
-        \App\Models\ScriptExecution::class,
+        ServerLog::class,
+        Script::class,
+        ScriptExecution::class,
     ];
 
     /**
      * @var string[]
      */
     protected array $canCreate = [
-        \App\Models\ServerLog::class,
-        \App\Models\Script::class,
-        \App\Models\ScriptExecution::class,
-        \App\Models\FirewallRule::class,
-        \App\Models\PersonalAccessToken::class,
+        ServerLog::class,
+        Script::class,
+        ScriptExecution::class,
+        FirewallRule::class,
+        PersonalAccessToken::class,
     ];
 
     public function register(): void

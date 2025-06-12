@@ -2,14 +2,16 @@
 
 namespace App\Facades;
 
+use App\Models\Server;
+use App\Models\ServerLog;
 use App\Support\Testing\SSHFake;
 use Illuminate\Support\Facades\Facade as FacadeAlias;
 
 /**
  * Class SSH
  *
- * @method static \App\Helpers\SSH|SSHFake init(\App\Models\Server $server, string $asUser = null)
- * @method static setLog(?\App\Models\ServerLog $log)
+ * @method static \App\Helpers\SSH|SSHFake init(Server $server, string $asUser = null)
+ * @method static setLog(?ServerLog $log)
  * @method static connect()
  * @method static string exec(string $command, string $log = '', int $siteId = null, ?bool $stream = false, callable $streamCallback = null)
  * @method static string upload(string $local, string $remote, ?string $owner = null)

@@ -6,7 +6,7 @@ use App\Models\SshKey;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\SshKey>
+ * @extends Factory<SshKey>
  */
 class SshKeyFactory extends Factory
 {

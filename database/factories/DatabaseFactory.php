@@ -7,7 +7,7 @@ use App\Models\Database;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\Database>
+ * @extends Factory<Database>
  */
 class DatabaseFactory extends Factory
 {

@@ -2,6 +2,8 @@
 
 namespace App\SSH;
 
+use Exception;
+
 trait HasS3Storage
 {
     private function prepareS3Path(string $path, string $prefix = ''): string
@@ -16,7 +18,7 @@ trait HasS3Storage
         }
 
         if ($path === null) {
-            throw new \Exception('Invalid S3 path');
+            throw new Exception('Invalid S3 path');
         }
 
         return $path;

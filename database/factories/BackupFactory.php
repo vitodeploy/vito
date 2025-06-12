@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Enums\BackupStatus;
+use App\Models\Backup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\Backup>
+ * @extends Factory<Backup>
  */
 class BackupFactory extends Factory
 {

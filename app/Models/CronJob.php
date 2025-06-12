@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CronjobStatus;
+use Database\Factories\CronJobFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CronJob extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\CronJobFactory> */
+    /** @use HasFactory<CronJobFactory> */
     use HasFactory;
 
     protected $fillable = [

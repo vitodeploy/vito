@@ -16,6 +16,7 @@ use App\Http\Resources\SiteResource;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -172,7 +173,7 @@ class SiteController extends Controller
     #[Get('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script.show', middleware: 'ability:read')]
     #[Endpoint(title: 'deployment-script', description: 'Get site deployment script content')]
     #[Response(status: 200)]
-    public function showDeploymentScript(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    public function showDeploymentScript(Project $project, Server $server, Site $site): JsonResponse
     {
         $this->authorize('view', [$site, $server]);
 
@@ -190,7 +191,7 @@ class SiteController extends Controller
             'env' => 'APP_NAME=Laravel\nAPP_ENV=production',
         ],
     ], status: 200)]
-    public function showEnv(Project $project, Server $server, Site $site): \Illuminate\Http\JsonResponse
+    public function showEnv(Project $project, Server $server, Site $site): JsonResponse
     {
         $this->authorize('view', [$site, $server]);
 

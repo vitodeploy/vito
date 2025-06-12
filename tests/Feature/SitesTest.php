@@ -7,6 +7,7 @@ use App\Enums\SiteStatus;
 use App\Enums\SiteType;
 use App\Facades\SSH;
 use App\Models\Site;
+use App\Models\SourceControl;
 use App\SiteTypes\PHPBlank;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,8 +35,8 @@ class SitesTest extends TestCase
 
         $this->actingAs($this->user);
 
-        /** @var \App\Models\SourceControl $sourceControl */
-        $sourceControl = \App\Models\SourceControl::factory()->create([
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
         ]);
 
@@ -90,8 +91,8 @@ class SitesTest extends TestCase
 
         $this->actingAs($this->user);
 
-        /** @var \App\Models\SourceControl $sourceControl */
-        $sourceControl = \App\Models\SourceControl::factory()->create([
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
         ]);
 
@@ -178,8 +179,8 @@ class SitesTest extends TestCase
             ], 201),
         ]);
 
-        /** @var \App\Models\SourceControl $sourceControl */
-        $sourceControl = \App\Models\SourceControl::factory()->create([
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
         ]);
 
@@ -207,8 +208,8 @@ class SitesTest extends TestCase
             ], 404),
         ]);
 
-        /** @var \App\Models\SourceControl $sourceControl */
-        $sourceControl = \App\Models\SourceControl::factory()->create([
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
         ]);
 

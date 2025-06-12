@@ -6,7 +6,7 @@ use App\Models\Deployment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\Deployment>
+ * @extends Factory<Deployment>
  */
 class DeploymentFactory extends Factory
 {

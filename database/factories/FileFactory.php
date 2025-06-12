@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * @extends Factory<\App\Models\File>
+ * @extends Factory<File>
  */
 class FileFactory extends Factory
 {

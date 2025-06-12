@@ -7,7 +7,7 @@ use App\Models\CronJob;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\CronJob>
+ * @extends Factory<CronJob>
  */
 class CronJobFactory extends Factory
 {

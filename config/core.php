@@ -1,5 +1,31 @@
 <?php
 
+use App\Enums\NotificationChannel;
+use App\Enums\OperatingSystem;
+use App\Enums\ServerType;
+use App\Enums\SslType;
+use App\Enums\UserRole;
+use App\Enums\Webserver;
+use App\Models\Server;
+use App\Models\Site;
+use App\NotificationChannels\Discord;
+use App\NotificationChannels\Email;
+use App\NotificationChannels\Slack;
+use App\NotificationChannels\Telegram;
+use App\ServerTypes\Database;
+use App\ServerTypes\Regular;
+use App\SSH\Services\Database\Mariadb;
+use App\SSH\Services\Database\Mysql;
+use App\SSH\Services\Database\Postgresql;
+use App\SSH\Services\Firewall\Ufw;
+use App\SSH\Services\Monitoring\RemoteMonitor\RemoteMonitor;
+use App\SSH\Services\Monitoring\VitoAgent\VitoAgent;
+use App\SSH\Services\NodeJS\NodeJS;
+use App\SSH\Services\PHP\PHP;
+use App\SSH\Services\ProcessManager\Supervisor;
+use App\SSH\Services\Webserver\Caddy;
+use App\SSH\Services\Webserver\Nginx;
+
 return [
     /*
      * SSH
@@ -14,19 +40,19 @@ return [
      * General
      */
     'operating_systems' => [
-        \App\Enums\OperatingSystem::UBUNTU20,
-        \App\Enums\OperatingSystem::UBUNTU22,
-        \App\Enums\OperatingSystem::UBUNTU24,
+        OperatingSystem::UBUNTU20,
+        OperatingSystem::UBUNTU22,
+        OperatingSystem::UBUNTU24,
     ],
     'operating_system_versions' => [
-        \App\Enums\OperatingSystem::UBUNTU20 => '20.04',
-        \App\Enums\OperatingSystem::UBUNTU22 => '22.04',
-        \App\Enums\OperatingSystem::UBUNTU24 => '24.04',
+        OperatingSystem::UBUNTU20 => '20.04',
+        OperatingSystem::UBUNTU22 => '22.04',
+        OperatingSystem::UBUNTU24 => '24.04',
     ],
     'webservers' => [
-        \App\Enums\Webserver::NONE,
-        \App\Enums\Webserver::NGINX,
-        \App\Enums\Webserver::CADDY,
+        Webserver::NONE,
+        Webserver::NGINX,
+        Webserver::CADDY,
     ],
     'php_versions' => [
         \App\Enums\PHP::NONE,
@@ -113,12 +139,12 @@ return [
      * Server
      */
     'server_types' => [
-        \App\Enums\ServerType::REGULAR,
-        \App\Enums\ServerType::DATABASE,
+        ServerType::REGULAR,
+        ServerType::DATABASE,
     ],
     'server_types_class' => [
-        \App\Enums\ServerType::REGULAR => \App\ServerTypes\Regular::class,
-        \App\Enums\ServerType::DATABASE => \App\ServerTypes\Database::class,
+        ServerType::REGULAR => Regular::class,
+        ServerType::DATABASE => Database::class,
     ],
 
     /*
@@ -139,18 +165,18 @@ return [
         'remote-monitor' => 'monitoring',
     ],
     'service_handlers' => [
-        'nginx' => \App\SSH\Services\Webserver\Nginx::class,
-        'caddy' => \App\SSH\Services\Webserver\Caddy::class,
-        'mysql' => \App\SSH\Services\Database\Mysql::class,
-        'mariadb' => \App\SSH\Services\Database\Mariadb::class,
-        'postgresql' => \App\SSH\Services\Database\Postgresql::class,
+        'nginx' => Nginx::class,
+        'caddy' => Caddy::class,
+        'mysql' => Mysql::class,
+        'mariadb' => Mariadb::class,
+        'postgresql' => Postgresql::class,
         'redis' => \App\SSH\Services\Redis\Redis::class,
-        'php' => \App\SSH\Services\PHP\PHP::class,
-        'nodejs' => \App\SSH\Services\NodeJS\NodeJS::class,
-        'ufw' => \App\SSH\Services\Firewall\Ufw::class,
-        'supervisor' => \App\SSH\Services\ProcessManager\Supervisor::class,
-        'vito-agent' => \App\SSH\Services\Monitoring\VitoAgent\VitoAgent::class,
-        'remote-monitor' => \App\SSH\Services\Monitoring\RemoteMonitor\RemoteMonitor::class,
+        'php' => PHP::class,
+        'nodejs' => NodeJS::class,
+        'ufw' => Ufw::class,
+        'supervisor' => Supervisor::class,
+        'vito-agent' => VitoAgent::class,
+        'remote-monitor' => RemoteMonitor::class,
     ],
     'service_versions' => [
         'nginx' => [
@@ -221,60 +247,60 @@ return [
     ],
     'service_units' => [
         'nginx' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 'latest' => 'nginx',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 'latest' => 'nginx',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 'latest' => 'nginx',
             ],
         ],
         'caddy' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 'latest' => 'caddy',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 'latest' => 'caddy',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 'latest' => 'caddy',
             ],
         ],
         'mysql' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
                 '8.4' => 'mysql',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
                 '8.4' => 'mysql',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 '5.7' => 'mysql',
                 '8.0' => 'mysql',
                 '8.4' => 'mysql',
             ],
         ],
         'mariadb' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 '10.3' => 'mariadb',
                 '10.4' => 'mariadb',
                 '10.6' => 'mariadb',
                 '10.11' => 'mariadb',
                 '11.4' => 'mariadb',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 '10.3' => 'mariadb',
                 '10.4' => 'mariadb',
                 '10.6' => 'mariadb',
                 '10.11' => 'mariadb',
                 '11.4' => 'mariadb',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 '10.3' => 'mariadb',
                 '10.4' => 'mariadb',
                 '10.6' => 'mariadb',
@@ -283,21 +309,21 @@ return [
             ],
         ],
         'postgresql' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 '12' => 'postgresql',
                 '13' => 'postgresql',
                 '14' => 'postgresql',
                 '15' => 'postgresql',
                 '16' => 'postgresql',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 '12' => 'postgresql',
                 '13' => 'postgresql',
                 '14' => 'postgresql',
                 '15' => 'postgresql',
                 '16' => 'postgresql',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 '12' => 'postgresql',
                 '13' => 'postgresql',
                 '14' => 'postgresql',
@@ -306,7 +332,7 @@ return [
             ],
         ],
         'php' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 '5.6' => 'php5.6-fpm',
                 '7.0' => 'php7.0-fpm',
                 '7.1' => 'php7.1-fpm',
@@ -318,7 +344,7 @@ return [
                 '8.3' => 'php8.3-fpm',
                 '8.4' => 'php8.4-fpm',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 '5.6' => 'php5.6-fpm',
                 '7.0' => 'php7.0-fpm',
                 '7.1' => 'php7.1-fpm',
@@ -331,7 +357,7 @@ return [
                 '8.3' => 'php8.3-fpm',
                 '8.4' => 'php8.4-fpm',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 '5.6' => 'php5.6-fpm',
                 '7.0' => 'php7.0-fpm',
                 '7.1' => 'php7.1-fpm',
@@ -346,46 +372,46 @@ return [
             ],
         ],
         'redis' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 'latest' => 'redis',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 'latest' => 'redis',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 'latest' => 'redis',
             ],
         ],
         'supervisor' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 'latest' => 'supervisor',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 'latest' => 'supervisor',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 'latest' => 'supervisor',
             ],
         ],
         'ufw' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 'latest' => 'ufw',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 'latest' => 'ufw',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 'latest' => 'ufw',
             ],
         ],
         'vito-agent' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => [
+            OperatingSystem::UBUNTU20 => [
                 'latest' => 'vito-agent',
             ],
-            \App\Enums\OperatingSystem::UBUNTU22 => [
+            OperatingSystem::UBUNTU22 => [
                 'latest' => 'vito-agent',
             ],
-            \App\Enums\OperatingSystem::UBUNTU24 => [
+            OperatingSystem::UBUNTU24 => [
                 'latest' => 'vito-agent',
             ],
         ],
@@ -432,28 +458,28 @@ return [
      * Notification channels
      */
     'notification_channels_providers' => [
-        \App\Enums\NotificationChannel::SLACK,
-        \App\Enums\NotificationChannel::DISCORD,
-        \App\Enums\NotificationChannel::EMAIL,
-        \App\Enums\NotificationChannel::TELEGRAM,
+        NotificationChannel::SLACK,
+        NotificationChannel::DISCORD,
+        NotificationChannel::EMAIL,
+        NotificationChannel::TELEGRAM,
     ],
     'notification_channels_providers_class' => [
-        \App\Enums\NotificationChannel::SLACK => \App\NotificationChannels\Slack::class,
-        \App\Enums\NotificationChannel::DISCORD => \App\NotificationChannels\Discord::class,
-        \App\Enums\NotificationChannel::EMAIL => \App\NotificationChannels\Email::class,
-        \App\Enums\NotificationChannel::TELEGRAM => \App\NotificationChannels\Telegram::class,
+        NotificationChannel::SLACK => Slack::class,
+        NotificationChannel::DISCORD => Discord::class,
+        NotificationChannel::EMAIL => Email::class,
+        NotificationChannel::TELEGRAM => Telegram::class,
     ],
     'notification_channels_providers_custom_fields' => [
-        \App\Enums\NotificationChannel::SLACK => ['webhook_url'],
-        \App\Enums\NotificationChannel::DISCORD => ['webhook_url'],
-        \App\Enums\NotificationChannel::EMAIL => ['email'],
-        \App\Enums\NotificationChannel::TELEGRAM => ['bot_token', 'chat_id'],
+        NotificationChannel::SLACK => ['webhook_url'],
+        NotificationChannel::DISCORD => ['webhook_url'],
+        NotificationChannel::EMAIL => ['email'],
+        NotificationChannel::TELEGRAM => ['bot_token', 'chat_id'],
     ],
 
 
     'ssl_types' => [
-        \App\Enums\SslType::LETSENCRYPT,
-        \App\Enums\SslType::CUSTOM,
+        SslType::LETSENCRYPT,
+        SslType::CUSTOM,
     ],
 
     'metrics_data_retention' => [
@@ -464,13 +490,13 @@ return [
     ],
 
     'taggable_types' => [
-        \App\Models\Server::class,
-        \App\Models\Site::class,
+        Server::class,
+        Site::class,
     ],
 
     'user_roles' => [
-        \App\Enums\UserRole::USER,
-        \App\Enums\UserRole::ADMIN,
+        UserRole::USER,
+        UserRole::ADMIN,
     ],
 
     'cronjob_intervals' => [

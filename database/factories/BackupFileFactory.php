@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\BackupFile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\BackupFile>
+ * @extends Factory<BackupFile>
  */
 class BackupFileFactory extends Factory
 {

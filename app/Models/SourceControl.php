@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SourceControlProviders\SourceControlProvider;
+use Database\Factories\SourceControlFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class SourceControl extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\SourceControlFactory> */
+    /** @use HasFactory<SourceControlFactory> */
     use HasFactory;
 
     use SoftDeletes;

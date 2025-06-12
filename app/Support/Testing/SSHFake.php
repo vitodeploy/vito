@@ -5,6 +5,7 @@ namespace App\Support\Testing;
 use App\Exceptions\SSHConnectionError;
 use App\Helpers\SSH;
 use App\Models\Server;
+use App\Models\ServerLog;
 use Illuminate\Support\Traits\ReflectsClosures;
 use PHPUnit\Framework\Assert;
 
@@ -53,8 +54,8 @@ class SSHFake extends SSH
 
     public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        if (! $this->log instanceof \App\Models\ServerLog && $log) {
-            /** @var \App\Models\ServerLog $log */
+        if (! $this->log instanceof ServerLog && $log) {
+            /** @var ServerLog $log */
             $log = $this->server->logs()->create([
                 'site_id' => $siteId,
                 'name' => $this->server->id.'-'.strtotime('now').'-'.$log.'.log',

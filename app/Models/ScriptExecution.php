@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ScriptExecutionStatus;
 use Carbon\Carbon;
+use Database\Factories\ScriptExecutionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ScriptExecution extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\ScriptExecutionFactory> */
+    /** @use HasFactory<ScriptExecutionFactory> */
     use HasFactory;
 
     protected $fillable = [

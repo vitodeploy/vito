@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use stdClass;
 
 class GetMetrics
 {
@@ -70,7 +71,7 @@ class GetMetrics
             ->groupByRaw('date_interval')
             ->orderBy('date_interval')
             ->get()
-            ->map(function ($item): \stdClass {
+            ->map(function ($item): stdClass {
                 $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
 
                 return $item;

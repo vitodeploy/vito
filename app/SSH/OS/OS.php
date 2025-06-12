@@ -225,7 +225,7 @@ class OS
     public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null, ?array $variables = []): ServerLog
     {
         $ssh = $this->server->ssh($user);
-        if ($serverLog instanceof \App\Models\ServerLog) {
+        if ($serverLog instanceof ServerLog) {
             $ssh->setLog($serverLog);
         }
         $command = '';

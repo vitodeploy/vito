@@ -7,6 +7,7 @@ use App\Enums\LoadBalancerMethod;
 use App\Facades\SSH;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\SourceControl;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -42,8 +43,8 @@ class SitesTest extends TestCase
 
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        /** @var \App\Models\SourceControl $sourceControl */
-        $sourceControl = \App\Models\SourceControl::factory()->create([
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
         ]);
 

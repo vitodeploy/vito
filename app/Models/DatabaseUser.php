@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DatabaseUserStatus;
+use Database\Factories\DatabaseUserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class DatabaseUser extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\DatabaseUserFactory> */
+    /** @use HasFactory<DatabaseUserFactory> */
     use HasFactory;
 
     protected $fillable = [
