@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\StorageProviders;
 
-use App\Enums\StorageProvider;
 use App\Models\StorageProvider as StorageProviderModel;
 use App\StorageProviders\S3;
 use Aws\Command;
@@ -18,7 +17,7 @@ class S3Test extends TestCase
     public function test_s3_connect_successful(): void
     {
         $storageProvider = StorageProviderModel::factory()->create([
-            'provider' => StorageProvider::S3,
+            'provider' => S3::id(),
             'credentials' => [
                 'api_url' => 'https://fake-bucket.s3.us-east-1.s3-compatible.com',
                 'key' => 'fake-key',
@@ -62,7 +61,7 @@ class S3Test extends TestCase
     public function test_s3_connect_failure(): void
     {
         $storageProvider = StorageProviderModel::factory()->create([
-            'provider' => StorageProvider::S3,
+            'provider' => S3::id(),
             'credentials' => [
                 'key' => 'fake-key',
                 'secret' => 'fake-secret',

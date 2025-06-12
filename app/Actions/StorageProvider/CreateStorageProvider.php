@@ -55,7 +55,7 @@ class CreateStorageProvider
         $rules = [
             'provider' => [
                 'required',
-                Rule::in(config('core.storage_providers')),
+                Rule::in(array_keys(config('storage-provider.providers'))),
             ],
             'name' => [
                 'required',

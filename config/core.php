@@ -120,61 +120,6 @@ return [
         \App\Enums\ServerType::REGULAR => \App\ServerTypes\Regular::class,
         \App\Enums\ServerType::DATABASE => \App\ServerTypes\Database::class,
     ],
-    'server_providers' => [
-        \App\Enums\ServerProvider::CUSTOM,
-        \App\Enums\ServerProvider::AWS,
-        \App\Enums\ServerProvider::LINODE,
-        \App\Enums\ServerProvider::DIGITALOCEAN,
-        \App\Enums\ServerProvider::VULTR,
-        \App\Enums\ServerProvider::HETZNER,
-    ],
-    'server_providers_class' => [
-        \App\Enums\ServerProvider::CUSTOM => \App\ServerProviders\Custom::class,
-        \App\Enums\ServerProvider::AWS => \App\ServerProviders\AWS::class,
-        \App\Enums\ServerProvider::LINODE => \App\ServerProviders\Linode::class,
-        \App\Enums\ServerProvider::DIGITALOCEAN => \App\ServerProviders\DigitalOcean::class,
-        \App\Enums\ServerProvider::VULTR => \App\ServerProviders\Vultr::class,
-        \App\Enums\ServerProvider::HETZNER => \App\ServerProviders\Hetzner::class,
-    ],
-    'server_providers_default_user' => [
-        'custom' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU22 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
-        ],
-        'aws' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => 'ubuntu',
-            \App\Enums\OperatingSystem::UBUNTU22 => 'ubuntu',
-            \App\Enums\OperatingSystem::UBUNTU24 => 'ubuntu',
-        ],
-        'linode' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU22 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
-        ],
-        'digitalocean' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU22 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
-        ],
-        'vultr' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU22 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
-        ],
-        'hetzner' => [
-            \App\Enums\OperatingSystem::UBUNTU20 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU22 => 'root',
-            \App\Enums\OperatingSystem::UBUNTU24 => 'root',
-        ],
-    ],
-    'server_providers_custom_fields' => [
-        \App\Enums\ServerProvider::AWS => ['key', 'secret'],
-        \App\Enums\ServerProvider::LINODE => ['token'],
-        \App\Enums\ServerProvider::DIGITALOCEAN => ['token'],
-        \App\Enums\ServerProvider::VULTR => ['token'],
-        \App\Enums\ServerProvider::HETZNER => ['token'],
-    ],
 
     /*
      * Service
@@ -447,53 +392,6 @@ return [
     ],
 
     /*
-     * Site
-     */
-    'site_types' => [
-        \App\Enums\SiteType::PHP,
-        \App\Enums\SiteType::PHP_BLANK,
-        \App\Enums\SiteType::LARAVEL,
-        \App\Enums\SiteType::WORDPRESS,
-        \App\Enums\SiteType::PHPMYADMIN,
-        \App\Enums\SiteType::LOAD_BALANCER,
-    ],
-    'site_types_class' => [
-        \App\Enums\SiteType::PHP => \App\SiteTypes\PHPSite::class,
-        \App\Enums\SiteType::PHP_BLANK => \App\SiteTypes\PHPBlank::class,
-        \App\Enums\SiteType::LARAVEL => \App\SiteTypes\Laravel::class,
-        \App\Enums\SiteType::WORDPRESS => \App\SiteTypes\Wordpress::class,
-        \App\Enums\SiteType::PHPMYADMIN => \App\SiteTypes\PHPMyAdmin::class,
-        \App\Enums\SiteType::LOAD_BALANCER => \App\SiteTypes\LoadBalancer::class,
-    ],
-    'site_types_custom_fields' => [
-        \App\Enums\SiteType::PHP => \App\SiteTypes\PHPSite::make()->fields()->toArray(),
-        \App\Enums\SiteType::PHP_BLANK => \App\SiteTypes\PHPBlank::make()->fields()->toArray(),
-        \App\Enums\SiteType::LARAVEL => \App\SiteTypes\Laravel::make()->fields()->toArray(),
-        \App\Enums\SiteType::WORDPRESS => \App\SiteTypes\Wordpress::make()->fields()->toArray(),
-        \App\Enums\SiteType::PHPMYADMIN => \App\SiteTypes\PHPMyAdmin::make()->fields()->toArray(),
-        \App\Enums\SiteType::LOAD_BALANCER => \App\SiteTypes\LoadBalancer::make()->fields()->toArray(),
-    ],
-
-    /*
-     * Source Control
-     */
-    'source_control_providers' => [
-        'github',
-        'gitlab',
-        'bitbucket',
-    ],
-    'source_control_providers_class' => [
-        'github' => \App\SourceControlProviders\Github::class,
-        'gitlab' => \App\SourceControlProviders\Gitlab::class,
-        'bitbucket' => \App\SourceControlProviders\Bitbucket::class,
-    ],
-    'source_control_providers_custom_fields' => [
-        \App\Enums\SourceControl::GITHUB => ['token'],
-        \App\Enums\SourceControl::GITLAB => ['token', 'url'],
-        \App\Enums\SourceControl::BITBUCKET => ['username', 'password'],
-    ],
-
-    /*
      * available php extensions
      */
     'php_extensions' => [
@@ -552,42 +450,6 @@ return [
         \App\Enums\NotificationChannel::TELEGRAM => ['bot_token', 'chat_id'],
     ],
 
-    /*
-     * storage providers
-     */
-    'storage_providers' => [
-        \App\Enums\StorageProvider::DROPBOX,
-        \App\Enums\StorageProvider::FTP,
-        \App\Enums\StorageProvider::LOCAL,
-        \App\Enums\StorageProvider::S3,
-    ],
-    'storage_providers_class' => [
-        \App\Enums\StorageProvider::DROPBOX => \App\StorageProviders\Dropbox::class,
-        \App\Enums\StorageProvider::FTP => \App\StorageProviders\FTP::class,
-        \App\Enums\StorageProvider::LOCAL => \App\StorageProviders\Local::class,
-        \App\Enums\StorageProvider::S3 => \App\StorageProviders\S3::class,
-    ],
-    'storage_providers_custom_fields' => [
-        \App\Enums\StorageProvider::DROPBOX => ['token'],
-        \App\Enums\StorageProvider::FTP => [
-            'host',
-            'port',
-            'path',
-            'username',
-            'password',
-            'ssl',
-            'passive',
-        ],
-        \App\Enums\StorageProvider::S3 => [
-            'api_url',
-            'key',
-            'secret',
-            'region',
-            'bucket',
-            'path',
-        ],
-        \App\Enums\StorageProvider::LOCAL => ['path'],
-    ],
 
     'ssl_types' => [
         \App\Enums\SslType::LETSENCRYPT,

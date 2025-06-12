@@ -14,6 +14,11 @@ class Gitlab extends AbstractSourceControlProvider
 
     protected string $apiVersion = 'api/v4';
 
+    public static function id(): string
+    {
+        return 'gitlab';
+    }
+
     public function createRules(array $input): array
     {
         return [

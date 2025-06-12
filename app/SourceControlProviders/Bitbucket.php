@@ -13,6 +13,11 @@ class Bitbucket extends AbstractSourceControlProvider
 {
     protected string $apiUrl = 'https://api.bitbucket.org/2.0';
 
+    public static function id(): string
+    {
+        return 'bitbucket';
+    }
+
     public function createRules(array $input): array
     {
         return [

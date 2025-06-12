@@ -3,11 +3,14 @@
 namespace Database\Factories;
 
 use App\Models\SourceControl;
+use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\Github;
+use App\SourceControlProviders\Gitlab;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends Factory<\App\Models\SourceControl>
+ * @extends Factory<SourceControl>
  */
 class SourceControlFactory extends Factory
 {
@@ -17,39 +20,39 @@ class SourceControlFactory extends Factory
     {
         return [
             'access_token' => Str::random(10),
-            'provider' => \App\Enums\SourceControl::GITHUB,
+            'provider' => Github::id(),
             'profile' => $this->faker->name,
             'project_id' => null,
         ];
     }
 
     /**
-     * @return Factory<\App\Models\SourceControl>
+     * @return Factory<SourceControl>
      */
     public function gitlab(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'provider' => \App\Enums\SourceControl::GITLAB,
+            'provider' => Gitlab::id(),
         ]);
     }
 
     /**
-     * @return Factory<\App\Models\SourceControl>
+     * @return Factory<SourceControl>
      */
     public function github(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'provider' => \App\Enums\SourceControl::GITHUB,
+            'provider' => Github::id(),
         ]);
     }
 
     /**
-     * @return Factory<\App\Models\SourceControl>
+     * @return Factory<SourceControl>
      */
     public function bitbucket(): Factory
     {
         return $this->state(fn (array $attributes): array => [
-            'provider' => \App\Enums\SourceControl::BITBUCKET,
+            'provider' => Bitbucket::id(),
         ]);
     }
 }

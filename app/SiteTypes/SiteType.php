@@ -2,13 +2,11 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicForm;
-
 interface SiteType
 {
-    public function language(): string;
+    public static function id(): string;
 
-    public function fields(): DynamicForm;
+    public function language(): string;
 
     /**
      * @param  array<string, mixed>  $input
@@ -17,12 +15,16 @@ interface SiteType
     public function createRules(array $input): array;
 
     /**
+     * The fields here will be replaced in the Site model
+     *
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */
     public function createFields(array $input): array;
 
     /**
+     * The fields here will be replaced in the type_data column as json
+     *
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */

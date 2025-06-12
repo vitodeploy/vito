@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\API;
 
-use App\Enums\StorageProvider;
 use App\Facades\FTP;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider as StorageProviderModel;
+use App\StorageProviders\Dropbox;
+use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
@@ -25,11 +26,11 @@ class StorageProvidersTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        if ($input['provider'] === StorageProvider::DROPBOX) {
+        if ($input['provider'] === Dropbox::id()) {
             Http::fake();
         }
 
-        if ($input['provider'] === StorageProvider::FTP) {
+        if ($input['provider'] === \App\StorageProviders\FTP::id()) {
             FTP::fake();
         }
 
@@ -50,7 +51,7 @@ class StorageProvidersTest extends TestCase
         /** @var StorageProviderModel $provider */
         $provider = StorageProviderModel::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         $this->json('GET', route('api.projects.storage-providers', [
@@ -115,14 +116,14 @@ class StorageProvidersTest extends TestCase
         return [
             [
                 [
-                    'provider' => StorageProvider::LOCAL,
+                    'provider' => Local::id(),
                     'name' => 'local-test',
                     'path' => '/home/vito/backups',
                 ],
             ],
             [
                 [
-                    'provider' => StorageProvider::LOCAL,
+                    'provider' => Local::id(),
                     'name' => 'local-test',
                     'path' => '/home/vito/backups',
                     'global' => 1,
@@ -130,7 +131,7 @@ class StorageProvidersTest extends TestCase
             ],
             [
                 [
-                    'provider' => StorageProvider::FTP,
+                    'provider' => \App\StorageProviders\FTP::id(),
                     'name' => 'ftp-test',
                     'host' => '1.2.3.4',
                     'port' => '22',
@@ -143,7 +144,7 @@ class StorageProvidersTest extends TestCase
             ],
             [
                 [
-                    'provider' => StorageProvider::FTP,
+                    'provider' => \App\StorageProviders\FTP::id(),
                     'name' => 'ftp-test',
                     'host' => '1.2.3.4',
                     'port' => '22',
@@ -157,14 +158,14 @@ class StorageProvidersTest extends TestCase
             ],
             [
                 [
-                    'provider' => StorageProvider::DROPBOX,
+                    'provider' => Dropbox::id(),
                     'name' => 'dropbox-test',
                     'token' => 'token',
                 ],
             ],
             [
                 [
-                    'provider' => StorageProvider::DROPBOX,
+                    'provider' => Dropbox::id(),
                     'name' => 'dropbox-test',
                     'token' => 'token',
                     'global' => 1,

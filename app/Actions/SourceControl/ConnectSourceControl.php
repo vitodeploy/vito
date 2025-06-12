@@ -51,7 +51,7 @@ class ConnectSourceControl
             ],
             'provider' => [
                 'required',
-                Rule::in(config('core.source_control_providers')),
+                Rule::in(array_keys(config('source-control.providers'))),
             ],
         ];
 

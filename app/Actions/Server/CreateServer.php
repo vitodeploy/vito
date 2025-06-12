@@ -36,7 +36,7 @@ class CreateServer
             'project_id' => $project->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
-            'ssh_user' => config('core.server_providers_default_user')[$input['provider']][$input['os']],
+            'ssh_user' => data_get(config('server-provider.providers'), $input['provider'].'.default_users.'.$input['os'], 'root'),
             'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],
@@ -129,7 +129,7 @@ class CreateServer
         $rules = [
             'provider' => [
                 'required',
-                Rule::in(config('core.server_providers')),
+                Rule::in(array_keys(config('server-provider.providers'))),
             ],
             'name' => [
                 'required',
@@ -190,7 +190,7 @@ class CreateServer
         if (
             ! isset($input['provider']) ||
             ! isset($input['server_provider']) ||
-            ! in_array($input['provider'], config('core.server_providers')) ||
+            ! config('server-provider.providers.'.$input['provider']) ||
             $input['provider'] == ServerProvider::CUSTOM
         ) {
             return [];

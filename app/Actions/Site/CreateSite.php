@@ -13,7 +13,6 @@ use App\Notifications\SiteInstallationFailed;
 use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -39,7 +38,6 @@ class CreateSite
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'aliases' => $input['aliases'] ?? [],
-                'port' => $input['port'] ?? null,
                 'user' => $user,
                 'path' => '/home/'.$user.'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
@@ -116,7 +114,7 @@ class CreateSite
         $rules = [
             'type' => [
                 'required',
-                Rule::in(config('core.site_types')),
+                Rule::in(array_keys(config('site.types'))),
             ],
             'domain' => [
                 'required',
@@ -134,14 +132,6 @@ class CreateSite
                 Rule::unique('sites', 'user')->where('server_id', $server->id),
                 Rule::notIn($server->getSshUsers()),
             ],
-            'port' => [
-                'nullable',
-                'integer',
-                'min:1',
-                'max:65535',
-                Rule::unique('sites', 'port')
-                    ->where(fn (Builder $query) => $query->where('server_id', $server->id)),
-            ],
         ];
 
         return array_merge($rules, self::typeRules($server, $input));
@@ -153,7 +143,7 @@ class CreateSite
      */
     private static function typeRules(Server $server, array $input): array
     {
-        if (! isset($input['type']) || ! in_array($input['type'], config('core.site_types'))) {
+        if (! isset($input['type']) || ! config('site.types.'.$input['type'])) {
             return [];
         }
 

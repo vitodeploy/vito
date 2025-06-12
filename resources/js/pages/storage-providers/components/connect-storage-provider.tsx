@@ -19,6 +19,8 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { SharedData } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import DynamicField from '@/components/ui/dynamic-field';
 
 type StorageProviderForm = {
   provider: string;
@@ -40,7 +42,7 @@ export default function ConnectStorageProvider({
   const page = usePage<SharedData>();
 
   const form = useForm<Required<StorageProviderForm>>({
-    provider: defaultProvider || 's3',
+    provider: defaultProvider || 'local',
     name: '',
     global: false,
   });
@@ -60,7 +62,7 @@ export default function ConnectStorageProvider({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Connect to storage provider</DialogTitle>
           <DialogDescription className="sr-only">Connect to a new storage provider</DialogDescription>
@@ -81,9 +83,9 @@ export default function ConnectStorageProvider({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {page.props.configs.storage_providers.map((provider) => (
-                      <SelectItem key={provider} value={provider}>
-                        {provider}
+                    {Object.entries(page.props.configs.storage_provider.providers).map(([key, provider]) => (
+                      <SelectItem key={key} value={key}>
+                        {provider.label}
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -95,7 +97,7 @@ export default function ConnectStorageProvider({
               <Label htmlFor="name">Name</Label>
               <Input
                 type="text"
-                name="name"
+                name="host"
                 id="name"
                 placeholder="Name"
                 value={form.data.name}
@@ -103,27 +105,18 @@ export default function ConnectStorageProvider({
               />
               <InputError message={form.errors.name} />
             </FormField>
-            <div
-              className={
-                page.props.configs.storage_providers_custom_fields[form.data.provider].length > 1 ? 'grid grid-cols-2 items-start gap-6' : ''
-              }
-            >
-              {page.props.configs.storage_providers_custom_fields[form.data.provider]?.map((item: string) => (
-                <FormField key={item}>
-                  <Label htmlFor={item} className="capitalize">
-                    {item.replaceAll('_', ' ')}
-                  </Label>
-                  <Input
-                    type="text"
-                    name={item}
-                    id={item}
-                    value={(form.data[item as keyof StorageProviderForm] as string) ?? ''}
-                    onChange={(e) => form.setData(item as keyof StorageProviderForm, e.target.value)}
-                  />
-                  <InputError message={form.errors[item as keyof StorageProviderForm]} />
-                </FormField>
-              ))}
-            </div>
+            {page.props.configs.storage_provider.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
+              <DynamicField
+                key={`field-${field.name}`}
+                /*@ts-expect-error dynamic types*/
+                value={form.data[field.name]}
+                /*@ts-expect-error dynamic types*/
+                onChange={(value) => form.setData(field.name, value)}
+                config={field}
+                /*@ts-expect-error dynamic types*/
+                error={form.errors[field.name]}
+              />
+            ))}
             <FormField>
               <div className="flex items-center space-x-3">
                 <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />

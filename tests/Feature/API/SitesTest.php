@@ -4,10 +4,10 @@ namespace Tests\Feature\API;
 
 use App\Enums\DeploymentStatus;
 use App\Enums\LoadBalancerMethod;
-use App\Enums\SourceControl;
 use App\Facades\SSH;
 use App\Models\Server;
 use App\Models\Site;
+use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
@@ -44,7 +44,7 @@ class SitesTest extends TestCase
 
         /** @var \App\Models\SourceControl $sourceControl */
         $sourceControl = \App\Models\SourceControl::factory()->create([
-            'provider' => SourceControl::GITHUB,
+            'provider' => Github::id(),
         ]);
 
         $inputs['source_control'] = $sourceControl->id;

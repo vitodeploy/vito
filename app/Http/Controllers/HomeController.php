@@ -27,6 +27,6 @@ class HomeController extends Controller
 
         new Enable($site)->handle($request);
 
-        return 'Laravel Octane enabled for site: ' . $site->name;
+        return 'Laravel Octane enabled for site: '.$site->name;
     }
 }

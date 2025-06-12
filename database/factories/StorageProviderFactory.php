@@ -14,7 +14,7 @@ class StorageProviderFactory extends Factory
     {
         return [
             'profile' => $this->faker->word(),
-            'provider' => $this->faker->randomElement(config('core.storage_providers')),
+            'provider' => $this->faker->randomElement(array_keys(config('storage-provider.providers'))),
             'credentials' => [
                 'token' => 'test-token',
             ],

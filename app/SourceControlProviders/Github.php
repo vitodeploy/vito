@@ -12,6 +12,11 @@ class Github extends AbstractSourceControlProvider
 {
     protected string $apiUrl = 'https://api.github.com';
 
+    public static function id(): string
+    {
+        return 'github';
+    }
+
     public function connect(): bool
     {
         try {

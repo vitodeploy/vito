@@ -25,7 +25,6 @@ type CreateSiteForm = {
   php_version: string;
   source_control: string;
   user: string;
-  port: string;
 };
 
 export default function CreateSite({ server, children }: { server?: Server; children: ReactNode }) {
@@ -40,7 +39,6 @@ export default function CreateSite({ server, children }: { server?: Server; chil
     php_version: '',
     source_control: '',
     user: '',
-    port: '',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -121,9 +119,9 @@ export default function CreateSite({ server, children }: { server?: Server; chil
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {page.props.configs.site_types.map((type) => (
-                          <SelectItem key={`type-${type}`} value={type}>
-                            {type}
+                        {Object.entries(page.props.configs.site.types).map(([key, type]) => (
+                          <SelectItem key={`type-${key}`} value={key}>
+                            {type.label}
                           </SelectItem>
                         ))}
                       </SelectGroup>
@@ -156,16 +154,7 @@ export default function CreateSite({ server, children }: { server?: Server; chil
                   <InputError message={form.errors.aliases} />
                 </FormField>
 
-                <FormField>
-                  <Label htmlFor="port">Reverse proxy port</Label>
-                  <Input id="port" type="text" value={form.data.port} onChange={(e) => form.setData('port', e.target.value)} placeholder="3000" />
-                  <p className="text-muted-foreground text-xs">
-                    This port will be used for reverse proxying the site. It should be unique across all sites on the server.
-                  </p>
-                  <InputError message={form.errors.port} />
-                </FormField>
-
-                {page.props.configs.site_types_custom_fields[form.data.type].map((config) => getFormField(config))}
+                {page.props.configs.site.types[form.data.type].form?.map((config) => getFormField(config))}
 
                 <FormField>
                   <Label htmlFor="user">Isolated User (Optional)</Label>

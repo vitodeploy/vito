@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * @property int $server_id
@@ -237,12 +238,15 @@ class Site extends AbstractModel
 
     public function type(): SiteType
     {
-        $typeClass = config('core.site_types_class.'.$this->type);
+        $handlerClass = config('site.types.'.$this->type.'.handler');
+        if (! class_exists($handlerClass)) {
+            throw new RuntimeException("Site type handler class {$handlerClass} does not exist.");
+        }
 
-        /** @var SiteType $type */
-        $type = new $typeClass($this);
+        /** @var SiteType $handler */
+        $handler = new $handlerClass($this);
 
-        return $type;
+        return $handler;
     }
 
     public function php(): ?Service

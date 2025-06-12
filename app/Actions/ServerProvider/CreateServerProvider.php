@@ -48,7 +48,7 @@ class CreateServerProvider
 
     private static function getProvider(string $name): ServerProviderContract
     {
-        $providerClass = config('core.server_providers_class.'.$name);
+        $providerClass = config('server-provider.providers.'.$name. '.handler');
         /** @var ServerProviderContract $provider */
         $provider = new $providerClass(new ServerProvider, new Server);
 
@@ -67,7 +67,7 @@ class CreateServerProvider
             ],
             'provider' => [
                 'required',
-                Rule::in(config('core.server_providers')),
+                Rule::in(array_keys(config('server-provider.providers'))),
                 Rule::notIn('custom'),
             ],
         ];

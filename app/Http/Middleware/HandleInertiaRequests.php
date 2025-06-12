@@ -84,7 +84,32 @@ class HandleInertiaRequests extends Middleware
             ],
             'publicKeyText' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
             'projectServers' => $servers,
-            'configs' => config('core'),
+            'configs' => [
+                'notification_channels_providers' => config('core.notification_channels_providers'),
+                'notification_channels_providers_custom_fields' => config('core.notification_channels_providers_custom_fields'),
+                'operating_systems' => config('core.operating_systems'),
+                'service_versions' => config('core.service_versions'),
+                'service_types' => config('core.service_types'),
+                'colors' => config('core.colors'),
+                'webservers' => config('core.webservers'),
+                'databases' => config('core.databases'),
+                'php_versions' => config('core.php_versions'),
+                'cronjob_intervals' => config('core.cronjob_intervals'),
+                'metrics_periods' => config('core.metrics_periods'),
+                'php_extensions' => config('core.php_extensions'),
+                'site' => [
+                    'types' => config('site.types'),
+                ],
+                'source_control' => [
+                    'providers' => config('source-control.providers'),
+                ],
+                'server_provider' => [
+                    'providers' => config('server-provider.providers'),
+                ],
+                'storage_provider' => [
+                    'providers' => config('storage-provider.providers'),
+                ],
+            ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

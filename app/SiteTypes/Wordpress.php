@@ -5,8 +5,6 @@ namespace App\SiteTypes;
 use App\Actions\Database\CreateDatabase;
 use App\Actions\Database\CreateDatabaseUser;
 use App\Actions\Database\LinkUser;
-use App\DTOs\DynamicField;
-use App\DTOs\DynamicForm;
 use App\Exceptions\SSHError;
 use App\Models\Database;
 use App\Models\DatabaseUser;
@@ -16,48 +14,19 @@ use Illuminate\Validation\Rule;
 
 class Wordpress extends PHPSite
 {
+    public static function id(): string
+    {
+        return 'wordpress';
+    }
+
     public static function make(): self
     {
-        return new self(new Site(['type' => \App\Enums\SiteType::WORDPRESS]));
+        return new self(new Site(['type' => self::id()]));
     }
 
     public function language(): string
     {
         return 'php';
-    }
-
-    public function fields(): DynamicForm
-    {
-        return new DynamicForm([
-            DynamicField::make('php_version')
-                ->component()
-                ->label('PHP Version'),
-            DynamicField::make('title')
-                ->text()
-                ->label('Site Title')
-                ->placeholder('My WordPress Site'),
-            DynamicField::make('username')
-                ->text()
-                ->label('Admin Username')
-                ->placeholder('admin'),
-            DynamicField::make('password')
-                ->text()
-                ->label('Admin Password'),
-            DynamicField::make('email')
-                ->text()
-                ->label('Admin Email'),
-            DynamicField::make('database')
-                ->text()
-                ->label('Database Name')
-                ->placeholder('wordpress'),
-            DynamicField::make('database_user')
-                ->text()
-                ->label('Database User')
-                ->placeholder('wp_user'),
-            DynamicField::make('database_password')
-                ->text()
-                ->label('Database Password'),
-        ]);
     }
 
     public function createRules(array $input): array

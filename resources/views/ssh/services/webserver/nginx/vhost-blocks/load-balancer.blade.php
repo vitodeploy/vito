@@ -1,4 +1,7 @@
 #[load-balancer]
+@php
+    $backendName = preg_replace("/[^A-Za-z0-9 ]/", '', $site->domain).'_backend';
+@endphp
 location / {
     proxy_pass http://{{ $backendName }}$request_uri;
     proxy_set_header Host $host;

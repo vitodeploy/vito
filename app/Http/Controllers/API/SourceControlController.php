@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Project;
 use App\Models\SourceControl;
+use App\SourceControlProviders\Github;
+use App\SourceControlProviders\Gitlab;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -42,7 +44,7 @@ class SourceControlController extends Controller
 
     #[Post('/', name: 'api.projects.source-controls.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create')]
-    #[BodyParam(name: 'provider', description: 'The provider', required: true, enum: [\App\Enums\SourceControl::GITLAB, \App\Enums\SourceControl::GITHUB, \App\Enums\SourceControl::BITBUCKET])]
+    #[BodyParam(name: 'provider', description: 'The provider', required: true)]
     #[BodyParam(name: 'name', description: 'The name of the storage provider.', required: true)]
     #[BodyParam(name: 'token', description: 'The token if provider requires api token')]
     #[BodyParam(name: 'url', description: 'The URL if the provider is Gitlab and it is self-hosted')]

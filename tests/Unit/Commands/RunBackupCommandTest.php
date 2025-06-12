@@ -6,6 +6,7 @@ use App\Facades\SSH;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider;
+use App\StorageProviders\Dropbox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,7 +30,7 @@ class RunBackupCommandTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([

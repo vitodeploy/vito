@@ -2,26 +2,20 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicField;
-use App\DTOs\DynamicForm;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use Illuminate\Validation\Rule;
 
 class PHPMyAdmin extends PHPSite
 {
-    public static function make(): self
+    public static function id(): string
     {
-        return new self(new Site(['type' => \App\Enums\SiteType::PHPMYADMIN]));
+        return 'phpmyadmin';
     }
 
-    public function fields(): DynamicForm
+    public static function make(): self
     {
-        return new DynamicForm([
-            DynamicField::make('php_version')
-                ->component()
-                ->label('PHP Version'),
-        ]);
+        return new self(new Site(['type' => self::id()]));
     }
 
     public function createRules(array $input): array

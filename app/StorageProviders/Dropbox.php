@@ -10,6 +10,11 @@ class Dropbox extends AbstractStorageProvider
 {
     protected string $apiUrl = 'https://api.dropboxapi.com/2';
 
+    public static function id(): string
+    {
+        return 'dropbox';
+    }
+
     public function validationRules(): array
     {
         return [

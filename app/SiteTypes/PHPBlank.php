@@ -2,31 +2,20 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicField;
-use App\DTOs\DynamicForm;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use Illuminate\Validation\Rule;
 
 class PHPBlank extends PHPSite
 {
-    public static function make(): self
+    public static function id(): string
     {
-        return new self(new Site(['type' => \App\Enums\SiteType::PHP]));
+        return 'php-blank';
     }
 
-    public function fields(): DynamicForm
+    public static function make(): self
     {
-        return new DynamicForm([
-            DynamicField::make('php_version')
-                ->component()
-                ->label('PHP Version'),
-            DynamicField::make('web_directory')
-                ->text()
-                ->label('Web Directory')
-                ->placeholder('For / leave empty')
-                ->description('The relative path of your website from /home/vito/your-domain/'),
-        ]);
+        return new self(new Site(['type' => self::id()]));
     }
 
     public function createRules(array $input): array

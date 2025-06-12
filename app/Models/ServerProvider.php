@@ -67,7 +67,7 @@ class ServerProvider extends AbstractModel
 
     public function provider(): \App\ServerProviders\ServerProvider
     {
-        $providerClass = config('core.server_providers_class')[$this->provider];
+        $providerClass = config('server-provider.providers.'.$this->provider.'.handler');
 
         /** @var \App\ServerProviders\ServerProvider $provider */
         $provider = new $providerClass($this, new Server);

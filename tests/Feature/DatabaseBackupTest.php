@@ -9,6 +9,7 @@ use App\Facades\SSH;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider;
+use App\StorageProviders\Dropbox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
@@ -36,7 +37,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         $this->post(route('backups.store', [
@@ -73,7 +74,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         $this->post(route('backups.store', ['server' => $this->server]), [
@@ -100,7 +101,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         Backup::factory()->create([
@@ -126,7 +127,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -166,7 +167,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([
@@ -199,7 +200,7 @@ class DatabaseBackupTest extends TestCase
 
         $storage = StorageProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => \App\Enums\StorageProvider::DROPBOX,
+            'provider' => Dropbox::id(),
         ]);
 
         $backup = Backup::factory()->create([

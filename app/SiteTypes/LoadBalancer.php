@@ -2,8 +2,6 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicField;
-use App\DTOs\DynamicForm;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\Webserver;
 use App\Exceptions\SSHError;
@@ -12,28 +10,19 @@ use Illuminate\Validation\Rule;
 
 class LoadBalancer extends AbstractSiteType
 {
+    public static function id(): string
+    {
+        return 'load-balancer';
+    }
+
     public static function make(): self
     {
-        return new self(new Site(['type' => \App\Enums\SiteType::LOAD_BALANCER]));
+        return new self(new Site(['type' => self::id()]));
     }
 
     public function language(): string
     {
         return 'yaml';
-    }
-
-    public function fields(): DynamicForm
-    {
-        return new DynamicForm([
-            DynamicField::make('method')
-                ->select()
-                ->label('Load Balancing Method')
-                ->options([
-                    LoadBalancerMethod::IP_HASH,
-                    LoadBalancerMethod::ROUND_ROBIN,
-                    LoadBalancerMethod::LEAST_CONNECTIONS,
-                ]),
-        ]);
     }
 
     public function createRules(array $input): array

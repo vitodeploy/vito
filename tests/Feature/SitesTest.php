@@ -5,9 +5,10 @@ namespace Tests\Feature;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteStatus;
 use App\Enums\SiteType;
-use App\Enums\SourceControl;
 use App\Facades\SSH;
 use App\Models\Site;
+use App\SiteTypes\PHPBlank;
+use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
@@ -35,7 +36,7 @@ class SitesTest extends TestCase
 
         /** @var \App\Models\SourceControl $sourceControl */
         $sourceControl = \App\Models\SourceControl::factory()->create([
-            'provider' => SourceControl::GITHUB,
+            'provider' => Github::id(),
         ]);
 
         $inputs['source_control'] = $sourceControl->id;
@@ -91,7 +92,7 @@ class SitesTest extends TestCase
 
         /** @var \App\Models\SourceControl $sourceControl */
         $sourceControl = \App\Models\SourceControl::factory()->create([
-            'provider' => SourceControl::GITHUB,
+            'provider' => Github::id(),
         ]);
 
         $inputs['source_control'] = $sourceControl->id;
@@ -179,7 +180,7 @@ class SitesTest extends TestCase
 
         /** @var \App\Models\SourceControl $sourceControl */
         $sourceControl = \App\Models\SourceControl::factory()->create([
-            'provider' => SourceControl::GITHUB,
+            'provider' => Github::id(),
         ]);
 
         $this->patch(route('site-settings.update-source-control', [
@@ -208,7 +209,7 @@ class SitesTest extends TestCase
 
         /** @var \App\Models\SourceControl $sourceControl */
         $sourceControl = \App\Models\SourceControl::factory()->create([
-            'provider' => SourceControl::GITHUB,
+            'provider' => Github::id(),
         ]);
 
         $this->patch(route('site-settings.update-source-control', [
@@ -279,7 +280,7 @@ class SitesTest extends TestCase
         return [
             [
                 [
-                    'type' => SiteType::PHP_BLANK,
+                    'type' => PHPBlank::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -289,7 +290,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHP_BLANK,
+                    'type' => PHPBlank::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -299,7 +300,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHP_BLANK,
+                    'type' => PHPBlank::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -309,7 +310,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHP_BLANK,
+                    'type' => PHPBlank::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -319,7 +320,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHP_BLANK,
+                    'type' => PHPBlank::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',

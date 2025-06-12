@@ -49,7 +49,7 @@ class SiteController extends Controller
 
     #[Post('/', name: 'api.projects.servers.sites.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create', description: 'Create a new site.')]
-    #[BodyParam(name: 'type', required: true, enum: [SiteType::PHP, SiteType::PHP_BLANK, SiteType::PHPMYADMIN, SiteType::LARAVEL, SiteType::WORDPRESS, SiteType::LOAD_BALANCER])]
+    #[BodyParam(name: 'type', required: true)]
     #[BodyParam(name: 'domain', required: true)]
     #[BodyParam(name: 'aliases', type: 'array')]
     #[BodyParam(name: 'php_version', description: 'One of the installed PHP Versions', required: true, example: '7.4')]

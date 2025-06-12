@@ -8,6 +8,11 @@ use FTP\Connection;
 
 class FTP extends AbstractStorageProvider
 {
+    public static function id(): string
+    {
+        return 'ftp';
+    }
+
     /**
      * @return array<string, mixed>
      */

@@ -21,6 +21,11 @@ class S3 extends AbstractStorageProvider
      */
     protected array $clientConfig = [];
 
+    public static function id(): string
+    {
+        return 's3';
+    }
+
     public function getApiUrl(): string
     {
         if (isset($this->storageProvider->credentials['api_url']) && $this->storageProvider->credentials['api_url']) {

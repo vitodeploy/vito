@@ -2,8 +2,6 @@
 
 namespace App\SiteTypes;
 
-use App\DTOs\DynamicField;
-use App\DTOs\DynamicForm;
 use App\Enums\Webserver;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
@@ -14,9 +12,9 @@ use Illuminate\Validation\Rule;
 
 class PHPSite extends AbstractSiteType
 {
-    public static function make(): self
+    public static function id(): string
     {
-        return new self(new Site(['type' => \App\Enums\SiteType::PHP]));
+        return 'php';
     }
 
     public function language(): string
@@ -24,33 +22,9 @@ class PHPSite extends AbstractSiteType
         return 'php';
     }
 
-    public function fields(): DynamicForm
+    public static function make(): self
     {
-        return new DynamicForm([
-            DynamicField::make('php_version')
-                ->component()
-                ->label('PHP Version'),
-            DynamicField::make('source_control')
-                ->component()
-                ->label('Source Control'),
-            DynamicField::make('web_directory')
-                ->text()
-                ->label('Web Directory')
-                ->placeholder('For / leave empty')
-                ->description('The relative path of your website from /home/vito/your-domain/'),
-            DynamicField::make('repository')
-                ->text()
-                ->label('Repository')
-                ->placeholder('organization/repository'),
-            DynamicField::make('branch')
-                ->text()
-                ->label('Branch')
-                ->default('main'),
-            DynamicField::make('composer')
-                ->checkbox()
-                ->label('Run `composer install --no-dev`')
-                ->default(false),
-        ]);
+        return new self(new Site(['type' => self::id()]));
     }
 
     public function createRules(array $input): array

@@ -6,9 +6,14 @@ use App\Models\Site;
 
 class Laravel extends PHPSite
 {
+    public static function id() : string
+    {
+        return 'laravel';
+    }
+
     public static function make(): self
     {
-        return new self(new Site(['type' => \App\Enums\SiteType::LARAVEL]));
+        return new self(new Site(['type' => self::id()]));
     }
 
     public function baseCommands(): array

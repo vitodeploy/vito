@@ -119,9 +119,9 @@ export default function CreateServer({ children }: { children: React.ReactNode }
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {page.props.configs.server_providers.map((provider) => (
-                      <SelectItem key={provider} value={provider}>
-                        {provider}
+                    {Object.entries(page.props.configs.server_provider.providers).map(([key, provider]) => (
+                      <SelectItem key={key} value={key}>
+                        {provider.label}
                       </SelectItem>
                     ))}
                   </SelectGroup>

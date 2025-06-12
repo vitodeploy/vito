@@ -19,6 +19,8 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { SharedData } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import DynamicField from '@/components/ui/dynamic-field';
 
 type ServerProviderForm = {
   provider: string;
@@ -81,11 +83,11 @@ export default function ConnectServerProvider({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {page.props.configs.server_providers.map(
-                      (provider) =>
-                        provider !== 'custom' && (
-                          <SelectItem key={provider} value={provider}>
-                            {provider}
+                    {Object.entries(page.props.configs.server_provider.providers).map(
+                      ([key, provider]) =>
+                        key !== 'custom' && (
+                          <SelectItem key={key} value={key}>
+                            {provider.label}
                           </SelectItem>
                         ),
                     )}
@@ -106,25 +108,18 @@ export default function ConnectServerProvider({
               />
               <InputError message={form.errors.name} />
             </FormField>
-            <div
-              className={page.props.configs.server_providers_custom_fields[form.data.provider].length > 1 ? 'grid grid-cols-2 items-start gap-6' : ''}
-            >
-              {page.props.configs.server_providers_custom_fields[form.data.provider]?.map((item: string) => (
-                <FormField key={item}>
-                  <Label htmlFor={item} className="capitalize">
-                    {item.replaceAll('_', ' ')}
-                  </Label>
-                  <Input
-                    type="text"
-                    name={item}
-                    id={item}
-                    value={(form.data[item as keyof ServerProviderForm] as string) ?? ''}
-                    onChange={(e) => form.setData(item as keyof ServerProviderForm, e.target.value)}
-                  />
-                  <InputError message={form.errors[item as keyof ServerProviderForm]} />
-                </FormField>
-              ))}
-            </div>
+            {page.props.configs.server_provider.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
+              <DynamicField
+                key={`field-${field.name}`}
+                /*@ts-expect-error dynamic types*/
+                value={form.data[field.name]}
+                /*@ts-expect-error dynamic types*/
+                onChange={(value) => form.setData(field.name, value)}
+                config={field}
+                /*@ts-expect-error dynamic types*/
+                error={form.errors[field.name]}
+              />
+            ))}
             <FormField>
               <div className="flex items-center space-x-3">
                 <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />

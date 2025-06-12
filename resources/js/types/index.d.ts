@@ -3,7 +3,7 @@ import type { Config } from 'ziggy-js';
 import type { Server } from '@/types/server';
 import { Project } from '@/types/project';
 import { User } from '@/types/user';
-import { Site } from '@/types/site';
+import { Site, SiteType } from '@/types/site';
 import { DynamicFieldConfig } from './dynamic-field-config';
 
 export interface Auth {
@@ -34,18 +34,6 @@ export interface NavItem {
 }
 
 export interface Configs {
-  server_providers: string[];
-  server_providers_custom_fields: {
-    [provider: string]: string[];
-  };
-  source_control_providers: string[];
-  source_control_providers_custom_fields: {
-    [provider: string]: string[];
-  };
-  storage_providers: string[];
-  storage_providers_custom_fields: {
-    [provider: string]: string[];
-  };
   notification_channels_providers: string[];
   notification_channels_providers_custom_fields: {
     [provider: string]: string[];
@@ -61,15 +49,44 @@ export interface Configs {
   webservers: string[];
   databases: string[];
   php_versions: string[];
-  site_types: string[];
-  site_types_custom_fields: {
-    [type: string]: DynamicFieldConfig[];
-  };
   cronjob_intervals: {
     [key: string]: string;
   };
   metrics_periods: string[];
   php_extensions: string[];
+
+  server_provider: {
+    providers: {
+      [provider: string]: {
+        label: string;
+        handler: string;
+        form?: DynamicFieldConfig[];
+      };
+    };
+  };
+  storage_provider: {
+    providers: {
+      [provider: string]: {
+        label: string;
+        handler: string;
+        form?: DynamicFieldConfig[];
+      };
+    };
+  };
+  source_control: {
+    providers: {
+      [provider: string]: {
+        label: string;
+        handler: string;
+        form?: DynamicFieldConfig[];
+      };
+    };
+  };
+  site: {
+    types: {
+      [type: string]: SiteType;
+    };
+  };
 
   [key: string]: unknown;
 }

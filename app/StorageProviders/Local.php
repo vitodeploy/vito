@@ -7,6 +7,11 @@ use App\SSH\Storage\Storage;
 
 class Local extends AbstractStorageProvider
 {
+    public static function id(): string
+    {
+        return 'local';
+    }
+
     public function validationRules(): array
     {
         return [

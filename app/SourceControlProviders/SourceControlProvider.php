@@ -8,6 +8,8 @@ use App\Exceptions\FailedToDestroyGitHook;
 
 interface SourceControlProvider
 {
+    public static function id(): string;
+
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>

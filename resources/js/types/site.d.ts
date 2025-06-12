@@ -1,4 +1,5 @@
 import { Server } from '@/types/server';
+import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 
 export interface Site {
   id: number;
@@ -30,4 +31,23 @@ export interface Site {
   updated_at: string;
 
   [key: string]: unknown;
+}
+
+export interface SiteType {
+  label: string;
+  handler: string;
+  form?: DynamicFieldConfig[];
+  features?: SiteFeature[];
+}
+
+export interface SiteFeature {
+  label: string;
+  description?: string;
+  actions?: SiteFeatureAction[];
+}
+
+export interface SiteFeatureAction {
+  label: string;
+  handler: string;
+  enabled?: boolean;
 }

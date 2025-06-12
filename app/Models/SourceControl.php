@@ -41,7 +41,7 @@ class SourceControl extends AbstractModel
 
     public function provider(): SourceControlProvider
     {
-        $providerClass = config('core.source_control_providers_class')[$this->provider];
+        $providerClass = config('source-control.providers.'.$this->provider.'.handler');
 
         /** @var SourceControlProvider $provider */
         $provider = new $providerClass($this);

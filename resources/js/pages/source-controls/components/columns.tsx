@@ -33,7 +33,11 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('source-controls.update', sourceControl.id));
+    form.patch(route('source-controls.update', sourceControl.id), {
+      onSuccess: () => {
+        setOpen(false);
+      },
+    });
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>

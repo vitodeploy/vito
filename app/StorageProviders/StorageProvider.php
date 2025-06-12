@@ -7,6 +7,8 @@ use App\SSH\Storage\Storage;
 
 interface StorageProvider
 {
+    public static function id(): string;
+
     /**
      * @return array<string, string>
      */

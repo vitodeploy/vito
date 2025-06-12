@@ -4,7 +4,10 @@ namespace App\Models;
 
 use App\Actions\Database\ManageBackupFile;
 use App\Enums\BackupFileStatus;
-use App\Enums\StorageProvider as StorageProviderAlias;
+use App\StorageProviders\Dropbox;
+use App\StorageProviders\FTP;
+use App\StorageProviders\Local;
+use App\StorageProviders\S3;
 use Carbon\Carbon;
 use Database\Factories\BackupFileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -81,7 +84,7 @@ class BackupFile extends AbstractModel
 
     public function isLocal(): bool
     {
-        return $this->backup->storage->provider === StorageProviderAlias::LOCAL;
+        return $this->backup->storage->provider === Local::id();
     }
 
     /**
@@ -103,8 +106,8 @@ class BackupFile extends AbstractModel
         $databaseName = $this->backup->database->name;
 
         return match ($storage->provider) {
-            StorageProviderAlias::DROPBOX => '/'.$databaseName.'/'.$this->name.'.zip',
-            StorageProviderAlias::S3, StorageProviderAlias::FTP, StorageProviderAlias::LOCAL => implode('/', [
+            Dropbox::id() => '/'.$databaseName.'/'.$this->name.'.zip',
+            S3::id(), FTP::id(), Local::id() => implode('/', [
                 rtrim((string) $storage->credentials['path'], '/'),
                 $databaseName,
                 $this->name.'.zip',

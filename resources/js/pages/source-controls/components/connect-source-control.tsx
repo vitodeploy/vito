@@ -19,6 +19,8 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { SharedData } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import DynamicField from '@/components/ui/dynamic-field';
 
 type SourceControlForm = {
   provider: string;
@@ -81,9 +83,9 @@ export default function ConnectSourceControl({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {page.props.configs.source_control_providers.map((provider) => (
-                      <SelectItem key={provider} value={provider}>
-                        {provider}
+                    {Object.entries(page.props.configs.source_control.providers).map(([key, provider]) => (
+                      <SelectItem key={key} value={key}>
+                        {provider.label}
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -103,20 +105,17 @@ export default function ConnectSourceControl({
               />
               <InputError message={form.errors.name} />
             </FormField>
-            {page.props.configs.source_control_providers_custom_fields[form.data.provider]?.map((item: string) => (
-              <FormField key={item}>
-                <Label htmlFor={item} className="capitalize">
-                  {item}
-                </Label>
-                <Input
-                  type="text"
-                  name={item}
-                  id={item}
-                  value={(form.data[item as keyof SourceControlForm] as string) ?? ''}
-                  onChange={(e) => form.setData(item as keyof SourceControlForm, e.target.value)}
-                />
-                <InputError message={form.errors[item as keyof SourceControlForm]} />
-              </FormField>
+            {page.props.configs.source_control.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
+              <DynamicField
+                key={`field-${field.name}`}
+                /*@ts-expect-error dynamic types*/
+                value={form.data[field.name]}
+                /*@ts-expect-error dynamic types*/
+                onChange={(value) => form.setData(field.name, value)}
+                config={field}
+                /*@ts-expect-error dynamic types*/
+                error={form.errors[field.name]}
+              />
             ))}
             <FormField>
               <div className="flex items-center space-x-3">
