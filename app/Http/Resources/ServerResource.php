@@ -27,8 +27,6 @@ class ServerResource extends JsonResource
             'local_ip' => $this->local_ip,
             'port' => $this->port,
             'os' => $this->os,
-            'type' => $this->type,
-            'type_data' => $this->type_data,
             'provider' => $this->provider,
             'provider_data' => $this->provider_data,
             'public_key' => $this->public_key,

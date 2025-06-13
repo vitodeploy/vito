@@ -4,7 +4,6 @@ namespace Tests\Feature\API;
 
 use App\Enums\Database;
 use App\Enums\OperatingSystem;
-use App\Enums\ServerType;
 use App\Enums\Webserver;
 use App\Facades\SSH;
 use App\ServerProviders\Custom;
@@ -64,7 +63,6 @@ class ServerTest extends TestCase
             ->assertSuccessful()
             ->assertJsonFragment([
                 'name' => 'test',
-                'type' => ServerType::REGULAR,
             ]);
     }
 
@@ -89,7 +87,6 @@ class ServerTest extends TestCase
             ->assertSuccessful()
             ->assertJsonFragment([
                 'name' => 'test',
-                'type' => ServerType::REGULAR,
             ]);
     }
 

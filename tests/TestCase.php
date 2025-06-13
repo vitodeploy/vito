@@ -2,10 +2,8 @@
 
 namespace Tests;
 
-use App\Enums\Database;
 use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
-use App\Enums\Webserver;
 use App\Models\NotificationChannel;
 use App\Models\Redirect;
 use App\Models\Server;
@@ -13,6 +11,12 @@ use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\User;
 use App\NotificationChannels\Email;
+use App\Services\Database\Mysql;
+use App\Services\Firewall\Ufw;
+use App\Services\PHP\PHP;
+use App\Services\ProcessManager\Supervisor;
+use App\Services\Redis\Redis;
+use App\Services\Webserver\Nginx;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\File;
 
@@ -82,10 +86,35 @@ abstract class TestCase extends BaseTestCase
             $this->server->provider()->generateKeyPair();
         }
 
-        $this->server->type()->createServices([
-            'webserver' => Webserver::NGINX,
-            'database' => Database::MYSQL80,
-            'php' => '8.2',
+        $this->server->services()->create([
+            'type' => Nginx::type(),
+            'name' => Nginx::id(),
+            'version' => 'latest',
+        ]);
+        $this->server->services()->create([
+            'type' => Mysql::type(),
+            'name' => Mysql::id(),
+            'version' => '8.0',
+        ]);
+        $this->server->services()->create([
+            'type' => PHP::type(),
+            'name' => PHP::id(),
+            'version' => '8.2',
+        ]);
+        $this->server->services()->create([
+            'type' => Ufw::type(),
+            'name' => Ufw::id(),
+            'version' => 'latest',
+        ]);
+        $this->server->services()->create([
+            'type' => Supervisor::type(),
+            'name' => Supervisor::id(),
+            'version' => 'latest',
+        ]);
+        $this->server->services()->create([
+            'type' => Redis::type(),
+            'name' => Redis::id(),
+            'version' => 'latest',
         ]);
 
         $this->server->services()->update([

@@ -1,14 +1,11 @@
 <?php
 
 use App\Enums\OperatingSystem;
-use App\Enums\ServerType;
 use App\Enums\SslType;
 use App\Enums\UserRole;
 use App\Enums\Webserver;
 use App\Models\Server;
 use App\Models\Site;
-use App\ServerTypes\Database;
-use App\ServerTypes\Regular;
 use App\Services\PHP\PHP;
 
 return [
@@ -118,18 +115,6 @@ return [
             'mysql',
             'mariadb',
         ],
-    ],
-
-    /*
-     * Server
-     */
-    'server_types' => [
-        ServerType::REGULAR,
-        ServerType::DATABASE,
-    ],
-    'server_types_class' => [
-        ServerType::REGULAR => Regular::class,
-        ServerType::DATABASE => Database::class,
     ],
 
     /*

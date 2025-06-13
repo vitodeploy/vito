@@ -79,10 +79,11 @@ class Service extends AbstractModel
 
     public function handler(): ServiceInterface|Webserver|PHP|Firewall|\App\Services\Database\Database|ProcessManager
     {
-        $handler = config("service.services.{$this->name}.handler");
+        $name = $this->name;
+        $handler = config("service.services.$name.handler");
 
         if (! $handler) {
-            throw new InvalidArgumentException("Service handler for {$this->name} is not defined.");
+            throw new InvalidArgumentException("Service handler for $name is not defined.");
         }
 
         /** @var ServiceInterface $service */

@@ -3,28 +3,22 @@
 namespace App\Actions\Server;
 
 use App\Enums\FirewallRuleStatus;
-use App\Enums\ServerStatus;
-use App\Enums\ServerType;
-use App\Exceptions\SSHConnectionError;
-use App\Facades\Notifier;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\User;
-use App\Notifications\ServerInstallationFailed;
-use App\Notifications\ServerInstallationSucceed;
 use App\ServerProviders\Custom;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 class CreateServer
 {
+    protected Server $server;
+
     /**
      * @param  array<string, mixed>  $input
      */
@@ -32,7 +26,7 @@ class CreateServer
     {
         Validator::make($input, self::rules($project, $input))->validate();
 
-        $server = new Server([
+        $this->server = new Server([
             'project_id' => $project->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
@@ -40,7 +34,6 @@ class CreateServer
             'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],
-            'type' => ServerType::REGULAR,
             'provider' => $input['provider'],
             'authentication' => [
                 'user' => config('core.ssh_user'),
@@ -52,72 +45,35 @@ class CreateServer
         ]);
 
         try {
-            if ($server->provider != 'custom') {
-                $server->provider_id = $input['server_provider'];
+            if ($this->server->provider != 'custom') {
+                $this->server->provider_id = $input['server_provider'];
             }
 
-            $server->type_data = $server->type()->data($input);
-
-            $server->provider_data = $server->provider()->data($input);
+            $this->server->provider_data = $this->server->provider()->data($input);
 
             // save
-            $server->save();
+            $this->server->save();
 
             // create firewall rules
-            $this->createFirewallRules($server);
+            $this->createFirewallRules($this->server);
 
             // create instance
-            $server->provider()->create();
+            $this->server->provider()->create();
 
-            // add services
-            $server->type()->createServices($input);
+            // create services
+            $this->createServices($input);
 
             // install server
-            $this->install($server);
+            app(InstallServer::class)->run($this->server);
 
-            return $server;
+            return $this->server;
         } catch (Exception $e) {
-            $server->delete();
+            $this->server->delete();
 
             throw ValidationException::withMessages([
                 'provider' => $e->getMessage(),
             ]);
         }
-    }
-
-    private function install(Server $server): void
-    {
-        dispatch(function () use ($server): void {
-            $maxWait = 180;
-            while ($maxWait > 0) {
-                sleep(10);
-                $maxWait -= 10;
-                if (! $server->provider()->isRunning()) {
-                    continue;
-                }
-                try {
-                    $server->ssh()->connect();
-                    break;
-                } catch (SSHConnectionError) {
-                    // ignore
-                }
-            }
-            $server->type()->install();
-            $server->update([
-                'status' => ServerStatus::READY,
-            ]);
-            Notifier::send($server, new ServerInstallationSucceed($server));
-        })
-            ->catch(function (Throwable $e) use ($server): void {
-                $server->update([
-                    'status' => ServerStatus::INSTALLATION_FAILED,
-                ]);
-                Notifier::send($server, new ServerInstallationFailed($server));
-                Log::error('server-installation-error', [
-                    'error' => (string) $e,
-                ]);
-            })
-            ->onConnection('ssh');
     }
 
     /**
@@ -161,24 +117,21 @@ class CreateServer
                     'max:65535',
                 ]),
             ],
+            'webserver' => [
+                'required',
+                Rule::in(config('core.webservers')),
+            ],
+            'php' => [
+                'required',
+                Rule::in(config('core.php_versions')),
+            ],
+            'database' => [
+                'required',
+                Rule::in(config('core.databases')),
+            ],
         ];
 
-        return array_merge($rules, self::typeRules($input), self::providerRules($input));
-    }
-
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, array<string>>
-     */
-    private static function typeRules(array $input): array
-    {
-        if (! isset($input['type']) || ! in_array($input['type'], config('core.server_types'))) {
-            return [];
-        }
-
-        $server = new Server(['type' => $input['type']]);
-
-        return $server->type()->createRules($input);
+        return array_merge($rules, self::providerRules($input));
     }
 
     /**
@@ -234,6 +187,93 @@ class CreateServer
                 'mask' => null,
                 'status' => FirewallRuleStatus::READY,
             ],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    private function createServices(array $input): void
+    {
+        $this->server->services()->forceDelete();
+        $this->addWebserver($input['webserver']);
+        $this->addDatabase($input['database']);
+        $this->addPHP($input['php']);
+        $this->addSupervisor();
+        $this->addRedis();
+        $this->addUfw();
+        $this->addMonitoring();
+    }
+
+    private function addWebserver(string $service): void
+    {
+        if ($service !== 'none') {
+            $this->server->services()->create([
+                'type' => 'webserver',
+                'name' => $service,
+                'version' => 'latest',
+            ]);
+        }
+    }
+
+    private function addDatabase(string $service): void
+    {
+        if ($service !== 'none') {
+            $this->server->services()->create([
+                'type' => 'database',
+                'name' => config('core.databases_name.'.$service),
+                'version' => config('core.databases_version.'.$service),
+            ]);
+        }
+    }
+
+    private function addPHP(string $version): void
+    {
+        if ($version !== 'none') {
+            $this->server->services()->create([
+                'type' => 'php',
+                'type_data' => [
+                    'extensions' => [],
+                ],
+                'name' => 'php',
+                'version' => $version,
+            ]);
+        }
+    }
+
+    private function addSupervisor(): void
+    {
+        $this->server->services()->create([
+            'type' => 'process_manager',
+            'name' => 'supervisor',
+            'version' => 'latest',
+        ]);
+    }
+
+    private function addRedis(): void
+    {
+        $this->server->services()->create([
+            'type' => 'memory_database',
+            'name' => 'redis',
+            'version' => 'latest',
+        ]);
+    }
+
+    private function addUfw(): void
+    {
+        $this->server->services()->create([
+            'type' => 'firewall',
+            'name' => 'ufw',
+            'version' => 'latest',
+        ]);
+    }
+
+    private function addMonitoring(): void
+    {
+        $this->server->services()->create([
+            'type' => 'monitoring',
+            'name' => 'remote-monitor',
+            'version' => 'latest',
         ]);
     }
 }

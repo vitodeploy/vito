@@ -20,7 +20,7 @@ class UninstallTest extends TestCase
     {
         SSH::fake();
 
-        $this->server->monitoring()->delete();
+        $this->server->monitoring()?->delete();
 
         $service = Service::factory()->create([
             'server_id' => $this->server->id,

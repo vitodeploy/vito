@@ -21,7 +21,7 @@ class InstallTest extends TestCase
             'https://api.github.com/repos/vitodeploy/agent/tags' => Http::response([['name' => '0.1.0']]),
         ]);
 
-        $this->server->monitoring()->delete();
+        $this->server->monitoring()?->delete();
 
         app(Install::class)->install($this->server, [
             'type' => 'monitoring',
@@ -40,7 +40,7 @@ class InstallTest extends TestCase
 
     public function test_install_vito_agent_failed(): void
     {
-        $this->server->monitoring()->delete();
+        $this->server->monitoring()?->delete();
         $this->expectExceptionMessage('Failed to fetch tags');
         SSH::fake('Active: inactive');
         Http::fake([

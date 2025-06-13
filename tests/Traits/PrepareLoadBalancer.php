@@ -2,11 +2,8 @@
 
 namespace Tests\Traits;
 
-use App\Enums\Database;
 use App\Enums\LoadBalancerMethod;
-use App\Enums\PHP;
 use App\Enums\ServiceStatus;
-use App\Enums\Webserver;
 use App\Models\Server;
 use App\Models\Site;
 use App\SiteTypes\LoadBalancer;
@@ -27,11 +24,6 @@ trait PrepareLoadBalancer
             'project_id' => $this->user->current_project_id,
         ]);
         foreach ($servers as $server) {
-            $server->type()->createServices([
-                'webserver' => Webserver::NGINX,
-                'database' => Database::NONE,
-                'php' => PHP::NONE,
-            ]);
             $server->services()->update([
                 'status' => ServiceStatus::READY,
             ]);

@@ -7,7 +7,6 @@ use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
 use App\Facades\SSH;
-use App\ServerTypes\ServerType;
 use App\SSH\Cron\Cron;
 use App\SSH\OS\OS;
 use App\SSH\Systemd\Systemd;
@@ -81,8 +80,6 @@ class Server extends AbstractModel
         'local_ip',
         'port',
         'os',
-        'type',
-        'type_data',
         'provider',
         'provider_id',
         'provider_data',
@@ -101,7 +98,6 @@ class Server extends AbstractModel
     protected $casts = [
         'project_id' => 'integer',
         'user_id' => 'integer',
-        'type_data' => 'json',
         'port' => 'integer',
         'provider_data' => 'json',
         'authentication' => 'encrypted:json',
@@ -408,16 +404,6 @@ class Server extends AbstractModel
         }
 
         return $versions;
-    }
-
-    public function type(): ServerType
-    {
-        $typeClass = config('core.server_types_class')[$this->type];
-
-        /** @var ServerType $type */
-        $type = new $typeClass($this);
-
-        return $type;
     }
 
     public function provider(): \App\ServerProviders\ServerProvider
