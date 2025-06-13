@@ -65,7 +65,7 @@ class HandleInertiaRequests extends Middleware
                 $sites = SiteResource::collection($server->sites);
             }
 
-            $data['serverSites'] = $sites;
+            $data['server_sites'] = $sites;
 
             if ($request->route('site')) {
                 $data['site'] = SiteResource::make($request->route('site'));
@@ -82,17 +82,13 @@ class HandleInertiaRequests extends Middleware
                 'projects' => $user?->allProjects()->get(),
                 'currentProject' => $user?->currentProject,
             ],
-            'publicKeyText' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
-            'projectServers' => $servers,
+            'public_key_text' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
+            'project_servers' => $servers,
             'configs' => [
                 'operating_systems' => config('core.operating_systems'),
                 'colors' => config('core.colors'),
-                'webservers' => config('core.webservers'),
-                'databases' => config('core.databases'),
-                'php_versions' => config('core.php_versions'),
                 'cronjob_intervals' => config('core.cronjob_intervals'),
                 'metrics_periods' => config('core.metrics_periods'),
-                'php_extensions' => config('core.php_extensions'),
                 'site' => [
                     'types' => config('site.types'),
                 ],
@@ -117,7 +113,6 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'csrf_token' => csrf_token(),
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

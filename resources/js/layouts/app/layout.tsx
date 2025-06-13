@@ -19,13 +19,6 @@ export default function Layout({
   secondNavTitle?: string;
 }>) {
   const page = usePage<SharedData>();
-  // const [sidebarOpen, setSidebarOpen] = useState(
-  //   (localStorage.getItem('sidebar') === 'true' || false) && !!(secondNavItems && secondNavItems.length > 0),
-  // );
-  // const sidebarOpenChange = (open: boolean) => {
-  //   setSidebarOpen(open);
-  //   localStorage.setItem('sidebar', String(open));
-  // };
 
   if (page.props.flash && page.props.flash.success) {
     toast(

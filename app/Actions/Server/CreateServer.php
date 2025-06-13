@@ -3,17 +3,22 @@
 namespace App\Actions\Server;
 
 use App\Enums\FirewallRuleStatus;
+use App\Enums\ServerStatus;
+use App\Facades\Notifier;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\User;
+use App\Notifications\ServerInstallationFailed;
 use App\ServerProviders\Custom;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class CreateServer
 {
@@ -30,7 +35,7 @@ class CreateServer
             'project_id' => $project->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
-            'ssh_user' => data_get(config('server-provider.providers'), $input['provider'].'.default_user', 'root'),
+            'ssh_user' => data_get(config('server-provider.providers'), $input['provider'].'.default_user') ?? 'root',
             'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],
@@ -61,10 +66,22 @@ class CreateServer
             $this->server->provider()->create();
 
             // create services
-            $this->createServices($input);
+            $this->createServices();
 
             // install server
-            app(InstallServer::class)->run($this->server);
+            dispatch(function (): void {
+                app(InstallServer::class)->run($this->server);
+            })
+                ->catch(function (Throwable $e): void {
+                    $this->server->update([
+                        'status' => ServerStatus::INSTALLATION_FAILED,
+                    ]);
+                    Notifier::send($this->server, new ServerInstallationFailed($this->server));
+                    Log::error('server-installation-error', [
+                        'error' => (string) $e,
+                    ]);
+                })
+                ->onConnection('ssh');
 
             return $this->server;
         } catch (Exception $e) {
@@ -116,18 +133,6 @@ class CreateServer
                     'min:1',
                     'max:65535',
                 ]),
-            ],
-            'webserver' => [
-                'required',
-                Rule::in(config('core.webservers')),
-            ],
-            'php' => [
-                'required',
-                Rule::in(config('core.php_versions')),
-            ],
-            'database' => [
-                'required',
-                Rule::in(config('core.databases')),
             ],
         ];
 
@@ -190,55 +195,13 @@ class CreateServer
         ]);
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    private function createServices(array $input): void
+    private function createServices(): void
     {
         $this->server->services()->forceDelete();
-        $this->addWebserver($input['webserver']);
-        $this->addDatabase($input['database']);
-        $this->addPHP($input['php']);
         $this->addSupervisor();
         $this->addRedis();
         $this->addUfw();
         $this->addMonitoring();
-    }
-
-    private function addWebserver(string $service): void
-    {
-        if ($service !== 'none') {
-            $this->server->services()->create([
-                'type' => 'webserver',
-                'name' => $service,
-                'version' => 'latest',
-            ]);
-        }
-    }
-
-    private function addDatabase(string $service): void
-    {
-        if ($service !== 'none') {
-            $this->server->services()->create([
-                'type' => 'database',
-                'name' => config('core.databases_name.'.$service),
-                'version' => config('core.databases_version.'.$service),
-            ]);
-        }
-    }
-
-    private function addPHP(string $version): void
-    {
-        if ($version !== 'none') {
-            $this->server->services()->create([
-                'type' => 'php',
-                'type_data' => [
-                    'extensions' => [],
-                ],
-                'name' => 'php',
-                'version' => $version,
-            ]);
-        }
     }
 
     private function addSupervisor(): void

@@ -71,8 +71,8 @@ class ServersSeeder extends Seeder
         Service::query()->create([
             'server_id' => $server->id,
             'type' => 'database',
-            'name' => config('core.databases_name.mysql80'),
-            'version' => config('core.databases_version.mysql80'),
+            'name' => 'mysql',
+            'version' => '8.4',
             'status' => ServiceStatus::READY,
         ]);
     }

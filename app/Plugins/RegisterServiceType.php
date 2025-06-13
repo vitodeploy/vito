@@ -9,6 +9,7 @@ class RegisterServiceType
 {
     /**
      * @param  array<string>  $versions
+     * @param  array<string, mixed>  $data
      */
     public function __construct(
         private string $name,
@@ -17,7 +18,8 @@ class RegisterServiceType
         private string $label = '',
         private string $handler = '',
         private ?DynamicForm $form = null,
-        private array $versions = ['latest']
+        private array $versions = ['latest'],
+        private array $data = []
     ) {}
 
     public static function make(string $name): self
@@ -77,6 +79,16 @@ class RegisterServiceType
         return $this;
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function data(array $data): self
+    {
+        $this->data = $data;
+
+        return $this;
+    }
+
     public function register(): void
     {
         $types = config('service.services');
@@ -92,6 +104,7 @@ class RegisterServiceType
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
             'versions' => $this->versions,
+            'data' => $this->data,
         ];
 
         config(['service.services' => $types]);

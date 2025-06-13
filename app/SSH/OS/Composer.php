@@ -1,23 +1,23 @@
 <?php
 
-namespace App\SSH\PHPMyAdmin;
+namespace App\SSH\OS;
 
 use App\Exceptions\SSHError;
 use App\Models\Site;
 
-class PHPMyAdmin
+class Composer
 {
     /**
      * @throws SSHError
      */
-    public function install(Site $site): void
+    public function installDependencies(Site $site): void
     {
         $site->server->ssh($site->user)->exec(
-            view('ssh.phpmyadmin.install', [
-                'version' => $site->type_data['version'],
+            view('ssh.composer.composer-install', [
                 'path' => $site->path,
+                'phpVersion' => $site->php_version,
             ]),
-            'install-phpmyadmin',
+            'composer-install',
             $site->id
         );
     }

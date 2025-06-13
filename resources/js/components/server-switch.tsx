@@ -54,8 +54,8 @@ export function ServerSwitch() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
-          {page.props.projectServers.length > 0 ? (
-            page.props.projectServers.map((server) => (
+          {page.props.project_servers.length > 0 ? (
+            page.props.project_servers.map((server) => (
               <DropdownMenuCheckboxItem
                 key={`server-${server.id.toString()}`}
                 checked={selectedServer?.id === server.id}

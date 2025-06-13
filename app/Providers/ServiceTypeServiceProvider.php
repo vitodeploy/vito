@@ -147,6 +147,17 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '7.0',
                 '5.6',
             ])
+            ->data([
+                'extensions' => [
+                    'imagick',
+                    'exif',
+                    'gmagick',
+                    'gmp',
+                    'intl',
+                    'sqlite3',
+                    'opcache',
+                ],
+            ])
             ->register();
     }
 

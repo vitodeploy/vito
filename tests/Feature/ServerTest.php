@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Database;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
-use App\Enums\Webserver;
 use App\Facades\SSH;
 use App\Models\ServerProvider;
 use App\NotificationChannels\Email\NotificationMail;
@@ -15,16 +13,18 @@ use App\ServerProviders\Hetzner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ServerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_regular_server(): void
+    public function test_create_server(): void
     {
         $this->actingAs($this->user);
 
+        Storage::fake();
         SSH::fake('Active: active'); // fake output for service installations
 
         $this->post(route('servers.store', [
@@ -33,9 +33,6 @@ class ServerTest extends TestCase
             'ip' => '1.1.1.1',
             'port' => '22',
             'os' => OperatingSystem::UBUNTU22,
-            'webserver' => Webserver::NGINX,
-            'database' => Database::MYSQL80,
-            'php' => '8.2',
         ]))
             ->assertSessionDoesntHaveErrors();
 
@@ -47,85 +44,6 @@ class ServerTest extends TestCase
 
         $this->assertDatabaseHas('services', [
             'server_id' => 1,
-            'type' => 'php',
-            'version' => '8.2',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => 1,
-            'type' => 'webserver',
-            'name' => 'nginx',
-            'version' => 'latest',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => 1,
-            'type' => 'database',
-            'name' => 'mysql',
-            'version' => '8.0',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => 1,
-            'type' => 'firewall',
-            'name' => 'ufw',
-            'version' => 'latest',
-            'status' => ServiceStatus::READY,
-        ]);
-    }
-
-    public function test_create_regular_server_with_caddy(): void
-    {
-        $this->actingAs($this->user);
-
-        SSH::fake('Active: active'); // fake output for service installations
-
-        $this->post(route('servers.store', [
-            'provider' => Custom::id(),
-            'name' => 'caddy-test',
-            'ip' => '2.2.2.2',
-            'port' => '22',
-            'os' => OperatingSystem::UBUNTU22,
-            'webserver' => Webserver::CADDY,
-            'database' => Database::MYSQL80,
-            'php' => '8.2',
-        ]))
-            ->assertSessionDoesntHaveErrors();
-
-        $this->assertDatabaseHas('servers', [
-            'name' => 'caddy-test',
-            'ip' => '2.2.2.2',
-            'status' => ServerStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => 2,
-            'type' => 'php',
-            'version' => '8.2',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => 2,
-            'type' => 'webserver',
-            'name' => 'caddy',
-            'version' => 'latest',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => 2,
-            'type' => 'database',
-            'name' => 'mysql',
-            'version' => '8.0',
-            'status' => ServiceStatus::READY,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'server_id' => 2,
             'type' => 'firewall',
             'name' => 'ufw',
             'version' => 'latest',

@@ -4,13 +4,10 @@ namespace App\SSH\Storage;
 
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
-use App\SSH\HasS3Storage;
 use Illuminate\Support\Facades\Log;
 
 class S3 extends AbstractStorage
 {
-    use HasS3Storage;
-
     /**
      * @throws SSHError
      */
@@ -88,5 +85,26 @@ class S3 extends AbstractStorage
             ]),
             'delete-from-s3'
         );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    private function prepareS3Path(string $path, string $prefix = ''): string
+    {
+        $path = trim($path);
+        $path = ltrim($path, '/');
+        $path = preg_replace('/[^a-zA-Z0-9\-_\.\/]/', '_', $path);
+        $path = preg_replace('/\/+/', '/', (string) $path);
+
+        if ($prefix !== '' && $prefix !== '0') {
+            return trim($prefix, '/').'/'.$path;
+        }
+
+        if ($path === null) {
+            throw new SSHError('Invalid S3 path');
+        }
+
+        return $path;
     }
 }

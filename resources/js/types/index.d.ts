@@ -35,18 +35,12 @@ export interface NavItem {
 
 export interface Configs {
   operating_systems: string[];
-  service_versions: {
-    [service: string]: string[];
-  };
   colors: string[];
-  webservers: string[];
   databases: string[];
-  php_versions: string[];
   cronjob_intervals: {
     [key: string]: string;
   };
   metrics_periods: string[];
-  php_extensions: string[];
 
   server_provider: {
     providers: {
@@ -92,6 +86,9 @@ export interface Configs {
         handler: string;
         form?: DynamicFieldConfig[];
         versions: string[];
+        data?: {
+          extensions?: string[];
+        };
       };
     };
   };
@@ -109,13 +106,12 @@ export interface SharedData {
   quote: { message: string; author: string };
   auth: Auth;
   ziggy: Config & { location: string };
-  sidebarOpen: boolean;
   configs: Configs;
-  projectServers: Server[];
-  serverSites?: Site[];
+  project_servers: Server[];
+  server_sites?: Site[];
   server?: Server;
   site?: Site;
-  publicKeyText: string;
+  public_key_text: string;
   flash?: {
     success: string;
     error: string;

@@ -59,6 +59,7 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       href: route('databases', { server: page.props.server.id }),
       icon: DatabaseIcon,
       isDisabled: isMenuDisabled,
+      hidden: !page.props.server.services['database'],
       children: [
         {
           title: 'Databases',

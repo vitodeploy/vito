@@ -10,7 +10,6 @@ use App\ServerProviders\Vultr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
-use JsonException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -20,8 +19,6 @@ class ServerProvidersTest extends TestCase
 
     /**
      * @param  array<string, mixed>  $input
-     *
-     * @throws JsonException
      */
     #[DataProvider('data')]
     public function test_connect_provider(string $provider, array $input): void
@@ -38,7 +35,7 @@ class ServerProvidersTest extends TestCase
             $input
         );
         $this->post(route('server-providers.store'), $data)
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('server_providers', [
             'provider' => $provider,
@@ -88,9 +85,6 @@ class ServerProvidersTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('server-providers/index'));
     }
 
-    /**
-     * @throws JsonException
-     */
     #[DataProvider('data')]
     public function test_delete_provider(string $provider): void
     {
@@ -102,7 +96,7 @@ class ServerProvidersTest extends TestCase
         ]);
 
         $this->delete(route('server-providers.destroy', $provider))
-            ->assertSessionHasNoErrors()
+            ->assertSessionDoesntHaveErrors()
             ->assertRedirect(route('server-providers'));
 
         $this->assertDatabaseMissing('server_providers', [

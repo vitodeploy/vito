@@ -32,7 +32,7 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
       }
       setInitialValue(true);
     }
-  }, [initialValue, setInitialValue, onChange, value]);
+  }, [initialValue, setInitialValue, onChange, value, config]);
 
   // Handle checkbox
   if (config?.type === 'checkbox') {

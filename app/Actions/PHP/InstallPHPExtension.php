@@ -57,7 +57,7 @@ class InstallPHPExtension
         return [
             'extension' => [
                 'required',
-                Rule::in(config('core.php_extensions')),
+                Rule::in(config('service.services.php.data.extensions', []) ?? []),
             ],
             'version' => [
                 'required',

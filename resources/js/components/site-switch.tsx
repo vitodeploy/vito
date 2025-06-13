@@ -28,7 +28,7 @@ export function SiteSwitch() {
     siteHelper.storeSite(page.props.site);
   }
 
-  if (storedSite && page.props.serverSites && !page.props.serverSites.find((site) => site.id === storedSite.id)) {
+  if (storedSite && page.props.server_sites && !page.props.server_sites.find((site) => site.id === storedSite.id)) {
     siteHelper.storeSite();
   }
 
@@ -40,7 +40,7 @@ export function SiteSwitch() {
 
   return (
     page.props.server &&
-    page.props.serverSites && (
+    page.props.server_sites && (
       <div className="flex items-center">
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -67,8 +67,8 @@ export function SiteSwitch() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
-            {page.props.serverSites.length > 0 ? (
-              page.props.serverSites.map((site) => (
+            {page.props.server_sites.length > 0 ? (
+              page.props.server_sites.map((site) => (
                 <DropdownMenuCheckboxItem
                   key={`site-${site.id.toString()}`}
                   checked={selectedSite?.id === site.id}

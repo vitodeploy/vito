@@ -2,9 +2,7 @@
 
 namespace Tests\Feature\API;
 
-use App\Enums\Database;
 use App\Enums\OperatingSystem;
-use App\Enums\Webserver;
 use App\Facades\SSH;
 use App\ServerProviders\Custom;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,33 +54,6 @@ class ServerTest extends TestCase
             'ip' => '1.1.1.1',
             'port' => '22',
             'os' => OperatingSystem::UBUNTU22,
-            'webserver' => Webserver::NGINX,
-            'database' => Database::MYSQL80,
-            'php' => '8.2',
-        ])
-            ->assertSuccessful()
-            ->assertJsonFragment([
-                'name' => 'test',
-            ]);
-    }
-
-    public function test_create_server_with_caddy(): void
-    {
-        Sanctum::actingAs($this->user, ['read', 'write']);
-
-        SSH::fake('Active: active'); // fake output for service installations
-
-        $this->json('POST', route('api.projects.servers.create', [
-            'project' => $this->user->current_project_id,
-        ]), [
-            'provider' => Custom::id(),
-            'name' => 'test',
-            'ip' => '1.1.1.1',
-            'port' => '22',
-            'os' => OperatingSystem::UBUNTU22,
-            'webserver' => Webserver::CADDY,
-            'database' => Database::MYSQL80,
-            'php' => '8.2',
         ])
             ->assertSuccessful()
             ->assertJsonFragment([

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\SSH\Git;
+namespace App\SSH\OS;
 
 use App\Exceptions\SSHError;
 use App\Models\Site;

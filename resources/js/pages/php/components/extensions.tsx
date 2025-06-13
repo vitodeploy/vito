@@ -30,6 +30,7 @@ export default function Extensions({ service }: { service: Service }) {
     extension: '',
     version: service.version,
   });
+  const [, php] = Object.entries(page.props.configs.service.services).filter(([key]) => key === 'php')[0] || null;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -39,6 +40,10 @@ export default function Extensions({ service }: { service: Service }) {
       },
     });
   };
+
+  if (!php) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -60,7 +65,7 @@ export default function Extensions({ service }: { service: Service }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {page.props.configs.php_extensions.map((extension: string) => (
+                    {php.data?.extensions?.map((extension: string) => (
                       <SelectItem key={`extension-${extension}`} value={extension} disabled={service.type_data.extensions?.includes(extension)}>
                         {extension} {service.type_data.extensions?.includes(extension) && <span>(installed)</span>}
                       </SelectItem>

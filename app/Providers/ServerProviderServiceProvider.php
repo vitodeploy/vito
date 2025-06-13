@@ -66,6 +66,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->label('Token'),
                 ])
             )
+            ->defaultUser('root')
             ->register();
     }
 
@@ -81,6 +82,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->label('Token'),
                 ])
             )
+            ->defaultUser('root')
             ->register();
     }
 
@@ -96,6 +98,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->label('Token'),
                 ])
             )
+            ->defaultUser('root')
             ->register();
     }
 
@@ -111,6 +114,7 @@ class ServerProviderServiceProvider extends ServiceProvider
                         ->label('Token'),
                 ])
             )
+            ->defaultUser('root')
             ->register();
     }
 }

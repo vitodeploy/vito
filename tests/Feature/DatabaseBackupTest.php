@@ -13,7 +13,6 @@ use App\StorageProviders\Dropbox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
-use JsonException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -22,12 +21,12 @@ class DatabaseBackupTest extends TestCase
     use RefreshDatabase;
 
     #[DataProvider('data')]
-    public function test_create_backup(string $db): void
+    public function test_create_backup(string $db, string $version): void
     {
         SSH::fake();
         Http::fake();
 
-        $this->setupDatabase($db);
+        $this->setupDatabase($db, $version);
 
         $this->actingAs($this->user);
 
@@ -48,7 +47,7 @@ class DatabaseBackupTest extends TestCase
             'interval' => '0 * * * *',
             'keep' => '10',
         ])
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
             'status' => BackupStatus::RUNNING,
@@ -59,9 +58,6 @@ class DatabaseBackupTest extends TestCase
         ]);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_create_custom_interval_backup(): void
     {
         Bus::fake();
@@ -84,7 +80,7 @@ class DatabaseBackupTest extends TestCase
             'custom_interval' => '* * * * *',
             'keep' => '10',
         ])
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
             'status' => BackupStatus::RUNNING,
@@ -114,9 +110,6 @@ class DatabaseBackupTest extends TestCase
             ->assertSuccessful();
     }
 
-    /**
-     * @throws JsonException
-     */
     public function test_update_backup(): void
     {
         $this->actingAs($this->user);
@@ -145,7 +138,7 @@ class DatabaseBackupTest extends TestCase
             'interval' => '0 0 * * *',
             'keep' => 10,
         ])
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backups', [
             'id' => $backup->id,
@@ -155,9 +148,9 @@ class DatabaseBackupTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_delete_backup(string $db): void
+    public function test_delete_backup(string $db, string $version): void
     {
-        $this->setupDatabase($db);
+        $this->setupDatabase($db, $version);
 
         $this->actingAs($this->user);
 
@@ -177,7 +170,7 @@ class DatabaseBackupTest extends TestCase
         ]);
 
         $this->delete(route('backups.destroy', ['server' => $this->server, 'backup' => $backup]))
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseMissing('backups', [
             'id' => $backup->id,
@@ -185,12 +178,12 @@ class DatabaseBackupTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_restore_backup(string $db): void
+    public function test_restore_backup(string $db, string $version): void
     {
         Http::fake();
         SSH::fake();
 
-        $this->setupDatabase($db);
+        $this->setupDatabase($db, $version);
 
         $this->actingAs($this->user);
 
@@ -218,7 +211,7 @@ class DatabaseBackupTest extends TestCase
         ]), [
             'database' => $database->id,
         ])
-            ->assertSessionHasNoErrors();
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('backup_files', [
             'id' => $backupFile->id,
@@ -226,14 +219,14 @@ class DatabaseBackupTest extends TestCase
         ]);
     }
 
-    private function setupDatabase(string $database): void
+    private function setupDatabase(string $database, string $version): void
     {
         $this->server->services()->where('type', 'database')->delete();
 
         $this->server->services()->create([
             'type' => 'database',
-            'name' => config('core.databases_name.'.$database),
-            'version' => config('core.databases_version.'.$database),
+            'name' => $database,
+            'version' => $version,
         ]);
     }
 
@@ -243,9 +236,9 @@ class DatabaseBackupTest extends TestCase
     public static function data(): array
     {
         return [
-            [\App\Enums\Database::MYSQL80],
-            [\App\Enums\Database::MARIADB104],
-            [\App\Enums\Database::POSTGRESQL16],
+            ['mysql', '8.4'],
+            ['mariadb', '10.4'],
+            ['postgresql', '16'],
         ];
     }
 }

@@ -117,6 +117,25 @@ class Wordpress extends PHPSite
 
         $this->site->php()?->restart();
         $this->progress(60);
-        app(\App\SSH\Wordpress\Wordpress::class)->install($this->site);
+
+        $this->site->server->ssh($this->site->user)->exec(
+            view('ssh.wordpress.install', [
+                'path' => $this->site->path,
+                'domain' => $this->site->domain,
+                'isIsolated' => $this->site->isIsolated() ? 'true' : 'false',
+                'isolatedUsername' => $this->site->user,
+                'dbName' => $this->site->type_data['database'],
+                'dbUser' => $this->site->type_data['database_user'],
+                'dbPass' => $this->site->type_data['database_password'],
+                'dbHost' => 'localhost',
+                'dbPrefix' => 'wp_',
+                'username' => $this->site->type_data['username'],
+                'password' => $this->site->type_data['password'],
+                'email' => $this->site->type_data['email'],
+                'title' => $this->site->type_data['title'],
+            ]),
+            'install-wordpress',
+            $this->site->id
+        );
     }
 }

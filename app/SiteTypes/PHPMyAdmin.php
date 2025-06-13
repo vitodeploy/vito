@@ -51,7 +51,14 @@ class PHPMyAdmin extends PHPSite
         $this->isolate();
         $this->site->webserver()->createVHost($this->site);
         $this->progress(30);
-        app(\App\SSH\PHPMyAdmin\PHPMyAdmin::class)->install($this->site);
+        $this->site->server->ssh($this->site->user)->exec(
+            view('ssh.phpmyadmin.install', [
+                'version' => $this->site->type_data['version'],
+                'path' => $this->site->path,
+            ]),
+            'install-phpmyadmin',
+            $this->site->id
+        );
         $this->progress(65);
         $this->site->php()?->restart();
     }

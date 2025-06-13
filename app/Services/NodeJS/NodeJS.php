@@ -29,8 +29,7 @@ class NodeJS extends AbstractService
         return [
             'version' => [
                 'required',
-                Rule::in(config('core.nodejs_versions')),
-                Rule::notIn([\App\Enums\NodeJS::NONE]),
+                Rule::in(config('service.services.nodejs.versions')),
                 Rule::unique('services', 'version')
                     ->where('type', 'nodejs')
                     ->where('server_id', $this->service->server_id),

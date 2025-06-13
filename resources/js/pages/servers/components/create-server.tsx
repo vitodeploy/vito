@@ -23,9 +23,6 @@ type CreateServerForm = {
   port: number;
   region: string;
   plan: string;
-  webserver: string;
-  database: string;
-  php: string;
 };
 
 export default function CreateServer({ children }: { children: React.ReactNode }) {
@@ -40,9 +37,6 @@ export default function CreateServer({ children }: { children: React.ReactNode }
     port: 22,
     region: '',
     plan: '',
-    webserver: 'nginx',
-    database: 'none',
-    php: 'none',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -52,7 +46,7 @@ export default function CreateServer({ children }: { children: React.ReactNode }
 
   const [copySuccess, setCopySuccess] = useState(false);
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(page.props.publicKeyText).then(() => {
+    navigator.clipboard.writeText(page.props.public_key_text).then(() => {
       setCopySuccess(true);
       setTimeout(() => {
         setCopySuccess(false);
@@ -218,10 +212,10 @@ export default function CreateServer({ children }: { children: React.ReactNode }
                     variant="outline"
                     id="public_key"
                     type="button"
-                    value={page.props.publicKeyText}
+                    value={page.props.public_key_text}
                     className="justify-between truncate font-normal"
                   >
-                    <span className="w-full max-w-2/3 overflow-x-hidden overflow-ellipsis">{page.props.publicKeyText}</span>
+                    <span className="w-full max-w-2/3 overflow-x-hidden overflow-ellipsis">{page.props.public_key_text}</span>
                     {copySuccess ? <ClipboardCheckIcon size={5} className="text-success!" /> : <ClipboardIcon size={5} />}
                   </Button>
                 </FormField>
@@ -275,63 +269,6 @@ export default function CreateServer({ children }: { children: React.ReactNode }
                 </FormField>
               </div>
             )}
-
-            <div className="grid grid-cols-3 items-start gap-6">
-              <FormField>
-                <Label htmlFor="webserver">Webserver</Label>
-                <Select value={form.data.webserver} onValueChange={(value) => form.setData('webserver', value)}>
-                  <SelectTrigger id="webserver">
-                    <SelectValue placeholder="Select webserver" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {page.props.configs.webservers.map((value) => (
-                        <SelectItem key={`webserver-${value}`} value={value}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <InputError message={form.errors.webserver} />
-              </FormField>
-              <FormField>
-                <Label htmlFor="database">Database</Label>
-                <Select value={form.data.database} onValueChange={(value) => form.setData('database', value)}>
-                  <SelectTrigger id="database">
-                    <SelectValue placeholder="Select database" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {page.props.configs.databases.map((value) => (
-                        <SelectItem key={`database-${value}`} value={value}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <InputError message={form.errors.database} />
-              </FormField>
-              <FormField>
-                <Label htmlFor="php">PHP</Label>
-                <Select value={form.data.php} onValueChange={(value) => form.setData('php', value)}>
-                  <SelectTrigger id="php">
-                    <SelectValue placeholder="Select PHP version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {page.props.configs.php_versions.map((value) => (
-                        <SelectItem key={`php-${value}`} value={value}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <InputError message={form.errors.php} />
-              </FormField>
-            </div>
           </FormFields>
         </Form>
         <SheetFooter>

@@ -6,8 +6,8 @@ use App\Enums\Webserver;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
-use App\SSH\Composer\Composer;
-use App\SSH\Git\Git;
+use App\SSH\OS\Composer;
+use App\SSH\OS\Git;
 use Illuminate\Validation\Rule;
 
 class PHPSite extends AbstractSiteType

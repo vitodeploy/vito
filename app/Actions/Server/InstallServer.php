@@ -8,53 +8,39 @@ use App\Exceptions\SSHConnectionError;
 use App\Exceptions\SSHError;
 use App\Facades\Notifier;
 use App\Models\Server;
-use App\Notifications\ServerInstallationFailed;
 use App\Notifications\ServerInstallationSucceed;
 use App\Services\PHP\PHP;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class InstallServer
 {
     protected Server $server;
 
+    /**
+     * @throws SSHError
+     */
     public function run(Server $server): void
     {
         $this->server = $server;
 
-        dispatch(/**
-         * @throws SSHError
-         */ function (): void {
-            $maxWait = 180;
-            while ($maxWait > 0) {
-                sleep(10);
-                $maxWait -= 10;
-                if (! $this->server->provider()->isRunning()) {
-                    continue;
-                }
-                try {
-                    $this->server->ssh()->connect();
-                    break;
-                } catch (SSHConnectionError) {
-                    // ignore
-                }
+        $maxWait = 180;
+        while ($maxWait > 0) {
+            if (! $this->server->provider()->isRunning()) {
+                continue;
             }
-            $this->install();
-            $this->server->update([
-                'status' => ServerStatus::READY,
-            ]);
-            Notifier::send($this->server, new ServerInstallationSucceed($this->server));
-        })
-            ->catch(function (Throwable $e): void {
-                $this->server->update([
-                    'status' => ServerStatus::INSTALLATION_FAILED,
-                ]);
-                Notifier::send($this->server, new ServerInstallationFailed($this->server));
-                Log::error('server-installation-error', [
-                    'error' => (string) $e,
-                ]);
-            })
-            ->onConnection('ssh');
+            try {
+                $this->server->ssh()->connect();
+                break;
+            } catch (SSHConnectionError) {
+                // ignore
+            }
+            sleep(10);
+            $maxWait -= 10;
+        }
+        $this->install();
+        $this->server->update([
+            'status' => ServerStatus::READY,
+        ]);
+        Notifier::send($this->server, new ServerInstallationSucceed($this->server));
     }
 
     /**
