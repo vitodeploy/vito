@@ -4,6 +4,7 @@ namespace App\Actions\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\Models\User;
+use App\NotificationChannels\Email;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -33,7 +34,7 @@ class AddChannel
             if (! $channel->provider()->connect()) {
                 $channel->delete();
 
-                if ($channel->provider === \App\Enums\NotificationChannel::EMAIL) {
+                if ($channel->provider === Email::id()) {
                     throw ValidationException::withMessages([
                         'email' => __('Could not connect! Make sure you configured `.env` file correctly.'),
                     ]);
@@ -64,7 +65,7 @@ class AddChannel
         $rules = [
             'provider' => [
                 'required',
-                Rule::in(config('core.notification_channels_providers')),
+                Rule::in(array_keys(config('notification-channel.providers'))),
             ],
             'name' => 'required',
         ];

@@ -3,10 +3,10 @@
 namespace Database\Factories;
 
 use App\Enums\OperatingSystem;
-use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
 use App\Enums\ServerType;
 use App\Models\Server;
+use App\ServerProviders\Custom;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,7 +28,7 @@ class ServerFactory extends Factory
             'port' => 22,
             'os' => OperatingSystem::UBUNTU22,
             'type' => ServerType::REGULAR,
-            'provider' => ServerProvider::CUSTOM,
+            'provider' => Custom::id(),
             'authentication' => [
                 'user' => 'vito',
                 'pass' => 'password',

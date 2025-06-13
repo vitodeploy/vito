@@ -14,6 +14,11 @@ class DigitalOcean extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.digitalocean.com/v2';
 
+    public static function id(): string
+    {
+        return 'digitalocean';
+    }
+
     public function createRules(array $input): array
     {
         return [

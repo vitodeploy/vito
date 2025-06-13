@@ -85,8 +85,6 @@ class HandleInertiaRequests extends Middleware
             'publicKeyText' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
             'projectServers' => $servers,
             'configs' => [
-                'notification_channels_providers' => config('core.notification_channels_providers'),
-                'notification_channels_providers_custom_fields' => config('core.notification_channels_providers_custom_fields'),
                 'operating_systems' => config('core.operating_systems'),
                 'service_versions' => config('core.service_versions'),
                 'service_types' => config('core.service_types'),
@@ -108,6 +106,9 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'storage_provider' => [
                     'providers' => config('storage-provider.providers'),
+                ],
+                'notification_channel' => [
+                    'providers' => config('notification-channel.providers'),
                 ],
             ],
             'ziggy' => fn (): array => [

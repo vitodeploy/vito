@@ -3,6 +3,9 @@
 namespace Tests\Feature\API;
 
 use App\Models\SourceControl;
+use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\Github;
+use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
@@ -137,11 +140,11 @@ class SourceControlsTest extends TestCase
     public static function data(): array
     {
         return [
-            ['github', ['token' => 'test']],
-            ['github', ['token' => 'test', 'global' => '1']],
-            ['gitlab', ['token' => 'test']],
-            ['gitlab', ['token' => 'test', 'url' => 'https://git.example.com/']],
-            ['bitbucket', ['username' => 'test', 'password' => 'test']],
+            [Github::id(), ['token' => 'test']],
+            [Github::id(), ['token' => 'test', 'global' => '1']],
+            [Gitlab::id(), ['token' => 'test']],
+            [Gitlab::id(), ['token' => 'test', 'url' => 'https://git.example.com/']],
+            [Bitbucket::id(), ['username' => 'test', 'password' => 'test']],
         ];
     }
 }

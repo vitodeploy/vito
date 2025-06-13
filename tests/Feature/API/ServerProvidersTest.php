@@ -2,7 +2,11 @@
 
 namespace Tests\Feature\API;
 
-use App\Enums\ServerProvider;
+use App\Models\ServerProvider;
+use App\ServerProviders\DigitalOcean;
+use App\ServerProviders\Hetzner;
+use App\ServerProviders\Linode;
+use App\ServerProviders\Vultr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
@@ -70,8 +74,8 @@ class ServerProvidersTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        /** @var \App\Models\ServerProvider $provider */
-        $provider = \App\Models\ServerProvider::factory()->create([
+        /** @var ServerProvider $provider */
+        $provider = ServerProvider::factory()->create([
             'user_id' => $this->user->id,
         ]);
 
@@ -90,8 +94,8 @@ class ServerProvidersTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        /** @var \App\Models\ServerProvider $provider */
-        $provider = \App\Models\ServerProvider::factory()->create([
+        /** @var ServerProvider $provider */
+        $provider = ServerProvider::factory()->create([
             'user_id' => $this->user->id,
             'provider' => $provider,
         ]);
@@ -108,8 +112,8 @@ class ServerProvidersTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        /** @var \App\Models\ServerProvider $provider */
-        $provider = \App\Models\ServerProvider::factory()->create([
+        /** @var ServerProvider $provider */
+        $provider = ServerProvider::factory()->create([
             'user_id' => $this->user->id,
             'provider' => $provider,
         ]);
@@ -141,32 +145,32 @@ class ServerProvidersTest extends TestCase
             //     ],
             // ],
             [
-                ServerProvider::LINODE,
+                Linode::id(),
                 [
                     'token' => 'token',
                 ],
             ],
             [
-                ServerProvider::LINODE,
+                Linode::id(),
                 [
                     'token' => 'token',
                     'global' => 1,
                 ],
             ],
             [
-                ServerProvider::DIGITALOCEAN,
+                DigitalOcean::id(),
                 [
                     'token' => 'token',
                 ],
             ],
             [
-                ServerProvider::VULTR,
+                Vultr::id(),
                 [
                     'token' => 'token',
                 ],
             ],
             [
-                ServerProvider::HETZNER,
+                Hetzner::id(),
                 [
                     'token' => 'token',
                 ],

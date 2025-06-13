@@ -34,7 +34,7 @@ class SiteTypeServiceProvider extends ServiceProvider
 
     private function php(): void
     {
-        RegisterSiteType::make('php')
+        RegisterSiteType::make(PHPSite::id())
             ->label('PHP')
             ->handler(PHPSite::class)
             ->form(DynamicForm::make([
@@ -67,7 +67,7 @@ class SiteTypeServiceProvider extends ServiceProvider
 
     private function phpBlank(): void
     {
-        RegisterSiteType::make('php-blank')
+        RegisterSiteType::make(PHPBlank::id())
             ->label('PHP Blank')
             ->handler(PHPBlank::class)
             ->form(DynamicForm::make([
@@ -85,7 +85,7 @@ class SiteTypeServiceProvider extends ServiceProvider
 
     private function laravel(): void
     {
-        RegisterSiteType::make('laravel')
+        RegisterSiteType::make(Laravel::id())
             ->label('Laravel')
             ->handler(Laravel::class)
             ->form(DynamicForm::make([
@@ -130,7 +130,7 @@ class SiteTypeServiceProvider extends ServiceProvider
 
     public function loadBalancer(): void
     {
-        RegisterSiteType::make('load-balancer')
+        RegisterSiteType::make(LoadBalancer::id())
             ->label('Load Balancer')
             ->handler(LoadBalancer::class)
             ->form(DynamicForm::make([
@@ -148,7 +148,7 @@ class SiteTypeServiceProvider extends ServiceProvider
 
     public function phpMyAdmin(): void
     {
-        RegisterSiteType::make('phpmyadmin')
+        RegisterSiteType::make(PHPMyAdmin::id())
             ->label('PHPMyAdmin')
             ->handler(PHPMyAdmin::class)
             ->form(DynamicForm::make([
@@ -161,7 +161,7 @@ class SiteTypeServiceProvider extends ServiceProvider
 
     public function wordpress(): void
     {
-        RegisterSiteType::make('wordpress')
+        RegisterSiteType::make(Wordpress::id())
             ->label('WordPress')
             ->handler(Wordpress::class)
             ->form(DynamicForm::make([

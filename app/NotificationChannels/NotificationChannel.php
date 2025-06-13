@@ -6,6 +6,8 @@ use App\Notifications\NotificationInterface;
 
 interface NotificationChannel
 {
+    public static function id(): string;
+
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>

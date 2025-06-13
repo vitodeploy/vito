@@ -14,6 +14,11 @@ class Linode extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.linode.com/v4';
 
+    public static function id(): string
+    {
+        return 'linode';
+    }
+
     public function createRules(array $input): array
     {
         return [

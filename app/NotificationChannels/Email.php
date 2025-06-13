@@ -10,6 +10,11 @@ use Throwable;
 
 class Email extends AbstractNotificationChannel
 {
+    public static function id(): string
+    {
+        return 'email';
+    }
+
     public function createRules(array $input): array
     {
         return [

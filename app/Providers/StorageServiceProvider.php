@@ -25,7 +25,7 @@ class StorageServiceProvider extends ServiceProvider
 
     private function local(): void
     {
-        RegisterStorageProvider::make('local')
+        RegisterStorageProvider::make(Local::id())
             ->label('Local')
             ->handler(Local::class)
             ->form(
@@ -40,7 +40,7 @@ class StorageServiceProvider extends ServiceProvider
 
     private function aws(): void
     {
-        RegisterStorageProvider::make('s3')
+        RegisterStorageProvider::make(S3::id())
             ->label('S3')
             ->handler(S3::class)
             ->form(
@@ -70,7 +70,7 @@ class StorageServiceProvider extends ServiceProvider
 
     private function dropbox(): void
     {
-        RegisterStorageProvider::make('dropbox')
+        RegisterStorageProvider::make(Dropbox::id())
             ->label('Dropbox')
             ->handler(Dropbox::class)
             ->form(
@@ -85,7 +85,7 @@ class StorageServiceProvider extends ServiceProvider
 
     private function ftp(): void
     {
-        RegisterStorageProvider::make('ftp')
+        RegisterStorageProvider::make(FTP::id())
             ->label('FTP')
             ->handler(FTP::class)
             ->form(

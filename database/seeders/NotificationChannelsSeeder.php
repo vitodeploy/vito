@@ -3,6 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\NotificationChannel;
+use App\NotificationChannels\Discord;
+use App\NotificationChannels\Email;
+use App\NotificationChannels\Slack;
+use App\NotificationChannels\Telegram;
 use Illuminate\Database\Seeder;
 
 class NotificationChannelsSeeder extends Seeder
@@ -11,7 +15,7 @@ class NotificationChannelsSeeder extends Seeder
     {
         NotificationChannel::factory()->create([
             'label' => 'Slack',
-            'provider' => \App\Enums\NotificationChannel::SLACK,
+            'provider' => Slack::id(),
             'data' => [
                 'webhook' => 'slack_webhook',
             ],
@@ -20,7 +24,7 @@ class NotificationChannelsSeeder extends Seeder
 
         NotificationChannel::factory()->create([
             'label' => 'Discord',
-            'provider' => \App\Enums\NotificationChannel::DISCORD,
+            'provider' => Discord::id(),
             'data' => [
                 'webhook' => 'discord_webhook',
             ],
@@ -29,7 +33,7 @@ class NotificationChannelsSeeder extends Seeder
 
         NotificationChannel::factory()->create([
             'label' => 'Telegram',
-            'provider' => \App\Enums\NotificationChannel::TELEGRAM,
+            'provider' => Telegram::id(),
             'data' => [
                 'token' => 'telegram_token',
                 'chat_id' => 'telegram_chat_id',
@@ -39,7 +43,7 @@ class NotificationChannelsSeeder extends Seeder
 
         NotificationChannel::factory()->create([
             'label' => 'Email',
-            'provider' => \App\Enums\NotificationChannel::EMAIL,
+            'provider' => Email::id(),
             'data' => [
                 'email' => 'email@vitodeploy.com',
             ],

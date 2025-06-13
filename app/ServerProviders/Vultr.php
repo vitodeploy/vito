@@ -16,6 +16,11 @@ class Vultr extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.vultr.com/v2';
 
+    public static function id(): string
+    {
+        return 'vultr';
+    }
+
     public function createRules(array $input): array
     {
         return [

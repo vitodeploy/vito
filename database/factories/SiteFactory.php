@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\SiteType;
 use App\Models\Site;
+use App\SiteTypes\Laravel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +17,7 @@ class SiteFactory extends Factory
     {
         return [
             'server_id' => 1,
-            'type' => SiteType::LARAVEL,
+            'type' => Laravel::id(),
             'domain' => 'test.com',
             'web_directory' => '/',
             'path' => '/home',

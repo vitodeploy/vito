@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\SiteType;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Enums\WorkerStatus;
@@ -11,6 +10,8 @@ use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Ssl;
 use App\Models\Worker;
+use App\SiteTypes\Laravel;
+use App\SiteTypes\Wordpress;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 
@@ -31,7 +32,7 @@ class SitesSeeder extends Seeder
                 'server_id' => $server->id,
                 'domain' => $server->project->name.'.com',
                 'source_control_id' => $sourceControls->random()->id,
-                'type' => SiteType::LARAVEL,
+                'type' => Laravel::id(),
                 'path' => '/home/vito/'.$server->project->name.'.com',
                 'aliases' => ['www.'.$server->project->name.'.com'],
             ]);
@@ -52,7 +53,7 @@ class SitesSeeder extends Seeder
             $blog = Site::factory()->create([
                 'server_id' => $server->id,
                 'domain' => 'blog.'.$server->project->name.'.com',
-                'type' => SiteType::WORDPRESS,
+                'type' => Wordpress::id(),
                 'path' => '/home/vito/blog.'.$server->project->name.'.com',
                 'aliases' => ['www.blog.'.$server->project->name.'.com'],
             ]);

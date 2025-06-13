@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\NotificationChannel;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerType;
 use App\Enums\SslType;
@@ -8,10 +7,6 @@ use App\Enums\UserRole;
 use App\Enums\Webserver;
 use App\Models\Server;
 use App\Models\Site;
-use App\NotificationChannels\Discord;
-use App\NotificationChannels\Email;
-use App\NotificationChannels\Slack;
-use App\NotificationChannels\Telegram;
 use App\ServerTypes\Database;
 use App\ServerTypes\Regular;
 use App\SSH\Services\Database\Mariadb;
@@ -453,29 +448,6 @@ return [
         ['127.0.0.1', 'localhost', '0.0.0.0'],
         explode(',', (string) env('RESTRICTED_IP_ADDRESSES', ''))
     ),
-
-    /*
-     * Notification channels
-     */
-    'notification_channels_providers' => [
-        NotificationChannel::SLACK,
-        NotificationChannel::DISCORD,
-        NotificationChannel::EMAIL,
-        NotificationChannel::TELEGRAM,
-    ],
-    'notification_channels_providers_class' => [
-        NotificationChannel::SLACK => Slack::class,
-        NotificationChannel::DISCORD => Discord::class,
-        NotificationChannel::EMAIL => Email::class,
-        NotificationChannel::TELEGRAM => Telegram::class,
-    ],
-    'notification_channels_providers_custom_fields' => [
-        NotificationChannel::SLACK => ['webhook_url'],
-        NotificationChannel::DISCORD => ['webhook_url'],
-        NotificationChannel::EMAIL => ['email'],
-        NotificationChannel::TELEGRAM => ['bot_token', 'chat_id'],
-    ],
-
 
     'ssl_types' => [
         SslType::LETSENCRYPT,

@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Enums\NotificationChannel;
+use App\Models\NotificationChannel;
+use App\NotificationChannels\Discord;
+use App\NotificationChannels\Email;
+use App\NotificationChannels\Slack;
+use App\NotificationChannels\Telegram;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Http;
@@ -19,16 +23,16 @@ class NotificationChannelsTest extends TestCase
         $this->actingAs($this->user);
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::EMAIL,
+            'provider' => Email::id(),
             'email' => 'email@example.com',
             'name' => 'Email',
             'global' => true,
         ])
             ->assertSessionDoesntHaveErrors();
 
-        /** @var \App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::EMAIL)
+        /** @var NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Email::id())
             ->where('label', 'Email')
             ->whereNull('project_id')
             ->first();
@@ -45,15 +49,15 @@ class NotificationChannelsTest extends TestCase
         $this->actingAs($this->user);
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::EMAIL,
+            'provider' => Email::id(),
             'email' => 'email@example.com',
             'name' => 'Email',
             'global' => true,
         ]);
 
-        /** @var ?\App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::EMAIL)
+        /** @var ?NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Email::id())
             ->where('label', 'Email')
             ->first();
 
@@ -67,15 +71,15 @@ class NotificationChannelsTest extends TestCase
         Http::fake();
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::SLACK,
+            'provider' => Slack::id(),
             'webhook_url' => 'https://hooks.slack.com/services/123/token',
             'name' => 'Slack',
         ])
             ->assertSessionDoesntHaveErrors();
 
-        /** @var \App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::SLACK)
+        /** @var NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Slack::id())
             ->first();
 
         $this->assertEquals('https://hooks.slack.com/services/123/token', $channel->data['webhook_url']);
@@ -91,7 +95,7 @@ class NotificationChannelsTest extends TestCase
         ]);
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::SLACK,
+            'provider' => Slack::id(),
             'webhook_url' => 'https://hooks.slack.com/services/123/token',
             'name' => 'Slack',
         ])
@@ -99,9 +103,9 @@ class NotificationChannelsTest extends TestCase
                 'provider' => 'Could not connect',
             ]);
 
-        /** @var ?\App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::SLACK)
+        /** @var ?NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Slack::id())
             ->first();
 
         $this->assertNull($channel);
@@ -114,15 +118,15 @@ class NotificationChannelsTest extends TestCase
         Http::fake();
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::DISCORD,
+            'provider' => Discord::id(),
             'webhook_url' => 'https://discord.com/api/webhooks/123/token',
             'name' => 'Discord',
         ])
             ->assertSessionDoesntHaveErrors();
 
-        /** @var \App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::DISCORD)
+        /** @var NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Discord::id())
             ->first();
 
         $this->assertEquals('https://discord.com/api/webhooks/123/token', $channel->data['webhook_url']);
@@ -138,7 +142,7 @@ class NotificationChannelsTest extends TestCase
         ]);
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::DISCORD,
+            'provider' => Discord::id(),
             'webhook_url' => 'https://discord.com/api/webhooks/123/token',
             'name' => 'Slack',
         ])
@@ -146,9 +150,9 @@ class NotificationChannelsTest extends TestCase
                 'provider' => 'Could not connect',
             ]);
 
-        /** @var ?\App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::DISCORD)
+        /** @var ?NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Discord::id())
             ->first();
 
         $this->assertNull($channel);
@@ -161,16 +165,16 @@ class NotificationChannelsTest extends TestCase
         Http::fake();
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::TELEGRAM,
+            'provider' => Telegram::id(),
             'bot_token' => 'token',
             'chat_id' => '123',
             'name' => 'Telegram',
         ])
             ->assertSessionDoesntHaveErrors();
 
-        /** @var \App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::TELEGRAM)
+        /** @var NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Telegram::id())
             ->first();
 
         $this->assertEquals('123', $channel->data['chat_id']);
@@ -187,7 +191,7 @@ class NotificationChannelsTest extends TestCase
         ]);
 
         $this->post(route('notification-channels.store'), [
-            'provider' => NotificationChannel::TELEGRAM,
+            'provider' => Telegram::id(),
             'bot_token' => 'token',
             'chat_id' => '123',
             'name' => 'Telegram',
@@ -196,9 +200,9 @@ class NotificationChannelsTest extends TestCase
                 'provider' => 'Could not connect',
             ]);
 
-        /** @var ?\App\Models\NotificationChannel $channel */
-        $channel = \App\Models\NotificationChannel::query()
-            ->where('provider', NotificationChannel::TELEGRAM)
+        /** @var ?NotificationChannel $channel */
+        $channel = NotificationChannel::query()
+            ->where('provider', Telegram::id())
             ->first();
 
         $this->assertNull($channel);
@@ -208,7 +212,7 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        \App\Models\NotificationChannel::factory()->create();
+        NotificationChannel::factory()->create();
 
         $this->get(route('notification-channels'))
             ->assertInertia(fn (AssertableInertia $page) => $page->component('notification-channels/index'));
@@ -218,7 +222,7 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $channel = \App\Models\NotificationChannel::factory()->create();
+        $channel = NotificationChannel::factory()->create();
 
         $this->delete(route('notification-channels.destroy', [
             'notificationChannel' => $channel->id,

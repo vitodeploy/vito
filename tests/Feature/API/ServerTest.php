@@ -4,10 +4,10 @@ namespace Tests\Feature\API;
 
 use App\Enums\Database;
 use App\Enums\OperatingSystem;
-use App\Enums\ServerProvider;
 use App\Enums\ServerType;
 use App\Enums\Webserver;
 use App\Facades\SSH;
+use App\ServerProviders\Custom;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -52,7 +52,7 @@ class ServerTest extends TestCase
         $this->json('POST', route('api.projects.servers.create', [
             'project' => $this->user->current_project_id,
         ]), [
-            'provider' => ServerProvider::CUSTOM,
+            'provider' => Custom::id(),
             'name' => 'test',
             'ip' => '1.1.1.1',
             'port' => '22',
@@ -77,7 +77,7 @@ class ServerTest extends TestCase
         $this->json('POST', route('api.projects.servers.create', [
             'project' => $this->user->current_project_id,
         ]), [
-            'provider' => ServerProvider::CUSTOM,
+            'provider' => Custom::id(),
             'name' => 'test',
             'ip' => '1.1.1.1',
             'port' => '22',

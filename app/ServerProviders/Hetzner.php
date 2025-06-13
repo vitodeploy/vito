@@ -15,6 +15,11 @@ class Hetzner extends AbstractProvider
 {
     protected string $apiUrl = 'https://api.hetzner.cloud/v1';
 
+    public static function id(): string
+    {
+        return 'hetzner';
+    }
+
     public function createRules(array $input): array
     {
         return [

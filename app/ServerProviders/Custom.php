@@ -10,6 +10,11 @@ use Illuminate\Validation\Rule;
 
 class Custom extends AbstractProvider
 {
+    public static function id(): string
+    {
+        return 'custom';
+    }
+
     public function createRules(array $input): array
     {
         return [

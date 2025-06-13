@@ -6,7 +6,7 @@ use App\Models\Site;
 
 class Laravel extends PHPSite
 {
-    public static function id() : string
+    public static function id(): string
     {
         return 'laravel';
     }

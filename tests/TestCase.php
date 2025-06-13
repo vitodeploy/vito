@@ -12,6 +12,7 @@ use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\User;
+use App\NotificationChannels\Email;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\File;
 
@@ -46,7 +47,7 @@ abstract class TestCase extends BaseTestCase
         $this->user->createDefaultProject();
 
         $this->notificationChannel = NotificationChannel::factory()->create([
-            'provider' => \App\Enums\NotificationChannel::EMAIL,
+            'provider' => Email::id(),
             'connected' => true,
             'data' => [
                 'email' => 'user@example.com',

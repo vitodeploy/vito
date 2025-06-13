@@ -6,16 +6,17 @@ use App\Enums\Database;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\PHP;
 use App\Enums\ServiceStatus;
-use App\Enums\SiteType;
 use App\Enums\Webserver;
 use App\Models\Server;
 use App\Models\Site;
+use App\SiteTypes\LoadBalancer;
+use App\SiteTypes\PHPBlank;
 
 trait PrepareLoadBalancer
 {
     private function prepare(): void
     {
-        $this->site->type = SiteType::LOAD_BALANCER;
+        $this->site->type = LoadBalancer::id();
         $this->site->type_data = [
             'method' => LoadBalancerMethod::ROUND_ROBIN,
         ];
@@ -38,7 +39,7 @@ trait PrepareLoadBalancer
                 'domain' => 'vito.test',
                 'aliases' => ['www.vito.test'],
                 'server_id' => $server->id,
-                'type' => SiteType::PHP_BLANK,
+                'type' => PHPBlank::id(),
                 'path' => '/home/vito/vito.test',
                 'web_directory' => '',
             ]);

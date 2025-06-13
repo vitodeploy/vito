@@ -4,11 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteStatus;
-use App\Enums\SiteType;
 use App\Facades\SSH;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\SiteTypes\Laravel;
+use App\SiteTypes\LoadBalancer;
 use App\SiteTypes\PHPBlank;
+use App\SiteTypes\PHPMyAdmin;
+use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -72,7 +75,7 @@ class SitesTest extends TestCase
     public function test_create_site_failed_due_to_source_control(int $status): void
     {
         $inputs = [
-            'type' => SiteType::LARAVEL,
+            'type' => Laravel::id(),
             'domain' => 'example.com',
             'aliases' => ['www.example.com'],
             'php_version' => '8.2',
@@ -340,7 +343,7 @@ class SitesTest extends TestCase
         return [
             [
                 [
-                    'type' => SiteType::LARAVEL,
+                    'type' => Laravel::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com', 'www2.example.com'],
                     'php_version' => '8.2',
@@ -352,7 +355,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::LARAVEL,
+                    'type' => Laravel::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com', 'www2.example.com'],
                     'php_version' => '8.2',
@@ -365,7 +368,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::WORDPRESS,
+                    'type' => Wordpress::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -382,7 +385,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::WORDPRESS,
+                    'type' => Wordpress::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -400,7 +403,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHP_BLANK,
+                    'type' => PHPBlank::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -409,7 +412,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHP_BLANK,
+                    'type' => PHPBlank::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -419,7 +422,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHPMYADMIN,
+                    'type' => PHPMyAdmin::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -428,7 +431,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::PHPMYADMIN,
+                    'type' => PHPMyAdmin::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'php_version' => '8.2',
@@ -438,7 +441,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => SiteType::LOAD_BALANCER,
+                    'type' => LoadBalancer::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'user' => 'example',

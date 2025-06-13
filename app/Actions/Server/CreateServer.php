@@ -3,7 +3,6 @@
 namespace App\Actions\Server;
 
 use App\Enums\FirewallRuleStatus;
-use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
 use App\Enums\ServerType;
 use App\Exceptions\SSHConnectionError;
@@ -13,6 +12,7 @@ use App\Models\Server;
 use App\Models\User;
 use App\Notifications\ServerInstallationFailed;
 use App\Notifications\ServerInstallationSucceed;
+use App\ServerProviders\Custom;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
@@ -139,7 +139,7 @@ class CreateServer
                 Rule::in(config('core.operating_systems')),
             ],
             'server_provider' => [
-                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] != ServerProvider::CUSTOM, [
+                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] != Custom::id(), [
                     'required',
                     Rule::exists('server_providers', 'id')->where(function (Builder $query) use ($project): void {
                         $query->where('project_id', $project->id)
@@ -148,13 +148,13 @@ class CreateServer
                 ]),
             ],
             'ip' => [
-                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM, [
+                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] == Custom::id(), [
                     'required',
                     new RestrictedIPAddressesRule,
                 ]),
             ],
             'port' => [
-                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] == ServerProvider::CUSTOM, [
+                Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] == Custom::id(), [
                     'required',
                     'numeric',
                     'min:1',
@@ -191,7 +191,7 @@ class CreateServer
             ! isset($input['provider']) ||
             ! isset($input['server_provider']) ||
             ! config('server-provider.providers.'.$input['provider']) ||
-            $input['provider'] == ServerProvider::CUSTOM
+            $input['provider'] == Custom::id()
         ) {
             return [];
         }

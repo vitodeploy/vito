@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\SourceControl;
+use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\Github;
+use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -38,7 +41,7 @@ class SourceControlsTest extends TestCase
             'url' => $customUrl,
         ]);
 
-        if (isset($input['global'])) {
+        if (isset($input['global']) && $input['global']) {
             $this->assertDatabaseHas('source_controls', [
                 'provider' => $provider,
                 'url' => $customUrl,
@@ -132,11 +135,11 @@ class SourceControlsTest extends TestCase
     public static function data(): array
     {
         return [
-            ['github', null, ['token' => 'test']],
-            ['github', null, ['token' => 'test', 'global' => '1']],
-            ['gitlab', null, ['token' => 'test']],
-            ['gitlab', 'https://git.example.com/', ['token' => 'test']],
-            ['bitbucket', null, ['username' => 'test', 'password' => 'test']],
+            [Github::id(), null, ['token' => 'test']],
+            [Github::id(), null, ['token' => 'test', 'global' => true]],
+            [Gitlab::id(), null, ['token' => 'test']],
+            [Gitlab::id(), 'https://git.example.com/', ['token' => 'test']],
+            [Bitbucket::id(), null, ['username' => 'test', 'password' => 'test']],
         ];
     }
 }

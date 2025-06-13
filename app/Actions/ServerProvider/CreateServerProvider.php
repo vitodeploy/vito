@@ -48,7 +48,7 @@ class CreateServerProvider
 
     private static function getProvider(string $name): ServerProviderContract
     {
-        $providerClass = config('server-provider.providers.'.$name. '.handler');
+        $providerClass = config('server-provider.providers.'.$name.'.handler');
         /** @var ServerProviderContract $provider */
         $provider = new $providerClass(new ServerProvider, new Server);
 

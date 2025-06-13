@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Http;
 
 class Slack extends AbstractNotificationChannel
 {
+    public static function id(): string
+    {
+        return 'slack';
+    }
+
     public function createRules(array $input): array
     {
         return [

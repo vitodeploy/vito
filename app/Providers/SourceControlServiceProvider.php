@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Plugins\RegisterSourceControl;
-use App\Plugins\RegisterStorageProvider;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
@@ -24,7 +23,7 @@ class SourceControlServiceProvider extends ServiceProvider
 
     private function github(): void
     {
-        RegisterSourceControl::make('github')
+        RegisterSourceControl::make(Github::id())
             ->label('Github')
             ->handler(Github::class)
             ->form(
@@ -39,7 +38,7 @@ class SourceControlServiceProvider extends ServiceProvider
 
     private function gitlab(): void
     {
-        RegisterSourceControl::make('gitlab')
+        RegisterSourceControl::make(Gitlab::id())
             ->label('Gitlab')
             ->handler(Gitlab::class)
             ->form(
@@ -57,7 +56,7 @@ class SourceControlServiceProvider extends ServiceProvider
 
     private function bitbucket(): void
     {
-        RegisterSourceControl::make('bitbucket')
+        RegisterSourceControl::make(Bitbucket::id())
             ->label('Bitbucket')
             ->handler(Bitbucket::class)
             ->form(

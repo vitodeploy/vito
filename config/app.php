@@ -197,6 +197,7 @@ return [
         App\Providers\ServerServiceProvider::class,
         App\Providers\StorageServiceProvider::class,
         App\Providers\SourceControlServiceProvider::class,
+        App\Providers\NotificationChannelServiceProvider::class,
     ],
 
     /*

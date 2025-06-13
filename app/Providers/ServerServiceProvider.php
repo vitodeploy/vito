@@ -30,7 +30,7 @@ class ServerServiceProvider extends ServiceProvider
 
     private function custom(): void
     {
-        RegisterServerProvider::make('custom')
+        RegisterServerProvider::make(Custom::id())
             ->label('Custom')
             ->handler(Custom::class)
             ->register();
@@ -38,7 +38,7 @@ class ServerServiceProvider extends ServiceProvider
 
     private function aws(): void
     {
-        RegisterServerProvider::make('aws')
+        RegisterServerProvider::make(AWS::id())
             ->label('AWS')
             ->handler(AWS::class)
             ->form(
@@ -61,7 +61,7 @@ class ServerServiceProvider extends ServiceProvider
 
     private function hetzner(): void
     {
-        RegisterServerProvider::make('hetzner')
+        RegisterServerProvider::make(Hetzner::id())
             ->label('Hetzner')
             ->handler(Hetzner::class)
             ->form(
@@ -76,7 +76,7 @@ class ServerServiceProvider extends ServiceProvider
 
     private function digitalOcean(): void
     {
-        RegisterServerProvider::make('digitalocean')
+        RegisterServerProvider::make(DigitalOcean::id())
             ->label('DigitalOcean')
             ->handler(DigitalOcean::class)
             ->form(
@@ -91,7 +91,7 @@ class ServerServiceProvider extends ServiceProvider
 
     private function linode(): void
     {
-        RegisterServerProvider::make('linode')
+        RegisterServerProvider::make(Linode::id())
             ->label('Linode')
             ->handler(Linode::class)
             ->form(
@@ -106,7 +106,7 @@ class ServerServiceProvider extends ServiceProvider
 
     private function vultr(): void
     {
-        RegisterServerProvider::make('vultr')
+        RegisterServerProvider::make(Vultr::id())
             ->label('Vultr')
             ->handler(Vultr::class)
             ->form(

@@ -7,7 +7,6 @@ use App\Actions\Server\RebootServer;
 use App\Actions\Server\Update;
 use App\Enums\Database;
 use App\Enums\PHP;
-use App\Enums\ServerProvider;
 use App\Enums\Webserver;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerResource;
@@ -45,7 +44,7 @@ class ServerController extends Controller
     #[Post('/', name: 'api.projects.servers.create', middleware: 'ability:write')]
     #[Endpoint(title: 'create', description: 'Create a new server.')]
     #[BodyParam(name: 'provider', description: 'The server provider type', required: true)]
-    #[BodyParam(name: 'server_provider', description: 'If the provider is not custom, the ID of the server provider profile', enum: [ServerProvider::CUSTOM, ServerProvider::HETZNER, ServerProvider::DIGITALOCEAN, ServerProvider::LINODE, ServerProvider::VULTR])]
+    #[BodyParam(name: 'server_provider', description: 'If the provider is not custom, the ID of the server provider profile')]
     #[BodyParam(name: 'region', description: 'Provider region if the provider is not custom')]
     #[BodyParam(name: 'plan', description: 'Provider plan if the provider is not custom')]
     #[BodyParam(name: 'ip', description: 'SSH IP address if the provider is custom')]

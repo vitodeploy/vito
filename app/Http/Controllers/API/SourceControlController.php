@@ -9,8 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Project;
 use App\Models\SourceControl;
-use App\SourceControlProviders\Github;
-use App\SourceControlProviders\Gitlab;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;

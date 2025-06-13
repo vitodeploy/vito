@@ -4,6 +4,8 @@ namespace App\ServerProviders;
 
 interface ServerProvider
 {
+    public static function id(): string;
+
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>

@@ -24,7 +24,7 @@ export default function NotificationChannels() {
         <div className="flex items-start justify-between">
           <Heading title="Notification Channels" description="Here you can manage all of the notification channel connectinos" />
           <div className="flex items-center gap-2">
-            <ConnectNotificationChannel providers={page.props.configs.notification_channels_providers}>
+            <ConnectNotificationChannel>
               <Button>Connect</Button>
             </ConnectNotificationChannel>
           </div>

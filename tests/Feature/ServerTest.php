@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\Database;
 use App\Enums\OperatingSystem;
-use App\Enums\ServerProvider;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\Webserver;
 use App\Facades\SSH;
+use App\Models\ServerProvider;
 use App\NotificationChannels\Email\NotificationMail;
+use App\ServerProviders\Custom;
+use App\ServerProviders\Hetzner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -26,7 +28,7 @@ class ServerTest extends TestCase
         SSH::fake('Active: active'); // fake output for service installations
 
         $this->post(route('servers.store', [
-            'provider' => ServerProvider::CUSTOM,
+            'provider' => Custom::id(),
             'name' => 'test',
             'ip' => '1.1.1.1',
             'port' => '22',
@@ -82,7 +84,7 @@ class ServerTest extends TestCase
         SSH::fake('Active: active'); // fake output for service installations
 
         $this->post(route('servers.store', [
-            'provider' => ServerProvider::CUSTOM,
+            'provider' => Custom::id(),
             'name' => 'caddy-test',
             'ip' => '2.2.2.2',
             'port' => '22',
@@ -156,16 +158,16 @@ class ServerTest extends TestCase
 
         $this->actingAs($this->user);
 
-        $provider = \App\Models\ServerProvider::factory()->create([
+        $provider = ServerProvider::factory()->create([
             'user_id' => $this->user->id,
-            'provider' => ServerProvider::HETZNER,
+            'provider' => Hetzner::id(),
             'credentials' => [
                 'token' => 'token',
             ],
         ]);
 
         $this->server->update([
-            'provider' => ServerProvider::HETZNER,
+            'provider' => Hetzner::id(),
             'provider_id' => $provider->id,
             'provider_data' => [
                 'hetzner_id' => 1,

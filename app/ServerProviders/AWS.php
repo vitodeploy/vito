@@ -15,6 +15,11 @@ class AWS extends AbstractProvider
 {
     protected Ec2Client $ec2Client;
 
+    public static function id(): string
+    {
+        return 'aws';
+    }
+
     public function createRules(array $input): array
     {
         return [
