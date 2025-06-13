@@ -6,7 +6,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use App\Models\Service;
-use App\SSH\Services\Firewall\Firewall;
+use App\Services\Firewall\Firewall;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 

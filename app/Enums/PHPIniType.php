@@ -4,7 +4,7 @@ namespace App\Enums;
 
 final class PHPIniType
 {
-    const CLI = 'cli';
+    const string CLI = 'cli';
 
-    const FPM = 'fpm';
+    const string FPM = 'fpm';
 }

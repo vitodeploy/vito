@@ -24,7 +24,7 @@ class SiteResource extends JsonResource
             'domain' => $this->domain,
             'aliases' => $this->aliases,
             'web_directory' => $this->web_directory,
-            'webserver' => $this->webserver()->name(),
+            'webserver' => $this->webserver()->id(),
             'path' => $this->path,
             'php_version' => $this->php_version,
             'repository' => $this->repository,

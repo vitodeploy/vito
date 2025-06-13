@@ -4,9 +4,9 @@ namespace App\Enums;
 
 final class DeploymentStatus
 {
-    const DEPLOYING = 'deploying';
+    const string DEPLOYING = 'deploying';
 
-    const FINISHED = 'finished';
+    const string FINISHED = 'finished';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 }

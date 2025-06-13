@@ -17,7 +17,12 @@ class Install
     {
         Validator::make($input, self::rules($input))->validate();
 
-        $input['type'] = config('core.service_types')[$input['name']];
+        $name = $input['name'];
+        $input['type'] = config("service.services.$name.type");
+
+        if (! $input['type']) {
+            throw new \InvalidArgumentException("Service type is not defined for $name");
+        }
 
         $service = new Service([
             'server_id' => $server->id,
@@ -55,14 +60,14 @@ class Install
         $rules = [
             'name' => [
                 'required',
-                Rule::in(array_keys(config('core.service_types'))),
+                Rule::in(array_keys(config('service.services'))),
             ],
             'version' => [
                 'required',
             ],
         ];
         if (isset($input['name'])) {
-            $rules['version'][] = Rule::in(config("core.service_versions.{$input['name']}"));
+            $rules['version'][] = Rule::in(config("service.services.{$input['name']}.versions", []));
         }
 
         return $rules;

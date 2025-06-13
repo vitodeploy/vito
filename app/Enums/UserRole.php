@@ -4,7 +4,7 @@ namespace App\Enums;
 
 final class UserRole
 {
-    const USER = 'user';
+    const string USER = 'user';
 
-    const ADMIN = 'admin';
+    const string ADMIN = 'admin';
 }

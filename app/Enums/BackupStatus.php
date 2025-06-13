@@ -4,11 +4,11 @@ namespace App\Enums;
 
 final class BackupStatus
 {
-    const RUNNING = 'running';
+    const string RUNNING = 'running';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 
-    const STOPPED = 'stopped';
+    const string STOPPED = 'stopped';
 }

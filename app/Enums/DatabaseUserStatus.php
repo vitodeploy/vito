@@ -4,11 +4,11 @@ namespace App\Enums;
 
 final class DatabaseUserStatus
 {
-    const READY = 'ready';
+    const string READY = 'ready';
 
-    const CREATING = 'creating';
+    const string CREATING = 'creating';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 }

@@ -6,7 +6,7 @@ use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\Service;
-use App\SSH\Services\PHP\PHP;
+use App\Services\PHP\PHP;
 use Illuminate\Validation\ValidationException;
 
 class ChangeDefaultCli

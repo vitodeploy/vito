@@ -4,11 +4,11 @@ namespace App\Enums;
 
 final class SiteStatus
 {
-    const READY = 'ready';
+    const string READY = 'ready';
 
-    const INSTALLING = 'installing';
+    const string INSTALLING = 'installing';
 
-    const INSTALLATION_FAILED = 'installation_failed';
+    const string INSTALLATION_FAILED = 'installation_failed';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 }

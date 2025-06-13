@@ -5,15 +5,16 @@ namespace App\Models;
 use App\Actions\Service\Manage;
 use App\Enums\ServiceStatus;
 use App\Exceptions\ServiceInstallationFailed;
-use App\SSH\Services\Firewall\Firewall;
-use App\SSH\Services\PHP\PHP;
-use App\SSH\Services\ProcessManager\ProcessManager;
-use App\SSH\Services\ServiceInterface;
-use App\SSH\Services\Webserver\Webserver;
+use App\Services\Firewall\Firewall;
+use App\Services\PHP\PHP;
+use App\Services\ProcessManager\ProcessManager;
+use App\Services\ServiceInterface;
+use App\Services\Webserver\Webserver;
 use Database\Factories\ServiceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 /**
  * @property int $server_id
@@ -50,17 +51,6 @@ class Service extends AbstractModel
         'is_default' => 'boolean',
     ];
 
-    public static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (Service $service): void {
-            if (array_key_exists($service->name, config('core.service_units'))) {
-                $service->unit = config('core.service_units')[$service->name][$service->server->os][$service->version];
-            }
-        });
-    }
-
     /**
      * @var array<string, string>
      */
@@ -87,9 +77,13 @@ class Service extends AbstractModel
         return $this->belongsTo(Server::class);
     }
 
-    public function handler(): ServiceInterface|Webserver|PHP|Firewall|\App\SSH\Services\Database\Database|ProcessManager
+    public function handler(): ServiceInterface|Webserver|PHP|Firewall|\App\Services\Database\Database|ProcessManager
     {
-        $handler = config('core.service_handlers')[$this->name];
+        $handler = config("service.services.{$this->name}.handler");
+
+        if (! $handler) {
+            throw new InvalidArgumentException("Service handler for {$this->name} is not defined.");
+        }
 
         /** @var ServiceInterface $service */
         $service = new $handler($this);
@@ -109,26 +103,26 @@ class Service extends AbstractModel
 
     public function start(): void
     {
-        $this->unit && app(Manage::class)->start($this);
+        $this->handler()->unit() && app(Manage::class)->start($this);
     }
 
     public function stop(): void
     {
-        $this->unit && app(Manage::class)->stop($this);
+        $this->handler()->unit() && app(Manage::class)->stop($this);
     }
 
     public function restart(): void
     {
-        $this->unit && app(Manage::class)->restart($this);
+        $this->handler()->unit() && app(Manage::class)->restart($this);
     }
 
     public function enable(): void
     {
-        $this->unit && app(Manage::class)->enable($this);
+        $this->handler()->unit() && app(Manage::class)->enable($this);
     }
 
     public function disable(): void
     {
-        $this->unit && app(Manage::class)->disable($this);
+        $this->handler()->unit() && app(Manage::class)->disable($this);
     }
 }

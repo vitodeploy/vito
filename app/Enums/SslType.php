@@ -4,7 +4,7 @@ namespace App\Enums;
 
 final class SslType
 {
-    const LETSENCRYPT = 'letsencrypt';
+    const string LETSENCRYPT = 'letsencrypt';
 
-    const CUSTOM = 'custom';
+    const string CUSTOM = 'custom';
 }

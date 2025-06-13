@@ -4,7 +4,7 @@ namespace App\Actions\Site;
 
 use App\Models\Service;
 use App\Models\Site;
-use App\SSH\Services\Webserver\Webserver;
+use App\Services\Webserver\Webserver;
 use App\ValidationRules\DomainRule;
 
 class UpdateAliases

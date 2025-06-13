@@ -4,11 +4,11 @@ namespace App\Enums;
 
 final class SslStatus
 {
-    const CREATED = 'created';
+    const string CREATED = 'created';
 
-    const CREATING = 'creating';
+    const string CREATING = 'creating';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 }

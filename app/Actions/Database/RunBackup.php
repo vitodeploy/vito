@@ -7,7 +7,7 @@ use App\Enums\BackupStatus;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Service;
-use App\SSH\Services\Database\Database;
+use App\Services\Database\Database;
 use Illuminate\Support\Str;
 
 class RunBackup

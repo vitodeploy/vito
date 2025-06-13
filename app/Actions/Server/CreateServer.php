@@ -36,7 +36,7 @@ class CreateServer
             'project_id' => $project->id,
             'user_id' => $creator->id,
             'name' => $input['name'],
-            'ssh_user' => data_get(config('server-provider.providers'), $input['provider'].'.default_users.'.$input['os'], 'root'),
+            'ssh_user' => data_get(config('server-provider.providers'), $input['provider'].'.default_user', 'root'),
             'ip' => $input['ip'] ?? '',
             'port' => $input['port'] ?? 22,
             'os' => $input['os'],

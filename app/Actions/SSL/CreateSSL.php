@@ -8,7 +8,7 @@ use App\Models\ServerLog;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\Ssl;
-use App\SSH\Services\Webserver\Webserver;
+use App\Services\Webserver\Webserver;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;

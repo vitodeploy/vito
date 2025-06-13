@@ -4,17 +4,17 @@ namespace App\Enums;
 
 final class CronjobStatus
 {
-    const CREATING = 'creating';
+    const string CREATING = 'creating';
 
-    const READY = 'ready';
+    const string READY = 'ready';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 
-    const ENABLING = 'enabling';
+    const string ENABLING = 'enabling';
 
-    const DISABLING = 'disabling';
+    const string DISABLING = 'disabling';
 
-    const UPDATING = 'updating';
+    const string UPDATING = 'updating';
 
-    const DISABLED = 'disabled';
+    const string DISABLED = 'disabled';
 }

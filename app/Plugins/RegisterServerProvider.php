@@ -6,15 +6,12 @@ use App\DTOs\DynamicForm;
 
 class RegisterServerProvider
 {
-    /**
-     * @param  array<string, string>  $defaultUsers  default ssh user per OS
-     */
     public function __construct(
         private string $name,
         private string $label = '',
         private string $handler = '',
         private ?DynamicForm $form = null,
-        private array $defaultUsers = [],
+        private string $defaultUser = '',
     ) {}
 
     public static function make(string $name): self
@@ -50,12 +47,9 @@ class RegisterServerProvider
         return $this;
     }
 
-    /**
-     * @param  array<string, string>  $defaultUsers
-     */
-    public function defaultUsers(array $defaultUsers): self
+    public function defaultUser(string $defaultUser): self
     {
-        $this->defaultUsers = $defaultUsers;
+        $this->defaultUser = $defaultUser;
 
         return $this;
     }
@@ -68,7 +62,7 @@ class RegisterServerProvider
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
-            'default_users' => $this->defaultUsers,
+            'default_user' => $this->defaultUser,
         ];
 
         config(['server-provider.providers' => $providers]);

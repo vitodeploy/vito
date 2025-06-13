@@ -5,7 +5,7 @@ namespace App\Actions\Database;
 use App\Enums\DatabaseStatus;
 use App\Models\Server;
 use App\Models\Service;
-use App\SSH\Services\Database\Database;
+use App\Services\Database\Database;
 
 class SyncDatabases
 {

@@ -4,9 +4,9 @@ namespace App\Enums;
 
 final class SshKeyStatus
 {
-    const ADDING = 'adding';
+    const string ADDING = 'adding';
 
-    const ADDED = 'added';
+    const string ADDED = 'added';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 }

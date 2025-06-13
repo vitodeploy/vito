@@ -5,8 +5,8 @@ namespace App\Actions\Site;
 use App\Exceptions\SSHError;
 use App\Models\Service;
 use App\Models\Site;
-use App\SSH\Services\PHP\PHP;
-use App\SSH\Services\Webserver\Webserver;
+use App\Services\PHP\PHP;
+use App\Services\Webserver\Webserver;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 

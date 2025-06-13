@@ -6,7 +6,7 @@ use App\Enums\RedirectStatus;
 use App\Models\Redirect;
 use App\Models\Service;
 use App\Models\Site;
-use App\SSH\Services\Webserver\Webserver;
+use App\Services\Webserver\Webserver;
 
 class DeleteRedirect
 {

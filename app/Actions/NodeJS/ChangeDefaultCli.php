@@ -6,7 +6,7 @@ use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\Service;
-use App\SSH\Services\NodeJS\NodeJS;
+use App\Services\NodeJS\NodeJS;
 use Illuminate\Validation\ValidationException;
 
 class ChangeDefaultCli

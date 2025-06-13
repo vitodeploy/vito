@@ -4,19 +4,19 @@ namespace App\Enums;
 
 final class WorkerStatus
 {
-    const RUNNING = 'running';
+    const string RUNNING = 'running';
 
-    const CREATING = 'creating';
+    const string CREATING = 'creating';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 
-    const STARTING = 'starting';
+    const string STARTING = 'starting';
 
-    const STOPPING = 'stopping';
+    const string STOPPING = 'stopping';
 
-    const RESTARTING = 'restarting';
+    const string RESTARTING = 'restarting';
 
-    const STOPPED = 'stopped';
+    const string STOPPED = 'stopped';
 }

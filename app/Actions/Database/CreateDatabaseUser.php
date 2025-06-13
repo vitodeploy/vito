@@ -6,7 +6,7 @@ use App\Enums\DatabaseUserStatus;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Models\Service;
-use App\SSH\Services\Database\Database;
+use App\Services\Database\Database;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;

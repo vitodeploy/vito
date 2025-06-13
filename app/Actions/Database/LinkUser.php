@@ -39,7 +39,7 @@ class LinkUser
         /** @var Service $service */
         $service = $databaseUser->server->database();
 
-        /** @var \App\SSH\Services\Database\Database $handler */
+        /** @var \App\Services\Database\Database $handler */
         $handler = $service->handler();
 
         // Unlink the user from all databases

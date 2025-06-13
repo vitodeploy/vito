@@ -13,7 +13,7 @@ class DeleteDatabase
     {
         /** @var Service $service */
         $service = $server->database();
-        /** @var \App\SSH\Services\Database\Database $handler */
+        /** @var \App\Services\Database\Database $handler */
         $handler = $service->handler();
         $handler->delete($database->name);
         $database->delete();

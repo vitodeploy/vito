@@ -4,13 +4,13 @@ namespace App\Enums;
 
 final class ServerStatus
 {
-    const READY = 'ready';
+    const string READY = 'ready';
 
-    const INSTALLING = 'installing';
+    const string INSTALLING = 'installing';
 
-    const INSTALLATION_FAILED = 'installation_failed';
+    const string INSTALLATION_FAILED = 'installation_failed';
 
-    const DISCONNECTED = 'disconnected';
+    const string DISCONNECTED = 'disconnected';
 
-    const UPDATING = 'updating';
+    const string UPDATING = 'updating';
 }

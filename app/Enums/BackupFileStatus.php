@@ -4,17 +4,17 @@ namespace App\Enums;
 
 final class BackupFileStatus
 {
-    const CREATED = 'created';
+    const string CREATED = 'created';
 
-    const CREATING = 'creating';
+    const string CREATING = 'creating';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 
-    const RESTORING = 'restoring';
+    const string RESTORING = 'restoring';
 
-    const RESTORED = 'restored';
+    const string RESTORED = 'restored';
 
-    const RESTORE_FAILED = 'restore_failed';
+    const string RESTORE_FAILED = 'restore_failed';
 }

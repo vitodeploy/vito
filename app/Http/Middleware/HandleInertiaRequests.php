@@ -86,8 +86,6 @@ class HandleInertiaRequests extends Middleware
             'projectServers' => $servers,
             'configs' => [
                 'operating_systems' => config('core.operating_systems'),
-                'service_versions' => config('core.service_versions'),
-                'service_types' => config('core.service_types'),
                 'colors' => config('core.colors'),
                 'webservers' => config('core.webservers'),
                 'databases' => config('core.databases'),
@@ -109,6 +107,9 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'notification_channel' => [
                     'providers' => config('notification-channel.providers'),
+                ],
+                'service' => [
+                    'services' => config('service.services'),
                 ],
             ],
             'ziggy' => fn (): array => [

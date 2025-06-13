@@ -84,7 +84,7 @@ class Enable extends Action
 
     private function getVHost(): string
     {
-        $webserver = $this->site->webserver()->name();
+        $webserver = $this->site->webserver()->id();
 
         if ($webserver === Webserver::NGINX) {
             return view('ssh.services.webserver.nginx.vhost', [

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\WorkerStatus;
-use App\SSH\Services\ProcessManager\ProcessManager;
+use App\Services\ProcessManager\ProcessManager;
 use Database\Factories\WorkerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

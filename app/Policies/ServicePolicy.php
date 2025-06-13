@@ -38,26 +38,26 @@ class ServicePolicy
 
     public function start(User $user, Service $service): bool
     {
-        return $this->update($user, $service) && $service->unit;
+        return $this->update($user, $service);
     }
 
     public function stop(User $user, Service $service): bool
     {
-        return $this->update($user, $service) && $service->unit;
+        return $this->update($user, $service);
     }
 
     public function restart(User $user, Service $service): bool
     {
-        return $this->update($user, $service) && $service->unit;
+        return $this->update($user, $service);
     }
 
     public function disable(User $user, Service $service): bool
     {
-        return $this->update($user, $service) && $service->unit;
+        return $this->update($user, $service);
     }
 
     public function enable(User $user, Service $service): bool
     {
-        return $this->update($user, $service) && $service->unit;
+        return $this->update($user, $service);
     }
 }

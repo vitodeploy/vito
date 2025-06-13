@@ -73,9 +73,9 @@ export default function InstallService({ name, children }: { name?: string; chil
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {Object.entries(page.props.configs.service_types).map(([key]) => (
+                      {Object.entries(page.props.configs.service.services).map(([key, service]) => (
                         <SelectItem key={`service-${key}`} value={key}>
-                          {key}
+                          {service.label}
                         </SelectItem>
                       ))}
                     </SelectGroup>
@@ -95,7 +95,7 @@ export default function InstallService({ name, children }: { name?: string; chil
                 <SelectContent>
                   <SelectGroup>
                     {form.data.name &&
-                      page.props.configs.service_versions[form.data.name].map((version) => (
+                      page.props.configs.service.services[form.data.name].versions.map((version) => (
                         <SelectItem key={`version-${form.data.name}-${version}`} value={version}>
                           {version}
                         </SelectItem>

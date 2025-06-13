@@ -5,7 +5,7 @@ namespace App\ServerTypes;
 use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
 use App\Models\Server;
-use App\SSH\Services\PHP\PHP;
+use App\Services\PHP\PHP;
 
 abstract class AbstractType implements ServerType
 {

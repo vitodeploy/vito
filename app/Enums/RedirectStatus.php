@@ -4,11 +4,11 @@ namespace App\Enums;
 
 final class RedirectStatus
 {
-    const CREATING = 'creating';
+    const string CREATING = 'creating';
 
-    const READY = 'ready';
+    const string READY = 'ready';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 }

@@ -4,27 +4,27 @@ namespace App\Enums;
 
 final class ServiceStatus
 {
-    const READY = 'ready';
+    const string READY = 'ready';
 
-    const INSTALLING = 'installing';
+    const string INSTALLING = 'installing';
 
-    const INSTALLATION_FAILED = 'installation_failed';
+    const string INSTALLATION_FAILED = 'installation_failed';
 
-    const UNINSTALLING = 'uninstalling';
+    const string UNINSTALLING = 'uninstalling';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 
-    const STARTING = 'starting';
+    const string STARTING = 'starting';
 
-    const STOPPING = 'stopping';
+    const string STOPPING = 'stopping';
 
-    const RESTARTING = 'restarting';
+    const string RESTARTING = 'restarting';
 
-    const STOPPED = 'stopped';
+    const string STOPPED = 'stopped';
 
-    const ENABLING = 'enabling';
+    const string ENABLING = 'enabling';
 
-    const DISABLING = 'disabling';
+    const string DISABLING = 'disabling';
 
-    const DISABLED = 'disabled';
+    const string DISABLED = 'disabled';
 }

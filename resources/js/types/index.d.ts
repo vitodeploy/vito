@@ -38,9 +38,6 @@ export interface Configs {
   service_versions: {
     [service: string]: string[];
   };
-  service_types: {
-    [service: string]: string;
-  };
   colors: string[];
   webservers: string[];
   databases: string[];
@@ -84,6 +81,17 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+      };
+    };
+  };
+  service: {
+    services: {
+      [name: string]: {
+        label: string;
+        type: string;
+        handler: string;
+        form?: DynamicFieldConfig[];
+        versions: string[];
       };
     };
   };

@@ -4,13 +4,13 @@ namespace App\Enums;
 
 final class FirewallRuleStatus
 {
-    const CREATING = 'creating';
+    const string CREATING = 'creating';
 
-    const UPDATING = 'updating';
+    const string UPDATING = 'updating';
 
-    const READY = 'ready';
+    const string READY = 'ready';
 
-    const DELETING = 'deleting';
+    const string DELETING = 'deleting';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 }

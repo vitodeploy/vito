@@ -5,7 +5,7 @@ namespace App\Actions\Worker;
 use App\Enums\WorkerStatus;
 use App\Models\Service;
 use App\Models\Worker;
-use App\SSH\Services\ProcessManager\ProcessManager;
+use App\Services\ProcessManager\ProcessManager;
 
 class ManageWorker
 {

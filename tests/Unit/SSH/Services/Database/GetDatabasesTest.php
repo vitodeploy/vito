@@ -3,7 +3,7 @@
 namespace Tests\Unit\SSH\Services\Database;
 
 use App\Facades\SSH;
-use App\SSH\Services\Database\Database;
+use App\Services\Database\Database;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

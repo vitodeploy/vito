@@ -28,7 +28,7 @@ class RestoreBackup
         dispatch(function () use ($backupFile, $database): void {
             /** @var Service $service */
             $service = $database->server->database();
-            /** @var \App\SSH\Services\Database\Database $databaseHandler */
+            /** @var \App\Services\Database\Database $databaseHandler */
             $databaseHandler = $service->handler();
             $databaseHandler->restoreBackup($backupFile, $database->name);
             $backupFile->status = BackupFileStatus::RESTORED;

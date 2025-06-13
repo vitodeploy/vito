@@ -29,7 +29,7 @@ class CreateDatabase
         /** @var Service $service */
         $service = $server->database();
 
-        /** @var \App\SSH\Services\Database\Database $databaseHandler */
+        /** @var \App\Services\Database\Database $databaseHandler */
         $databaseHandler = $service->handler();
         $databaseHandler->create($database->name, $database->charset, $database->collation);
         $database->status = DatabaseStatus::READY;

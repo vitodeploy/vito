@@ -4,9 +4,9 @@ namespace App\Enums;
 
 final class ScriptExecutionStatus
 {
-    const EXECUTING = 'executing';
+    const string EXECUTING = 'executing';
 
-    const COMPLETED = 'completed';
+    const string COMPLETED = 'completed';
 
-    const FAILED = 'failed';
+    const string FAILED = 'failed';
 }

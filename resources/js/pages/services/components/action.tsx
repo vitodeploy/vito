@@ -15,6 +15,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
+import InputError from '@/components/ui/input-error';
 
 export function Action({ type, service }: { type: 'start' | 'stop' | 'restart' | 'enable' | 'disable'; service: Service }) {
   const [open, setOpen] = useState(false);
@@ -41,7 +42,12 @@ export function Action({ type, service }: { type: 'start' | 'stop' | 'restart' |
           </DialogTitle>
           <DialogDescription className="sr-only">{type} service</DialogDescription>
         </DialogHeader>
-        <p className="p-4">Are you sure you want to {type} the service?</p>
+        <div className="space-y-2 p-4">
+          <p>Are you sure you want to {type} the service?</p>
+          {Object.entries(form.errors).map(([key, value]) => (
+            <InputError key={key} message={value} />
+          ))}
+        </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
