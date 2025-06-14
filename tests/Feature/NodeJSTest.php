@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\NodeJS;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Service;
@@ -25,7 +24,7 @@ class NodeJSTest extends TestCase
             'type' => 'nodejs',
             'type_data' => [],
             'name' => 'nodejs',
-            'version' => NodeJS::V16,
+            'version' => '16',
             'status' => ServiceStatus::READY,
             'is_default' => false,
         ]);
@@ -34,7 +33,7 @@ class NodeJSTest extends TestCase
             'server' => $this->server->id,
             'service' => $service->id,
         ]), [
-            'version' => NodeJS::V16,
+            'version' => '16',
         ])
             ->assertSessionDoesntHaveErrors();
 

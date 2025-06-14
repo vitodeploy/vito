@@ -101,11 +101,19 @@ class Caddy extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = []): void
+    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = []): void
     {
+        if (! $vhost) {
+            $vhost = $this->getVHost($site);
+        }
+
+        if (! $vhost || ! preg_match('/#\[main]/', $vhost)) {
+            $vhost = $this->generateVhost($site);
+        }
+
         $this->service->server->ssh()->write(
             '/etc/caddy/sites-available/'.$site->domain,
-            $vhost ?? $this->generateVhost($site),
+            format_nginx_config($this->getUpdatedVHost($site, $vhost, $replace, $regenerate, $append)),
             'root'
         );
 
@@ -197,12 +205,5 @@ class Caddy extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
-    }
-
-    private function generateVhost(Site $site): string
-    {
-        $vhost = $site->type()->vhost(\App\Enums\Webserver::CADDY);
-
-        return format_nginx_config($vhost);
     }
 }

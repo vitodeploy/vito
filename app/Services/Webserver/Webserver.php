@@ -13,8 +13,9 @@ interface Webserver extends ServiceInterface
     /**
      * @param  array<string, string>  $replace  replace blocks
      * @param  array<int, string>  $regenerate  regenerates the blocks
+     * @param  array<string, string>  $append  appends to the blocks
      */
-    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = []): void;
+    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = []): void;
 
     public function getVHost(Site $site): string;
 

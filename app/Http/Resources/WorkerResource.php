@@ -17,6 +17,7 @@ class WorkerResource extends JsonResource
         return [
             'id' => $this->id,
             'server_id' => $this->server_id,
+            'name' => $this->name,
             'command' => $this->command,
             'user' => $this->user,
             'auto_start' => $this->auto_start,

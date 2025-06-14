@@ -1,5 +1,6 @@
 import { type NavItem } from '@/types';
 import {
+  BoxIcon,
   ChartLineIcon,
   ClockIcon,
   CloudIcon,
@@ -98,6 +99,11 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
               href: route('application', { server: page.props.server.id, site: site.id }),
               onlyActivePath: route('application', { server: page.props.server.id, site: site.id }),
               icon: RocketIcon,
+            },
+            {
+              title: 'Features',
+              href: route('site-features', { server: page.props.server.id, site: site.id }),
+              icon: BoxIcon,
             },
             {
               title: 'Commands',

@@ -6,7 +6,6 @@ use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
-use RuntimeException;
 use Throwable;
 
 class Nginx extends AbstractWebserver
@@ -97,34 +96,19 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = []): void
+    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = []): void
     {
         if (! $vhost) {
             $vhost = $this->getVHost($site);
         }
-        if (! $vhost) {
+
+        if (! $vhost || ! preg_match('/#\[header]/', $vhost) || ! preg_match('/#\[main]/', $vhost) || ! preg_match('/#\[footer]/', $vhost)) {
             $vhost = $this->generateVhost($site);
-        }
-
-        foreach ($replace as $block => $replacement) {
-            $vhost = preg_replace(
-                '/#\['.$block.'](.*?)#\[\/'.$block.']/s',
-                $replacement,
-                $vhost
-            );
-        }
-
-        foreach ($regenerate as $block) {
-            $vhost = preg_replace(
-                '/#\['.$block.'](.*?)#\[\/'.$block.']/s',
-                $this->generateVhost($site, $block),
-                $vhost
-            );
         }
 
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            format_nginx_config($vhost),
+            format_nginx_config($this->getUpdatedVHost($site, $vhost, $replace, $regenerate, $append)),
             'root'
         );
 
@@ -225,22 +209,5 @@ class Nginx extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
-    }
-
-    private function generateVhost(Site $site, ?string $block = null): string
-    {
-        $viewPath = 'ssh.services.webserver.nginx.vhost-blocks.'.$block;
-        if ($block) {
-            if (! view()->exists($viewPath)) {
-                throw new RuntimeException("View for block '{$block}' does not exist.");
-            }
-            $vhost = view($viewPath, [
-                'site' => $site,
-            ]);
-        } else {
-            $vhost = $site->type()->vhost(\App\Enums\Webserver::NGINX);
-        }
-
-        return format_nginx_config($vhost);
     }
 }

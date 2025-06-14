@@ -1,4 +1,6 @@
 #[laravel-octane]
+index index.php index.html;
+error_page 404 /index.php;
 location /index.php {
     try_files /not_exists @octane;
 }

@@ -62,6 +62,7 @@ class WorkersTest extends TestCase
         $this->post(route('workers.store', [
             'server' => $this->server,
         ]), [
+            'name' => 'Test Worker',
             'command' => 'php artisan worker:work',
             'user' => 'vito',
             'auto_start' => 1,
@@ -72,6 +73,7 @@ class WorkersTest extends TestCase
 
         $this->assertDatabaseHas('workers', [
             'server_id' => $this->server->id,
+            'name' => 'Test Worker',
             'command' => 'php artisan worker:work',
             'user' => 'vito',
             'auto_start' => 1,
@@ -94,6 +96,7 @@ class WorkersTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]), [
+            'name' => 'Test Worker',
             'command' => 'php artisan worker:work',
             'user' => 'example',
             'auto_start' => 1,
@@ -124,6 +127,7 @@ class WorkersTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]), [
+            'name' => 'Test Worker',
             'command' => 'php artisan worker:work',
             'user' => 'example',
             'auto_start' => 1,
@@ -154,6 +158,7 @@ class WorkersTest extends TestCase
             'server' => $this->server,
             'site' => $this->site,
         ]), [
+            'name' => 'Test Worker',
             'command' => 'php artisan worker:work',
             'user' => 'example',
             'auto_start' => 1,

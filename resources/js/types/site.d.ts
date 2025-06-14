@@ -43,11 +43,14 @@ export interface SiteType {
 export interface SiteFeature {
   label: string;
   description?: string;
-  actions?: SiteFeatureAction[];
+  actions?: {
+    [key: string]: SiteFeatureAction;
+  };
 }
 
 export interface SiteFeatureAction {
   label: string;
   handler: string;
-  enabled?: boolean;
+  form?: DynamicFieldConfig[];
+  active?: boolean;
 }

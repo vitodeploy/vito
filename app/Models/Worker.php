@@ -21,6 +21,7 @@ use Throwable;
  * @property int $redirect_stderr
  * @property string $stdout_logfile
  * @property string $status
+ * @property string $name
  * @property Server $server
  * @property Site $site
  */
@@ -40,6 +41,7 @@ class Worker extends AbstractModel
         'redirect_stderr',
         'stdout_logfile',
         'status',
+        'name',
     ];
 
     protected $casts = [

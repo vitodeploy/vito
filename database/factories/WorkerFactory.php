@@ -16,6 +16,7 @@ class WorkerFactory extends Factory
     public function definition(): array
     {
         return [
+            'name' => $this->faker->name,
             'command' => 'php artisan queue:work',
             'user' => 'vito',
             'auto_start' => 1,

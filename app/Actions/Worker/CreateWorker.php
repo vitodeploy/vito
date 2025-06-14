@@ -26,6 +26,7 @@ class CreateWorker
         $worker = new Worker([
             'server_id' => $server->id,
             'site_id' => $site?->id,
+            'name' => $input['name'],
             'command' => $input['command'],
             'user' => $input['user'],
             'auto_start' => $input['auto_start'] ? 1 : 0,
@@ -63,6 +64,19 @@ class CreateWorker
     public static function rules(Server $server, ?Site $site = null): array
     {
         return [
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('workers')->where(function ($query) use ($server, $site) {
+                    return $query->where('server_id', $server->id)
+                        ->where(function ($query) use ($site) {
+                            if ($site) {
+                                $query->where('site_id', $site->id);
+                            }
+                        });
+                }),
+            ],
             'command' => [
                 'required',
             ],

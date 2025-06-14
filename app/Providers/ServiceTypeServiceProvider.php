@@ -43,7 +43,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
 
         RegisterServiceType::make(Caddy::id())
             ->type(Caddy::type())
-            ->label('Caddy')
+            ->label('Caddy (beta)')
             ->handler(Caddy::class)
             ->register();
     }

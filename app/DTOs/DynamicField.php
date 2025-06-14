@@ -50,6 +50,13 @@ class DynamicField
         return $this;
     }
 
+    public function alert(): self
+    {
+        $this->type = 'alert';
+
+        return $this;
+    }
+
     public function name(string $name): self
     {
         $this->name = $name;

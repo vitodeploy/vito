@@ -3,7 +3,6 @@
 namespace App\Actions\Worker;
 
 use App\Enums\WorkerStatus;
-use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\Worker;
@@ -21,9 +20,10 @@ class EditWorker
      */
     public function edit(Worker $worker, array $input): void
     {
-        Validator::make($input, self::rules($worker->server, $worker->site))->validate();
+        Validator::make($input, self::rules($worker, $worker->site))->validate();
 
         $worker->fill([
+            'name' => $input['name'],
             'command' => $input['command'],
             'user' => $input['user'],
             'auto_start' => $input['auto_start'] ? 1 : 0,
@@ -61,15 +61,29 @@ class EditWorker
     /**
      * @return array<string, array<string>>
      */
-    public static function rules(Server $server, ?Site $site = null): array
+    public static function rules(Worker $worker, ?Site $site = null): array
     {
         return [
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('workers')->where(function ($query) use ($worker, $site) {
+                    return $query->where('server_id', $worker->server_id)
+                        ->where(function ($query) use ($site) {
+                            if ($site) {
+                                $query->where('site_id', $site->id);
+                            }
+                        });
+                })
+                    ->ignore($worker->id),
+            ],
             'command' => [
                 'required',
             ],
             'user' => [
                 'required',
-                Rule::in($site?->getSshUsers() ?? $server->getSshUsers()),
+                Rule::in($site?->getSshUsers() ?? $worker->server->getSshUsers()),
             ],
             'numprocs' => [
                 'required',

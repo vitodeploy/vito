@@ -10,6 +10,7 @@ use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Services\PHP\PHP;
 use App\Services\Webserver\Webserver;
+use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\SiteType;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
@@ -436,5 +437,26 @@ class Site extends AbstractModel
     public function activeRedirects(): HasMany
     {
         return $this->redirects()->whereIn('status', [RedirectStatus::CREATING, RedirectStatus::READY]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function features(): array
+    {
+        $features = config('site.types.'.$this->type.'.features', []);
+        foreach ($features as $featureKey => $feature) {
+            foreach ($feature['actions'] ?? [] as $actionKey => $action) {
+                $handlerClass = $action['handler'] ?? null;
+                if ($handlerClass && class_exists($handlerClass)) {
+                    /** @var ActionInterface $handler */
+                    $handler = new $handlerClass($this);
+                    $action['active'] = $handler->active();
+                }
+                $features[$featureKey]['actions'][$actionKey] = $action;
+            }
+        }
+
+        return $features;
     }
 }

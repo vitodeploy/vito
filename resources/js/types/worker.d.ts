@@ -1,6 +1,7 @@
 export interface Worker {
   id: number;
   server_id: number;
+  name: string;
   command: string;
   user: string;
   auto_start: boolean;

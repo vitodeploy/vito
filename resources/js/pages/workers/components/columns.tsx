@@ -140,6 +140,12 @@ function Logs({ worker }: { worker: Worker }) {
 
 export const columns: ColumnDef<Worker>[] = [
   {
+    accessorKey: 'name',
+    header: 'Name',
+    enableColumnFilter: true,
+    enableSorting: true,
+  },
+  {
     accessorKey: 'command',
     header: 'Command',
     enableColumnFilter: true,
@@ -153,24 +159,6 @@ export const columns: ColumnDef<Worker>[] = [
     header: 'User',
     enableColumnFilter: true,
     enableSorting: true,
-  },
-  {
-    accessorKey: 'auto_start',
-    header: 'Auto start',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <Badge variant={row.original.auto_start ? 'success' : 'outline'}>{row.original.auto_start ? 'Yes' : 'No'}</Badge>;
-    },
-  },
-  {
-    accessorKey: 'auto_restart',
-    header: 'Auto restart',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <Badge variant={row.original.auto_restart ? 'success' : 'outline'}>{row.original.auto_restart ? 'Yes' : 'No'}</Badge>;
-    },
   },
   {
     accessorKey: 'numprocs',

@@ -6,7 +6,6 @@ use App\Actions\Worker\CreateWorker;
 use App\Actions\Worker\ManageWorker;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
-use App\Enums\Webserver;
 use App\Exceptions\SSHError;
 use App\Models\Worker;
 use App\SiteFeatures\Action;
@@ -44,12 +43,6 @@ class Enable extends Action
             'port' => 'required|integer|min:1|max:65535',
         ])->validate();
 
-        $typeData = $this->site->type_data ?? [];
-        data_set($typeData, 'octane', true);
-        data_set($typeData, 'octane_port', $request->input('port'));
-        $this->site->type_data = $typeData;
-        $this->site->save();
-
         $this->site->server->ssh()->exec(
             __('php :path/artisan octane:install --no-interaction', [
                 'path' => $this->site->path,
@@ -61,14 +54,16 @@ class Enable extends Action
             'path' => $this->site->path,
             'port' => $request->input('port'),
         ]);
+
         /** @var ?Worker $worker */
-        $worker = $this->site->workers()->where('command', $command)->first();
+        $worker = $this->site->workers()->where('name', 'laravel-octane')->first();
         if ($worker) {
             app(ManageWorker::class)->restart($worker);
         } else {
             app(CreateWorker::class)->create(
                 $this->site->server,
                 [
+                    'name' => 'laravel-octane',
                     'command' => $command,
                     'user' => $this->site->user ?? $this->site->server->getSshUser(),
                     'auto_start' => true,
@@ -79,28 +74,36 @@ class Enable extends Action
             );
         }
 
-        $this->site->webserver()->updateVHost($this->site, $this->getVHost());
+        $typeData = $this->site->type_data ?? [];
+        data_set($typeData, 'octane', true);
+        data_set($typeData, 'octane_port', $request->input('port'));
+        $this->site->type_data = $typeData;
+        $this->site->save();
+
+        $this->updateVHost();
+
+        $request->session()->flash('success', 'Laravel Octane has been enabled for this site.');
     }
 
-    private function getVHost(): string
+    private function updateVHost(): void
     {
-        $webserver = $this->site->webserver()->id();
+        $webserver = $this->site->webserver();
 
-        if ($webserver === Webserver::NGINX) {
-            return view('ssh.services.webserver.nginx.vhost', [
-                'topBlocks' => [
-                    view('ssh.services.webserver.nginx.vhost-blocks.force-ssl', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.laravel-octane-map', ['site' => $this->site]),
+        if ($webserver->id() === 'nginx') {
+            $this->site->webserver()->updateVHost(
+                $this->site,
+                replace: [
+                    'php' => view('ssh.services.webserver.nginx.vhost-blocks.laravel-octane', ['site' => $this->site]),
+                    'laravel-octane-map' => '',
                 ],
-                'blocks' => [
-                    view('ssh.services.webserver.nginx.vhost-blocks.port', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.core', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.laravel-octane', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.redirects', ['site' => $this->site]),
-                ],
-            ]);
+                append: [
+                    'header' => view('ssh.services.webserver.nginx.vhost-blocks.laravel-octane-map', ['site' => $this->site]),
+                ]
+            );
+
+            return;
         }
 
-        throw new RuntimeException('Unsupported webserver: '.$webserver);
+        throw new RuntimeException('Unsupported webserver: '.$webserver->id());
     }
 }

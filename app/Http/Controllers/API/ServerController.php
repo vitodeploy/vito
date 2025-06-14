@@ -5,9 +5,6 @@ namespace App\Http\Controllers\API;
 use App\Actions\Server\CreateServer;
 use App\Actions\Server\RebootServer;
 use App\Actions\Server\Update;
-use App\Enums\Database;
-use App\Enums\PHP;
-use App\Enums\Webserver;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerResource;
 use App\Models\Project;
@@ -51,9 +48,9 @@ class ServerController extends Controller
     #[BodyParam(name: 'port', description: 'SSH Port if the provider is custom')]
     #[BodyParam(name: 'name', description: 'The name of the server.', required: true)]
     #[BodyParam(name: 'os', description: 'The os of the server', required: true)]
-    #[BodyParam(name: 'webserver', description: 'Web server', required: true, enum: [Webserver::NONE, Webserver::NGINX, Webserver::CADDY])]
-    #[BodyParam(name: 'database', description: 'Database', required: true, enum: [Database::NONE, Database::MYSQL57, Database::MYSQL80, Database::MARIADB103, Database::MARIADB104, Database::MARIADB103, Database::POSTGRESQL12, Database::POSTGRESQL13, Database::POSTGRESQL14, Database::POSTGRESQL15, Database::POSTGRESQL16], )]
-    #[BodyParam(name: 'php', description: 'PHP version', required: true, enum: [PHP::V70, PHP::V71, PHP::V72, PHP::V73, PHP::V74, PHP::V80, PHP::V81, PHP::V82, PHP::V83])]
+    #[BodyParam(name: 'webserver', description: 'Web server', required: true)]
+    #[BodyParam(name: 'database', description: 'Database', required: true)]
+    #[BodyParam(name: 'php', description: 'PHP version', required: true)]
     #[ResponseFromApiResource(ServerResource::class, Server::class)]
     public function create(Request $request, Project $project): ServerResource
     {

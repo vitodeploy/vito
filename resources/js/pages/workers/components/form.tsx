@@ -27,12 +27,14 @@ export default function WorkerForm({ serverId, site, worker, children }: { serve
   const page = usePage<SharedData & { server: Server }>();
   const [open, setOpen] = useState(false);
   const form = useForm<{
+    name: string;
     command: string;
     user: string;
     auto_start: boolean;
     auto_restart: boolean;
     numprocs: string;
   }>({
+    name: worker?.name || '',
     command: worker?.command || '',
     user: worker?.user || '',
     auto_start: worker?.auto_start || true,
@@ -69,6 +71,13 @@ export default function WorkerForm({ serverId, site, worker, children }: { serve
         </DialogHeader>
         <Form id="worker-form" onSubmit={submit} className="p-4">
           <FormFields>
+            {/*name*/}
+            <FormField>
+              <Label htmlFor="name">Name</Label>
+              <Input type="text" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+              <InputError message={form.errors.name} />
+            </FormField>
+
             {/*command*/}
             <FormField>
               <Label htmlFor="command">Command</Label>

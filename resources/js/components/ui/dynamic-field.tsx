@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import InputError from '@/components/ui/input-error';
 import { FormField } from '@/components/ui/form';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface DynamicFieldProps {
   value: string | number | boolean | string[] | undefined;
@@ -33,6 +34,18 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
       setInitialValue(true);
     }
   }, [initialValue, setInitialValue, onChange, value, config]);
+
+  // Handle alert
+  if (config?.type === 'alert') {
+    return (
+      <FormField>
+        <Alert>
+          <AlertTitle>{config.label}</AlertTitle>
+          <AlertDescription>{config.description}</AlertDescription>
+        </Alert>
+      </FormField>
+    );
+  }
 
   // Handle checkbox
   if (config?.type === 'checkbox') {
