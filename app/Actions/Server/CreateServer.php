@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -60,19 +61,19 @@ class CreateServer
             $this->server->save();
 
             // create firewall rules
-            $this->createFirewallRules($this->server);
-
-            // create instance
-            $this->server->provider()->create();
+            $this->createFirewallRules();
 
             // create services
             $this->createServices();
 
-            // install server
-            dispatch(function (): void {
+            dispatch(function () {
+                // create a server (from a specific provider such as Hetzner or DigitalOcean)
+                $this->server->provider()->create();
+
+                Sleep::for(30)->seconds();
+
                 app(InstallServer::class)->run($this->server);
-            })
-                ->catch(function (Throwable $e): void {
+            })->onConnection('ssh')->catch(function (Throwable $e): void {
                     $this->server->update([
                         'status' => ServerStatus::INSTALLATION_FAILED,
                     ]);
@@ -80,8 +81,7 @@ class CreateServer
                     Log::error('server-installation-error', [
                         'error' => (string) $e,
                     ]);
-                })
-                ->onConnection('ssh');
+                });
 
             return $this->server;
         } catch (Exception $e) {
@@ -162,9 +162,9 @@ class CreateServer
         return $server->provider()->createRules($input);
     }
 
-    public function createFirewallRules(Server $server): void
+    public function createFirewallRules(): void
     {
-        $server->firewallRules()->createMany([
+        $this->server->firewallRules()->createMany([
             [
                 'type' => 'allow',
                 'name' => 'SSH',
