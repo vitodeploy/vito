@@ -193,6 +193,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\DemoServiceProvider::class,
+        App\Providers\PluginsServiceProvider::class,
         App\Providers\SiteTypeServiceProvider::class,
         App\Providers\ServerProviderServiceProvider::class,
         App\Providers\StorageProviderServiceProvider::class,

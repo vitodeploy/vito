@@ -227,3 +227,17 @@ function user(): User
 
     return $user;
 }
+
+function plugins_path(?string $path = null): string
+{
+    if ($path === null) {
+        $path = storage_path('plugins');
+        if (! file_exists($path)) {
+            mkdir($path, 0755, true);
+        }
+
+        return $path;
+    }
+
+    return storage_path('plugins'.'/'.$path);
+}

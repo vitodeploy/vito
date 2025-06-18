@@ -9,7 +9,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 ij_any_block_comment_at_first_column = false
 
-[*.php]
+[{*.php,composer.json,composer.lock}]
 indent_size = 4
 
 [*.md]
