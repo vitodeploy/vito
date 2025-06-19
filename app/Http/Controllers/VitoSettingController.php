@@ -17,7 +17,7 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
-#[Prefix('vito')]
+#[Prefix('settings/vito')]
 #[Middleware(['auth', 'must-be-admin'])]
 class VitoSettingController extends Controller
 {
