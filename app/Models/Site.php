@@ -438,4 +438,12 @@ class Site extends AbstractModel
     {
         return $this->redirects()->whereIn('status', [RedirectStatus::CREATING, RedirectStatus::READY]);
     }
+
+    /**
+     * @return BelongsToMany<User, covariant $this>
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'site_user')->withTimestamps();
+    }
 }

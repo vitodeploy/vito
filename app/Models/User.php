@@ -205,6 +205,14 @@ class User extends Authenticatable implements FilamentUser
         });
     }
 
+    /**
+     * @return BelongsToMany<Site, covariant $this>
+     */
+    public function sites(): BelongsToMany
+    {
+        return $this->belongsToMany(Site::class, 'site_user')->withTimestamps();
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return true;

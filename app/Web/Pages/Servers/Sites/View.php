@@ -69,6 +69,25 @@ class View extends Page
             }
         }
 
+        /** @var User $user */
+        $user = auth()->user();
+        
+        if ($user->can('addUser', [$this->site, $this->server])) {
+            $widgets[] = [
+                Widgets\AddUser::class,
+                [
+                    'site' => $this->site,
+                ],
+            ];
+            
+            $widgets[] = [
+                Widgets\SiteUsersList::class,
+                [
+                    'site' => $this->site,
+                ],
+            ];
+        }
+        
         return $widgets;
     }
 
