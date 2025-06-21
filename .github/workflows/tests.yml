@@ -19,6 +19,15 @@ jobs:
         php: [ 8.4 ]
         node-version: [ "22.x" ]
 
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -62,3 +71,5 @@ jobs:
 
       - name: Run test suite
         run: php artisan test
+        env:
+          REDIS_HOST: redis
