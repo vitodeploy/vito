@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 
 # requirements
-RUN apt-get install -y software-properties-common curl zip unzip gcc nginx git \
+RUN apt-get install -y software-properties-common curl zip unzip gcc nginx redis-server git \
     cron gnupg gosu curl ca-certificates zip unzip supervisor libcap2-bin libpng-dev \
     dnsutils librsvg2-bin fswatch wget openssh-client \
     && add-apt-repository ppa:ondrej/php -y \

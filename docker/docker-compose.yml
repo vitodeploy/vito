@@ -9,6 +9,7 @@ services:
             PASSWORD: "password"
             APP_KEY: "base64:UodiJrx3DkcMlizmoimNlDn+yd4q5f2VbkBay19rJwM="
             APP_PORT: 8000
+            APP_URL: "http://localhost:8000"
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:

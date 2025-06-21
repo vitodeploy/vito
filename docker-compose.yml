@@ -21,7 +21,18 @@ services:
             - '.:/var/www/html'
         networks:
             - vito
-        depends_on: {  }
+        depends_on:
+            - redis
+    redis:
+        image: 'redis:alpine'
+        volumes:
+            - 'vito-redis:/data'
+        networks:
+            - vito
+        healthcheck:
+            test: [ "CMD", "redis-cli", "ping" ]
+            retries: 3
+            timeout: 5s
     worker:
         build:
             context: ./vendor/laravel/sail/runtimes/8.4
@@ -43,6 +54,11 @@ services:
             - vito
         depends_on:
             - app
+            - redis
 networks:
     vito:
         driver: bridge
+volumes:
+    vito-redis:
+        driver: local
+        name: vito-redis

@@ -44,19 +44,23 @@ return [
         ],
 
         'default' => [
-            'driver' => 'database',
-            'table' => 'jobs',
+            'driver' => 'redis',
+            'connection' => 'default',
             'queue' => 'default',
             'timeout' => 90,
             'retry_after' => 600,
+            'block_for' => null,
+            'after_commit' => false,
         ],
 
         'ssh' => [
-            'driver' => 'database',
-            'table' => 'jobs',
+            'driver' => 'redis',
+            'connection' => 'default',
             'queue' => 'default',
             'timeout' => 600,
             'retry_after' => 600,
+            'block_for' => null,
+            'after_commit' => false,
         ],
 
     ],

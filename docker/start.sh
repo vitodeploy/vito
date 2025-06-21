@@ -58,6 +58,7 @@ chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 service php8.4-fpm start
 
+service redis-server start
 service nginx start
 
 php /var/www/html/artisan migrate --force
