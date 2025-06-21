@@ -26,15 +26,13 @@ import { ReactNode } from 'react';
 import { Server } from '@/types/server';
 import ServerHeader from '@/pages/servers/components/header';
 import Layout from '@/layouts/app/layout';
-import { usePage, usePoll } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { Site } from '@/types/site';
 import PHPIcon from '@/icons/php';
 import NodeIcon from '@/icons/node';
 import siteHelper from '@/lib/site-helper';
 
 export default function ServerLayout({ children }: { children: ReactNode }) {
-  usePoll(7000);
-
   const page = usePage<{
     server: Server;
     site?: Site;

@@ -21,13 +21,16 @@ export default function AppCommand() {
 
   return (
     <div>
-      <Button className="px-1!" variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button className="hidden px-1! lg:flex" variant="outline" size="sm" onClick={() => setOpen(true)}>
         <span className="sr-only">Open command menu</span>
         <SearchIcon className="ml-1 size-3" />
         Search...
         <span className="bg-accent flex h-6 items-center justify-center rounded-sm border px-2 text-xs">
           <CommandIcon className="mr-1 size-3" /> K
         </span>
+      </Button>
+      <Button className="lg:hidden" variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <CommandIcon className="mr-1 size-3" /> K
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Type a command or search..." />

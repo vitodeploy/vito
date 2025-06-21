@@ -1,6 +1,7 @@
 import AppLogoIcon from '@/components/app-logo-icon';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
+import { SharedData } from '@/types';
 
 interface AuthLayoutProps {
   name?: string;
@@ -9,6 +10,7 @@ interface AuthLayoutProps {
 }
 
 export default function AuthLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
+  const page = usePage<SharedData>();
   return (
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-sm">
@@ -27,6 +29,16 @@ export default function AuthLayout({ children, title, description }: PropsWithCh
             </div>
           </div>
           {children}
+          <div className="text-muted-foreground/50 text-center text-xs">
+            VitoDeploy{' '}
+            <a
+              href={`https://github.com/vitodeploy/vito/releases/tag/${page.props.version}`}
+              className="hover:text-primary cursor-pointer"
+              target="_blank"
+            >
+              {page.props.version}
+            </a>
+          </div>
         </div>
       </div>
     </div>

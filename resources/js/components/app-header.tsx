@@ -6,6 +6,7 @@ import AppCommand from '@/components/app-command';
 import { SiteSwitch } from '@/components/site-switch';
 import { usePage } from '@inertiajs/react';
 import { SharedData } from '@/types';
+import Refresh from '@/components/refresh';
 
 export function AppHeader() {
   const page = usePage<SharedData>();
@@ -26,7 +27,10 @@ export function AppHeader() {
           )}
         </div>
       </div>
-      <AppCommand />
+      <div className="flex items-center gap-2">
+        <AppCommand />
+        <Refresh />
+      </div>
     </header>
   );
 }

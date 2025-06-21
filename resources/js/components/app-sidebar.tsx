@@ -12,12 +12,13 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { type NavItem, SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, ChevronRightIcon, CogIcon, Folder, MousePointerClickIcon, ServerIcon, ZapIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const mainNavItems: NavItem[] = [
   {
@@ -56,6 +57,8 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
+  const page = usePage<SharedData>();
+
   return (
     <Sidebar collapsible="icon" className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row">
       {/* This is the first sidebar */}
@@ -67,7 +70,12 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
                 <Link href={route('servers')} prefetch>
-                  <AppLogo />
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <AppLogo />
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{page.props.version}</TooltipContent>
+                  </Tooltip>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
