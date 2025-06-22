@@ -27,6 +27,6 @@ class DeleteRedirect
         })->catch(function () use ($redirect): void {
             $redirect->status = RedirectStatus::FAILED;
             $redirect->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh-unique');
     }
 }

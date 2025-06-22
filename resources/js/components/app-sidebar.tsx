@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, ChevronRightIcon, CogIcon, Folder, MousePointerClickIcon, ServerIcon, ZapIcon } from 'lucide-react';
+import { BookOpen, ChevronRightIcon, CogIcon, Folder, ListEndIcon, LogsIcon, MousePointerClickIcon, ServerIcon, ZapIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -44,6 +44,16 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
+  {
+    title: 'Workers',
+    href: route('horizon.index'),
+    icon: ListEndIcon,
+  },
+  {
+    title: 'Logs',
+    href: route('log-viewer.index'),
+    icon: LogsIcon,
+  },
   {
     title: 'Repository',
     href: 'https://github.com/vitodeploy/vito',

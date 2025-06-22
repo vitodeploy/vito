@@ -34,7 +34,7 @@ class ManageRule
 
         $rule->save();
 
-        dispatch(fn () => $this->applyRule($rule));
+        dispatch(fn () => $this->applyRule($rule))->onQueue('ssh');
 
         return $rule;
     }
@@ -58,7 +58,7 @@ class ManageRule
             'status' => FirewallRuleStatus::UPDATING,
         ]);
 
-        dispatch(fn () => $this->applyRule($rule));
+        dispatch(fn () => $this->applyRule($rule))->onQueue('ssh');
 
         return $rule;
     }
@@ -68,7 +68,7 @@ class ManageRule
         $rule->status = FirewallRuleStatus::DELETING;
         $rule->save();
 
-        dispatch(fn () => $this->applyRule($rule));
+        dispatch(fn () => $this->applyRule($rule))->onQueue('ssh');
     }
 
     protected function applyRule(FirewallRule $rule): void

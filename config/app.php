@@ -200,6 +200,7 @@ return [
         App\Providers\SourceControlServiceProvider::class,
         App\Providers\NotificationChannelServiceProvider::class,
         App\Providers\ServiceTypeServiceProvider::class,
+        App\Providers\HorizonServiceProvider::class,
     ],
 
     /*

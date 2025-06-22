@@ -43,7 +43,7 @@ class CreateRedirect
                 $redirect->status = RedirectStatus::FAILED;
                 $redirect->save();
             })
-            ->onConnection('ssh');
+            ->onQueue('ssh-unique');
 
         return $redirect->refresh();
     }

@@ -44,7 +44,7 @@ class InstallPHPExtension
                 $typeData['extensions'] = array_values(array_diff($typeData['extensions'], [$input['extension']]));
                 $service->type_data = $typeData;
                 $service->save();
-            })->onConnection('ssh');
+            })->onQueue('ssh-unique');
 
         return $service;
     }

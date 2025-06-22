@@ -57,7 +57,7 @@ class Deploy
             $deployment->status = DeploymentStatus::FAILED;
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
-        })->onConnection('ssh');
+        })->onQueue('ssh-unique');
 
         return $deployment;
     }

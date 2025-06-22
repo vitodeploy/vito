@@ -81,7 +81,7 @@ class CreateServer
                         'error' => (string) $e,
                     ]);
                 })
-                ->onConnection('ssh');
+                ->onQueue('ssh');
 
             return $this->server;
         } catch (Exception $e) {

@@ -4,7 +4,6 @@ includes:
 parameters:
     paths:
         - app
-        - config
         - bootstrap
         - database/factories
     level: 7

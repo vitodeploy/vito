@@ -12,7 +12,7 @@ class Agent extends MobileDetect
      *
      * @var array<string, string>
      */
-    protected static $additionalOperatingSystems = [
+    protected static array $additionalOperatingSystems = [
         'Windows' => 'Windows',
         'Windows NT' => 'Windows NT',
         'OS X' => 'Mac OS X',
@@ -29,7 +29,7 @@ class Agent extends MobileDetect
      *
      * @var array<string, string>
      */
-    protected static $additionalBrowsers = [
+    protected static array $additionalBrowsers = [
         'Opera Mini' => 'Opera Mini',
         'Opera' => 'Opera|OPR',
         'Edge' => 'Edge|Edg',
@@ -50,14 +50,12 @@ class Agent extends MobileDetect
      *
      * @var array<string, mixed>
      */
-    protected $store = [];
+    protected array $store = [];
 
     /**
      * Get the platform name from the User Agent.
-     *
-     * @return string|null
      */
-    public function platform()
+    public function platform(): ?string
     {
         return $this->retrieveUsingCacheOrResolve('paymently.platform', fn () => $this->findDetectionRulesAgainstUserAgent(
             $this->mergeRules(MobileDetect::getOperatingSystems(), static::$additionalOperatingSystems)

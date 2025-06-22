@@ -30,6 +30,6 @@ class ManageBackupFile
 
         dispatch(function () use ($file): void {
             $file->deleteFile();
-        });
+        })->onQueue('ssh');
     }
 }

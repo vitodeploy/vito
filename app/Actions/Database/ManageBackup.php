@@ -65,7 +65,7 @@ class ManageBackup
             }
 
             $backup->delete();
-        });
+        })->onQueue('ssh');
     }
 
     /**

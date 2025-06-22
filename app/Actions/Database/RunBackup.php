@@ -39,7 +39,7 @@ class RunBackup
             $backup->save();
             $file->status = BackupFileStatus::FAILED;
             $file->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
 
         return $file;
     }

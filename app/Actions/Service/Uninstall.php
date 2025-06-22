@@ -26,6 +26,6 @@ class Uninstall
         })->catch(function () use ($service): void {
             $service->status = ServiceStatus::FAILED;
             $service->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh-unique');
     }
 }

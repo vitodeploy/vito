@@ -92,7 +92,7 @@ class CreateSite
                 $site->status = SiteStatus::INSTALLATION_FAILED;
                 $site->save();
                 Notifier::send($site, new SiteInstallationFailed($site));
-            })->onConnection('ssh');
+            })->onQueue('ssh-unique');
 
             DB::commit();
 

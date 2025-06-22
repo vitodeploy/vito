@@ -21,7 +21,7 @@ class Manage
                 $service->status = ServiceStatus::FAILED;
             }
             $service->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     public function stop(Service $service): void
@@ -37,7 +37,7 @@ class Manage
                 $service->status = ServiceStatus::FAILED;
             }
             $service->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     public function restart(Service $service): void
@@ -53,7 +53,7 @@ class Manage
                 $service->status = ServiceStatus::FAILED;
             }
             $service->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     public function enable(Service $service): void
@@ -69,7 +69,7 @@ class Manage
                 $service->status = ServiceStatus::FAILED;
             }
             $service->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     public function disable(Service $service): void
@@ -85,7 +85,7 @@ class Manage
                 $service->status = ServiceStatus::FAILED;
             }
             $service->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     private function validate(Service $service): void

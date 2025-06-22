@@ -35,6 +35,10 @@ sudo sed -i "s/php8.2-fpm.sock/php8.4-fpm.sock/g" /etc/nginx/sites-available/vit
 sudo sed -i '/server\s*{.*/a \    client_max_body_size 100M;' /etc/nginx/sites-available/vito
 sudo service nginx restart
 
+echo "Update supervisor configuration"
+sudo sed -i 's/command=php \/home\/vito\/vito\/artisan queue:work --sleep=3 --backoff=0 --queue=default,ssh,ssh-long --timeout=3600 --tries=1/command=php \/home\/vito\/vito\/artisan horizon/' /etc/supervisor/conf.d/worker.conf
+sudo service supervisor restart
+
 echo "Fetching the latest release"
 git fetch
 git checkout 3.x

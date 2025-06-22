@@ -209,7 +209,7 @@ chown -R vito:vito /home/vito
 export V_WORKER_CONFIG="
 [program:worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /home/vito/vito/artisan queue:work --sleep=3 --backoff=0 --queue=default,ssh,ssh-long --timeout=3600 --tries=1
+command=php /home/vito/vito/artisan horizon
 autostart=1
 autorestart=1
 user=vito

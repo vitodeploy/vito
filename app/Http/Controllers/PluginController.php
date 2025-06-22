@@ -58,8 +58,7 @@ class PluginController extends Controller
             }
 
             Plugins::cleanup();
-        })
-            ->onConnection('default');
+        })->onQueue('default');
 
         return back()->with('info', 'Plugin is being installed...');
     }
@@ -89,8 +88,7 @@ class PluginController extends Controller
             }
 
             Plugins::cleanup();
-        })
-            ->onConnection('default');
+        })->onQueue('default');
 
         return back()->with('warning', 'Plugin is being uninstalled...');
     }

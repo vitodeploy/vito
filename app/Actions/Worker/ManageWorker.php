@@ -21,7 +21,7 @@ class ManageWorker
             $handler->start($worker->id, $worker->site_id);
             $worker->status = WorkerStatus::RUNNING;
             $worker->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     public function stop(Worker $worker): void
@@ -36,7 +36,7 @@ class ManageWorker
             $handler->stop($worker->id, $worker->site_id);
             $worker->status = WorkerStatus::STOPPED;
             $worker->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     public function restart(Worker $worker): void
@@ -51,6 +51,6 @@ class ManageWorker
             $handler->restart($worker->id, $worker->site_id);
             $worker->status = WorkerStatus::RUNNING;
             $worker->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 }

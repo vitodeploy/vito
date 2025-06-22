@@ -27,7 +27,7 @@ class CheckServersConnectionCommand extends Command
                         return;
                     }
                     $server->checkConnection();
-                })->onConnection('ssh');
+                })->onQueue('ssh');
             }
         });
     }

@@ -55,7 +55,7 @@ class EditWorker
         })->catch(function () use ($worker): void {
             $worker->status = WorkerStatus::FAILED;
             $worker->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     /**

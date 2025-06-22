@@ -20,6 +20,6 @@ class Update
         })->catch(function () use ($server): void {
             Notifier::send($server, new ServerUpdateFailed($server));
             $server->checkConnection();
-        })->onConnection('ssh');
+        })->onQueue('ssh-unique');
     }
 }

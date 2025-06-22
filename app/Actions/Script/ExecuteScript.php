@@ -62,7 +62,7 @@ class ExecuteScript
         })->catch(function () use ($execution): void {
             $execution->status = ScriptExecutionStatus::FAILED;
             $execution->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
 
         return $execution;
     }

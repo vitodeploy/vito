@@ -55,7 +55,7 @@ class ExecuteCommand
         })->catch(function () use ($execution): void {
             $execution->status = CommandExecutionStatus::FAILED;
             $execution->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
 
         return $execution;
     }

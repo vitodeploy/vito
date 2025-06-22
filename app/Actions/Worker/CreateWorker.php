@@ -55,7 +55,7 @@ class CreateWorker
             $worker->save();
         })->catch(function () use ($worker): void {
             $worker->delete();
-        })->onConnection('ssh');
+        })->onQueue('ssh');
     }
 
     /**

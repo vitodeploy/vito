@@ -60,7 +60,7 @@ class CreateSSL
         })->catch(function () use ($ssl): void {
             $ssl->status = SslStatus::FAILED;
             $ssl->save();
-        })->onConnection('ssh');
+        })->onQueue('ssh-unique');
     }
 
     /**
