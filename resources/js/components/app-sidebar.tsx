@@ -45,12 +45,12 @@ const mainNavItems: NavItem[] = [
 
 const footerNavItems: NavItem[] = [
   {
-    title: 'Workers',
+    title: 'Horizon Dashboard',
     href: route('horizon.index'),
     icon: ListEndIcon,
   },
   {
-    title: 'Logs',
+    title: 'Vito Logs',
     href: route('log-viewer.index'),
     icon: LogsIcon,
   },

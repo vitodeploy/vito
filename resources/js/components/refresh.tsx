@@ -42,7 +42,6 @@ export default function Refresh() {
       setPoll(undefined);
     }
     localStorage.setItem('refresh_interval', refreshInterval.toString());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshInterval]);
 
   return (

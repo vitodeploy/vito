@@ -30,6 +30,7 @@ export function SiteSwitch() {
 
   if (storedSite && page.props.server_sites && !page.props.server_sites.find((site) => site.id === storedSite.id)) {
     siteHelper.storeSite();
+    setSelectedSite(null);
   }
 
   const handleSiteChange = (site: Site) => {

@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FormEventHandler, ReactNode, useState } from 'react';
+import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoaderCircle } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
@@ -19,8 +19,30 @@ import InputError from '@/components/ui/input-error';
 import { Project } from '@/types/project';
 import FormSuccessful from '@/components/form-successful';
 
-export default function ProjectForm({ project, children }: { project?: Project; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+export default function ProjectForm({
+  project,
+  defaultOpen,
+  onOpenChange,
+  children,
+}: {
+  project?: Project;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen || false);
+  useEffect(() => {
+    if (defaultOpen) {
+      setOpen(defaultOpen);
+    }
+  }, [setOpen, defaultOpen]);
+
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
+  };
 
   const form = useForm({
     name: project?.name || '',
@@ -42,7 +64,7 @@ export default function ProjectForm({ project, children }: { project?: Project; 
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>

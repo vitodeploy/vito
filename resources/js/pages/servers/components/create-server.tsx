@@ -2,7 +2,7 @@ import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, TriangleAlert, WifiIco
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useForm, usePage } from '@inertiajs/react';
-import React, { FormEventHandler, useState } from 'react';
+import React, { FormEventHandler, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -25,8 +25,30 @@ type CreateServerForm = {
   plan: string;
 };
 
-export default function CreateServer({ children }: { children: React.ReactNode }) {
+export default function CreateServer({
+  defaultOpen,
+  onOpenChange,
+  children,
+}: {
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children: React.ReactNode;
+}) {
   const page = usePage<SharedData>();
+
+  const [open, setOpen] = useState(defaultOpen || false);
+  useEffect(() => {
+    if (defaultOpen) {
+      setOpen(defaultOpen);
+    }
+  }, [defaultOpen]);
+
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
+  };
 
   const form = useForm<Required<CreateServerForm>>({
     provider: 'custom',
@@ -97,7 +119,7 @@ export default function CreateServer({ children }: { children: React.ReactNode }
   };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={handleOpenChange} modal>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="w-full lg:max-w-4xl">
         <SheetHeader>
