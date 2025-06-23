@@ -55,7 +55,7 @@ class DigitalOcean extends AbstractProvider
     public function connect(array $credentials): bool
     {
         try {
-            $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/account');
+            $connect = Http::withToken($credentials['token'])->get($this->apiUrl.'/droplets');
         } catch (Exception) {
             throw new CouldNotConnectToProvider('DigitalOcean');
         }
