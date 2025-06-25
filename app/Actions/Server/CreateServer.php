@@ -198,28 +198,8 @@ class CreateServer
     private function createServices(): void
     {
         $this->server->services()->forceDelete();
-        $this->addSupervisor();
-        $this->addRedis();
         $this->addUfw();
         $this->addMonitoring();
-    }
-
-    private function addSupervisor(): void
-    {
-        $this->server->services()->create([
-            'type' => 'process_manager',
-            'name' => 'supervisor',
-            'version' => 'latest',
-        ]);
-    }
-
-    private function addRedis(): void
-    {
-        $this->server->services()->create([
-            'type' => 'memory_database',
-            'name' => 'redis',
-            'version' => 'latest',
-        ]);
     }
 
     private function addUfw(): void
