@@ -9,6 +9,7 @@ export interface Site {
   type: string;
   type_data: {
     method?: 'round-robin' | 'least-connections' | 'ip-hash';
+    env_path?: string;
     [key: string]: unknown;
   };
   domain: string;

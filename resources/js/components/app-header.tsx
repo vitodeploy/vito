@@ -19,7 +19,7 @@ export function AppHeader() {
           <ProjectSwitch />
           <SlashIcon className="size-3" />
           <ServerSwitch />
-          {page.props.server && (
+          {page.props.server && page.props.server.services['webserver'] && (
             <>
               <SlashIcon className="size-3" />
               <SiteSwitch />

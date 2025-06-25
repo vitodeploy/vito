@@ -55,12 +55,17 @@ class HandleInertiaRequests extends Middleware
 
         $data = [];
         if ($request->route('server')) {
-            $data['server'] = ServerResource::make($request->route('server'));
+            /** @var Server $server */
+            $server = $request->route('server');
+            if ($user && $user->can('view', $server) && $user->current_project_id !== $server->project_id) {
+                $user->current_project_id = $server->project_id;
+                $user->save();
+            }
+
+            $data['server'] = ServerResource::make($server);
 
             // sites
             $sites = [];
-            /** @var Server $server */
-            $server = $request->route('server');
             if ($user && $user->can('viewAny', [Site::class, $server])) {
                 $sites = SiteResource::collection($server->sites);
             }

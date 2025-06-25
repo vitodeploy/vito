@@ -11,14 +11,17 @@ import { LoaderCircleIcon } from 'lucide-react';
 import { registerDotEnvLanguage } from '@/lib/editor';
 import { Site } from '@/types/site';
 import { useAppearance } from '@/hooks/use-appearance';
+import { Input } from '@/components/ui/input';
 
 export default function Env({ site, children }: { site: Site; children: ReactNode }) {
   const { getActualAppearance } = useAppearance();
   const [open, setOpen] = useState(false);
   const form = useForm<{
     env: string;
+    path: string;
   }>({
     env: '',
+    path: site.type_data.env_path || `${site.path}/.env`,
   });
 
   const submit = (e: FormEvent) => {
@@ -55,7 +58,15 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>
-          <SheetTitle>Edit .env</SheetTitle>
+          <SheetTitle>
+            <Input
+              name="path"
+              value={form.data.path}
+              onChange={(e) => form.setData('path', e.target.value)}
+              autoFocus={false}
+              className="max-w-[80%]"
+            />
+          </SheetTitle>
           <SheetDescription className="sr-only">Edit .env file</SheetDescription>
         </SheetHeader>
         <Form id="update-env-form" className="h-full" onSubmit={submit}>

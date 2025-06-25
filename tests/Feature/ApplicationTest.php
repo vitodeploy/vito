@@ -147,8 +147,13 @@ class ApplicationTest extends TestCase
             'site' => $this->site,
         ]), [
             'env' => 'APP_ENV="production"',
+            'path' => '/home/vito/some-path/.env',
         ])
             ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertEquals('/home/vito/some-path/.env', data_get($this->site->type_data, 'env_path'));
     }
 
     /**

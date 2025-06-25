@@ -381,6 +381,7 @@ class SitesTest extends TestCase
             'site' => $site,
         ]), [
             'env' => $envContent,
+            'path' => '/home/vito/some-path/.env',
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
