@@ -10,6 +10,7 @@ export interface User {
   updated_at: string;
   timezone: string;
   projects?: Project[];
+  two_factor_enabled: boolean;
   role: string;
   [key: string]: unknown; // This allows for additional properties...
 }

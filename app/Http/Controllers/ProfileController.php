@@ -11,9 +11,12 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
+use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Patch;
+use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
 
@@ -64,5 +67,31 @@ class ProfileController extends Controller
         ]);
 
         return to_route('profile');
+    }
+
+    #[Post('/enable-two-factor', name: 'profile.enable-two-factor')]
+    public function enableTwoFactor(): RedirectResponse
+    {
+        $user = user();
+
+        app(EnableTwoFactorAuthentication::class)($user);
+
+        return back()
+            ->with('success', 'Two factor authentication enabled.')
+            ->with('data', [
+                'qr_code' => $user->twoFactorQrCodeSvg(),
+                'qr_code_url' => $user->twoFactorQrCodeUrl(),
+                'recovery_codes' => $user->recoveryCodes(),
+            ]);
+    }
+
+    #[Post('/disable-two-factor', name: 'profile.disable-two-factor')]
+    public function disableTwoFactor(): RedirectResponse
+    {
+        $user = user();
+
+        app(DisableTwoFactorAuthentication::class)($user);
+
+        return back()->with('success', 'Two factor authentication disabled.');
     }
 }

@@ -49,6 +49,18 @@ class AuthenticatedSessionController extends Controller
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
+        if (user()->two_factor_secret) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            $request->session()->put([
+                'login.id' => user()->id,
+                'login.remember' => $request->boolean('remember'),
+            ]);
+
+            return redirect()->route('two-factor.login');
+        }
+
         return redirect()->intended(route('servers', absolute: false));
     }
 

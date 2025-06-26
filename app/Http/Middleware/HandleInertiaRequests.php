@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
+use App\Http\Resources\UserResource;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
@@ -84,11 +86,11 @@ class HandleInertiaRequests extends Middleware
             'version' => config('app.version'),
             'demo' => config('app.demo'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
-            'auth' => [
-                'user' => $user,
-                'projects' => $user?->allProjects()->get(),
-                'currentProject' => $user?->currentProject,
-            ],
+            'auth' => $user ? [
+                'user' => UserResource::make($user->load('projects')),
+                'projects' => ProjectResource::collection($user->allProjects()->get()),
+                'currentProject' => ProjectResource::make($user->currentProject),
+            ] : null,
             'public_key_text' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
             'project_servers' => $servers,
             'configs' => [

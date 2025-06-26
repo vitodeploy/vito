@@ -5,7 +5,7 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
-import { BookOpenIcon, MoreVerticalIcon } from 'lucide-react';
+import { MoreVerticalIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardRow, CardTitle } from '@/components/ui/card';
 import React from 'react';
 import { Site, SiteFeature } from '@/types/site';
@@ -29,14 +29,6 @@ export default function SiteFeatures() {
       <Container className="max-w-5xl">
         <HeaderContainer>
           <Heading title="Features" description="Your site has some features enabled by Vito or other plugins" />
-          <div className="flex items-center gap-2">
-            <a href="https://vitodeploy.com/docs/sites/features" target="_blank">
-              <Button variant="outline">
-                <BookOpenIcon />
-                <span className="hidden lg:block">Docs</span>
-              </Button>
-            </a>
-          </div>
         </HeaderContainer>
 
         <Card>

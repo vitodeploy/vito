@@ -34,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('plugins', fn (): Plugins => new Plugins);
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+        Fortify::twoFactorChallengeView(function () {
+            return view('app');
+        });
 
         if (config('app.force_https')) {
             URL::forceHttps();
