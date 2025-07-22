@@ -105,13 +105,31 @@ export default function CreateSSL({ site, children }: { site: Site; children: Re
                     name="certificate"
                     value={form.data.certificate}
                     onChange={(e) => form.setData('certificate', e.target.value)}
+                    className="max-h-60"
                   />
                   <InputError message={form.errors.certificate} />
                 </FormField>
                 <FormField>
                   <Label htmlFor="private">Private key</Label>
-                  <Textarea id="private" name="private" value={form.data.private} onChange={(e) => form.setData('private', e.target.value)} />
+                  <Textarea
+                    id="private"
+                    name="private"
+                    value={form.data.private}
+                    onChange={(e) => form.setData('private', e.target.value)}
+                    className="max-h-60"
+                  />
                   <InputError message={form.errors.private} />
+                </FormField>
+                <FormField>
+                  <Label htmlFor="expires-at">Expires at</Label>
+                  <Input
+                    id="date"
+                    value={form.data.expires_at}
+                    placeholder="YYYY-MM-DD"
+                    className="bg-background pr-10"
+                    onChange={(e) => form.setData('expires_at', e.target.value)}
+                  />
+                  <InputError message={form.errors.expires_at} />
                 </FormField>
               </>
             )}
