@@ -6,6 +6,7 @@ use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Models\Project;
 use App\Models\ServerProvider;
 use App\NotificationChannels\Email\NotificationMail;
 use App\ServerProviders\Custom;
@@ -247,5 +248,27 @@ class ServerTest extends TestCase
 
         $this->assertEquals(ServerStatus::READY, $this->server->status);
         $this->assertEquals(0, $this->server->updates);
+    }
+
+    public function test_transfer_server(): void
+    {
+        $this->actingAs($this->user);
+
+        /** @var Project $newProject */
+        $newProject = $this->user->projects()->create([
+            'name' => 'New Project',
+        ]);
+
+        $this->post(route('servers.transfer', $this->server), [
+            'project_id' => $newProject->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'project_id' => $newProject->id,
+        ]);
+
+        $this->assertEquals($newProject->id, $this->user->refresh()->current_project_id);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Server\CreateServer;
 use App\Actions\Server\RebootServer;
+use App\Actions\Server\TransferServer;
 use App\Actions\Server\Update;
 use App\Exceptions\SSHError;
 use App\Http\Resources\ServerLogResource;
@@ -141,6 +142,17 @@ class ServerController extends Controller
         app(Update::class)->update($server);
 
         return back()->with('info', 'Server is being updated. This may take a while.');
+    }
+
+    #[Post('/{server}/transfer', name: 'servers.transfer')]
+    public function transfer(Server $server, Request $request): RedirectResponse
+    {
+        $server = app(TransferServer::class)->transfer(user(), $server, $request->all());
+
+        user()->update(['current_project_id' => $server->project_id]);
+
+        return redirect()->route('server-settings', ['server' => $server->id])
+            ->with('success', __('Server transferred successfully.'));
     }
 
     #[Delete('/{server}', name: 'servers.destroy')]

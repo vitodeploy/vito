@@ -14,6 +14,7 @@ import CopyableBadge from '@/components/copyable-badge';
 import { Input } from '@/components/ui/input';
 import React, { useState } from 'react';
 import DeleteServer from '@/pages/servers/components/delete-server';
+import TransferServer from '@/pages/servers/components/transfer-server';
 
 export default function Databases() {
   const page = usePage<{
@@ -206,6 +207,22 @@ export default function Databases() {
             <div className="flex items-center justify-between p-4">
               <span>Public key</span>
               <CopyableBadge text={page.props.server.public_key} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Transfer server</CardTitle>
+            <CardDescription>Here you can transfer server to another project</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 p-4">
+              <p>please note that this action is irreversible and will delete all data associated with the server.</p>
+
+              <TransferServer server={page.props.server}>
+                <Button variant="outline">Transfer server</Button>
+              </TransferServer>
             </div>
           </CardContent>
         </Card>

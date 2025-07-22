@@ -168,7 +168,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                             <CollapsibleContent>
                               <SidebarMenuSub>
                                 {item.children.map((childItem) => (
-                                  <SidebarMenuSubItem key={`${childItem.title}-${childItem.href}`}>
+                                  <SidebarMenuSubItem key={`${childItem.title}-${childItem.href}`} hidden={childItem.hidden}>
                                     <SidebarMenuButton
                                       asChild
                                       isActive={
