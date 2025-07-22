@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Actions\Server\CreateServer;
 use App\Enums\ServiceStatus;
+use App\Facades\SSH;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
@@ -101,14 +101,16 @@ class ServersSeeder extends Seeder
 
     private function firewall(Server $server): void
     {
-        Service::query()->create([
+        SSH::fake();
+
+        $service = Service::query()->create([
             'server_id' => $server->id,
             'type' => 'firewall',
             'name' => 'ufw',
             'version' => 'latest',
             'status' => ServiceStatus::READY,
         ]);
-        app(CreateServer::class)->createFirewallRules($server);
+        $service->handler()->install();
     }
 
     private function monitoring(Server $server): void

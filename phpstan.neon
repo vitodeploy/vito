@@ -6,4 +6,4 @@ parameters:
         - app
         - bootstrap
         - database/factories
-    level: 7
+    level: 5

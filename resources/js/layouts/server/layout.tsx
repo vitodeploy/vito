@@ -155,6 +155,7 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       href: route('firewall', { server: page.props.server.id }),
       icon: FlameIcon,
       isDisabled: isMenuDisabled,
+      hidden: !page.props.server.services['firewall'],
     },
     {
       title: 'CronJobs',

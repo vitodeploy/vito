@@ -55,7 +55,7 @@ class InstallServer
         $this->server->os()->installDependencies();
         $services = $this->server->services;
         $currentProgress = 45;
-        $progressPerService = (100 - $currentProgress) / count($services);
+        $progressPerService = count($services) ? (100 - $currentProgress) / count($services) : 0;
         foreach ($services as $service) {
             $currentProgress += $progressPerService;
             $this->progress($currentProgress, 'installing- '.$service->name);

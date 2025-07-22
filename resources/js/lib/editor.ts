@@ -1,4 +1,4 @@
-type monacoType = typeof import('/Users/saeed/Projects/vito/node_modules/monaco-editor/esm/vs/editor/editor.api') | null;
+type monacoType = typeof import('../../../node_modules/monaco-editor/esm/vs/editor/editor.api') | null;
 
 export function registerIniLanguage(monaco: monacoType): void {
   monaco?.languages.register({ id: 'ini' });

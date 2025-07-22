@@ -32,6 +32,7 @@ class ServerProviderServiceProvider extends ServiceProvider
         RegisterServerProvider::make(Custom::id())
             ->label('Custom')
             ->handler(Custom::class)
+            ->defaultUser('root')
             ->register();
     }
 

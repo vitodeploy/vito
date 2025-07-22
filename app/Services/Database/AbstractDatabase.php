@@ -30,12 +30,8 @@ abstract class AbstractDatabase extends AbstractService implements Database
 
     protected bool $removeLastRow = false;
 
-    /**
-     * @phpstan-return view-string
-     */
     protected function getScriptView(string $script): string
     {
-        /** @phpstan-ignore-next-line */
         return 'ssh.services.database.'.$this->service->name.'.'.$script;
     }
 

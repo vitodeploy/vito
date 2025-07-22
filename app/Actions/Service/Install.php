@@ -3,6 +3,7 @@
 namespace App\Actions\Service;
 
 use App\Enums\ServiceStatus;
+use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
@@ -12,6 +13,8 @@ class Install
 {
     /**
      * @param  array<string, mixed>  $input
+     *
+     * @throws SSHError
      */
     public function install(Server $server, array $input): Service
     {

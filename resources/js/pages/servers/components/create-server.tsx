@@ -1,4 +1,4 @@
-import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, TriangleAlert, WifiIcon } from 'lucide-react';
+import { ClipboardCheckIcon, ClipboardIcon, LoaderCircle, PlusIcon, TrashIcon, TriangleAlert, WifiIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useForm, usePage } from '@inertiajs/react';
@@ -13,6 +13,25 @@ import ConnectServerProvider from '@/pages/server-providers/components/connect-s
 import axios from 'axios';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import type { SharedData } from '@/types';
+import { DataTable } from '@/components/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+import { EventBus } from '@/lib/event-bus';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+
+type Service = {
+  type: string;
+  name: string;
+  version: string;
+};
 
 type CreateServerForm = {
   provider: string;
@@ -23,7 +42,141 @@ type CreateServerForm = {
   port: number;
   region: string;
   plan: string;
+  services: Service[];
 };
+
+function AddService() {
+  const [open, setOpen] = useState(false);
+  const page = usePage<SharedData>();
+  const form = useForm<Service>({
+    type: '',
+    name: '',
+    version: '',
+  });
+
+  const add = () => {
+    if (!form.data.name) {
+      form.setError('name', 'Please select a service name');
+      return;
+    }
+
+    if (!form.data.version) {
+      form.setError('version', 'Please select a service version');
+      return;
+    }
+
+    EventBus.emit('add-service', form.data);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog modal open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <div className="flex items-center justify-end p-0">
+          <button type="button" className="cursor-pointer">
+            <PlusIcon className="size-4" />
+          </button>
+        </div>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add service</DialogTitle>
+          <DialogDescription className="sr-only">Add a new service to server installation</DialogDescription>
+        </DialogHeader>
+
+        <Form id="add-service-form" onSubmit={add} className="p-4">
+          <FormFields>
+            {/*service*/}
+            <FormField>
+              <Label htmlFor="name">Name</Label>
+              <Select
+                value={form.data.name}
+                onValueChange={(value) => {
+                  form.setData('name', value);
+                  form.setData('type', page.props.configs.service.services[value].type);
+                  form.setData('version', '');
+                }}
+              >
+                <SelectTrigger id="name">
+                  <SelectValue placeholder="Select a service" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {Object.entries(page.props.configs.service.services).map(([key, service]) => (
+                      <SelectItem key={`service-${key}`} value={key}>
+                        {service.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <InputError message={form.errors.type || form.errors.name} />
+            </FormField>
+
+            {/*version*/}
+            <FormField>
+              <Label htmlFor="version">Version</Label>
+              <Select value={form.data.version} onValueChange={(value) => form.setData('version', value)}>
+                <SelectTrigger id="version">
+                  <SelectValue placeholder="Select a version" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {form.data.name &&
+                      page.props.configs.service.services[form.data.name].versions.map((version) => (
+                        <SelectItem key={`version-${form.data.name}-${version}`} value={version}>
+                          {version}
+                        </SelectItem>
+                      ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <InputError message={form.errors.version} />
+            </FormField>
+          </FormFields>
+        </Form>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button form="add-service-form" type="button" onClick={add}>
+            Add
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const servicesColumns: ColumnDef<Service>[] = [
+  {
+    accessorKey: 'type',
+    header: 'Type',
+  },
+  {
+    accessorKey: 'name',
+    header: 'Name',
+  },
+  {
+    accessorKey: 'version',
+    header: 'Version',
+  },
+  {
+    id: 'actions',
+    header: () => <AddService />,
+    enableSorting: false,
+    cell: ({ row }) => (
+      <div className="flex items-center justify-end">
+        <button type="button" className="hover:text-destructive" onClick={() => EventBus.emit('remove-service', row.original)}>
+          <TrashIcon className="size-4" />
+        </button>
+      </div>
+    ),
+  },
+];
 
 export default function CreateServer({
   defaultOpen,
@@ -41,6 +194,29 @@ export default function CreateServer({
     if (defaultOpen) {
       setOpen(defaultOpen);
     }
+
+    const handleRemoveService = (d: unknown) => {
+      const service = d as Service;
+      form.setData((data) => ({
+        ...data,
+        services: data.services.filter((s) => s.type !== service.type || s.name !== service.name || s.version !== service.version),
+      }));
+    };
+    EventBus.on('remove-service', handleRemoveService);
+
+    const handleAddService = (d: unknown) => {
+      const service = d as Service;
+      form.setData((data) => ({
+        ...data,
+        services: [...data.services, service],
+      }));
+    };
+    EventBus.on('add-service', handleAddService);
+
+    return () => {
+      EventBus.off('remove-service', handleRemoveService);
+      EventBus.off('add-service', handleAddService);
+    };
   }, [defaultOpen]);
 
   const handleOpenChange = (open: boolean) => {
@@ -59,6 +235,38 @@ export default function CreateServer({
     port: 22,
     region: '',
     plan: '',
+    services: [
+      {
+        type: 'webserver',
+        name: 'nginx',
+        version: 'latest',
+      },
+      {
+        type: 'database',
+        name: 'mysql',
+        version: '8.4',
+      },
+      {
+        type: 'memory_database',
+        name: 'redis',
+        version: 'latest',
+      },
+      {
+        type: 'process_manager',
+        name: 'supervisor',
+        version: 'latest',
+      },
+      {
+        type: 'firewall',
+        name: 'ufw',
+        version: 'latest',
+      },
+      {
+        type: 'monitoring',
+        name: 'remote-monitor',
+        version: 'latest',
+      },
+    ],
   });
 
   const submit: FormEventHandler = (e) => {
@@ -291,6 +499,22 @@ export default function CreateServer({
                 </FormField>
               </div>
             )}
+
+            <div>
+              <FormField>
+                <Label>Services</Label>
+                <div>
+                  <DataTable columns={servicesColumns} data={form.data.services} />
+                </div>
+                {Object.entries(form.errors)
+                  .filter(([key, value]) => {
+                    return key.startsWith('services') && value.length > 0;
+                  })
+                  .map(([key, value]) => (
+                    <InputError key={key} message={value} />
+                  ))}
+              </FormField>
+            </div>
           </FormFields>
         </Form>
         <SheetFooter>

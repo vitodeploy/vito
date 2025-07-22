@@ -33,6 +33,13 @@ class ServerTest extends TestCase
             'ip' => '1.1.1.1',
             'port' => '22',
             'os' => OperatingSystem::UBUNTU22,
+            'services' => [
+                [
+                    'name' => 'ufw',
+                    'type' => 'firewall',
+                    'version' => 'latest',
+                ],
+            ],
         ]))
             ->assertSessionDoesntHaveErrors();
 

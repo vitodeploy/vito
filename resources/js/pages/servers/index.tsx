@@ -9,7 +9,6 @@ import Heading from '@/components/heading';
 import CreateServer from '@/pages/servers/components/create-server';
 import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
-import React from 'react';
 import Layout from '@/layouts/app/layout';
 import { PlusIcon } from 'lucide-react';
 

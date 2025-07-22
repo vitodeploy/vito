@@ -2,7 +2,6 @@
 
 namespace App\Actions\Server;
 
-use App\Enums\FirewallRuleStatus;
 use App\Enums\ServerStatus;
 use App\Facades\Notifier;
 use App\Models\Project;
@@ -59,14 +58,11 @@ class CreateServer
             // save
             $this->server->save();
 
-            // create firewall rules
-            $this->createFirewallRules($this->server);
-
             // create instance
             $this->server->provider()->create();
 
             // create services
-            $this->createServices();
+            $this->createServices($input);
 
             // install server
             dispatch(function (): void {
@@ -134,6 +130,22 @@ class CreateServer
                     'max:65535',
                 ]),
             ],
+            'services' => [
+                'array',
+                'nullable',
+            ],
+            'services.*.type' => [
+                'string',
+                Rule::in(collect(config('service.services'))->pluck('type')->toArray()),
+            ],
+            'services.*.name' => [
+                'string',
+                Rule::in(array_keys(config('service.services'))),
+            ],
+            'services.*.version' => [
+                'string',
+                Rule::in(collect(config('service.services'))->pluck('versions')->flatten()->toArray()),
+            ],
         ];
 
         return array_merge($rules, self::providerRules($input));
@@ -162,61 +174,16 @@ class CreateServer
         return $server->provider()->createRules($input);
     }
 
-    public function createFirewallRules(Server $server): void
-    {
-        $server->firewallRules()->createMany([
-            [
-                'type' => 'allow',
-                'name' => 'SSH',
-                'protocol' => 'tcp',
-                'port' => 22,
-                'source' => null,
-                'mask' => null,
-                'status' => FirewallRuleStatus::READY,
-            ],
-            [
-                'type' => 'allow',
-                'name' => 'HTTP',
-                'protocol' => 'tcp',
-                'port' => 80,
-                'source' => null,
-                'mask' => null,
-                'status' => FirewallRuleStatus::READY,
-            ],
-            [
-                'type' => 'allow',
-                'name' => 'HTTPS',
-                'protocol' => 'tcp',
-                'port' => 443,
-                'source' => null,
-                'mask' => null,
-                'status' => FirewallRuleStatus::READY,
-            ],
-        ]);
-    }
-
-    private function createServices(): void
+    private function createServices(array $input): void
     {
         $this->server->services()->forceDelete();
-        $this->addUfw();
-        $this->addMonitoring();
-    }
 
-    private function addUfw(): void
-    {
-        $this->server->services()->create([
-            'type' => 'firewall',
-            'name' => 'ufw',
-            'version' => 'latest',
-        ]);
-    }
-
-    private function addMonitoring(): void
-    {
-        $this->server->services()->create([
-            'type' => 'monitoring',
-            'name' => 'remote-monitor',
-            'version' => 'latest',
-        ]);
+        foreach ($input['services'] as $service) {
+            $this->server->services()->create([
+                'type' => $service['type'],
+                'name' => $service['name'],
+                'version' => $service['version'],
+            ]);
+        }
     }
 }
