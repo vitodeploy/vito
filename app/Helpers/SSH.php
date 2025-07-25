@@ -9,6 +9,7 @@ use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use Exception;
+use Illuminate\Contracts\View\View;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,7 @@ use phpseclib3\Crypt\Common\PrivateKey;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SFTP;
 use phpseclib3\Net\SSH2;
+use RuntimeException;
 use Throwable;
 
 class SSH
@@ -92,7 +94,7 @@ class SSH
     /**
      * @throws SSHError
      */
-    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
+    public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
         if (! $this->log instanceof ServerLog && $log) {
             $this->log = ServerLog::newLog($this->server, $log);
@@ -164,6 +166,10 @@ class SSH
             $this->connect(true);
         }
 
+        if (! $this->connection instanceof SFTP) {
+            throw new RuntimeException('Connection is not established!');
+        }
+
         $tmpName = Str::random(10).strtotime('now');
         $tempPath = home_path($this->user).'/'.$tmpName;
 
@@ -189,6 +195,10 @@ class SSH
             $this->connect(true);
         }
 
+        if (! $this->connection instanceof SFTP) {
+            throw new RuntimeException('Connection is not established!');
+        }
+
         /** @phpstan-ignore-next-line */
         $this->connection->get($remote, $local);
     }
@@ -196,7 +206,7 @@ class SSH
     /**
      * @throws SSHError
      */
-    public function write(string $remotePath, string $content, ?string $owner = null): void
+    public function write(string $remotePath, string|View $content, ?string $owner = null): void
     {
         $tmpName = Str::random(10).strtotime('now');
 

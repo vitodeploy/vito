@@ -6,6 +6,7 @@ use App\Exceptions\SSHConnectionError;
 use App\Helpers\SSH;
 use App\Models\Server;
 use App\Models\ServerLog;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Traits\ReflectsClosures;
 use PHPUnit\Framework\Assert;
 
@@ -52,7 +53,7 @@ class SSHFake extends SSH
         }
     }
 
-    public function exec(string $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
+    public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
         if (! $this->log instanceof ServerLog && $log) {
             /** @var ServerLog $log */
