@@ -185,5 +185,12 @@ class CreateServer
                 'version' => $service['version'],
             ]);
         }
+
+        $this->server->services()->where('type', '=', 'php')->update(['is_default' => 0]);
+        $this->server->services()
+            ->where('type', '=', 'php')
+            ->orderBy('version', 'desc')
+            ->first()
+            ?->update(['is_default' => 1]);
     }
 }

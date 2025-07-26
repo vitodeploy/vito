@@ -66,8 +66,8 @@ export default function Extensions({ service }: { service: Service }) {
                 <SelectContent>
                   <SelectGroup>
                     {php.data?.extensions?.map((extension: string) => (
-                      <SelectItem key={`extension-${extension}`} value={extension} disabled={service.type_data.extensions?.includes(extension)}>
-                        {extension} {service.type_data.extensions?.includes(extension) && <span>(installed)</span>}
+                      <SelectItem key={`extension-${extension}`} value={extension} disabled={service.type_data?.extensions?.includes(extension)}>
+                        {extension} {service.type_data?.extensions?.includes(extension) && <span>(installed)</span>}
                       </SelectItem>
                     ))}
                   </SelectGroup>
