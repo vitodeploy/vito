@@ -116,6 +116,7 @@ export interface SharedData {
   site?: Site;
   public_key_text: string;
   flash?: {
+    status: string;
     success: string;
     error: string;
     info: string;

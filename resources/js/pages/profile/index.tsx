@@ -7,11 +7,24 @@ import Heading from '@/components/heading';
 import TwoFactor from '@/pages/profile/components/two-factor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
+import { BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Settings',
+    href: '/settings',
+  },
+  {
+    title: 'Profile',
+    href: '/settings/profile',
+  },
+];
 
 export default function Profile() {
   const [tab, setTab] = useState('info');
+
   return (
-    <SettingsLayout>
+    <SettingsLayout breadcrumbs={breadcrumbs}>
       <Head title="Profile settings" />
       <Container className="max-w-5xl">
         <Heading title="Profile settings" description="Manage your profile settings." />
@@ -22,7 +35,7 @@ export default function Profile() {
             <TabsTrigger value="password">Password</TabsTrigger>
             <TabsTrigger value="two_factor">Two Factor</TabsTrigger>
           </TabsList>
-          <TabsContent value="info">
+          <TabsContent value="info" className="space-y-4">
             <UpdateProfile />
           </TabsContent>
           <TabsContent value="password">

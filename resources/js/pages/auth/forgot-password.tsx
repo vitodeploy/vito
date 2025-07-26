@@ -1,63 +1,70 @@
-// Components
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
-
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { CheckCircle2Icon, LoaderCircleIcon } from 'lucide-react';
+import { FormEvent } from 'react';
 import InputError from '@/components/ui/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth/layout';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { SharedData } from '@/types';
 
-export default function ForgotPassword({ status }: { status?: string }) {
-  const { data, setData, post, processing, errors } = useForm<Required<{ email: string }>>({
+export default function ForgotPassword() {
+  const page = usePage<SharedData>();
+  const form = useForm<{ email: string }>({
     email: '',
   });
 
-  const submit: FormEventHandler = (e) => {
+  const submit = (e: FormEvent) => {
     e.preventDefault();
 
-    post(route('password.email'));
+    form.post('/forgot-password');
   };
 
   return (
     <AuthLayout title="Forgot password" description="Enter your email to receive a password reset link">
       <Head title="Forgot password" />
 
-      {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+      {page.props.flash?.status && (
+        <Alert className="mb-4">
+          <AlertDescription className="flex items-center gap-2">
+            <CheckCircle2Icon className="text-success size-4" />
+            {page.props.flash?.status}
+          </AlertDescription>
+        </Alert>
+      )}
 
-      <div className="space-y-6">
-        <form onSubmit={submit}>
+      <form id="forget-password-form" onSubmit={submit}>
+        <div className="grid gap-6">
           <div className="grid gap-2">
             <Label htmlFor="email">Email address</Label>
             <Input
               id="email"
               type="email"
+              required
               name="email"
-              autoComplete="off"
-              value={data.email}
+              value={form.data.email}
               autoFocus
-              onChange={(e) => setData('email', e.target.value)}
+              onChange={(e) => form.setData('email', e.target.value)}
               placeholder="email@example.com"
             />
-
-            <InputError message={errors.email} />
+            <InputError message={form.errors.email} />
           </div>
 
-          <div className="my-6 flex items-center justify-start">
-            <Button className="w-full" disabled={processing}>
-              {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+          <div className="flex items-center justify-start">
+            <Button className="w-full" disabled={form.processing}>
+              {form.processing && <LoaderCircleIcon className="animate-spin" />}
               Email password reset link
             </Button>
           </div>
-        </form>
-
-        <div className="text-muted-foreground space-x-1 text-center text-sm">
-          <span>Or, return to</span>
-          <TextLink href={route('login')}>log in</TextLink>
         </div>
-      </div>
+
+        <div className="text-muted-foreground mt-4 space-x-1 text-center text-sm">
+          <span>Or, return to</span>
+          <TextLink href="/login">log in</TextLink>
+        </div>
+      </form>
     </AuthLayout>
   );
 }

@@ -10,7 +10,6 @@ use App\Plugins\Plugins;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Fortify\Fortify;
 use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,10 +17,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-        Fortify::ignoreRoutes();
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
@@ -34,9 +30,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('plugins', fn (): Plugins => new Plugins);
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
-        Fortify::twoFactorChallengeView(function () {
-            return view('app');
-        });
 
         if (config('app.force_https')) {
             URL::forceHttps();

@@ -2,35 +2,36 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
-import { useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import type { SharedData } from '@/types';
-import { FormEventHandler } from 'react';
-import { Form, FormField, FormFields } from '@/components/ui/form';
+import { FormEvent } from 'react';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 
-type ProfileForm = {
-  name: string;
-  email: string;
-};
-
 export default function UpdateProfile() {
-  const { auth } = usePage<SharedData>().props;
+  const page = usePage<
+    SharedData & {
+      must_verify_email: boolean;
+    }
+  >();
 
-  const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-    name: auth.user.name,
-    email: auth.user.email,
+  const form = useForm<{
+    name: string;
+    email: string;
+  }>({
+    name: page.props.auth.user.name,
+    email: page.props.auth.user.email,
   });
 
-  const submit: FormEventHandler = (e) => {
+  const submit = (e: FormEvent) => {
     e.preventDefault();
 
-    patch(route('profile.update'), {
+    form.put('/user/profile-information', {
       preserveScroll: true,
+      errorBag: 'updateProfileInformation',
     });
   };
-
   return (
     <Card>
       <CardHeader>
@@ -38,40 +39,51 @@ export default function UpdateProfile() {
         <CardDescription>Update your profile information and email address.</CardDescription>
       </CardHeader>
       <CardContent className="p-4">
-        <Form id="update-profile-form" onSubmit={submit}>
-          <FormFields>
-            <FormField>
+        <form id="update-profile-form" onSubmit={submit}>
+          <div className="grid gap-6">
+            <div className="grid gap-2">
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                value={data.name}
-                onChange={(e) => setData('name', e.target.value)}
-                required
+                value={form.data.name}
+                onChange={(e) => form.setData('name', e.target.value)}
                 autoComplete="name"
                 placeholder="Full name"
               />
-              <InputError message={errors.name} />
-            </FormField>
-            <FormField>
+              <InputError message={form.errors.name} />
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="email">Email address</Label>
               <Input
                 id="email"
                 type="email"
-                value={data.email}
-                onChange={(e) => setData('email', e.target.value)}
-                required
+                value={form.data.email}
+                onChange={(e) => form.setData('email', e.target.value)}
                 autoComplete="username"
                 placeholder="Email address"
               />
-              <InputError message={errors.email} />
-            </FormField>
-          </FormFields>
-        </Form>
+              <InputError message={form.errors.email} />
+            </div>
+            {page.props.must_verify_email && page.props.auth.user.email_verified_at === null && (
+              <div>
+                <p className="text-muted-foreground -mt-4 text-sm">
+                  Your email address is unverified.{' '}
+                  <Link href="/email/verification-notification" method="post" as="button" className="text-foreground underline">
+                    Click here to resend the verification email.
+                  </Link>
+                </p>
+                {page.props.status === 'verification-link-sent' && (
+                  <div className="text-success mt-2 text-sm font-medium">A new verification link has been sent to your email address.</div>
+                )}
+              </div>
+            )}
+          </div>
+        </form>
       </CardContent>
       <CardFooter className="gap-2">
-        <Button form="update-profile-form" disabled={processing}>
-          {processing && <LoaderCircleIcon className="animate-spin" />}
-          <FormSuccessful successful={recentlySuccessful} />
+        <Button form="update-profile-form" disabled={form.processing}>
+          {form.processing && <LoaderCircleIcon className="animate-spin" />}
+          <FormSuccessful successful={form.recentlySuccessful} />
           Save
         </Button>
       </CardFooter>

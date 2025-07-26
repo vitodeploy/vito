@@ -1,8 +1,6 @@
-// Components
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
-
+import { LoaderCircleIcon } from 'lucide-react';
+import { FormEvent } from 'react';
 import InputError from '@/components/ui/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,15 +8,15 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth/layout';
 
 export default function ConfirmPassword() {
-  const { data, setData, post, processing, errors, reset } = useForm<Required<{ password: string }>>({
+  const form = useForm<{ password: string }>({
     password: '',
   });
 
-  const submit: FormEventHandler = (e) => {
+  const submit = (e: FormEvent) => {
     e.preventDefault();
 
-    post(route('password.confirm.store'), {
-      onFinish: () => reset('password'),
+    form.post('/user/confirm-password', {
+      onFinish: () => form.reset('password'),
     });
   };
 
@@ -26,27 +24,27 @@ export default function ConfirmPassword() {
     <AuthLayout title="Confirm your password" description="This is a secure area of the application. Please confirm your password before continuing.">
       <Head title="Confirm password" />
 
-      <form onSubmit={submit}>
-        <div className="space-y-6">
+      <form id="confirm-password-form" onSubmit={submit}>
+        <div className="grid gap-6">
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
               name="password"
+              required
               placeholder="Password"
               autoComplete="current-password"
-              value={data.password}
+              value={form.data.password}
               autoFocus
-              onChange={(e) => setData('password', e.target.value)}
+              onChange={(e) => form.setData('password', e.target.value)}
             />
-
-            <InputError message={errors.password} />
+            <InputError message={form.errors.password} />
           </div>
 
           <div className="flex items-center">
-            <Button className="w-full" disabled={processing}>
-              {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+            <Button className="w-full" disabled={form.processing}>
+              {form.processing && <LoaderCircleIcon className="animate-spin" />}
               Confirm password
             </Button>
           </div>
