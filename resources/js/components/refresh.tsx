@@ -35,7 +35,7 @@ export default function Refresh() {
 
   useEffect(() => {
     poll?.stop();
-    if (refreshInterval > 0) {
+    if (parseInt(refreshInterval.toString()) > 0) {
       setPoll(router.poll(refreshInterval * 1000));
     } else {
       poll?.stop();

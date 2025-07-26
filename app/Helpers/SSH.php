@@ -173,7 +173,6 @@ class SSH
         $tmpName = Str::random(10).strtotime('now');
         $tempPath = home_path($this->user).'/'.$tmpName;
 
-        /** @phpstan-ignore-next-line */
         $this->connection->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
 
         $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));
@@ -199,7 +198,6 @@ class SSH
             throw new RuntimeException('Connection is not established!');
         }
 
-        /** @phpstan-ignore-next-line */
         $this->connection->get($remote, $local);
     }
 
