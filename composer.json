@@ -1,94 +1,101 @@
 {
-    "name": "vitodeploy/vito",
-    "type": "project",
-    "description": "The ultimate server management tool",
-    "keywords": [
-        "framework",
-        "laravel"
+  "name": "vitodeploy/vito",
+  "type": "project",
+  "description": "The ultimate server management tool",
+  "keywords": [
+    "framework",
+    "laravel"
+  ],
+  "license": "AGPL-3.0",
+  "require": {
+    "php": "^8.4",
+    "ext-ftp": "*",
+    "ext-intl": "*",
+    "aws/aws-sdk-php": "^3.158",
+    "inertiajs/inertia-laravel": "^2.0",
+    "laravel/fortify": "^1.17",
+    "laravel/framework": "^12.0",
+    "laravel/horizon": "^5.33",
+    "laravel/sanctum": "^4.0",
+    "laravel/tinker": "^2.8",
+    "mobiledetect/mobiledetectlib": "^4.8",
+    "opcodesio/log-viewer": "^3.17",
+    "phpseclib/phpseclib": "3.0.43",
+    "spatie/laravel-route-attributes": "^1.24",
+    "tightenco/ziggy": "^2.5"
+  },
+  "require-dev": {
+    "fakerphp/faker": "^1.9.1",
+    "knuckleswtf/scribe": "^5.0",
+    "larastan/larastan": "^3.1",
+    "laravel/pint": "^1.10",
+    "laravel/sail": "^1.18",
+    "mockery/mockery": "^1.4.4",
+    "nunomaduro/collision": "^8.1",
+    "phpunit/phpunit": "^11.0",
+    "rector/rector": "^2.0",
+    "spatie/laravel-ignition": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/"
+    },
+    "files": [
+      "app/Support/helpers.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+      "@php artisan package:discover --ansi"
     ],
-    "license": "AGPL-3.0",
-    "require": {
-        "php": "^8.4",
-        "ext-ftp": "*",
-        "ext-intl": "*",
-        "aws/aws-sdk-php": "^3.158",
-        "inertiajs/inertia-laravel": "^2.0",
-        "laravel/fortify": "^1.17",
-        "laravel/framework": "^12.0",
-        "laravel/horizon": "^5.33",
-        "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.8",
-        "mobiledetect/mobiledetectlib": "^4.8",
-        "opcodesio/log-viewer": "^3.17",
-        "phpseclib/phpseclib": "3.0.43",
-        "spatie/laravel-route-attributes": "^1.24",
-        "tightenco/ziggy": "^2.5"
-    },
-    "require-dev": {
-        "fakerphp/faker": "^1.9.1",
-        "knuckleswtf/scribe": "^5.0",
-        "larastan/larastan": "^3.1",
-        "laravel/pint": "^1.10",
-        "laravel/sail": "^1.18",
-        "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.0",
-        "rector/rector": "^2.0",
-        "spatie/laravel-ignition": "^2.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
-        },
-        "files": [
-            "app/Support/helpers.php"
-        ]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
-        }
-    },
-    "scripts": {
-        "post-autoload-dump": [
-            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
-        ],
-        "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
-        ],
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi"
-        ]
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "storage/plugins/*/*",
-            "options": {
-                "symlink": true
-            }
-        }
+    "post-update-cmd": [
+      "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
     ],
-    "extra": {
-        "laravel": {
-            "dont-discover": []
-        }
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "php-http/discovery": true
-        }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    "post-root-package-install": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-create-project-cmd": [
+      "@php artisan key:generate --ansi"
+    ],
+    "pre-commit": [
+      "./vendor/bin/pint --parallel",
+      "./vendor/bin/phpstan analyze",
+      "npm run format",
+      "npm run lint",
+      "@php artisan test"
+    ]
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "storage/plugins/*/*",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "dont-discover": []
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "php-http/discovery": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

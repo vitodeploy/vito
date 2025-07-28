@@ -19,6 +19,7 @@ import ChangePHPVersion from '@/pages/site-settings/components/php-version';
 import DeleteSite from '@/pages/site-settings/components/delete-site';
 import VHost from '@/pages/site-settings/components/vhost';
 import ChangeSourceControl from '@/pages/site-settings/components/source-control';
+import Aliases from './components/aliases';
 
 export default function Databases() {
   const page = usePage<{
@@ -33,7 +34,7 @@ export default function Databases() {
 
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title="Settings" description="Here you can manage your server's settings" />
+          <Heading title="Settings" description="Here you can manage your site's settings" />
           <div className="flex items-center gap-2">
             <a href="https://vitodeploy.com/docs/sites/settings" target="_blank">
               <Button variant="outline">
@@ -62,6 +63,15 @@ export default function Databases() {
               <a href={page.props.site.url} target="_blank" className="text-muted-foreground hover:underline">
                 {page.props.site.domain}
               </a>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between p-4">
+              <span>Aliases</span>
+              <Aliases site={page.props.site}>
+                <Button variant="outline" className="h-6">
+                  Update Aliases
+                </Button>
+              </Aliases>
             </div>
             <Separator />
             <div className="flex items-center justify-between p-4">

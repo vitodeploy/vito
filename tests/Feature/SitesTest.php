@@ -276,6 +276,24 @@ class SitesTest extends TestCase
         SSH::assertExecutedContains('git checkout -f master');
     }
 
+    public function test_update_aliases(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-aliases', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'aliases' => ['www.example.com', 'test.example.com'],
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+        $this->assertEquals(['www.example.com', 'test.example.com'], $this->site->aliases);
+    }
+
     /**
      * @return array<array<int, mixed>>
      */

@@ -107,7 +107,7 @@ function Delete({ sourceControl }: { sourceControl: SourceControl }) {
           <p>
             Are you sure you want to delete <strong>{sourceControl.name}</strong>?
           </p>
-          <InputError message={form.errors.provider} />
+          <InputError message={form.errors.source_control} />
         </div>
         <DialogFooter>
           <DialogClose asChild>

@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\Site;
 use App\Services\Webserver\Webserver;
 use App\ValidationRules\DomainRule;
+use Illuminate\Support\Facades\Validator;
 
 class UpdateAliases
 {
@@ -14,6 +15,8 @@ class UpdateAliases
      */
     public function update(Site $site, array $input): void
     {
+        $this->validate($input);
+
         $site->aliases = $input['aliases'] ?? [];
 
         /** @var Service $service */
@@ -28,15 +31,12 @@ class UpdateAliases
         $site->save();
     }
 
-    /**
-     * @return array<string, array<int, mixed>>
-     */
-    public static function rules(): array
+    protected function validate(array $input): void
     {
-        return [
+        Validator::make($input, [
             'aliases.*' => [
                 new DomainRule,
             ],
-        ];
+        ])->validate();
     }
 }
