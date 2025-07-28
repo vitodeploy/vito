@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -27,8 +26,13 @@ class ProfileController extends Controller
     #[Get('/', name: 'profile')]
     public function edit(Request $request): Response
     {
+        $user = user();
+
         return Inertia::render('profile/index', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'two_factor_enabled' => (bool) $user->two_factor_secret,
+            'two_factor_recovery_codes' => $user->two_factor_secret ? $user->recoveryCodes() : null,
+            'two_factor_confirmed_at' => $user->two_factor_confirmed_at,
+            'two_factor_must_confirm' => (bool) config('fortify-options.two-factor-authentication.confirm'),
             'status' => $request->session()->get('status'),
         ]);
     }

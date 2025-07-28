@@ -215,7 +215,7 @@ export default function TwoFactor() {
         <CardTitle>Two factor authentication</CardTitle>
         <CardDescription>Enable or Disable two factor authentication</CardDescription>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent className="space-y-4 p-4">
         {isEnabled() ? (
           <>
             <Alert>
