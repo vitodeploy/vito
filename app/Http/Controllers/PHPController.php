@@ -30,6 +30,10 @@ class PHPController extends Controller
     {
         $this->authorize('viewAny', [Service::class, $server]);
 
+        if (! $server->php()) {
+            abort(404);
+        }
+
         $installedVersions = Service::query()
             ->where('type', 'php')
             ->where('server_id', $server->id)

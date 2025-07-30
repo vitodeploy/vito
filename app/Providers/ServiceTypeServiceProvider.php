@@ -172,8 +172,6 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '20',
                 '18',
                 '16',
-                '14',
-                '12',
             ])
             ->register();
     }

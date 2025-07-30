@@ -2,31 +2,34 @@
 
 namespace App\SiteTypes;
 
+use App\Actions\Worker\CreateWorker;
+use App\Actions\Worker\ManageWorker;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
-use App\SSH\OS\Composer;
+use App\Models\Worker;
 use App\SSH\OS\Git;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 
-class PHPSite extends AbstractSiteType
+class NodeJS extends AbstractSiteType
 {
     public static function id(): string
     {
-        return 'php';
+        return 'nodejs';
     }
 
     public function language(): string
     {
-        return 'php';
+        return 'nodejs';
     }
 
     public function requiredServices(): array
     {
         return [
-            'php',
+            'nodejs',
             'webserver',
+            'process_manager',
         ];
     }
 
@@ -38,16 +41,9 @@ class PHPSite extends AbstractSiteType
     public function createRules(array $input): array
     {
         return [
-            'php_version' => [
-                'required',
-                Rule::in($this->site->server->installedPHPVersions()),
-            ],
             'source_control' => [
                 'required',
                 Rule::exists('source_controls', 'id'),
-            ],
-            'web_directory' => [
-                'nullable',
             ],
             'repository' => [
                 'required',
@@ -55,8 +51,10 @@ class PHPSite extends AbstractSiteType
             'branch' => [
                 'required',
             ],
-            'composer' => [
-                'nullable',
+            'port' => [
+                'required',
+                'numeric',
+                'between:1,65535',
             ],
         ];
     }
@@ -64,20 +62,16 @@ class PHPSite extends AbstractSiteType
     public function createFields(array $input): array
     {
         return [
-            'web_directory' => $input['web_directory'] ?? '',
             'source_control_id' => $input['source_control'] ?? '',
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',
-            'php_version' => $input['php_version'] ?? '',
-            'composer' => $input['php_version'] ?? '',
+            'port' => $input['port'] ?? '',
         ];
     }
 
     public function data(array $input): array
     {
-        return [
-            'composer' => isset($input['composer']) && $input['composer'],
-        ];
+        return [];
     }
 
     /**
@@ -92,10 +86,42 @@ class PHPSite extends AbstractSiteType
         $this->deployKey();
         $this->progress(30);
         app(Git::class)->clone($this->site);
+        $this->site->server->ssh()->exec(
+            __('npm install --prefix=:path', [
+                'path' => $this->site->path,
+            ]),
+            'install-npm-dependencies',
+            $this->site->id
+        );
+        $this->site->server->ssh()->exec(
+            __('npm run build --prefix=:path', [
+                'path' => $this->site->path,
+            ]),
+            'npm-build',
+            $this->site->id
+        );
         $this->progress(65);
-        $this->site->php()?->restart();
-        if ($this->site->type_data['composer']) {
-            app(Composer::class)->installDependencies($this->site);
+        $command = __('npm start --prefix=:path', [
+            'path' => $this->site->path,
+        ]);
+        $this->progress(80);
+        /** @var ?Worker $worker */
+        $worker = $this->site->workers()->where('name', 'app')->first();
+        if ($worker) {
+            app(ManageWorker::class)->restart($worker);
+        } else {
+            app(CreateWorker::class)->create(
+                $this->site->server,
+                [
+                    'name' => 'app',
+                    'command' => $command,
+                    'user' => $this->site->user ?? $this->site->server->getSshUser(),
+                    'auto_start' => true,
+                    'auto_restart' => true,
+                    'numprocs' => 1,
+                ],
+                $this->site,
+            );
         }
     }
 
@@ -103,8 +129,8 @@ class PHPSite extends AbstractSiteType
     {
         return [
             [
-                'name' => 'composer:install',
-                'command' => 'composer install --no-dev --no-interaction --no-progress',
+                'name' => 'npm:install',
+                'command' => 'npm install --production',
             ],
         ];
     }
@@ -119,7 +145,7 @@ class PHPSite extends AbstractSiteType
                 'main' => [
                     view('ssh.services.webserver.nginx.vhost-blocks.port', ['site' => $this->site]),
                     view('ssh.services.webserver.nginx.vhost-blocks.core', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.php', ['site' => $this->site]),
+                    view('ssh.services.webserver.nginx.vhost-blocks.reverse-proxy', ['site' => $this->site]),
                     view('ssh.services.webserver.nginx.vhost-blocks.redirects', ['site' => $this->site]),
                 ],
             ]);
@@ -131,7 +157,7 @@ class PHPSite extends AbstractSiteType
                     view('ssh.services.webserver.caddy.vhost-blocks.force-ssl', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.port', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.core', ['site' => $this->site]),
-                    view('ssh.services.webserver.caddy.vhost-blocks.php', ['site' => $this->site]),
+                    view('ssh.services.webserver.caddy.vhost-blocks.reverse-proxy', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.redirects', ['site' => $this->site]),
                 ],
             ]);

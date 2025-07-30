@@ -2,11 +2,15 @@
 
 namespace App\SiteTypes;
 
+use Illuminate\Contracts\View\View;
+
 interface SiteType
 {
     public static function id(): string;
 
     public function language(): string;
+
+    public function requiredServices(): array;
 
     /**
      * @param  array<string, mixed>  $input
@@ -37,5 +41,5 @@ interface SiteType
      */
     public function baseCommands(): array;
 
-    public function vhost(string $webserver): string;
+    public function vhost(string $webserver): string|View;
 }

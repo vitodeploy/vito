@@ -14,6 +14,7 @@ use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -43,6 +44,14 @@ class CreateSite
                 'status' => SiteStatus::INSTALLING,
             ]);
 
+            foreach ($site->type()->requiredServices() as $requiredService) {
+                if (! $server->service($requiredService)) {
+                    throw ValidationException::withMessages([
+                        'type' => "The site type requires a {$requiredService} service to be installed.",
+                    ]);
+                }
+            }
+
             // fields based on the type
             $site->fill($site->type()->createFields($input));
 
@@ -71,11 +80,7 @@ class CreateSite
             // save
             $site->save();
 
-            // create default deployment script
-            $site->deploymentScript()->create([
-                'name' => 'default',
-                'content' => '',
-            ]);
+            $this->createDefaultDeploymentScript($site);
 
             // create base commands if any
             $site->commands()->createMany($site->type()->baseCommands());
@@ -153,5 +158,18 @@ class CreateSite
         );
 
         return $site->type()->createRules($input);
+    }
+
+    private function createDefaultDeploymentScript(Site $site): void
+    {
+        $script = '';
+        $path = resource_path('deployment-scripts/'.$site->type.'.sh');
+        if (File::exists($path)) {
+            $script = File::get($path);
+        }
+        $site->deploymentScript()->create([
+            'name' => 'default',
+            'content' => $script,
+        ]);
     }
 }

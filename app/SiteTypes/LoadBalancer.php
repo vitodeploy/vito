@@ -5,6 +5,7 @@ namespace App\SiteTypes;
 use App\Enums\LoadBalancerMethod;
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 
 class LoadBalancer extends AbstractSiteType
@@ -12,6 +13,13 @@ class LoadBalancer extends AbstractSiteType
     public static function id(): string
     {
         return 'load-balancer';
+    }
+
+    public function requiredServices(): array
+    {
+        return [
+            'webserver',
+        ];
     }
 
     public static function make(): self
@@ -55,7 +63,7 @@ class LoadBalancer extends AbstractSiteType
         $this->site->webserver()->createVHost($this->site);
     }
 
-    public function vhost(string $webserver): string
+    public function vhost(string $webserver): string|View
     {
         if ($webserver === 'nginx') {
             return view('ssh.services.webserver.nginx.vhost', [

@@ -13,7 +13,9 @@ class FirewallRulePolicy
 
     public function viewAny(User $user, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
+        return ($user->isAdmin() || $server->project->users->contains($user))
+            && $server->isReady()
+            && $server->firewall();
     }
 
     public function view(User $user, FirewallRule $rule): bool
@@ -24,7 +26,9 @@ class FirewallRulePolicy
 
     public function create(User $user, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
+        return ($user->isAdmin() || $server->project->users->contains($user))
+            && $server->isReady()
+            && $server->firewall();
     }
 
     public function update(User $user, FirewallRule $rule): bool

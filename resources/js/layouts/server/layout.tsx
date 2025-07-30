@@ -29,7 +29,6 @@ import Layout from '@/layouts/app/layout';
 import { usePage } from '@inertiajs/react';
 import { Site } from '@/types/site';
 import PHPIcon from '@/icons/php';
-import NodeIcon from '@/icons/node';
 import siteHelper from '@/lib/site-helper';
 
 export default function ServerLayout({ children }: { children: ReactNode }) {
@@ -143,12 +142,7 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       href: route('php', { server: page.props.server.id }),
       icon: PHPIcon,
       isDisabled: isMenuDisabled,
-    },
-    {
-      title: 'NodeJS',
-      href: route('node', { server: page.props.server.id }),
-      icon: NodeIcon,
-      isDisabled: isMenuDisabled,
+      hidden: !page.props.server.services['php'],
     },
     {
       title: 'Firewall',
