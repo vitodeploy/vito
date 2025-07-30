@@ -57,7 +57,6 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->versions([
                 '8.4',
                 '8.0',
-                '5.7',
             ])
             ->register();
         RegisterServiceType::make(Postgresql::id())
