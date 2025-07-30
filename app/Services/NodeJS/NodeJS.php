@@ -81,6 +81,11 @@ class NodeJS extends AbstractService
      */
     public function uninstall(): void
     {
+        // skip uninstalling if there are other NodeJS services installed
+        // to keep it compatible with the previous approach with nvm
+        if ($this->service->server->services()->where('type', 'nodejs')->count() > 1) {
+            return;
+        }
         $this->service->server->ssh()->exec(
             view('ssh.services.nodejs.uninstall-nodejs', [
                 'version' => $this->service->version,
