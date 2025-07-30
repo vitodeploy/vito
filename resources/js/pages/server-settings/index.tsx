@@ -193,7 +193,7 @@ export default function Databases() {
             <div className="flex items-center justify-between p-4">
               <span>Available updates</span>
               <span className="text-muted-foreground">
-                <span className="text-muted-foreground">{page.props.server.available_updates ?? '-'}</span>
+                <span className="text-muted-foreground">{page.props.server.updates ?? '-'}</span>
               </span>
             </div>
             <Separator />

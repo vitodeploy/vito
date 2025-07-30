@@ -131,7 +131,7 @@ class ServerController extends Controller
 
         $server->checkForUpdates();
 
-        return back()->with('info', 'Available updates: '.$server->refresh()->available_updates);
+        return back()->with('info', 'Available updates: '.$server->refresh()->updates);
     }
 
     #[Post('/{server}/update', name: 'servers.update')]

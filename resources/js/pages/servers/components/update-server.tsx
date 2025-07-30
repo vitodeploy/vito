@@ -36,7 +36,7 @@ export default function UpdateServer({ server, children }: { server: Server; chi
         </DialogHeader>
 
         <p className="p-4">
-          Are you sure you want to update the server? There are <b>{server.available_updates}</b> available updates
+          Are you sure you want to update the server? There are <b>{server.updates}</b> available updates
         </p>
 
         <DialogFooter className="gap-2">

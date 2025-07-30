@@ -44,8 +44,6 @@ use Throwable;
  * @property string $public_key
  * @property string $status
  * @property bool $auto_update
- * @property int $available_updates
- * @property int $security_updates
  * @property int|float $progress
  * @property ?string $progress_step
  * @property Project $project
@@ -87,8 +85,6 @@ class Server extends AbstractModel
         'public_key',
         'status',
         'auto_update',
-        'available_updates',
-        'security_updates',
         'progress',
         'progress_step',
         'updates',
@@ -102,8 +98,6 @@ class Server extends AbstractModel
         'provider_data' => 'json',
         'authentication' => 'encrypted:json',
         'auto_update' => 'boolean',
-        'available_updates' => 'integer',
-        'security_updates' => 'integer',
         'progress' => 'float',
         'updates' => 'integer',
         'last_update_check' => 'datetime',
@@ -536,15 +530,6 @@ class Server extends AbstractModel
         $this->updates = $this->os()->availableUpdates();
         $this->last_update_check = now();
         $this->save();
-    }
-
-    public function getAvailableUpdatesAttribute(?int $value): int
-    {
-        if ($value === null || $value === 0) {
-            return 0;
-        }
-
-        return $value;
     }
 
     /**

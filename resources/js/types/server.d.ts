@@ -21,11 +21,9 @@ export interface Server {
   public_key: string;
   status: string;
   auto_update: boolean;
-  available_updates: number;
-  security_updates: string;
   progress?: string;
   progress_step?: string;
-  updates?: string;
+  updates: number;
   last_update_check?: string;
   created_at: string;
   updated_at: string;

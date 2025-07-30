@@ -32,8 +32,6 @@ class ServerResource extends JsonResource
             'public_key' => $this->public_key,
             'status' => $this->status,
             'auto_update' => $this->auto_update,
-            'available_updates' => $this->available_updates,
-            'security_updates' => $this->security_updates,
             'progress' => $this->progress,
             'progress_step' => $this->progress_step,
             'updates' => $this->updates,

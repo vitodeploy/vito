@@ -64,7 +64,7 @@ export default function ServerActions({ server }: { server: Server }) {
         </RebootServer>
         <CheckForUpdates server={server} />
         <UpdateServer server={server}>
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()} disabled={server.available_updates == 0}>
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()} disabled={server.updates == 0}>
             Update
           </DropdownMenuItem>
         </UpdateServer>
