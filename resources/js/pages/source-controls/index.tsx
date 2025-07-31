@@ -8,6 +8,7 @@ import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/source-controls/components/columns';
 import { SourceControl } from '@/types/source-control';
 import { Configs, PaginatedData } from '@/types';
+import { BookOpenIcon } from 'lucide-react';
 
 type Page = {
   sourceControls: PaginatedData<SourceControl>;
@@ -24,6 +25,12 @@ export default function SourceControls() {
         <div className="flex items-start justify-between">
           <Heading title="Source Controls" description="Here you can manage all of the source control connectinos" />
           <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/settings/source-controls" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
             <ConnectSourceControl>
               <Button>Connect</Button>
             </ConnectSourceControl>

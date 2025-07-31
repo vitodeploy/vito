@@ -28,7 +28,7 @@ export default function Backups() {
         <HeaderContainer>
           <Heading title="Backups" description="Here you can manage the backups of your database" />
           <div className="flex items-center gap-2">
-            <a href="https://vitodeploy.com/docs/servers/database" target="_blank">
+            <a href="https://vitodeploy.com/docs/servers/database#backup" target="_blank">
               <Button variant="outline">
                 <BookOpenIcon />
                 <span className="hidden lg:block">Docs</span>
