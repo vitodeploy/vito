@@ -4,6 +4,7 @@ import { ChevronDownIcon, RefreshCwIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { useInputFocus } from '@/stores/useInputFocus';
+import { usePageActive } from '@/hooks/use-page-active';
 
 export default function Refresh() {
   const readInitial = () => (typeof window !== 'undefined' && (localStorage.getItem('refresh_interval') as '5' | '10' | '30' | '60' | '0')) || '10';
@@ -17,6 +18,8 @@ export default function Refresh() {
 
   const timerRef = useRef<number | null>(null);
   const stoppedRef = useRef<boolean>(false);
+
+  const isPageActive = usePageActive();
 
   const intervalLabels: Record<5 | 10 | 30 | 60 | 0, string> = {
     5: '5s',
@@ -47,18 +50,18 @@ export default function Refresh() {
     stoppedRef.current = false;
 
     // no polling
-    if (refreshInterval === 0) return;
+    if (refreshInterval === 0 || !isPageActive) return;
 
     // self-rescheduling tick: schedule next only after current finishes
     const tick = () => {
       if (stoppedRef.current) return;
 
-      if (!isFocused) {
+      if (isPageActive && !isFocused) {
         router.reload({
           onStart: () => setPolling(true),
           onFinish: () => {
             setPolling(false);
-            if (!stoppedRef.current && refreshInterval > 0) {
+            if (!stoppedRef.current && refreshInterval > 0 && isPageActive) {
               timerRef.current = window.setTimeout(tick, refreshInterval * 1000);
             }
           },
@@ -77,7 +80,7 @@ export default function Refresh() {
         timerRef.current = null;
       }
     };
-  }, [refreshInterval, isFocused]);
+  }, [refreshInterval, isPageActive, isFocused]);
 
   return (
     <div className="flex items-center">
