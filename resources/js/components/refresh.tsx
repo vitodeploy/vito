@@ -1,20 +1,21 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon, RefreshCwIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 
 export default function Refresh() {
-  const [poll, setPoll] = useState<{
-    stop: VoidFunction;
-    start: VoidFunction;
-  }>();
+  const readInitial = () => (typeof window !== 'undefined' && (localStorage.getItem('refresh_interval') as '5' | '10' | '30' | '60' | '0')) || '10';
+
   const [polling, setPolling] = useState(false);
-  const storedInterval = (localStorage.getItem('refresh_interval') as '5' | '10' | '30' | '60' | '0') || '10';
   const [refreshInterval, setRefreshInterval] = useState<5 | 10 | 30 | 60 | 0>(
-    storedInterval === '0' ? 0 : (parseInt(storedInterval) as 5 | 10 | 30 | 60),
+    readInitial() === '0' ? 0 : (parseInt(readInitial()) as 5 | 10 | 30 | 60),
   );
-  const intervalLabels = {
+
+  const timerRef = useRef<number | null>(null);
+  const stoppedRef = useRef<boolean>(false);
+
+  const intervalLabels: Record<5 | 10 | 30 | 60 | 0, string> = {
     5: '5s',
     10: '10s',
     30: '30s',
@@ -24,24 +25,53 @@ export default function Refresh() {
 
   const refresh = () => {
     router.reload({
-      onStart: () => {
-        setPolling(true);
-      },
-      onFinish: () => {
-        setPolling(false);
-      },
+      onStart: () => setPolling(true),
+      onFinish: () => setPolling(false),
     });
   };
 
   useEffect(() => {
-    poll?.stop();
-    if (refreshInterval > 0) {
-      setPoll(router.poll(refreshInterval * 1000));
-    } else {
-      poll?.stop();
-      setPoll(undefined);
+    // persist choice
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('refresh_interval', String(refreshInterval));
     }
-    localStorage.setItem('refresh_interval', refreshInterval.toString());
+
+    // clear any existing timer
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    stoppedRef.current = false;
+
+    // no polling
+    if (refreshInterval === 0) return;
+
+    // self-rescheduling tick: schedule next only after current finishes
+    const tick = () => {
+      if (stoppedRef.current) return;
+
+      router.reload({
+        onStart: () => setPolling(true),
+        onFinish: () => {
+          setPolling(false);
+          if (!stoppedRef.current && refreshInterval > 0) {
+            timerRef.current = window.setTimeout(tick, refreshInterval * 1000);
+          }
+        },
+      });
+    };
+
+    // initial schedule
+    timerRef.current = window.setTimeout(tick, refreshInterval * 1000);
+
+    // cleanup on interval change/unmount
+    return () => {
+      stoppedRef.current = true;
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [refreshInterval]);
 
   return (
@@ -52,7 +82,7 @@ export default function Refresh() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" className="hidden rounded-l-none border-l-0 md:flex">
-            {intervalLabels[refreshInterval] || 'Unknown'}
+            {intervalLabels[refreshInterval]}
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>
