@@ -80,4 +80,14 @@ class ConsoleController extends Controller
             'dir' => Cache::get('console.'.$server->id.'.dir', '~'),
         ]);
     }
+
+    #[Get('/new-session', name: 'console.new-session')]
+    public function newSession(Server $server): JsonResponse
+    {
+        $this->authorize('update', $server);
+
+        Cache::forget('console.'.$server->id.'.dir');
+
+        return response()->json(['status' => 'ok']);
+    }
 }

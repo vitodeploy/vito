@@ -4,7 +4,7 @@ import ServerLayout from '@/layouts/server/layout';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { BookOpenIcon, Trash2, Square, LoaderCircleIcon } from 'lucide-react';
+import { BookOpenIcon, Trash2, Square, LoaderCircleIcon, RefreshCcwIcon } from 'lucide-react';
 import Container from '@/components/container';
 import { useState, useRef, FormEvent, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -181,6 +181,11 @@ export default function Console() {
     run();
   };
 
+  const newSession = async () => {
+    await fetch(route('console.new-session', { server: page.props.server.id }), {});
+    getWorkingDir(user);
+  };
+
   // Initialize on first render
   if (!initialized) {
     initialize();
@@ -224,6 +229,10 @@ export default function Console() {
                 <span className="ml-2 hidden lg:block">Stop</span>
               </Button>
             )}
+            <Button variant="outline" onClick={newSession}>
+              <RefreshCcwIcon className="h-4 w-4" />
+              <span className="ml-2 hidden lg:block">New Session</span>
+            </Button>
           </div>
         </HeaderContainer>
 
