@@ -10,4 +10,4 @@ if ! echo "{{ $pk }}" | sudo tee {{ $pkPath }}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-echo "Successfully received certificate."
+echo "Successfully received certificate"
