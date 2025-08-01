@@ -7,6 +7,7 @@ use App\Actions\Server\RebootServer;
 use App\Actions\Server\TransferServer;
 use App\Actions\Server\Update;
 use App\Exceptions\SSHError;
+use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
 use App\Http\Resources\ServerProviderResource;
 use App\Http\Resources\ServerResource;
@@ -36,7 +37,10 @@ class ServerController extends Controller
 
         $this->authorize('viewAny', [Server::class, $project]);
 
-        $servers = $project->servers()->simplePaginate(config('web.pagination_size'));
+        $servers = QueryBuilder::for($project->servers())
+            ->searchableFields(['name', 'ip_address'])
+            ->query()
+            ->simplePaginate(config('web.pagination_size'), pageName: 'serversPage');
 
         return Inertia::render('servers/index', [
             'servers' => ServerResource::collection($servers),

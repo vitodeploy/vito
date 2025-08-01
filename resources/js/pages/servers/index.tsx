@@ -36,7 +36,7 @@ export default function Servers() {
             </CreateServer>
           </div>
         </div>
-        <DataTable columns={columns} paginatedData={page.props.servers} />
+        <DataTable columns={columns} paginatedData={page.props.servers} searchable />
       </Container>
     </Layout>
   );

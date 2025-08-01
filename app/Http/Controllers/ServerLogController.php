@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\ServerLog\CreateLog;
 use App\Actions\ServerLog\UpdateLog;
+use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
 use App\Models\Server;
 use App\Models\ServerLog;
@@ -31,9 +32,14 @@ class ServerLogController extends Controller
     {
         $this->authorize('viewAny', [ServerLog::class, $server]);
 
+        $logs = QueryBuilder::for($server->logs()->where('is_remote', 0)->latest())
+            ->searchableFields(['name'])
+            ->query()
+            ->simplePaginate(config('web.pagination_size'));
+
         return Inertia::render('server-logs/index', [
             'title' => 'Server logs',
-            'logs' => ServerLogResource::collection($server->logs()->where('is_remote', 0)->latest()->simplePaginate(config('web.pagination_size'))),
+            'logs' => ServerLogResource::collection($logs),
         ]);
     }
 

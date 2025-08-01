@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\CreateSite;
+use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
 use App\Http\Resources\SiteResource;
 use App\Models\Server;
@@ -23,7 +24,12 @@ class SiteController extends Controller
     #[Get('/sites', name: 'sites.all')]
     public function index(): Response
     {
-        $sites = user()->currentProject->sites()->with('server')->latest()->simplePaginate(config('web.pagination_size'));
+        $sites = user()->currentProject->sites()->with('server')->latest();
+
+        $sites = QueryBuilder::for($sites)
+            ->searchableFields(['domain'])
+            ->query()
+            ->simplePaginate(config('web.pagination_size'), pageName: 'sitesPage');
 
         return Inertia::render('sites/index', [
             'sites' => SiteResource::collection($sites),
@@ -35,8 +41,14 @@ class SiteController extends Controller
     {
         $this->authorize('viewAny', [Site::class, $server]);
 
+        $sites = $server->sites()->latest();
+        $sites = QueryBuilder::for($sites)
+            ->searchableFields(['domain'])
+            ->query()
+            ->simplePaginate(config('web.pagination_size'), pageName: 'sitesPage');
+
         return Inertia::render('sites/index', [
-            'sites' => SiteResource::collection($server->sites()->latest()->simplePaginate(config('web.pagination_size'))),
+            'sites' => SiteResource::collection($sites),
         ]);
     }
 
@@ -79,8 +91,14 @@ class SiteController extends Controller
     {
         $this->authorize('view', [$site, $server]);
 
+        $logs = $site->logs()->latest();
+        $logs = QueryBuilder::for($logs)
+            ->searchableFields(['name'])
+            ->query()
+            ->simplePaginate(config('web.pagination_size'), pageName: 'logsPage');
+
         return Inertia::render('sites/logs', [
-            'logs' => ServerLogResource::collection($site->logs()->latest()->simplePaginate(config('web.pagination_size'))),
+            'logs' => ServerLogResource::collection($logs),
         ]);
     }
 }

@@ -5,7 +5,6 @@ import { Server } from '@/types/server';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
-import React from 'react';
 import { PaginatedData } from '@/types';
 import { ServerLog } from '@/types/server-log';
 import { DataTable } from '@/components/data-table';
@@ -29,7 +28,7 @@ export default function ShowSite() {
           <Heading title="Logs" description="Here you can see your site's logs" />
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.logs} />
+        <DataTable columns={columns} paginatedData={page.props.logs} searchable />
       </Container>
     </ServerLayout>
   );

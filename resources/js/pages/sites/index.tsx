@@ -45,7 +45,7 @@ export default function Sites() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={getColumns(page.props.server)} paginatedData={page.props.sites} />
+        <DataTable columns={getColumns(page.props.server)} paginatedData={page.props.sites} searchable />
       </Container>
     </Comp>
   );
