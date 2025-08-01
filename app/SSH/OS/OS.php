@@ -231,13 +231,14 @@ class OS
         $command = '';
         if ($variables !== null && $variables !== []) {
             foreach ($variables as $key => $variable) {
-                $command .= "$key=$variable\n";
+                $command .= "export $key=$variable\n";
             }
         }
         $command .= view('ssh.os.run-script', [
             'path' => $path,
             'script' => $script,
         ]);
+
         $ssh->exec($command, 'run-script');
 
         /** @var ServerLog $log */

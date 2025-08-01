@@ -114,9 +114,8 @@ class SSH
 
         try {
             if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
-                $command = addslashes($command);
-                $command = str_replace('\\\'', '\'', $command);
-                $command = 'sudo su - '.$this->asUser.' -c '.'"'.trim($command).'"';
+                $command = base64_encode((string) $command);
+                $command = "sudo su - {$this->asUser} -c 'bash -c \"echo {$command} | base64 -d | bash\"'";
             }
 
             $this->connection->setTimeout(0);

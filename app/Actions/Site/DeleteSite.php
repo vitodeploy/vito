@@ -29,11 +29,13 @@ class DeleteSite
         $webserverHandler->deleteSite($site);
 
         if ($site->isIsolated()) {
-            /** @var Service $phpService */
-            $phpService = $site->server->php();
-            /** @var PHP $php */
-            $php = $phpService->handler();
-            $php->removeFpmPool($site->user, $site->php_version, $site->id);
+            if ($site->type()->language() === 'php') {
+                /** @var Service $phpService */
+                $phpService = $site->server->php();
+                /** @var PHP $php */
+                $php = $phpService->handler();
+                $php->removeFpmPool($site->user, $site->php_version, $site->id);
+            }
 
             $os = $site->server->os();
             $os->deleteIsolatedUser($site->user);
