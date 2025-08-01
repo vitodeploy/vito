@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDownIcon, RefreshCwIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function Refresh() {
   const readInitial = () => (typeof window !== 'undefined' && (localStorage.getItem('refresh_interval') as '5' | '10' | '30' | '60' | '0')) || '10';
@@ -11,6 +12,8 @@ export default function Refresh() {
   const [refreshInterval, setRefreshInterval] = useState<5 | 10 | 30 | 60 | 0>(
     readInitial() === '0' ? 0 : (parseInt(readInitial()) as 5 | 10 | 30 | 60),
   );
+
+  const isFocused = useInputFocus((state) => state.isFocused);
 
   const timerRef = useRef<number | null>(null);
   const stoppedRef = useRef<boolean>(false);
@@ -50,15 +53,17 @@ export default function Refresh() {
     const tick = () => {
       if (stoppedRef.current) return;
 
-      router.reload({
-        onStart: () => setPolling(true),
-        onFinish: () => {
-          setPolling(false);
-          if (!stoppedRef.current && refreshInterval > 0) {
-            timerRef.current = window.setTimeout(tick, refreshInterval * 1000);
-          }
-        },
-      });
+      if (!isFocused) {
+        router.reload({
+          onStart: () => setPolling(true),
+          onFinish: () => {
+            setPolling(false);
+            if (!stoppedRef.current && refreshInterval > 0) {
+              timerRef.current = window.setTimeout(tick, refreshInterval * 1000);
+            }
+          },
+        });
+      }
     };
 
     // initial schedule
@@ -72,7 +77,7 @@ export default function Refresh() {
         timerRef.current = null;
       }
     };
-  }, [refreshInterval]);
+  }, [refreshInterval, isFocused]);
 
   return (
     <div className="flex items-center">
