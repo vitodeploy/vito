@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Actions\Database\ManageBackupFile;
 use App\Enums\BackupFileStatus;
+use App\Facades\Notifier;
+use App\Notifications\FailedToDeleteBackupFileFromProvider;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
 use App\StorageProviders\Local;
@@ -12,6 +14,7 @@ use Carbon\Carbon;
 use Database\Factories\BackupFileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Throwable;
 
 /**
  * @property int $backup_id
@@ -121,8 +124,10 @@ class BackupFile extends AbstractModel
         try {
             $storage = $this->backup->storage->provider()->ssh($this->backup->server);
             $storage->delete($this->path());
-        } finally {
-            $this->delete();
+        } catch (Throwable) {
+            Notifier::send($this->backup->server, new FailedToDeleteBackupFileFromProvider($this));
         }
+
+        $this->delete();
     }
 }

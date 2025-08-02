@@ -22,6 +22,8 @@ if ! command_exists aws; then
     exit 1
 fi
 
+export AWS_REQUEST_CHECKSUM_CALCULATION=when_required
+export AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
 export AWS_ACCESS_KEY_ID={{ $key }}
 export AWS_SECRET_ACCESS_KEY={{ $secret }}
 export AWS_DEFAULT_REGION={{ $region }}
