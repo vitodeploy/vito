@@ -1,9 +1,6 @@
 # Define the Node.js version you want to install (e.g., "20", "18", "22")
 NODE_VERSION={{ $version }}
 
-# Exit on error
-set -e
-
 # Update system packages
 sudo apt-get update
 

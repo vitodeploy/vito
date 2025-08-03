@@ -10,6 +10,9 @@ php artisan migrate --force
 php artisan optimize:clear
 php artisan optimize
 
+npm install
+npm run build
+
 sudo supervisorctl restart all
 
 php artisan up

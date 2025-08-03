@@ -33,4 +33,16 @@ class Laravel extends PHPSite
             ],
         ]);
     }
+
+    public function install(): void
+    {
+        parent::install();
+
+        $this->site->server->ssh($this->site->user)->exec(
+            __('cp :path/.env.example :path/.env', ['path' => $this->site->path])
+        );
+        $this->site->server->ssh($this->site->user)->exec(
+            __('php :path/artisan key:generate', ['path' => $this->site->path])
+        );
+    }
 }
