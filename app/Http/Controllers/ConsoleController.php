@@ -90,4 +90,57 @@ class ConsoleController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
+
+    #[Post('/autocomplete', name: 'console.autocomplete')]
+    public function autocomplete(Server $server, Request $request): JsonResponse
+    {
+        $this->authorize('update', $server);
+
+        $this->validate($request, [
+            'user' => [
+                'required',
+                Rule::in($server->getSshUsers()),
+            ],
+            'path' => 'required|string',
+        ]);
+
+        $ssh = $server->ssh($request->user);
+        $user = $request->input('user');
+        $path = $request->input('path');
+        
+        $currentDir = $user == 'root' ? '/root' : '/home/'.$user;
+        if (Cache::has('console.'.$server->id.'.dir')) {
+            $currentDir = Cache::get('console.'.$server->id.'.dir');
+        }
+
+        // Handle relative paths
+        if (!str_starts_with($path, '/')) {
+            $path = $currentDir.'/'.$path;
+        }
+
+        // Get directory part and filename part
+        $dirname = dirname($path);
+        $basename = basename($path);
+
+        // Handle current directory listing
+        if ($basename === '.') {
+            $dirname = $path === '.' ? $currentDir : $dirname;
+            $basename = '';
+        }
+
+        try {
+            if ($basename === '') {
+                $command = "cd {$currentDir} && ls -1a {$dirname}/ 2>/dev/null | grep -v '^\\.$' | grep -v '^\\.\\.$' || true";
+            } else {
+                $command = "cd {$currentDir} && ls -1a {$dirname}/ 2>/dev/null | grep '^{$basename}' || true";
+            }
+            $output = $ssh->exec($command);
+            
+            $suggestions = array_filter(explode("\n", trim($output)));
+            
+            return response()->json(['suggestions' => $suggestions]);
+        } catch (\Exception $e) {
+            return response()->json(['suggestions' => []]);
+        }
+    }
 }

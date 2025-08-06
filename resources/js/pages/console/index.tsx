@@ -6,7 +6,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { BookOpenIcon, Trash2, Square, LoaderCircleIcon, RefreshCcwIcon } from 'lucide-react';
 import Container from '@/components/container';
-import { useState, useRef, FormEvent, useCallback } from 'react';
+import { useState, useRef, FormEvent, useCallback, KeyboardEvent } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import LogOutput from '@/components/log-output';
@@ -24,6 +24,10 @@ export default function Console() {
   const [shellPrefix, setShellPrefix] = useState('');
   const [clearAfterCommand] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
+  const [autocompleteLoading, setAutocompleteLoading] = useState(false);
 
   const outputRef = useRef<HTMLDivElement>(null);
   const commandRef = useRef<HTMLInputElement>(null);
@@ -78,7 +82,7 @@ export default function Console() {
     updateShellPrefix(user, currentDir);
     focusCommand();
 
-    const handleKeydown = (event: KeyboardEvent) => {
+    const handleKeydown = (event: globalThis.KeyboardEvent) => {
       if (event.ctrlKey && event.key === 'l') {
         event.preventDefault();
         if (!running) {
@@ -181,6 +185,81 @@ export default function Console() {
     run();
   };
 
+  const getAutocomplete = async (inputValue: string) => {
+    if (!inputValue.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const words = inputValue.split(' ');
+    const lastWord = words[words.length - 1] || '.';
+
+    setAutocompleteLoading(true);
+
+    try {
+      const response = await fetch(route('console.autocomplete', { server: page.props.server.id }), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': page.props.csrf_token as string,
+        },
+        body: JSON.stringify({
+          user,
+          path: lastWord,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.suggestions || []);
+        setShowSuggestions(data.suggestions && data.suggestions.length > 0);
+        setSelectedSuggestion(-1);
+      }
+    } catch (error) {
+      console.error('Autocomplete failed:', error);
+      setSuggestions([]);
+      setShowSuggestions(false);
+    } finally {
+      setAutocompleteLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (showSuggestions && suggestions.length > 0) {
+        const words = command.split(' ');
+        words[words.length - 1] = suggestions[selectedSuggestion >= 0 ? selectedSuggestion : 0];
+        setCommand(words.join(' '));
+        setShowSuggestions(false);
+        setSelectedSuggestion(-1);
+      } else {
+        getAutocomplete(command);
+      }
+    } else if (showSuggestions) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedSuggestion((prev) => (prev + 1) % suggestions.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedSuggestion((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+      } else if (e.key === 'Escape') {
+        setShowSuggestions(false);
+        setSelectedSuggestion(-1);
+      } else if (e.key === 'Enter') {
+        if (selectedSuggestion >= 0) {
+          e.preventDefault();
+          const words = command.split(' ');
+          words[words.length - 1] = suggestions[selectedSuggestion];
+          setCommand(words.join(' '));
+          setShowSuggestions(false);
+          setSelectedSuggestion(-1);
+        }
+      }
+    }
+  };
+
   const newSession = async () => {
     await fetch(route('console.new-session', { server: page.props.server.id }), {});
     getWorkingDir(user);
@@ -244,16 +323,49 @@ export default function Console() {
           <div className="absolute right-0 bottom-0 left-0 p-4">
             {!running ? (
               <form onSubmit={handleSubmit} className="flex w-full items-center">
-                <span className="flex-none">{shellPrefix}</span>
-                <Input
-                  ref={commandRef}
-                  type="text"
-                  value={command}
-                  onChange={(e) => setCommand(e.target.value)}
-                  className="ml-2 h-auto flex-grow border-0 bg-transparent! px-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none focus-visible:ring-0"
-                  autoComplete="off"
-                  autoFocus
-                />
+                <span className="flex-none flex items-center gap-1">
+                  {shellPrefix}
+                  {autocompleteLoading && (
+                    <LoaderCircleIcon className="h-3 w-3 animate-spin text-muted-foreground" />
+                  )}
+                </span>
+                <div className="relative flex-grow">
+                  <Input
+                    ref={commandRef}
+                    type="text"
+                    value={command}
+                    onChange={(e) => {
+                      setCommand(e.target.value);
+                      setShowSuggestions(false);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    className="ml-2 h-auto flex-grow border-0 bg-transparent! px-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none focus-visible:ring-0"
+                    autoComplete="off"
+                    autoFocus
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute bottom-full left-2 mb-1 max-h-48 w-64 overflow-y-auto rounded border bg-background shadow-lg">
+                      {suggestions.map((suggestion, index) => (
+                        <div
+                          key={suggestion}
+                          className={`cursor-pointer px-3 py-1 text-sm hover:bg-muted ${
+                            index === selectedSuggestion ? 'bg-muted' : ''
+                          }`}
+                          onClick={() => {
+                            const words = command.split(' ');
+                            words[words.length - 1] = suggestion;
+                            setCommand(words.join(' '));
+                            setShowSuggestions(false);
+                            setSelectedSuggestion(-1);
+                            commandRef.current?.focus();
+                          }}
+                        >
+                          {suggestion}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button type="submit" className="hidden" />
               </form>
             ) : (
