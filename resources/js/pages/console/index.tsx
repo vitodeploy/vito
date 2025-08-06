@@ -24,6 +24,8 @@ export default function Console() {
   const [shellPrefix, setShellPrefix] = useState('');
   const [clearAfterCommand] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   const outputRef = useRef<HTMLDivElement>(null);
   const commandRef = useRef<HTMLInputElement>(null);
@@ -115,8 +117,13 @@ export default function Console() {
     if (!command.trim() || running) return;
 
     setRunning(true);
-    const commandOutput = `${shellPrefix} ${command}\n`;
+    const commandToRun = command.trim();
+    const commandOutput = `${shellPrefix} ${commandToRun}\n`;
     const cancelled = false;
+
+    // Add command to history
+    setCommandHistory((prev) => [...prev, commandToRun]);
+    setHistoryIndex(-1);
 
     if (clearAfterCommand) {
       setOutput(commandOutput);
@@ -250,6 +257,30 @@ export default function Console() {
                   type="text"
                   value={command}
                   onChange={(e) => setCommand(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      if (commandHistory.length > 0) {
+                        const newIndex = historyIndex === -1 
+                          ? commandHistory.length - 1 
+                          : Math.max(0, historyIndex - 1);
+                        setHistoryIndex(newIndex);
+                        setCommand(commandHistory[newIndex]);
+                      }
+                    } else if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      if (historyIndex >= 0) {
+                        const newIndex = historyIndex + 1;
+                        if (newIndex >= commandHistory.length) {
+                          setHistoryIndex(-1);
+                          setCommand('');
+                        } else {
+                          setHistoryIndex(newIndex);
+                          setCommand(commandHistory[newIndex]);
+                        }
+                      }
+                    }
+                  }}
                   className="ml-2 h-auto flex-grow border-0 bg-transparent! px-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none focus-visible:ring-0"
                   autoComplete="off"
                   autoFocus
