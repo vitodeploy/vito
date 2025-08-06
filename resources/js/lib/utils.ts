@@ -31,3 +31,26 @@ export function formatDateString(dateString: string | Date): string {
   // Generate yyyy-mm-dd date string
   return year + '-' + month + '-' + day;
 }
+
+// Copy text to clipboard with fallback to text selection for localhost
+export async function copyToClipboard(text: string, inputElement?: HTMLInputElement): Promise<boolean> {
+  try {
+    // Try clipboard API first
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback: if input element is provided, select the text so user can copy with Cmd+C
+    if (inputElement) {
+      inputElement.focus();
+      inputElement.select();
+      // Try the legacy execCommand as a last resort
+      try {
+        return document.execCommand('copy');
+      } catch {
+        // If all fails, at least the text is selected
+        return false;
+      }
+    }
+    return false;
+  }
+}
