@@ -77,6 +77,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->label('MariaDB')
             ->handler(Mariadb::class)
             ->versions([
+                '11.8',
                 '11.4',
                 '10.11',
                 '10.6',
@@ -137,15 +138,6 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->versions([
                 '8.4',
                 '8.3',
-                '8.2',
-                '8.1',
-                '8.0',
-                '7.4',
-                '7.3',
-                '7.2',
-                '7.1',
-                '7.0',
-                '5.6',
             ])
             ->data([
                 'extensions' => [
@@ -168,10 +160,9 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->label('Node.js')
             ->handler(NodeJS::class)
             ->versions([
+                '24',
                 '22',
                 '20',
-                '18',
-                '16',
             ])
             ->register();
     }
