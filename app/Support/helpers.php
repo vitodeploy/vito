@@ -1,9 +1,14 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ProcessUtils;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 function generate_public_key(string $privateKeyPath, string $publicKeyPath): void
 {
@@ -242,6 +247,9 @@ function plugins_path(?string $path = null): string
     return storage_path('plugins'.'/'.$path);
 }
 
+/**
+ * @deprecated
+ **/
 function composer_path(): ?string
 {
     $paths = [
@@ -254,6 +262,16 @@ function composer_path(): ?string
     return array_find($paths, fn ($path) => is_executable($path));
 }
 
+function composer_binary(): string
+{
+    $composer = new Composer(new Filesystem);
+
+    return implode(' ', $composer->findComposer());
+}
+
+/**
+ * @deprecated
+ **/
 function php_path(): ?string
 {
     $paths = [
@@ -264,6 +282,17 @@ function php_path(): ?string
     ];
 
     return array_find($paths, fn ($path) => is_executable($path));
+}
+
+function php_binary(): string
+{
+    $phpBinary = function_exists('Illuminate\Support\php_binary')
+        ? \Illuminate\Support\php_binary()
+        : (new PhpExecutableFinder)->find(false);
+
+    return $phpBinary !== false
+        ? ProcessUtils::escapeArgument($phpBinary)
+        : 'php';
 }
 
 function git_path(): ?string
