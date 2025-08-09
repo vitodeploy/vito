@@ -133,4 +133,17 @@ class ServiceController extends Controller
             'service' => $service->name,
         ]));
     }
+
+    #[Get('/{service}/version', name: 'services.version')]
+    public function version(Server $server, Service $service): RedirectResponse
+    {
+        $this->authorize('view', $service);
+
+        $service->installed_version = $service->handler()->version();
+        $service->save();
+
+        return back()->with('success', __('Fetched instaled version for :service', [
+            'service' => $service->name,
+        ]));
+    }
 }

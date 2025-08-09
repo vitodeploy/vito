@@ -158,4 +158,13 @@ class Supervisor extends AbstractProcessManager
             "tail -100 $logPath"
         );
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'supervisord --version'
+        );
+
+        return trim($version);
+    }
 }

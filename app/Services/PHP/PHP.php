@@ -173,4 +173,13 @@ class PHP extends AbstractService
             $siteId
         );
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            '/usr/bin/php'.$this->service->version.' -r \'echo PHP_VERSION;\''
+        );
+
+        return trim($version);
+    }
 }

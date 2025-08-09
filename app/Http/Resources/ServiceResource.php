@@ -21,6 +21,7 @@ class ServiceResource extends JsonResource
             'type_data' => $this->type_data,
             'name' => $this->name,
             'version' => $this->version,
+            'installed_version' => $this->installed_version,
             'unit' => $this->unit,
             'status' => $this->status,
             'status_color' => Service::$statusColors[$this->status] ?? 'gray',

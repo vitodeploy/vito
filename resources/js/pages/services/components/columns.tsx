@@ -2,12 +2,12 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreVerticalIcon } from 'lucide-react';
-import React from 'react';
 import { Service } from '@/types/service';
 import { Badge } from '@/components/ui/badge';
 import DateTime from '@/components/date-time';
 import Uninstall from '@/pages/services/components/uninstall';
 import { Action } from '@/pages/services/components/action';
+import Version from './version';
 
 export const columns: ColumnDef<Service>[] = [
   {
@@ -21,6 +21,9 @@ export const columns: ColumnDef<Service>[] = [
     header: 'Version',
     enableColumnFilter: true,
     enableSorting: true,
+    cell: ({ row }) => {
+      return <Version service={row.original} />;
+    },
   },
   {
     accessorKey: 'created_at',

@@ -95,4 +95,13 @@ class NodeJS extends AbstractService
         );
         $this->service->server->os()->cleanup();
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'node -v | tr -d \'v\''
+        );
+
+        return trim($version);
+    }
 }

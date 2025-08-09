@@ -206,4 +206,13 @@ class Caddy extends AbstractWebserver
 
         $this->updateVHost($ssl->site);
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'caddy version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
+        );
+
+        return trim($version);
+    }
 }
