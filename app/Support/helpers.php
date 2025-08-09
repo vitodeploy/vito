@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ProcessUtils;
 use Symfony\Component\Process\PhpExecutableFinder;
+
 use function Illuminate\Support\php_binary;
 
 function generate_public_key(string $privateKeyPath, string $publicKeyPath): void
