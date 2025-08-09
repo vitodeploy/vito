@@ -92,12 +92,12 @@ class Plugins
                         if (! str_contains($name, '/')) {
                             continue;
                         }
-                        $phpPath = php_binary();
-                        $composerPath = composer_binary();
+                        $phpPath = php_path();
+                        $composerPath = composer_path();
                         $result = Process::timeout(0)
                             ->env(['PATH' => dirname($phpPath).':'.dirname($composerPath)])
                             ->path(base_path())
-                            ->run(composer_binary()." require $name");
+                            ->run(composer_path()." require $name");
                         if ($result->failed()) {
                             throw new Exception($result->errorOutput());
                         }

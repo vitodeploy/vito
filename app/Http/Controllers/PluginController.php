@@ -44,7 +44,7 @@ class PluginController extends Controller
             'url' => 'required|url',
         ]);
 
-        if (! composer_binary() || ! php_binary()) {
+        if (! composer_path() || ! php_path()) {
             return back()->with('error', 'Use CLI to install plugins.');
         }
 
@@ -53,7 +53,7 @@ class PluginController extends Controller
         dispatch(function () use ($url) {
             try {
                 Plugins::install($url);
-            } catch (Throwable) {
+            } catch (Throwable $e) {
                 //
             }
 
@@ -74,7 +74,7 @@ class PluginController extends Controller
             'name' => 'required|string',
         ]);
 
-        if (! composer_binary() || ! php_binary()) {
+        if (! composer_path() || ! php_path()) {
             return back()->with('error', 'Use CLI to uninstall plugins.');
         }
 
