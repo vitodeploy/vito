@@ -58,7 +58,7 @@ class Plugins
         $output = $result->output();
 
         if ($result->failed()) {
-            throw new Exception($output);
+            throw new Exception($result->errorOutput());
         }
 
         $output .= $this->load();
@@ -97,7 +97,7 @@ class Plugins
                         $result = Process::timeout(0)
                             ->env(['PATH' => dirname($phpPath).':'.dirname($composerPath)])
                             ->path(base_path())
-                            ->run(composer_path()." require $name");
+                            ->run("composer require $name");
                         if ($result->failed()) {
                             throw new Exception($result->errorOutput());
                         }
