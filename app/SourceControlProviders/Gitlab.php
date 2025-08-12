@@ -182,6 +182,6 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function getWebhookBranch(array $payload): string
     {
-        return $payload['ref'] ?? '';
+        return str($payload['ref'] ?? '')->after('refs/heads/')->toString();
     }
 }
