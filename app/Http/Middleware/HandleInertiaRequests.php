@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
 
         // servers
         $servers = [];
-        if ($user && $user->can('viewAny', [Server::class, $user->currentProject])) {
+        if ($user && $user->currentProject && $user->can('viewAny', [Server::class, $user->currentProject])) {
             $servers = ServerResource::collection($user->currentProject?->servers);
         }
 
