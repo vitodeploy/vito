@@ -22,6 +22,7 @@ use InvalidArgumentException;
  * @property array<string, mixed> $type_data
  * @property string $name
  * @property string $version
+ * @property string $installed_version
  * @property string $unit
  * @property string $logs
  * @property string $status
@@ -39,6 +40,7 @@ class Service extends AbstractModel
         'type_data',
         'name',
         'version',
+        'installed_version',
         'unit',
         'logs',
         'status',

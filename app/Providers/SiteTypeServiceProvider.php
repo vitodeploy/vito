@@ -96,6 +96,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('web_directory')
                     ->text()
                     ->label('Web Directory')
+                    ->default('public')
                     ->placeholder('For / leave empty')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
                 DynamicField::make('repository')

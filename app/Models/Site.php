@@ -477,6 +477,9 @@ class Site extends AbstractModel
             'site_id' => $this->id,
             'name' => 'default',
             'content' => $script,
+            'configs' => [
+                'restart_workers' => true,
+            ],
         ]);
         $deploymentScript->save();
         $this->refresh();

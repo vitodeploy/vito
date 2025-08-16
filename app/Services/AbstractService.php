@@ -49,4 +49,9 @@ abstract class AbstractService implements ServiceInterface
     {
         //
     }
+
+    public function version(): string
+    {
+        return $this->service->version;
+    }
 }

@@ -162,7 +162,7 @@ class Server extends AbstractModel
 
     public function isReady(): bool
     {
-        return $this->status === ServerStatus::READY;
+        return in_array($this->status, [ServerStatus::READY, ServerStatus::UPDATING]);
     }
 
     public function isInstalling(): bool

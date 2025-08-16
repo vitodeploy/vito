@@ -30,10 +30,12 @@ class DeploymentScript extends AbstractModel
         'site_id',
         'name',
         'content',
+        'configs',
     ];
 
     protected $casts = [
         'site_id' => 'integer',
+        'configs' => 'array',
     ];
 
     /**
@@ -42,5 +44,17 @@ class DeploymentScript extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    public function shouldRestartWorkers(): bool
+    {
+        $configs = $this->configs ?? [];
+        if (! isset($configs['restart_workers'])) {
+            $configs['restart_workers'] = false;
+            $this->configs = $configs;
+            $this->save();
+        }
+
+        return $configs['restart_workers'];
     }
 }

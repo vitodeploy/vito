@@ -11,12 +11,16 @@ import { Action } from '@/pages/services/components/action';
 import PHPIni from '@/pages/php/components/ini';
 import Extensions from '@/pages/php/components/extensions';
 import DefaultCli from '@/pages/php/components/default-cli';
+import Version from '@/pages/services/components/version';
 export const columns: ColumnDef<Service>[] = [
   {
     accessorKey: 'version',
     header: 'Version',
     enableColumnFilter: true,
     enableSorting: true,
+    cell: ({ row }) => {
+      return <Version service={row.original} />;
+    },
   },
   {
     accessorKey: 'created_at',
