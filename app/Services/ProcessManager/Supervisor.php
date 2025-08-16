@@ -25,7 +25,7 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.install-supervisor'),
@@ -37,7 +37,7 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.uninstall-supervisor'),

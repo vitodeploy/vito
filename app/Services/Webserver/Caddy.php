@@ -28,7 +28,7 @@ class Caddy extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.caddy.install-caddy'),
@@ -57,7 +57,7 @@ class Caddy extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.caddy.uninstall-caddy'),

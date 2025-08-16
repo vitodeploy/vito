@@ -74,7 +74,7 @@ class VitoAgent extends AbstractService
      * @throws ServiceInstallationFailed
      * @throws ConnectionException
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $tags = Http::get(self::TAGS_URL)->json();
         if (empty($tags)) {
@@ -105,7 +105,7 @@ class VitoAgent extends AbstractService
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.monitoring.vito-agent.uninstall'),

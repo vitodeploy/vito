@@ -54,7 +54,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
      * @throws ServiceInstallationFailed
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $version = str_replace('.', '', $this->service->version);
         $command = view($this->getScriptView('install-'.$version));
@@ -93,7 +93,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         $version = $this->service->version;
         $command = view($this->getScriptView('uninstall'));

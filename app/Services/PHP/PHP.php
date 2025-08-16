@@ -58,7 +58,7 @@ class PHP extends AbstractService
     /**
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $server = $this->service->server;
         $server->ssh()->exec(
@@ -75,7 +75,7 @@ class PHP extends AbstractService
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.php.uninstall-php', [

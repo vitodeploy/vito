@@ -28,7 +28,7 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.install-nginx'),
@@ -51,7 +51,7 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.uninstall-nginx'),

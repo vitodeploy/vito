@@ -43,7 +43,7 @@ class Redis extends AbstractService
      * @throws ServiceInstallationFailed
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.redis.install'),
@@ -57,7 +57,7 @@ class Redis extends AbstractService
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.redis.uninstall'),

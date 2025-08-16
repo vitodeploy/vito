@@ -25,7 +25,7 @@ class Ufw extends AbstractFirewall
     /**
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $this->createBasicFirewallRules();
 
@@ -36,7 +36,7 @@ class Ufw extends AbstractFirewall
         $this->service->server->os()->cleanup();
     }
 
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         //
     }

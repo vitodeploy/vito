@@ -64,7 +64,7 @@ class NodeJS extends AbstractService
     /**
      * @throws SSHError
      */
-    public function install(): void
+    protected function doInstall(): void
     {
         $server = $this->service->server;
         $server->ssh()->exec(
@@ -79,7 +79,7 @@ class NodeJS extends AbstractService
     /**
      * @throws SSHError
      */
-    public function uninstall(): void
+    protected function doUninstall(): void
     {
         // skip uninstalling if there are other NodeJS services installed
         // to keep it compatible with the previous approach with nvm
