@@ -56,14 +56,14 @@ class InstallPHPExtension
     {
         $extensions = event('php.extensions.list', [
             'service' => $service,
-            'available_extensions' => config('service.services.php.data.extensions', []),
+            'available_extensions' => [],
         ]);
         $extensions = array_shift($extensions);
 
         return [
             'extension' => [
                 'required',
-                Rule::in($extensions['available_extensions']),
+                Rule::in($extensions['available_extensions'] ?? config('service.services.php.data.extensions', [])),
             ],
             'version' => [
                 'required',
