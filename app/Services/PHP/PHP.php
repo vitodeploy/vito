@@ -69,6 +69,7 @@ class PHP extends AbstractService
             'install-php-'.$this->service->version
         );
         $this->installComposer();
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -83,6 +84,7 @@ class PHP extends AbstractService
             ]),
             'uninstall-php-'.$this->service->version
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

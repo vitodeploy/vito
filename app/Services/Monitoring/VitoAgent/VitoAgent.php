@@ -99,6 +99,7 @@ class VitoAgent extends AbstractService
             'install-vito-agent'
         );
         $status = $this->service->server->systemd()->status($this->unit());
+        event('service.installed', $this->service);
         $this->service->validateInstall($status);
     }
 
@@ -111,6 +112,7 @@ class VitoAgent extends AbstractService
             view('ssh.services.monitoring.vito-agent.uninstall'),
             'uninstall-vito-agent'
         );
+        event('service.uninstalled', $this->service);
         Metric::query()->where('server_id', $this->service->server_id)->delete();
     }
 }

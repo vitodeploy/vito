@@ -62,7 +62,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $status = $this->service->server->systemd()->status($this->unit());
         $this->service->validateInstall($status);
         $this->service->server->os()->cleanup();
-        /** @TODO implement post-install for services and move it there */
+        event('service.installed', $this->service);
         app(SyncDatabases::class)->sync($this->service->server);
     }
 
@@ -98,6 +98,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $version = $this->service->version;
         $command = view($this->getScriptView('uninstall'));
         $this->service->server->ssh()->exec($command, 'uninstall-'.$this->service->name.'-'.$version);
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

@@ -16,10 +16,10 @@ class InstallPHPExtension
      */
     public function install(Server $server, array $input): Service
     {
-        Validator::make($input, self::rules($server))->validate();
-
         /** @var Service $service */
         $service = $server->php($input['version']);
+
+        Validator::make($input, self::rules($server, $service))->validate();
 
         if (in_array($input['extension'], $service->type_data['extensions'] ?? [])) {
             throw ValidationException::withMessages([
@@ -52,12 +52,18 @@ class InstallPHPExtension
     /**
      * @return array<string, array<string>>
      */
-    public static function rules(Server $server): array
+    public static function rules(Server $server, Service $service): array
     {
+        $extensions = event('php.extensions.list', [
+            'service' => $service,
+            'available_extensions' => [],
+        ]);
+        $extensions = array_shift($extensions);
+
         return [
             'extension' => [
                 'required',
-                Rule::in(config('service.services.php.data.extensions', []) ?? []),
+                Rule::in($extensions['available_extensions'] ?? config('service.services.php.data.extensions', [])),
             ],
             'version' => [
                 'required',

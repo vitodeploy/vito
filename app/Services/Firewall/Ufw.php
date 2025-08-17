@@ -33,12 +33,13 @@ class Ufw extends AbstractFirewall
             view('ssh.services.firewall.ufw.install-ufw'),
             'install-ufw'
         );
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
     public function uninstall(): void
     {
-        //
+        event('service.uninstalled', $this->service);
     }
 
     /**
