@@ -67,4 +67,9 @@ class Redis extends AbstractService
         event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
+
+    public function version(): string
+    {
+        return $this->service->server->ssh()->exec('redis-server --version | awk \'{print $3}\' | cut -d= -f2');
+    }
 }

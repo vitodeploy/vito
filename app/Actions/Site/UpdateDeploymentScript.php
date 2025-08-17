@@ -18,6 +18,7 @@ class UpdateDeploymentScript
         /** @var DeploymentScript $script */
         $script = $site->deploymentScript;
         $script->content = $input['script'];
+        $script->jsonUpdate('configs', 'restart_workers', $input['restart_workers'] ?? false, false);
         $script->save();
     }
 

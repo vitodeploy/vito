@@ -271,6 +271,24 @@ class ServicesTest extends TestCase
         ]);
     }
 
+    public function test_fetch_php_installed_version(): void
+    {
+        SSH::fake('8.4.10');
+
+        $this->actingAs($this->user);
+
+        /** @var \App\Models\Service $service */
+        $service = $this->server->services()->where('name', 'php')->firstOrFail();
+
+        $this->get(route('services.version', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertEquals($service->refresh()->installed_version, '8.4.10');
+    }
+
     /**
      * @return array<array<string>>
      */

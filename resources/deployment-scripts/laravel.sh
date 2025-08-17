@@ -13,8 +13,6 @@ php artisan optimize
 npm install
 npm run build
 
-sudo supervisorctl restart all
-
 php artisan up
 
 echo "✅ Deployment completed successfully!"

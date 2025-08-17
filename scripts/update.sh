@@ -33,10 +33,6 @@ git pull origin "$NEW_RELEASE"
 echo "Installing composer dependencies..."
 composer install --no-dev
 
-echo "Installing npm packages..."
-npm install
-npm run build
-
 echo "Running migrations..."
 php artisan migrate --force
 

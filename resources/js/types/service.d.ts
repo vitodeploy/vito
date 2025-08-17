@@ -8,6 +8,7 @@ export interface Service {
   };
   name: string;
   version: string;
+  installed_version?: string;
   unit: number;
   is_default: boolean;
   status: string;

@@ -4,6 +4,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ProcessUtils;
+use Symfony\Component\Process\PhpExecutableFinder;
+
+use function Illuminate\Support\php_binary;
 
 function generate_public_key(string $privateKeyPath, string $publicKeyPath): void
 {
@@ -256,14 +260,13 @@ function composer_path(): ?string
 
 function php_path(): ?string
 {
-    $paths = [
-        '/usr/local/bin/php',
-        '/usr/bin/php',
-        '/opt/homebrew/bin/php',
-        trim((string) shell_exec('which php')),
-    ];
+    $phpBinary = function_exists('Illuminate\Support\php_binary')
+        ? php_binary()
+        : (new PhpExecutableFinder)->find(false);
 
-    return array_find($paths, fn ($path) => is_executable($path));
+    return $phpBinary !== false
+        ? ProcessUtils::escapeArgument($phpBinary)
+        : null;
 }
 
 function git_path(): ?string

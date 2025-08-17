@@ -9,6 +9,7 @@ use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Notifications\DeploymentCompleted;
+use App\Services\ProcessManager\ProcessManager;
 
 class Deploy
 {
@@ -50,6 +51,13 @@ class Deploy
                 user: $site->user,
                 variables: $site->environmentVariables($deployment),
             );
+
+            if ($site->deploymentScript->shouldRestartWorkers()) {
+                /** @var ProcessManager $processManager */
+                $processManager = $site->server->processManager()->handler();
+                $processManager->restartAll($site->id);
+            }
+
             $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));

@@ -211,4 +211,13 @@ class Nginx extends AbstractWebserver
 
         $this->updateVHost($ssl->site);
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'nginx -v 2>&1 | awk -F/ \'{print $2}\';'
+        );
+
+        return str(trim($version))->before(' ');
+    }
 }

@@ -142,6 +142,15 @@ class Supervisor extends AbstractProcessManager
         );
     }
 
+    public function restartAll(?int $siteId = null): void
+    {
+        $this->service->server->ssh()->exec(
+            view('ssh.services.process-manager.supervisor.restart-all-workers'),
+            'restart-all-workers',
+            $siteId
+        );
+    }
+
     /**
      * @throws Throwable
      */
@@ -150,5 +159,14 @@ class Supervisor extends AbstractProcessManager
         return $this->service->server->ssh($user)->exec(
             "tail -100 $logPath"
         );
+    }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'supervisord --version'
+        );
+
+        return trim($version);
     }
 }

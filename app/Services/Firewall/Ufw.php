@@ -57,4 +57,13 @@ class Ufw extends AbstractFirewall
             'apply-rules'
         );
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'ufw --version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
+        );
+
+        return trim($version);
+    }
 }

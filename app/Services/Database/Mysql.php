@@ -29,4 +29,13 @@ class Mysql extends AbstractDatabase
     {
         return 'mysql';
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'mysql -V | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
+        );
+
+        return trim($version);
+    }
 }
