@@ -28,7 +28,7 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    protected function doInstall(): void
+    public function install(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.install-nginx'),
@@ -44,19 +44,20 @@ class Nginx extends AbstractWebserver
         );
 
         $this->service->server->systemd()->restart('nginx');
-
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
     /**
      * @throws SSHError
      */
-    protected function doUninstall(): void
+    public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.uninstall-nginx'),
             'uninstall-nginx'
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

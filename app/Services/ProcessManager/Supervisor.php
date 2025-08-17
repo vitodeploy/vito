@@ -25,24 +25,26 @@ class Supervisor extends AbstractProcessManager
     /**
      * @throws SSHError
      */
-    protected function doInstall(): void
+    public function install(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.install-supervisor'),
             'install-supervisor'
         );
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
     /**
      * @throws SSHError
      */
-    protected function doUninstall(): void
+    public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.uninstall-supervisor'),
             'uninstall-supervisor'
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

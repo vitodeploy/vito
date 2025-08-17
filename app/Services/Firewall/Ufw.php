@@ -25,7 +25,7 @@ class Ufw extends AbstractFirewall
     /**
      * @throws SSHError
      */
-    protected function doInstall(): void
+    public function install(): void
     {
         $this->createBasicFirewallRules();
 
@@ -33,12 +33,13 @@ class Ufw extends AbstractFirewall
             view('ssh.services.firewall.ufw.install-ufw'),
             'install-ufw'
         );
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
-    protected function doUninstall(): void
+    public function uninstall(): void
     {
-        //
+        event('service.uninstall', $this->service);
     }
 
     /**

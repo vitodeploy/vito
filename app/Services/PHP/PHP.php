@@ -58,7 +58,7 @@ class PHP extends AbstractService
     /**
      * @throws SSHError
      */
-    protected function doInstall(): void
+    public function install(): void
     {
         $server = $this->service->server;
         $server->ssh()->exec(
@@ -69,13 +69,14 @@ class PHP extends AbstractService
             'install-php-'.$this->service->version
         );
         $this->installComposer();
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
     /**
      * @throws SSHError
      */
-    protected function doUninstall(): void
+    public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.php.uninstall-php', [
@@ -83,6 +84,7 @@ class PHP extends AbstractService
             ]),
             'uninstall-php-'.$this->service->version
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

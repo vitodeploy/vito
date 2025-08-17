@@ -74,7 +74,7 @@ class VitoAgent extends AbstractService
      * @throws ServiceInstallationFailed
      * @throws ConnectionException
      */
-    protected function doInstall(): void
+    public function install(): void
     {
         $tags = Http::get(self::TAGS_URL)->json();
         if (empty($tags)) {
@@ -99,18 +99,20 @@ class VitoAgent extends AbstractService
             'install-vito-agent'
         );
         $status = $this->service->server->systemd()->status($this->unit());
+        event('service.installed', $this->service);
         $this->service->validateInstall($status);
     }
 
     /**
      * @throws SSHError
      */
-    protected function doUninstall(): void
+    public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
             view('ssh.services.monitoring.vito-agent.uninstall'),
             'uninstall-vito-agent'
         );
+        event('service.uninstalled', $this->service);
         Metric::query()->where('server_id', $this->service->server_id)->delete();
     }
 }

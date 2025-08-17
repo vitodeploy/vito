@@ -56,13 +56,14 @@ class RemoteMonitor extends AbstractService
         ];
     }
 
-    protected function doInstall(): void
+    public function install(): void
     {
         //
     }
 
-    protected function doUninstall(): void
+    public function uninstall(): void
     {
         Metric::query()->where('server_id', $this->service->server_id)->delete();
+        event('service.uninstall', $this->service);
     }
 }

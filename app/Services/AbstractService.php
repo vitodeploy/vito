@@ -28,24 +28,12 @@ abstract class AbstractService implements ServiceInterface
         return [];
     }
 
-    final public function install(): void
-    {
-        $this->doInstall();
-        event('service.installed', $this->service);
-    }
-
-    final public function uninstall(): void
-    {
-        $this->doUninstall();
-        event('service.uninstalled', $this->service);
-    }
-
-    protected function doInstall(): void
+    public function install(): void
     {
         //
     }
 
-    protected function doUninstall(): void
+    public function uninstall(): void
     {
         //
     }
