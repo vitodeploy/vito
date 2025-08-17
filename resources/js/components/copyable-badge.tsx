@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 
@@ -17,7 +17,7 @@ export default function CopyableBadge({ text }: { text: string }) {
     <Tooltip>
       <TooltipTrigger asChild>
         <div className="inline-flex cursor-pointer justify-start space-x-2 truncate" onClick={copyToClipboard}>
-          <Badge variant={copySuccess ? 'success' : 'outline'} className="block max-w-[200px] overflow-ellipsis">
+          <Badge variant={copySuccess ? 'success' : 'outline'} className="block max-w-[200px] overflow-ellipsis overflow-hidden">
             {text}
           </Badge>
         </div>
