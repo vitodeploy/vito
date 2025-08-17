@@ -1,0 +1,1 @@
+const t={getStoredSite(){const e=localStorage.getItem("site");return e?JSON.parse(e):null},storeSite(e){if(!e){localStorage.removeItem("site");return}localStorage.setItem("site",JSON.stringify(e))}};export{t as s};
