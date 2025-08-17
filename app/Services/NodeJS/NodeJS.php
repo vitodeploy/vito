@@ -94,7 +94,7 @@ class NodeJS extends AbstractService
             ]),
             'uninstall-nodejs-'.$this->service->version
         );
-        event('service.uninstall', $this->service);
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

@@ -39,7 +39,7 @@ class Ufw extends AbstractFirewall
 
     public function uninstall(): void
     {
-        event('service.uninstall', $this->service);
+        event('service.uninstalled', $this->service);
     }
 
     /**

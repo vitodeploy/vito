@@ -98,7 +98,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
         $version = $this->service->version;
         $command = view($this->getScriptView('uninstall'));
         $this->service->server->ssh()->exec($command, 'uninstall-'.$this->service->name.'-'.$version);
-        event('service.uninstall', $this->service);
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 
