@@ -64,5 +64,6 @@ class RemoteMonitor extends AbstractService
     public function uninstall(): void
     {
         Metric::query()->where('server_id', $this->service->server_id)->delete();
+        event('service.uninstalled', $this->service);
     }
 }

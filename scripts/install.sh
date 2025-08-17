@@ -5,32 +5,32 @@ export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
 if [[ -z "${V_PASSWORD}" ]]; then
-    export V_PASSWORD=$(openssl rand -base64 12)
+  export V_PASSWORD=$(openssl rand -base64 12)
 fi
 
 if [[ -z "${VITO_APP_URL}" ]]; then
-    export DEFAULT_VITO_APP_URL=http://$(curl -s https://free.freeipapi.com -4)
-    read -p "Enter the APP_URL [$DEFAULT_VITO_APP_URL]: " VITO_APP_URL
-    export VITO_APP_URL=${VITO_APP_URL:-$DEFAULT_VITO_APP_URL}
-    echo "APP_URL is set to: $VITO_APP_URL\n"
+  export DEFAULT_VITO_APP_URL=http://$(curl -s https://free.freeipapi.com -4)
+  read -p "Enter the APP_URL [$DEFAULT_VITO_APP_URL]: " VITO_APP_URL
+  export VITO_APP_URL=${VITO_APP_URL:-$DEFAULT_VITO_APP_URL}
+  echo "APP_URL is set to: $VITO_APP_URL\n"
 fi
 
 if [[ -z "${V_ADMIN_EMAIL}" ]]; then
-    read -p "Enter admin's email address: " V_ADMIN_EMAIL
+  read -p "Enter admin's email address: " V_ADMIN_EMAIL
 fi
 
 if [[ -z "${V_ADMIN_EMAIL}" ]]; then
-    echo "Error: V_ADMIN_EMAIL environment variable is not set."
-    exit 1
+  echo "Error: V_ADMIN_EMAIL environment variable is not set."
+  exit 1
 fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
-    read -p "Enter a password for the admin user: " V_ADMIN_PASSWORD
+  read -p "Enter a password for the admin user: " V_ADMIN_PASSWORD
 fi
 
 if [[ -z "${V_ADMIN_PASSWORD}" ]]; then
-    echo "Error: V_ADMIN_PASSWORD environment variable is not set."
-    exit 1
+  echo "Error: V_ADMIN_PASSWORD environment variable is not set."
+  exit 1
 fi
 
 apt remove needrestart -y
@@ -42,7 +42,7 @@ mkdir /home/vito
 mkdir /home/vito/.ssh
 chown -R vito:vito /home/vito
 chsh -s /bin/bash "vito"
-su - "vito" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<< y
+su - "vito" -c "ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa" <<<y
 
 # upgrade
 apt clean
@@ -84,7 +84,7 @@ export V_NGINX_CONFIG="
 "
 apt install nginx -y
 if ! echo "${V_NGINX_CONFIG}" | tee /etc/nginx/nginx.conf; then
-    echo "Can't configure nginx!" && exit 1
+  echo "Can't configure nginx!" && exit 1
 fi
 service nginx start
 
@@ -99,7 +99,7 @@ add-apt-repository ppa:ondrej/php -y
 apt update
 apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-intl
 if ! sed -i "s/www-data/vito/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
-    echo 'Error installing PHP' && exit 1
+  echo 'Error installing PHP' && exit 1
 fi
 service php${V_PHP_VERSION}-fpm enable
 service php${V_PHP_VERSION}-fpm start
@@ -117,7 +117,6 @@ php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 apt install redis-server -y
 service redis enable
 service redis start
-
 
 # setup website
 export COMPOSER_ALLOW_SUPERUSER=1
@@ -188,13 +187,9 @@ php artisan migrate --force
 php artisan user:create Vito ${V_ADMIN_EMAIL} ${V_ADMIN_PASSWORD}
 openssl genpkey -algorithm RSA -out /home/vito/vito/storage/ssh-private.pem
 chmod 600 /home/vito/vito/storage/ssh-private.pem
-ssh-keygen -y -f /home/vito/vito/storage/ssh-private.pem > /home/vito/vito/storage/ssh-public.key
+ssh-keygen -y -f /home/vito/vito/storage/ssh-private.pem >/home/vito/vito/storage/ssh-public.key
 chown -R vito:vito /home/vito/vito/storage/ssh-private.pem
 chown -R vito:vito /home/vito/vito/storage/ssh-public.key
-
-# install npm packages
-npm install
-npm run build
 
 # install plugins
 php artisan plugins:install https://github.com/vitodeploy/laravel-octane-plugin

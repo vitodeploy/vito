@@ -44,7 +44,7 @@ class Nginx extends AbstractWebserver
         );
 
         $this->service->server->systemd()->restart('nginx');
-
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -57,6 +57,7 @@ class Nginx extends AbstractWebserver
             view('ssh.services.webserver.nginx.uninstall-nginx'),
             'uninstall-nginx'
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

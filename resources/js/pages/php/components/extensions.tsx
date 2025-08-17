@@ -45,6 +45,12 @@ export default function Extensions({ service }: { service: Service }) {
     return null;
   }
 
+  const availableExtensions = Array.isArray(service.type_data?.available_extensions)
+    ? service.type_data.available_extensions
+    : Array.isArray(php.data?.extensions)
+      ? php.data.extensions
+      : Object.values(service.type_data?.available_extensions || php.data?.extensions || {});
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -65,7 +71,7 @@ export default function Extensions({ service }: { service: Service }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {php.data?.extensions?.map((extension: string) => (
+                    {availableExtensions.map((extension: string) => (
                       <SelectItem key={`extension-${extension}`} value={extension} disabled={service.type_data?.extensions?.includes(extension)}>
                         {extension} {service.type_data?.extensions?.includes(extension) && <span>(installed)</span>}
                       </SelectItem>

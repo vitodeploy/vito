@@ -7,6 +7,7 @@ use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -43,6 +44,59 @@ class PHPTest extends TestCase
         $php->refresh();
 
         $this->assertTrue($php->is_default);
+    }
+
+    public function test_extensions_validation_array_extension(): void
+    {
+        SSH::fake('output... [PHP Modules] grcp');
+
+        $this->actingAs($this->user);
+
+        $php = $this->server->php('8.2');
+
+        $php->type_data = [
+            'available_extensions' => ['grcp'],
+        ];
+        $php->save();
+
+        Event::listen('php.extensions.list', function (Service $service, array $availableExtensions) {
+            return [
+                'service' => $service,
+                'available_extensions' => $service->type_data['available_extensions'] ?? $availableExtensions,
+            ];
+        });
+
+        $this->post(route('php.install-extension', [
+            'server' => $this->server,
+            'service' => $php->id,
+        ]), [
+            'version' => '8.2',
+            'extension' => 'grcp',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertContains('grcp', $php->refresh()->type_data['extensions']);
+    }
+
+    public function test_invalid_extension_validation(): void
+    {
+        SSH::fake('output... [PHP Modules] invalid');
+
+        $this->actingAs($this->user);
+
+        $php = $this->server->php('8.2');
+
+        $this->post(route('php.install-extension', [
+            'server' => $this->server,
+            'service' => $php->id,
+        ]), [
+            'version' => '8.2',
+            'extension' => 'invalid',
+        ])
+            ->assertSessionHasErrors([
+                'extension' => 'The selected extension is invalid.',
+            ]);
+
     }
 
     public function test_install_extension(): void
