@@ -69,6 +69,7 @@ class PHP extends AbstractService
             'install-php-'.$this->service->version
         );
         $this->installComposer();
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -83,6 +84,7 @@ class PHP extends AbstractService
             ]),
             'uninstall-php-'.$this->service->version
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -172,5 +174,14 @@ class PHP extends AbstractService
             "remove-{$version}fpm-pool-{$user}",
             $siteId
         );
+    }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            '/usr/bin/php'.$this->service->version.' -r \'echo PHP_VERSION;\''
+        );
+
+        return trim($version);
     }
 }

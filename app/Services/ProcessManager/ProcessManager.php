@@ -25,5 +25,7 @@ interface ProcessManager extends ServiceInterface
 
     public function start(int $id, ?int $siteId = null): void;
 
+    public function restartAll(?int $siteId = null): void;
+
     public function getLogs(string $user, string $logPath): string;
 }

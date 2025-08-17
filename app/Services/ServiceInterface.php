@@ -35,4 +35,6 @@ interface ServiceInterface
     public function install(): void;
 
     public function uninstall(): void;
+
+    public function version(): string;
 }

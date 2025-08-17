@@ -45,6 +45,7 @@ class Install
         dispatch(function () use ($service): void {
             $service->handler()->install();
             $service->status = ServiceStatus::READY;
+            $service->installed_version = $service->handler()->version();
             $service->save();
         })->catch(function () use ($service): void {
             $service->status = ServiceStatus::INSTALLATION_FAILED;

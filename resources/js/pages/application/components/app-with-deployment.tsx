@@ -7,7 +7,6 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { BookOpenIcon, MoreHorizontalIcon, RocketIcon } from 'lucide-react';
-import React from 'react';
 import { PaginatedData } from '@/types';
 import { Deployment } from '@/types/deployment';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -17,13 +16,14 @@ import Deploy from '@/pages/application/components/deploy';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/application/components/deployment-columns';
 import AutoDeployment from '@/pages/application/components/auto-deployment';
+import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-script';
 
 export default function AppWithDeployment() {
   const page = usePage<{
     server: Server;
     site: Site;
     deployments: PaginatedData<Deployment>;
-    deploymentScript: string;
+    deploymentScript: DeploymentScriptType;
   }>();
 
   return (

@@ -41,8 +41,9 @@ class Laravel extends PHPSite
         $this->site->server->ssh($this->site->user)->exec(
             __('cp :path/.env.example :path/.env', ['path' => $this->site->path])
         );
-        $this->site->server->ssh($this->site->user)->exec(
-            __('php :path/artisan key:generate', ['path' => $this->site->path])
-        );
+        // disabling because composer might have not been installed
+        // $this->site->server->ssh($this->site->user)->exec(
+        //     __('php :path/artisan key:generate', ['path' => $this->site->path])
+        // );
     }
 }

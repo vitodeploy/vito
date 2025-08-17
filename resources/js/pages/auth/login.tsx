@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import { FormEvent } from 'react';
 import InputError from '@/components/ui/input-error';
@@ -10,13 +10,17 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth/layout';
 
 export default function Login() {
+  const page = usePage<{
+    demo: boolean;
+  }>();
+
   const form = useForm<{
     email: string;
     password: string;
     remember: boolean;
   }>({
-    email: '',
-    password: '',
+    email: page.props.demo ? 'demo@vitodeploy.com' : '',
+    password: page.props.demo ? 'password' : '',
     remember: false,
   });
 

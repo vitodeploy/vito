@@ -50,7 +50,7 @@ class Caddy extends AbstractWebserver
         $this->service->server->systemd()->reload();
 
         $this->service->server->systemd()->restart('caddy');
-
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -63,6 +63,7 @@ class Caddy extends AbstractWebserver
             view('ssh.services.webserver.caddy.uninstall-caddy'),
             'uninstall-caddy'
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -205,5 +206,14 @@ class Caddy extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
+    }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'caddy version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
+        );
+
+        return trim($version);
     }
 }

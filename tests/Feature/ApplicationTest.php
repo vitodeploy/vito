@@ -39,6 +39,7 @@ class ApplicationTest extends TestCase
             'site' => $this->site,
         ]), [
             'script' => 'some script',
+            'restart_workers' => true,
         ])
             ->assertSessionDoesntHaveErrors();
 
@@ -47,6 +48,9 @@ class ApplicationTest extends TestCase
             'name' => 'default',
             'content' => 'some script',
         ]);
+
+        $deploymentScript = $this->site->refresh()->deploymentScript;
+        $this->assertTrue($deploymentScript->shouldRestartWorkers());
     }
 
     /**

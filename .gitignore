@@ -22,6 +22,5 @@ yarn-error.log
 /.idea
 /.vscode
 laradumps.yaml
-/public/build
 .DS_Store
 /storage/pail

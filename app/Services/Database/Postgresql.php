@@ -33,4 +33,13 @@ class Postgresql extends AbstractDatabase
     {
         return 'postgresql';
     }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'psql --version | grep -oE \'[0-9]+\.[0-9]+(\.[0-9]+)?\' | head -n 1'
+        );
+
+        return trim($version);
+    }
 }

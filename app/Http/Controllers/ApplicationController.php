@@ -11,6 +11,7 @@ use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Http\Resources\DeploymentResource;
+use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\LoadBalancerServerResource;
 use App\Http\Resources\ServerLogResource;
 use App\Models\Server;
@@ -38,7 +39,7 @@ class ApplicationController extends Controller
         return Inertia::render('application/index', [
             'logs' => ServerLogResource::collection($site->logs()->latest()->simplePaginate(config('web.pagination_size'))),
             'deployments' => DeploymentResource::collection($site->deployments()->latest()->simplePaginate(config('web.pagination_size'))),
-            'deploymentScript' => $site->deploymentScript?->content,
+            'deploymentScript' => new DeploymentScriptResource($site->deploymentScript),
             'loadBalancerServers' => LoadBalancerServerResource::collection($site->loadBalancerServers),
         ]);
     }

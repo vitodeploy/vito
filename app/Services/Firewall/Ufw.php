@@ -33,12 +33,13 @@ class Ufw extends AbstractFirewall
             view('ssh.services.firewall.ufw.install-ufw'),
             'install-ufw'
         );
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
     public function uninstall(): void
     {
-        //
+        event('service.uninstalled', $this->service);
     }
 
     /**
@@ -55,5 +56,14 @@ class Ufw extends AbstractFirewall
             view('ssh.services.firewall.ufw.apply-rules', ['rules' => $rules]),
             'apply-rules'
         );
+    }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'ufw --version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
+        );
+
+        return trim($version);
     }
 }

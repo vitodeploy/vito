@@ -79,8 +79,8 @@ export default function CreateApiKey({ children }: { children: ReactNode }) {
                 <InputError message={form.errors.name} />
               </FormField>
               <FormField>
-                <Label htmlFor="name">Name</Label>
-                <Select name="permission" value={form.data.permission} onValueChange={(value) => form.setData('permission', value)}>
+                <Label htmlFor="permission">Permission</Label>
+                <Select id="permission" name="permission" value={form.data.permission} onValueChange={(value) => form.setData('permission', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a permission" />
                   </SelectTrigger>

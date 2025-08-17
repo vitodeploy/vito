@@ -73,6 +73,7 @@ class NodeJS extends AbstractService
             ]),
             'install-nodejs-'.$this->service->version
         );
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -93,6 +94,16 @@ class NodeJS extends AbstractService
             ]),
             'uninstall-nodejs-'.$this->service->version
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
+    }
+
+    public function version(): string
+    {
+        $version = $this->service->server->ssh()->exec(
+            'node -v | tr -d \'v\''
+        );
+
+        return trim($version);
     }
 }
