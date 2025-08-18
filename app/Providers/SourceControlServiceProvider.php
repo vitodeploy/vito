@@ -6,6 +6,7 @@ use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Plugins\RegisterSourceControl;
 use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Support\ServiceProvider;
@@ -19,6 +20,7 @@ class SourceControlServiceProvider extends ServiceProvider
         $this->github();
         $this->gitlab();
         $this->bitbucket();
+        $this->gitea();
     }
 
     private function github(): void
@@ -67,6 +69,24 @@ class SourceControlServiceProvider extends ServiceProvider
                     DynamicField::make('password')
                         ->text()
                         ->label('Password'),
+                ])
+            )
+            ->register();
+    }
+
+    private function gitea(): void
+    {
+        RegisterSourceControl::make(Gitea::id())
+            ->label('Gitea')
+            ->handler(Gitea::class)
+            ->form(
+                DynamicForm::make([
+                    DynamicField::make('token')
+                        ->text()
+                        ->label('Token'),
+                    DynamicField::make('url')
+                        ->text()
+                        ->label('Self hosted URL'),
                 ])
             )
             ->register();

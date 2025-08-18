@@ -1,24 +1,46 @@
-name: general
+name: firewall-rules
 description: ''
 endpoints:
   -
     httpMethods:
       - GET
-    uri: api/health
+    uri: 'api/projects/{project_id}/servers/{server_id}/firewall-rules'
     metadata:
-      groupName: general
+      groupName: firewall-rules
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: health-check
-      description: ''
+      title: list
+      description: 'Get all firewall rules.'
       authenticated: false
       custom: []
     headers:
       Content-Type: application/json
       Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -27,14 +49,414 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"success":true,"version":"2.5.0"}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          x-ratelimit-limit: '60'
-          x-ratelimit-remaining: '56'
-          access-control-allow-origin: '*'
-        description: null
+        content: '{"data":[{"id":1,"name":"eius","server_id":1,"type":"allow","protocol":"tcp","port":9322,"source":"113.14.236.204","mask":"24","note":"test","status":"creating","status_color":"info","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"},{"id":2,"name":"velit","server_id":1,"type":"allow","protocol":"tcp","port":2983,"source":"199.172.126.144","mask":"24","note":"test","status":"creating","status_color":"info","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/firewall-rules'
+    metadata:
+      groupName: firewall-rules
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: create
+      description: 'Create a new firewall rule.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      type:
+        name: type
+        description: ''
+        required: true
+        example: allow
+        type: string
+        enumValues:
+          - allow
+          - deny
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      protocol:
+        name: protocol
+        description: ''
+        required: true
+        example: udp
+        type: string
+        enumValues:
+          - tcp
+          - udp
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      port:
+        name: port
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      source:
+        name: source
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      mask:
+        name: mask
+        description: 'Mask for source IP.'
+        required: true
+        example: '0'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: architecto
+      type: allow
+      protocol: udp
+      port: architecto
+      source: architecto
+      mask: '0'
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":1,"name":"eius","server_id":1,"type":"allow","protocol":"tcp","port":9322,"source":"113.14.236.204","mask":"24","note":"test","status":"creating","status_color":"info","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{project_id}/servers/{server_id}/firewall-rules/{firewallRule_id}'
+    metadata:
+      groupName: firewall-rules
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: edit
+      description: 'Update an existing firewall rule.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      firewallRule_id:
+        name: firewallRule_id
+        description: 'The ID of the firewallRule.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      firewallRule_id: 16
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      type:
+        name: type
+        description: ''
+        required: true
+        example: deny
+        type: string
+        enumValues:
+          - allow
+          - deny
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      protocol:
+        name: protocol
+        description: ''
+        required: true
+        example: tcp
+        type: string
+        enumValues:
+          - tcp
+          - udp
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      port:
+        name: port
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      source:
+        name: source
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      mask:
+        name: mask
+        description: 'Mask for source IP.'
+        required: true
+        example: '0'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: architecto
+      type: deny
+      protocol: tcp
+      port: architecto
+      source: architecto
+      mask: '0'
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":1,"name":"eius","server_id":1,"type":"allow","protocol":"tcp","port":9322,"source":"113.14.236.204","mask":"24","note":"test","status":"creating","status_color":"info","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/servers/{server_id}/firewall-rules/{firewallRule_id}'
+    metadata:
+      groupName: firewall-rules
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: show
+      description: 'Get a firewall rule by ID.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      firewallRule_id:
+        name: firewallRule_id
+        description: 'The ID of the firewallRule.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      firewallRule_id: 16
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":1,"name":"eius","server_id":1,"type":"allow","protocol":"tcp","port":9322,"source":"113.14.236.204","mask":"24","note":"test","status":"creating","status_color":"info","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/projects/{project_id}/servers/{server_id}/firewall-rules/{firewallRule_id}'
+    metadata:
+      groupName: firewall-rules
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: delete
+      description: 'Delete firewall rule.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      firewallRule_id:
+        name: firewallRule_id
+        description: 'The ID of the firewallRule.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      firewallRule_id: 16
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: null
+        headers: []
+        description: ''
         custom: []
     responseFields: []
     auth: []

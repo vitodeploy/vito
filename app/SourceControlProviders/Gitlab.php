@@ -179,9 +179,4 @@ class Gitlab extends AbstractSourceControlProvider
 
         return $host.$this->apiVersion;
     }
-
-    public function getWebhookBranch(array $payload): string
-    {
-        return $payload['ref'] ?? '';
-    }
 }

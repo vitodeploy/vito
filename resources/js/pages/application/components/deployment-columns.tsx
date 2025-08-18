@@ -9,6 +9,11 @@ import { Download, View } from '@/pages/server-logs/components/columns';
 
 export const columns: ColumnDef<Deployment>[] = [
   {
+    accessorKey: 'id',
+    header: 'ID',
+    enableColumnFilter: true,
+  },
+  {
     accessorKey: 'commit_id',
     header: 'Commit',
     enableColumnFilter: true,

@@ -34,7 +34,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -42,7 +42,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
+      server_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -51,7 +51,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":4,"server_id":1,"username":"cartwright.maxine","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"},{"id":5,"server_id":1,"username":"gusikowski.eden","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":1,"server_id":1,"username":"gottlieb.malika","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"},{"id":2,"server_id":1,"username":"funk.diego","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -92,7 +92,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -100,7 +100,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
+      server_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -142,7 +142,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":4,"server_id":1,"username":"justina.gaylord","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"}'
+        content: '{"id":1,"server_id":1,"username":"justina.gaylord","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -183,7 +183,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -201,7 +201,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
+      server_id: 1
       databaseUser_id: 16
     queryParameters: []
     cleanQueryParameters: []
@@ -211,7 +211,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":4,"server_id":1,"username":"zbailey","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"}'
+        content: '{"id":1,"server_id":1,"username":"zbailey","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -252,7 +252,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -270,7 +270,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
+      server_id: 1
       databaseUser_id: 16
     queryParameters: []
     cleanQueryParameters: []
@@ -291,7 +291,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":4,"server_id":1,"username":"zbailey","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"}'
+        content: '{"id":1,"server_id":1,"username":"zbailey","databases":[],"host":"%","status":"creating","status_color":"warning","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -332,7 +332,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -350,7 +350,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
+      server_id: 1
       databaseUser_id: 16
     queryParameters: []
     cleanQueryParameters: []

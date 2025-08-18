@@ -26,7 +26,7 @@
             </style>
 
     <script>
-        var tryItOutBaseUrl = "https://vito.test";
+        var tryItOutBaseUrl = "http://localhost:8000";
         var useCsrf = Boolean();
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
@@ -136,6 +136,22 @@
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="databases-DELETEapi-projects--project_id--servers--server_id--databases--database_id-">
                                 <a href="#databases-DELETEapi-projects--project_id--servers--server_id--databases--database_id-">delete</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
+                    <ul id="tocify-header-deployments" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="deployments">
+                    <a href="#deployments">deployments</a>
+                </li>
+                                    <ul id="tocify-subheader-deployments" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="deployments-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+                                <a href="#deployments-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments">list</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="deployments-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+                                <a href="#deployments-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments">deploy</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="deployments-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-">
+                                <a href="#deployments-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-">deployment</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -393,7 +409,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: June 10, 2025</li>
+        <li>Last updated: August 18, 2025</li>
     </ul>
 </div>
 
@@ -403,7 +419,7 @@
         <h1 id="introduction">Introduction</h1>
 <p>VitoDeploy's API documentation.</p>
 <aside>
-    <strong>Base URL</strong>: <code>https://vito.test</code>
+    <strong>Base URL</strong>: <code>http://localhost:8000</code>
 </aside>
 <pre><code>This documentation aims to provide all the information you need to work with our API.
 
@@ -430,7 +446,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/servers/6/agent/architecto" \
+    "http://localhost:8000/api/servers/1/agent/architecto" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -447,7 +463,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/servers/6/agent/architecto"
+    "http://localhost:8000/api/servers/1/agent/architecto"
 );
 
 const headers = {
@@ -551,10 +567,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-servers--server_id--agent--id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
@@ -660,14 +676,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/git-hooks" \
+    --get "http://localhost:8000/api/git-hooks" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/git-hooks"
+    "http://localhost:8000/api/git-hooks"
 );
 
 const headers = {
@@ -693,7 +709,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: no-cache, private
 content-type: application/json
 x-ratelimit-limit: 60
-x-ratelimit-remaining: 57
+x-ratelimit-remaining: 59
 access-control-allow-origin: *
  </code></pre></details>         <pre>
 
@@ -810,14 +826,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/cron-jobs" \
+    --get "http://localhost:8000/api/projects/1/servers/1/cron-jobs" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/cron-jobs"
+    "http://localhost:8000/api/projects/1/servers/1/cron-jobs"
 );
 
 const headers = {
@@ -841,26 +857,26 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 3,
+            &quot;id&quot;: 1,
             &quot;server_id&quot;: 1,
             &quot;command&quot;: &quot;ls -la&quot;,
             &quot;user&quot;: &quot;root&quot;,
             &quot;frequency&quot;: &quot;* * * * *&quot;,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;status_color&quot;: &quot;success&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 4,
+            &quot;id&quot;: 2,
             &quot;server_id&quot;: 1,
             &quot;command&quot;: &quot;ls -la&quot;,
             &quot;user&quot;: &quot;root&quot;,
             &quot;frequency&quot;: &quot;* * * * *&quot;,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;status_color&quot;: &quot;success&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -985,10 +1001,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--cron-jobs"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -1005,7 +1021,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/cron-jobs" \
+    "http://localhost:8000/api/projects/1/servers/1/cron-jobs" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -1018,7 +1034,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/cron-jobs"
+    "http://localhost:8000/api/projects/1/servers/1/cron-jobs"
 );
 
 const headers = {
@@ -1047,15 +1063,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 3,
+    &quot;id&quot;: 1,
     &quot;server_id&quot;: 1,
     &quot;command&quot;: &quot;ls -la&quot;,
     &quot;user&quot;: &quot;root&quot;,
     &quot;frequency&quot;: &quot;* * * * *&quot;,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;status_color&quot;: &quot;success&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -1146,10 +1162,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--cron-jobs"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -1202,14 +1218,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/cron-jobs/1" \
+    --get "http://localhost:8000/api/projects/1/servers/1/cron-jobs/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/cron-jobs/1"
+    "http://localhost:8000/api/projects/1/servers/1/cron-jobs/16"
 );
 
 const headers = {
@@ -1231,15 +1247,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 3,
+    &quot;id&quot;: 1,
     &quot;server_id&quot;: 1,
     &quot;command&quot;: &quot;ls -la&quot;,
     &quot;user&quot;: &quot;root&quot;,
     &quot;frequency&quot;: &quot;* * * * *&quot;,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;status_color&quot;: &quot;success&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -1330,10 +1346,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--cron-jobs--cronJob_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>cronJob_id</code></b>&nbsp;&nbsp;
@@ -1341,10 +1357,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="cronJob_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--cron-jobs--cronJob_id-"
-               value="1"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the cronJob. Example: <code>1</code></p>
+<p>The ID of the cronJob. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -1361,14 +1377,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/cron-jobs/1" \
+    "http://localhost:8000/api/projects/1/servers/1/cron-jobs/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/cron-jobs/1"
+    "http://localhost:8000/api/projects/1/servers/1/cron-jobs/16"
 );
 
 const headers = {
@@ -1478,10 +1494,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--cron-jobs--cronJob_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>cronJob_id</code></b>&nbsp;&nbsp;
@@ -1489,10 +1505,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="cronJob_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--cron-jobs--cronJob_id-"
-               value="1"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the cronJob. Example: <code>1</code></p>
+<p>The ID of the cronJob. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -1513,14 +1529,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/database-users" \
+    --get "http://localhost:8000/api/projects/1/servers/1/database-users" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/database-users"
+    "http://localhost:8000/api/projects/1/servers/1/database-users"
 );
 
 const headers = {
@@ -1544,26 +1560,26 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 4,
+            &quot;id&quot;: 1,
             &quot;server_id&quot;: 1,
-            &quot;username&quot;: &quot;cartwright.maxine&quot;,
+            &quot;username&quot;: &quot;gottlieb.malika&quot;,
             &quot;databases&quot;: [],
             &quot;host&quot;: &quot;%&quot;,
             &quot;status&quot;: &quot;creating&quot;,
             &quot;status_color&quot;: &quot;warning&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 5,
+            &quot;id&quot;: 2,
             &quot;server_id&quot;: 1,
-            &quot;username&quot;: &quot;gusikowski.eden&quot;,
+            &quot;username&quot;: &quot;funk.diego&quot;,
             &quot;databases&quot;: [],
             &quot;host&quot;: &quot;%&quot;,
             &quot;status&quot;: &quot;creating&quot;,
             &quot;status_color&quot;: &quot;warning&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -1688,10 +1704,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--database-users"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -1708,7 +1724,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/database-users" \
+    "http://localhost:8000/api/projects/1/servers/1/database-users" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -1721,7 +1737,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/database-users"
+    "http://localhost:8000/api/projects/1/servers/1/database-users"
 );
 
 const headers = {
@@ -1750,15 +1766,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 1,
     &quot;server_id&quot;: 1,
     &quot;username&quot;: &quot;justina.gaylord&quot;,
     &quot;databases&quot;: [],
     &quot;host&quot;: &quot;%&quot;,
     &quot;status&quot;: &quot;creating&quot;,
     &quot;status_color&quot;: &quot;warning&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -1849,10 +1865,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--database-users"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -1903,14 +1919,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/database-users/16" \
+    --get "http://localhost:8000/api/projects/1/servers/1/database-users/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/database-users/16"
+    "http://localhost:8000/api/projects/1/servers/1/database-users/16"
 );
 
 const headers = {
@@ -1932,15 +1948,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 1,
     &quot;server_id&quot;: 1,
     &quot;username&quot;: &quot;zbailey&quot;,
     &quot;databases&quot;: [],
     &quot;host&quot;: &quot;%&quot;,
     &quot;status&quot;: &quot;creating&quot;,
     &quot;status_color&quot;: &quot;warning&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -2031,10 +2047,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--database-users--databaseUser_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>databaseUser_id</code></b>&nbsp;&nbsp;
@@ -2062,7 +2078,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/database-users/16/link" \
+    "http://localhost:8000/api/projects/1/servers/1/database-users/16/link" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -2073,7 +2089,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/database-users/16/link"
+    "http://localhost:8000/api/projects/1/servers/1/database-users/16/link"
 );
 
 const headers = {
@@ -2100,15 +2116,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 1,
     &quot;server_id&quot;: 1,
     &quot;username&quot;: &quot;zbailey&quot;,
     &quot;databases&quot;: [],
     &quot;host&quot;: &quot;%&quot;,
     &quot;status&quot;: &quot;creating&quot;,
     &quot;status_color&quot;: &quot;warning&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -2199,10 +2215,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--database-users--databaseUser_id--link"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>databaseUser_id</code></b>&nbsp;&nbsp;
@@ -2242,14 +2258,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/database-users/16" \
+    "http://localhost:8000/api/projects/1/servers/1/database-users/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/database-users/16"
+    "http://localhost:8000/api/projects/1/servers/1/database-users/16"
 );
 
 const headers = {
@@ -2359,10 +2375,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--database-users--databaseUser_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>databaseUser_id</code></b>&nbsp;&nbsp;
@@ -2394,14 +2410,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/databases" \
+    --get "http://localhost:8000/api/projects/1/servers/1/databases" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/databases"
+    "http://localhost:8000/api/projects/1/servers/1/databases"
 );
 
 const headers = {
@@ -2425,26 +2441,26 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 9,
+            &quot;id&quot;: 1,
             &quot;server_id&quot;: 1,
             &quot;name&quot;: &quot;zbailey&quot;,
             &quot;collation&quot;: null,
             &quot;charset&quot;: null,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;status_color&quot;: &quot;success&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 10,
+            &quot;id&quot;: 2,
             &quot;server_id&quot;: 1,
             &quot;name&quot;: &quot;rempel.chadrick&quot;,
             &quot;collation&quot;: null,
             &quot;charset&quot;: null,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;status_color&quot;: &quot;success&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -2569,10 +2585,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--databases"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -2589,7 +2605,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/databases" \
+    "http://localhost:8000/api/projects/1/servers/1/databases" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -2602,7 +2618,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/databases"
+    "http://localhost:8000/api/projects/1/servers/1/databases"
 );
 
 const headers = {
@@ -2631,15 +2647,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 9,
+    &quot;id&quot;: 1,
     &quot;server_id&quot;: 1,
     &quot;name&quot;: &quot;zbailey&quot;,
     &quot;collation&quot;: null,
     &quot;charset&quot;: null,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;status_color&quot;: &quot;success&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -2730,10 +2746,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--databases"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -2784,14 +2800,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/databases/8" \
+    --get "http://localhost:8000/api/projects/1/servers/1/databases/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/databases/8"
+    "http://localhost:8000/api/projects/1/servers/1/databases/16"
 );
 
 const headers = {
@@ -2813,15 +2829,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 9,
+    &quot;id&quot;: 1,
     &quot;server_id&quot;: 1,
-    &quot;name&quot;: &quot;rempel.chadrick&quot;,
+    &quot;name&quot;: &quot;zbailey&quot;,
     &quot;collation&quot;: null,
     &quot;charset&quot;: null,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;status_color&quot;: &quot;success&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -2912,10 +2928,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--databases--id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
@@ -2923,10 +2939,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="id"                data-endpoint="GETapi-projects--project_id--servers--server_id--databases--id-"
-               value="8"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the database. Example: <code>8</code></p>
+<p>The ID of the database. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -2943,14 +2959,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/databases/8" \
+    "http://localhost:8000/api/projects/1/servers/1/databases/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/databases/8"
+    "http://localhost:8000/api/projects/1/servers/1/databases/16"
 );
 
 const headers = {
@@ -3060,10 +3076,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--databases--database_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>database_id</code></b>&nbsp;&nbsp;
@@ -3071,10 +3087,561 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="database_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--databases--database_id-"
-               value="8"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the database. Example: <code>8</code></p>
+<p>The ID of the database. Example: <code>16</code></p>
+            </div>
+                    </form>
+
+                <h1 id="deployments">deployments</h1>
+
+    
+
+                                <h2 id="deployments-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments">list</h2>
+
+<p>
+</p>
+
+<p>Get all sites.</p>
+
+<span id="example-requests-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/projects/1/servers/1/sites/5/deployments" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deployments"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;data&quot;: [
+        {
+            &quot;id&quot;: null,
+            &quot;site_id&quot;: null,
+            &quot;deployment_script_id&quot;: null,
+            &quot;log_id&quot;: null,
+            &quot;log&quot;: null,
+            &quot;commit_id&quot;: null,
+            &quot;commit_id_short&quot;: null,
+            &quot;commit_data&quot;: null,
+            &quot;status&quot;: null,
+            &quot;status_color&quot;: &quot;gray&quot;,
+            &quot;updated_at&quot;: null,
+            &quot;created_at&quot;: null
+        },
+        {
+            &quot;id&quot;: null,
+            &quot;site_id&quot;: null,
+            &quot;deployment_script_id&quot;: null,
+            &quot;log_id&quot;: null,
+            &quot;log&quot;: null,
+            &quot;commit_id&quot;: null,
+            &quot;commit_id_short&quot;: null,
+            &quot;commit_data&quot;: null,
+            &quot;status&quot;: null,
+            &quot;status_color&quot;: &quot;gray&quot;,
+            &quot;updated_at&quot;: null,
+            &quot;created_at&quot;: null
+        }
+    ],
+    &quot;links&quot;: {
+        &quot;first&quot;: &quot;/?page=1&quot;,
+        &quot;last&quot;: &quot;/?page=1&quot;,
+        &quot;prev&quot;: null,
+        &quot;next&quot;: null
+    },
+    &quot;meta&quot;: {
+        &quot;current_page&quot;: 1,
+        &quot;from&quot;: 1,
+        &quot;last_page&quot;: 1,
+        &quot;links&quot;: [
+            {
+                &quot;url&quot;: null,
+                &quot;label&quot;: &quot;&amp;laquo; Previous&quot;,
+                &quot;active&quot;: false
+            },
+            {
+                &quot;url&quot;: &quot;/?page=1&quot;,
+                &quot;label&quot;: &quot;1&quot;,
+                &quot;active&quot;: true
+            },
+            {
+                &quot;url&quot;: null,
+                &quot;label&quot;: &quot;Next &amp;raquo;&quot;,
+                &quot;active&quot;: false
+            }
+        ],
+        &quot;path&quot;: &quot;/&quot;,
+        &quot;per_page&quot;: 25,
+        &quot;to&quot;: 2,
+        &quot;total&quot;: 2
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments" data-method="GET"
+      data-path="api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployments"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-projects--project_id--servers--server_id--sites--site_id--deployments', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+                    onclick="tryItOut('GETapi-projects--project_id--servers--server_id--sites--site_id--deployments');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+                    onclick="cancelTryOut('GETapi-projects--project_id--servers--server_id--sites--site_id--deployments');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployments</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>server_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the server. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="site_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="5"
+               data-component="url">
+    <br>
+<p>The ID of the site. Example: <code>5</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="deployments-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments">deploy</h2>
+
+<p>
+</p>
+
+<p>Run site deployment script</p>
+
+<span id="example-requests-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deployments" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deployments"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;id&quot;: null,
+    &quot;site_id&quot;: null,
+    &quot;deployment_script_id&quot;: null,
+    &quot;log_id&quot;: null,
+    &quot;log&quot;: null,
+    &quot;commit_id&quot;: null,
+    &quot;commit_id_short&quot;: null,
+    &quot;commit_data&quot;: null,
+    &quot;status&quot;: null,
+    &quot;status_color&quot;: &quot;gray&quot;,
+    &quot;updated_at&quot;: null,
+    &quot;created_at&quot;: null
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments" data-method="POST"
+      data-path="api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployments"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+                    onclick="tryItOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+                    onclick="cancelTryOut('POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployments</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>server_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the server. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="site_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deployments"
+               value="5"
+               data-component="url">
+    <br>
+<p>The ID of the site. Example: <code>5</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="deployments-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-">deployment</h2>
+
+<p>
+</p>
+
+<p>Show deployment details</p>
+
+<span id="example-requests-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/projects/1/servers/1/sites/5/deployments/16" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deployments/16"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;id&quot;: null,
+    &quot;site_id&quot;: null,
+    &quot;deployment_script_id&quot;: null,
+    &quot;log_id&quot;: null,
+    &quot;log&quot;: null,
+    &quot;commit_id&quot;: null,
+    &quot;commit_id_short&quot;: null,
+    &quot;commit_data&quot;: null,
+    &quot;status&quot;: null,
+    &quot;status_color&quot;: &quot;gray&quot;,
+    &quot;updated_at&quot;: null,
+    &quot;created_at&quot;: null
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-" data-method="GET"
+      data-path="api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployments/{id}"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+                    onclick="tryItOut('GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+                    onclick="cancelTryOut('GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployments/{id}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>server_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+               value="1"
+               data-component="url">
+    <br>
+<p>The ID of the server. Example: <code>1</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="site_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+               value="5"
+               data-component="url">
+    <br>
+<p>The ID of the site. Example: <code>5</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployments--id-"
+               value="16"
+               data-component="url">
+    <br>
+<p>The ID of the deployment. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -3095,14 +3662,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/firewall-rules" \
+    --get "http://localhost:8000/api/projects/1/servers/1/firewall-rules" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/firewall-rules"
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules"
 );
 
 const headers = {
@@ -3126,7 +3693,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 22,
+            &quot;id&quot;: 1,
             &quot;name&quot;: &quot;eius&quot;,
             &quot;server_id&quot;: 1,
             &quot;type&quot;: &quot;allow&quot;,
@@ -3137,11 +3704,11 @@ fetch(url, {
             &quot;note&quot;: &quot;test&quot;,
             &quot;status&quot;: &quot;creating&quot;,
             &quot;status_color&quot;: &quot;info&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 23,
+            &quot;id&quot;: 2,
             &quot;name&quot;: &quot;velit&quot;,
             &quot;server_id&quot;: 1,
             &quot;type&quot;: &quot;allow&quot;,
@@ -3152,8 +3719,8 @@ fetch(url, {
             &quot;note&quot;: &quot;test&quot;,
             &quot;status&quot;: &quot;creating&quot;,
             &quot;status_color&quot;: &quot;info&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -3278,10 +3845,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--firewall-rules"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -3298,13 +3865,13 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/firewall-rules" \
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
     \"name\": \"architecto\",
     \"type\": \"allow\",
-    \"protocol\": \"tcp\",
+    \"protocol\": \"udp\",
     \"port\": \"architecto\",
     \"source\": \"architecto\",
     \"mask\": \"0\"
@@ -3314,7 +3881,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/firewall-rules"
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules"
 );
 
 const headers = {
@@ -3325,7 +3892,7 @@ const headers = {
 let body = {
     "name": "architecto",
     "type": "allow",
-    "protocol": "tcp",
+    "protocol": "udp",
     "port": "architecto",
     "source": "architecto",
     "mask": "0"
@@ -3346,7 +3913,7 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 22,
+    &quot;id&quot;: 1,
     &quot;name&quot;: &quot;eius&quot;,
     &quot;server_id&quot;: 1,
     &quot;type&quot;: &quot;allow&quot;,
@@ -3357,8 +3924,8 @@ fetch(url, {
     &quot;note&quot;: &quot;test&quot;,
     &quot;status&quot;: &quot;creating&quot;,
     &quot;status_color&quot;: &quot;info&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -3449,10 +4016,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--firewall-rules"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -3485,10 +4052,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="protocol"                data-endpoint="POSTapi-projects--project_id--servers--server_id--firewall-rules"
-               value="tcp"
+               value="udp"
                data-component="body">
     <br>
-<p>Example: <code>tcp</code></p>
+<p>Example: <code>udp</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>tcp</code></li> <li><code>udp</code></li></ul>
         </div>
@@ -3540,13 +4107,13 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1/servers/6/firewall-rules/19" \
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
     \"name\": \"architecto\",
     \"type\": \"deny\",
-    \"protocol\": \"udp\",
+    \"protocol\": \"tcp\",
     \"port\": \"architecto\",
     \"source\": \"architecto\",
     \"mask\": \"0\"
@@ -3556,7 +4123,7 @@ Must be one of:
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/firewall-rules/19"
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules/16"
 );
 
 const headers = {
@@ -3567,7 +4134,7 @@ const headers = {
 let body = {
     "name": "architecto",
     "type": "deny",
-    "protocol": "udp",
+    "protocol": "tcp",
     "port": "architecto",
     "source": "architecto",
     "mask": "0"
@@ -3588,7 +4155,7 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 22,
+    &quot;id&quot;: 1,
     &quot;name&quot;: &quot;eius&quot;,
     &quot;server_id&quot;: 1,
     &quot;type&quot;: &quot;allow&quot;,
@@ -3599,8 +4166,8 @@ fetch(url, {
     &quot;note&quot;: &quot;test&quot;,
     &quot;status&quot;: &quot;creating&quot;,
     &quot;status_color&quot;: &quot;info&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -3691,10 +4258,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>firewallRule_id</code></b>&nbsp;&nbsp;
@@ -3702,10 +4269,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="firewallRule_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="19"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the firewallRule. Example: <code>19</code></p>
+<p>The ID of the firewallRule. Example: <code>16</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -3738,10 +4305,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="protocol"                data-endpoint="PUTapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="udp"
+               value="tcp"
                data-component="body">
     <br>
-<p>Example: <code>udp</code></p>
+<p>Example: <code>tcp</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>tcp</code></li> <li><code>udp</code></li></ul>
         </div>
@@ -3793,14 +4360,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/firewall-rules/19" \
+    --get "http://localhost:8000/api/projects/1/servers/1/firewall-rules/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/firewall-rules/19"
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules/16"
 );
 
 const headers = {
@@ -3822,19 +4389,19 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 22,
-    &quot;name&quot;: &quot;velit&quot;,
+    &quot;id&quot;: 1,
+    &quot;name&quot;: &quot;eius&quot;,
     &quot;server_id&quot;: 1,
     &quot;type&quot;: &quot;allow&quot;,
     &quot;protocol&quot;: &quot;tcp&quot;,
-    &quot;port&quot;: 2983,
-    &quot;source&quot;: &quot;199.172.126.144&quot;,
+    &quot;port&quot;: 9322,
+    &quot;source&quot;: &quot;113.14.236.204&quot;,
     &quot;mask&quot;: &quot;24&quot;,
     &quot;note&quot;: &quot;test&quot;,
     &quot;status&quot;: &quot;creating&quot;,
     &quot;status_color&quot;: &quot;info&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -3925,10 +4492,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>firewallRule_id</code></b>&nbsp;&nbsp;
@@ -3936,10 +4503,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="firewallRule_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="19"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the firewallRule. Example: <code>19</code></p>
+<p>The ID of the firewallRule. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -3956,14 +4523,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/firewall-rules/19" \
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/firewall-rules/19"
+    "http://localhost:8000/api/projects/1/servers/1/firewall-rules/16"
 );
 
 const headers = {
@@ -4073,10 +4640,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>firewallRule_id</code></b>&nbsp;&nbsp;
@@ -4084,10 +4651,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="firewallRule_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--firewall-rules--firewallRule_id-"
-               value="19"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the firewallRule. Example: <code>19</code></p>
+<p>The ID of the firewallRule. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -4108,14 +4675,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/health" \
+    --get "http://localhost:8000/api/health" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/health"
+    "http://localhost:8000/api/health"
 );
 
 const headers = {
@@ -4141,13 +4708,13 @@ fetch(url, {
             <pre><code class="language-http">cache-control: no-cache, private
 content-type: application/json
 x-ratelimit-limit: 60
-x-ratelimit-remaining: 56
+x-ratelimit-remaining: 58
 access-control-allow-origin: *
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;success&quot;: true,
-    &quot;version&quot;: &quot;2.5.0&quot;
+    &quot;version&quot;: &quot;3.2.0&quot;
 }</code>
  </pre>
     </span>
@@ -4239,14 +4806,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects" \
+    --get "http://localhost:8000/api/projects" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects"
+    "http://localhost:8000/api/projects"
 );
 
 const headers = {
@@ -4271,15 +4838,15 @@ fetch(url, {
     &quot;data&quot;: [
         {
             &quot;id&quot;: 3,
-            &quot;name&quot;: &quot;Belle Dickens&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;name&quot;: &quot;Ms. Elisabeth Okuneva&quot;,
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
             &quot;id&quot;: 4,
-            &quot;name&quot;: &quot;Mittie Considine&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;name&quot;: &quot;Aleen O&#039;Kon&quot;,
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -4401,7 +4968,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects" \
+    "http://localhost:8000/api/projects" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -4412,7 +4979,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects"
+    "http://localhost:8000/api/projects"
 );
 
 const headers = {
@@ -4441,8 +5008,8 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: 3,
     &quot;name&quot;: &quot;Ms. Elisabeth Okuneva&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -4542,14 +5109,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1" \
+    --get "http://localhost:8000/api/projects/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1"
+    "http://localhost:8000/api/projects/1"
 );
 
 const headers = {
@@ -4573,8 +5140,8 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: 3,
     &quot;name&quot;: &quot;Aleen O&#039;Kon&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -4674,7 +5241,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1" \
+    "http://localhost:8000/api/projects/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -4685,7 +5252,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1"
+    "http://localhost:8000/api/projects/1"
 );
 
 const headers = {
@@ -4714,8 +5281,8 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;id&quot;: 3,
     &quot;name&quot;: &quot;Ms. Elisabeth Okuneva&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -4827,14 +5394,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1" \
+    "http://localhost:8000/api/projects/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1"
+    "http://localhost:8000/api/projects/1"
 );
 
 const headers = {
@@ -4957,20 +5524,20 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/sites/14/redirects" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/redirects" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
     \"from\": \"architecto\",
     \"to\": \"architecto\",
-    \"mode\": 307
+    \"mode\": 302
 }"
 </code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/redirects"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/redirects"
 );
 
 const headers = {
@@ -4981,7 +5548,7 @@ const headers = {
 let body = {
     "from": "architecto",
     "to": "architecto",
-    "mode": 307
+    "mode": 302
 };
 
 fetch(url, {
@@ -5088,10 +5655,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -5099,10 +5666,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -5133,10 +5700,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="mode"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--redirects"
-               value="307"
+               value="302"
                data-component="body">
     <br>
-<p>Example: <code>307</code></p>
+<p>Example: <code>302</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>301</code></li> <li><code>302</code></li> <li><code>307</code></li> <li><code>308</code></li></ul>
         </div>
@@ -5155,14 +5722,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/sites/14/redirects/2" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/redirects/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/redirects/2"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/redirects/1"
 );
 
 const headers = {
@@ -5272,10 +5839,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -5283,10 +5850,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>redirect_id</code></b>&nbsp;&nbsp;
@@ -5294,10 +5861,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="redirect_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id--redirects--redirect_id-"
-               value="2"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the redirect. Example: <code>2</code></p>
+<p>The ID of the redirect. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -5318,14 +5885,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/server-providers" \
+    --get "http://localhost:8000/api/projects/1/server-providers" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/server-providers"
+    "http://localhost:8000/api/projects/1/server-providers"
 );
 
 const headers = {
@@ -5349,22 +5916,22 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 4,
+            &quot;id&quot;: 2,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
             &quot;name&quot;: &quot;ab&quot;,
             &quot;provider&quot;: &quot;custom&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 5,
+            &quot;id&quot;: 3,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
             &quot;name&quot;: &quot;incidunt&quot;,
             &quot;provider&quot;: &quot;custom&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -5498,7 +6065,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/server-providers" \
+    "http://localhost:8000/api/projects/1/server-providers" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -5513,7 +6080,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/server-providers"
+    "http://localhost:8000/api/projects/1/server-providers"
 );
 
 const headers = {
@@ -5544,13 +6111,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 2,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;eius&quot;,
     &quot;provider&quot;: &quot;custom&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -5706,14 +6273,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/server-providers/3" \
+    --get "http://localhost:8000/api/projects/1/server-providers/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/server-providers/3"
+    "http://localhost:8000/api/projects/1/server-providers/1"
 );
 
 const headers = {
@@ -5735,13 +6302,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 2,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;mollitia&quot;,
-    &quot;provider&quot;: &quot;vultr&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;provider&quot;: &quot;linode&quot;,
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -5832,10 +6399,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="serverProvider_id"                data-endpoint="GETapi-projects--project_id--server-providers--serverProvider_id-"
-               value="3"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the serverProvider. Example: <code>3</code></p>
+<p>The ID of the serverProvider. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -5852,7 +6419,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1/server-providers/3" \
+    "http://localhost:8000/api/projects/1/server-providers/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -5864,7 +6431,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/server-providers/3"
+    "http://localhost:8000/api/projects/1/server-providers/1"
 );
 
 const headers = {
@@ -5892,13 +6459,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 2,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;eius&quot;,
     &quot;provider&quot;: &quot;custom&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -5989,10 +6556,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="serverProvider_id"                data-endpoint="PUTapi-projects--project_id--server-providers--serverProvider_id-"
-               value="3"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the serverProvider. Example: <code>3</code></p>
+<p>The ID of the serverProvider. Example: <code>1</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -6034,14 +6601,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/server-providers/3" \
+    "http://localhost:8000/api/projects/1/server-providers/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/server-providers/3"
+    "http://localhost:8000/api/projects/1/server-providers/1"
 );
 
 const headers = {
@@ -6151,10 +6718,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="serverProvider_id"                data-endpoint="DELETEapi-projects--project_id--server-providers--serverProvider_id-"
-               value="3"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the serverProvider. Example: <code>3</code></p>
+<p>The ID of the serverProvider. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -6175,14 +6742,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers" \
+    --get "http://localhost:8000/api/projects/1/servers" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers"
+    "http://localhost:8000/api/projects/1/servers"
 );
 
 const headers = {
@@ -6206,70 +6773,62 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 7,
+            &quot;id&quot;: 2,
             &quot;project_id&quot;: 1,
             &quot;services&quot;: [],
             &quot;user_id&quot;: 1,
             &quot;provider_id&quot;: null,
-            &quot;name&quot;: &quot;Rhiannon Hackett&quot;,
+            &quot;name&quot;: &quot;Dakota Reilly&quot;,
             &quot;ssh_user&quot;: &quot;vito&quot;,
             &quot;ssh_users&quot;: [
                 &quot;root&quot;,
                 &quot;vito&quot;
             ],
-            &quot;ip&quot;: &quot;15.21.182.27&quot;,
-            &quot;local_ip&quot;: &quot;15.126.47.30&quot;,
+            &quot;ip&quot;: &quot;214.243.18.115&quot;,
+            &quot;local_ip&quot;: &quot;240.199.127.73&quot;,
             &quot;port&quot;: 22,
             &quot;os&quot;: &quot;ubuntu_22&quot;,
-            &quot;type&quot;: &quot;regular&quot;,
-            &quot;type_data&quot;: null,
             &quot;provider&quot;: &quot;custom&quot;,
             &quot;provider_data&quot;: null,
             &quot;public_key&quot;: &quot;test&quot;,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;auto_update&quot;: null,
-            &quot;available_updates&quot;: 0,
-            &quot;security_updates&quot;: null,
             &quot;progress&quot;: 100,
             &quot;progress_step&quot;: null,
             &quot;updates&quot;: 0,
             &quot;last_update_check&quot;: null,
             &quot;status_color&quot;: &quot;success&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 8,
+            &quot;id&quot;: 3,
             &quot;project_id&quot;: 1,
             &quot;services&quot;: [],
             &quot;user_id&quot;: 1,
             &quot;provider_id&quot;: null,
-            &quot;name&quot;: &quot;Maya Bins&quot;,
+            &quot;name&quot;: &quot;Prof. Terrell Reichert&quot;,
             &quot;ssh_user&quot;: &quot;vito&quot;,
             &quot;ssh_users&quot;: [
                 &quot;root&quot;,
                 &quot;vito&quot;
             ],
-            &quot;ip&quot;: &quot;88.63.32.129&quot;,
-            &quot;local_ip&quot;: &quot;161.58.4.234&quot;,
+            &quot;ip&quot;: &quot;166.198.170.213&quot;,
+            &quot;local_ip&quot;: &quot;211.2.131.202&quot;,
             &quot;port&quot;: 22,
             &quot;os&quot;: &quot;ubuntu_22&quot;,
-            &quot;type&quot;: &quot;regular&quot;,
-            &quot;type_data&quot;: null,
             &quot;provider&quot;: &quot;custom&quot;,
             &quot;provider_data&quot;: null,
             &quot;public_key&quot;: &quot;test&quot;,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;auto_update&quot;: null,
-            &quot;available_updates&quot;: 0,
-            &quot;security_updates&quot;: null,
             &quot;progress&quot;: 100,
             &quot;progress_step&quot;: null,
             &quot;updates&quot;: 0,
             &quot;last_update_check&quot;: null,
             &quot;status_color&quot;: &quot;success&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -6403,28 +6962,28 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers" \
+    "http://localhost:8000/api/projects/1/servers" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
     \"provider\": \"architecto\",
-    \"server_provider\": \"linode\",
+    \"server_provider\": \"architecto\",
     \"region\": \"architecto\",
     \"plan\": \"architecto\",
     \"ip\": \"architecto\",
     \"port\": \"architecto\",
     \"name\": \"architecto\",
     \"os\": \"architecto\",
-    \"webserver\": \"none\",
-    \"database\": \"mysql80\",
-    \"php\": \"8.2\"
+    \"webserver\": \"architecto\",
+    \"database\": \"architecto\",
+    \"php\": \"architecto\"
 }"
 </code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers"
+    "http://localhost:8000/api/projects/1/servers"
 );
 
 const headers = {
@@ -6434,16 +6993,16 @@ const headers = {
 
 let body = {
     "provider": "architecto",
-    "server_provider": "linode",
+    "server_provider": "architecto",
     "region": "architecto",
     "plan": "architecto",
     "ip": "architecto",
     "port": "architecto",
     "name": "architecto",
     "os": "architecto",
-    "webserver": "none",
-    "database": "mysql80",
-    "php": "8.2"
+    "webserver": "architecto",
+    "database": "architecto",
+    "php": "architecto"
 };
 
 fetch(url, {
@@ -6461,7 +7020,7 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 7,
+    &quot;id&quot;: 2,
     &quot;project_id&quot;: 1,
     &quot;services&quot;: [],
     &quot;user_id&quot;: 1,
@@ -6476,22 +7035,18 @@ fetch(url, {
     &quot;local_ip&quot;: &quot;199.172.126.144&quot;,
     &quot;port&quot;: 22,
     &quot;os&quot;: &quot;ubuntu_22&quot;,
-    &quot;type&quot;: &quot;regular&quot;,
-    &quot;type_data&quot;: null,
     &quot;provider&quot;: &quot;custom&quot;,
     &quot;provider_data&quot;: null,
     &quot;public_key&quot;: &quot;test&quot;,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;auto_update&quot;: null,
-    &quot;available_updates&quot;: 0,
-    &quot;security_updates&quot;: null,
     &quot;progress&quot;: 100,
     &quot;progress_step&quot;: null,
     &quot;updates&quot;: 0,
     &quot;last_update_check&quot;: null,
     &quot;status_color&quot;: &quot;success&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -6594,12 +7149,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="server_provider"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="linode"
+               value="architecto"
                data-component="body">
     <br>
-<p>If the provider is not custom, the ID of the server provider profile Example: <code>linode</code></p>
-Must be one of:
-<ul style="list-style-type: square;"><li><code>custom</code></li> <li><code>hetzner</code></li> <li><code>digitalocean</code></li> <li><code>linode</code></li> <li><code>vultr</code></li></ul>
+<p>If the provider is not custom, the ID of the server provider profile Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>region</code></b>&nbsp;&nbsp;
@@ -6673,12 +7226,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="webserver"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="none"
+               value="architecto"
                data-component="body">
     <br>
-<p>Web server Example: <code>none</code></p>
-Must be one of:
-<ul style="list-style-type: square;"><li><code>none</code></li> <li><code>nginx</code></li> <li><code>caddy</code></li></ul>
+<p>Web server Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>database</code></b>&nbsp;&nbsp;
@@ -6686,12 +7237,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="database"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="mysql80"
+               value="architecto"
                data-component="body">
     <br>
-<p>Database Example: <code>mysql80</code></p>
-Must be one of:
-<ul style="list-style-type: square;"><li><code>none</code></li> <li><code>mysql57</code></li> <li><code>mysql80</code></li> <li><code>mariadb103</code></li> <li><code>mariadb104</code></li> <li><code>mariadb103</code></li> <li><code>postgresql12</code></li> <li><code>postgresql13</code></li> <li><code>postgresql14</code></li> <li><code>postgresql15</code></li> <li><code>postgresql16</code></li></ul>
+<p>Database Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>php</code></b>&nbsp;&nbsp;
@@ -6699,12 +7248,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="php"                data-endpoint="POSTapi-projects--project_id--servers"
-               value="8.2"
+               value="architecto"
                data-component="body">
     <br>
-<p>PHP version Example: <code>8.2</code></p>
-Must be one of:
-<ul style="list-style-type: square;"><li><code>7.0</code></li> <li><code>7.1</code></li> <li><code>7.2</code></li> <li><code>7.3</code></li> <li><code>7.4</code></li> <li><code>8.0</code></li> <li><code>8.1</code></li> <li><code>8.2</code></li> <li><code>8.3</code></li></ul>
+<p>PHP version Example: <code>architecto</code></p>
         </div>
         </form>
 
@@ -6721,14 +7268,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6" \
+    --get "http://localhost:8000/api/projects/1/servers/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6"
+    "http://localhost:8000/api/projects/1/servers/1"
 );
 
 const headers = {
@@ -6750,7 +7297,7 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 7,
+    &quot;id&quot;: 2,
     &quot;project_id&quot;: 1,
     &quot;services&quot;: [],
     &quot;user_id&quot;: 1,
@@ -6765,22 +7312,18 @@ fetch(url, {
     &quot;local_ip&quot;: &quot;82.174.132.158&quot;,
     &quot;port&quot;: 22,
     &quot;os&quot;: &quot;ubuntu_22&quot;,
-    &quot;type&quot;: &quot;regular&quot;,
-    &quot;type_data&quot;: null,
     &quot;provider&quot;: &quot;custom&quot;,
     &quot;provider_data&quot;: null,
     &quot;public_key&quot;: &quot;test&quot;,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;auto_update&quot;: null,
-    &quot;available_updates&quot;: 0,
-    &quot;security_updates&quot;: null,
     &quot;progress&quot;: 100,
     &quot;progress_step&quot;: null,
     &quot;updates&quot;: 0,
     &quot;last_update_check&quot;: null,
     &quot;status_color&quot;: &quot;success&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -6871,10 +7414,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="id"                data-endpoint="GETapi-projects--project_id--servers--id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -6891,14 +7434,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/reboot" \
+    "http://localhost:8000/api/projects/1/servers/1/reboot" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/reboot"
+    "http://localhost:8000/api/projects/1/servers/1/reboot"
 );
 
 const headers = {
@@ -7008,10 +7551,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--reboot"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -7028,14 +7571,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/upgrade" \
+    "http://localhost:8000/api/projects/1/servers/1/upgrade" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/upgrade"
+    "http://localhost:8000/api/projects/1/servers/1/upgrade"
 );
 
 const headers = {
@@ -7145,10 +7688,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--upgrade"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -7165,14 +7708,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6" \
+    "http://localhost:8000/api/projects/1/servers/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6"
+    "http://localhost:8000/api/projects/1/servers/1"
 );
 
 const headers = {
@@ -7282,10 +7825,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -7306,14 +7849,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/services" \
+    --get "http://localhost:8000/api/projects/1/servers/1/services" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services"
+    "http://localhost:8000/api/projects/1/servers/1/services"
 );
 
 const headers = {
@@ -7343,6 +7886,7 @@ fetch(url, {
             &quot;type_data&quot;: null,
             &quot;name&quot;: &quot;nginx&quot;,
             &quot;version&quot;: null,
+            &quot;installed_version&quot;: null,
             &quot;unit&quot;: null,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;status_color&quot;: &quot;success&quot;,
@@ -7358,6 +7902,7 @@ fetch(url, {
             &quot;type_data&quot;: null,
             &quot;name&quot;: &quot;nginx&quot;,
             &quot;version&quot;: null,
+            &quot;installed_version&quot;: null,
             &quot;unit&quot;: null,
             &quot;status&quot;: &quot;ready&quot;,
             &quot;status_color&quot;: &quot;success&quot;,
@@ -7489,10 +8034,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--services"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -7509,14 +8054,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/services/22" \
+    --get "http://localhost:8000/api/projects/1/servers/1/services/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services/22"
+    "http://localhost:8000/api/projects/1/servers/1/services/1"
 );
 
 const headers = {
@@ -7544,6 +8089,7 @@ fetch(url, {
     &quot;type_data&quot;: null,
     &quot;name&quot;: &quot;nginx&quot;,
     &quot;version&quot;: null,
+    &quot;installed_version&quot;: null,
     &quot;unit&quot;: null,
     &quot;status&quot;: &quot;ready&quot;,
     &quot;status_color&quot;: &quot;success&quot;,
@@ -7641,10 +8187,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--services--id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
@@ -7652,10 +8198,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="id"                data-endpoint="GETapi-projects--project_id--servers--server_id--services--id-"
-               value="22"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the service. Example: <code>22</code></p>
+<p>The ID of the service. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -7672,14 +8218,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/services/22/start" \
+    "http://localhost:8000/api/projects/1/servers/1/services/1/start" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services/22/start"
+    "http://localhost:8000/api/projects/1/servers/1/services/1/start"
 );
 
 const headers = {
@@ -7789,10 +8335,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--start"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>service_id</code></b>&nbsp;&nbsp;
@@ -7800,10 +8346,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="service_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--start"
-               value="22"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the service. Example: <code>22</code></p>
+<p>The ID of the service. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -7820,14 +8366,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/services/22/stop" \
+    "http://localhost:8000/api/projects/1/servers/1/services/1/stop" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services/22/stop"
+    "http://localhost:8000/api/projects/1/servers/1/services/1/stop"
 );
 
 const headers = {
@@ -7937,10 +8483,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--stop"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>service_id</code></b>&nbsp;&nbsp;
@@ -7948,10 +8494,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="service_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--stop"
-               value="22"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the service. Example: <code>22</code></p>
+<p>The ID of the service. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -7968,14 +8514,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/services/22/restart" \
+    "http://localhost:8000/api/projects/1/servers/1/services/1/restart" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services/22/restart"
+    "http://localhost:8000/api/projects/1/servers/1/services/1/restart"
 );
 
 const headers = {
@@ -8085,10 +8631,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--restart"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>service_id</code></b>&nbsp;&nbsp;
@@ -8096,10 +8642,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="service_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--restart"
-               value="22"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the service. Example: <code>22</code></p>
+<p>The ID of the service. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -8116,14 +8662,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/services/22/enable" \
+    "http://localhost:8000/api/projects/1/servers/1/services/1/enable" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services/22/enable"
+    "http://localhost:8000/api/projects/1/servers/1/services/1/enable"
 );
 
 const headers = {
@@ -8233,10 +8779,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--enable"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>service_id</code></b>&nbsp;&nbsp;
@@ -8244,10 +8790,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="service_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--enable"
-               value="22"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the service. Example: <code>22</code></p>
+<p>The ID of the service. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -8264,14 +8810,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/services/22/disable" \
+    "http://localhost:8000/api/projects/1/servers/1/services/1/disable" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services/22/disable"
+    "http://localhost:8000/api/projects/1/servers/1/services/1/disable"
 );
 
 const headers = {
@@ -8381,10 +8927,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--disable"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>service_id</code></b>&nbsp;&nbsp;
@@ -8392,10 +8938,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="service_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--services--service_id--disable"
-               value="22"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the service. Example: <code>22</code></p>
+<p>The ID of the service. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -8412,14 +8958,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/services/22" \
+    "http://localhost:8000/api/projects/1/servers/1/services/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/services/22"
+    "http://localhost:8000/api/projects/1/servers/1/services/1"
 );
 
 const headers = {
@@ -8529,10 +9075,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--services--service_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>service_id</code></b>&nbsp;&nbsp;
@@ -8540,10 +9086,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="service_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--services--service_id-"
-               value="22"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the service. Example: <code>22</code></p>
+<p>The ID of the service. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -8564,14 +9110,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/sites" \
+    --get "http://localhost:8000/api/projects/1/servers/1/sites" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites"
+    "http://localhost:8000/api/projects/1/servers/1/sites"
 );
 
 const headers = {
@@ -8595,21 +9141,15 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 15,
+            &quot;id&quot;: 6,
             &quot;server_id&quot;: 1,
             &quot;source_control_id&quot;: null,
             &quot;type&quot;: &quot;laravel&quot;,
             &quot;type_data&quot;: null,
-            &quot;features&quot;: [
-                &quot;deployment&quot;,
-                &quot;commands&quot;,
-                &quot;env&quot;,
-                &quot;ssl&quot;,
-                &quot;workers&quot;
-            ],
             &quot;domain&quot;: &quot;test.com&quot;,
             &quot;aliases&quot;: null,
             &quot;web_directory&quot;: &quot;/&quot;,
+            &quot;webserver&quot;: &quot;nginx&quot;,
             &quot;path&quot;: &quot;/home&quot;,
             &quot;php_version&quot;: &quot;8.2&quot;,
             &quot;repository&quot;: null,
@@ -8622,25 +9162,19 @@ fetch(url, {
             &quot;url&quot;: &quot;http://test.com&quot;,
             &quot;force_ssl&quot;: false,
             &quot;progress&quot;: 100,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 16,
+            &quot;id&quot;: 7,
             &quot;server_id&quot;: 1,
             &quot;source_control_id&quot;: null,
             &quot;type&quot;: &quot;laravel&quot;,
             &quot;type_data&quot;: null,
-            &quot;features&quot;: [
-                &quot;deployment&quot;,
-                &quot;commands&quot;,
-                &quot;env&quot;,
-                &quot;ssl&quot;,
-                &quot;workers&quot;
-            ],
             &quot;domain&quot;: &quot;test.com&quot;,
             &quot;aliases&quot;: null,
             &quot;web_directory&quot;: &quot;/&quot;,
+            &quot;webserver&quot;: &quot;nginx&quot;,
             &quot;path&quot;: &quot;/home&quot;,
             &quot;php_version&quot;: &quot;8.2&quot;,
             &quot;repository&quot;: null,
@@ -8653,8 +9187,8 @@ fetch(url, {
             &quot;url&quot;: &quot;http://test.com&quot;,
             &quot;force_ssl&quot;: false,
             &quot;progress&quot;: 100,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -8779,10 +9313,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -8799,11 +9333,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/sites" \
+    "http://localhost:8000/api/projects/1/servers/1/sites" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"type\": \"php-blank\",
+    \"type\": \"architecto\",
     \"domain\": \"architecto\",
     \"aliases\": [
         \"architecto\"
@@ -8823,7 +9357,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites"
+    "http://localhost:8000/api/projects/1/servers/1/sites"
 );
 
 const headers = {
@@ -8832,7 +9366,7 @@ const headers = {
 };
 
 let body = {
-    "type": "php-blank",
+    "type": "architecto",
     "domain": "architecto",
     "aliases": [
         "architecto"
@@ -8863,21 +9397,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 15,
+    &quot;id&quot;: 6,
     &quot;server_id&quot;: 1,
     &quot;source_control_id&quot;: null,
     &quot;type&quot;: &quot;laravel&quot;,
     &quot;type_data&quot;: null,
-    &quot;features&quot;: [
-        &quot;deployment&quot;,
-        &quot;commands&quot;,
-        &quot;env&quot;,
-        &quot;ssl&quot;,
-        &quot;workers&quot;
-    ],
     &quot;domain&quot;: &quot;test.com&quot;,
     &quot;aliases&quot;: null,
     &quot;web_directory&quot;: &quot;/&quot;,
+    &quot;webserver&quot;: &quot;nginx&quot;,
     &quot;path&quot;: &quot;/home&quot;,
     &quot;php_version&quot;: &quot;8.2&quot;,
     &quot;repository&quot;: null,
@@ -8890,8 +9418,8 @@ fetch(url, {
     &quot;url&quot;: &quot;http://test.com&quot;,
     &quot;force_ssl&quot;: false,
     &quot;progress&quot;: 100,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -8982,10 +9510,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -8994,12 +9522,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="type"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites"
-               value="php-blank"
+               value="architecto"
                data-component="body">
     <br>
-<p>Example: <code>php-blank</code></p>
-Must be one of:
-<ul style="list-style-type: square;"><li><code>php</code></li> <li><code>php-blank</code></li> <li><code>phpmyadmin</code></li> <li><code>laravel</code></li> <li><code>wordpress</code></li> <li><code>load-balancer</code></li></ul>
+<p>Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>domain</code></b>&nbsp;&nbsp;
@@ -9151,14 +9677,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/sites/14" \
+    --get "http://localhost:8000/api/projects/1/servers/1/sites/5" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5"
 );
 
 const headers = {
@@ -9180,21 +9706,15 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 15,
+    &quot;id&quot;: 6,
     &quot;server_id&quot;: 1,
     &quot;source_control_id&quot;: null,
     &quot;type&quot;: &quot;laravel&quot;,
     &quot;type_data&quot;: null,
-    &quot;features&quot;: [
-        &quot;deployment&quot;,
-        &quot;commands&quot;,
-        &quot;env&quot;,
-        &quot;ssl&quot;,
-        &quot;workers&quot;
-    ],
     &quot;domain&quot;: &quot;test.com&quot;,
     &quot;aliases&quot;: null,
     &quot;web_directory&quot;: &quot;/&quot;,
+    &quot;webserver&quot;: &quot;nginx&quot;,
     &quot;path&quot;: &quot;/home&quot;,
     &quot;php_version&quot;: &quot;8.2&quot;,
     &quot;repository&quot;: null,
@@ -9207,8 +9727,8 @@ fetch(url, {
     &quot;url&quot;: &quot;http://test.com&quot;,
     &quot;force_ssl&quot;: false,
     &quot;progress&quot;: 100,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -9299,10 +9819,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
@@ -9310,10 +9830,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--id-"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                     </form>
 
@@ -9330,14 +9850,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/sites/14" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5"
 );
 
 const headers = {
@@ -9447,10 +9967,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -9458,10 +9978,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--sites--site_id-"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                     </form>
 
@@ -9478,11 +9998,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/sites/14/load-balancer" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/load-balancer" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"method\": \"round-robin\",
+    \"method\": \"ip-hash\",
     \"servers\": [
         \"architecto\"
     ]
@@ -9492,7 +10012,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/load-balancer"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/load-balancer"
 );
 
 const headers = {
@@ -9501,7 +10021,7 @@ const headers = {
 };
 
 let body = {
-    "method": "round-robin",
+    "method": "ip-hash",
     "servers": [
         "architecto"
     ]
@@ -9611,10 +10131,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--load-balancer"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -9622,10 +10142,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--load-balancer"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -9634,10 +10154,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="method"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--load-balancer"
-               value="round-robin"
+               value="ip-hash"
                data-component="body">
     <br>
-<p>Load balancer method, Required if the site type is Load balancer Example: <code>round-robin</code></p>
+<p>Load balancer method, Required if the site type is Load balancer Example: <code>ip-hash</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>round-robin</code></li> <li><code>least-connections</code></li> <li><code>ip-hash</code></li></ul>
         </div>
@@ -9669,7 +10189,7 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1/servers/6/sites/14/aliases" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/aliases" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -9682,7 +10202,7 @@ Must be one of:
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/aliases"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/aliases"
 );
 
 const headers = {
@@ -9800,10 +10320,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--aliases"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -9811,10 +10331,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--aliases"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -9837,7 +10357,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>
 </p>
 
-<p>Run site deployment script</p>
+<p>[Deprecated] Run site deployment script</p>
 
 <span id="example-requests-POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy">
 <blockquote>Example request:</blockquote>
@@ -9845,14 +10365,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/sites/14/deploy" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deploy" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/deploy"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deploy"
 );
 
 const headers = {
@@ -9963,10 +10483,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -9974,10 +10494,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--sites--site_id--deploy"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                     </form>
 
@@ -9994,7 +10514,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1/servers/6/sites/14/deployment-script" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deployment-script" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -10005,7 +10525,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/deployment-script"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deployment-script"
 );
 
 const headers = {
@@ -10120,10 +10640,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--deployment-script"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -10131,10 +10651,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--deployment-script"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -10163,14 +10683,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/sites/14/deployment-script" \
+    --get "http://localhost:8000/api/projects/1/servers/1/sites/5/deployment-script" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/deployment-script"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/deployment-script"
 );
 
 const headers = {
@@ -10281,10 +10801,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployment-script"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -10292,10 +10812,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--deployment-script"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                     </form>
 
@@ -10312,14 +10832,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/sites/14/env" \
+    --get "http://localhost:8000/api/projects/1/servers/1/sites/5/env" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/env"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/env"
 );
 
 const headers = {
@@ -10434,10 +10954,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--env"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -10445,10 +10965,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--sites--site_id--env"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                     </form>
 
@@ -10465,7 +10985,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1/servers/6/sites/14/env" \
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/env" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -10476,7 +10996,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/sites/14/env"
+    "http://localhost:8000/api/projects/1/servers/1/sites/5/env"
 );
 
 const headers = {
@@ -10592,10 +11112,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--env"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>site_id</code></b>&nbsp;&nbsp;
@@ -10603,10 +11123,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="site_id"                data-endpoint="PUTapi-projects--project_id--servers--server_id--sites--site_id--env"
-               value="14"
+               value="5"
                data-component="url">
     <br>
-<p>The ID of the site. Example: <code>14</code></p>
+<p>The ID of the site. Example: <code>5</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -10639,14 +11159,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/source-controls" \
+    --get "http://localhost:8000/api/projects/1/source-controls" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/source-controls"
+    "http://localhost:8000/api/projects/1/source-controls"
 );
 
 const headers = {
@@ -10670,22 +11190,22 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 2,
+            &quot;id&quot;: 4,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
             &quot;name&quot;: &quot;Ms. Elisabeth Okuneva&quot;,
             &quot;provider&quot;: &quot;github&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
         },
         {
-            &quot;id&quot;: 3,
+            &quot;id&quot;: 5,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
             &quot;name&quot;: &quot;Aleen O&#039;Kon&quot;,
             &quot;provider&quot;: &quot;github&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -10819,11 +11339,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/source-controls" \
+    "http://localhost:8000/api/projects/1/source-controls" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"provider\": \"gitlab\",
+    \"provider\": \"architecto\",
     \"name\": \"architecto\",
     \"token\": \"architecto\",
     \"url\": \"http:\\/\\/www.bailey.biz\\/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html\",
@@ -10835,7 +11355,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/source-controls"
+    "http://localhost:8000/api/projects/1/source-controls"
 );
 
 const headers = {
@@ -10844,7 +11364,7 @@ const headers = {
 };
 
 let body = {
-    "provider": "gitlab",
+    "provider": "architecto",
     "name": "architecto",
     "token": "architecto",
     "url": "http:\/\/www.bailey.biz\/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html",
@@ -10867,13 +11387,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 2,
+    &quot;id&quot;: 4,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;Mrs. Justina Gaylord&quot;,
     &quot;provider&quot;: &quot;github&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -10965,12 +11485,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="provider"                data-endpoint="POSTapi-projects--project_id--source-controls"
-               value="gitlab"
+               value="architecto"
                data-component="body">
     <br>
-<p>The provider Example: <code>gitlab</code></p>
-Must be one of:
-<ul style="list-style-type: square;"><li><code>gitlab</code></li> <li><code>github</code></li> <li><code>bitbucket</code></li></ul>
+<p>The provider Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>name</code></b>&nbsp;&nbsp;
@@ -11042,14 +11560,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/source-controls/1" \
+    --get "http://localhost:8000/api/projects/1/source-controls/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/source-controls/1"
+    "http://localhost:8000/api/projects/1/source-controls/1"
 );
 
 const headers = {
@@ -11071,13 +11589,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 2,
+    &quot;id&quot;: 4,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;Misael Runte&quot;,
     &quot;provider&quot;: &quot;github&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -11188,7 +11706,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1/source-controls/1" \
+    "http://localhost:8000/api/projects/1/source-controls/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -11204,7 +11722,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/source-controls/1"
+    "http://localhost:8000/api/projects/1/source-controls/1"
 );
 
 const headers = {
@@ -11236,13 +11754,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 2,
+    &quot;id&quot;: 4,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;Mrs. Justina Gaylord&quot;,
     &quot;provider&quot;: &quot;github&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -11422,14 +11940,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/source-controls/1" \
+    "http://localhost:8000/api/projects/1/source-controls/1" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/source-controls/1"
+    "http://localhost:8000/api/projects/1/source-controls/1"
 );
 
 const headers = {
@@ -11563,14 +12081,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/servers/6/ssh-keys" \
+    --get "http://localhost:8000/api/projects/1/servers/1/ssh-keys" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/ssh-keys"
+    "http://localhost:8000/api/projects/1/servers/1/ssh-keys"
 );
 
 const headers = {
@@ -11594,16 +12112,16 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 3,
+            &quot;id&quot;: 1,
             &quot;name&quot;: &quot;Haven Romaguera&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         },
         {
-            &quot;id&quot;: 4,
+            &quot;id&quot;: 2,
             &quot;name&quot;: &quot;Viva Marquardt&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -11728,10 +12246,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="GETapi-projects--project_id--servers--server_id--ssh-keys"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     </form>
 
@@ -11748,7 +12266,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/servers/6/ssh-keys" \
+    "http://localhost:8000/api/projects/1/servers/1/ssh-keys" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -11761,7 +12279,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/ssh-keys"
+    "http://localhost:8000/api/projects/1/servers/1/ssh-keys"
 );
 
 const headers = {
@@ -11790,10 +12308,10 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 3,
+    &quot;id&quot;: 1,
     &quot;name&quot;: &quot;Ms. Elisabeth Okuneva&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:12.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -11884,10 +12402,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="POSTapi-projects--project_id--servers--server_id--ssh-keys"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -11938,14 +12456,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/servers/6/ssh-keys/1" \
+    "http://localhost:8000/api/projects/1/servers/1/ssh-keys/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/servers/6/ssh-keys/1"
+    "http://localhost:8000/api/projects/1/servers/1/ssh-keys/16"
 );
 
 const headers = {
@@ -12055,10 +12573,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="server_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--ssh-keys--sshKey_id-"
-               value="6"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the server. Example: <code>6</code></p>
+<p>The ID of the server. Example: <code>1</code></p>
             </div>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>sshKey_id</code></b>&nbsp;&nbsp;
@@ -12066,10 +12584,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="sshKey_id"                data-endpoint="DELETEapi-projects--project_id--servers--server_id--ssh-keys--sshKey_id-"
-               value="1"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the sshKey. Example: <code>1</code></p>
+<p>The ID of the sshKey. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -12090,14 +12608,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/storage-providers" \
+    --get "http://localhost:8000/api/projects/1/storage-providers" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/storage-providers"
+    "http://localhost:8000/api/projects/1/storage-providers"
 );
 
 const headers = {
@@ -12121,22 +12639,22 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: 4,
+            &quot;id&quot;: 1,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
             &quot;name&quot;: &quot;harum&quot;,
-            &quot;provider&quot;: &quot;local&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;provider&quot;: &quot;dropbox&quot;,
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
         },
         {
-            &quot;id&quot;: 5,
+            &quot;id&quot;: 2,
             &quot;project_id&quot;: null,
             &quot;global&quot;: true,
             &quot;name&quot;: &quot;commodi&quot;,
-            &quot;provider&quot;: &quot;local&quot;,
-            &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-            &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+            &quot;provider&quot;: &quot;dropbox&quot;,
+            &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
         }
     ],
     &quot;links&quot;: {
@@ -12270,7 +12788,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://vito.test/api/projects/1/storage-providers" \
+    "http://localhost:8000/api/projects/1/storage-providers" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -12285,7 +12803,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/storage-providers"
+    "http://localhost:8000/api/projects/1/storage-providers"
 );
 
 const headers = {
@@ -12316,13 +12834,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 1,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;eius&quot;,
-    &quot;provider&quot;: &quot;local&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;provider&quot;: &quot;dropbox&quot;,
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -12478,14 +12996,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://vito.test/api/projects/1/storage-providers/1" \
+    --get "http://localhost:8000/api/projects/1/storage-providers/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/storage-providers/1"
+    "http://localhost:8000/api/projects/1/storage-providers/16"
 );
 
 const headers = {
@@ -12507,13 +13025,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 1,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
-    &quot;name&quot;: &quot;et&quot;,
+    &quot;name&quot;: &quot;eius&quot;,
     &quot;provider&quot;: &quot;dropbox&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -12604,10 +13122,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="storageProvider_id"                data-endpoint="GETapi-projects--project_id--storage-providers--storageProvider_id-"
-               value="1"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the storageProvider. Example: <code>1</code></p>
+<p>The ID of the storageProvider. Example: <code>16</code></p>
             </div>
                     </form>
 
@@ -12624,7 +13142,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request PUT \
-    "https://vito.test/api/projects/1/storage-providers/1" \
+    "http://localhost:8000/api/projects/1/storage-providers/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -12636,7 +13154,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/storage-providers/1"
+    "http://localhost:8000/api/projects/1/storage-providers/16"
 );
 
 const headers = {
@@ -12664,13 +13182,13 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 4,
+    &quot;id&quot;: 1,
     &quot;project_id&quot;: null,
     &quot;global&quot;: true,
     &quot;name&quot;: &quot;eius&quot;,
-    &quot;provider&quot;: &quot;local&quot;,
-    &quot;created_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2025-06-10T10:21:56.000000Z&quot;
+    &quot;provider&quot;: &quot;dropbox&quot;,
+    &quot;created_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;,
+    &quot;updated_at&quot;: &quot;2025-08-18T13:55:13.000000Z&quot;
 }</code>
  </pre>
     </span>
@@ -12761,10 +13279,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="storageProvider_id"                data-endpoint="PUTapi-projects--project_id--storage-providers--storageProvider_id-"
-               value="1"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the storageProvider. Example: <code>1</code></p>
+<p>The ID of the storageProvider. Example: <code>16</code></p>
             </div>
                             <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
@@ -12806,14 +13324,14 @@ Must be one of:
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://vito.test/api/projects/1/storage-providers/1" \
+    "http://localhost:8000/api/projects/1/storage-providers/16" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://vito.test/api/projects/1/storage-providers/1"
+    "http://localhost:8000/api/projects/1/storage-providers/16"
 );
 
 const headers = {
@@ -12923,10 +13441,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="storageProvider_id"                data-endpoint="DELETEapi-projects--project_id--storage-providers--storageProvider_id-"
-               value="1"
+               value="16"
                data-component="url">
     <br>
-<p>The ID of the storageProvider. Example: <code>1</code></p>
+<p>The ID of the storageProvider. Example: <code>16</code></p>
             </div>
                     </form>
 
