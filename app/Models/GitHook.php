@@ -69,7 +69,9 @@ class GitHook extends AbstractModel
      */
     public function destroyHook(): void
     {
-        $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
+        if ($this->hook_id) {
+            $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
+        }
         $this->delete();
     }
 }
