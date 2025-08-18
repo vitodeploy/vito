@@ -78,10 +78,21 @@ jobs:
       - name: Update config/app.php
         run: sed -i "s/'version' => '[^']*'/'version' => '${{ steps.version.outputs.version }}'/" config/app.php
 
-      - name: Commit version change
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+
+      - name: Install NPM Dependencies
+        run: npm install --force
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update version to ${{ steps.version.outputs.version }}"
+          commit_message: "Build version ${{ steps.version.outputs.version }}"
 
       - name: Create release
         uses: softprops/action-gh-release@v2

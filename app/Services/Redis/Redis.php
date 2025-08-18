@@ -51,6 +51,7 @@ class Redis extends AbstractService
         );
         $status = $this->service->server->systemd()->status($this->unit());
         $this->service->validateInstall($status);
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -63,6 +64,7 @@ class Redis extends AbstractService
             view('ssh.services.redis.uninstall'),
             'uninstall-redis'
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 

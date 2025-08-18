@@ -31,6 +31,7 @@ class Supervisor extends AbstractProcessManager
             view('ssh.services.process-manager.supervisor.install-supervisor'),
             'install-supervisor'
         );
+        event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
 
@@ -43,6 +44,7 @@ class Supervisor extends AbstractProcessManager
             view('ssh.services.process-manager.supervisor.uninstall-supervisor'),
             'uninstall-supervisor'
         );
+        event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }
 
