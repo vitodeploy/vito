@@ -1,17 +1,17 @@
-name: ssh-keys
+name: server-providers
 description: ''
 endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/projects/{project_id}/servers/{server_id}/ssh-keys'
+    uri: 'api/projects/{project_id}/server-providers'
     metadata:
-      groupName: ssh-keys
+      groupName: server-providers
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: list
-      description: 'Get all ssh keys.'
+      description: ''
       authenticated: false
       custom: []
     headers:
@@ -28,19 +28,8 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 6
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -49,7 +38,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":3,"name":"Haven Romaguera","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"},{"id":4,"name":"Viva Marquardt","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":2,"project_id":null,"global":true,"name":"ab","provider":"custom","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"},{"id":3,"project_id":null,"global":true,"name":"incidunt","provider":"custom","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -62,14 +51,14 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/ssh-keys'
+    uri: 'api/projects/{project_id}/server-providers'
     metadata:
-      groupName: ssh-keys
+      groupName: server-providers
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: create
-      description: 'Deploy ssh key to server.'
+      description: ''
       authenticated: false
       custom: []
     headers:
@@ -86,25 +75,14 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 6
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      key_id:
-        name: key_id
-        description: 'The ID of the key.'
+      provider:
+        name: provider
+        description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)'
         required: true
         example: architecto
         type: string
@@ -114,7 +92,7 @@ endpoints:
         custom: []
       name:
         name: name
-        description: 'Key name, required if key_id is not provided.'
+        description: 'The name of the server provider.'
         required: true
         example: architecto
         type: string
@@ -122,9 +100,29 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      public_key:
-        name: public_key
-        description: 'Public Key, required if key_id is not provided.'
+      token:
+        name: token
+        description: 'The token if provider requires api token'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      key:
+        name: key
+        description: 'The key if provider requires key'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      secret:
+        name: secret
+        description: 'The secret if provider requires key'
         required: true
         example: architecto
         type: string
@@ -133,14 +131,156 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      key_id: architecto
+      provider: architecto
       name: architecto
-      public_key: architecto
+      token: architecto
+      key: architecto
+      secret: architecto
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":3,"name":"Ms. Elisabeth Okuneva","created_at":"2025-06-10T10:21:56.000000Z","updated_at":"2025-06-10T10:21:56.000000Z"}'
+        content: '{"id":2,"project_id":null,"global":true,"name":"eius","provider":"custom","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/projects/{project_id}/server-providers/{serverProvider_id}'
+    metadata:
+      groupName: server-providers
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: show
+      description: ''
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      serverProvider_id:
+        name: serverProvider_id
+        description: 'The ID of the serverProvider.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      serverProvider_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":2,"project_id":null,"global":true,"name":"mollitia","provider":"linode","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{project_id}/server-providers/{serverProvider_id}'
+    metadata:
+      groupName: server-providers
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: update
+      description: ''
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      serverProvider_id:
+        name: serverProvider_id
+        description: 'The ID of the serverProvider.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      serverProvider_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        name: name
+        description: 'The name of the server provider.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      global:
+        name: global
+        description: 'Accessible in all projects'
+        required: true
+        example: false
+        type: string
+        enumValues:
+          - true
+          - false
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      name: architecto
+      global: false
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: '{"id":2,"project_id":null,"global":true,"name":"eius","provider":"custom","created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -153,14 +293,14 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/projects/{project_id}/servers/{server_id}/ssh-keys/{sshKey_id}'
+    uri: 'api/projects/{project_id}/server-providers/{serverProvider_id}'
     metadata:
-      groupName: ssh-keys
+      groupName: server-providers
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: delete
-      description: 'Delete ssh key from server.'
+      description: ''
       authenticated: false
       custom: []
     headers:
@@ -177,19 +317,9 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 6
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      sshKey_id:
-        name: sshKey_id
-        description: 'The ID of the sshKey.'
+      serverProvider_id:
+        name: serverProvider_id
+        description: 'The ID of the serverProvider.'
         required: true
         example: 1
         type: integer
@@ -199,8 +329,7 @@ endpoints:
         custom: []
     cleanUrlParameters:
       project_id: 1
-      server_id: 6
-      sshKey_id: 1
+      serverProvider_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []

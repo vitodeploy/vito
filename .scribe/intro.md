@@ -3,7 +3,7 @@
 VitoDeploy's API documentation.
 
 <aside>
-    <strong>Base URL</strong>: <code>https://vito.test</code>
+    <strong>Base URL</strong>: <code>http://localhost:8000</code>
 </aside>
 
     This documentation aims to provide all the information you need to work with our API.

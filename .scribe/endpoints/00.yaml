@@ -22,7 +22,7 @@ endpoints:
         name: server_id
         description: 'The ID of the server.'
         required: true
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -39,7 +39,7 @@ endpoints:
         nullable: false
         custom: []
     cleanUrlParameters:
-      server_id: 6
+      server_id: 1
       id: architecto
     queryParameters: []
     cleanQueryParameters: []
@@ -169,7 +169,7 @@ endpoints:
           cache-control: 'no-cache, private'
           content-type: application/json
           x-ratelimit-limit: '60'
-          x-ratelimit-remaining: '57'
+          x-ratelimit-remaining: '59'
           access-control-allow-origin: '*'
         description: null
         custom: []

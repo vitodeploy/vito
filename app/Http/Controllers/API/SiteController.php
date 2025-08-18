@@ -11,6 +11,7 @@ use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\SiteResource;
 use App\Models\Project;
 use App\Models\Server;
@@ -133,18 +134,18 @@ class SiteController extends Controller
     }
 
     #[Post('{site}/deploy', name: 'api.projects.servers.sites.deploy', middleware: 'ability:write')]
-    #[Endpoint(title: 'deploy', description: 'Run site deployment script')]
+    #[Endpoint(title: 'deploy', description: '[Deprecated] Run site deployment script')]
     #[Response(status: 200)]
-    public function deploy(Request $request, Project $project, Server $server, Site $site): SiteResource
+    public function deploy(Request $request, Project $project, Server $server, Site $site): DeploymentResource
     {
         $this->authorize('update', [$site, $server]);
 
         $this->validateRoute($project, $server, $site);
 
         try {
-            app(Deploy::class)->run($site);
+            $deployment = app(Deploy::class)->run($site);
 
-            return new SiteResource($site);
+            return new DeploymentResource($deployment);
         } catch (DeploymentScriptIsEmptyException) {
             abort(422, 'Deployment script is empty');
         }
