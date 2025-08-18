@@ -99,6 +99,10 @@ export default function Console() {
     document.addEventListener('keydown', handleKeydown);
     outputRef.current?.addEventListener('mouseup', handleMouseUp);
 
+    const storedHistory = localStorage.getItem('command_history');
+    const history = storedHistory ? JSON.parse(storedHistory) : [];
+    setCommandHistory(history);
+
     setInitialized(true);
 
     return () => {
@@ -113,6 +117,16 @@ export default function Console() {
     updateShellPrefix(newUser, currentDir);
   };
 
+  const addToCommandHistory = (command: string) => {
+    const storedHistory = localStorage.getItem('command_history');
+    const history = storedHistory ? JSON.parse(storedHistory) : [];
+    const updatedHistory = history.filter((cmd: string) => cmd !== command);
+    updatedHistory.push(command);
+    localStorage.setItem('command_history', JSON.stringify(updatedHistory));
+    setCommandHistory(updatedHistory);
+    setHistoryIndex(-1);
+  };
+
   const run = async () => {
     if (!command.trim() || running) return;
 
@@ -122,8 +136,7 @@ export default function Console() {
     const cancelled = false;
 
     // Add command to history
-    setCommandHistory((prev) => [...prev, commandToRun]);
-    setHistoryIndex(-1);
+    addToCommandHistory(commandToRun);
 
     if (clearAfterCommand) {
       setOutput(commandOutput);
@@ -261,9 +274,7 @@ export default function Console() {
                     if (e.key === 'ArrowUp') {
                       e.preventDefault();
                       if (commandHistory.length > 0) {
-                        const newIndex = historyIndex === -1 
-                          ? commandHistory.length - 1 
-                          : Math.max(0, historyIndex - 1);
+                        const newIndex = historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
                         setHistoryIndex(newIndex);
                         setCommand(commandHistory[newIndex]);
                       }
