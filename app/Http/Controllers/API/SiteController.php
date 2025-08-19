@@ -204,6 +204,7 @@ class SiteController extends Controller
 
     #[Put('{site}/env', name: 'api.projects.servers.sites.env', middleware: 'ability:write')]
     #[Endpoint(title: 'env', description: 'Update site .env file')]
+    #[BodyParam(name: 'path', type: 'string', description: 'Path to the .env file')]
     #[BodyParam(name: 'env', type: 'string', description: 'Content of the .env file')]
     #[Response(status: 200)]
     public function updateEnv(Request $request, Project $project, Server $server, Site $site): SiteResource
@@ -211,10 +212,6 @@ class SiteController extends Controller
         $this->authorize('update', [$site, $server]);
 
         $this->validateRoute($project, $server, $site);
-
-        $this->validate($request, [
-            'env' => ['required', 'string'],
-        ]);
 
         app(UpdateEnv::class)->update($site, $request->all());
 

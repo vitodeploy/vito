@@ -43,7 +43,7 @@ class DeploymentController extends Controller
 
     #[Post('/', name: 'api.projects.servers.sites.deployments.store', middleware: 'ability:write')]
     #[Endpoint(title: 'deploy', description: 'Run site deployment script')]
-    #[ResponseFromApiResource(DeploymentResource::class, Deployment::class, collection: false)]
+    #[ResponseFromApiResource(DeploymentResource::class, Deployment::class, status: 201)]
     public function store(Project $project, Server $server, Site $site): DeploymentResource
     {
         $this->authorize('update', [$site, $server]);
@@ -61,7 +61,7 @@ class DeploymentController extends Controller
 
     #[Get('{deployment}', name: 'api.projects.servers.sites.deployments.show', middleware: 'ability:read')]
     #[Endpoint(title: 'deployment', description: 'Show deployment details')]
-    #[ResponseFromApiResource(DeploymentResource::class, Deployment::class, collection: false)]
+    #[ResponseFromApiResource(DeploymentResource::class, Deployment::class)]
     public function show(Project $project, Server $server, Site $site, Deployment $deployment): DeploymentResource
     {
         $this->authorize('view', [$site, $server]);

@@ -152,6 +152,25 @@ class ApplicationTest extends TestCase
             'site' => $this->site,
         ]), [
             'env' => 'APP_ENV="production"',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertEquals($this->site->path.'/.env', data_get($this->site->type_data, 'env_path'));
+    }
+
+    public function test_update_env_file_with_path(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_ENV="production"',
             'path' => '/home/vito/some-path/.env',
         ])
             ->assertSessionDoesntHaveErrors();

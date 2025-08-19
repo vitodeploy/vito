@@ -17,15 +17,18 @@ class UpdateEnv
     {
         Validator::make($input, [
             'env' => ['required', 'string'],
-            'path' => ['required', 'string'],
+            'path' => ['nullable', 'string'],
         ])->validate();
 
+        $typeData = $site->type_data ?? [];
+        $path = $input['path'] ?? data_get($typeData, 'env_path', $site->path.'/.env');
+
         $site->server->os()->write(
-            $input['path'],
+            $path,
             trim((string) $input['env']),
             $site->user,
         );
 
-        $site->jsonUpdate('type_data', 'env_path', $input['path']);
+        $site->jsonUpdate('type_data', 'env_path', $path);
     }
 }
