@@ -10,7 +10,7 @@ use Throwable;
 
 class CheckConnection
 {
-    public function check(Server $server): Server
+    public function check(Server $server, int $retry = 1): Server
     {
         $status = $server->status;
         try {
@@ -21,6 +21,11 @@ class CheckConnection
                 $server->save();
             }
         } catch (Throwable) {
+            if ($retry > 0) {
+                sleep(2);
+
+                return $this->check($server, $retry - 1);
+            }
             $server->status = ServerStatus::DISCONNECTED;
             $server->save();
             Notifier::send($server, new ServerDisconnected($server));
