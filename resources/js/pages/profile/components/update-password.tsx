@@ -1,14 +1,17 @@
 import InputError from '@/components/ui/input-error';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { FormEvent, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon, TriangleAlertIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
+import { SharedData } from '@/types';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function UpdatePassword() {
+  const page = usePage<SharedData>();
   const passwordInput = useRef<HTMLInputElement>(null);
   const currentPasswordInput = useRef<HTMLInputElement>(null);
 
@@ -50,6 +53,14 @@ export default function UpdatePassword() {
         <CardDescription>Ensure your account is using a long, random password to stay secure.</CardDescription>
       </CardHeader>
       <CardContent className="p-4">
+        {page.props.auth.user.two_factor_enabled && (
+          <Alert className="mb-4">
+            <TriangleAlertIcon size={5} />
+            <AlertDescription>
+              Resetting your password will disable two-factor authentication. You will need to set it up again after changing your password.
+            </AlertDescription>
+          </Alert>
+        )}
         <form id="update-password-form" onSubmit={updatePassword}>
           <div className="grid gap-6">
             <div className="grid gap-2">

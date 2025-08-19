@@ -50,6 +50,11 @@ class ProfileTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         $this->assertTrue(Hash::check('new-password', $this->user->refresh()->password));
+
+        $this->user->refresh();
+        $this->assertNull($this->user->two_factor_secret);
+        $this->assertNull($this->user->two_factor_recovery_codes);
+        $this->assertNull($this->user->two_factor_confirmed_at);
     }
 
     public function test_correct_password_must_be_provided_to_update_password(): void
