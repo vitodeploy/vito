@@ -19,6 +19,7 @@ class SiteFactory extends Factory
             'server_id' => 1,
             'type' => Laravel::id(),
             'domain' => 'test.com',
+            'aliases' => [],
             'web_directory' => '/',
             'path' => '/home',
             'status' => 'ready',
