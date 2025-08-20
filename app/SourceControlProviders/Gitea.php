@@ -133,8 +133,8 @@ class Gitea extends AbstractSourceControlProvider
                 'commit_data' => [
                     'name' => $commits[0]['commit']['committer']['name'] ?? null,
                     'email' => $commits[0]['commit']['committer']['email'] ?? null,
-                    'message' => $commits[0]['title'] ?? null,
-                    'url' => $commits[0]['commit']['message'] ?? null,
+                    'message' => $commits[0]['commit']['message'] ?? null,
+                    'url' => $commits[0]['commit']['url'] ?? null,
                 ],
             ];
         }
