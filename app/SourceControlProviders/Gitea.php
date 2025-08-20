@@ -72,7 +72,7 @@ class Gitea extends AbstractSourceControlProvider
             $response = Http::withToken($this->data()['token'])->post(
                 $this->getApiUrl().'/repos/'.$repo.'/hooks',
                 [
-                    'acvtive' => true,
+                    'active' => true,
                     'events' => $events,
                     'type' => 'gitea',
                     'config' => [
