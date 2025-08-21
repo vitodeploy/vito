@@ -72,7 +72,7 @@ class Gitea extends AbstractSourceControlProvider
             $response = Http::withToken($this->data()['token'])->post(
                 $this->getApiUrl().'/repos/'.$repo.'/hooks',
                 [
-                    'acvtive' => true,
+                    'active' => true,
                     'events' => $events,
                     'type' => 'gitea',
                     'config' => [
@@ -133,8 +133,8 @@ class Gitea extends AbstractSourceControlProvider
                 'commit_data' => [
                     'name' => $commits[0]['commit']['committer']['name'] ?? null,
                     'email' => $commits[0]['commit']['committer']['email'] ?? null,
-                    'message' => $commits[0]['title'] ?? null,
-                    'url' => $commits[0]['commit']['message'] ?? null,
+                    'message' => $commits[0]['commit']['message'] ?? null,
+                    'url' => $commits[0]['commit']['url'] ?? null,
                 ],
             ];
         }

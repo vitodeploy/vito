@@ -130,7 +130,7 @@ endpoints:
     fileParameters: []
     responses:
       -
-        status: 200
+        status: 201
         content: '{"id":null,"site_id":null,"deployment_script_id":null,"log_id":null,"log":null,"commit_id":null,"commit_id_short":null,"commit_data":null,"status":null,"status_color":"gray","updated_at":null,"created_at":null}'
         headers: []
         description: ''
@@ -192,7 +192,7 @@ endpoints:
         name: id
         description: 'The ID of the deployment.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -202,7 +202,7 @@ endpoints:
       project_id: 1
       server_id: 1
       site_id: 5
-      id: 16
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []

@@ -27,7 +27,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"success":true,"version":"3.2.0"}'
+        content: '{"success":true,"version":"3.3.0"}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json

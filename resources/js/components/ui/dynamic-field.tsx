@@ -102,7 +102,7 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
       <Input
         type="text"
         name={config.name}
-        id={config.name}
+        id={`field-${config.name}`}
         defaultValue={(value as string) || ''}
         onChange={(e) => onChange(e.target.value)}
         {...props}

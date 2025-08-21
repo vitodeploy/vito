@@ -79,7 +79,7 @@ endpoints:
         name: mode
         description: ''
         required: true
-        example: 302
+        example: 308
         type: string
         enumValues:
           - 301
@@ -92,7 +92,7 @@ endpoints:
     cleanBodyParameters:
       from: architecto
       to: architecto
-      mode: 302
+      mode: 308
     fileParameters: []
     responses:
       -

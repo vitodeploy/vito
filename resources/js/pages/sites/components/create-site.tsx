@@ -1,4 +1,4 @@
-import { ReactNode, useState, FormEventHandler } from 'react';
+import { ReactNode, useState, FormEventHandler, useEffect } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,22 @@ export default function CreateSite({ server, children }: { server?: Server; chil
     e.preventDefault();
     form.post(route('sites.store', { server: form.data.server }));
   };
+
+  useEffect(() => {
+    const typeConfig = page.props.configs.site.types[form.data.type];
+
+    if (typeConfig?.form) {
+      typeConfig.form.forEach((field: DynamicFieldConfig) => {
+        if (field.default !== undefined) {
+          /* @ts-expect-error dynamic types */
+          if (form.data[field.name] === '' || form.data[field.name] === undefined) {
+            /* @ts-expect-error dynamic types */
+            form.setData(field.name, field.default);
+          }
+        }
+      });
+    }
+  }, [form.data.type]);
 
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {

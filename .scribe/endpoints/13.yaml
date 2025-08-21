@@ -1,17 +1,17 @@
-name: sites
+name: services
 description: ''
 endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites'
+    uri: 'api/projects/{project_id}/servers/{server_id}/services'
     metadata:
-      groupName: sites
+      groupName: services
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: list
-      description: 'Get all sites.'
+      description: 'Get all services.'
       authenticated: false
       custom: []
     headers:
@@ -49,202 +49,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":6,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","webserver":"nginx","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","status_color":"success","auto_deploy":false,"port":null,"user":"vito","url":"http:\/\/test.com","force_ssl":false,"progress":100,"created_at":"2025-08-18T13:55:12.000000Z","updated_at":"2025-08-18T13:55:12.000000Z"},{"id":7,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","webserver":"nginx","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","status_color":"success","auto_deploy":false,"port":null,"user":"vito","url":"http:\/\/test.com","force_ssl":false,"progress":100,"created_at":"2025-08-18T13:55:13.000000Z","updated_at":"2025-08-18T13:55:13.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: create
-      description: 'Create a new site.'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      type:
-        name: type
-        description: ''
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      domain:
-        name: domain
-        description: ''
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      aliases:
-        name: aliases
-        description: ''
-        required: true
-        example:
-          - architecto
-        type: 'string[]'
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      php_version:
-        name: php_version
-        description: 'One of the installed PHP Versions'
-        required: true
-        example: '7.4'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      web_directory:
-        name: web_directory
-        description: 'Required for PHP and Laravel sites'
-        required: true
-        example: public
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      source_control:
-        name: source_control
-        description: 'Source control ID, Required for Sites which support source control'
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      repository:
-        name: repository
-        description: 'Repository, Required for Sites which support source control'
-        required: true
-        example: organization/repository
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      branch:
-        name: branch
-        description: 'Branch, Required for Sites which support source control'
-        required: true
-        example: main
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      composer:
-        name: composer
-        description: 'Run composer if site supports composer'
-        required: true
-        example: true
-        type: boolean
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      version:
-        name: version
-        description: 'Version, if the site type requires a version like PHPMyAdmin'
-        required: true
-        example: 5.2.1
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      user:
-        name: user
-        description: 'user, to isolate the website under a new user'
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      method:
-        name: method
-        description: 'Load balancer method, Required if the site type is Load balancer'
-        required: true
-        example: round-robin
-        type: string
-        enumValues:
-          - round-robin
-          - least-connections
-          - ip-hash
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanBodyParameters:
-      type: architecto
-      domain: architecto
-      aliases:
-        - architecto
-      php_version: '7.4'
-      web_directory: public
-      source_control: architecto
-      repository: organization/repository
-      branch: main
-      composer: true
-      version: 5.2.1
-      user: architecto
-      method: round-robin
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: '{"id":6,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","webserver":"nginx","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","status_color":"success","auto_deploy":false,"port":null,"user":"vito","url":"http:\/\/test.com","force_ssl":false,"progress":100,"created_at":"2025-08-18T13:55:13.000000Z","updated_at":"2025-08-18T13:55:13.000000Z"}'
+        content: '{"data":[{"id":null,"server_id":1,"type":"webserver","type_data":null,"name":"nginx","version":null,"installed_version":null,"unit":null,"status":"ready","status_color":"success","icon":"","is_default":null,"created_at":null,"updated_at":null},{"id":null,"server_id":1,"type":"webserver","type_data":null,"name":"nginx","version":null,"installed_version":null,"unit":null,"status":"ready","status_color":"success","icon":"","is_default":null,"created_at":null,"updated_at":null}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -257,14 +62,14 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{id}'
+    uri: 'api/projects/{project_id}/servers/{server_id}/services/{id}'
     metadata:
-      groupName: sites
+      groupName: services
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: show
-      description: 'Get a site by ID.'
+      description: 'Get a service by ID.'
       authenticated: false
       custom: []
     headers:
@@ -293,9 +98,9 @@ endpoints:
         custom: []
       id:
         name: id
-        description: 'The ID of the site.'
+        description: 'The ID of the service.'
         required: true
-        example: 5
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -304,7 +109,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 1
-      id: 5
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -313,7 +118,352 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":6,"server_id":1,"source_control_id":null,"type":"laravel","type_data":null,"domain":"test.com","aliases":null,"web_directory":"\/","webserver":"nginx","path":"\/home","php_version":"8.2","repository":null,"branch":"main","status":"ready","status_color":"success","auto_deploy":false,"port":null,"user":"vito","url":"http:\/\/test.com","force_ssl":false,"progress":100,"created_at":"2025-08-18T13:55:13.000000Z","updated_at":"2025-08-18T13:55:13.000000Z"}'
+        content: '{"id":null,"server_id":1,"type":"webserver","type_data":null,"name":"nginx","version":null,"installed_version":null,"unit":null,"status":"ready","status_color":"success","icon":"","is_default":null,"created_at":null,"updated_at":null}'
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/start'
+    metadata:
+      groupName: services
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: start
+      description: 'Start service.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      service_id:
+        name: service_id
+        description: 'The ID of the service.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      service_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/stop'
+    metadata:
+      groupName: services
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: stop
+      description: 'Stop service.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      service_id:
+        name: service_id
+        description: 'The ID of the service.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      service_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/restart'
+    metadata:
+      groupName: services
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: restart
+      description: 'Restart service.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      service_id:
+        name: service_id
+        description: 'The ID of the service.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      service_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/enable'
+    metadata:
+      groupName: services
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: enable
+      description: 'Enable service.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      service_id:
+        name: service_id
+        description: 'The ID of the service.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      service_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: null
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}/disable'
+    metadata:
+      groupName: services
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: disable
+      description: 'Disable service.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      server_id:
+        name: server_id
+        description: 'The ID of the server.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      service_id:
+        name: service_id
+        description: 'The ID of the service.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      project_id: 1
+      server_id: 1
+      service_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 204
+        content: null
         headers: []
         description: ''
         custom: []
@@ -326,14 +476,14 @@ endpoints:
   -
     httpMethods:
       - DELETE
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}'
+    uri: 'api/projects/{project_id}/servers/{server_id}/services/{service_id}'
     metadata:
-      groupName: sites
+      groupName: services
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: delete
-      description: 'Delete site.'
+      description: 'Delete service.'
       authenticated: false
       custom: []
     headers:
@@ -360,11 +510,11 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
+      service_id:
+        name: service_id
+        description: 'The ID of the service.'
         required: true
-        example: 5
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -373,7 +523,7 @@ endpoints:
     cleanUrlParameters:
       project_id: 1
       server_id: 1
-      site_id: 5
+      service_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -382,551 +532,6 @@ endpoints:
     responses:
       -
         status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/load-balancer'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: load-balancer
-      description: 'Update load balancer.'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
-        required: true
-        example: 5
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-      site_id: 5
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      method:
-        name: method
-        description: 'Load balancer method, Required if the site type is Load balancer'
-        required: true
-        example: ip-hash
-        type: string
-        enumValues:
-          - round-robin
-          - least-connections
-          - ip-hash
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      servers:
-        name: servers
-        description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)'
-        required: true
-        example:
-          - architecto
-        type: 'string[]'
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanBodyParameters:
-      method: ip-hash
-      servers:
-        - architecto
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - PUT
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/aliases'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: aliases
-      description: 'Update aliases.'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
-        required: true
-        example: 5
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-      site_id: 5
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      aliases:
-        name: aliases
-        description: 'Array of aliases'
-        required: true
-        example:
-          - architecto
-        type: 'string[]'
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanBodyParameters:
-      aliases:
-        - architecto
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - POST
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deploy'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: deploy
-      description: '[Deprecated] Run site deployment script'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
-        required: true
-        example: 5
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-      site_id: 5
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - PUT
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployment-script'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: deployment-script
-      description: 'Update site deployment script'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
-        required: true
-        example: 5
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-      site_id: 5
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      script:
-        name: script
-        description: 'Content of the deployment script'
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanBodyParameters:
-      script: architecto
-    fileParameters: []
-    responses:
-      -
-        status: 204
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/deployment-script'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: deployment-script
-      description: 'Get site deployment script content'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
-        required: true
-        example: 5
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-      site_id: 5
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: null
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/env'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: env
-      description: 'Get site .env file content'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
-        required: true
-        example: 5
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-      site_id: 5
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: '{"data":{"env":"APP_NAME=Laravel\\nAPP_ENV=production"}}'
-        headers: []
-        description: ''
-        custom: []
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - PUT
-    uri: 'api/projects/{project_id}/servers/{server_id}/sites/{site_id}/env'
-    metadata:
-      groupName: sites
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: env
-      description: 'Update site .env file'
-      authenticated: false
-      custom: []
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      project_id:
-        name: project_id
-        description: 'The ID of the project.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      server_id:
-        name: server_id
-        description: 'The ID of the server.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-      site_id:
-        name: site_id
-        description: 'The ID of the site.'
-        required: true
-        example: 5
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      project_id: 1
-      server_id: 1
-      site_id: 5
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      env:
-        name: env
-        description: 'Content of the .env file'
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        custom: []
-    cleanBodyParameters:
-      env: architecto
-    fileParameters: []
-    responses:
-      -
-        status: 200
         content: null
         headers: []
         description: ''
