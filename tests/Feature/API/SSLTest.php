@@ -98,7 +98,7 @@ class SSLTest extends TestCase
             'server_id' => $this->server->id,
         ]);
 
-        $this->json('POST', route('api.projects.servers.sites.ssls.create-letsencrypt', [
+        $this->json('POST', route('api.projects.servers.sites.ssls.create-custom', [
             'project' => $this->server->project,
             'server' => $this->server,
             'site' => $site,
