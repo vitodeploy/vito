@@ -120,6 +120,64 @@ class SSLTest extends TestCase
         ]);
     }
 
+    public function test_activate_ssl(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Ssl $ssl */
+        $ssl = Ssl::factory()->create([
+            'site_id' => $site->id,
+            'is_active' => false,
+        ]);
+
+        $this->json('POST', route('api.projects.servers.sites.ssls.activate', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+            'ssl' => $ssl,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'is_active' => true,
+            ]);
+    }
+
+    public function test_deactivate_ssl(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Ssl $ssl */
+        $ssl = Ssl::factory()->create([
+            'site_id' => $site->id,
+            'is_active' => true,
+        ]);
+
+        $this->json('POST', route('api.projects.servers.sites.ssls.deactivate', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+            'ssl' => $ssl,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'is_active' => false,
+            ]);
+    }
+
     public function test_delete_ssl(): void
     {
         SSH::fake();

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\SSL\ActivateSSL;
 use App\Actions\SSL\CreateSSL;
+use App\Actions\SSL\DeactivateSSL;
 use App\Actions\SSL\DeleteSSL;
 use App\Enums\SslType;
 use App\Http\Controllers\Controller;
@@ -34,7 +36,7 @@ class SSLController extends Controller
     #[ResponseFromApiResource(SslResource::class, Ssl::class, collection: true, paginate: 25)]
     public function index(Project $project, Server $server, Site $site): ResourceCollection
     {
-        $this->authorize('view', [$site, $server]);
+        $this->authorize('view', [Ssl::class, $project, $server, $site]);
 
         $this->validateRoute($project, $server, $site);
 
@@ -65,7 +67,7 @@ class SSLController extends Controller
     #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function createLetsEncrypt(Request $request, Project $project, Server $server, Site $site): SslResource
     {
-        $this->authorize('create', [Site::class, $server]);
+        $this->authorize('create', [Ssl::class, $project, $server, $site]);
 
         $this->validateRoute($project, $server, $site);
 
@@ -83,12 +85,40 @@ class SSLController extends Controller
     #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function createCustom(Request $request, Project $project, Server $server, Site $site): SslResource
     {
-        $this->authorize('create', [Site::class, $server]);
+        $this->authorize('create', [Ssl::class, $project, $server, $site]);
 
         $this->validateRoute($project, $server, $site);
 
         $ssl = app(CreateSSL::class)
             ->create($site, array_merge($request->all(), ['type' => SslType::CUSTOM]));
+
+        return new SslResource($ssl);
+    }
+
+    #[Post('/{ssl}/activate', name: 'api.projects.servers.sites.ssls.activate', middleware: 'ability:write')]
+    #[Endpoint(title: 'activate', description: 'Activate SSL certificate.')]
+    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
+    public function activate(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): SslResource
+    {
+        $this->authorize('update', [$project, $server, $site, $ssl]);
+
+        $this->validateRoute($project, $server, $site, $ssl);
+
+        app(ActivateSSL::class)->activate($ssl);
+
+        return new SslResource($ssl);
+    }
+
+    #[Post('/{ssl}/deactivate', name: 'api.projects.servers.sites.ssls.deactivate', middleware: 'ability:write')]
+    #[Endpoint(title: 'activate', description: 'Deactivate SSL certificate.')]
+    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
+    public function deactivate(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): SslResource
+    {
+        $this->authorize('update', [$project, $server, $site, $ssl]);
+
+        $this->validateRoute($project, $server, $site, $ssl);
+
+        app(DeactivateSSL::class)->deactivate($ssl);
 
         return new SslResource($ssl);
     }
