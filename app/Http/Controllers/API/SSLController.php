@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\SSL\CreateSSL;
+use App\Actions\SSL\DeleteSSL;
 use App\Enums\SslType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SslResource;
@@ -15,7 +16,9 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
 use Knuckles\Scribe\Attributes\Endpoint;
 use Knuckles\Scribe\Attributes\Group;
+use Knuckles\Scribe\Attributes\Response;
 use Knuckles\Scribe\Attributes\ResponseFromApiResource;
+use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -52,14 +55,28 @@ class SSLController extends Controller
     {
         $this->authorize('create', [Site::class, $server]);
 
-        $this->validateRoute($project, $server);
+        $this->validateRoute($project, $server, $site);
 
         $ssl = app(CreateSSL::class)->create($site, array_merge($request->all(), ['type' => SslType::LETSENCRYPT]));
 
         return new SslResource($ssl);
     }
 
-    private function validateRoute(Project $project, Server $server, ?Site $site = null): void
+    #[Delete('/{ssl}', name: 'api.projects.servers.sites.ssls.delete', middleware: 'ability:write')]
+    #[Endpoint(title: 'delete', description: 'Delete SSL certificate.')]
+    #[Response(status: 204)]
+    public function delete(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): \Illuminate\Http\Response
+    {
+        $this->authorize('delete', [$project, $server, $site, $ssl]);
+
+        $this->validateRoute($project, $server, $site, $ssl);
+
+        app(DeleteSSL::class)->delete($ssl);
+
+        return response()->noContent();
+    }
+
+    private function validateRoute(Project $project, Server $server, ?Site $site = null, ?Ssl $ssl = null): void
     {
         if ($project->id !== $server->project_id) {
             abort(404, 'Server not found in project');
@@ -67,6 +84,10 @@ class SSLController extends Controller
 
         if ($site && $site->server_id !== $server->id) {
             abort(404, 'Site not found in server');
+        }
+
+        if ($site && $ssl && $ssl->site_id !== $site->id) {
+            abort(404, 'SSL certificate not found in site');
         }
     }
 }

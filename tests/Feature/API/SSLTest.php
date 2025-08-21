@@ -6,6 +6,7 @@ use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Facades\SSH;
 use App\Models\Site;
+use App\Models\Ssl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -61,5 +62,31 @@ class SSLTest extends TestCase
             'status' => SslStatus::CREATED,
             'email' => 'ssl@example.com',
         ]);
+    }
+
+    public function test_delete_ssl(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Ssl $ssl */
+        $ssl = Ssl::factory()->create([
+            'site_id' => $site->id,
+        ]);
+
+        $this->json('DELETE', route('api.projects.servers.sites.ssls.delete', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+            'ssl' => $ssl,
+        ]))
+            ->assertSuccessful()
+            ->assertNoContent();
     }
 }
