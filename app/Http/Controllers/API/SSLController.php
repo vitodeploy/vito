@@ -46,6 +46,18 @@ class SSLController extends Controller
         return SslResource::collection($ssls);
     }
 
+    #[Get('{ssl}', name: 'api.projects.servers.sites.ssls.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'show', description: 'Get an SSL certificate by ID.')]
+    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
+    public function show(Project $project, Server $server, Site $site, Ssl $ssl): SslResource
+    {
+        $this->authorize('delete', [$project, $server, $site, $ssl]);
+
+        $this->validateRoute($project, $server, $site, $ssl);
+
+        return new SslResource($ssl);
+    }
+
     #[Post('/', name: 'api.projects.servers.sites.ssls.create-letsencrypt', middleware: 'ability:write')]
     #[Endpoint(title: 'create-letsencrypt', description: 'Create a new Let\'s Encrypt SSL certificate.')]
     #[BodyParam(name: 'email', required: true)]

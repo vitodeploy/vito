@@ -32,6 +32,29 @@ class SSLTest extends TestCase
             ->assertSuccessful();
     }
 
+    public function test_see_ssl(): void
+    {
+        Sanctum::actingAs($this->user, ['read']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Ssl $ssl */
+        $ssl = Ssl::factory()->create([
+            'site_id' => $site->id,
+        ]);
+
+        $this->json('GET', route('api.projects.servers.sites.ssls.show', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+            'ssl' => $ssl,
+        ]))
+            ->assertSuccessful();
+    }
+
     public function test_create_letsencrypt_ssl(): void
     {
         SSH::fake('Successfully received certificate');
