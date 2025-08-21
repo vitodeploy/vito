@@ -12,20 +12,49 @@ class PluginsTest extends TestCase
 {
     private Plugins $plugins;
 
+    private string $pluginsBackupPath;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->plugins = new Plugins;
+        $this->pluginsBackupPath = storage_path('plugins_backup_'.time());
 
+        $this->moveExistingPlugins();
         $this->cleanupTestPlugins();
     }
 
     protected function tearDown(): void
     {
         $this->cleanupTestPlugins();
+        $this->restoreExistingPlugins();
 
         parent::tearDown();
+    }
+
+    private function moveExistingPlugins(): void
+    {
+        $pluginsPath = storage_path('plugins');
+
+        if (File::exists($pluginsPath)) {
+            File::moveDirectory($pluginsPath, $this->pluginsBackupPath);
+        }
+
+        File::makeDirectory($pluginsPath, 0755, true);
+    }
+
+    private function restoreExistingPlugins(): void
+    {
+        $pluginsPath = storage_path('plugins');
+
+        if (File::exists($pluginsPath)) {
+            File::deleteDirectory($pluginsPath);
+        }
+
+        if (File::exists($this->pluginsBackupPath)) {
+            File::moveDirectory($this->pluginsBackupPath, $pluginsPath);
+        }
     }
 
     private function cleanupTestPlugins(): void
