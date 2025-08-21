@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
 import { MoreVerticalIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardRow, CardTitle } from '@/components/ui/card';
-import React from 'react';
 import { Site, SiteFeature } from '@/types/site';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
