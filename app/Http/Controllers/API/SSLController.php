@@ -74,6 +74,25 @@ class SSLController extends Controller
         return new SslResource($ssl);
     }
 
+    #[Post('/', name: 'api.projects.servers.sites.ssls.create-custom', middleware: 'ability:write')]
+    #[Endpoint(title: 'create-letsencrypt', description: 'Create a custom SSL certificate.')]
+    #[BodyParam(name: 'private', required: true)]
+    #[BodyParam(name: 'certificate', required: true)]
+    #[BodyParam(name: 'expires_at', type: 'data', required: true)]
+    #[BodyParam(name: 'aliases', type: 'boolean', description: 'Set SSL for site\'s aliases as well')]
+    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
+    public function createCustom(Request $request, Project $project, Server $server, Site $site): SslResource
+    {
+        $this->authorize('create', [Site::class, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        $ssl = app(CreateSSL::class)
+            ->create($site, array_merge($request->all(), ['type' => SslType::CUSTOM]));
+
+        return new SslResource($ssl);
+    }
+
     #[Delete('/{ssl}', name: 'api.projects.servers.sites.ssls.delete', middleware: 'ability:write')]
     #[Endpoint(title: 'delete', description: 'Delete SSL certificate.')]
     #[Response(status: 204)]

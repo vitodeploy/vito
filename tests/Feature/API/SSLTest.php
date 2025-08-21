@@ -87,6 +87,39 @@ class SSLTest extends TestCase
         ]);
     }
 
+    public function test_create_custom_ssl(): void
+    {
+        SSH::fake('Successfully received certificate');
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->json('POST', route('api.projects.servers.sites.ssls.create-letsencrypt', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'certificate' => 'certificate',
+            'private' => 'private',
+            'expires_at' => now()->addYear()->format('Y-m-d'),
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'type' => SslType::CUSTOM,
+                'status' => SslStatus::CREATING,
+            ]);
+
+        $this->assertDatabaseHas('ssls', [
+            'site_id' => $site->id,
+            'type' => SslType::CUSTOM,
+            'status' => SslStatus::CREATED,
+        ]);
+    }
+
     public function test_delete_ssl(): void
     {
         SSH::fake();
