@@ -1,5 +1,5 @@
 import { Site, SiteFeatureAction } from '@/types/site';
-import React, { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,

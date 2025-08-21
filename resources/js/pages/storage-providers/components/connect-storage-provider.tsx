@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, ReactNode, useState } from 'react';
+import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -59,6 +59,19 @@ export default function ConnectStorageProvider({
     });
   };
 
+  useEffect(() => {
+    const providerConfig = page.props.configs.storage_provider.providers[form.data.provider];
+    if (providerConfig?.form) {
+      providerConfig.form.forEach((field: DynamicFieldConfig) => {
+        /* @ts-expect-error dynamic types */
+        if (field.default !== undefined && (form.data[field.name] === '' || form.data[field.name] === undefined)) {
+          /* @ts-expect-error dynamic types */
+          form.setData(field.name, field.default);
+        }
+      });
+    }
+  }, [form.data.provider]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -95,14 +108,7 @@ export default function ConnectStorageProvider({
             </FormField>
             <FormField>
               <Label htmlFor="name">Name</Label>
-              <Input
-                type="text"
-                name="host"
-                id="name"
-                placeholder="Name"
-                value={form.data.name}
-                onChange={(e) => form.setData('name', e.target.value)}
-              />
+              <Input type="text" name="host" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
             {page.props.configs.storage_provider.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
