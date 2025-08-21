@@ -20,7 +20,7 @@ class CreateSSL
      *
      * @throws ValidationException
      */
-    public function create(Site $site, array $input): void
+    public function create(Site $site, array $input): Ssl
     {
         Validator::make($input, self::rules($input))->validate();
 
@@ -61,6 +61,8 @@ class CreateSSL
             $ssl->status = SslStatus::FAILED;
             $ssl->save();
         })->onQueue('ssh-unique');
+
+        return $ssl;
     }
 
     /**
