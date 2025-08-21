@@ -36,7 +36,7 @@ class SSLController extends Controller
     #[ResponseFromApiResource(SslResource::class, Ssl::class, collection: true, paginate: 25)]
     public function index(Project $project, Server $server, Site $site): ResourceCollection
     {
-        $this->authorize('view', [Ssl::class, $project, $server, $site]);
+        $this->authorize('view', [$project, $server, $site]);
 
         $this->validateRoute($project, $server, $site);
 
@@ -60,14 +60,14 @@ class SSLController extends Controller
         return new SslResource($ssl);
     }
 
-    #[Post('/', name: 'api.projects.servers.sites.ssls.create-letsencrypt', middleware: 'ability:write')]
+    #[Post('/letsencrypt', name: 'api.projects.servers.sites.ssls.create-letsencrypt', middleware: 'ability:write')]
     #[Endpoint(title: 'create-letsencrypt', description: 'Create a new Let\'s Encrypt SSL certificate.')]
     #[BodyParam(name: 'email', required: true)]
     #[BodyParam(name: 'aliases', type: 'boolean', description: 'Set SSL for site\'s aliases as well')]
     #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function createLetsEncrypt(Request $request, Project $project, Server $server, Site $site): SslResource
     {
-        $this->authorize('create', [Ssl::class, $project, $server, $site]);
+        $this->authorize('create', [$project, $server, $site]);
 
         $this->validateRoute($project, $server, $site);
 
@@ -76,7 +76,7 @@ class SSLController extends Controller
         return new SslResource($ssl);
     }
 
-    #[Post('/', name: 'api.projects.servers.sites.ssls.create-custom', middleware: 'ability:write')]
+    #[Post('/custom', name: 'api.projects.servers.sites.ssls.create-custom', middleware: 'ability:write')]
     #[Endpoint(title: 'create-letsencrypt', description: 'Create a custom SSL certificate.')]
     #[BodyParam(name: 'private', required: true)]
     #[BodyParam(name: 'certificate', required: true)]
@@ -85,7 +85,7 @@ class SSLController extends Controller
     #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function createCustom(Request $request, Project $project, Server $server, Site $site): SslResource
     {
-        $this->authorize('create', [Ssl::class, $project, $server, $site]);
+        $this->authorize('create', [$project, $server, $site]);
 
         $this->validateRoute($project, $server, $site);
 
