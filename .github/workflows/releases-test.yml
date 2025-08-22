@@ -37,7 +37,7 @@ jobs:
         run: touch storage/database.sqlite
 
       - name: Set up the .env file
-        run: touch .env
+        run: cp .env.example .env
 
       - name: Generate Application Key
         run: php artisan key:generate
