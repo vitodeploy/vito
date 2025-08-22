@@ -1,5 +1,4 @@
-import { Server } from '@/types/server';
-import React, { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -26,7 +25,15 @@ type CreateForm = {
   host: string;
 };
 
-export default function CreateDatabaseUser({ server, children }: { server: Server; children: ReactNode }) {
+export default function CreateDatabaseUser({
+  server,
+  onDatabaseUserCreated,
+  children,
+}: {
+  server: number;
+  onDatabaseUserCreated?: () => void;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<CreateForm>({
@@ -38,10 +45,13 @@ export default function CreateDatabaseUser({ server, children }: { server: Serve
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('database-users.store', server.id), {
+    form.post(route('database-users.store', server), {
       onSuccess: () => {
         form.reset();
         setOpen(false);
+        if (onDatabaseUserCreated) {
+          onDatabaseUserCreated();
+        }
       },
     });
   };

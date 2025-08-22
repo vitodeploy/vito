@@ -16,8 +16,8 @@ import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import DatabaseSelect from '@/pages/database-users/components/database-select';
 import InputError from '@/components/ui/input-error';
+import DatabaseSelect from '@/pages/databases/components/database-select';
 
 export default function RestoreBackup({
   backup,

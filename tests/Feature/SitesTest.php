@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\LoadBalancerMethod;
 use App\Enums\SiteStatus;
 use App\Facades\SSH;
+use App\Models\Database;
+use App\Models\DatabaseUser;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SiteTypes\Laravel;
@@ -34,6 +36,13 @@ class SitesTest extends TestCase
         Http::fake([
             'https://api.github.com/repos/*' => Http::response([
             ], 201),
+        ]);
+
+        Database::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+        DatabaseUser::factory()->create([
+            'server_id' => $this->server->id,
         ]);
 
         $this->actingAs($this->user);
@@ -394,11 +403,8 @@ class SitesTest extends TestCase
                     'username' => 'example',
                     'email' => 'email@example.com',
                     'password' => 'password',
-                    'database' => 'example',
-                    'charset' => 'utf8mb4',
-                    'collation' => 'utf8mb4_unicode_ci',
-                    'database_user' => 'example',
-                    'database_password' => 'password',
+                    'database' => '1',
+                    'database_user' => '1',
                 ],
             ],
             [
@@ -411,11 +417,8 @@ class SitesTest extends TestCase
                     'username' => 'example',
                     'email' => 'email@example.com',
                     'password' => 'password',
-                    'database' => 'example',
-                    'charset' => 'utf8mb4',
-                    'collation' => 'utf8mb4_unicode_ci',
-                    'database_user' => 'example',
-                    'database_password' => 'password',
+                    'database' => '1',
+                    'database_user' => '1',
                     'user' => 'example',
                 ],
             ],

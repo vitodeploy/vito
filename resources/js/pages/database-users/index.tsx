@@ -36,7 +36,7 @@ export default function Databases() {
               </Button>
             </a>
             <SyncUsers server={page.props.server} />
-            <CreateDatabaseUser server={page.props.server}>
+            <CreateDatabaseUser server={page.props.server.id}>
               <Button>
                 <PlusIcon />
                 <span className="hidden lg:block">Create</span>

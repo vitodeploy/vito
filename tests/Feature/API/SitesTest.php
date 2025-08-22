@@ -5,6 +5,8 @@ namespace Tests\Feature\API;
 use App\Enums\DeploymentStatus;
 use App\Enums\LoadBalancerMethod;
 use App\Facades\SSH;
+use App\Models\Database;
+use App\Models\DatabaseUser;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\SourceControl;
@@ -42,6 +44,13 @@ class SitesTest extends TestCase
         ]);
 
         Sanctum::actingAs($this->user, ['read', 'write']);
+
+        Database::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+        DatabaseUser::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
 
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([

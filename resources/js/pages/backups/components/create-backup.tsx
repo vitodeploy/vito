@@ -10,8 +10,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import InputError from '@/components/ui/input-error';
 import { SharedData } from '@/types';
 import { Input } from '@/components/ui/input';
-import DatabaseSelect from '@/pages/database-users/components/database-select';
 import StorageProviderSelect from '@/pages/storage-providers/components/storage-provider-select';
+import DatabaseSelect from '@/pages/databases/components/database-select';
 
 export default function CreateBackup({ server, children }: { server: Server; children: ReactNode }) {
   const [open, setOpen] = useState(false);

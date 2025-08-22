@@ -1,5 +1,4 @@
-import { Server } from '@/types/server';
-import React, { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -32,13 +31,23 @@ type CreateForm = {
   host: string;
 };
 
-export default function CreateDatabase({ server, children }: { server: Server; children: ReactNode }) {
+export default function CreateDatabase({
+  server,
+  withUser = false,
+  onDatabaseCreated,
+  children,
+}: {
+  server: number;
+  withUser?: boolean;
+  onDatabaseCreated?: () => void;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const [charsets, setCharsets] = useState<string[]>([]);
   const [collations, setCollations] = useState<string[]>([]);
 
   const fetchCharsets = async () => {
-    axios.get(route('databases.charsets', server.id)).then((response) => {
+    axios.get(route('databases.charsets', server)).then((response) => {
       setCharsets(response.data);
     });
   };
@@ -47,7 +56,7 @@ export default function CreateDatabase({ server, children }: { server: Server; c
     name: '',
     charset: '',
     collation: '',
-    user: false,
+    user: withUser,
     username: '',
     password: '',
     remote: false,
@@ -56,10 +65,16 @@ export default function CreateDatabase({ server, children }: { server: Server; c
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.post(route('databases.store', server.id), {
+    form.post(route('databases.store', server), {
       onSuccess: () => {
         form.reset();
         setOpen(false);
+        if (onDatabaseCreated) {
+          onDatabaseCreated();
+        }
+      },
+      onError: () => {
+        // Handle error if needed
       },
     });
   };
@@ -74,7 +89,7 @@ export default function CreateDatabase({ server, children }: { server: Server; c
   const handleCharsetChange = (value: string) => {
     form.setData('collation', '');
     form.setData('charset', value);
-    axios.get(route('databases.collations', { server: server.id, charset: value })).then((response) => {
+    axios.get(route('databases.collations', { server: server, charset: value })).then((response) => {
       setCollations(response.data);
     });
   };

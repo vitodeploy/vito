@@ -16,6 +16,8 @@ import ServiceVersionSelect from '@/pages/services/components/service-version-se
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
 import { TagsInput } from '@/components/ui/tags-input';
+import DatabaseSelect from '@/pages/databases/components/database-select';
+import DatabaseUserSelect from '@/pages/database-users/components/database-user-select';
 
 type CreateSiteForm = {
   server: string;
@@ -89,6 +91,48 @@ export default function CreateSite({ server, children }: { server?: Server; chil
             onValueChange={(value) => form.setData('php_version', value)}
           />
           <InputError message={form.errors.php_version} />
+        </FormField>
+      );
+    }
+
+    if (field.name === 'database') {
+      return (
+        <FormField key={`field-${field.name}`}>
+          <Label htmlFor="database">Database</Label>
+          <DatabaseSelect
+            id="database"
+            key={`field-${field.name}`}
+            name="database"
+            serverId={parseInt(form.data.server)}
+            /*@ts-expect-error dynamic types*/
+            value={form.data.database}
+            /*@ts-expect-error dynamic types*/
+            onValueChange={(value) => form.setData('database', value)}
+            createWithUser={true}
+          />
+          {/*@ts-expect-error dynamic types*/}
+          <InputError message={form.errors.database} />
+        </FormField>
+      );
+    }
+
+    if (field.name === 'database_user') {
+      return (
+        <FormField key={`field-${field.name}`}>
+          <Label htmlFor="database-user">Database user</Label>
+          <DatabaseUserSelect
+            id="database-user"
+            key={`field-${field.name}`}
+            name="database_user"
+            serverId={parseInt(form.data.server)}
+            /*@ts-expect-error dynamic types*/
+            value={form.data.database_user}
+            /*@ts-expect-error dynamic types*/
+            onValueChange={(value) => form.setData('database_user', value)}
+            create={false}
+          />
+          {/*@ts-expect-error dynamic types*/}
+          <InputError message={form.errors.database_user} />
         </FormField>
       );
     }

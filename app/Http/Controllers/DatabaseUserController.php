@@ -12,6 +12,7 @@ use App\Models\DatabaseUser;
 use App\Models\Server;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -35,6 +36,14 @@ class DatabaseUserController extends Controller
             'databases' => DatabaseResource::collection($server->databases()->get()),
             'databaseUsers' => DatabaseUserResource::collection($server->databaseUsers()->simplePaginate(config('web.pagination_size'))),
         ]);
+    }
+
+    #[Get('/json', name: 'database-users.json')]
+    public function json(Server $server): ResourceCollection
+    {
+        $this->authorize('viewAny', [DatabaseUser::class, $server]);
+
+        return DatabaseUserResource::collection($server->databaseUsers()->get());
     }
 
     #[Post('/', name: 'database-users.store')]
