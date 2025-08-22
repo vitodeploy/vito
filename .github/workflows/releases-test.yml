@@ -42,6 +42,9 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
+      - name: Migrate database
+        run: php artisan migrate --force
+
       - name: Generate API Docs
         run: php artisan scribe:generate
 
