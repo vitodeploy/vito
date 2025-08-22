@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DeploymentStatus;
 use App\Models\Deployment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,7 +16,12 @@ class DeploymentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'site_id' => 1,
+            'deployment_script_id' => 1,
+            'log_id' => 1,
+            'commit_id' => 'id',
+            'commit_data' => [],
+            'status' => DeploymentStatus::FINISHED,
         ];
     }
 }

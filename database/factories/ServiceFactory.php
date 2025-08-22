@@ -19,6 +19,7 @@ class ServiceFactory extends Factory
             'server_id' => 1,
             'type' => 'webserver',
             'name' => 'nginx',
+            'version' => 'latest',
             'status' => ServiceStatus::READY,
         ];
     }

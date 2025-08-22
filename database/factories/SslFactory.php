@@ -17,6 +17,7 @@ class SslFactory extends Factory
     public function definition(): array
     {
         return [
+            'site_id' => 1,
             'type' => $this->faker->word(),
             'certificate' => $this->faker->word(),
             'pk' => $this->faker->word(),
