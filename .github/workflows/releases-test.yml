@@ -43,7 +43,7 @@ jobs:
         run: php artisan key:generate
 
       - name: Migrate database
-        run: php artisan migrate --force
+        run: php artisan migrate:refresh --seed
 
       - name: Generate API Docs
         run: php artisan scribe:generate
