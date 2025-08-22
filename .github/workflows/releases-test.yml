@@ -33,6 +33,15 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Create sqlite database
+        run: touch storage/database-test.sqlite
+
+      - name: Set up the .env file
+        run: touch .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
       - name: Generate API Docs
         run: php artisan scribe:generate
 
