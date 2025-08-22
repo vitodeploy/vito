@@ -19,7 +19,7 @@ class CreateWorker
      *
      * @throws ValidationException
      */
-    public function create(Server $server, array $input, ?Site $site = null): void
+    public function create(Server $server, array $input, ?Site $site = null): Worker
     {
         Validator::make($input, self::rules($server, $site))->validate();
 
@@ -56,6 +56,8 @@ class CreateWorker
         })->catch(function () use ($worker): void {
             $worker->delete();
         })->onQueue('ssh');
+
+        return $worker;
     }
 
     /**
@@ -83,6 +85,14 @@ class CreateWorker
             'user' => [
                 'required',
                 Rule::in($site?->getSshUsers() ?? $server->getSshUsers()),
+            ],
+            'auto_start' => [
+                'required',
+                'boolean',
+            ],
+            'auto_restart' => [
+                'required',
+                'boolean',
             ],
             'numprocs' => [
                 'required',
