@@ -53,7 +53,7 @@ class SSLController extends Controller
     #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function show(Project $project, Server $server, Site $site, Ssl $ssl): SslResource
     {
-        $this->authorize('delete', [$project, $server, $site, $ssl]);
+        $this->authorize('view', [$project, $server, $site, $ssl]);
 
         $this->validateRoute($project, $server, $site, $ssl);
 
