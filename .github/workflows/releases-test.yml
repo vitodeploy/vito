@@ -34,7 +34,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Create sqlite database
-        run: touch storage/database-test.sqlite
+        run: touch storage/database.sqlite
 
       - name: Set up the .env file
         run: touch .env
