@@ -32,22 +32,6 @@ class ServersSeeder extends Seeder
         /** @var Tag $tag */
         foreach ($project->tags()->get() as $tag) {
             $provider = $providers->random();
-            // database
-            /** @var Server $db */
-            $db = Server::factory()->create([
-                'user_id' => $user->id,
-                'project_id' => $project->id,
-                'name' => $tag->name.'-'.'database',
-                'provider' => $provider->provider,
-                'provider_id' => $provider->id,
-            ]);
-            $db->tags()->attach($tag->id);
-            $this->database($db);
-            $this->firewall($db);
-            $this->monitoring($db);
-            $this->redis($db);
-
-            // app-1
             /** @var Server $app */
             $app = Server::factory()->create([
                 'user_id' => $user->id,
@@ -61,6 +45,7 @@ class ServersSeeder extends Seeder
             $this->php($app);
             $this->firewall($app);
             $this->monitoring($app);
+            $this->database($app);
             $this->supervisor($app);
             $this->redis($app);
         }
