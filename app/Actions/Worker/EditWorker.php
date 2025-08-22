@@ -18,7 +18,7 @@ class EditWorker
      *
      * @throws ValidationException
      */
-    public function edit(Worker $worker, array $input): void
+    public function edit(Worker $worker, array $input): Worker
     {
         Validator::make($input, self::rules($worker, $worker->site))->validate();
 
@@ -56,6 +56,8 @@ class EditWorker
             $worker->status = WorkerStatus::FAILED;
             $worker->save();
         })->onQueue('ssh');
+
+        return $worker;
     }
 
     /**
@@ -84,6 +86,14 @@ class EditWorker
             'user' => [
                 'required',
                 Rule::in($site?->getSshUsers() ?? $worker->server->getSshUsers()),
+            ],
+            'auto_start' => [
+                'required',
+                'boolean',
+            ],
+            'auto_restart' => [
+                'required',
+                'boolean',
             ],
             'numprocs' => [
                 'required',
