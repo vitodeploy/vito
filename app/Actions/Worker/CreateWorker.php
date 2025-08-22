@@ -49,6 +49,7 @@ class CreateWorker
                 $worker->auto_restart,
                 $worker->numprocs,
                 $worker->getLogFile(),
+                $worker->site?->path,
                 $worker->site_id
             );
             $worker->status = WorkerStatus::RUNNING;

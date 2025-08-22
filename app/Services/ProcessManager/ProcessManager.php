@@ -14,7 +14,8 @@ interface ProcessManager extends ServiceInterface
         bool $autoRestart,
         int $numprocs,
         string $logFile,
-        ?int $siteId = null
+        ?string $directory = null,
+        ?int $siteId = null,
     ): void;
 
     public function delete(int $id, ?int $siteId = null): void;

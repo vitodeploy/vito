@@ -59,12 +59,14 @@ class Supervisor extends AbstractProcessManager
         bool $autoRestart,
         int $numprocs,
         string $logFile,
+        ?string $directory = null,
         ?int $siteId = null
     ): void {
         $this->service->server->ssh()->write(
             "/etc/supervisor/conf.d/$id.conf",
             view('ssh.services.process-manager.supervisor.worker', [
                 'name' => (string) $id,
+                'directory' => $directory,
                 'command' => $command,
                 'user' => $user,
                 'autoStart' => var_export($autoStart, true),

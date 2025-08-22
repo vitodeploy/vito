@@ -23,7 +23,7 @@ use Throwable;
  * @property string $status
  * @property string $name
  * @property Server $server
- * @property Site $site
+ * @property ?Site $site
  */
 class Worker extends AbstractModel
 {
