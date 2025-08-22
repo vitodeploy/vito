@@ -46,6 +46,7 @@ jobs:
         run: php artisan migrate:refresh --seed
         env:
           APP_ENV: local
+          APP_DEMO: true
 
       - name: Generate API Docs
         run: php artisan scribe:generate
