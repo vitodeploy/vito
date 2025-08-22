@@ -69,7 +69,7 @@ class PHPSite extends AbstractSiteType
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',
             'php_version' => $input['php_version'] ?? '',
-            'composer' => $input['php_version'] ?? '',
+            'composer' => $input['composer'] ?? '',
         ];
     }
 
