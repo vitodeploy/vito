@@ -49,5 +49,5 @@ jobs:
           APP_DEMO: true
 
       - name: Generate API Docs
-        run: php artisan scribe:generate --force
+        run: php artisan scribe:generate
 
