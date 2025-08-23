@@ -1,0 +1,49 @@
+<?php
+
+namespace App\SiteFeatures\ModernDeployment;
+
+use App\Exceptions\SSHError;
+use App\Helpers\SSH;
+use App\SiteFeatures\Action;
+use Illuminate\Http\Request;
+
+class Disable extends Action
+{
+    protected SSH $ssh;
+
+    public function name(): string
+    {
+        return 'Disable';
+    }
+
+    public function active(): bool
+    {
+        return data_get($this->site->type_data, 'modern_deployment', false);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function handle(Request $request): void
+    {
+        $this->ssh = $this->site->server->ssh($this->site->user);
+
+        $sharedResources = data_get($this->site->type_data, 'modern_deployment_shared_resources', []);
+
+        $this->ssh->exec(view('ssh.modern-deployment.disable', [
+            'site' => $this->site,
+            'sharedResources' => $sharedResources,
+        ]), 'disable-modern-deployment', $this->site->id);
+
+        $typeData = $this->site->type_data;
+        unset($typeData['modern_deployment']);
+        unset($typeData['modern_deployment_shared_resources']);
+        $this->site->type_data = $typeData;
+        $this->site->save();
+
+        $this->site->path = str_replace('/current', '', $this->site->path);
+        $this->site->save();
+
+        $this->site->webserver()->updateVHost($this->site, regenerate: ['core']);
+    }
+}

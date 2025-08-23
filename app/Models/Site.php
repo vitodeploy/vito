@@ -27,7 +27,7 @@ use RuntimeException;
 /**
  * @property int $server_id
  * @property string $type
- * @property array<string, string> $type_data
+ * @property array<string, mixed> $type_data
  * @property string $domain
  * @property array<int, string> $aliases
  * @property string $web_directory
@@ -461,6 +461,28 @@ class Site extends AbstractModel
         }
 
         return $features;
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        return in_array($feature, config('site.types.'.$this->type.'.features', []));
+    }
+
+    public function isFeatureEnabled(string $feature): bool
+    {
+        return $this->hasFeature($feature) && data_get($this->type_data, $feature, false) === true;
+    }
+
+    public function enabledFeatures(): array
+    {
+        $enabled = [];
+        foreach (array_keys(config('site.types.'.$this->type.'.features', [])) as $feature) {
+            if ($this->isFeatureEnabled($feature)) {
+                $enabled[] = $feature;
+            }
+        }
+
+        return $enabled;
     }
 
     public function createDefaultDeploymentScript(): void

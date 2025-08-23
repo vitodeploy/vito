@@ -28,6 +28,8 @@ export interface Site {
   url: string;
   force_ssl: boolean;
   progress: number;
+  features: SiteFeature[];
+  enabled_features: string[];
   created_at: string;
   updated_at: string;
 
