@@ -29,7 +29,6 @@ export interface Site {
   force_ssl: boolean;
   progress: number;
   features: SiteFeature[];
-  enabled_features: string[];
   created_at: string;
   updated_at: string;
 

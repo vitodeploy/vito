@@ -10,13 +10,14 @@ use App\Models\ServerLog;
 use App\Models\Site;
 use App\Notifications\DeploymentCompleted;
 use App\Services\ProcessManager\ProcessManager;
+use App\SSH\OS\Git;
 
 class Deploy
 {
     /**
      * @throws DeploymentScriptIsEmptyException
      */
-    public function run(Site $site): Deployment
+    public function run(Site $site, bool $modern = true): Deployment
     {
         if ($site->sourceControl) {
             $site->sourceControl->getRepo($site->repository);
@@ -43,6 +44,17 @@ class Deploy
         }
         $deployment->save();
 
+        $typeData = $site->type_data;
+
+        if (! $modern || ! isset($typeData['modern_deployment']) || ! $typeData['modern_deployment']) {
+            return $this->deployClassic($site, $deployment, $log);
+        }
+
+        return $this->deployModern($site, $deployment, $log);
+    }
+
+    private function deployClassic(Site $site, Deployment $deployment, ServerLog $log): Deployment
+    {
         dispatch(function () use ($site, $deployment, $log): void {
             $site->server->os()->runScript(
                 path: $site->path,
@@ -50,6 +62,49 @@ class Deploy
                 serverLog: $log,
                 user: $site->user,
                 variables: $site->environmentVariables($deployment),
+            );
+
+            if ($site->deploymentScript->shouldRestartWorkers()) {
+                /** @var ProcessManager $processManager */
+                $processManager = $site->server->processManager()->handler();
+                $processManager->restartAll($site->id);
+            }
+
+            $deployment->status = DeploymentStatus::FINISHED;
+            $deployment->save();
+            Notifier::send($site, new DeploymentCompleted($deployment, $site));
+        })->catch(function () use ($deployment, $site): void {
+            $deployment->status = DeploymentStatus::FAILED;
+            $deployment->save();
+            Notifier::send($site, new DeploymentCompleted($deployment, $site));
+        })->onQueue('ssh-unique');
+
+        return $deployment;
+    }
+
+    private function deployModern(Site $site, Deployment $deployment, ServerLog $log): Deployment
+    {
+        $deployment->release = now()->format('YmdHis');
+        $deployment->save();
+
+        dispatch(function () use ($site, $deployment, $log): void {
+            app(Git::class)->clone($site, $deployment->path());
+
+            $site->server->os()->runScript(
+                path: $deployment->path(),
+                script: $site->deploymentScript->content,
+                serverLog: $log,
+                user: $site->user,
+                variables: $site->environmentVariables($deployment),
+            );
+
+            $site->server->ssh($site->user)->exec(
+                view('ssh.modern-deployment.deploy', [
+                    'site' => $site,
+                    'releasePath' => $deployment->path(),
+                ]),
+                'deployment',
+                $site->id
             );
 
             if ($site->deploymentScript->shouldRestartWorkers()) {

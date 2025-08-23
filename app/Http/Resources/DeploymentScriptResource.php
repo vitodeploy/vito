@@ -17,6 +17,7 @@ class DeploymentScriptResource extends JsonResource
         return [
             'id' => $this->id,
             'site_id' => $this->site_id,
+            'name' => $this->name,
             'content' => $this->content,
             'configs' => [
                 'restart_workers' => $this->shouldRestartWorkers(),

@@ -10,13 +10,13 @@ class Git
     /**
      * @throws SSHError
      */
-    public function clone(Site $site): void
+    public function clone(Site $site, ?string $path = null): void
     {
         $site->server->ssh($site->user)->exec(
             view('ssh.git.clone', [
                 'host' => str($site->getFullRepositoryUrl())->after('@')->before('-'),
                 'repo' => $site->getFullRepositoryUrl(),
-                'path' => $site->path,
+                'path' => $path ?? $site->path,
                 'branch' => $site->branch,
                 'key' => $site->getSshKeyName(),
             ]),

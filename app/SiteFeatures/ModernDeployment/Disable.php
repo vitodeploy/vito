@@ -2,6 +2,7 @@
 
 namespace App\SiteFeatures\ModernDeployment;
 
+use App\Actions\Site\Deploy;
 use App\Exceptions\SSHError;
 use App\Helpers\SSH;
 use App\SiteFeatures\Action;
@@ -41,9 +42,11 @@ class Disable extends Action
         $this->site->type_data = $typeData;
         $this->site->save();
 
-        $this->site->path = str_replace('/current', '', $this->site->path);
+        $this->site->path = $this->site->basePath();
         $this->site->save();
 
         $this->site->webserver()->updateVHost($this->site, regenerate: ['core']);
+
+        app(Deploy::class)->run($this->site);
     }
 }

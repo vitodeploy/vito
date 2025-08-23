@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $commit_id_short
  * @property array<string, mixed> $commit_data
  * @property string $status
+ * @property ?string $release
  * @property Site $site
  * @property DeploymentScript $deploymentScript
  * @property ?ServerLog $log
@@ -31,6 +32,7 @@ class Deployment extends AbstractModel
         'commit_id',
         'commit_data',
         'status',
+        'release',
     ];
 
     protected $casts = [
@@ -71,5 +73,10 @@ class Deployment extends AbstractModel
     public function log(): BelongsTo
     {
         return $this->belongsTo(ServerLog::class, 'log_id');
+    }
+
+    public function path(): string
+    {
+        return $this->site->basePath().($this->release ? '/releases/'.$this->release : '');
     }
 }

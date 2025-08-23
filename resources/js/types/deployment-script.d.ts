@@ -5,6 +5,7 @@ export interface DeploymentScriptConfigs {
 export interface DeploymentScript {
   id: number;
   site_id: number;
+  name: string;
   content: string;
   configs: DeploymentScriptConfigs;
   created_at: string;

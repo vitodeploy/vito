@@ -14,6 +14,11 @@ export const columns: ColumnDef<Deployment>[] = [
     enableColumnFilter: true,
   },
   {
+    accessorKey: 'release',
+    header: 'Release',
+    enableColumnFilter: true,
+  },
+  {
     accessorKey: 'commit_id',
     header: 'Commit',
     enableColumnFilter: true,

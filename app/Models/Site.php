@@ -48,7 +48,11 @@ use RuntimeException;
  * @property Collection<int, Deployment> $deployments
  * @property Collection<int, Command> $commands
  * @property ?GitHook $gitHook
+ * @property Collection<int, DeploymentScript> $deploymentScripts
  * @property ?DeploymentScript $deploymentScript
+ * @property ?DeploymentScript $buildScript
+ * @property ?DeploymentScript $migrationsScript
+ * @property ?DeploymentScript $postScript
  * @property Collection<int, Worker> $workers
  * @property Collection<int, Ssl> $ssls
  * @property ?Ssl $activeSsl
@@ -187,11 +191,43 @@ class Site extends AbstractModel
     }
 
     /**
+     * @return HasMany<DeploymentScript, covariant $this>
+     */
+    public function deploymentScripts(): HasMany
+    {
+        return $this->hasMany(DeploymentScript::class);
+    }
+
+    /**
      * @return HasOne<DeploymentScript, covariant $this>
      */
     public function deploymentScript(): HasOne
     {
-        return $this->hasOne(DeploymentScript::class, 'site_id');
+        return $this->hasOne(DeploymentScript::class, 'site_id')->where('name', 'default');
+    }
+
+    /**
+     * @return HasOne<DeploymentScript, covariant $this>
+     */
+    public function buildScript(): HasOne
+    {
+        return $this->hasOne(DeploymentScript::class, 'site_id')->where('name', 'build');
+    }
+
+    /**
+     * @return HasOne<DeploymentScript, covariant $this>
+     */
+    public function migrationsScript(): HasOne
+    {
+        return $this->hasOne(DeploymentScript::class, 'site_id')->where('name', 'migrations');
+    }
+
+    /**
+     * @return HasOne<DeploymentScript, covariant $this>
+     */
+    public function postScript(): HasOne
+    {
+        return $this->hasOne(DeploymentScript::class, 'site_id')->where('name', 'post');
     }
 
     /**
@@ -468,23 +504,6 @@ class Site extends AbstractModel
         return in_array($feature, config('site.types.'.$this->type.'.features', []));
     }
 
-    public function isFeatureEnabled(string $feature): bool
-    {
-        return $this->hasFeature($feature) && data_get($this->type_data, $feature, false) === true;
-    }
-
-    public function enabledFeatures(): array
-    {
-        $enabled = [];
-        foreach (array_keys(config('site.types.'.$this->type.'.features', [])) as $feature) {
-            if ($this->isFeatureEnabled($feature)) {
-                $enabled[] = $feature;
-            }
-        }
-
-        return $enabled;
-    }
-
     public function createDefaultDeploymentScript(): void
     {
         if ($this->deploymentScript) {
@@ -505,5 +524,10 @@ class Site extends AbstractModel
         ]);
         $deploymentScript->save();
         $this->refresh();
+    }
+
+    public function basePath(): string
+    {
+        return preg_replace('#/current$#', '', $this->path);
     }
 }

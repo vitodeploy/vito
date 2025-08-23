@@ -124,7 +124,7 @@ class SiteTypeServiceProvider extends ServiceProvider
             ->form(DynamicForm::make([
                 DynamicField::make('alert')
                     ->alert()
-                    ->label('Alert')
+                    ->label('Important!')
                     ->description("Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path and start a deployment to finish the setup."),
                 DynamicField::make('alert')
                     ->alert()
