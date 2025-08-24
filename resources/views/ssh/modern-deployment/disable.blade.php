@@ -1,6 +1,6 @@
 @php($tmpPath = $site->basePath() . '-tmp')
 
-LAST_RELEASE_PATH=$(readlink {{ $site->path }})
+LAST_RELEASE_PATH=$(readlink {{ $site->basePath() . '/current' }})
 
 mv $LAST_RELEASE_PATH {{ $tmpPath }}
 
@@ -13,9 +13,6 @@ mv $LAST_RELEASE_PATH {{ $tmpPath }}
 
 rm -rf {{ $site->basePath() }}
 mv {{ $tmpPath }} {{ $site->basePath() }}
-rm -rf {{ $site->basePath() }}/releases
-rm -rf {{ $site->basePath() }}/source
-rm -rf {{ $site->basePath() }}/current
 
 cd {{ $site->basePath() }}
 git stash

@@ -13,4 +13,3 @@ git pull origin {{ $site->branch }}
     @endforeach
 @endif
 
-rm -rf {{ $releasePath }}/.git

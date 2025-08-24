@@ -71,13 +71,13 @@ class Deploy
             }
 
             $deployment->status = DeploymentStatus::FINISHED;
-            $deployment->activate();
             $deployment->save();
+            $deployment->activate();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
         })->catch(function () use ($deployment, $site): void {
             $deployment->status = DeploymentStatus::FAILED;
-            $deployment->activate();
             $deployment->save();
+            $deployment->activate();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
         })->onQueue('ssh-unique');
 
@@ -88,6 +88,8 @@ class Deploy
     {
         $deployment->release = now()->format('YmdHis');
         $deployment->save();
+        /** @var ?Deployment $current */
+        $current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
 
         dispatch(function () use ($site, $deployment, $log): void {
             app(Git::class)->clone($site, $deployment->path());
@@ -137,14 +139,25 @@ class Deploy
             }
 
             $deployment->status = DeploymentStatus::FINISHED;
-            $deployment->activate();
             $deployment->save();
+            $deployment->activate();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
-        })->catch(function () use ($deployment, $site): void {
-            // @TODO: rollback to previous release if exists
+        })->catch(function () use ($deployment, $site, $current): void {
             $deployment->status = DeploymentStatus::FAILED;
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
+            if ($current) {
+                $deployment->site->server->ssh($site->user)->exec(
+                    view('ssh.modern-deployment.release', [
+                        'site' => $site,
+                        'releasePath' => $current->path(),
+                    ]),
+                    'release',
+                    $site->id
+                );
+                $current->activate();
+
+            }
         })->onQueue('ssh-unique');
 
         return $deployment;

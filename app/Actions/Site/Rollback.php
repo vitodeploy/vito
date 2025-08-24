@@ -13,6 +13,8 @@ class Rollback
     public function run(Deployment $deployment): void
     {
         $site = $deployment->site;
+        /** ?Deployment $current */
+        $current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
 
         if ($deployment->active) {
             throw ValidationException::withMessages([
@@ -41,11 +43,22 @@ class Rollback
             $deployment->activate();
             $deployment->status = DeploymentStatus::FINISHED;
             $deployment->save();
-        })->catch(function () use ($deployment, $site): void {
-            // @TODO: rollback to previous release if exists
+        })->catch(function () use ($deployment, $site, $current): void {
             $deployment->status = DeploymentStatus::FAILED;
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
+            if ($current) {
+                $deployment->site->server->ssh($site->user)->exec(
+                    view('ssh.modern-deployment.release', [
+                        'site' => $site,
+                        'releasePath' => $current->path(),
+                    ]),
+                    'release',
+                    $site->id
+                );
+                $current->activate();
+
+            }
         })->onQueue('ssh-unique');
     }
 }

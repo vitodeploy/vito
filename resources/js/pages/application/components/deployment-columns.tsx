@@ -54,7 +54,7 @@ export const columns: ColumnDef<Deployment>[] = [
       return (
         <div className="inline-flex items-center gap-2">
           {row.original.release}
-          {row.original.active && <Badge variant="success">active</Badge>}
+          {row.original.active && <Badge variant="default">active</Badge>}
         </div>
       );
     },
@@ -78,12 +78,16 @@ export const columns: ColumnDef<Deployment>[] = [
               <Download serverLog={row.original.log}>
                 <DropdownMenuItem>Download</DropdownMenuItem>
               </Download>
-              <DropdownMenuSeparator />
-              <Rollback deployment={row.original}>
-                <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-                  Rollback
-                </DropdownMenuItem>
-              </Rollback>
+              {!row.original.active && row.original.release && row.original.status === 'finished' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <Rollback deployment={row.original}>
+                    <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                      Rollback
+                    </DropdownMenuItem>
+                  </Rollback>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

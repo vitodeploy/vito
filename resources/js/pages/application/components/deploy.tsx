@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import {
   Dialog,
   DialogClose,
@@ -11,12 +11,19 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon, TriangleAlert } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { Site } from '@/types/site';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { DeploymentScript } from '@/types/deployment-script';
 
 export default function Deploy({ site, children }: { site: Site; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const page = usePage<{
+    deploymentScript: DeploymentScript;
+    buildScript?: DeploymentScript;
+    preFlightScript?: DeploymentScript;
+  }>();
   const form = useForm();
 
   const submit = () => {
@@ -35,6 +42,24 @@ export default function Deploy({ site, children }: { site: Site; children: React
           <DialogDescription className="sr-only">Deploy application</DialogDescription>
         </DialogHeader>
         <div className="space-y-2 p-4">
+          {!site.modern_deployment && !page.props.deploymentScript?.content && (
+            <Alert>
+              <TriangleAlert className="text-warning!" />
+              <AlertDescription>Your deployment script is empty!</AlertDescription>
+            </Alert>
+          )}
+          {site.modern_deployment && !page.props.buildScript?.content && (
+            <Alert>
+              <TriangleAlert className="text-warning!" />
+              <AlertDescription>Your build script is empty!</AlertDescription>
+            </Alert>
+          )}
+          {site.modern_deployment && !page.props.preFlightScript?.content && (
+            <Alert>
+              <TriangleAlert className="text-warning!" />
+              <AlertDescription>Your pre flight script is empty!</AlertDescription>
+            </Alert>
+          )}
           <p>Are you sure you want to deploy this site?</p>
         </div>
         <DialogFooter>
