@@ -509,6 +509,9 @@ class Site extends AbstractModel
                     /** @var ActionInterface $handler */
                     $handler = new $handlerClass($this);
                     $action['active'] = $handler->active();
+                    if (! isset($action['form']) || empty($action['form'])) {
+                        $action['form'] = $handler->form()?->toArray() ?? [];
+                    }
                 }
                 $features[$featureKey]['actions'][$actionKey] = $action;
             }

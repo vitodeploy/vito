@@ -20,10 +20,10 @@ export const columns: ColumnDef<Deployment>[] = [
     cell: ({ row }) => {
       return row.original.commit_data?.message ? (
         <a href={row.original.commit_data?.url} target="_blank" className="text-primary inline-flex truncate font-mono">
-          <span className="block max-w-[300px] overflow-ellipsis">{row.original.commit_data.message}</span>
+          <span className="block max-w-[200px] overflow-x-hidden overflow-ellipsis">{row.original.commit_data.message}</span>
         </a>
       ) : (
-        'No commit message'
+        'No message'
       );
     },
   },
@@ -49,7 +49,12 @@ export const columns: ColumnDef<Deployment>[] = [
     header: 'Release',
     enableColumnFilter: true,
     cell: ({ row }) => {
-      return row.original.release || '-';
+      return (
+        <div className="inline-flex items-center gap-2">
+          {row.original.release}
+          {row.original.active && <Badge variant="success">active</Badge>}
+        </div>
+      );
     },
   },
   {

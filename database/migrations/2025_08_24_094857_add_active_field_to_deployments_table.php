@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('deployments', function (Blueprint $table) {
-            $table->string('release')->nullable()->index();
+            $table->boolean('active')->default(false);
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('deployments', function (Blueprint $table) {
-            $table->dropColumn('release');
+            $table->dropColumn('active');
         });
     }
 };

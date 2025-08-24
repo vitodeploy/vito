@@ -26,6 +26,7 @@ class DeploymentResource extends JsonResource
             'status' => $this->status,
             'status_color' => Deployment::$statusColors[$this->status] ?? 'gray',
             'release' => $this->release,
+            'active' => $this->active,
             'updated_at' => $this->updated_at,
             'created_at' => $this->created_at,
         ];

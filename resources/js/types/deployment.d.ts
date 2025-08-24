@@ -17,6 +17,7 @@ export interface Deployment {
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   release?: string;
+  active: boolean;
   created_at: string;
   updated_at: string;
 

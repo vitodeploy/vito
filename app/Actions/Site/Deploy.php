@@ -71,10 +71,12 @@ class Deploy
             }
 
             $deployment->status = DeploymentStatus::FINISHED;
+            $deployment->activate();
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
         })->catch(function () use ($deployment, $site): void {
             $deployment->status = DeploymentStatus::FAILED;
+            $deployment->activate();
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
         })->onQueue('ssh-unique');
@@ -135,9 +137,11 @@ class Deploy
             }
 
             $deployment->status = DeploymentStatus::FINISHED;
+            $deployment->activate();
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));
         })->catch(function () use ($deployment, $site): void {
+            // @TODO: rollback to previous release if exists
             $deployment->status = DeploymentStatus::FAILED;
             $deployment->save();
             Notifier::send($site, new DeploymentCompleted($deployment, $site));

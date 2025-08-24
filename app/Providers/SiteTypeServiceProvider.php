@@ -116,31 +116,20 @@ class SiteTypeServiceProvider extends ServiceProvider
             ]))
             ->register();
         RegisterSiteFeature::make(Laravel::id(), 'modern-deployment')
-            ->label('Modern Deployment')
+            ->label('Modern Deployment (beta)')
             ->description('Enables zero downtime deployment and deployment rollbacks')
             ->register();
         RegisterSiteFeatureAction::make(Laravel::id(), 'modern-deployment', 'enable')
             ->label('Enable')
-            ->form(DynamicForm::make([
-                DynamicField::make('alert')
-                    ->alert()
-                    ->label('Important!')
-                    ->description("Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path and start a deployment to finish the setup."),
-                DynamicField::make('alert')
-                    ->alert()
-                    ->label('Important!')
-                    ->description("If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path."),
-                DynamicField::make('shared_resources')
-                    ->text()
-                    ->label('Shared resouces')
-                    ->default('.env,storage')
-                    ->description('Comma separated list of resources to be shared between deployments'),
-            ]))
             ->handler(\App\SiteFeatures\ModernDeployment\Enable::class)
             ->register();
         RegisterSiteFeatureAction::make(Laravel::id(), 'modern-deployment', 'disable')
             ->label('Disable')
             ->handler(\App\SiteFeatures\ModernDeployment\Disable::class)
+            ->register();
+        RegisterSiteFeatureAction::make(Laravel::id(), 'modern-deployment', 'configuration')
+            ->label('Configure')
+            ->handler(\App\SiteFeatures\ModernDeployment\Configuration::class)
             ->register();
     }
 
