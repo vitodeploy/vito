@@ -181,7 +181,7 @@ export default function CreateDatabase({
                 </FormField>
                 {form.data.remote && (
                   <FormField>
-                    <Label htmlFor="host">Allow connections from (% for all)</Label>
+                    <Label htmlFor="host">Allow connection from (% for all)</Label>
                     <Input type="text" id="host" name="host" value={form.data.host} onChange={(e) => form.setData('host', e.target.value)} />
                     <InputError message={form.errors.host} />
                   </FormField>
