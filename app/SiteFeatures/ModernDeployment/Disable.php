@@ -3,6 +3,8 @@
 namespace App\SiteFeatures\ModernDeployment;
 
 use App\Actions\Site\Deploy;
+use App\DTOs\DynamicField;
+use App\DTOs\DynamicForm;
 use App\Exceptions\SSHError;
 use App\Helpers\SSH;
 use App\SiteFeatures\Action;
@@ -20,6 +22,15 @@ class Disable extends Action
     public function active(): bool
     {
         return data_get($this->site->type_data, 'modern_deployment', false);
+    }
+
+    public function form(): DynamicForm
+    {
+        return DynamicForm::make([
+            DynamicField::make('alert')
+                ->alert()
+                ->description('Disabling modern deployment will remove all releases and keep the current active one as default and will start a new deployment with your default deployment script.'),
+        ]);
     }
 
     /**
