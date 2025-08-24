@@ -51,8 +51,7 @@ use RuntimeException;
  * @property Collection<int, DeploymentScript> $deploymentScripts
  * @property ?DeploymentScript $deploymentScript
  * @property ?DeploymentScript $buildScript
- * @property ?DeploymentScript $migrationsScript
- * @property ?DeploymentScript $postScript
+ * @property ?DeploymentScript $preFlightScript
  * @property Collection<int, Worker> $workers
  * @property Collection<int, Ssl> $ssls
  * @property ?Ssl $activeSsl
@@ -217,17 +216,36 @@ class Site extends AbstractModel
     /**
      * @return HasOne<DeploymentScript, covariant $this>
      */
-    public function migrationsScript(): HasOne
+    public function preFlightScript(): HasOne
     {
-        return $this->hasOne(DeploymentScript::class, 'site_id')->where('name', 'migrations');
+        return $this->hasOne(DeploymentScript::class, 'site_id')->where('name', 'pre-flight');
     }
 
-    /**
-     * @return HasOne<DeploymentScript, covariant $this>
-     */
-    public function postScript(): HasOne
+    public function ensureDeploymentScriptsExist(): void
     {
-        return $this->hasOne(DeploymentScript::class, 'site_id')->where('name', 'post');
+        $modernDeploymentEnabled = $this->type_data['modern_deployment'] ?? false;
+
+        if ($modernDeploymentEnabled) {
+            if (! $this->buildScript) {
+                $this->deploymentScripts()->create([
+                    'name' => 'build',
+                    'content' => '',
+                ]);
+            }
+            if (! $this->preFlightScript) {
+                $this->deploymentScripts()->create([
+                    'name' => 'pre-flight',
+                    'content' => '',
+                ]);
+            }
+        }
+
+        if (! $this->deploymentScript) {
+            $this->deploymentScripts()->create([
+                'name' => 'default',
+                'content' => '',
+            ]);
+        }
     }
 
     /**

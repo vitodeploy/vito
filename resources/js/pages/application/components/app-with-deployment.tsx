@@ -24,6 +24,8 @@ export default function AppWithDeployment() {
     site: Site;
     deployments: PaginatedData<Deployment>;
     deploymentScript: DeploymentScriptType;
+    buildScript?: DeploymentScriptType;
+    preFlightScript?: DeploymentScriptType;
   }>();
 
   return (
@@ -59,9 +61,33 @@ export default function AppWithDeployment() {
                     {page.props.site.auto_deploy ? 'Disable' : 'Enable'} auto deploy
                   </DropdownMenuItem>
                 </AutoDeployment>
-                <DeploymentScript site={page.props.site} script={page.props.deploymentScript}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Deployment Script</DropdownMenuItem>
-                </DeploymentScript>
+                {!page.props.site.modern_deployment && (
+                  <DeploymentScript
+                    site={page.props.site}
+                    script={page.props.deploymentScript}
+                    description="This script will be executed on every deployment."
+                  >
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Deployment Script</DropdownMenuItem>
+                  </DeploymentScript>
+                )}
+                {page.props.buildScript && page.props.site.modern_deployment && (
+                  <DeploymentScript
+                    site={page.props.site}
+                    script={page.props.buildScript}
+                    description="This script will build resources like composer and npm before release"
+                  >
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Build Script</DropdownMenuItem>
+                  </DeploymentScript>
+                )}
+                {page.props.preFlightScript && page.props.site.modern_deployment && (
+                  <DeploymentScript
+                    site={page.props.site}
+                    script={page.props.preFlightScript}
+                    description="This script will be executed before releaase like migrations and optimizations"
+                  >
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Pre Flight Script</DropdownMenuItem>
+                  </DeploymentScript>
+                )}
                 <Env site={page.props.site}>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Update .env</DropdownMenuItem>
                 </Env>

@@ -14,11 +14,6 @@ export const columns: ColumnDef<Deployment>[] = [
     enableColumnFilter: true,
   },
   {
-    accessorKey: 'release',
-    header: 'Release',
-    enableColumnFilter: true,
-  },
-  {
     accessorKey: 'commit_id',
     header: 'Commit',
     enableColumnFilter: true,
@@ -47,6 +42,14 @@ export const columns: ColumnDef<Deployment>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+    },
+  },
+  {
+    accessorKey: 'release',
+    header: 'Release',
+    enableColumnFilter: true,
+    cell: ({ row }) => {
+      return row.original.release || '-';
     },
   },
   {

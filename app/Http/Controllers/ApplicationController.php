@@ -14,6 +14,7 @@ use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\LoadBalancerServerResource;
 use App\Http\Resources\ServerLogResource;
+use App\Models\DeploymentScript;
 use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Http\JsonResponse;
@@ -36,60 +37,30 @@ class ApplicationController extends Controller
     {
         $this->authorize('view', [$site, $server]);
 
+        $site->ensureDeploymentScriptsExist();
+
         $deploymentScript = $site->deploymentScript;
         $buildScript = $site->buildScript;
-        $migrationsScript = $site->migrationsScript;
-        $postScript = $site->postScript;
+        $preFlightScript = $site->preFlightScript;
 
         return Inertia::render('application/index', [
             'logs' => ServerLogResource::collection($site->logs()->latest()->simplePaginate(config('web.pagination_size'))),
             'deployments' => DeploymentResource::collection($site->deployments()->latest()->simplePaginate(config('web.pagination_size'))),
             'deploymentScript' => new DeploymentScriptResource($deploymentScript),
             'buildScript' => $buildScript ? new DeploymentScriptResource($buildScript) : null,
-            'migrationsScript' => $migrationsScript ? new DeploymentScriptResource($migrationsScript) : null,
-            'postScript' => $postScript ? new DeploymentScriptResource($postScript) : null,
+            'preFlightScript' => $preFlightScript ? new DeploymentScriptResource($preFlightScript) : null,
             'loadBalancerServers' => LoadBalancerServerResource::collection($site->loadBalancerServers),
         ]);
     }
 
-    #[Put('/deployment-script', name: 'application.update-deployment-script')]
-    public function updateDeploymentScript(Request $request, Server $server, Site $site): RedirectResponse
+    #[Put('/deployment-scripts/{deploymentScript}', name: 'application.update-deployment-script')]
+    public function updateScript(Request $request, Server $server, Site $site, DeploymentScript $deploymentScript): RedirectResponse
     {
         $this->authorize('update', [$site, $server]);
 
-        app(UpdateDeploymentScript::class)->update($site, $request->input());
+        app(UpdateDeploymentScript::class)->update($deploymentScript, $request->input());
 
         return back()->with('success', 'Deployment script updated successfully.');
-    }
-
-    #[Put('/build-script', name: 'application.update-build-script')]
-    public function updateBuildScript(Request $request, Server $server, Site $site): RedirectResponse
-    {
-        $this->authorize('update', [$site, $server]);
-
-        app(UpdateDeploymentScript::class)->update($site, $request->input(), 'build');
-
-        return back()->with('success', 'Build script updated successfully.');
-    }
-
-    #[Put('/migrations-script', name: 'application.update-migrations-script')]
-    public function updateMigrationsScript(Request $request, Server $server, Site $site): RedirectResponse
-    {
-        $this->authorize('update', [$site, $server]);
-
-        app(UpdateDeploymentScript::class)->update($site, $request->input(), 'migrations');
-
-        return back()->with('success', 'Migrations script updated successfully.');
-    }
-
-    #[Put('/post-script', name: 'application.update-post-script')]
-    public function updatePostScript(Request $request, Server $server, Site $site): RedirectResponse
-    {
-        $this->authorize('update', [$site, $server]);
-
-        app(UpdateDeploymentScript::class)->update($site, $request->input(), 'post');
-
-        return back()->with('success', 'Post-deployment script updated successfully.');
     }
 
     /**

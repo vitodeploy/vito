@@ -13,7 +13,17 @@ import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-scr
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
-export default function DeploymentScript({ site, script, children }: { site: Site; script: DeploymentScriptType; children: ReactNode }) {
+export default function DeploymentScript({
+  site,
+  script,
+  children,
+  description,
+}: {
+  site: Site;
+  script: DeploymentScriptType;
+  description?: string;
+  children: ReactNode;
+}) {
   const { getActualAppearance } = useAppearance();
 
   const [open, setOpen] = useState(false);
@@ -27,7 +37,7 @@ export default function DeploymentScript({ site, script, children }: { site: Sit
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('application.update-deployment-script', { server: site.server_id, site: site.id }), {
+    form.put(route('application.update-deployment-script', { server: site.server_id, site: site.id, deploymentScript: script.id }), {
       onSuccess: () => {
         setOpen(false);
       },
@@ -41,8 +51,8 @@ export default function DeploymentScript({ site, script, children }: { site: Sit
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>
-          <SheetTitle>Deployment script</SheetTitle>
-          <SheetDescription className="sr-only">Update deployment script</SheetDescription>
+          <SheetTitle className="capitalize">{script.name} script</SheetTitle>
+          <SheetDescription>{description || 'Update script'}</SheetDescription>
         </SheetHeader>
         <Form id="update-script-form" className="h-full gap-0" onSubmit={submit}>
           <Editor
@@ -55,19 +65,21 @@ export default function DeploymentScript({ site, script, children }: { site: Sit
               fontSize: 15,
             }}
           />
-          <FormFields className="p-4">
-            <FormField className="mb-0">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="restart_workers"
-                  checked={form.data.restart_workers}
-                  onCheckedChange={(value) => form.setData('restart_workers', value)}
-                />
-                <Label htmlFor="restart_workers">Restart workers after deployment</Label>
-                <InputError message={form.errors.restart_workers} />
-              </div>
-            </FormField>
-          </FormFields>
+          {['default', 'pre-flight'].includes(script.name) && (
+            <FormFields className="p-4">
+              <FormField className="mb-0">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="restart_workers"
+                    checked={form.data.restart_workers}
+                    onCheckedChange={(value) => form.setData('restart_workers', value)}
+                  />
+                  <Label htmlFor="restart_workers">Restart workers after deployment</Label>
+                  <InputError message={form.errors.restart_workers} />
+                </div>
+              </FormField>
+            </FormFields>
+          )}
         </Form>
         <SheetFooter>
           <div className="flex items-center gap-2">

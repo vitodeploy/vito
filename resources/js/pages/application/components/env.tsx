@@ -67,7 +67,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
               className="max-w-[80%]"
             />
           </SheetTitle>
-          <SheetDescription className="sr-only">Edit .env file</SheetDescription>
+          <SheetDescription>Site path: {site.path}</SheetDescription>
         </SheetHeader>
         <Form id="update-env-form" className="h-full" onSubmit={submit}>
           {query.isSuccess ? (

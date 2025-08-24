@@ -43,18 +43,7 @@ class Enable extends Action
         $this->site->path = $this->site->path.'/current';
         $this->site->save();
 
-        $this->site->deploymentScripts()->where('name', 'build')->firstOrCreate(
-            ['name' => 'build'],
-            ['content' => '']
-        );
-        $this->site->deploymentScripts()->where('name', 'migrations')->firstOrCreate(
-            ['name' => 'migrations'],
-            ['content' => '']
-        );
-        $this->site->deploymentScripts()->where('name', 'post')->firstOrCreate(
-            ['name' => 'post'],
-            ['content' => '']
-        );
+        $this->site->ensureDeploymentScriptsExist();
 
         $this->site->webserver()->updateVHost($this->site, regenerate: ['core']);
 

@@ -90,24 +90,45 @@ class Deploy
         dispatch(function () use ($site, $deployment, $log): void {
             app(Git::class)->clone($site, $deployment->path());
 
+            // build
             $site->server->os()->runScript(
                 path: $deployment->path(),
-                script: $site->deploymentScript->content,
+                script: $site->buildScript->content ?? '',
                 serverLog: $log,
                 user: $site->user,
                 variables: $site->environmentVariables($deployment),
             );
 
+            // link resources
             $site->server->ssh($site->user)->exec(
-                view('ssh.modern-deployment.deploy', [
+                view('ssh.modern-deployment.link-resources', [
                     'site' => $site,
                     'releasePath' => $deployment->path(),
                 ]),
-                'deployment',
+                'link-resources',
                 $site->id
             );
 
-            if ($site->deploymentScript->shouldRestartWorkers()) {
+            // pre-flight
+            $site->server->os()->runScript(
+                path: $deployment->path(),
+                script: $site->preFlightScript->content ?? '',
+                serverLog: $log,
+                user: $site->user,
+                variables: $site->environmentVariables($deployment),
+            );
+
+            // release
+            $site->server->ssh($site->user)->exec(
+                view('ssh.modern-deployment.release', [
+                    'site' => $site,
+                    'releasePath' => $deployment->path(),
+                ]),
+                'release',
+                $site->id
+            );
+
+            if ($site->preFlightScript?->shouldRestartWorkers()) {
                 /** @var ProcessManager $processManager */
                 $processManager = $site->server->processManager()->handler();
                 $processManager->restartAll($site->id);

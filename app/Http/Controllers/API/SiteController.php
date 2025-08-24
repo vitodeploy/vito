@@ -163,7 +163,7 @@ class SiteController extends Controller
 
         $this->validate($request, UpdateDeploymentScript::rules());
 
-        app(UpdateDeploymentScript::class)->update($site, $request->all());
+        app(UpdateDeploymentScript::class)->update($site->deploymentScript, $request->all());
 
         return response()->noContent();
     }

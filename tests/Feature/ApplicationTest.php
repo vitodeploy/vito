@@ -37,6 +37,7 @@ class ApplicationTest extends TestCase
         $this->put(route('application.update-deployment-script', [
             'server' => $this->server,
             'site' => $this->site,
+            'deploymentScript' => $this->site->deploymentScript,
         ]), [
             'script' => 'some script',
             'restart_workers' => true,

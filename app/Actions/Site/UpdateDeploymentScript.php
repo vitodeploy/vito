@@ -3,7 +3,6 @@
 namespace App\Actions\Site;
 
 use App\Models\DeploymentScript;
-use App\Models\Site;
 use Illuminate\Support\Facades\Validator;
 
 class UpdateDeploymentScript
@@ -11,18 +10,13 @@ class UpdateDeploymentScript
     /**
      * @param  array<string, mixed>  $input
      */
-    public function update(Site $site, array $input, string $name = 'default'): void
+    public function update(DeploymentScript $deploymentScript, array $input): void
     {
         Validator::make($input, self::rules())->validate();
 
-        /** @var DeploymentScript $script */
-        $script = $site->deploymentScripts()->where('name', $name)->firstOrNew([
-            'site_id' => $site->id,
-            'name' => $name,
-        ]);
-        $script->content = $input['script'];
-        $script->jsonUpdate('configs', 'restart_workers', $input['restart_workers'] ?? false, false);
-        $script->save();
+        $deploymentScript->content = $input['script'];
+        $deploymentScript->jsonUpdate('configs', 'restart_workers', $input['restart_workers'] ?? false, false);
+        $deploymentScript->save();
     }
 
     /**
