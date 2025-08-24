@@ -30,9 +30,16 @@ class Enable extends Action
         return DynamicForm::make([
             DynamicField::make('alert')
                 ->alert()
-                ->description("Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path and start a deployment to finish the setup. The new deployment will be with your default deployment script and for future deployments you will need to add Build and PreFlight scripts."),
-            DynamicField::make('alert')
+                ->options(['type' => 'warning'])
+                ->description('While the feature is in beta, it is recommended to enable it on new websites than a live production site!'),
+            DynamicField::make('alert-2')
                 ->alert()
+                ->options(['type' => 'warning'])
+                ->link('Documentation', 'https://vitodeploy.com/docs/sites/modern-deployment')
+                ->description("Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path and start a deployment to finish the setup. The new deployment will be with your default deployment script and for future deployments you will need to add Build and PreFlight scripts."),
+            DynamicField::make('alert-3')
+                ->alert()
+                ->options(['type' => 'warning'])
                 ->description("If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path."),
             DynamicField::make('shared_resources')
                 ->text()

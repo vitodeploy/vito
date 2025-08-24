@@ -7,6 +7,7 @@ import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import InputError from '@/components/ui/input-error';
 import { FormField } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { TriangleAlertIcon } from 'lucide-react';
 
 interface DynamicFieldProps {
   value: string | number | boolean | string[] | undefined;
@@ -40,8 +41,16 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
     return (
       <FormField>
         <Alert>
+          {!Array.isArray(config.options) && config.options?.type === 'warning' && <TriangleAlertIcon className="text-warning!" />}
           {config.label && <AlertTitle>{config.label}</AlertTitle>}
-          {config.description && <AlertDescription>{config.description}</AlertDescription>}
+          <AlertDescription>
+            {config.description}
+            {config.link && (
+              <a href={config.link.url} target="_blank" className="text-primary underline">
+                {config.link.label}
+              </a>
+            )}
+          </AlertDescription>
         </Alert>
       </FormField>
     );
@@ -74,11 +83,12 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              {config.options.map((item) => (
-                <SelectItem key={`${config.name}-${item}`} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
+              {Array.isArray(config.options) &&
+                config.options.map((item) => (
+                  <SelectItem key={`${config.name}-${item}`} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
             </SelectGroup>
           </SelectContent>
         </Select>

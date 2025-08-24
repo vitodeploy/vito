@@ -4,9 +4,6 @@ namespace App\DTOs;
 
 class DynamicField
 {
-    /**
-     * @param  array<int, mixed>|null  $options
-     */
     public function __construct(
         private string $name,
         private string $type = 'text',
@@ -14,7 +11,8 @@ class DynamicField
         private mixed $default = null,
         private ?string $placeholder = null,
         private ?string $description = null,
-        private ?array $options = null
+        private ?array $options = null,
+        private ?array $link = null
     ) {}
 
     public static function make(string $name): self
@@ -92,12 +90,19 @@ class DynamicField
         return $this;
     }
 
-    /**
-     * @param  array<int, mixed>|null  $options
-     */
     public function options(?array $options): self
     {
         $this->options = $options;
+
+        return $this;
+    }
+
+    public function link(string $label, string $url): self
+    {
+        $this->link = [
+            'label' => $label,
+            'url' => $url,
+        ];
 
         return $this;
     }
@@ -115,6 +120,7 @@ class DynamicField
             'placeholder' => $this->placeholder,
             'description' => $this->description,
             'options' => $this->options,
+            'link' => $this->link,
         ];
     }
 }

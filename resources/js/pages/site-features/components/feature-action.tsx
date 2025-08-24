@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Form, FormField, FormFields } from '@/components/ui/form';
+import { Form, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
@@ -61,12 +61,6 @@ export default function FeatureAction({
         </DialogHeader>
         <Form id="action-form" onSubmit={submit} className="p-4">
           <FormFields>
-            <FormField>
-              <p className="text-muted-foreground">
-                You're performing action <b className="text-foreground">[{action.label}]</b> on site{' '}
-                <b className="text-foreground">[{site.domain}]</b>
-              </p>
-            </FormField>
             {action.form?.map((field: DynamicFieldConfig) => (
               <DynamicField
                 key={`field-${field.name}`}
