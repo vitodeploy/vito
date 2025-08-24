@@ -14,9 +14,17 @@ mv {{ $tmpPath }} {{ $site->basePath() }}/source
   'key' => $site->getSshKeyName(),
 ])
 
-ln -s {{ $site->basePath() }}/releases/initial {{ $site->basePath() }}/current
+# move vendor to initial release if exists
+if [ -d "{{ $site->basePath() }}/source/vendor" ]; then
+    mv {{ $site->basePath() }}/source/vendor {{ $site->basePath() }}/initial/vendor
+fi
 
-composer install --no-dev --working-dir={{ $site->basePath() }}/current --prefer-dist --optimize-autoloader
+# move node_modules to initial release if exists
+if [ -d "{{ $site->basePath() }}/source/node_modules" ]; then
+    mv {{ $site->basePath() }}/source/node_modules {{ $site->basePath() }}/initial/node_modules
+fi
+
+ln -s {{ $site->basePath() }}/releases/initial {{ $site->basePath() }}/current
 
 @if (count($sharedResources) > 0)
     @foreach ($sharedResources as $resource)

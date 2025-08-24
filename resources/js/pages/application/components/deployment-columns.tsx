@@ -6,6 +6,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Deployment } from '@/types/deployment';
 import { Badge } from '@/components/ui/badge';
 import { Download, View } from '@/pages/server-logs/components/columns';
+import { DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
+import Rollback from './rollback';
 
 export const columns: ColumnDef<Deployment>[] = [
   {
@@ -76,6 +78,12 @@ export const columns: ColumnDef<Deployment>[] = [
               <Download serverLog={row.original.log}>
                 <DropdownMenuItem>Download</DropdownMenuItem>
               </Download>
+              <DropdownMenuSeparator />
+              <Rollback deployment={row.original}>
+                <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                  Rollback
+                </DropdownMenuItem>
+              </Rollback>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

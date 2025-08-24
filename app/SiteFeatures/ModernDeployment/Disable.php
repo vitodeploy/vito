@@ -39,13 +39,15 @@ class Disable extends Action
         $typeData = $this->site->type_data;
         unset($typeData['modern_deployment']);
         unset($typeData['modern_deployment_shared_resources']);
+        unset($typeData['modern_deployment_history']);
         $this->site->type_data = $typeData;
-        $this->site->save();
-
         $this->site->path = $this->site->basePath();
         $this->site->save();
 
         $this->site->webserver()->updateVHost($this->site, regenerate: ['core']);
+
+        // set releases to null as they are already removed
+        $this->site->deployments()->update(['release' => null]);
 
         app(Deploy::class)->run($this->site);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\Deploy;
+use App\Actions\Site\Rollback;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
@@ -14,6 +15,7 @@ use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\LoadBalancerServerResource;
 use App\Http\Resources\ServerLogResource;
+use App\Models\Deployment;
 use App\Models\DeploymentScript;
 use App\Models\Server;
 use App\Models\Site;
@@ -74,6 +76,20 @@ class ApplicationController extends Controller
         app(Deploy::class)->run($site);
 
         return back()->with('info', 'Deployment started, please wait...');
+    }
+
+    #[Post('/rollback/{deployment}', name: 'application.rollback')]
+    public function rollback(Server $server, Site $site, Deployment $deployment): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        if ($deployment->site_id !== $site->id) {
+            return back()->with('error', 'Invalid deployment selected for rollback.');
+        }
+
+        app(Rollback::class)->run($deployment);
+
+        return back()->with('info', 'Rollback started, please wait...');
     }
 
     #[Get('/env', name: 'application.env')]
