@@ -2,12 +2,12 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { MoreVerticalIcon } from 'lucide-react';
 import DateTime from '@/components/date-time';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Deployment } from '@/types/deployment';
 import { Badge } from '@/components/ui/badge';
 import { Download, View } from '@/pages/server-logs/components/columns';
-import { DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 import Rollback from './rollback';
+import DeleteDeployment from './delete-deployment';
 
 export const columns: ColumnDef<Deployment>[] = [
   {
@@ -79,15 +79,18 @@ export const columns: ColumnDef<Deployment>[] = [
                 <DropdownMenuItem>Download</DropdownMenuItem>
               </Download>
               {!row.original.active && row.original.release && row.original.status === 'finished' && (
-                <>
-                  <DropdownMenuSeparator />
-                  <Rollback deployment={row.original}>
-                    <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-                      Rollback
-                    </DropdownMenuItem>
-                  </Rollback>
-                </>
+                <Rollback deployment={row.original}>
+                  <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                    Rollback
+                  </DropdownMenuItem>
+                </Rollback>
               )}
+              <DropdownMenuSeparator />
+              <DeleteDeployment deployment={row.original}>
+                <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                  Delete
+                </DropdownMenuItem>
+              </DeleteDeployment>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

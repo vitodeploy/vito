@@ -24,6 +24,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -90,6 +91,20 @@ class ApplicationController extends Controller
         app(Rollback::class)->run($deployment);
 
         return back()->with('info', 'Rollback started, please wait...');
+    }
+
+    #[Delete('/deployments/{deployment}', name: 'application.deployments.destroy')]
+    public function destroyDeployment(Server $server, Site $site, Deployment $deployment): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        if ($deployment->site_id !== $site->id) {
+            abort(404);
+        }
+
+        $deployment->remove();
+
+        return back()->with('success', 'Deployment removed successfully.');
     }
 
     #[Get('/env', name: 'application.env')]

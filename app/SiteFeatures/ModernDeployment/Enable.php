@@ -30,11 +30,9 @@ class Enable extends Action
         return DynamicForm::make([
             DynamicField::make('alert')
                 ->alert()
-                ->label('Important!')
                 ->description("Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path and start a deployment to finish the setup."),
             DynamicField::make('alert')
                 ->alert()
-                ->label('Important!')
                 ->description("If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path."),
             DynamicField::make('shared_resources')
                 ->text()

@@ -40,8 +40,8 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
     return (
       <FormField>
         <Alert>
-          <AlertTitle>{config.label}</AlertTitle>
-          <AlertDescription>{config.description}</AlertDescription>
+          {config.label && <AlertTitle>{config.label}</AlertTitle>}
+          {config.description && <AlertDescription>{config.description}</AlertDescription>}
         </Alert>
       </FormField>
     );

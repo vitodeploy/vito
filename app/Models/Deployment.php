@@ -124,7 +124,7 @@ class Deployment extends AbstractModel
     public function activate(): void
     {
         $this->site->deployments()->update(['active' => false]);
-        $this->refresh()->active = true;
+        $this->active = true;
         $this->save();
     }
 }
