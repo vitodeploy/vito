@@ -95,13 +95,13 @@ export default function CreateDatabaseUser({
             <FormField>
               <div className="flex items-center space-x-3">
                 <Checkbox id="remote" name="remote" checked={form.data.remote} onClick={() => form.setData('remote', !form.data.remote)} />
-                <Label htmlFor="remote">Allow remote access</Label>
+                <Label htmlFor="remote">Allow remote connection</Label>
               </div>
               <InputError message={form.errors.remote} />
             </FormField>
             {form.data.remote && (
               <FormField>
-                <Label htmlFor="host">Host</Label>
+                <Label htmlFor="host">Allow connection from (% for all)</Label>
                 <Input type="text" id="host" name="host" value={form.data.host} onChange={(e) => form.setData('host', e.target.value)} />
                 <InputError message={form.errors.host} />
               </FormField>
