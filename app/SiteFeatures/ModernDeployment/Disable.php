@@ -61,5 +61,7 @@ class Disable extends Action
         $this->site->deployments()->update(['release' => null]);
 
         app(Deploy::class)->run($this->site);
+
+        $request->session()->flash('success', 'Modern deployment disabled! Starting a new deployment to finish the setup.');
     }
 }

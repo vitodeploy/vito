@@ -51,6 +51,8 @@ class Configuration extends Action
         $typeData['modern_deployment_history'] = (int) $request->input('history');
         $this->site->type_data = $typeData;
         $this->site->save();
+
+        $request->session()->flash('success', 'Changes saved successfully.');
     }
 
     private function validate(Request $request): void

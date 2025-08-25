@@ -120,15 +120,13 @@ class SSHFake extends SSH
         $executed = false;
         foreach ($this->commands as $executedCommand) {
             if (str($executedCommand)->contains($command)) {
-                $executed = true;
-                break;
+                return;
             }
         }
-        if (! $executed) {
-            Assert::fail(
-                'The expected command is not executed in the executed commands: '.implode(', ', $this->commands)
-            );
-        }
+
+        Assert::fail(
+            'The expected command is not executed in the executed commands: '.implode(', ', $this->commands)
+        );
     }
 
     public function assertFileUploaded(string $toPath, ?string $content = null): void

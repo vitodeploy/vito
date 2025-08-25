@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\DeploymentStatus;
 use App\Facades\SSH;
+use App\Models\Deployment;
 use App\Models\GitHook;
 use App\Notifications\DeploymentCompleted;
 use Exception;
@@ -57,7 +58,7 @@ class ApplicationTest extends TestCase
     /**
      * @throws Exception
      */
-    public function test_deploy(): void
+    public function test_deploy_classic(): void
     {
         SSH::fake('fake output');
         Http::fake([
@@ -96,6 +97,110 @@ class ApplicationTest extends TestCase
         Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
     }
 
+    public function test_deploy_modern(): void
+    {
+        SSH::fake('fake output');
+        Http::fake([
+            'github.com/*' => Http::response([
+                'sha' => '123',
+                'commit' => [
+                    'message' => 'test commit message',
+                    'name' => 'test commit name',
+                    'email' => 'test@example.com',
+                    'url' => 'https://github.com/commit-url',
+                ],
+            ]),
+        ]);
+        Notification::fake();
+
+        $this->site->update([
+            'type_data' => [
+                'modern_deployment' => true,
+                'modern_deployment_history' => 10,
+                'modern_deployment_shared_resources' => ['.env'],
+            ],
+        ]);
+        $this->site->ensureDeploymentScriptsExist();
+        $this->site->refresh();
+
+        $this->site->buildScript->update([
+            'content' => 'composer install',
+        ]);
+
+        $this->site->preFlightScript->update([
+            'content' => 'php artisan migrate --force',
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->post(route('application.deploy', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $this->site->id,
+            'status' => DeploymentStatus::FINISHED,
+        ]);
+
+        /** @var \App\Models\Deployment $lastDeployment */
+        $lastDeployment = $this->site->deployments()->latest()->first();
+
+        $this->assertNotNull($lastDeployment->release);
+
+        SSH::assertExecutedContains('composer install');
+
+        Notification::assertSentTo($this->notificationChannel, DeploymentCompleted::class);
+    }
+
+    public function test_rollback(): void
+    {
+        SSH::fake('fake output');
+        Notification::fake();
+
+        $this->site->update([
+            'type_data' => [
+                'modern_deployment' => true,
+                'modern_deployment_history' => 10,
+                'modern_deployment_shared_resources' => ['.env'],
+            ],
+        ]);
+
+        $this->actingAs($this->user);
+
+        Deployment::factory()->create([
+            'site_id' => $this->site->id,
+            'status' => DeploymentStatus::FINISHED,
+            'active' => true,
+            'release' => '20250901000000',
+        ]);
+
+        /** @var Deployment $oldRelease */
+        $oldRelease = Deployment::factory()->create([
+            'site_id' => $this->site->id,
+            'status' => DeploymentStatus::FINISHED,
+            'active' => false,
+            'release' => '20240901000000',
+        ]);
+
+        $this->post(route('application.rollback', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'deployment' => $oldRelease->id,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('deployments', [
+            'id' => $oldRelease->id,
+            'site_id' => $this->site->id,
+            'status' => DeploymentStatus::FINISHED,
+            'active' => true,
+        ]);
+
+        SSH::assertExecutedContains('ln -sfn');
+    }
+
     public function test_enable_auto_deployment(): void
     {
         Http::fake([
@@ -114,6 +219,49 @@ class ApplicationTest extends TestCase
         $this->site->refresh();
 
         $this->assertTrue($this->site->isAutoDeployment());
+    }
+
+    public function test_delete_release(): void
+    {
+        SSH::fake('fake output');
+
+        $this->site->update([
+            'type_data' => [
+                'modern_deployment' => true,
+                'modern_deployment_history' => 10,
+                'modern_deployment_shared_resources' => ['.env'],
+            ],
+        ]);
+
+        $this->actingAs($this->user);
+
+        Deployment::factory()->create([
+            'site_id' => $this->site->id,
+            'status' => DeploymentStatus::FINISHED,
+            'active' => true,
+            'release' => '20250901000000',
+        ]);
+
+        /** @var Deployment $oldRelease */
+        $oldRelease = Deployment::factory()->create([
+            'site_id' => $this->site->id,
+            'status' => DeploymentStatus::FINISHED,
+            'active' => false,
+            'release' => '20240901000000',
+        ]);
+
+        $this->delete(route('application.deployments.destroy', [
+            'server' => $this->server,
+            'site' => $this->site,
+            'deployment' => $oldRelease->id,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('deployments', [
+            'id' => $oldRelease->id,
+        ]);
+
+        SSH::assertExecutedContains('rm -rf '.$this->site->basePath().'/releases/20240901000000');
     }
 
     public function test_disable_auto_deployment(): void

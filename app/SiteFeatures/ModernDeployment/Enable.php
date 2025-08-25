@@ -83,6 +83,8 @@ class Enable extends Action
         $this->site->webserver()->updateVHost($this->site, regenerate: ['core']);
 
         app(Deploy::class)->run($this->site, false);
+
+        $request->session()->flash('success', 'Modern deployment enabled! Starting a new deployment to finish the setup.');
     }
 
     private function validate(Request $request): void
