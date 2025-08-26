@@ -71,7 +71,7 @@ export default function PHPIni({ service, type }: { service: Service; type: 'fpm
           {query.isSuccess ? (
             <Editor
               defaultLanguage="ini"
-              defaultValue={query.data.ini}
+              value={query.data.ini}
               theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
               className="h-full"
               onChange={(value) => form.setData('ini', value ?? '')}

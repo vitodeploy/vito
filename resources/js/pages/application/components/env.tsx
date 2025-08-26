@@ -7,7 +7,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHe
 import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon, RefreshCwIcon } from 'lucide-react';
 import { registerDotEnvLanguage } from '@/lib/editor';
 import { Site } from '@/types/site';
 import { useAppearance } from '@/hooks/use-appearance';
@@ -40,6 +40,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
         route('application.env', {
           server: site.server_id,
           site: site.id,
+          env: form.data.path,
         }),
       );
       if (response.data?.env) {
@@ -58,7 +59,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>
-          <SheetTitle>
+          <SheetTitle className="flex items-center gap-4">
             <Input
               name="path"
               value={form.data.path}
@@ -66,14 +67,17 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
               autoFocus={false}
               className="max-w-[80%]"
             />
+            <Button variant="outline" size="icon" onClick={() => query.refetch()} disabled={query.isFetching}>
+              <RefreshCwIcon className={query.isFetching ? 'animate-spin' : ''} />
+            </Button>
           </SheetTitle>
           <SheetDescription>Site path: {site.path}</SheetDescription>
         </SheetHeader>
         <Form id="update-env-form" className="h-full" onSubmit={submit}>
           {query.isSuccess ? (
             <Editor
+              value={form.data.env}
               defaultLanguage="dotenv"
-              defaultValue={query.data.env}
               theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
               className="h-full"
               onChange={(value) => form.setData('env', value ?? '')}

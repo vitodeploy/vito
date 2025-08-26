@@ -58,7 +58,7 @@ export default function ScriptForm({ script, children }: { script?: Script; chil
               <div className="overflow-hidden rounded-md border">
                 <Editor
                   defaultLanguage="bash"
-                  defaultValue={form.data.content}
+                  value={form.data.content}
                   theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
                   className="h-[500px]"
                   onChange={(value) => form.setData('content', value ?? '')}

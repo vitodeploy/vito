@@ -66,7 +66,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
           {query.isSuccess ? (
             <Editor
               defaultLanguage={site.webserver}
-              defaultValue={query.data.vhost}
+              value={query.data.vhost}
               theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
               className="h-full"
               onChange={(value) => form.setData('vhost', value ?? '')}

@@ -108,9 +108,13 @@ class ApplicationController extends Controller
     }
 
     #[Get('/env', name: 'application.env')]
-    public function env(Server $server, Site $site): JsonResponse
+    public function env(Request $request, Server $server, Site $site): JsonResponse
     {
         $this->authorize('view', [$site, $server]);
+
+        if ($request->input('env')) {
+            $site->jsonUpdate('type_data', 'env_path', $request->input('env'), false);
+        }
 
         $env = $site->getEnv();
 

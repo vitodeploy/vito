@@ -420,7 +420,9 @@ class Site extends AbstractModel
     public function getEnv(): string
     {
         try {
-            return $this->server->os()->readFile($this->path.'/.env');
+            $envPath = $this->type_data['env_path'] ?? $this->path.'/.env';
+
+            return $this->server->os()->readFile($envPath);
         } catch (SSHError) {
             return '';
         }

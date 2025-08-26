@@ -57,7 +57,7 @@ export default function DeploymentScript({
         <Form id="update-script-form" className="h-full gap-0" onSubmit={submit}>
           <Editor
             defaultLanguage="bash"
-            defaultValue={form.data.script}
+            value={form.data.script}
             theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
             className="h-full"
             onChange={(value) => form.setData('script', value ?? '')}
