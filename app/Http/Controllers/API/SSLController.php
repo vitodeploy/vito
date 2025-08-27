@@ -77,7 +77,7 @@ class SSLController extends Controller
     }
 
     #[Post('/custom', name: 'api.projects.servers.sites.ssls.create-custom', middleware: 'ability:write')]
-    #[Endpoint(title: 'create-letsencrypt', description: 'Create a custom SSL certificate.')]
+    #[Endpoint(title: 'create-custom', description: 'Create a custom SSL certificate.')]
     #[BodyParam(name: 'private', required: true)]
     #[BodyParam(name: 'certificate', required: true)]
     #[BodyParam(name: 'expires_at', type: 'data', required: true)]
@@ -110,7 +110,7 @@ class SSLController extends Controller
     }
 
     #[Post('/{ssl}/deactivate', name: 'api.projects.servers.sites.ssls.deactivate', middleware: 'ability:write')]
-    #[Endpoint(title: 'activate', description: 'Deactivate SSL certificate.')]
+    #[Endpoint(title: 'deactivate', description: 'Deactivate SSL certificate.')]
     #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function deactivate(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): SslResource
     {

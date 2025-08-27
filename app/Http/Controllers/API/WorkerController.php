@@ -50,7 +50,7 @@ class WorkerController extends Controller
     }
 
     #[Get('/sites/{site}/workers', name: 'api.projects.servers.sites.workers', middleware: 'ability:read')]
-    #[Endpoint(title: 'list', description: 'Get all site workers.')]
+    #[Endpoint(title: 'site-list', description: 'Get all site workers.')]
     #[ResponseFromApiResource(WorkerResource::class, Worker::class, collection: true, paginate: 25)]
     public function siteIndex(Project $project, Server $server, Site $site): ResourceCollection
     {
@@ -78,7 +78,7 @@ class WorkerController extends Controller
     }
 
     #[Get('/sites/{site}/workers/{worker}', name: 'api.projects.servers.sites.workers.show', middleware: 'ability:read')]
-    #[Endpoint(title: 'show', description: 'Get a server worker by ID.')]
+    #[Endpoint(title: 'site-show', description: 'Get a server worker by ID.')]
     #[ResponseFromApiResource(WorkerResource::class, Worker::class)]
     public function siteShow(Project $project, Server $server, Site $site, Worker $worker): WorkerResource
     {
@@ -144,7 +144,7 @@ class WorkerController extends Controller
     }
 
     #[Post('/workers/{worker}/restart', name: 'api.projects.servers.workers.restart', middleware: 'ability:write')]
-    #[Endpoint(title: 'update', description: 'Restart a worker.')]
+    #[Endpoint(title: 'restart', description: 'Restart a worker.')]
     #[ResponseFromApiResource(WorkerResource::class, Worker::class)]
     public function restart(Request $request, Project $project, Server $server, Worker $worker): WorkerResource
     {
