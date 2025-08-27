@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\ValidationRules\TimezoneRule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -50,10 +51,12 @@ class ProfileController extends Controller
                 'max:255',
                 Rule::unique(User::class)->ignore(user()->id),
             ],
+            'timezone' => ['nullable', 'string', 'max:255', new TimezoneRule],
         ]);
-        $request->user()->fill($request->only('name', 'email'));
 
-        $request->user()->save();
+        $user = $request->user();
+        $user->fill($request->only('name', 'email', 'timezone'));
+        $user->save();
 
         return to_route('profile');
     }

@@ -3,6 +3,7 @@
 namespace App\Actions\User;
 
 use App\Models\User;
+use App\ValidationRules\TimezoneRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -22,6 +23,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
+            'timezone' => ['nullable', 'string', 'max:255', new TimezoneRule],
         ])->validateWithBag('updateProfileInformation');
 
         if ($input['email'] !== $user->email && Features::enabled(Features::emailVerification())) {
@@ -30,6 +32,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'timezone' => $input['timezone'] ?? 'UTC',
             ])->save();
         }
     }
@@ -39,6 +42,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         $user->forceFill([
             'name' => $input['name'],
             'email' => $input['email'],
+            'timezone' => $input['timezone'] ?? 'UTC',
             'email_verified_at' => null,
         ])->save();
 

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import type { SharedData } from '@/types';
 import { FormEvent } from 'react';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
+import { timezones } from '@/lib/timezones';
 
 export default function UpdateProfile() {
   const page = usePage<
@@ -19,9 +21,11 @@ export default function UpdateProfile() {
   const form = useForm<{
     name: string;
     email: string;
+    timezone: string;
   }>({
     name: page.props.auth.user.name,
     email: page.props.auth.user.email,
+    timezone: page.props.auth.user.timezone || 'UTC',
   });
 
   const submit = (e: FormEvent) => {
@@ -36,7 +40,7 @@ export default function UpdateProfile() {
     <Card>
       <CardHeader>
         <CardTitle>Profile information</CardTitle>
-        <CardDescription>Update your profile information and email address.</CardDescription>
+        <CardDescription>Update your profile information, email address, and timezone.</CardDescription>
       </CardHeader>
       <CardContent className="p-4">
         <form id="update-profile-form" onSubmit={submit}>
@@ -63,6 +67,25 @@ export default function UpdateProfile() {
                 placeholder="Email address"
               />
               <InputError message={form.errors.email} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="timezone">Timezone</Label>
+              <Select
+                value={form.data.timezone}
+                onValueChange={(value) => form.setData('timezone', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timezones.map((timezone) => (
+                    <SelectItem key={timezone.value} value={timezone.value}>
+                      {timezone.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <InputError message={form.errors.timezone} />
             </div>
             {page.props.must_verify_email && page.props.auth.user.email_verified_at === null && (
               <div>

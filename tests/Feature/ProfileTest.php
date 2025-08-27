@@ -37,6 +37,36 @@ class ProfileTest extends TestCase
         $this->assertSame('test@example.com', $this->user->email);
     }
 
+    public function test_timezone_can_be_updated(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->patch(route('profile.update'), [
+            'name' => 'Test',
+            'email' => 'test@example.com',
+            'timezone' => 'America/New_York',
+        ])
+            ->assertRedirect(route('profile'));
+
+        $this->user->refresh();
+
+        $this->assertSame('Test', $this->user->name);
+        $this->assertSame('test@example.com', $this->user->email);
+        $this->assertSame('America/New_York', $this->user->timezone);
+    }
+
+    public function test_invalid_timezone_is_rejected(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->patch(route('profile.update'), [
+            'name' => 'Test',
+            'email' => 'test@example.com',
+            'timezone' => 'Invalid/Timezone',
+        ])
+            ->assertSessionHasErrors('timezone');
+    }
+
     public function test_password_can_be_updated(): void
     {
         $this->actingAs($this->user);
