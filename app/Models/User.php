@@ -202,4 +202,12 @@ class User extends Authenticatable
             });
         });
     }
+
+    /**
+     * @return HasMany<ServerTemplate, covariant $this>
+     */
+    public function serverTemplates(): HasMany
+    {
+        return $this->hasMany(ServerTemplate::class);
+    }
 }

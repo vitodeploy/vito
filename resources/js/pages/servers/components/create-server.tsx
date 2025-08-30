@@ -26,12 +26,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-
-type Service = {
-  type: string;
-  name: string;
-  version: string;
-};
+import ServerTemplates from './templates';
+import { ServerTemplate, Service } from '@/types/server-template';
 
 type CreateServerForm = {
   provider: string;
@@ -326,6 +322,14 @@ export default function CreateServer({
     form.setData('plan', plan);
   };
 
+  const serverTemplateChanged = (template: ServerTemplate | null) => {
+    if (template) {
+      form.setData('services', template.services);
+    } else {
+      form.setData('services', []);
+    }
+  };
+
   return (
     <Sheet open={open} onOpenChange={handleOpenChange} modal>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -502,7 +506,10 @@ export default function CreateServer({
 
             <div>
               <FormField>
-                <Label>Services</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Services</Label>
+                  <ServerTemplates services={form.data.services} onTemplateChanged={serverTemplateChanged} />
+                </div>
                 <div>
                   <DataTable columns={servicesColumns} data={form.data.services} />
                 </div>
