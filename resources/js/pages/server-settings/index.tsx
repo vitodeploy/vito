@@ -218,7 +218,7 @@ export default function Databases() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 p-4">
-              <p>please note that this action is irreversible and will delete all data associated with the server.</p>
+              <p>This action will transfer the server to another project. All associated data will remain intact.</p>
 
               <TransferServer server={page.props.server}>
                 <Button variant="outline">Transfer server</Button>
