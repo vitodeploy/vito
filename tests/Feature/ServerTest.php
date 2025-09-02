@@ -7,6 +7,7 @@ use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Project;
+use App\Models\Server;
 use App\Models\ServerProvider;
 use App\NotificationChannels\Email\NotificationMail;
 use App\ServerProviders\Custom;
@@ -50,8 +51,11 @@ class ServerTest extends TestCase
             'status' => ServerStatus::READY,
         ]);
 
+        /** @var Server $server */
+        $server = Server::where('name', 'test')->where('ip', '1.1.1.1')->first();
+
         $this->assertDatabaseHas('services', [
-            'server_id' => 1,
+            'server_id' => $server->id,
             'type' => 'firewall',
             'name' => 'ufw',
             'version' => 'latest',
