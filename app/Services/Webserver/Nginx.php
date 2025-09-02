@@ -97,7 +97,7 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = []): void
+    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = [], bool $restart = true): void
     {
         if (! $vhost) {
             $vhost = $this->getVHost($site);
@@ -113,7 +113,13 @@ class Nginx extends AbstractWebserver
             'root'
         );
 
-        $this->service->server->systemd()->restart('nginx');
+        if ($restart) {
+            $this->service->server->systemd()->restart('nginx');
+
+            return;
+        }
+
+        $this->service->server->systemd()->reload('nginx');
     }
 
     /**

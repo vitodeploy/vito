@@ -26,7 +26,7 @@ class UpdateAliases
         $webserver = $service->handler();
         $webserver->updateVHost($site, regenerate: [
             'core',
-        ]);
+        ], restart: false);
 
         $site->save();
     }
