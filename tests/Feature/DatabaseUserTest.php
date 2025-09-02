@@ -108,7 +108,7 @@ class DatabaseUserTest extends TestCase
 
         $this->assertDatabaseHas('database_users', [
             'username' => $databaseUser->username,
-            'databases' => json_encode([]),
+            'databases' => $this->castAsJson([]),
         ]);
     }
 }

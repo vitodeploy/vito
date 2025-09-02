@@ -45,12 +45,18 @@ class SitesTest extends TestCase
 
         Sanctum::actingAs($this->user, ['read', 'write']);
 
-        Database::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
-        DatabaseUser::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
+        if (isset($inputs['database']) && isset($inputs['database_user'])) {
+            /** @var Database $database */
+            $database = Database::factory()->create([
+                'server_id' => $this->server->id,
+            ]);
+            /** @var DatabaseUser $databaseUser */
+            $databaseUser = DatabaseUser::factory()->create([
+                'server_id' => $this->server->id,
+            ]);
+            $inputs['database'] = $database->id;
+            $inputs['database_user'] = $databaseUser->id;
+        }
 
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([

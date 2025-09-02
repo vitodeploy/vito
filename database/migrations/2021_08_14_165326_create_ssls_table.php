@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('site_id');
             $table->string('type')->default('letsencrypt');
-            $table->string('domains')->nullable();
+            $table->json('domains')->nullable();
             $table->longText('certificate')->nullable();
             $table->longText('pk')->nullable();
             $table->longText('ca')->nullable();

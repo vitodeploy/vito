@@ -78,7 +78,7 @@ class ServerTemplateTest extends TestCase
         $this->assertDatabaseHas('server_templates', [
             'user_id' => $this->user->id,
             'name' => 'My Web Server Template',
-            'services' => json_encode([
+            'services' => $this->castAsJson([
                 'php' => '8.4',
                 'nginx' => 'latest',
                 'mysql' => '8.0',

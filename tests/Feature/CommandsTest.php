@@ -115,7 +115,7 @@ class CommandsTest extends TestCase
 
         $this->assertDatabaseHas('command_executions', [
             'command_id' => $command->id,
-            'variables' => json_encode(['MESSAGE' => 'Hello, world!']),
+            'variables' => $this->castAsJson(['MESSAGE' => 'Hello, world!']),
         ]);
     }
 

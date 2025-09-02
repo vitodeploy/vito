@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('source_controls', function (Blueprint $table): void {
             $table->id();
             $table->string('provider');
-            $table->json('provider_data')->nullable();
+            $table->longText('provider_data')->nullable();
             $table->longText('access_token')->nullable();
             $table->timestamps();
         });
