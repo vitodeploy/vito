@@ -95,6 +95,7 @@ class Systemd
     {
         $command = <<<'EOD'
             sudo systemctl reload $unit
+            sudo systemctl status $unit | cat
         EOD;
 
         return $this->server->ssh()->exec($command, 'reload-'.$unit);
