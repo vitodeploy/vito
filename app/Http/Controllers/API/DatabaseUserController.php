@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Database\CreateDatabaseUser;
+use App\Actions\Database\DeleteDatabaseUser;
 use App\Actions\Database\LinkUser;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DatabaseUserResource;
@@ -92,7 +93,7 @@ class DatabaseUserController extends Controller
 
         $this->validateRoute($project, $server, $databaseUser);
 
-        $databaseUser->delete();
+        app(DeleteDatabaseUser::class)->delete($server, $databaseUser);
 
         return response()->noContent();
     }
