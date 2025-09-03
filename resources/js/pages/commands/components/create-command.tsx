@@ -66,6 +66,7 @@ export default function CreateCommand({ children }: { children: ReactNode }) {
               <p className="text-muted-foreground text-sm">
                 You can use variables like {'${VARIABLE_NAME}'} in the command. The variables will be asked when executing the command
               </p>
+              <p className="text-muted-foreground text-sm">Using `php` command will use the site's php version.</p>
               <InputError message={form.errors.command} />
             </FormField>
           </FormFields>

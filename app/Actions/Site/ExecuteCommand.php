@@ -48,7 +48,8 @@ class ExecuteCommand
                 script: $content,
                 serverLog: $log,
                 user: $command->site->user,
-                variables: $execution->variables
+                variables: $execution->variables,
+                aliases: $command->site->environmentAliases(),
             );
             $execution->status = CommandExecutionStatus::COMPLETED;
             $execution->save();
