@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
-use App\Plugins\RegisterStorageProvider;
+use App\LegacyPlugins\RegisterStorageProvider;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
 use App\StorageProviders\Local;

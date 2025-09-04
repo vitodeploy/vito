@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
-use App\Plugins\RegisterServerProvider;
+use App\LegacyPlugins\RegisterServerProvider;
 use App\ServerProviders\AWS;
 use App\ServerProviders\Custom;
 use App\ServerProviders\DigitalOcean;

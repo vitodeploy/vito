@@ -1,21 +1,28 @@
 <?php
 
-namespace App\Plugins;
+namespace App\LegacyPlugins;
 
 use App\DTOs\DynamicForm;
 
-class RegisterSiteType
+class RegisterSourceControl
 {
     public function __construct(
-        public string $name,
-        public string $label = '',
-        public string $handler = '',
-        public ?DynamicForm $form = null,
+        private string $name,
+        private string $label = '',
+        private string $handler = '',
+        private ?DynamicForm $form = null,
     ) {}
 
     public static function make(string $name): self
     {
         return new self($name);
+    }
+
+    public function name(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function label(string $label): self
@@ -41,14 +48,14 @@ class RegisterSiteType
 
     public function register(): void
     {
-        $types = config('site.types');
+        $providers = config('source-control.providers');
 
-        $types[$this->name] = [
+        $providers[$this->name] = [
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
         ];
 
-        config(['site.types' => $types]);
+        config(['source-control.providers' => $providers]);
     }
 }

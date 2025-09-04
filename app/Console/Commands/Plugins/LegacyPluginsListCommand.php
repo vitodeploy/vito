@@ -5,11 +5,11 @@ namespace App\Console\Commands\Plugins;
 use App\Facades\Plugins;
 use Illuminate\Console\Command;
 
-class PluginsListCommand extends Command
+class LegacyPluginsListCommand extends Command
 {
-    protected $signature = 'plugins:list';
+    protected $signature = 'legacy-plugins:list';
 
-    protected $description = 'List all installed plugins';
+    protected $description = 'List all installed legacy-plugins';
 
     public function handle(): void
     {

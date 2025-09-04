@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Plugins;
+namespace App\LegacyPlugins;
 
 use App\DTOs\DynamicForm;
 use RuntimeException;

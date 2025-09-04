@@ -6,9 +6,9 @@ use App\Facades\Plugins;
 use Exception;
 use Illuminate\Console\Command;
 
-class InstallPluginCommand extends Command
+class InstallLegacyPluginCommand extends Command
 {
-    protected $signature = 'plugins:install {url} {--branch=} {--tag=}';
+    protected $signature = 'legacy-plugins:install {url} {--branch=} {--tag=}';
 
     protected $description = 'Install a plugin from a repository';
 

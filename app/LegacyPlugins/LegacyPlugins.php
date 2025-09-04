@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Plugins;
+namespace App\LegacyPlugins;
 
 use Exception;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
-class Plugins
+class LegacyPlugins
 {
     /**
      * @return array<array<string, string>>
@@ -42,11 +42,11 @@ class Plugins
         $vendor = str($url)->rtrim('/')->beforeLast('/')->afterLast('/');
         $name = str($url)->rtrim('/')->afterLast('/');
 
-        if (is_dir(storage_path("plugins/$vendor/$name"))) {
-            File::deleteDirectory(storage_path("plugins/$vendor/$name"));
+        if (is_dir(storage_path("legacy-plugins/$vendor/$name"))) {
+            File::deleteDirectory(storage_path("legacy-plugins/$vendor/$name"));
         }
 
-        $command = "git clone $url ".storage_path("plugins/$vendor/$name");
+        $command = "git clone $url ".storage_path("legacy-plugins/$vendor/$name");
         if ($branch) {
             $command .= " --branch $branch";
         }
@@ -71,7 +71,7 @@ class Plugins
      */
     public function load(): string
     {
-        $storagePath = storage_path('plugins');
+        $storagePath = storage_path('legacy-plugins');
         $composerJson = base_path('composer.json');
         $composerLock = base_path('composer.lock');
 
@@ -115,7 +115,7 @@ class Plugins
      */
     public function uninstall(string $name): string
     {
-        $pluginPath = storage_path('plugins/'.$name);
+        $pluginPath = storage_path('legacy-plugins/'.$name);
 
         if (! File::exists($pluginPath)) {
             throw new Exception("Plugin not found: $name");
@@ -139,7 +139,7 @@ class Plugins
 
         File::deleteDirectory($pluginPath);
 
-        $flagFile = storage_path("plugins/.installed/{$name}");
+        $flagFile = storage_path("legacy-plugins/.installed/{$name}");
         if (File::exists($flagFile)) {
             File::delete($flagFile);
         }
@@ -167,7 +167,7 @@ class Plugins
     {
         $output = '';
         $pluginName = $composerJson['name'] ?? 'unknown';
-        $flagFile = storage_path("plugins/.installed/{$pluginName}");
+        $flagFile = storage_path("legacy-plugins/.installed/{$pluginName}");
 
         if (File::exists($flagFile)) {
             return $output;

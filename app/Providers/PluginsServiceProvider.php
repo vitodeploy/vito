@@ -2,18 +2,25 @@
 
 namespace App\Providers;
 
-use App\Console\Commands\Plugins\InstallPluginCommand;
-use App\Console\Commands\Plugins\LoadPluginsCommand;
-use App\Console\Commands\Plugins\PluginsListCommand;
-use App\Plugins\Plugins;
+use App\Actions\Plugins\GetPluginInstance;
+use App\Actions\Plugins\LoadPlugins;
+use App\Console\Commands\Plugins\InstallLegacyPluginCommand;
+use App\Console\Commands\Plugins\LoadLegacyPluginsCommand;
+use App\Console\Commands\Plugins\LegacyPluginsListCommand;
+use App\LegacyPlugins\LegacyPlugins;
+use App\Vito\Services\PluginService;
 use Illuminate\Support\ServiceProvider;
 
 class PluginsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind('plugins', function () {
-            return new Plugins;
+        $this->app->bind('legacy-plugins', function () {
+            return new LegacyPlugins;
+        });
+
+        $this->app->scoped(GetPluginInstance::class, function () {
+            return new GetPluginInstance;
         });
     }
 
@@ -21,10 +28,18 @@ class PluginsServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                InstallPluginCommand::class,
-                LoadPluginsCommand::class,
-                PluginsListCommand::class,
+                InstallLegacyPluginCommand::class,
+                LoadLegacyPluginsCommand::class,
+                LegacyPluginsListCommand::class,
             ]);
         }
+
+        if (! $this->app->runningInConsole()) {
+            $this->app->booted(function () {
+                app(LoadPLugins::class)->handle();
+            });
+        }
+
+
     }
 }

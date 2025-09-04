@@ -22,7 +22,8 @@
     "opcodesio/log-viewer": "^3.17",
     "phpseclib/phpseclib": "3.0.43",
     "spatie/laravel-route-attributes": "^1.24",
-    "tightenco/ziggy": "^2.5"
+    "tightenco/ziggy": "^2.5",
+    "ext-zip": "*"
   },
   "require-dev": {
     "fakerphp/faker": "^1.9.1",

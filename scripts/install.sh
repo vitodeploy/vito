@@ -191,7 +191,7 @@ ssh-keygen -y -f /home/vito/vito/storage/ssh-private.pem >/home/vito/vito/storag
 chown -R vito:vito /home/vito/vito/storage/ssh-private.pem
 chown -R vito:vito /home/vito/vito/storage/ssh-public.key
 
-# install plugins
+# install legacy-plugins
 php artisan plugins:install https://github.com/vitodeploy/laravel-octane-plugin
 
 # optimize

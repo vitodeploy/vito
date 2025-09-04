@@ -37,7 +37,7 @@ echo "Running migrations..."
 php artisan migrate --force
 
 echo "Reloading plugins..."
-php artisan plugins:load
+php artisan legacy-plugins:load
 
 echo "Optimizing..."
 php artisan optimize:clear

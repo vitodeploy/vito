@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Plugins\RegisterServiceType;
+use App\LegacyPlugins\RegisterServiceType;
 use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;

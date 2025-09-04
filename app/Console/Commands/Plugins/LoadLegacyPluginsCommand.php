@@ -6,18 +6,18 @@ use App\Facades\Plugins;
 use Exception;
 use Illuminate\Console\Command;
 
-class LoadPluginsCommand extends Command
+class LoadLegacyPluginsCommand extends Command
 {
-    protected $signature = 'plugins:load';
+    protected $signature = 'legacy-plugins:load';
 
-    protected $description = 'Load all plugins from the storage/plugins directory';
+    protected $description = 'Load all legacy-plugins from the storage/plugins directory';
 
     /**
      * @throws Exception
      */
     public function handle(): void
     {
-        $this->info('Loading plugins...');
+        $this->info('Loading legacy plugins...');
 
         try {
             Plugins::load();
@@ -29,6 +29,6 @@ class LoadPluginsCommand extends Command
 
         Plugins::cleanup();
 
-        $this->info('Plugins loaded successfully.');
+        $this->info('Legacy plugins loaded successfully.');
     }
 }

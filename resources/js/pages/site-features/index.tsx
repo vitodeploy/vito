@@ -70,7 +70,7 @@ export default function SiteFeatures() {
             ) : (
               <CardRow className="flex-col items-center justify-center space-y-2">
                 <span className="text-muted-foreground">No available features</span>
-                <Link href={route('plugins')} prefetch>
+                <Link href={route('legacy-plugins')} prefetch>
                   <Button variant="outline">Explore Plugins</Button>
                 </Link>
               </CardRow>

@@ -18,7 +18,7 @@ export default function Uninstall({ plugin }: { plugin: Plugin }) {
   const [open, setOpen] = useState(false);
 
   const form = useForm({
-    name: plugin.name,
+    id: plugin.id,
   });
 
   const submit = () => {
@@ -33,7 +33,7 @@ export default function Uninstall({ plugin }: { plugin: Plugin }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Uninstall</Button>
+        <Button variant="destructive">Uninstall</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
-use App\Plugins\RegisterSourceControl;
+use App\LegacyPlugins\RegisterSourceControl;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;

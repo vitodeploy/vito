@@ -1,25 +1,25 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Repo } from '@/types/repo';
-import { BadgeCheckIcon, LoaderCircleIcon, StarIcon } from 'lucide-react';
+import { LoaderCircleIcon, StarIcon } from 'lucide-react';
 import { CardRow } from '@/components/ui/card';
 import React, { Fragment } from 'react';
-import Install from '@/pages/plugins/components/install';
+import Install from '@/pages/legacy-plugins/components/install';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-export default function OfficialPlugins() {
+export default function CommunityPlugins() {
   const query = useInfiniteQuery<{
     total_count: number;
     incomplete_results: boolean;
     items: Repo[];
     next_page?: number;
   }>({
-    queryKey: ['official-plugins'],
+    queryKey: ['official-legacy-plugins'],
     queryFn: async ({ pageParam }) => {
-      const data = (
-        await axios.get('https://api.github.com/search/repositories?q=owner:vitodeploy%20topic:vitodeploy-plugin&per_page=10&page=' + pageParam)
-      ).data;
+      const data = (await axios.get('https://api.github.com/search/repositories?q=topic:vitodeploy-plugin&per_page=10&page=' + pageParam)).data;
+      data.items = data.items.filter((repo: Repo) => repo.owner.login !== 'vitodeploy');
       if (data.items.length == 10) {
         data.next_page = (pageParam as number) + 1;
       }
@@ -41,13 +41,13 @@ export default function OfficialPlugins() {
           {query.data.pages.map((page) =>
             page.items.map((repo) => (
               <Fragment key={repo.id}>
-                <CardRow key={repo.id}>
+                <CardRow>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <a href={repo.html_url} target="_blank" className="hover:text-primary">
                         {repo.name}
                       </a>
-                      <BadgeCheckIcon className="text-primary size-4" />
+                      <Badge variant="outline">by {repo.owner.login}</Badge>
                     </div>
                     <span className="text-muted-foreground text-xs">{repo.description}</span>
                   </div>
