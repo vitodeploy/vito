@@ -42,6 +42,7 @@ class Disable extends Action
         }
 
         data_set($featureData, 'motd', false);
+        unset($featureData['motd_position']);
         $this->server->feature_data = $featureData;
         $this->server->save();
 
