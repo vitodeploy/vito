@@ -23,7 +23,6 @@ return new class extends Migration
             $table->boolean('is_enabled')->default(false);
             $table->boolean('is_installed')->default(false);
             $table->boolean('updates_available')->default(false);
-            $table->json('config')->nullable();
             $table->timestamps();
 
             $table->index(['is_enabled', 'priority']);

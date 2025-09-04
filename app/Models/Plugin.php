@@ -16,10 +16,6 @@ class Plugin extends Model
         'is_enabled',
         'is_installed',
         'updates_available',
-        'config',
-        'priority',
-        'last_error_at',
-        'error_count',
         'folder',
         'username',
     ];
@@ -27,11 +23,6 @@ class Plugin extends Model
     protected $casts = [
         'is_enabled' => 'boolean',
         'is_installed' => 'boolean',
-        'config' => 'array',
-        'requirements' => 'array',
-        'last_error_at' => 'datetime',
-        'error_count' => 'integer',
-        'priority' => 'integer',
         'updates_available' => 'boolean',
     ];
 
