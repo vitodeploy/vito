@@ -32,7 +32,7 @@ final readonly class InstallGithubPlugin
         $psrRepo = $this->toPsrCase($repo);
 
         $folder = implode(DIRECTORY_SEPARATOR, [$psrUser, $psrRepo]);
-        $pluginsFolder = implode(DIRECTORY_SEPARATOR, ['Plugins', $folder]);
+        $pluginsFolder = implode(DIRECTORY_SEPARATOR, ['Vito', 'Plugins', $folder]);
         $zipFile = implode(DIRECTORY_SEPARATOR, ['app', 'temp', "$repo.zip"]);
 
         $zipLocation = storage_path($zipFile);
@@ -48,7 +48,7 @@ final readonly class InstallGithubPlugin
                 'repo' => $url,
                 'folder' => $folder,
                 'version' => $release->tagName,
-                'namespace' => "App\\Plugins\\$psrUser\\$psrRepo\\Plugin",
+                'namespace' => "App\\Vito\\Plugins\\$psrUser\\$psrRepo\\Plugin",
             ]);
 
             $this->installPlugin->handle($plugin);

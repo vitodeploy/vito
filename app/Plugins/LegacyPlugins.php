@@ -1,6 +1,6 @@
 <?php
 
-namespace App\LegacyPlugins;
+namespace App\Plugins;
 
 use Exception;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
@@ -37,41 +37,9 @@ class LegacyPlugins
     /**
      * @throws Exception
      */
-    public function install(string $url, ?string $branch = null, ?string $tag = null): string
-    {
-        $vendor = str($url)->rtrim('/')->beforeLast('/')->afterLast('/');
-        $name = str($url)->rtrim('/')->afterLast('/');
-
-        if (is_dir(storage_path("legacy-plugins/$vendor/$name"))) {
-            File::deleteDirectory(storage_path("legacy-plugins/$vendor/$name"));
-        }
-
-        $command = "git clone $url ".storage_path("legacy-plugins/$vendor/$name");
-        if ($branch) {
-            $command .= " --branch $branch";
-        }
-        if ($tag) {
-            $command .= " --tag $tag";
-        }
-        $command .= ' --single-branch';
-        $result = Process::env(['PATH' => dirname(git_path())])->timeout(0)->run($command);
-        $output = $result->output();
-
-        if ($result->failed()) {
-            throw new Exception($result->errorOutput());
-        }
-
-        $output .= $this->load();
-
-        return $output;
-    }
-
-    /**
-     * @throws Exception
-     */
     public function load(): string
     {
-        $storagePath = storage_path('legacy-plugins');
+        $storagePath = storage_path('plugins');
         $composerJson = base_path('composer.json');
         $composerLock = base_path('composer.lock');
 

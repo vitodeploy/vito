@@ -4,11 +4,11 @@ namespace App\Providers;
 
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
+use App\Plugins\RegisterSourceControl;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
-use App\Vito\Plugins\RegisterSourceControl;
 use Illuminate\Support\ServiceProvider;
 
 class SourceControlServiceProvider extends ServiceProvider

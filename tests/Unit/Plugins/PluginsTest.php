@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Plugins;
 
-use App\LegacyPlugins\LegacyPlugins;
+use App\Plugins\LegacyPlugins;
 use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;

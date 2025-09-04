@@ -5,9 +5,9 @@ namespace App\Providers;
 use App\Actions\Plugins\GetPluginInstance;
 use App\Actions\Plugins\LoadPlugins;
 use App\Console\Commands\Plugins\InstallLegacyPluginCommand;
-use App\Console\Commands\Plugins\LoadLegacyPluginsCommand;
 use App\Console\Commands\Plugins\LegacyPluginsListCommand;
-use App\LegacyPlugins\LegacyPlugins;
+use App\Console\Commands\Plugins\LoadLegacyPluginsCommand;
+use App\Plugins\LegacyPlugins;
 use Illuminate\Support\ServiceProvider;
 
 class PluginsServiceProvider extends ServiceProvider

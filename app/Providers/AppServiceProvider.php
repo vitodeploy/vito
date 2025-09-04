@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Helpers\FTP;
 use App\Helpers\Notifier;
 use App\Helpers\SSH;
-use App\LegacyPlugins\LegacyPlugins;
 use App\Models\PersonalAccessToken;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\URL;

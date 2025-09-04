@@ -11,7 +11,7 @@ final readonly class DiscoverPlugins
 
     public function handle(): void
     {
-        $pluginsPath = app_path('Plugins');
+        $pluginsPath = app_path('Vito'.DIRECTORY_SEPARATOR.'Plugins');
         $globPath = implode(DIRECTORY_SEPARATOR, [$pluginsPath, '*', '*']);
         $pluginFolders = collect(File::glob($globPath))
             ->filter(fn ($path) => File::isDirectory($path))
@@ -25,7 +25,7 @@ final readonly class DiscoverPlugins
                 $namespace = str_replace(DIRECTORY_SEPARATOR, '\\', $folder);
                 Plugin::create([
                     'folder' => $folder,
-                    'namespace' => 'App\\Plugins\\'.$namespace.'\\Plugin',
+                    'namespace' => 'App\\Vito\\Plugins\\'.$namespace.'\\Plugin',
                 ]);
             }
         }

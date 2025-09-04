@@ -33,7 +33,7 @@ final readonly class UninstallPlugin
             }
         }
 
-        $folder = $this->path_join([app_path('Plugins'), $plugin->folder]);
+        $folder = $this->path_join([app_path('Vito'), 'Plugins', $plugin->folder]);
         File::deleteDirectory($folder);
 
         $subFolder = dirname($folder);

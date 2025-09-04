@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Vito\Plugins\Interfaces;
+namespace App\Plugins\Interfaces;
 
 interface PluginInterface
 {

@@ -4,13 +4,13 @@ namespace App\Providers;
 
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
+use App\Plugins\RegisterServerProvider;
 use App\ServerProviders\AWS;
 use App\ServerProviders\Custom;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
 use App\ServerProviders\Vultr;
-use App\Vito\Plugins\RegisterServerProvider;
 use Illuminate\Support\ServiceProvider;
 
 class ServerProviderServiceProvider extends ServiceProvider

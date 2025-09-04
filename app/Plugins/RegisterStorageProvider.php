@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Vito\Plugins;
+namespace App\Plugins;
 
 use App\DTOs\DynamicForm;
 
-class RegisterServerProvider
+class RegisterStorageProvider
 {
     public function __construct(
         private string $name,
         private string $label = '',
         private string $handler = '',
         private ?DynamicForm $form = null,
-        private string $defaultUser = '',
     ) {}
 
     public static function make(string $name): self
@@ -47,24 +46,16 @@ class RegisterServerProvider
         return $this;
     }
 
-    public function defaultUser(string $defaultUser): self
-    {
-        $this->defaultUser = $defaultUser;
-
-        return $this;
-    }
-
     public function register(): void
     {
-        $providers = config('server-provider.providers');
+        $providers = config('storage-provider.providers');
 
         $providers[$this->name] = [
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
-            'default_user' => $this->defaultUser,
         ];
 
-        config(['server-provider.providers' => $providers]);
+        config(['storage-provider.providers' => $providers]);
     }
 }
