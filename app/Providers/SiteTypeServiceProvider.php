@@ -5,9 +5,6 @@ namespace App\Providers;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Enums\LoadBalancerMethod;
-use App\LegacyPlugins\RegisterSiteFeature;
-use App\LegacyPlugins\RegisterSiteFeatureAction;
-use App\LegacyPlugins\RegisterSiteType;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
 use App\SiteTypes\NodeJS;
@@ -15,6 +12,9 @@ use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
 use App\SiteTypes\Wordpress;
+use App\Vito\Plugins\RegisterSiteFeature;
+use App\Vito\Plugins\RegisterSiteFeatureAction;
+use App\Vito\Plugins\RegisterSiteType;
 use Illuminate\Support\ServiceProvider;
 
 class SiteTypeServiceProvider extends ServiceProvider

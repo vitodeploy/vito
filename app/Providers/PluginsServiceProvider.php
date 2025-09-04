@@ -8,7 +8,6 @@ use App\Console\Commands\Plugins\InstallLegacyPluginCommand;
 use App\Console\Commands\Plugins\LoadLegacyPluginsCommand;
 use App\Console\Commands\Plugins\LegacyPluginsListCommand;
 use App\LegacyPlugins\LegacyPlugins;
-use App\Vito\Services\PluginService;
 use Illuminate\Support\ServiceProvider;
 
 class PluginsServiceProvider extends ServiceProvider

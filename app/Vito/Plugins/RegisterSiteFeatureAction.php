@@ -1,6 +1,6 @@
 <?php
 
-namespace App\LegacyPlugins;
+namespace App\Vito\Plugins;
 
 use App\DTOs\DynamicForm;
 use RuntimeException;

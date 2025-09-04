@@ -37,8 +37,8 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/3.x/scripts/in
 
 - [Documentation](https://vitodeploy.com)
 - [Demo Website](https://demo.vitodeploy.com)
-- [InstallDialog on Server](https://vitodeploy.com/getting-started/installation.html#install-on-vps)
-- [InstallDialog via Docker](https://vitodeploy.com/getting-started/installation.html#install-via-docker)
+- [Install on Server](https://vitodeploy.com/getting-started/installation.html#install-on-vps)
+- [Install via Docker](https://vitodeploy.com/getting-started/installation.html#install-via-docker)
 - [Roadmap](https://github.com/orgs/vitodeploy/projects/5)
 - [Discord](https://discord.gg/uZeeHZZnm5)
 - [Contribution](https://vitodeploy.com/prologue/contribution-guide.html)

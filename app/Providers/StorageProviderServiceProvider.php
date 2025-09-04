@@ -4,11 +4,11 @@ namespace App\Providers;
 
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
-use App\LegacyPlugins\RegisterStorageProvider;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
 use App\StorageProviders\Local;
 use App\StorageProviders\S3;
+use App\Vito\Plugins\RegisterStorageProvider;
 use Illuminate\Support\ServiceProvider;
 
 class StorageProviderServiceProvider extends ServiceProvider

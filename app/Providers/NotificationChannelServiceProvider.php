@@ -8,7 +8,7 @@ use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
 use App\NotificationChannels\Telegram;
-use App\LegacyPlugins\RegisterNotificationChannel;
+use App\Vito\Plugins\RegisterNotificationChannel;
 use Illuminate\Support\ServiceProvider;
 
 class NotificationChannelServiceProvider extends ServiceProvider

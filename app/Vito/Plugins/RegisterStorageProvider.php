@@ -1,10 +1,10 @@
 <?php
 
-namespace App\LegacyPlugins;
+namespace App\Vito\Plugins;
 
 use App\DTOs\DynamicForm;
 
-class RegisterNotificationChannel
+class RegisterStorageProvider
 {
     public function __construct(
         private string $name,
@@ -48,7 +48,7 @@ class RegisterNotificationChannel
 
     public function register(): void
     {
-        $providers = config('notification-channel.providers');
+        $providers = config('storage-provider.providers');
 
         $providers[$this->name] = [
             'label' => $this->label,
@@ -56,6 +56,6 @@ class RegisterNotificationChannel
             'form' => $this->form ? $this->form->toArray() : [],
         ];
 
-        config(['notification-channel.providers' => $providers]);
+        config(['storage-provider.providers' => $providers]);
     }
 }

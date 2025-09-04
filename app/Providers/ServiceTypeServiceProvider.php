@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\LegacyPlugins\RegisterServiceType;
 use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
@@ -15,6 +14,7 @@ use App\Services\ProcessManager\Supervisor;
 use App\Services\Redis\Redis;
 use App\Services\Webserver\Caddy;
 use App\Services\Webserver\Nginx;
+use App\Vito\Plugins\RegisterServiceType;
 use Illuminate\Support\ServiceProvider;
 
 class ServiceTypeServiceProvider extends ServiceProvider

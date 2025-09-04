@@ -4,7 +4,7 @@ namespace App\Actions\Plugins;
 
 use App\Models\Plugin;
 use App\Models\PluginError;
-use App\Vito\Interfaces\PluginInterface;
+use App\Vito\Plugins\Interfaces\PluginInterface;
 use Exception;
 use Throwable;
 
