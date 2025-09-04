@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Actions\Database\CreateDatabase;
+use App\Actions\Database\DeleteDatabase;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DatabaseResource;
 use App\Models\Database;
@@ -76,7 +77,7 @@ class DatabaseController extends Controller
 
         $this->validateRoute($project, $server, $database);
 
-        $database->delete();
+        app(DeleteDatabase::class)->delete($server, $database);
 
         return response()->noContent();
     }

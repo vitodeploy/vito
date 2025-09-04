@@ -3,7 +3,7 @@ name: Docker Release
 on:
   workflow_dispatch:
   release:
-    types: [created]
+    types: [created, published]
 
 jobs:
   determine-tags:

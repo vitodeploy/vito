@@ -38,15 +38,20 @@ class SitesTest extends TestCase
             ], 201),
         ]);
 
-        Database::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
-        DatabaseUser::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
+        if (isset($inputs['database']) && isset($inputs['database_user'])) {
+            /** @var Database $database */
+            $database = Database::factory()->create([
+                'server_id' => $this->server->id,
+            ]);
+            /** @var DatabaseUser $databaseUser */
+            $databaseUser = DatabaseUser::factory()->create([
+                'server_id' => $this->server->id,
+            ]);
+            $inputs['database'] = $database->id;
+            $inputs['database_user'] = $databaseUser->id;
+        }
 
         $this->actingAs($this->user);
-
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
@@ -60,7 +65,7 @@ class SitesTest extends TestCase
         $expectedUser = empty($inputs['user']) ? $this->server->getSshUser() : $inputs['user'];
         $this->assertDatabaseHas('sites', [
             'domain' => $inputs['domain'],
-            'aliases' => json_encode($inputs['aliases'] ?? []),
+            'aliases' => $this->castAsJson($inputs['aliases'] ?? []),
             'status' => SiteStatus::READY,
             'user' => $expectedUser,
             'path' => '/home/'.$expectedUser.'/'.$inputs['domain'],

@@ -53,7 +53,7 @@ class SslTest extends TestCase
             'site_id' => $this->site->id,
             'type' => SslType::LETSENCRYPT,
             'status' => SslStatus::CREATED,
-            'domains' => json_encode([$this->site->domain]),
+            'domains' => $this->castAsJson([$this->site->domain]),
             'email' => 'ssl@example.com',
             'certificate_path' => '/etc/letsencrypt/live/'.$ssl->id.'/fullchain.pem',
             'pk_path' => '/etc/letsencrypt/live/'.$ssl->id.'/privkey.pem',
@@ -80,7 +80,7 @@ class SslTest extends TestCase
             'site_id' => $this->site->id,
             'type' => SslType::LETSENCRYPT,
             'status' => SslStatus::CREATED,
-            'domains' => json_encode(array_merge([$this->site->domain], $this->site->aliases)),
+            'domains' => $this->castAsJson(array_merge([$this->site->domain], $this->site->aliases)),
             'email' => 'ssl@example.com',
         ]);
     }
@@ -109,7 +109,7 @@ class SslTest extends TestCase
             'site_id' => $this->site->id,
             'type' => SslType::CUSTOM,
             'status' => SslStatus::CREATED,
-            'domains' => json_encode([$this->site->domain]),
+            'domains' => $this->castAsJson([$this->site->domain]),
             'certificate_path' => '/etc/ssl/'.$ssl->id.'/cert.pem',
             'pk_path' => '/etc/ssl/'.$ssl->id.'/privkey.pem',
         ]);

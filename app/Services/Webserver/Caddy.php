@@ -47,7 +47,7 @@ class Caddy extends AbstractWebserver
             'root'
         );
 
-        $this->service->server->systemd()->reload();
+        $this->service->server->ssh()->exec('sudo systemctl daemon-reload', 'reload-systemctl');
 
         $this->service->server->systemd()->restart('caddy');
         event('service.installed', $this->service);
@@ -102,7 +102,7 @@ class Caddy extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = []): void
+    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = [], bool $restart = true): void
     {
         if (! $vhost) {
             $vhost = $this->getVHost($site);
@@ -118,7 +118,13 @@ class Caddy extends AbstractWebserver
             'root'
         );
 
-        $this->service->server->systemd()->restart('caddy');
+        if ($restart) {
+            $this->service->server->systemd()->restart('caddy');
+
+            return;
+        }
+
+        $this->service->server->systemd()->reload('caddy');
     }
 
     /**

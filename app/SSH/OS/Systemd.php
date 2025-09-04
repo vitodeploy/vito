@@ -91,12 +91,13 @@ class Systemd
     /**
      * @throws SSHError
      */
-    public function reload(): string
+    public function reload(string $unit): string
     {
         $command = <<<'EOD'
-            sudo systemctl daemon-reload
+            sudo systemctl reload $unit
+            sudo systemctl status $unit | cat
         EOD;
 
-        return $this->server->ssh()->exec($command, 'reload-systemctl');
+        return $this->server->ssh()->exec($command, 'reload-'.$unit);
     }
 }
