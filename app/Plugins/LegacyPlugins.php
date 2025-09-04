@@ -115,7 +115,7 @@ class LegacyPlugins
      */
     public function uninstall(string $name): string
     {
-        $pluginPath = storage_path('legacy-plugins/'.$name);
+        $pluginPath = storage_path('plugins/'.$name);
 
         if (! File::exists($pluginPath)) {
             throw new Exception("Plugin not found: $name");
@@ -139,7 +139,7 @@ class LegacyPlugins
 
         File::deleteDirectory($pluginPath);
 
-        $flagFile = storage_path("legacy-plugins/.installed/{$name}");
+        $flagFile = storage_path("plugins/.installed/{$name}");
         if (File::exists($flagFile)) {
             File::delete($flagFile);
         }
@@ -167,7 +167,7 @@ class LegacyPlugins
     {
         $output = '';
         $pluginName = $composerJson['name'] ?? 'unknown';
-        $flagFile = storage_path("legacy-plugins/.installed/{$pluginName}");
+        $flagFile = storage_path("plugins/.installed/{$pluginName}");
 
         if (File::exists($flagFile)) {
             return $output;
