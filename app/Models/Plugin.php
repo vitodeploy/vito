@@ -21,6 +21,7 @@ class Plugin extends Model
         'last_error_at',
         'error_count',
         'folder',
+        'username',
     ];
 
     protected $casts = [

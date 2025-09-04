@@ -5,9 +5,7 @@ import Uninstall from '@/pages/plugins/components/uninstall';
 import EnablePlugin from '@/pages/plugins/components/enable';
 import { Separator } from '@/components/ui/separator';
 import UpdatePlugin from '@/pages/plugins/components/update';
-import { Button } from '@/components/ui/button';
-import { Code, Folder } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
   const installedPlugins = plugins.filter(plugin => plugin.is_installed);
@@ -18,31 +16,24 @@ export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
           <div key={`plugin-${index}`}>
             <CardRow>
               <div className="flex flex-row gap-4 items-center">
-                {plugin.repo !== null ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          onClick={() => window.open(plugin.repo, '_blank')}
-                        >
-                          <Code />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">Open In GitHub</TooltipContent>
-                    </Tooltip>
-                ) : (
-                      <Button variant="outline" disabled>
-                        <Folder />
-                      </Button>
-                )}
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center">{plugin.name}</div>
-                  <span className="text-muted-foreground text-xs">
-                  {plugin.version}
-                  {plugin.updates_available &&
-                    " - Update Available!"
-                  }
-                </span>
+                  <div className="flex items-center gap-2">
+                    {plugin.repo === null ? (
+                      <span>{plugin.name}</span>
+                    ) : (
+                      <a href={plugin.repo} className="hover:text-primary" target="_blank">{plugin.name}</a>
+                    )}
+                    {plugin.username && (
+                      <Badge variant="outline">by {plugin.username}</Badge>
+                    )}
+                  </div>
+                  <div className="text-muted-foreground text-xs flex flex-row gap-3">
+                    <span>{plugin.repo !== null ? "GitHub" : "Local"}</span>
+                    <span>{plugin.version}</span>
+                    {plugin.updates_available && (
+                      <span>Update Available</span>
+                    )}
+                </div>
                 </div>
               </div>
 

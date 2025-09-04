@@ -49,35 +49,23 @@ export default function InstallDialog({ repo }: { repo?: Repo }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Install plugin</DialogTitle>
-          <DialogDescription className="sr-only">Install plugin {repo?.full_name}</DialogDescription>
+          <DialogDescription>Install a plugin from a GitHub Repository</DialogDescription>
         </DialogHeader>
         <Form className="p-4" id="install-plugin-form" onSubmit={submit}>
-          {repo ? (
-            <p>
-              Are you sure you want to install the plugin{' '}
-              <strong className="text-primary hover:underline">
-                <a href={repo.html_url} target="_blank">
-                  {repo.full_name}
-                </a>
-              </strong>
-              ? This will clone the repository and set it up as a Vito plugin.
-            </p>
-          ) : (
-            <FormFields>
-              <FormField>
-                <Label htmlFor="url">Repository URL</Label>
-                <Input
-                  id="url"
-                  type="text"
-                  name="url"
-                  autoComplete="url"
-                  value={form.data.url}
-                  onChange={(e) => form.setData('url', e.target.value)}
-                />
-                <InputError message={form.errors.url} />
-              </FormField>
-            </FormFields>
-          )}
+          <FormFields>
+            <FormField className="space-y-2">
+              <Label htmlFor="url">GitHub URL</Label>
+              <Input
+                id="url"
+                type="text"
+                name="url"
+                autoComplete="url"
+                value={form.data.url}
+                onChange={(e) => form.setData('url', e.target.value)}
+              />
+              <InputError message={form.errors.url} />
+            </FormField>
+          </FormFields>
         </Form>
 
         <DialogFooter>

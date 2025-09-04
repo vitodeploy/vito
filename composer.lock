@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "de06bbff73be2e03ebaf6c4bba4bdaf6",
+    "content-hash": "bf5ddd82a3ee1fad553dc72e395e2f39",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -7083,6 +7083,56 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.3.0"
             },
             "time": "2024-12-21T16:25:41+00:00"
+        },
+        {
+            "name": "vitodeploy/laravel-reverb-plugin",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "storage/plugins/vitodeploy/laravel-reverb-plugin",
+                "reference": "2ca3b6f492e3eaebf0fc3e799fddea0aa6b357db"
+            },
+            "require": {
+                "illuminate/console": "^12.0",
+                "illuminate/process": "^12.0",
+                "illuminate/support": "^12.0",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.10"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "VitoDeploy\\LaravelReverbPlugin\\LaravelReverbPluginServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "VitoDeploy\\LaravelReverbPlugin\\": "src"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Saeed Vaziry",
+                    "email": "mr.saeedvaziry@gmail.com"
+                }
+            ],
+            "description": "Laravel reverb plugin for VitoDeploy",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "vlucas/phpdotenv",

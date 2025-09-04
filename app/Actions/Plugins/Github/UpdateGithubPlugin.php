@@ -2,10 +2,8 @@
 
 namespace App\Actions\Plugins\Github;
 
-use App\Actions\Plugins\InstallPlugin;
 use App\Models\Plugin;
 use Exception;
-use File;
 
 final readonly class UpdateGithubPlugin
 {

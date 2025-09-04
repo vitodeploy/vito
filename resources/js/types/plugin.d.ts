@@ -13,4 +13,5 @@ export interface Plugin {
   folder: string;
   error_count: number;
   updates_available: boolean;
+  username: string;
 }

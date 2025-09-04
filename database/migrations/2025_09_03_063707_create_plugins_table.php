@@ -17,15 +17,13 @@ return new class extends Migration
             $table->string('version')->nullable();
             $table->text('description')->nullable();
             $table->string('repo')->nullable();
+            $table->string('username')->nullable();
             $table->string('namespace');
             $table->string('folder');
             $table->boolean('is_enabled')->default(false);
             $table->boolean('is_installed')->default(false);
             $table->boolean('updates_available')->default(false);
             $table->json('config')->nullable();
-            $table->integer('priority')->default(0);
-            $table->timestamp('last_error_at')->nullable();
-            $table->integer('error_count')->default(0);
             $table->timestamps();
 
             $table->index(['is_enabled', 'priority']);

@@ -23,7 +23,7 @@ export default function DiscoveredPlugins({ plugins }: { plugins: Plugin[] }) {
         ))
       ) : (
         <CardRow className="items-center justify-center">
-          <span className="text-muted-foreground">No plugins installed</span>
+          <span className="text-muted-foreground">No uninstalled plugins discovered</span>
         </CardRow>
       )}
     </div>

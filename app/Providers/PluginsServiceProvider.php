@@ -39,6 +39,5 @@ class PluginsServiceProvider extends ServiceProvider
             });
         }
 
-
     }
 }

@@ -29,5 +29,11 @@ final readonly class DiscoverPlugins
                 ]);
             }
         }
+
+        $plugins->each(function ($plugin) use ($pluginFolders) {
+            if (! in_array($plugin->folder, $pluginFolders)) {
+                $plugin->delete();
+            }
+        });
     }
 }

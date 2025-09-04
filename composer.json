@@ -11,6 +11,7 @@
     "php": "^8.4",
     "ext-ftp": "*",
     "ext-intl": "*",
+    "ext-zip": "*",
     "aws/aws-sdk-php": "^3.158",
     "inertiajs/inertia-laravel": "^2.0",
     "laravel/fortify": "^1.17",
@@ -23,7 +24,7 @@
     "phpseclib/phpseclib": "3.0.43",
     "spatie/laravel-route-attributes": "^1.24",
     "tightenco/ziggy": "^2.5",
-    "ext-zip": "*"
+    "vitodeploy/laravel-reverb-plugin": "^1.0"
   },
   "require-dev": {
     "fakerphp/faker": "^1.9.1",

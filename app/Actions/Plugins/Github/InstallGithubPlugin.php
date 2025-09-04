@@ -21,15 +21,33 @@ final readonly class InstallGithubPlugin
      */
     public function handle(string $url, ?Plugin $plugin = null): Plugin
     {
+        if (str_contains($url, 'https://api.github.com/repos')) {
+            $url = str_replace('https://api.github.com/repos', 'https://github.com', $url);
+        }
+
+        if ($plugin === null) {
+            $existingPlugin = Plugin::where('repo', $url)->exists();
+            if ($existingPlugin) {
+                throw new Exception('Plugin is already installed');
+            }
+        }
+
         [$username, $repo] = $this->parseGitHubUrl($url);
 
         $release = $this->releaseInfo->handle($username, $repo);
         if ($release === null) {
-            throw new Exception('No Released Versions');
+            throw new Exception('Plugin has no released versions');
         }
 
         $psrUser = $this->toPsrCase($username);
         $psrRepo = $this->toPsrCase($repo);
+
+        if ($plugin === null) {
+            $existingPlugin = Plugin::where('name', $psrRepo)->exists();
+            if ($existingPlugin) {
+                throw new Exception('A plugin with the same name is already installed');
+            }
+        }
 
         $folder = implode(DIRECTORY_SEPARATOR, [$psrUser, $psrRepo]);
         $pluginsFolder = implode(DIRECTORY_SEPARATOR, ['Vito', 'Plugins', $folder]);
@@ -44,12 +62,21 @@ final readonly class InstallGithubPlugin
         File::delete($zipLocation);
 
         if ($plugin === null) {
-            $plugin = Plugin::create([
-                'repo' => $url,
-                'folder' => $folder,
-                'version' => $release->tagName,
-                'namespace' => "App\\Vito\\Plugins\\$psrUser\\$psrRepo\\Plugin",
-            ]);
+            $plugin = Plugin::updateOrCreate(
+                ['folder' => $folder],
+                [
+                    'repo' => $url,
+                    'username' => $username,
+                    'folder' => $folder,
+                    'version' => $release->tagName,
+                    'namespace' => "App\\Vito\\Plugins\\$psrUser\\$psrRepo\\Plugin",
+                    'is_installed' => false,
+                    'is_enabled' => false,
+                    'name' => null,
+                    'description' => null,
+                    'updates_available' => false,
+                ]
+            );
 
             $this->installPlugin->handle($plugin);
         } else {
@@ -68,7 +95,7 @@ final readonly class InstallGithubPlugin
     {
         $parsed = parse_url(rtrim($url, '.git'));
         if (($parsed['host'] ?? '') !== 'github.com') {
-            throw new Exception('Invalid GitHub URL provided');
+            throw new Exception("Invalid GitHub URL provided. $url");
         }
 
         $parts = explode('/', trim($parsed['path'], '/'));
