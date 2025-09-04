@@ -28,11 +28,19 @@ class Disable extends Action
     {
         $this->ssh = $this->server->ssh($this->server->ssh_user);
 
-        $this->ssh->exec(view('ssh.motd.disable', [
-            'motd' => '',
-        ]), 'disable-motd', $this->server->id);
-
         $featureData = $this->server->feature_data ?? [];
+
+        $file = match ($featureData['motd_position']) {
+            MotdPosition::END => '/etc/update-motd.d/99-vito',
+            default => '/etc/update-motd.d/00-vito',
+        };
+
+        $this->server->os()->deleteFile($file, 'root');
+
+        if ($featureData['motd_position'] === MotdPosition::REPLACE) {
+            $this->ssh->exec('chmod +x /etc/update-motd.d/*', 'restore-motd', $this->server->id);
+        }
+
         data_set($featureData, 'motd', false);
         $this->server->feature_data = $featureData;
         $this->server->save();

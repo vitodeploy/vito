@@ -2,6 +2,7 @@ import { InputHTMLAttributes, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import InputError from '@/components/ui/input-error';
@@ -92,6 +93,27 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
             </SelectGroup>
           </SelectContent>
         </Select>
+        {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
+        <InputError message={error} />
+      </FormField>
+    );
+  }
+
+  // Handle textarea
+  if (config?.type === 'textarea') {
+    return (
+      <FormField>
+        <Label htmlFor={`field-${config.name}`} className="capitalize">
+          {label}
+        </Label>
+        <Textarea
+          name={config.name}
+          id={`field-${config.name}`}
+          defaultValue={(value as string) || ''}
+          placeholder={config.placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className={config.className}
+        />
         {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
         <InputError message={error} />
       </FormField>
