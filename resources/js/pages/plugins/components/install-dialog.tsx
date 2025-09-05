@@ -55,14 +55,7 @@ export default function InstallDialog({ repo }: { repo?: Repo }) {
           <FormFields>
             <FormField className="space-y-2">
               <Label htmlFor="url">GitHub URL</Label>
-              <Input
-                id="url"
-                type="text"
-                name="url"
-                autoComplete="url"
-                value={form.data.url}
-                onChange={(e) => form.setData('url', e.target.value)}
-              />
+              <Input id="url" type="text" name="url" autoComplete="url" value={form.data.url} onChange={(e) => form.setData('url', e.target.value)} />
               <InputError message={form.errors.url} />
             </FormField>
           </FormFields>

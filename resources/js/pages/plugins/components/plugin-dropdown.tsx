@@ -32,9 +32,3 @@ export default function PluginDropdown({ plugin }: { plugin: Plugin }) {
     </DropdownMenu>
   );
 }
-
-
-
-
-
-

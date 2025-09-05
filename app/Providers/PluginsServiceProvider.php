@@ -8,7 +8,6 @@ use App\Console\Commands\Plugins\InstallLegacyPluginCommand;
 use App\Console\Commands\Plugins\LegacyPluginsListCommand;
 use App\Console\Commands\Plugins\LoadLegacyPluginsCommand;
 use App\Plugins\LegacyPlugins;
-use App\Plugins\RegisterBind;
 use App\Plugins\RegisterCommand;
 use App\Plugins\RegisterViews;
 use Illuminate\Support\ServiceProvider;
@@ -41,10 +40,6 @@ class PluginsServiceProvider extends ServiceProvider
 
             foreach (RegisterViews::get() as $name => $path) {
                 $this->loadViewsFrom($path, $name);
-            }
-
-            foreach (RegisterBind::get() as $from => $to) {
-                $this->app->bind($from, $to);
             }
 
             if ($this->app->runningInConsole()) {

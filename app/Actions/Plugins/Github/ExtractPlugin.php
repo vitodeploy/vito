@@ -21,21 +21,17 @@ final readonly class ExtractPlugin
             throw new Exception('Failed to open ZIP file: '.$zipPath);
         }
 
-        if (! File::isDirectory($extractPath)) {
-            File::makeDirectory(path: dirname($extractPath), recursive: true);
+        if (File::isDirectory($extractPath)) {
+            File::deleteDirectory($extractPath);
         }
+
+        File::ensureDirectoryExists(path: dirname($extractPath));
 
         try {
             $rootFolder = $this->detectGitHubRootFolder($zip);
             if (! $rootFolder) {
                 throw new Exception('Could not detect GitHub root folder structure');
             }
-
-            if (File::isDirectory($extractPath)) {
-                File::deleteDirectory($extractPath);
-            }
-
-            File::makeDirectory(path: $extractPath, recursive: true);
 
             $temp = storage_path('app'.DIRECTORY_SEPARATOR.'temp');
             $zip->extractTo($temp);

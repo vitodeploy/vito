@@ -35,16 +35,18 @@ export default function Uninstall({ plugin }: { plugin: Plugin }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-          {plugin.is_installed ? "Uninstall" : "Remove"}
+          {plugin.is_installed ? 'Uninstall' : 'Remove'}
         </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{plugin.is_installed ? "Uninstall" : "Remove"} Plugin</DialogTitle>
-          <DialogDescription className="sr-only">{plugin.is_installed ? "Uninstall" : "Remove"} plugin {plugin.name ?? plugin.folder}</DialogDescription>
+          <DialogTitle>{plugin.is_installed ? 'Uninstall' : 'Remove'} Plugin</DialogTitle>
+          <DialogDescription className="sr-only">
+            {plugin.is_installed ? 'Uninstall' : 'Remove'} plugin {plugin.name ?? plugin.folder}
+          </DialogDescription>
         </DialogHeader>
         <p className="p-4">
-          Are you sure you want to {plugin.is_installed ? "uninstall" : "remove"} the plugin <strong>{plugin.name ?? plugin.folder}</strong>?
+          Are you sure you want to {plugin.is_installed ? 'uninstall' : 'remove'} the plugin <strong>{plugin.name ?? plugin.folder}</strong>?
         </p>
         <DialogFooter>
           <DialogClose asChild>
@@ -52,7 +54,7 @@ export default function Uninstall({ plugin }: { plugin: Plugin }) {
           </DialogClose>
           <Button variant="destructive" onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            {plugin.is_installed ? "Uninstall" : "Remove"}
+            {plugin.is_installed ? 'Uninstall' : 'Remove'}
           </Button>
         </DialogFooter>
       </DialogContent>

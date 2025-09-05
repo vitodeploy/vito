@@ -29,6 +29,8 @@ final readonly class EnablePlugin
         }
 
         try {
+            $plugin->name = $implementation->getName();
+            $plugin->description = $implementation->getDescription();
             $implementation->enable();
         } catch (Throwable $ex) {
             PluginError::createFromException($ex, $plugin);

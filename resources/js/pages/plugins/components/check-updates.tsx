@@ -11,10 +11,10 @@ export default function CheckForUpdates() {
   };
 
   return (
-      <Button variant="outline" onClick={submit} disabled={form.processing}>
-        <RefreshCw />
-        {form.processing && <LoaderCircleIcon className="animate-spin" />}
-        <span className="hidden lg:block">Check for Updates</span>
-      </Button>
+    <Button variant="outline" onClick={submit} disabled={form.processing}>
+      <RefreshCw />
+      {form.processing && <LoaderCircleIcon className="animate-spin" />}
+      <span className="hidden lg:block">Check for Updates</span>
+    </Button>
   );
 }

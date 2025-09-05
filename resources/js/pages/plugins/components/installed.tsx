@@ -8,45 +8,41 @@ import { TriangleAlert } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
-  const installedPlugins = plugins.filter(plugin => plugin.is_installed);
+  const installedPlugins = plugins.filter((plugin) => plugin.is_installed);
   return (
     <div>
       {installedPlugins.length > 0 ? (
         installedPlugins.map((plugin, index) => (
           <div key={`plugin-${index}`}>
             <CardRow>
-              <div className="flex flex-row gap-4 items-center">
-                <Pip variant={plugin.is_enabled ? "active" : "disabled"} />
+              <div className="flex flex-row items-center gap-4">
+                <Pip variant={plugin.is_enabled ? 'active' : 'disabled'} />
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     {plugin.repo === null ? (
                       <span>{plugin.name}</span>
                     ) : (
-                      <a href={plugin.repo} className="hover:text-primary" target="_blank">{plugin.name}</a>
+                      <a href={plugin.repo} className="hover:text-primary" target="_blank">
+                        {plugin.name}
+                      </a>
                     )}
-                    {plugin.username && (
-                      <Badge variant="outline">by {plugin.username}</Badge>
-                    )}
+                    {plugin.username && <Badge variant="outline">by {plugin.username}</Badge>}
                   </div>
-                  <div className="text-muted-foreground text-xs flex flex-row gap-3">
-                    <span>{plugin.repo !== null ? "GitHub" : "Local"}</span>
+                  <div className="text-muted-foreground flex flex-row gap-3 text-xs">
+                    <span>{plugin.repo !== null ? 'GitHub' : 'Local'}</span>
                     <span>{plugin.version}</span>
-                    {plugin.updates_available && (
-                      <span>Update Available</span>
-                    )}
+                    {plugin.updates_available && <span>Update Available</span>}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center flex-row gap-4">
+              <div className="flex flex-row items-center gap-4">
                 {plugin.errors.length > 0 && (
                   <Tooltip>
                     <TooltipTrigger>
                       <TriangleAlert className="text-danger mt-1" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                      This plugin has errors
-                    </TooltipContent>
+                    <TooltipContent>This plugin has errors</TooltipContent>
                   </Tooltip>
                 )}
                 <PluginDropdown plugin={plugin} />

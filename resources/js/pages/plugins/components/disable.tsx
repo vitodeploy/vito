@@ -34,7 +34,9 @@ export default function Disable({ plugin }: { plugin: Plugin }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>Disable</DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+          Disable
+        </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

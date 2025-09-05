@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { TriangleAlert } from 'lucide-react';
 
 export default function DiscoveredPlugins({ plugins }: { plugins: Plugin[] }) {
-  const installedPlugins = plugins.filter(plugin => !plugin.is_installed);
+  const installedPlugins = plugins.filter((plugin) => !plugin.is_installed);
   return (
     <div>
       {installedPlugins.length > 0 ? (
@@ -22,9 +22,7 @@ export default function DiscoveredPlugins({ plugins }: { plugins: Plugin[] }) {
                     <TooltipTrigger>
                       <TriangleAlert className="text-danger mt-1" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                      This plugin has errors
-                    </TooltipContent>
+                    <TooltipContent>This plugin has errors</TooltipContent>
                   </Tooltip>
                 )}
                 <PluginDropdown plugin={plugin} />

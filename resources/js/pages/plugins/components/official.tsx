@@ -4,7 +4,7 @@ import { Repo } from '@/types/repo';
 import { BadgeCheckIcon, LoaderCircleIcon, StarIcon } from 'lucide-react';
 import { CardRow } from '@/components/ui/card';
 import React, { Fragment } from 'react';
-import Install from '@/pages/plugins/components/quick-install'
+import Install from '@/pages/plugins/components/quick-install';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
@@ -17,7 +17,9 @@ export default function OfficialPlugins() {
   }>({
     queryKey: ['official-plugins'],
     queryFn: async ({ pageParam }) => {
-      const data = (await axios.get('https://api.github.com/search/repositories?q=owner:vitodeploy%20topic:vitodeploy-plugin&per_page=10&page=' + pageParam)).data;
+      const data = (
+        await axios.get('https://api.github.com/search/repositories?q=owner:vitodeploy%20topic:vitodeploy-newplugin&per_page=10&page=' + pageParam)
+      ).data;
       if (data.items.length == 10) {
         data.next_page = (pageParam as number) + 1;
       }
