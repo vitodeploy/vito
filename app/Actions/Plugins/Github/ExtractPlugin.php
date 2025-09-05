@@ -21,6 +21,10 @@ final readonly class ExtractPlugin
             throw new Exception('Failed to open ZIP file: '.$zipPath);
         }
 
+        if (! File::isDirectory($extractPath)) {
+            File::makeDirectory(path: dirname($extractPath), recursive: true);
+        }
+
         try {
             $rootFolder = $this->detectGitHubRootFolder($zip);
             if (! $rootFolder) {

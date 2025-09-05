@@ -4,6 +4,7 @@ namespace App\Actions\Plugins\Github;
 
 use App\DTOs\GitHub\ReleaseDto;
 use Exception;
+use File;
 
 final readonly class DownloadRelease
 {
@@ -23,6 +24,10 @@ final readonly class DownloadRelease
                 'timeout' => 30,
             ],
         ]);
+
+        if (! File::isDirectory(dirname($location))) {
+            File::makeDirectory(path: dirname($location), recursive: true);
+        }
 
         $content = @file_get_contents($release->zipUrl, false, $context);
         if ($content === false) {
