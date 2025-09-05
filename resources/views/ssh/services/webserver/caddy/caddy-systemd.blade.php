@@ -15,5 +15,5 @@ PrivateTmp=true
 ProtectSystem=full
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 
-[InstallDialog]
+[Install]
 WantedBy=multi-user.target

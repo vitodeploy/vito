@@ -4,7 +4,6 @@ namespace App\Actions\Plugins;
 
 use App\Models\Plugin;
 use Cache;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Throwable;
 

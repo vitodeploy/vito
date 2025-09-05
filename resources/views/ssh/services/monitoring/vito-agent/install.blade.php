@@ -30,7 +30,7 @@ User=root
 ExecStart=/usr/local/bin/vito-agent
 Restart=on-failure
 
-[InstallDialog]
+[Install]
 WantedBy=multi-user.target
 "
 echo "${VITO_AGENT_SERVICE}" | sudo tee /etc/systemd/system/vito-agent.service
