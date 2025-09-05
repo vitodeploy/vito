@@ -168,26 +168,25 @@ class VitoSettingController extends Controller
 
     private function moveBackupFiles(string $extractPath): void
     {
-        $fileMap = [
-            'database' => [
-                'sources' => ['database.sqlite', 'storage/database.sqlite'],
-                'destination' => storage_path('database.sqlite')
-            ],
+        $fileDirectoryMap = [
+            // Files
             'env' => [
                 'sources' => ['.env'],
                 'destination' => base_path('.env')
             ],
+            'database' => [
+                'sources' => ['database.sqlite', 'storage/database.sqlite'],
+                'destination' => storage_path('database.sqlite')
+            ],
             'ssh_public' => [
-                'sources' => ['ssh-public.key'],
+                'sources' => ['ssh-public.key', 'storage/ssh-public.key'],
                 'destination' => storage_path('ssh-public.key')
             ],
             'ssh_private' => [
-                'sources' => ['ssh-private.pem'],
+                'sources' => ['ssh-private.pem', 'storage/ssh-private.pem'],
                 'destination' => storage_path('ssh-private.pem')
             ],
-        ];
-
-        $directoryMap = [
+            // Directories
             'key_pairs' => [
                 'sources' => ['key-pairs'],
                 'destination' => storage_path('app/key-pairs')
@@ -198,21 +197,11 @@ class VitoSettingController extends Controller
             ],
         ];
 
-        foreach ($fileMap as $config) {
+        foreach ($fileDirectoryMap as $config) {
             foreach ($config['sources'] as $sourcePath) {
                 $fullPath = $extractPath . '/' . $sourcePath;
                 if (File::exists($fullPath)) {
                     File::move($fullPath, $config['destination']);
-                    break;
-                }
-            }
-        }
-
-        foreach ($directoryMap as $config) {
-            foreach ($config['sources'] as $sourcePath) {
-                $fullPath = $extractPath . '/' . $sourcePath;
-                if (File::exists($fullPath)) {
-                    move_directory($fullPath, $config['destination']);
                     break;
                 }
             }
