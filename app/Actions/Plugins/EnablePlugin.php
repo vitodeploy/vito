@@ -37,6 +37,8 @@ final readonly class EnablePlugin
             throw new Exception('Unable to enable the plugin, please check the error logs');
         }
 
+        // FIXME: When plguin is faulty, it still returns successful response to the frontend
+
         $plugin->is_enabled = true;
         $plugin->save();
 

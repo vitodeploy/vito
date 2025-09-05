@@ -2,9 +2,23 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $plugin_id
+ * @property string $error_type
+ * @property string $error_message
+ * @property string|null $stack_trace
+ * @property string|null $file
+ * @property int|null $line
+ * @property array|null $context
+ * @property bool $is_fatal
+ * @property Carbon $occurred_at
+ * @property Plugin $plugin
+ */
 class PluginError extends Model
 {
     protected $fillable = [
