@@ -96,40 +96,121 @@ class VitoSettingController extends Controller
             'backup_file' => 'required|file|mimes:zip',
         ]);
 
-        $uploadedFile = $request->file('backup_file');
+        $extractPath = $this->extractBackupFile($request->file('backup_file'));
+        
+        try {
+            $this->validateBackupStructure($extractPath);
+            $this->moveBackupFiles($extractPath);
+            
+            Artisan::call('optimize');
+            
+            return redirect()->route('vito-settings')
+                ->with('success', 'Settings imported successfully.');
+        } finally {
+            File::deleteDirectory($extractPath);
+        }
+    }
+
+    /**
+     * @throws ValidationException
+     * @throws Exception
+     */
+    private function extractBackupFile($uploadedFile): string
+    {
         $extractName = 'vito-backup-import-'.time();
         $extractPath = Storage::disk('tmp')->path($extractName);
 
-        // Create extraction directory
         File::makeDirectory($extractPath, 0755, true);
 
         $zip = new ZipArchive;
         if ($zip->open($uploadedFile->getPathname()) !== true) {
-            throw ValidationException::withMessages(['file' => 'The uploaded file is not a valid zip archive.']);
+            throw ValidationException::withMessages([
+                'file' => 'The uploaded file is not a valid zip archive.'
+            ]);
         }
 
-        // Extract files
         $zip->extractTo($extractPath);
         $zip->close();
 
-        // Replace files
-        File::move($extractPath.'/database.sqlite', storage_path('database.sqlite'));
-        if (File::exists($extractPath.'/.env')) {
-            File::move($extractPath.'/.env', base_path('.env'));
-        }
-        File::move($extractPath.'/ssh-public.key', storage_path('ssh-public.key'));
-        File::move($extractPath.'/ssh-private.pem', storage_path('ssh-private.pem'));
-        if (File::exists($extractPath.'/key-pairs')) {
-            move_directory($extractPath.'/key-pairs', storage_path('app/key-pairs'));
-        }
-        if (File::exists($extractPath.'/server-logs')) {
-            move_directory($extractPath.'/server-logs', storage_path('app/server-logs'));
+        return $extractPath;
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function validateBackupStructure(string $extractPath): void
+    {
+        $dbPaths = [
+            $extractPath . '/database.sqlite',
+            $extractPath . '/storage/database.sqlite'
+        ];
+
+        $dbPath = null;
+        foreach ($dbPaths as $path) {
+            if (file_exists($path)) {
+                $dbPath = $path;
+                break;
+            }
         }
 
-        Artisan::call('optimize');
+        if (!$dbPath) {
+            throw ValidationException::withMessages([
+                'file' => 'The uploaded backup file is not valid. Database file not found.'
+            ]);
+        }
+    }
 
-        return redirect()->route('vito-settings')
-            ->with('success', 'Settings imported successfully.');
+    private function moveBackupFiles(string $extractPath): void
+    {
+        $fileMap = [
+            'database' => [
+                'sources' => ['database.sqlite', 'storage/database.sqlite'],
+                'destination' => storage_path('database.sqlite')
+            ],
+            'env' => [
+                'sources' => ['.env'],
+                'destination' => base_path('.env')
+            ],
+            'ssh_public' => [
+                'sources' => ['ssh-public.key'],
+                'destination' => storage_path('ssh-public.key')
+            ],
+            'ssh_private' => [
+                'sources' => ['ssh-private.pem'],
+                'destination' => storage_path('ssh-private.pem')
+            ],
+        ];
+
+        $directoryMap = [
+            'key_pairs' => [
+                'sources' => ['key-pairs'],
+                'destination' => storage_path('app/key-pairs')
+            ],
+            'server_logs' => [
+                'sources' => ['server-logs'],
+                'destination' => storage_path('app/server-logs')
+            ],
+        ];
+
+        foreach ($fileMap as $config) {
+            foreach ($config['sources'] as $sourcePath) {
+                $fullPath = $extractPath . '/' . $sourcePath;
+                if (File::exists($fullPath)) {
+                    File::move($fullPath, $config['destination']);
+                    break;
+                }
+            }
+        }
+
+        foreach ($directoryMap as $config) {
+            foreach ($config['sources'] as $sourcePath) {
+                $fullPath = $extractPath . '/' . $sourcePath;
+                if (File::exists($fullPath)) {
+                    move_directory($fullPath, $config['destination']);
+                    break;
+                }
+            }
+        }
     }
 
     private function addDirectoryToZip(ZipArchive $zip, string $path, string $zipPath): void
