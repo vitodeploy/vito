@@ -6,6 +6,7 @@ import { Pip } from '@/components/ui/pip';
 import PluginDropdown from '@/pages/plugins/components/plugin-dropdown';
 import { TriangleAlert } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import ViewLogs from './view-logs';
 
 export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
   const installedPlugins = plugins.filter((plugin) => plugin.is_installed);
@@ -16,7 +17,7 @@ export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
           <div key={`plugin-${index}`}>
             <CardRow>
               <div className="flex flex-row items-center gap-4">
-                <Pip variant={plugin.is_enabled ? 'active' : 'disabled'} />
+                <Pip variant={plugin.is_enabled ? 'default' : plugin.errors.length > 0 ? 'destructive' : 'gray'} />
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     {plugin.repo === null ? (
@@ -40,7 +41,9 @@ export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
                 {plugin.errors.length > 0 && (
                   <Tooltip>
                     <TooltipTrigger>
-                      <TriangleAlert className="text-danger mt-1" />
+                      <ViewLogs plugin={plugin}>
+                        <TriangleAlert className="text-destructive cursor-pointer" />
+                      </ViewLogs>
                     </TooltipTrigger>
                     <TooltipContent>This plugin has errors</TooltipContent>
                   </Tooltip>

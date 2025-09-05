@@ -4,7 +4,7 @@ namespace App\Actions\Plugins\Github;
 
 use App\Models\Plugin;
 use Exception;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 final readonly class CheckForUpdates
 {

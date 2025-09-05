@@ -3,7 +3,7 @@
 namespace App\Actions\Plugins;
 
 use App\Models\Plugin;
-use File;
+use Illuminate\Support\Facades\File;
 
 final readonly class DiscoverPlugins
 {

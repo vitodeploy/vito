@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Repo } from '@/types/repo';
 import { LoaderCircleIcon, StarIcon } from 'lucide-react';
 import { CardRow } from '@/components/ui/card';
-import React, { Fragment } from 'react';
+import { Fragment } from 'react';
 import Install from '@/pages/legacy-plugins/components/install';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,8 @@ export default function CommunityPlugins() {
   }>({
     queryKey: ['official-legacy-plugins'],
     queryFn: async ({ pageParam }) => {
-      const data = (await axios.get('https://api.github.com/search/repositories?q=topic:vitodeploy-plugin&per_page=10&page=' + pageParam)).data;
+      const data = (await axios.get('https://api.github.com/search/repositories?q=topic:vitodeploy-plugin-legacy&per_page=10&page=' + pageParam))
+        .data;
       data.items = data.items.filter((repo: Repo) => repo.owner.login !== 'vitodeploy');
       if (data.items.length == 10) {
         data.next_page = (pageParam as number) + 1;

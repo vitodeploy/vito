@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils';
 const pipVariants = cva('rounded-full transition-colors self-stretch', {
   variants: {
     variant: {
-      active: 'bg-green-500',
-      inactive: 'bg-gray-400',
-      disabled: 'bg-red-500',
+      default: 'bg-primary',
+      gray: 'bg-muted-foreground/20',
+      destructive: 'bg-destructive',
     },
     size: {
       default: 'w-2',
@@ -18,7 +18,7 @@ const pipVariants = cva('rounded-full transition-colors self-stretch', {
     },
   },
   defaultVariants: {
-    variant: 'inactive',
+    variant: 'gray',
     size: 'default',
   },
 });

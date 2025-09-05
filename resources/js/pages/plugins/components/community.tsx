@@ -19,7 +19,9 @@ export default function CommunityPlugins() {
     queryKey: ['community-plugins'],
     queryFn: async ({ pageParam }) => {
       const data = (
-        await axios.get('https://api.github.com/search/repositories?q=-owner:vitodeploy%20topic:vitodeploy-newplugin%20fork:true&per_page=10&page=' + pageParam)
+        await axios.get(
+          'https://api.github.com/search/repositories?q=-owner:vitodeploy%20topic:vitodeploy-newplugin%20fork:true&per_page=10&page=' + pageParam,
+        )
       ).data;
       if (data.items.length == 10) {
         data.next_page = (pageParam as number) + 1;

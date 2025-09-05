@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Plugin } from '@/types/plugin';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function QuickInstall({ url }: { url: string }) {
   const form = useForm({
@@ -21,9 +22,14 @@ export default function QuickInstall({ url }: { url: string }) {
   };
 
   return (
-    <Button variant="default" onClick={submit} disabled={form.processing || isInstalled}>
-      {form.processing && <LoaderCircleIcon className="animate-spin" />}
-      {isInstalled ? 'Installed' : 'Install'}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger>
+        <Button variant="default" onClick={submit} disabled={form.processing || isInstalled}>
+          {form.processing && <LoaderCircleIcon className="animate-spin" />}
+          Install
+        </Button>
+      </TooltipTrigger>
+      {isInstalled && <TooltipContent>Already Installed</TooltipContent>}
+    </Tooltip>
   );
 }

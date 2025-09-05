@@ -4,7 +4,7 @@ namespace App\Actions\Plugins\Github;
 
 use App\DTOs\GitHub\ReleaseDto;
 use Exception;
-use File;
+use Illuminate\Support\Facades\File;
 
 final readonly class DownloadRelease
 {

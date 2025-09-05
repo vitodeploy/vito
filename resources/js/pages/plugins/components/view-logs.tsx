@@ -12,12 +12,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardRow } from '@/components/ui/card';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { cn } from '@/lib/utils';
 import DateTime from '@/components/date-time';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
-export default function ViewLogs({ plugin }: { plugin: Plugin }) {
+export default function ViewLogs({ plugin, children }: { plugin: Plugin; children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
 
@@ -36,7 +36,7 @@ export default function ViewLogs({ plugin }: { plugin: Plugin }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View Logs</DropdownMenuItem>
+        {children ? children : <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View Logs</DropdownMenuItem>}
       </DialogTrigger>
       <DialogContent className="flex max-h-[80vh] max-w-2xl! flex-col">
         <DialogHeader>

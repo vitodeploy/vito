@@ -3,8 +3,8 @@
 namespace App\Actions\Plugins;
 
 use App\Models\Plugin;
-use Cache;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 final readonly class PluginCache

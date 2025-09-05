@@ -5,7 +5,7 @@ namespace App\Actions\Plugins;
 use App\Models\Plugin;
 use App\Models\PluginError;
 use Exception;
-use File;
+use Illuminate\Support\Facades\File;
 use Throwable;
 
 final readonly class UninstallPlugin
