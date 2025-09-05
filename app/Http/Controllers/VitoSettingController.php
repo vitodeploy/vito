@@ -106,6 +106,10 @@ class VitoSettingController extends Controller
             
             return redirect()->route('vito-settings')
                 ->with('success', 'Settings imported successfully.');
+        } catch (ValidationException $e) {
+            return redirect()->route('vito-settings')
+                ->with('error', 'Import failed: ' . $e->getMessage())
+                ->withErrors($e->errors());
         } finally {
             File::deleteDirectory($extractPath);
         }
@@ -120,6 +124,7 @@ class VitoSettingController extends Controller
         $extractName = 'vito-backup-import-'.time();
         $extractPath = Storage::disk('tmp')->path($extractName);
 
+        // Create extraction directory
         File::makeDirectory($extractPath, 0755, true);
 
         $zip = new ZipArchive;
@@ -129,6 +134,7 @@ class VitoSettingController extends Controller
             ]);
         }
 
+        // Extract files
         $zip->extractTo($extractPath);
         $zip->close();
 
@@ -155,7 +161,7 @@ class VitoSettingController extends Controller
 
         if (!$dbPath) {
             throw ValidationException::withMessages([
-                'file' => 'The uploaded backup file is not valid. Database file not found.'
+                'backup_file' => 'The uploaded backup file is not valid. Database file not found.'
             ]);
         }
     }
