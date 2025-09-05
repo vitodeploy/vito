@@ -61,6 +61,11 @@ const sidebarNavItems: NavItem[] = [
     icon: PlugIcon,
   },
   {
+    title: 'Legacy Plugins',
+    href: route('legacy-plugins'),
+    icon: PlugIcon,
+  },
+  {
     title: 'Vito Settings',
     href: route('vito-settings'),
     icon: VitoIcon,

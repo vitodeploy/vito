@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm } from '@inertiajs/react';
@@ -22,13 +22,21 @@ export default function ScriptForm({ script, children }: { script?: Script; chil
     content: string;
   }>({
     name: script?.name ?? '',
-    content: script?.script ?? '',
+    content: script?.content ?? '',
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const url = script ? route('scripts.update', { script: script.id }) : route('scripts.store');
-    form.post(url, {
+    if (script) {
+      form.put(route('scripts.update', { script: script.id }), {
+        onSuccess: () => {
+          setOpen(false);
+        },
+      });
+      return;
+    }
+
+    form.post(route('scripts'), {
       onSuccess: () => {
         setOpen(false);
       },
@@ -58,7 +66,7 @@ export default function ScriptForm({ script, children }: { script?: Script; chil
               <div className="overflow-hidden rounded-md border">
                 <Editor
                   defaultLanguage="bash"
-                  value={form.data.content}
+                  defaultValue={form.data.content}
                   theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
                   className="h-[500px]"
                   onChange={(value) => form.setData('content', value ?? '')}

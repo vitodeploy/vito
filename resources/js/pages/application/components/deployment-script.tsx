@@ -12,6 +12,8 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-script';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { StatusRipple } from '@/components/status-ripple';
 
 export default function DeploymentScript({
   site,
@@ -65,6 +67,14 @@ export default function DeploymentScript({
               fontSize: 15,
             }}
           />
+          <div className="absolute! right-0 bottom-[140px] left-0 z-10 mx-auto max-w-5xl px-4">
+            <Alert>
+              <AlertDescription className="flex items-center gap-2">
+                <StatusRipple variant="default" />
+                <p>Using `php` command in your script will use the PHP version of the site.</p>
+              </AlertDescription>
+            </Alert>
+          </div>
           {['default', 'pre-flight'].includes(script.name) && (
             <FormFields className="p-4">
               <FormField className="mb-0">

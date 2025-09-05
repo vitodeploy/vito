@@ -15,6 +15,6 @@ class Plugins extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return 'plugins';
+        return 'legacy-plugins';
     }
 }

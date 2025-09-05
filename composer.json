@@ -11,6 +11,7 @@
     "php": "^8.4",
     "ext-ftp": "*",
     "ext-intl": "*",
+    "ext-zip": "*",
     "aws/aws-sdk-php": "^3.158",
     "inertiajs/inertia-laravel": "^2.0",
     "laravel/fortify": "^1.17",

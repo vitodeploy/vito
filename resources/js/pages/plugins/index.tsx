@@ -3,15 +3,17 @@ import { Head, usePage } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import React, { useState } from 'react';
 import Container from '@/components/container';
+import InstalledPlugins from '@/pages/plugins/components/installed';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import OfficialPlugins from '@/pages/plugins/components/official';
-import InstalledPlugins from '@/pages/plugins/components/installed';
 import { Plugin } from '@/types/plugin';
-import CommunityPlugins from '@/pages/plugins/components/community';
 import { Button } from '@/components/ui/button';
 import { BookOpenIcon } from 'lucide-react';
-import Install from '@/pages/plugins/components/install';
+import InstallDialog from '@/pages/plugins/components/install-dialog';
+import DiscoveredPlugins from '@/pages/plugins/components/discovered';
+import CheckForUpdates from '@/pages/plugins/components/check-updates';
+import CommunityPlugins from '@/pages/plugins/components/community';
+import OfficialPlugins from '@/pages/plugins/components/official';
 
 export default function Plugins() {
   const [tab, setTab] = useState('installed');
@@ -33,13 +35,15 @@ export default function Plugins() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <Install />
+            <CheckForUpdates />
+            <InstallDialog />
           </div>
         </div>
 
         <Tabs defaultValue={tab} onValueChange={setTab}>
           <TabsList>
             <TabsTrigger value="installed">Installed</TabsTrigger>
+            <TabsTrigger value="discovered">Discovered</TabsTrigger>
             <TabsTrigger value="official">Official</TabsTrigger>
             <TabsTrigger value="community">Community</TabsTrigger>
           </TabsList>
@@ -47,10 +51,21 @@ export default function Plugins() {
             <Card>
               <CardHeader>
                 <CardTitle>Installed plugins</CardTitle>
-                <CardDescription>All the installed plugins</CardDescription>
+                <CardDescription>All the currently installed plugins</CardDescription>
               </CardHeader>
               <CardContent>
                 <InstalledPlugins plugins={page.props.plugins} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="discovered">
+            <Card>
+              <CardHeader>
+                <CardTitle>Discovered plugins</CardTitle>
+                <CardDescription>These plugins are present on the system, but have not been installed</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DiscoveredPlugins plugins={page.props.plugins} />
               </CardContent>
             </Card>
           </TabsContent>

@@ -4,7 +4,7 @@ import { Repo } from '@/types/repo';
 import { LoaderCircleIcon, StarIcon } from 'lucide-react';
 import { CardRow } from '@/components/ui/card';
 import React, { Fragment } from 'react';
-import Install from '@/pages/plugins/components/install';
+import Install from '@/pages/plugins/components/quick-install';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -16,10 +16,13 @@ export default function CommunityPlugins() {
     items: Repo[];
     next_page?: number;
   }>({
-    queryKey: ['official-plugins'],
+    queryKey: ['community-plugins'],
     queryFn: async ({ pageParam }) => {
-      const data = (await axios.get('https://api.github.com/search/repositories?q=topic:vitodeploy-plugin&per_page=10&page=' + pageParam)).data;
-      data.items = data.items.filter((repo: Repo) => repo.owner.login !== 'vitodeploy');
+      const data = (
+        await axios.get(
+          'https://api.github.com/search/repositories?q=-owner:vitodeploy%20topic:vitodeploy-newplugin%20fork:true&per_page=10&page=' + pageParam,
+        )
+      ).data;
       if (data.items.length == 10) {
         data.next_page = (pageParam as number) + 1;
       }
@@ -56,7 +59,7 @@ export default function CommunityPlugins() {
                       <StarIcon />
                       {repo.stargazers_count}
                     </Button>
-                    <Install repo={repo} />
+                    <Install url={repo.html_url} />
                   </div>
                 </CardRow>
                 {!(page.items[page.items.length - 1].id === repo.id && page === query.data.pages[query.data.pages.length - 1]) && (
