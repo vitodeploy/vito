@@ -6,6 +6,7 @@ use App\Models\Plugin;
 use Cache;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
+use Throwable;
 
 final readonly class PluginCache
 {
@@ -31,7 +32,7 @@ final readonly class PluginCache
                     ->where('is_enabled', true)
                     ->get();
             });
-        } catch (QueryException) {
+        } catch (Throwable) {
             return collect();
         }
     }
