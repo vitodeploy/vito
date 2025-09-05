@@ -15,7 +15,7 @@ import { LoaderCircleIcon } from 'lucide-react';
 import { Plugin } from '@/types/plugin';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
-export default function UpdatePlugin({ plugin }: { plugin: Plugin }) {
+export default function DeleteLogs({ plugin }: { plugin: Plugin }) {
   const [open, setOpen] = useState(false);
 
   const form = useForm({
@@ -23,7 +23,7 @@ export default function UpdatePlugin({ plugin }: { plugin: Plugin }) {
   });
 
   const submit = () => {
-    form.patch(route('plugins.update'), {
+    form.delete(route('plugins.logs'), {
       onSuccess: () => {
         form.reset();
         setOpen(false);
@@ -34,23 +34,23 @@ export default function UpdatePlugin({ plugin }: { plugin: Plugin }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Update</DropdownMenuItem>
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete Logs</DropdownMenuItem>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Update plugin</DialogTitle>
-          <DialogDescription className="sr-only">Update plugin {plugin.name}</DialogDescription>
+          <DialogTitle>Delete Error Logs</DialogTitle>
+          <DialogDescription className="sr-only">Delete error logs for {plugin.name ?? plugin.folder}</DialogDescription>
         </DialogHeader>
         <p className="p-4">
-          Are you sure you want to update the plugin <strong>{plugin.name}</strong> to the latest released version?
+          Are you sure you want to delete the error logs for the plugin <strong>{plugin.name ?? plugin.folder}</strong>?
         </p>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button variant="default" onClick={submit} disabled={form.processing}>
+          <Button variant="destructive" onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            Update
+            Delete Logs
           </Button>
         </DialogFooter>
       </DialogContent>

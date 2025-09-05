@@ -35,7 +35,7 @@ class PluginsTest extends TestCase
 
     private function moveExistingPlugins(): void
     {
-        $pluginsPath = storage_path('legacy-plugins');
+        $pluginsPath = storage_path('plugins');
 
         if (File::exists($pluginsPath)) {
             File::moveDirectory($pluginsPath, $this->pluginsBackupPath);
@@ -46,7 +46,7 @@ class PluginsTest extends TestCase
 
     private function restoreExistingPlugins(): void
     {
-        $pluginsPath = storage_path('legacy-plugins');
+        $pluginsPath = storage_path('plugins');
 
         if (File::exists($pluginsPath)) {
             File::deleteDirectory($pluginsPath);
@@ -59,7 +59,7 @@ class PluginsTest extends TestCase
 
     private function cleanupTestPlugins(): void
     {
-        $pluginsPath = storage_path('legacy-plugins');
+        $pluginsPath = storage_path('plugins');
         if (! File::exists($pluginsPath)) {
             return;
         }
@@ -94,7 +94,7 @@ class PluginsTest extends TestCase
 
     public function test_all_returns_plugins_with_valid_composer_json(): void
     {
-        $pluginsPath = storage_path('legacy-plugins');
+        $pluginsPath = storage_path('plugins');
         $vendorPath = $pluginsPath.'/test-vendor';
         $pluginPath = $vendorPath.'/test-plugin';
         File::makeDirectory($pluginPath, 0755, true);
@@ -114,7 +114,7 @@ class PluginsTest extends TestCase
 
     public function test_all_handles_missing_name_and_version(): void
     {
-        $pluginsPath = storage_path('legacy-plugins');
+        $pluginsPath = storage_path('plugins');
         $vendorPath = $pluginsPath.'/test-vendor';
         $pluginPath = $vendorPath.'/test-plugin';
         File::makeDirectory($pluginPath, 0755, true);
@@ -130,7 +130,7 @@ class PluginsTest extends TestCase
 
     public function test_all_skips_directories_without_composer_json(): void
     {
-        $pluginsPath = storage_path('legacy-plugins');
+        $pluginsPath = storage_path('plugins');
         $vendorPath = $pluginsPath.'/test-vendor';
         $pluginPath = $vendorPath.'/test-plugin';
         File::makeDirectory($pluginPath, 0755, true);
@@ -202,7 +202,7 @@ class PluginsTest extends TestCase
             'composer require test-vendor/test-plugin' => Process::result(output: 'Package installed'),
         ]);
 
-        $vendorPath = storage_path('legacy-plugins/test-vendor');
+        $vendorPath = storage_path('plugins/test-vendor');
         $pluginPath = $vendorPath.'/test-plugin';
         File::makeDirectory($pluginPath, 0755, true);
 
@@ -219,7 +219,7 @@ class PluginsTest extends TestCase
 
     public function test_load_skips_plugins_with_invalid_names(): void
     {
-        $vendorPath = storage_path('legacy-plugins/test-vendor');
+        $vendorPath = storage_path('plugins/test-vendor');
         $pluginPath = $vendorPath.'/test-plugin';
         File::makeDirectory($pluginPath, 0755, true);
 
@@ -240,7 +240,7 @@ class PluginsTest extends TestCase
             'composer require test-vendor/test-plugin' => Process::result(exitCode: 1, errorOutput: 'Composer failed'),
         ]);
 
-        $vendorPath = storage_path('legacy-plugins/test-vendor');
+        $vendorPath = storage_path('plugins/test-vendor');
         $pluginPath = $vendorPath.'/test-plugin';
         File::makeDirectory($pluginPath, 0755, true);
 
@@ -263,7 +263,7 @@ class PluginsTest extends TestCase
             'composer remove test-vendor/test-plugin' => Process::result(output: 'Package removed'),
         ]);
 
-        $pluginPath = storage_path('legacy-plugins/test-vendor/test-plugin');
+        $pluginPath = storage_path('plugins/test-vendor/test-plugin');
         File::makeDirectory($pluginPath, 0755, true);
 
         $composerData = [
@@ -274,7 +274,7 @@ class PluginsTest extends TestCase
         ];
         File::put($pluginPath.'/composer.json', json_encode($composerData));
 
-        $flagFile = storage_path('legacy-plugins/.installed/test-vendor/test-plugin');
+        $flagFile = storage_path('plugins/.installed/test-vendor/test-plugin');
         File::makeDirectory(dirname($flagFile), 0755, true);
         File::put($flagFile, now()->toISOString());
 
@@ -299,7 +299,7 @@ class PluginsTest extends TestCase
             'composer remove test-vendor/test-plugin' => Process::result(exitCode: 1, output: 'Composer remove failed'),
         ]);
 
-        $pluginPath = storage_path('legacy-plugins/test-vendor/test-plugin');
+        $pluginPath = storage_path('plugins/test-vendor/test-plugin');
         File::makeDirectory($pluginPath, 0755, true);
         File::put($pluginPath.'/composer.json', json_encode(['name' => 'test-vendor/test-plugin']));
 
@@ -350,7 +350,7 @@ class PluginsTest extends TestCase
 
     public function test_execute_install_plugin_scripts_skips_if_already_installed(): void
     {
-        $flagFile = storage_path('legacy-plugins/.installed/test-vendor/test-plugin');
+        $flagFile = storage_path('plugins/.installed/test-vendor/test-plugin');
         File::makeDirectory(dirname($flagFile), 0755, true);
         File::put($flagFile, now()->toISOString());
 

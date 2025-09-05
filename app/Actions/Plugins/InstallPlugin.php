@@ -11,6 +11,7 @@ final readonly class InstallPlugin
 {
     public function __construct(
         private GetPluginInstance $getImplementation,
+        private PluginCache $cache,
     ) {}
 
     /**
@@ -36,5 +37,7 @@ final readonly class InstallPlugin
 
         $plugin->is_installed = true;
         $plugin->save();
+
+        $this->cache->clear();
     }
 }

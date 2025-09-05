@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Actions\Plugins\BootPlugins;
 use App\Actions\Plugins\GetPluginInstance;
-use App\Actions\Plugins\LoadPlugins;
 use App\Console\Commands\Plugins\InstallLegacyPluginCommand;
 use App\Console\Commands\Plugins\LegacyPluginsListCommand;
 use App\Console\Commands\Plugins\LoadLegacyPluginsCommand;
 use App\Plugins\LegacyPlugins;
+use App\Plugins\RegisterCommand;
+use App\Plugins\RegisterViews;
 use Illuminate\Support\ServiceProvider;
 
 class PluginsServiceProvider extends ServiceProvider
@@ -33,11 +35,19 @@ class PluginsServiceProvider extends ServiceProvider
             ]);
         }
 
-        if (! $this->app->runningInConsole()) {
-            $this->app->booted(function () {
-                app(LoadPLugins::class)->handle();
-            });
-        }
+        $this->app->booted(function () {
+            app(BootPlugins::class)->handle();
 
+            foreach (RegisterViews::get() as $name => $path) {
+                $this->loadViewsFrom($path, $name);
+            }
+
+            if ($this->app->runningInConsole()) {
+                $commands = RegisterCommand::get();
+                if (count($commands) > 0) {
+                    $this->commands($commands);
+                }
+            }
+        });
     }
 }

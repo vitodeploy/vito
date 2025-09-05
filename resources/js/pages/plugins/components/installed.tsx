@@ -6,6 +6,11 @@ import EnablePlugin from '@/pages/plugins/components/enable';
 import { Separator } from '@/components/ui/separator';
 import UpdatePlugin from '@/pages/plugins/components/update';
 import { Badge } from '@/components/ui/badge';
+import { Pip } from '@/components/ui/pip';
+import PluginDropdown from '@/pages/plugins/components/plugin-dropdown';
+import ViewLogs from '@/pages/plugins/components/view-logs';
+import { TriangleAlert } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
   const installedPlugins = plugins.filter(plugin => plugin.is_installed);
@@ -16,6 +21,7 @@ export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
           <div key={`plugin-${index}`}>
             <CardRow>
               <div className="flex flex-row gap-4 items-center">
+                <Pip variant={plugin.is_enabled ? "active" : "disabled"} />
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     {plugin.repo === null ? (
@@ -33,23 +39,22 @@ export default function InstalledPlugins({ plugins }: { plugins: Plugin[] }) {
                     {plugin.updates_available && (
                       <span>Update Available</span>
                     )}
-                </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-row gap-2">
-                {plugin.updates_available &&
-                  <UpdatePlugin plugin={plugin} />
-                }
-                {plugin.is_enabled &&
-                  <DisablePlugin plugin={plugin} />
-                }
-                {!plugin.is_enabled &&
-                  <EnablePlugin plugin={plugin} />
-                }
-                {!plugin.is_enabled &&
-                  <Uninstall plugin={plugin} />
-                }
+              <div className="flex items-center flex-row gap-4">
+                {plugin.errors.length > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <TriangleAlert className="text-danger mt-1" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      This plugin has errors
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                <PluginDropdown plugin={plugin} />
               </div>
             </CardRow>
             {installedPlugins.length - 1 !== index && <Separator />}

@@ -11,6 +11,7 @@ final readonly class EnablePlugin
 {
     public function __construct(
         private GetPluginInstance $getImplementation,
+        private PluginCache $cache,
     ) {}
 
     /**
@@ -32,5 +33,7 @@ final readonly class EnablePlugin
 
         $plugin->is_enabled = true;
         $plugin->save();
+
+        $this->cache->clear();
     }
 }

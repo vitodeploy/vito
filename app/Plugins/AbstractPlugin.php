@@ -12,8 +12,6 @@ abstract class AbstractPlugin implements PluginInterface
 
     public function boot(): void {}
 
-    public function register(): void {}
-
     public function enable(): void {}
 
     public function disable(): void {}

@@ -7,7 +7,9 @@ use File;
 
 final readonly class DiscoverPlugins
 {
-    public function __construct() {}
+    public function __construct(
+        private PluginCache $cache,
+    ) {}
 
     public function handle(): void
     {
@@ -35,5 +37,7 @@ final readonly class DiscoverPlugins
                 $plugin->delete();
             }
         });
+
+        $this->cache->clear();
     }
 }

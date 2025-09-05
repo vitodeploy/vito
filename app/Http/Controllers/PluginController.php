@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Plugins\ClearLogs;
 use App\Actions\Plugins\DisablePlugin;
 use App\Actions\Plugins\DiscoverPlugins;
 use App\Actions\Plugins\EnablePlugin;
@@ -31,7 +32,9 @@ class PluginController extends Controller
     public function index(DiscoverPlugins $pluginDiscovery): Response
     {
         $pluginDiscovery->handle();
-        $plugins = Plugin::all();
+        $plugins = Plugin::with(['errors' => function ($query) {
+            $query->latest()->limit(10);
+        }])->get();
 
         return Inertia::render('plugins/index', [
             'plugins' => $plugins,
@@ -84,7 +87,7 @@ class PluginController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Plugin '$plugin->name' Installed");
+        return back()->with('success', "Plugin '$plugin->name' installed");
     }
 
     #[Patch('/install', name: 'plugins.install')]
@@ -102,7 +105,7 @@ class PluginController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Plugin '$plugin->name' Installed");
+        return back()->with('success', "Plugin '$plugin->name' installed");
     }
 
     #[Get('/updates', name: 'plugins.updates')]
@@ -110,7 +113,7 @@ class PluginController extends Controller
     {
         $action->handle();
 
-        return back()->with('success', 'Retrieved Latest Plugin Updates');
+        return back()->with('success', 'Retrieved latest plugin releases');
     }
 
     #[Patch('/update', name: 'plugins.update')]
@@ -128,7 +131,7 @@ class PluginController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Plugin '$plugin->name' Updated");
+        return back()->with('success', "Plugin '$plugin->name' updated");
     }
 
     #[Delete('/uninstall', name: 'plugins.uninstall')]
@@ -146,6 +149,26 @@ class PluginController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Plugin '$plugin->name' Uninstalled");
+        return back()->with('success', "Plugin '$plugin->name' uninstalled");
+    }
+
+    #[Delete('/logs', name: 'plugins.logs')]
+    public function clearLogs(Request $request, ClearLogs $action): RedirectResponse
+    {
+        $data = $this->validate($request, ['id' => 'required']);
+        if (config('app.demo')) {
+            return back()->with('error', 'Plugins are disabled in demo mode.');
+        }
+
+        try {
+            $plugin = Plugin::findOrFail($data['id']);
+            $action->handle($plugin);
+        } catch (Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        $displayName = $plugin->name ?? $plugin->folder;
+
+        return back()->with('success', "Plugin '$displayName' logs cleared");
     }
 }

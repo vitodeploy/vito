@@ -6,8 +6,6 @@ interface PluginInterface
 {
     public function boot(): void;
 
-    public function register(): void;
-
     public function enable(): void;
 
     public function disable(): void;

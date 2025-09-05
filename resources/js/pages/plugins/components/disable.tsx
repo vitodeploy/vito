@@ -13,6 +13,7 @@ import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Plugin } from '@/types/plugin';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 export default function Disable({ plugin }: { plugin: Plugin }) {
   const [open, setOpen] = useState(false);
@@ -33,7 +34,7 @@ export default function Disable({ plugin }: { plugin: Plugin }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Disable</Button>
+        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>Disable</DropdownMenuItem>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

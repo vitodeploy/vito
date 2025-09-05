@@ -14,4 +14,13 @@ export interface Plugin {
   error_count: number;
   updates_available: boolean;
   username: string;
+  errors: PluginError[];
+}
+
+export interface PluginError {
+  error_message: string;
+  file: string;
+  line: number;
+  stack_trace: string;
+  occurred_at: string;
 }

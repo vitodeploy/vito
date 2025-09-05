@@ -13,6 +13,7 @@ import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Plugin } from '@/types/plugin';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 export default function Uninstall({ plugin }: { plugin: Plugin }) {
   const [open, setOpen] = useState(false);
@@ -33,15 +34,17 @@ export default function Uninstall({ plugin }: { plugin: Plugin }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive">Uninstall</Button>
+        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+          {plugin.is_installed ? "Uninstall" : "Remove"}
+        </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Uninstall plugin</DialogTitle>
-          <DialogDescription className="sr-only">Uninstall plugin {plugin.name}</DialogDescription>
+          <DialogTitle>{plugin.is_installed ? "Uninstall" : "Remove"} Plugin</DialogTitle>
+          <DialogDescription className="sr-only">{plugin.is_installed ? "Uninstall" : "Remove"} plugin {plugin.name ?? plugin.folder}</DialogDescription>
         </DialogHeader>
         <p className="p-4">
-          Are you sure you want to uninstall the plugin <strong>{plugin.name}</strong>?
+          Are you sure you want to {plugin.is_installed ? "uninstall" : "remove"} the plugin <strong>{plugin.name ?? plugin.folder}</strong>?
         </p>
         <DialogFooter>
           <DialogClose asChild>
@@ -49,7 +52,7 @@ export default function Uninstall({ plugin }: { plugin: Plugin }) {
           </DialogClose>
           <Button variant="destructive" onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            Uninstall
+            {plugin.is_installed ? "Uninstall" : "Remove"}
           </Button>
         </DialogFooter>
       </DialogContent>

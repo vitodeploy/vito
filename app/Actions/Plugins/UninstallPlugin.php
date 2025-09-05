@@ -12,6 +12,7 @@ final readonly class UninstallPlugin
 {
     public function __construct(
         private GetPluginInstance $getImplementation,
+        private PluginCache $cache,
     ) {}
 
     /**
@@ -19,17 +20,19 @@ final readonly class UninstallPlugin
      */
     public function handle(Plugin $plugin, bool $force = false): void
     {
-        $implementation = $this->getImplementation->handle($plugin);
-        if ($implementation === null) {
-            throw new Exception('Unable to uninstall the plugin, please check the error logs');
-        }
-
-        try {
-            $implementation->install();
-        } catch (Throwable $ex) {
-            if (! $force) {
-                PluginError::createFromException($ex, $plugin);
+        if ($plugin->is_installed) {
+            $implementation = $this->getImplementation->handle($plugin);
+            if ($implementation === null) {
                 throw new Exception('Unable to uninstall the plugin, please check the error logs');
+            }
+
+            try {
+                $implementation->uninstall();
+            } catch (Throwable $ex) {
+                if (! $force) {
+                    PluginError::createFromException($ex, $plugin);
+                    throw new Exception('Unable to uninstall the plugin, please check the error logs');
+                }
             }
         }
 
@@ -42,6 +45,8 @@ final readonly class UninstallPlugin
         }
 
         $plugin->delete();
+
+        $this->cache->clear();
     }
 
     public function path_join(array $strings): string
