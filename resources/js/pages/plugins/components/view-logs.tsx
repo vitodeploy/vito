@@ -1,7 +1,6 @@
 import { Plugin } from '@/types/plugin';
-import { EyeIcon, ChevronDownIcon, ChevronRightIcon, FileCodeIcon, AlertCircleIcon, TimerIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronRightIcon, FileCodeIcon, AlertCircleIcon, TimerIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogClose,

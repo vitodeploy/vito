@@ -1,14 +1,9 @@
 import { CardRow } from '@/components/ui/card';
 import { Plugin } from '@/types/plugin';
-import DisablePlugin from '@/pages/plugins/components/disable';
-import Uninstall from '@/pages/plugins/components/uninstall';
-import EnablePlugin from '@/pages/plugins/components/enable';
 import { Separator } from '@/components/ui/separator';
-import UpdatePlugin from '@/pages/plugins/components/update';
 import { Badge } from '@/components/ui/badge';
 import { Pip } from '@/components/ui/pip';
 import PluginDropdown from '@/pages/plugins/components/plugin-dropdown';
-import ViewLogs from '@/pages/plugins/components/view-logs';
 import { TriangleAlert } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 

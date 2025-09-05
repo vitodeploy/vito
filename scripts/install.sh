@@ -192,7 +192,7 @@ chown -R vito:vito /home/vito/vito/storage/ssh-private.pem
 chown -R vito:vito /home/vito/vito/storage/ssh-public.key
 
 # install legacy-plugins
-php artisan plugins:install https://github.com/vitodeploy/laravel-octane-plugin
+php artisan legacy-plugins:install https://github.com/vitodeploy/laravel-octane-plugin
 
 # optimize
 php artisan optimize
