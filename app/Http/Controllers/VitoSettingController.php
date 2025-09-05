@@ -93,7 +93,7 @@ class VitoSettingController extends Controller
         config(['session.driver' => 'file']);
 
         $request->validate([
-            'backup_file' => 'required|file|mimes:zip',
+            'backup_file' => 'required|file|mimes:zip|mimetypes:application/zip,application/x-zip-compressed'
         ]);
 
         $extractPath = $this->extractBackupFile($request->file('backup_file'));
