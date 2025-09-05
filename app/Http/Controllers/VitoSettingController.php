@@ -153,7 +153,7 @@ class VitoSettingController extends Controller
 
         $dbPath = null;
         foreach ($dbPaths as $path) {
-            if (file_exists($path)) {
+            if (File::exists($path)) {
                 $dbPath = $path;
                 break;
             }
