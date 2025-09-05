@@ -13,8 +13,6 @@ final readonly class PluginCache
 
     private const string CACHE_KEY = 'active-plugins';
 
-    private const int CACHE_TTL = 60 * 15;
-
     /**
      * Retrieves active plugins
      *
@@ -25,7 +23,7 @@ final readonly class PluginCache
         // We need the try/catch to ensure that no exceptions are
         // raised before migrations have been run.
         try {
-            return Cache::remember(self::CACHE_KEY, self::CACHE_TTL, function () {
+            return Cache::rememberForever(self::CACHE_KEY, function () {
                 return Plugin::query()
                     ->where('is_installed', true)
                     ->where('is_enabled', true)
@@ -46,7 +44,6 @@ final readonly class PluginCache
         Cache::set(
             key: self::CACHE_KEY,
             value: $plugins,
-            ttl: self::CACHE_TTL
         );
     }
 }

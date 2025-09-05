@@ -37,7 +37,7 @@ class PluginsServiceProvider extends ServiceProvider
         }
 
         $this->app->booted(function () {
-            app(BootPlugins::class)->handle($this);
+            app(BootPlugins::class)->handle();
 
             foreach (RegisterViews::get() as $name => $path) {
                 $this->loadViewsFrom($path, $name);

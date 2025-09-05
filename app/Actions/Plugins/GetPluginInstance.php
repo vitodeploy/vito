@@ -37,4 +37,9 @@ final class GetPluginInstance
 
         return null;
     }
+
+    public function clear(): void
+    {
+        $this->implementations = [];
+    }
 }
