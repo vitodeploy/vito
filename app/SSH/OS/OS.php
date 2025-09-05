@@ -222,13 +222,24 @@ class OS
      *
      * @throws SSHError
      */
-    public function runScript(string $path, string $script, ?ServerLog $serverLog, ?string $user = null, ?array $variables = []): ServerLog
-    {
+    public function runScript(
+        string $path,
+        string $script,
+        ?ServerLog $serverLog,
+        ?string $user = null,
+        ?array $variables = [],
+        ?array $aliases = []
+    ): ServerLog {
         $ssh = $this->server->ssh($user);
         if ($serverLog instanceof ServerLog) {
             $ssh->setLog($serverLog);
         }
-        $command = '';
+        $command = "shopt -s expand_aliases\n";
+        if ($aliases !== null && $aliases !== []) {
+            foreach ($aliases as $key => $alias) {
+                $command .= "alias $key=$alias\n";
+            }
+        }
         if ($variables !== null && $variables !== []) {
             foreach ($variables as $key => $variable) {
                 $command .= "export $key=$variable\n";
@@ -238,6 +249,8 @@ class OS
             'path' => $path,
             'script' => $script,
         ]);
+
+        info($command);
 
         $ssh->exec($command, 'run-script');
 

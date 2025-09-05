@@ -444,6 +444,16 @@ class Site extends AbstractModel
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function environmentAliases(): array
+    {
+        return [
+            'php' => '/usr/bin/php'.$this->php_version,
+        ];
+    }
+
     public function isIsolated(): bool
     {
         return $this->user != $this->server->getSshUser();

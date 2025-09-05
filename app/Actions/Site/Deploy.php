@@ -62,6 +62,7 @@ class Deploy
                 serverLog: $log,
                 user: $site->user,
                 variables: $site->environmentVariables($deployment),
+                aliases: $site->environmentAliases(),
             );
 
             if ($site->deploymentScript->shouldRestartWorkers()) {
@@ -101,6 +102,7 @@ class Deploy
                 serverLog: $log,
                 user: $site->user,
                 variables: $site->environmentVariables($deployment),
+                aliases: $site->environmentAliases(),
             );
 
             // link resources
@@ -120,6 +122,7 @@ class Deploy
                 serverLog: $log,
                 user: $site->user,
                 variables: $site->environmentVariables($deployment),
+                aliases: $site->environmentAliases(),
             );
 
             // release

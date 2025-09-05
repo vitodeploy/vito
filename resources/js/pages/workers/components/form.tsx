@@ -88,6 +88,8 @@ export default function WorkerForm({ serverId, site, worker, children }: { serve
                 onChange={(e) => form.setData('command', e.target.value)}
                 placeholder={site ? 'php artisan queue:work' : ''}
               />
+              <p className="text-muted-foreground text-sm">`php` command will use the default php cli command</p>
+              <p className="text-muted-foreground text-sm">For specific version, use exact path to the php version like `/usr/bin/php8.4`</p>
               <InputError message={form.errors.command} />
             </FormField>
 
