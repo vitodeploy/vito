@@ -25,8 +25,11 @@ class RegisterViews
 
     public function register(): void
     {
-        $views = self::get();
+        if (empty($this->name) || empty($this->path)) {
+            return;
+        }
 
+        $views = self::get();
         $views[$this->name] = $this->path;
 
         config([self::CONFIG_KEY => $views]);

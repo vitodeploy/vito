@@ -19,6 +19,10 @@ final readonly class EnablePlugin
      */
     public function handle(Plugin $plugin): void
     {
+        if ($plugin->is_enabled) {
+            throw new Exception('This plugin is already enabled');
+        }
+
         $implementation = $this->getImplementation->handle($plugin);
         if ($implementation === null) {
             throw new Exception('Unable to enable the plugin, please check the error logs');

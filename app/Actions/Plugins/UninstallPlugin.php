@@ -20,6 +20,10 @@ final readonly class UninstallPlugin
      */
     public function handle(Plugin $plugin, bool $force = false): void
     {
+        if ($plugin->is_enabled) {
+            throw new Exception('Unable to uninstall an enabled plugin, disable the plugin first');
+        }
+
         if ($plugin->is_installed) {
             $implementation = $this->getImplementation->handle($plugin);
             if ($implementation === null) {
