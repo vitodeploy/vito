@@ -201,7 +201,7 @@ class VitoSettingController extends Controller
             foreach ($config['sources'] as $sourcePath) {
                 $fullPath = $extractPath . '/' . $sourcePath;
                 if (File::exists($fullPath)) {
-                    File::move($fullPath, $config['destination']);
+                    move_directory($fullPath, $config['destination']);
                     break;
                 }
             }
