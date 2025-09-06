@@ -33,8 +33,7 @@ class Github extends AbstractSourceControlProvider
         return Http::withHeaders([
             'Accept' => 'application/vnd.github.v3+json',
             'Authorization' => 'Bearer '.$this->data()['token'],
-        ])->timeout(30)
-            ->retry(3, 100);
+        ]);
     }
 
     public function connect(): bool
@@ -62,19 +61,11 @@ class Github extends AbstractSourceControlProvider
             ? self::API_BASE_URL.'/repos/'.$repo
             : self::API_BASE_URL.'/user/repos';
 
-        try {
-            $res = $this->getClient()->get($url);
-            $this->handleResponseErrors($res, $repo);
+        $res = $this->getClient()->get($url);
 
-            return $res->json();
-        } catch (Throwable $e) {
-            Log::error('Failed to fetch repository', [
-                'repo' => $repo,
-                'error' => $e->getMessage(),
-            ]);
+        $this->handleResponseErrors($res, $repo);
 
-            throw new Exception('Failed to fetch repository: '.$e->getMessage());
-        }
+        return $res->json();
     }
 
     public function fullRepoUrl(string $repo, string $key): string
