@@ -168,40 +168,58 @@ class VitoSettingController extends Controller
 
     private function moveBackupFiles(string $extractPath): void
     {
-        $fileDirectoryMap = [
+        $fileMap = [
             // Files
             'env' => [
                 'sources' => ['.env'],
-                'destination' => base_path('.env')
+                'destination' => base_path('.env'),
+                'type' => 'file'
             ],
             'database' => [
                 'sources' => ['database.sqlite', 'storage/database.sqlite'],
-                'destination' => storage_path('database.sqlite')
+                'destination' => storage_path('database.sqlite'),
+                'type' => 'file'
             ],
             'ssh_public' => [
                 'sources' => ['ssh-public.key', 'storage/ssh-public.key'],
-                'destination' => storage_path('ssh-public.key')
+                'destination' => storage_path('ssh-public.key'),
+                'type' => 'file'
             ],
             'ssh_private' => [
                 'sources' => ['ssh-private.pem', 'storage/ssh-private.pem'],
-                'destination' => storage_path('ssh-private.pem')
+                'destination' => storage_path('ssh-private.pem'),
+                'type' => 'file'
             ],
             // Directories
             'key_pairs' => [
                 'sources' => ['key-pairs'],
-                'destination' => storage_path('app/key-pairs')
+                'destination' => storage_path('app/key-pairs'),
+                'type' => 'directory'
             ],
             'server_logs' => [
                 'sources' => ['server-logs'],
-                'destination' => storage_path('app/server-logs')
+                'destination' => storage_path('app/server-logs'),
+                'type' => 'directory'
             ],
         ];
 
-        foreach ($fileDirectoryMap as $config) {
+        foreach ($fileMap as $config) {
             foreach ($config['sources'] as $sourcePath) {
                 $fullPath = $extractPath . '/' . $sourcePath;
                 if (File::exists($fullPath)) {
-                    move_directory($fullPath, $config['destination']);
+                    if ($config['type'] === 'file') {
+                        // Ensure parent directory exists
+                        File::ensureDirectoryExists(dirname($config['destination']));
+                        
+                        // Copy file
+                        if (File::exists($config['destination'])) {
+                            File::delete($config['destination']);
+                        }
+                        File::copy($fullPath, $config['destination']);
+                    } else {
+                        // Use move_directory for directories
+                        move_directory($fullPath, $config['destination']);
+                    }
                     break;
                 }
             }
