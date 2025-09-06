@@ -61,8 +61,11 @@ service php8.4-fpm start
 service redis-server start
 service nginx start
 
+# remove all legacy plugins
+rm -rf /var/www/html/storage/plugins/*/
+php /var/www/html/artisan legacy-plugins:load
+
 php /var/www/html/artisan migrate --force
-php /var/www/html/artisan plugins:load
 php /var/www/html/artisan optimize:clear
 php /var/www/html/artisan optimize
 
