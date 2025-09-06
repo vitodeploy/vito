@@ -30,9 +30,6 @@ echo "Switching to tag: $NEW_RELEASE"
 git checkout "$NEW_RELEASE"
 git pull origin "$NEW_RELEASE"
 
-echo "Removing legacy plugins..."
-rm -rf storage/plugins/*/
-
 echo "Installing composer dependencies..."
 composer install --no-dev
 
