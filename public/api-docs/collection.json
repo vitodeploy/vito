@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "API Documentation",
-        "_postman_id": "6647de6e-70e1-4e02-a266-4aa98e3c15d5",
+        "_postman_id": "34fbec2d-be09-4ea2-b6ab-ff2125b41462",
         "description": "VitoDeploy's API documentation.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -162,7 +162,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"},{\"id\":6,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"},{\"id\":6,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -214,7 +214,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -269,7 +269,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"command\":\"ls -la\",\"user\":\"root\",\"frequency\":\"* * * * *\",\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -379,7 +379,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"username\":\"johnathan83\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"},{\"id\":6,\"server_id\":1,\"username\":\"wilfrid.lindgren\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"username\":\"lueilwitz.dion\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"},{\"id\":6,\"server_id\":1,\"username\":\"americo38\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -431,7 +431,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"username\":\"justina.gaylord\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"username\":\"justina.gaylord\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -486,7 +486,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"username\":\"lafayette.considine\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"username\":\"lafayette.considine\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -544,7 +544,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"username\":\"zbailey\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"username\":\"zbailey\",\"databases\":[],\"host\":\"%\",\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -654,7 +654,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"name\":\"zbailey\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"},{\"id\":6,\"server_id\":1,\"name\":\"rempel.chadrick\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"name\":\"zbailey\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"},{\"id\":6,\"server_id\":1,\"name\":\"rempel.chadrick\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -706,7 +706,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"name\":\"zbailey\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"name\":\"zbailey\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -761,7 +761,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"name\":\"rempel.chadrick\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:45.000000Z\",\"updated_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"name\":\"rempel.chadrick\",\"collation\":null,\"charset\":null,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -877,7 +877,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":1,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1756928323-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-03T19:38:43.000000Z\",\"updated_at\":\"2025-09-03T19:38:43.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-03T19:38:45.000000Z\",\"created_at\":\"2025-09-03T19:38:45.000000Z\"},{\"id\":2,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1756928323-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-03T19:38:43.000000Z\",\"updated_at\":\"2025-09-03T19:38:43.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-03T19:38:45.000000Z\",\"created_at\":\"2025-09-03T19:38:45.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":1,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1757059203-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-05T08:00:03.000000Z\",\"updated_at\":\"2025-09-05T08:00:03.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-05T08:00:05.000000Z\",\"created_at\":\"2025-09-05T08:00:05.000000Z\"},{\"id\":2,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1757059203-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-05T08:00:03.000000Z\",\"updated_at\":\"2025-09-05T08:00:03.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-05T08:00:05.000000Z\",\"created_at\":\"2025-09-05T08:00:05.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -932,7 +932,7 @@
                         {
                             "header": [],
                             "code": 201,
-                            "body": "{\"id\":1,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1756928323-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-03T19:38:43.000000Z\",\"updated_at\":\"2025-09-03T19:38:43.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-03T19:38:45.000000Z\",\"created_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":1,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1757059203-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-05T08:00:03.000000Z\",\"updated_at\":\"2025-09-05T08:00:03.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-05T08:00:05.000000Z\",\"created_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -993,7 +993,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":1,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1756928323-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-03T19:38:43.000000Z\",\"updated_at\":\"2025-09-03T19:38:43.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-03T19:38:45.000000Z\",\"created_at\":\"2025-09-03T19:38:45.000000Z\"}",
+                            "body": "{\"id\":1,\"site_id\":1,\"deployment_script_id\":1,\"log_id\":1,\"log\":{\"id\":1,\"server_id\":1,\"site_id\":null,\"type\":\"install-ufw\",\"name\":\"1-1757059203-install-ufw.log\",\"disk\":\"server-logs\",\"is_remote\":false,\"created_at\":\"2025-09-05T08:00:03.000000Z\",\"updated_at\":\"2025-09-05T08:00:03.000000Z\"},\"commit_id\":\"id\",\"commit_id_short\":null,\"commit_data\":[],\"status\":\"finished\",\"status_color\":\"success\",\"release\":null,\"active\":false,\"updated_at\":\"2025-09-05T08:00:05.000000Z\",\"created_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1048,7 +1048,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":13,\"name\":\"eius\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":9322,\"source\":\"113.14.236.204\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":14,\"name\":\"velit\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":2983,\"source\":\"199.172.126.144\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":13,\"name\":\"eius\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":9322,\"source\":\"113.14.236.204\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"},{\"id\":14,\"name\":\"velit\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":2983,\"source\":\"199.172.126.144\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1089,7 +1089,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"architecto\",\"type\":\"deny\",\"protocol\":\"tcp\",\"port\":\"architecto\",\"source\":\"architecto\",\"mask\":\"0\"}"
+                            "raw": "{\"name\":\"architecto\",\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":\"architecto\",\"source\":\"architecto\",\"mask\":\"0\"}"
                         },
                         "description": "Create a new firewall rule.",
                         "auth": {
@@ -1100,7 +1100,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":13,\"name\":\"eius\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":9322,\"source\":\"113.14.236.204\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":13,\"name\":\"eius\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":9322,\"source\":\"113.14.236.204\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1147,7 +1147,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"architecto\",\"type\":\"deny\",\"protocol\":\"udp\",\"port\":\"architecto\",\"source\":\"architecto\",\"mask\":\"0\"}"
+                            "raw": "{\"name\":\"architecto\",\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":\"architecto\",\"source\":\"architecto\",\"mask\":\"0\"}"
                         },
                         "description": "Update an existing firewall rule.",
                         "auth": {
@@ -1158,7 +1158,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":13,\"name\":\"eius\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":9322,\"source\":\"113.14.236.204\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":13,\"name\":\"eius\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":9322,\"source\":\"113.14.236.204\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1213,7 +1213,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":13,\"name\":\"velit\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":2983,\"source\":\"199.172.126.144\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":13,\"name\":\"velit\",\"server_id\":1,\"type\":\"allow\",\"protocol\":\"tcp\",\"port\":2983,\"source\":\"199.172.126.144\",\"mask\":\"24\",\"note\":\"test\",\"status\":\"creating\",\"status_color\":\"info\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1363,7 +1363,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":3,\"name\":\"Belle Dickens\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":4,\"name\":\"Mittie Considine\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":3,\"name\":\"Belle Dickens\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"},{\"id\":4,\"name\":\"Mittie Considine\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1401,7 +1401,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Ms. Elisabeth Okuneva\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Ms. Elisabeth Okuneva\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1444,7 +1444,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Aleen O'Kon\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Aleen O'Kon\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1490,7 +1490,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"name\":\"Ms. Elisabeth Okuneva\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":3,\"name\":\"Ms. Elisabeth Okuneva\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1594,7 +1594,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":1,\"server_id\":1,\"site_id\":1,\"from\":\"velit\",\"to\":\"http:\\\/\\\/www.okon.com\\\/accusantium-harum-mollitia-modi-deserunt-aut-ab\",\"mode\":301,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":2,\"server_id\":1,\"site_id\":1,\"from\":\"perspiciatis\",\"to\":\"http:\\\/\\\/www.cruickshank.com\\\/adipisci-quidem-nostrum-qui-commodi-incidunt-iure\",\"mode\":308,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":1,\"server_id\":1,\"site_id\":1,\"from\":\"velit\",\"to\":\"http:\\\/\\\/www.okon.com\\\/accusantium-harum-mollitia-modi-deserunt-aut-ab\",\"mode\":301,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"},{\"id\":2,\"server_id\":1,\"site_id\":1,\"from\":\"perspiciatis\",\"to\":\"http:\\\/\\\/www.cruickshank.com\\\/adipisci-quidem-nostrum-qui-commodi-incidunt-iure\",\"mode\":308,\"status\":\"ready\",\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:05.000000Z\",\"updated_at\":\"2025-09-05T08:00:05.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1641,7 +1641,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"from\":\"architecto\",\"to\":\"architecto\",\"mode\":308}"
+                            "raw": "{\"from\":\"architecto\",\"to\":\"architecto\",\"mode\":302}"
                         },
                         "description": "Create a new redirect.",
                         "auth": {
@@ -1762,7 +1762,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"ab\",\"provider\":\"custom\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":7,\"project_id\":null,\"global\":true,\"name\":\"incidunt\",\"provider\":\"custom\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"ab\",\"provider\":\"custom\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":7,\"project_id\":null,\"global\":true,\"name\":\"incidunt\",\"provider\":\"custom\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -1808,7 +1808,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"custom\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"custom\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1857,7 +1857,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"mollitia\",\"provider\":\"linode\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"mollitia\",\"provider\":\"linode\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -1898,7 +1898,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"architecto\",\"global\":false}"
+                            "raw": "{\"name\":\"architecto\",\"global\":true}"
                         },
                         "description": "",
                         "auth": {
@@ -1909,7 +1909,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"custom\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":6,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"custom\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2007,7 +2007,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Vesta Schuster PhD\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"224.61.31.27\",\"local_ip\":\"92.153.233.186\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":6,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Leda Price\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"212.189.109.80\",\"local_ip\":\"79.121.201.127\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Vesta Schuster PhD\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"224.61.31.27\",\"local_ip\":\"92.153.233.186\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":6,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Leda Price\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"212.189.109.80\",\"local_ip\":\"79.121.201.127\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2053,7 +2053,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Ms. Elisabeth Okuneva\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"75.13.66.152\",\"local_ip\":\"199.172.126.144\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Ms. Elisabeth Okuneva\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"75.13.66.152\",\"local_ip\":\"199.172.126.144\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2102,7 +2102,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Belle Dickens\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"51.210.32.30\",\"local_ip\":\"82.174.132.158\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"project_id\":1,\"services\":[],\"user_id\":1,\"provider_id\":null,\"name\":\"Belle Dickens\",\"ssh_user\":\"vito\",\"ssh_users\":[\"root\",\"vito\"],\"ip\":\"51.210.32.30\",\"local_ip\":\"82.174.132.158\",\"port\":22,\"os\":\"ubuntu_22\",\"provider\":\"custom\",\"provider_data\":null,\"public_key\":\"test\",\"status\":\"ready\",\"auto_update\":null,\"progress\":100,\"progress_step\":null,\"updates\":0,\"last_update_check\":null,\"status_color\":\"success\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2304,7 +2304,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":29,\"server_id\":1,\"type\":\"webserver\",\"type_data\":null,\"name\":\"nginx\",\"version\":\"latest\",\"installed_version\":null,\"unit\":null,\"status\":\"ready\",\"status_color\":\"success\",\"icon\":\"\",\"is_default\":true,\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":30,\"server_id\":1,\"type\":\"webserver\",\"type_data\":null,\"name\":\"nginx\",\"version\":\"latest\",\"installed_version\":null,\"unit\":null,\"status\":\"ready\",\"status_color\":\"success\",\"icon\":\"\",\"is_default\":true,\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":29,\"server_id\":1,\"type\":\"webserver\",\"type_data\":null,\"name\":\"nginx\",\"version\":\"latest\",\"installed_version\":null,\"unit\":null,\"status\":\"ready\",\"status_color\":\"success\",\"icon\":\"\",\"is_default\":true,\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":30,\"server_id\":1,\"type\":\"webserver\",\"type_data\":null,\"name\":\"nginx\",\"version\":\"latest\",\"installed_version\":null,\"unit\":null,\"status\":\"ready\",\"status_color\":\"success\",\"icon\":\"\",\"is_default\":true,\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2359,7 +2359,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":29,\"server_id\":1,\"type\":\"webserver\",\"type_data\":null,\"name\":\"nginx\",\"version\":\"latest\",\"installed_version\":null,\"unit\":null,\"status\":\"ready\",\"status_color\":\"success\",\"icon\":\"\",\"is_default\":true,\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":29,\"server_id\":1,\"type\":\"webserver\",\"type_data\":null,\"name\":\"nginx\",\"version\":\"latest\",\"installed_version\":null,\"unit\":null,\"status\":\"ready\",\"status_color\":\"success\",\"icon\":\"\",\"is_default\":true,\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2744,7 +2744,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":6,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":6,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -2796,7 +2796,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2851,7 +2851,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"source_control_id\":null,\"type\":\"laravel\",\"type_data\":null,\"domain\":\"test.com\",\"aliases\":[],\"web_directory\":\"\\\/\",\"webserver\":\"nginx\",\"path\":\"\\\/home\",\"php_version\":\"8.2\",\"repository\":null,\"branch\":\"main\",\"status\":\"ready\",\"status_color\":\"success\",\"auto_deploy\":false,\"port\":null,\"user\":\"vito\",\"url\":\"http:\\\/\\\/test.com\",\"force_ssl\":false,\"progress\":100,\"features\":{\"modern-deployment\":{\"label\":\"Modern Deployment (beta)\",\"description\":\"Enables zero downtime deployment and deployment rollbacks\",\"actions\":{\"enable\":{\"label\":\"Enable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Enable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"While the feature is in beta, it is recommended to enable it on new websites than a live production site!\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"alert\",\"name\":\"alert-2\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.\",\"options\":{\"type\":\"warning\"},\"link\":{\"label\":\"Documentation\",\"url\":\"https:\\\/\\\/vitodeploy.com\\\/docs\\\/sites\\\/modern-deployment\"}},{\"type\":\"alert\",\"name\":\"alert-3\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.\",\"options\":{\"type\":\"warning\"},\"link\":null},{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":true},\"disable\":{\"label\":\"Disable\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Disable\",\"form\":[{\"type\":\"alert\",\"name\":\"alert\",\"label\":\"\",\"default\":null,\"placeholder\":null,\"description\":\"Disabling modern deployment will remove all releases and keep the current active one as default.\",\"options\":{\"type\":\"warning\"},\"link\":null}],\"active\":false},\"configuration\":{\"label\":\"Configure\",\"handler\":\"App\\\\SiteFeatures\\\\ModernDeployment\\\\Configuration\",\"form\":[{\"type\":\"text\",\"name\":\"shared_resources\",\"label\":\"Shared resouces\",\"default\":\".env,storage\",\"placeholder\":null,\"description\":\"Comma separated list of resources to be shared between deployments\",\"options\":null,\"link\":null},{\"type\":\"text\",\"name\":\"history\",\"label\":\"Deployments to keep\",\"default\":\"10\",\"placeholder\":null,\"description\":\"This amount specifies how many previous deployments to keep for rollback purposes\",\"options\":null,\"link\":null}],\"active\":false}}}},\"modern_deployment\":false,\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -2953,7 +2953,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"method\":\"least-connections\",\"servers\":[\"architecto\"]}"
+                            "raw": "{\"method\":\"ip-hash\",\"servers\":[\"architecto\"]}"
                         },
                         "description": "Update load balancer.",
                         "auth": {
@@ -3352,7 +3352,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Ms. Elisabeth Okuneva\",\"provider\":\"github\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Aleen O'Kon\",\"provider\":\"github\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Ms. Elisabeth Okuneva\",\"provider\":\"github\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":5,\"project_id\":null,\"global\":true,\"name\":\"Aleen O'Kon\",\"provider\":\"github\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -3398,7 +3398,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Mrs. Justina Gaylord\",\"provider\":\"github\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Mrs. Justina Gaylord\",\"provider\":\"github\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3447,7 +3447,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Misael Runte\",\"provider\":\"github\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Misael Runte\",\"provider\":\"github\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3488,7 +3488,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"architecto\",\"token\":\"architecto\",\"url\":\"http:\\\/\\\/www.bailey.biz\\\/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html\",\"username\":\"architecto\",\"password\":\"|]|{+-\",\"global\":true}"
+                            "raw": "{\"name\":\"architecto\",\"token\":\"architecto\",\"url\":\"http:\\\/\\\/www.bailey.biz\\\/quos-velit-et-fugiat-sunt-nihil-accusantium-harum.html\",\"username\":\"architecto\",\"password\":\"|]|{+-\",\"global\":false}"
                         },
                         "description": "",
                         "auth": {
@@ -3499,7 +3499,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Mrs. Justina Gaylord\",\"provider\":\"github\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"Mrs. Justina Gaylord\",\"provider\":\"github\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3603,7 +3603,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"name\":\"Haven Romaguera\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":6,\"name\":\"Viva Marquardt\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"name\":\"Haven Romaguera\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":6,\"name\":\"Viva Marquardt\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -3655,7 +3655,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"name\":\"Ms. Elisabeth Okuneva\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"name\":\"Ms. Elisabeth Okuneva\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3771,7 +3771,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"quidem\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-04T19:38:46.000000Z\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":6,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"debitis\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-04T19:38:46.000000Z\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"consequatur\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-06T08:00:06.000000Z\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":6,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"est\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-06T08:00:06.000000Z\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -3832,7 +3832,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"tempora\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-04T19:38:46.000000Z\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"modi\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-06T08:00:06.000000Z\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3890,7 +3890,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"eius\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-04T19:38:46.000000Z\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"eius\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-06T08:00:06.000000Z\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -3948,7 +3948,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"eius\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-04T19:38:46.000000Z\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"eius\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-06T08:00:06.000000Z\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4009,7 +4009,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"velit\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-04T19:38:46.000000Z\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"velit\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-06T08:00:06.000000Z\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4070,7 +4070,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"nihil\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-04T19:38:46.000000Z\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":1,\"site_id\":1,\"is_active\":false,\"type\":\"nihil\",\"status\":\"created\",\"log\":null,\"status_color\":\"success\",\"expires_at\":\"2025-09-06T08:00:06.000000Z\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4180,7 +4180,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"suscipit\",\"provider\":\"s3\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"veniam\",\"provider\":\"s3\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"eum\",\"provider\":\"ftp\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":4,\"project_id\":null,\"global\":true,\"name\":\"qui\",\"provider\":\"dropbox\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -4226,7 +4226,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"dropbox\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"dropbox\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4275,7 +4275,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"commodi\",\"provider\":\"dropbox\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"commodi\",\"provider\":\"dropbox\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4327,7 +4327,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"dropbox\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":3,\"project_id\":null,\"global\":true,\"name\":\"eius\",\"provider\":\"dropbox\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4431,7 +4431,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"server_id\":null,\"name\":\"Mina Bauch\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":6,\"server_id\":null,\"name\":\"Mr. Oswald Koch\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"server_id\":null,\"name\":\"Mina Bauch\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":6,\"server_id\":null,\"name\":\"Mr. Oswald Koch\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -4486,7 +4486,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":5,\"server_id\":null,\"name\":\"Myrtis Tromp\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"},{\"id\":6,\"server_id\":null,\"name\":\"Henri Mitchell\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
+                            "body": "{\"data\":[{\"id\":5,\"server_id\":null,\"name\":\"Myrtis Tromp\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"},{\"id\":6,\"server_id\":null,\"name\":\"Henri Mitchell\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}],\"links\":{\"first\":\"\\\/?page=1\",\"last\":\"\\\/?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"from\":1,\"last_page\":1,\"links\":[{\"url\":null,\"label\":\"&laquo; Previous\",\"active\":false},{\"url\":\"\\\/?page=1\",\"label\":\"1\",\"active\":true},{\"url\":null,\"label\":\"Next &raquo;\",\"active\":false}],\"path\":\"\\\/\",\"per_page\":25,\"to\":2,\"total\":2}}",
                             "name": ""
                         }
                     ]
@@ -4541,7 +4541,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Matilda Feeney\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:46.000000Z\",\"updated_at\":\"2025-09-03T19:38:46.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Matilda Feeney\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4602,7 +4602,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Shayna Raynor Jr.\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:47.000000Z\",\"updated_at\":\"2025-09-03T19:38:47.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Shayna Raynor Jr.\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4660,7 +4660,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Ms. Elisabeth Okuneva\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:47.000000Z\",\"updated_at\":\"2025-09-03T19:38:47.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Ms. Elisabeth Okuneva\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4724,7 +4724,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Ms. Elisabeth Okuneva\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:47.000000Z\",\"updated_at\":\"2025-09-03T19:38:47.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Ms. Elisabeth Okuneva\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4779,7 +4779,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Aleen O'Kon\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:47.000000Z\",\"updated_at\":\"2025-09-03T19:38:47.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Aleen O'Kon\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4834,7 +4834,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Justina Gaylord\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:47.000000Z\",\"updated_at\":\"2025-09-03T19:38:47.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Justina Gaylord\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]
@@ -4889,7 +4889,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Misael Runte\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-03T19:38:47.000000Z\",\"updated_at\":\"2025-09-03T19:38:47.000000Z\"}",
+                            "body": "{\"id\":5,\"server_id\":null,\"name\":\"Misael Runte\",\"command\":\"php artisan queue:work\",\"user\":\"vito\",\"auto_start\":true,\"auto_restart\":true,\"numprocs\":1,\"status\":\"creating\",\"status_color\":\"warning\",\"created_at\":\"2025-09-05T08:00:06.000000Z\",\"updated_at\":\"2025-09-05T08:00:06.000000Z\"}",
                             "name": ""
                         }
                     ]

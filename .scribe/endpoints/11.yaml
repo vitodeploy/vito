@@ -38,7 +38,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":6,"project_id":null,"global":true,"name":"ab","provider":"custom","created_at":"2025-09-03T19:38:46.000000Z","updated_at":"2025-09-03T19:38:46.000000Z"},{"id":7,"project_id":null,"global":true,"name":"incidunt","provider":"custom","created_at":"2025-09-03T19:38:46.000000Z","updated_at":"2025-09-03T19:38:46.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":6,"project_id":null,"global":true,"name":"ab","provider":"custom","created_at":"2025-09-05T08:00:06.000000Z","updated_at":"2025-09-05T08:00:06.000000Z"},{"id":7,"project_id":null,"global":true,"name":"incidunt","provider":"custom","created_at":"2025-09-05T08:00:06.000000Z","updated_at":"2025-09-05T08:00:06.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -140,7 +140,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":6,"project_id":null,"global":true,"name":"eius","provider":"custom","created_at":"2025-09-03T19:38:46.000000Z","updated_at":"2025-09-03T19:38:46.000000Z"}'
+        content: '{"id":6,"project_id":null,"global":true,"name":"eius","provider":"custom","created_at":"2025-09-05T08:00:06.000000Z","updated_at":"2025-09-05T08:00:06.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -198,7 +198,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":6,"project_id":null,"global":true,"name":"mollitia","provider":"linode","created_at":"2025-09-03T19:38:46.000000Z","updated_at":"2025-09-03T19:38:46.000000Z"}'
+        content: '{"id":6,"project_id":null,"global":true,"name":"mollitia","provider":"linode","created_at":"2025-09-05T08:00:06.000000Z","updated_at":"2025-09-05T08:00:06.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -265,7 +265,7 @@ endpoints:
         name: global
         description: 'Accessible in all projects'
         required: true
-        example: false
+        example: true
         type: string
         enumValues:
           - true
@@ -275,12 +275,12 @@ endpoints:
         custom: []
     cleanBodyParameters:
       name: architecto
-      global: false
+      global: true
     fileParameters: []
     responses:
       -
         status: 200
-        content: '{"id":6,"project_id":null,"global":true,"name":"eius","provider":"custom","created_at":"2025-09-03T19:38:46.000000Z","updated_at":"2025-09-03T19:38:46.000000Z"}'
+        content: '{"id":6,"project_id":null,"global":true,"name":"eius","provider":"custom","created_at":"2025-09-05T08:00:06.000000Z","updated_at":"2025-09-05T08:00:06.000000Z"}'
         headers: []
         description: ''
         custom: []

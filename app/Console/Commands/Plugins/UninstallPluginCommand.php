@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class UninstallPluginCommand extends Command
 {
-    protected $signature = 'plugins:uninstall {name}';
+    protected $signature = 'legacy-plugins:uninstall {name}';
 
     protected $description = 'Uninstall a plugin by name';
 

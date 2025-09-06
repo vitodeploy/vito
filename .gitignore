@@ -24,3 +24,4 @@ yarn-error.log
 laradumps.yaml
 .DS_Store
 /storage/pail
+/app/Vito/Plugins

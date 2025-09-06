@@ -6,7 +6,6 @@ use App\Helpers\FTP;
 use App\Helpers\Notifier;
 use App\Helpers\SSH;
 use App\Models\PersonalAccessToken;
-use App\Plugins\Plugins;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -27,7 +26,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('ssh', fn (): SSH => new SSH);
         $this->app->bind('notifier', fn (): Notifier => new Notifier);
         $this->app->bind('ftp', fn (): FTP => new FTP);
-        $this->app->bind('plugins', fn (): Plugins => new Plugins);
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
