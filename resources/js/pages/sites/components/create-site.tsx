@@ -18,6 +18,8 @@ import DynamicField from '@/components/ui/dynamic-field';
 import { TagsInput } from '@/components/ui/tags-input';
 import DatabaseSelect from '@/pages/databases/components/database-select';
 import DatabaseUserSelect from '@/pages/database-users/components/database-user-select';
+import SelectRepo from '@/pages/source-controls/components/select-repo';
+import SelectBranch from '@/pages/source-controls/components/select-branch';
 
 type CreateSiteForm = {
   server: string;
@@ -26,6 +28,8 @@ type CreateSiteForm = {
   aliases: string[];
   php_version: string;
   source_control: string;
+  repository: string;
+  branch: string;
   user: string;
 };
 
@@ -40,6 +44,8 @@ export default function CreateSite({ server, children }: { server?: Server; chil
     aliases: [],
     php_version: '',
     source_control: '',
+    repository: '',
+    branch: '',
     user: '',
   });
 
@@ -75,6 +81,37 @@ export default function CreateSite({ server, children }: { server?: Server; chil
             onValueChange={(value) => form.setData('source_control', value)}
           />
           <InputError message={form.errors.source_control} />
+        </FormField>
+      );
+    }
+
+    if (field.name === 'repository') {
+      return (
+        <FormField key={`field-${field.name}`}>
+          <Label htmlFor="repository">Repository</Label>
+          <SelectRepo
+            sourceControlId={form.data.source_control}
+            value={form.data.repository}
+            onValueChange={(value) => form.setData('repository', value)}
+            placeholder="owner/repository"
+          />
+          <InputError message={form.errors.repository} />
+        </FormField>
+      );
+    }
+
+    if (field.name === 'branch') {
+      return (
+        <FormField key={`field-${field.name}`}>
+          <Label htmlFor="branch">Branch</Label>
+          <SelectBranch
+            sourceControlId={form.data.source_control}
+            repository={form.data.repository}
+            value={form.data.branch}
+            onValueChange={(value) => form.setData('branch', value)}
+            placeholder="e.g. main, master, develop"
+          />
+          <InputError message={form.errors.branch} />
         </FormField>
       );
     }
