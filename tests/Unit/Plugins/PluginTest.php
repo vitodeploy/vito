@@ -17,6 +17,7 @@ use App\DTOs\GitHub\ReleaseDto;
 use App\Models\Plugin;
 use App\Models\PluginError;
 use Carbon\Carbon;
+use Exception;
 use File;
 use Mockery;
 use Tests\TestCase;
@@ -64,7 +65,10 @@ class PluginTest extends TestCase
         );
 
         File::ensureDirectoryExists(dirname($toFile));
-        File::copy($fromFile, $toFile);
+        if (! File::copy($fromFile, $toFile)) {
+            $this->fail("Failed to copy example plugin from '$fromFile' to '$toFile'");
+        }
+
         $folder = implode(DIRECTORY_SEPARATOR, ['Example', 'Repo']);
 
         $discovery = app(DiscoverPlugins::class);
@@ -106,7 +110,9 @@ class PluginTest extends TestCase
             $mock = Mockery::mock(DownloadRelease::class);
             $mock->shouldReceive('handle')
                 ->andReturnUsing(function ($release, $location) use ($zip) {
-                    File::copy($zip, $location);
+                    if (! File::copy($zip, $location)) {
+                        throw new Exception("Unable to copy file from $zip to $location");
+                    }
                 });
 
             return $mock;
