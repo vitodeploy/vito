@@ -110,6 +110,7 @@ class PluginTest extends TestCase
             $mock = Mockery::mock(DownloadRelease::class);
             $mock->shouldReceive('handle')
                 ->andReturnUsing(function ($release, $location) use ($zip) {
+                    File::ensureDirectoryExists(dirname($location));
                     if (! File::copy($zip, $location)) {
                         throw new Exception("Unable to copy file from $zip to $location");
                     }
