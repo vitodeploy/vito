@@ -34,7 +34,7 @@ export default function SiteFeatures() {
         <Alert>
           <TriangleAlertIcon className="text-warning!" />
           <AlertDescription className="flex gap-1">
-            Vito now uses the new plugins system. If the feature you're looking is not here, Check the
+            Vito now uses the new plugins system. If the feature you're looking for is not here, check the
             <Link className="text-primary" href={route('plugins')}>
               plugins
             </Link>
