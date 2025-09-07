@@ -77,8 +77,8 @@ class PluginController extends Controller
         return back()->with('success', "Plugin '$plugin->name' enabled");
     }
 
-    #[Post('/install', name: 'plugins.install')]
-    public function installNewPlugin(Request $request, InstallGithubPlugin $action): RedirectResponse
+    #[Post('/install/github', name: 'plugins.install.github')]
+    public function installGithubPlugin(Request $request, InstallGithubPlugin $action): RedirectResponse
     {
         $data = $this->validate($request, ['url' => 'required']);
         try {

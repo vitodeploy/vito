@@ -36,9 +36,6 @@ composer install --no-dev
 echo "Running migrations..."
 php artisan migrate --force
 
-echo "Reloading plugins..."
-php artisan legacy-plugins:load
-
 echo "Optimizing..."
 php artisan optimize:clear
 php artisan optimize

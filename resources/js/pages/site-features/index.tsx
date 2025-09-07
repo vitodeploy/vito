@@ -5,12 +5,13 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
-import { MoreVerticalIcon } from 'lucide-react';
+import { MoreVerticalIcon, TriangleAlertIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardRow, CardTitle } from '@/components/ui/card';
 import { Site, SiteFeature } from '@/types/site';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import FeatureAction from '@/pages/site-features/components/feature-action';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SiteFeatures() {
   const page = usePage<{
@@ -29,6 +30,17 @@ export default function SiteFeatures() {
         <HeaderContainer>
           <Heading title="Features" description="Your site has some features enabled by Vito or other plugins" />
         </HeaderContainer>
+
+        <Alert>
+          <TriangleAlertIcon className="text-warning!" />
+          <AlertDescription className="flex gap-1">
+            Vito now uses the new plugins system. If the feature you're looking for is not here, check the
+            <Link className="text-primary" href={route('plugins')}>
+              plugins
+            </Link>
+            and install the required one.
+          </AlertDescription>
+        </Alert>
 
         <Card>
           <CardHeader className="flex-row items-center justify-between gap-2">

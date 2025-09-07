@@ -16,7 +16,7 @@ export default function QuickInstall({ url }: { url: string }) {
   const isInstalled = page.props.plugins.some((plugin) => plugin.repo === url);
 
   const submit = () => {
-    form.post(route('plugins.install'), {
+    form.post(route('plugins.install.github'), {
       onSuccess: () => {},
     });
   };

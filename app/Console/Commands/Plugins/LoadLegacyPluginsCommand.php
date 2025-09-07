@@ -6,9 +6,12 @@ use App\Facades\Plugins;
 use Exception;
 use Illuminate\Console\Command;
 
+/**
+ * @deprecated
+ */
 class LoadLegacyPluginsCommand extends Command
 {
-    protected $signature = 'legacy-plugins:load';
+    protected $signature = 'plugins:load';
 
     protected $description = 'Load all legacy-plugins from the storage/plugins directory';
 

@@ -44,19 +44,18 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('source_control')
                     ->component()
                     ->label('Source Control'),
+                DynamicField::make('repository')
+                    ->text()
+                    ->component()
+                    ->label('Repository'),
+                DynamicField::make('branch')
+                    ->component()
+                    ->label('Branch'),
                 DynamicField::make('web_directory')
                     ->text()
                     ->label('Web Directory')
                     ->placeholder('For / leave empty')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
-                DynamicField::make('repository')
-                    ->text()
-                    ->label('Repository')
-                    ->placeholder('organization/repository'),
-                DynamicField::make('branch')
-                    ->text()
-                    ->label('Branch')
-                    ->default('main'),
                 DynamicField::make('composer')
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')

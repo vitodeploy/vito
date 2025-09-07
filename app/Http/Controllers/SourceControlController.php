@@ -7,6 +7,7 @@ use App\Actions\SourceControl\DeleteSourceControl;
 use App\Actions\SourceControl\EditSourceControl;
 use App\Http\Resources\SourceControlResource;
 use App\Models\SourceControl;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -18,6 +19,7 @@ use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
+use Spatie\RouteAttributes\Attributes\Where;
 
 #[Prefix('settings/source-controls')]
 #[Middleware(['auth'])]
@@ -39,6 +41,40 @@ class SourceControlController extends Controller
         $this->authorize('viewAny', SourceControl::class);
 
         return SourceControlResource::collection(SourceControl::getByProjectId(user()->current_project_id)->get());
+    }
+
+    #[Get('/{source_control}/repos', name: 'source-controls.repos')]
+    public function repos(SourceControl $sourceControl): JsonResponse
+    {
+        $this->authorize('view', $sourceControl);
+
+        return response()->json($sourceControl->provider()->getRepos());
+    }
+
+    #[Get('/{source_control}/repos/nocache', name: 'source-controls.repos.nocache')]
+    public function liveRepos(SourceControl $sourceControl): JsonResponse
+    {
+        $this->authorize('view', $sourceControl);
+
+        return response()->json($sourceControl->provider()->getRepos(false));
+    }
+
+    #[Get('/{source_control}/branches/{repo}', name: 'source-controls.branches')]
+    #[Where('repo', '.*')]
+    public function branches(SourceControl $sourceControl, string $repo): JsonResponse
+    {
+        $this->authorize('view', $sourceControl);
+
+        return response()->json($sourceControl->provider()->getBranches($repo));
+    }
+
+    #[Get('/{source_control}/branches/nocache/{repo}', name: 'source-controls.branches.nocache')]
+    #[Where('repo', '.*')]
+    public function liveBranches(SourceControl $sourceControl, string $repo): JsonResponse
+    {
+        $this->authorize('view', $sourceControl);
+
+        return response()->json($sourceControl->provider()->getBranches($repo, false));
     }
 
     #[Post('/', name: 'source-controls.store')]
