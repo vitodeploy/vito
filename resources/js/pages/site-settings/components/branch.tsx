@@ -13,10 +13,10 @@ import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Site } from '@/types/site';
+import SelectBranch from '@/pages/source-controls/components/select-branch';
 
 export default function ChangeBranch({ site, children }: { site: Site; children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -48,7 +48,12 @@ export default function ChangeBranch({ site, children }: { site: Site; children:
           <FormFields>
             <FormField>
               <Label htmlFor="branch">Branch</Label>
-              <Input id="branch" value={form.data.branch} onChange={(e) => form.setData('branch', e.target.value)} placeholder="main" />
+              <SelectBranch
+                sourceControlId={site.source_control_id.toString()}
+                repository={site.repository}
+                value={form.data.branch}
+                onValueChange={(value) => form.setData('branch', value)}
+              />
               <InputError message={form.errors.branch} />
             </FormField>
           </FormFields>
