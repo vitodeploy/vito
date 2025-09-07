@@ -15,8 +15,8 @@ export function Combobox({
 }: {
   items: { value: string; label: string }[];
   value: string;
-  searchText: string;
-  noneFoundText: string;
+  searchText?: string;
+  noneFoundText?: string;
   onValueChange: (value: string) => void;
 }) {
   const [open, setOpen] = React.useState(false);

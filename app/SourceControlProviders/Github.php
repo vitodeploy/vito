@@ -23,6 +23,8 @@ class Github extends AbstractSourceControlProvider
 
     private const int MAX_PER_PAGE = 100;
 
+    private const int MAX_PAGES = 25;
+
     public static function id(): string
     {
         return 'github';
@@ -239,12 +241,6 @@ class Github extends AbstractSourceControlProvider
 
     public function getBranches(string $repo, bool $useCache = true): array
     {
-        if (! preg_match('/^[a-zA-Z0-9\-_.]+\/[a-zA-Z0-9\-_.]+$/', $repo)) {
-            Log::error('Invalid repository format', ['repo' => $repo]);
-
-            return [];
-        }
-
         $cacheKey = 'github_branches_'.md5($repo.$this->data()['token']);
         if ($useCache && Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
@@ -306,7 +302,7 @@ class Github extends AbstractSourceControlProvider
                 $page++;
             }
 
-            if ($page > 25) {
+            if ($page > self::MAX_PAGES) {
                 Log::warning('Reached pagination limit', [
                     'endpoint' => $endpoint,
                     'pages_fetched' => $page - 1,
