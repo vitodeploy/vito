@@ -32,7 +32,7 @@ export function Combobox({
       <PopoverContent className="p-0">
         <Command>
           <CommandInput placeholder={searchText} />
-          <CommandList>
+          <CommandList className="p-0 pointer-events-auto" onWheel={(e) => e.stopPropagation()}>
             <CommandEmpty>{noneFoundText}</CommandEmpty>
             <CommandGroup>
               {open &&
