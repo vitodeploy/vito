@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use App\Actions\Plugins\BootPlugins;
 use App\Actions\Plugins\GetPluginInstance;
-use App\Console\Commands\Plugins\InstallLegacyPluginCommand;
-use App\Console\Commands\Plugins\LegacyPluginsListCommand;
 use App\Console\Commands\Plugins\LoadLegacyPluginsCommand;
 use App\Plugins\LegacyPlugins;
 use App\Plugins\RegisterCommand;
@@ -29,9 +27,7 @@ class PluginsServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                InstallLegacyPluginCommand::class,
                 LoadLegacyPluginsCommand::class,
-                LegacyPluginsListCommand::class,
             ]);
         }
 
