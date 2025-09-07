@@ -41,7 +41,9 @@ export default function SelectBranch({ sourceControlId, repository, value, onVal
       const data = await response.json();
       setBranches(data);
 
-      if (data.length > 0 && !data.includes(value)) {
+      if (data.length === 1) {
+        onValueChange(data[0]);
+      } else if (data.length > 0 && !data.includes(value)) {
         onValueChange('');
       }
     } catch (error) {
