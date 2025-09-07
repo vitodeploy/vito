@@ -61,12 +61,12 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         return str($payload['ref'] ?? '')->after('refs/heads/')->toString();
     }
 
-    public function getRepos(): array
+    public function getRepos(bool $useCache = true): array
     {
         return [];
     }
 
-    public function getBranches(string $repo): array
+    public function getBranches(string $repo, bool $useCache = true): array
     {
         return [];
     }

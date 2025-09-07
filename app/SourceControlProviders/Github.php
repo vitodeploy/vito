@@ -19,7 +19,7 @@ class Github extends AbstractSourceControlProvider
 {
     private const string API_BASE_URL = 'https://api.github.com';
 
-    private const int CACHE_TTL = 300;
+    private const int CACHE_TTL = 60 * 15;
 
     private const int MAX_PER_PAGE = 100;
 
@@ -306,7 +306,7 @@ class Github extends AbstractSourceControlProvider
                 $page++;
             }
 
-            if ($page > 10) {
+            if ($page > 25) {
                 Log::warning('Reached pagination limit', [
                     'endpoint' => $endpoint,
                     'pages_fetched' => $page - 1,

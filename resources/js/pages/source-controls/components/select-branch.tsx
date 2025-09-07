@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Combobox } from '@/components/ui/combobox';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 interface SelectBranchProps {
   sourceControlId: string;
@@ -14,62 +16,69 @@ export default function SelectBranch({ sourceControlId, repository, value, onVal
   const [branches, setBranches] = useState<string[]>([]);
   const [gettingBranches, setGettingBranches] = useState(false);
 
-  useEffect(() => {
-    const fetchBranches = async () => {
+  const refresh = async () => {
+    fetchBranches(false);
+  };
+
+  const fetchBranches = async (useCache: boolean = true) => {
+    setBranches([]);
+
+    if (!sourceControlId || !repository) {
+      return;
+    }
+
+    setGettingBranches(true);
+
+    const routeName: string = useCache ? 'source-controls.branches' : 'source-controls.branches.nocache';
+
+    try {
+      const response = await fetch(
+        route(routeName, {
+          source_control: sourceControlId,
+          repo: repository,
+        }),
+      );
+      const data = await response.json();
+      setBranches(data);
+
+      if (data.length > 0 && !data.includes(value)) {
+        onValueChange('');
+      }
+    } catch (error) {
+      console.error('Failed to fetch branches:', error);
       setBranches([]);
+    } finally {
+      setGettingBranches(false);
+    }
+  };
 
-      if (!sourceControlId || !repository) {
-        return;
-      }
-
-      setGettingBranches(true);
-
-      try {
-        const response = await fetch(
-          route('source-controls.branches', {
-            source_control: sourceControlId,
-            repo: repository,
-          }),
-        );
-        const data = await response.json();
-        setBranches(data);
-
-        if (data.length > 0 && !data.includes(value)) {
-          onValueChange('');
-        }
-      } catch (error) {
-        console.error('Failed to fetch branches:', error);
-        setBranches([]);
-      } finally {
-        setGettingBranches(false);
-      }
-    };
-
+  useEffect(() => {
     fetchBranches();
   }, [sourceControlId, repository]);
 
-  if (gettingBranches) {
-    return <Input id="branch" type="text" value="" disabled={true} placeholder="Fetching..." />;
-  }
-
-  if (branches.length === 0 || !sourceControlId || !repository) {
-    return <Input id="branch" type="text" value={value ?? ''} onChange={(e) => onValueChange(e.target.value)} placeholder={placeholder} />;
-  }
+  const comboboxItems = branches.map((branch) => ({
+    value: branch,
+    label: branch,
+  }));
 
   return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger id="branch">
-        <SelectValue placeholder="Select a branch" />
-      </SelectTrigger>
-      <SelectContent searchable>
-        <SelectGroup>
-          {branches.map((branch) => (
-            <SelectItem key={`${branch}`} value={branch ?? ''}>
-              {branch}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <div className="flex items-center gap-2">
+      {gettingBranches && <Input id="branch" type="text" value="" disabled={true} placeholder="Fetching..." />}
+      {!gettingBranches && (branches.length === 0 || !sourceControlId || !repository) && (
+        <Input id="branch" type="text" value={value ?? ''} onChange={(e) => onValueChange(e.target.value)} placeholder={placeholder} />
+      )}
+      {!gettingBranches && branches.length !== 0 && sourceControlId && repository && (
+        <Combobox
+          items={comboboxItems}
+          value={value}
+          searchText="Filter branches..."
+          noneFoundText="No branches found..."
+          onValueChange={onValueChange}
+        />
+      )}
+      <Button variant="outline" type="button" disabled={gettingBranches || !sourceControlId || !repository} onClick={refresh}>
+        <RefreshCw className={gettingBranches ? 'animate-spin' : ''} />
+      </Button>
+    </div>
   );
 }

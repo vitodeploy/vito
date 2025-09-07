@@ -51,6 +51,14 @@ class SourceControlController extends Controller
         return response()->json($sourceControl->provider()->getRepos());
     }
 
+    #[Get('/{source_control}/repos/nocache', name: 'source-controls.repos.nocache')]
+    public function liveRepos(SourceControl $sourceControl): JsonResponse
+    {
+        $this->authorize('view', $sourceControl);
+
+        return response()->json($sourceControl->provider()->getRepos(false));
+    }
+
     #[Get('/{source_control}/branches/{repo}', name: 'source-controls.branches')]
     #[Where('repo', '.*')]
     public function branches(SourceControl $sourceControl, string $repo): JsonResponse
@@ -58,6 +66,15 @@ class SourceControlController extends Controller
         $this->authorize('view', $sourceControl);
 
         return response()->json($sourceControl->provider()->getBranches($repo));
+    }
+
+    #[Get('/{source_control}/branches/nocache/{repo}', name: 'source-controls.branches.nocache')]
+    #[Where('repo', '.*')]
+    public function liveBranches(SourceControl $sourceControl, string $repo): JsonResponse
+    {
+        $this->authorize('view', $sourceControl);
+
+        return response()->json($sourceControl->provider()->getBranches($repo, false));
     }
 
     #[Post('/', name: 'source-controls.store')]
