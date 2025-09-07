@@ -37,7 +37,7 @@ final readonly class ExtractPlugin
             $zip->extractTo($temp);
 
             $tempDir = $temp.DIRECTORY_SEPARATOR.$rootFolder;
-            File::moveDirectory($tempDir, $extractPath, true);
+            move_directory($tempDir, $extractPath);
         } finally {
             $zip->close();
         }

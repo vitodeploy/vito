@@ -62,7 +62,6 @@ service redis-server start
 service nginx start
 
 php /var/www/html/artisan migrate --force
-php /var/www/html/artisan plugins:load
 php /var/www/html/artisan optimize:clear
 php /var/www/html/artisan optimize
 
