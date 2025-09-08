@@ -37,6 +37,7 @@ class ServerResource extends JsonResource
             'updates' => $this->updates,
             'last_update_check' => $this->last_update_check,
             'status_color' => $this->getStatusColor(),
+            'features' => $this->features(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

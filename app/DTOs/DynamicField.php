@@ -12,7 +12,8 @@ class DynamicField
         private ?string $placeholder = null,
         private ?string $description = null,
         private ?array $options = null,
-        private ?array $link = null
+        private ?array $link = null,
+        private ?string $className = null,
     ) {}
 
     public static function make(string $name): self
@@ -30,6 +31,13 @@ class DynamicField
     public function text(): self
     {
         $this->type = 'text';
+
+        return $this;
+    }
+
+    public function textarea(): self
+    {
+        $this->type = 'textarea';
 
         return $this;
     }
@@ -107,6 +115,13 @@ class DynamicField
         return $this;
     }
 
+    public function className(?string $className): self
+    {
+        $this->className = $className;
+
+        return $this;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -121,6 +136,7 @@ class DynamicField
             'description' => $this->description,
             'options' => $this->options,
             'link' => $this->link,
+            'className' => $this->className,
         ];
     }
 }

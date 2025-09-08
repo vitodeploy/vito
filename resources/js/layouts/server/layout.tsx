@@ -208,6 +208,11 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       ],
     },
     {
+      title: 'Features',
+      href: route('server-features', { server: page.props.server.id }),
+      icon: BoxIcon,
+    },
+    {
       title: 'Settings',
       href: route('server-settings', { server: page.props.server.id }),
       icon: Settings2Icon,
