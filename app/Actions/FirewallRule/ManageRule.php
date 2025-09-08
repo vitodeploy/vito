@@ -18,7 +18,7 @@ class ManageRule
      */
     public function create(Server $server, array $input): FirewallRule
     {
-        Validator::make($input, self::rules($input))->validate();
+        $this->validate($input);
 
         $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
         $rule = new FirewallRule([
@@ -45,7 +45,7 @@ class ManageRule
      */
     public function update(FirewallRule $rule, array $input): FirewallRule
     {
-        Validator::make($input, self::rules($input))->validate();
+        $this->validate($input);
 
         $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
         $rule->update([
@@ -97,11 +97,7 @@ class ManageRule
         $rule->save();
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, array<string>>
-     */
-    public static function rules(array $input): array
+    private function validate(array $input): void
     {
         $rules = [
             'name' => [
@@ -140,6 +136,6 @@ class ManageRule
             $rules['mask'] = ['required', 'numeric', 'min:1', 'max:32'];
         }
 
-        return $rules;
+        Validator::make($input, $rules)->validate();
     }
 }

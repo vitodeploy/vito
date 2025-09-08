@@ -18,7 +18,7 @@ class EditServer
      */
     public function edit(Server $server, array $input): Server
     {
-        Validator::make($input, self::rules($server))->validate();
+        $this->validate($server, $input);
 
         $checkConnection = false;
         if (isset($input['name'])) {
@@ -48,12 +48,9 @@ class EditServer
         return $server;
     }
 
-    /**
-     * @return array<string, array<int, mixed>>
-     */
-    public static function rules(Server $server): array
+    private function validate(Server $server, array $input): void
     {
-        return [
+        $rules = [
             'name' => [
                 'required',
                 'max:255',
@@ -75,5 +72,7 @@ class EditServer
                 'max:65535',
             ],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }

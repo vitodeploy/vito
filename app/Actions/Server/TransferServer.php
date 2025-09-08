@@ -17,7 +17,7 @@ class TransferServer
      */
     public function transfer(User $user, Server $server, array $input): Server
     {
-        Validator::make($input, self::rules($user))->validate();
+        $this->validate($user, $input);
 
         $server->project_id = $input['project_id'];
         $server->save();
@@ -25,16 +25,15 @@ class TransferServer
         return $server;
     }
 
-    /**
-     * @return array<string, array<int, mixed>>
-     */
-    public static function rules(User $user): array
+    private function validate(User $user, array $input): void
     {
-        return [
+        $rules = [
             'project_id' => [
                 'required',
                 Rule::in($user->allProjects()->pluck('id')->toArray()),
             ],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }

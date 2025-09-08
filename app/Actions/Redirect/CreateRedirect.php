@@ -17,7 +17,7 @@ class CreateRedirect
      */
     public function create(Site $site, array $input): Redirect
     {
-        Validator::make($input, self::rules($site))->validate();
+        $this->validate($site, $input);
 
         $redirect = new Redirect;
 
@@ -48,12 +48,9 @@ class CreateRedirect
         return $redirect->refresh();
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(Site $site): array
+    private function validate(Site $site, array $input): void
     {
-        return [
+        $rules = [
             'from' => [
                 'required',
                 'string',
@@ -76,5 +73,7 @@ class CreateRedirect
                 ]),
             ],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }

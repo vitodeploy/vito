@@ -13,7 +13,11 @@ class EditStorageProvider
      */
     public function edit(StorageProvider $storageProvider, Project $project, array $input): StorageProvider
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'name' => [
+                'required',
+            ],
+        ])->validate();
 
         $storageProvider->profile = $input['name'];
         $storageProvider->project_id = isset($input['global']) && $input['global'] ? null : $project->id;
@@ -21,17 +25,5 @@ class EditStorageProvider
         $storageProvider->save();
 
         return $storageProvider;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [
-            'name' => [
-                'required',
-            ],
-        ];
     }
 }

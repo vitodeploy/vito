@@ -13,7 +13,7 @@ class CreateProject
      */
     public function create(User $user, array $input): Project
     {
-        Validator::make($input, self::rules())->validate();
+        $this->validate($input);
 
         if (isset($input['name'])) {
             $input['name'] = strtolower((string) $input['name']);
@@ -32,12 +32,9 @@ class CreateProject
         return $project;
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
+    private function validate(array $input): void
     {
-        return [
+        $rules = [
             'name' => [
                 'required',
                 'string',
@@ -46,13 +43,7 @@ class CreateProject
                 'lowercase:projects,name',
             ],
         ];
-    }
 
-    /**
-     * @param  array<string, mixed>  $input
-     */
-    private function validate(array $input): void
-    {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, $rules)->validate();
     }
 }

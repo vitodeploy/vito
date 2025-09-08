@@ -20,7 +20,7 @@ class LinkUser
      */
     public function link(DatabaseUser $databaseUser, array $input): DatabaseUser
     {
-        Validator::make($input, self::rules($databaseUser->server))->validate();
+        $this->validate($databaseUser->server, $input);
 
         if (! isset($input['databases']) || ! is_array($input['databases'])) {
             $input['databases'] = [];
@@ -62,16 +62,13 @@ class LinkUser
         return $databaseUser;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public static function rules(Server $server): array
+    private function validate(Server $server, array $input): void
     {
-        return [
+        Validator::make($input, [
             'databases.*' => [
                 'nullable',
                 Rule::exists('databases', 'name')->where('server_id', $server->id),
             ],
-        ];
+        ])->validate();
     }
 }

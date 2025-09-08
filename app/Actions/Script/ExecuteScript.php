@@ -18,7 +18,7 @@ class ExecuteScript
      */
     public function execute(Script $script, User $user, array $input): ScriptExecution
     {
-        Validator::make($input, self::rules($script, $input))->validate();
+        $this->validate($script, $input);
 
         $variables = [];
         foreach ($script->getVariables() as $variable) {
@@ -67,11 +67,7 @@ class ExecuteScript
         return $execution;
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public static function rules(Script $script, array $input): array
+    private function validate(Script $script, array $input): void
     {
         $users = ['root'];
         if (isset($input['server'])) {
@@ -99,6 +95,6 @@ class ExecuteScript
             ];
         }
 
-        return $rules;
+        Validator::make($input, $rules)->validate();
     }
 }

@@ -21,7 +21,7 @@ class CreateWorker
      */
     public function create(Server $server, array $input, ?Site $site = null): Worker
     {
-        Validator::make($input, self::rules($server, $site))->validate();
+        $this->validate($server, $input, $site);
 
         $worker = new Worker([
             'server_id' => $server->id,
@@ -61,12 +61,9 @@ class CreateWorker
         return $worker;
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(Server $server, ?Site $site = null): array
+    private function validate(Server $server, array $input, ?Site $site = null): void
     {
-        return [
+        Validator::make($input, [
             'name' => [
                 'required',
                 'string',
@@ -100,6 +97,6 @@ class CreateWorker
                 'numeric',
                 'min:1',
             ],
-        ];
+        ])->validate();
     }
 }

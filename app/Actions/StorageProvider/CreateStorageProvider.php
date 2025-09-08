@@ -19,7 +19,7 @@ class CreateStorageProvider
      */
     public function create(User $user, Project $project, array $input): StorageProvider
     {
-        Validator::make($input, self::rules($input))->validate();
+        $this->validate($input);
 
         $storageProvider = new StorageProvider([
             'user_id' => $user->id,
@@ -47,11 +47,7 @@ class CreateStorageProvider
         return $storageProvider;
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public static function rules(array $input): array
+    private function validate(array $input): void
     {
         $rules = [
             'provider' => [
@@ -68,6 +64,6 @@ class CreateStorageProvider
             $rules = array_merge($rules, $provider->validationRules());
         }
 
-        return $rules;
+        Validator::make($input, $rules)->validate();
     }
 }

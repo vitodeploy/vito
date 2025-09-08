@@ -20,7 +20,7 @@ class EditWorker
      */
     public function edit(Worker $worker, array $input): Worker
     {
-        Validator::make($input, self::rules($worker, $worker->site))->validate();
+        $this->validate($worker, $input, $worker->site);
 
         $worker->fill([
             'name' => $input['name'],
@@ -61,12 +61,9 @@ class EditWorker
         return $worker;
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(Worker $worker, ?Site $site = null): array
+    private function validate(Worker $worker, array $input, ?Site $site = null): void
     {
-        return [
+        $rules = [
             'name' => [
                 'required',
                 'string',
@@ -102,5 +99,7 @@ class EditWorker
                 'min:1',
             ],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }
