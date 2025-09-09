@@ -93,22 +93,22 @@ class VitoSettingController extends Controller
         config(['session.driver' => 'file']);
 
         $request->validate([
-            'backup_file' => 'required|file|mimes:zip|mimetypes:application/zip,application/x-zip-compressed'
+            'backup_file' => 'required|file|mimes:zip|mimetypes:application/zip,application/x-zip-compressed',
         ]);
 
         $extractPath = $this->extractBackupFile($request->file('backup_file'));
-        
+
         try {
             $this->validateBackupStructure($extractPath);
             $this->moveBackupFiles($extractPath);
-            
+
             Artisan::call('optimize');
-            
+
             return redirect()->route('vito-settings')
                 ->with('success', 'Settings imported successfully.');
         } catch (ValidationException $e) {
             return redirect()->route('vito-settings')
-                ->with('error', 'Import failed: ' . $e->getMessage())
+                ->with('error', 'Import failed: '.$e->getMessage())
                 ->withErrors($e->errors());
         } finally {
             File::deleteDirectory($extractPath);
@@ -130,7 +130,7 @@ class VitoSettingController extends Controller
         $zip = new ZipArchive;
         if ($zip->open($uploadedFile->getPathname()) !== true) {
             throw ValidationException::withMessages([
-                'file' => 'The uploaded file is not a valid zip archive.'
+                'file' => 'The uploaded file is not a valid zip archive.',
             ]);
         }
 
@@ -147,8 +147,8 @@ class VitoSettingController extends Controller
     private function validateBackupStructure(string $extractPath): void
     {
         $dbPaths = [
-            $extractPath . '/database.sqlite',
-            $extractPath . '/storage/database.sqlite'
+            $extractPath.'/database.sqlite',
+            $extractPath.'/storage/database.sqlite',
         ];
 
         $dbPath = null;
@@ -159,9 +159,9 @@ class VitoSettingController extends Controller
             }
         }
 
-        if (!$dbPath) {
+        if (! $dbPath) {
             throw ValidationException::withMessages([
-                'backup_file' => 'The uploaded backup file is not valid. Database file not found.'
+                'backup_file' => 'The uploaded backup file is not valid. Database file not found.',
             ]);
         }
     }
@@ -173,44 +173,44 @@ class VitoSettingController extends Controller
             'env' => [
                 'sources' => ['.env'],
                 'destination' => base_path('.env'),
-                'type' => 'file'
+                'type' => 'file',
             ],
             'database' => [
                 'sources' => ['database.sqlite', 'storage/database.sqlite'],
                 'destination' => storage_path('database.sqlite'),
-                'type' => 'file'
+                'type' => 'file',
             ],
             'ssh_public' => [
                 'sources' => ['ssh-public.key', 'storage/ssh-public.key'],
                 'destination' => storage_path('ssh-public.key'),
-                'type' => 'file'
+                'type' => 'file',
             ],
             'ssh_private' => [
                 'sources' => ['ssh-private.pem', 'storage/ssh-private.pem'],
                 'destination' => storage_path('ssh-private.pem'),
-                'type' => 'file'
+                'type' => 'file',
             ],
             // Directories
             'key_pairs' => [
                 'sources' => ['key-pairs'],
                 'destination' => storage_path('app/key-pairs'),
-                'type' => 'directory'
+                'type' => 'directory',
             ],
             'server_logs' => [
                 'sources' => ['server-logs'],
                 'destination' => storage_path('app/server-logs'),
-                'type' => 'directory'
+                'type' => 'directory',
             ],
         ];
 
         foreach ($fileMap as $config) {
             foreach ($config['sources'] as $sourcePath) {
-                $fullPath = $extractPath . '/' . $sourcePath;
+                $fullPath = $extractPath.'/'.$sourcePath;
                 if (File::exists($fullPath)) {
                     if ($config['type'] === 'file') {
                         // Ensure parent directory exists
                         File::ensureDirectoryExists(dirname($config['destination']));
-                        
+
                         // Copy file
                         if (File::exists($config['destination'])) {
                             File::delete($config['destination']);
