@@ -15,7 +15,7 @@ class AddUser
      */
     public function add(Project $project, array $input): void
     {
-        Validator::make($input, self::rules($project))->validate();
+        $this->validate($project, $input);
 
         /** @var User $user */
         $user = User::query()->findOrFail($input['user']);
@@ -24,12 +24,9 @@ class AddUser
         $project->users()->attach($user);
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(Project $project): array
+    private function validate(Project $project, array $input): void
     {
-        return [
+        $rules = [
             'user' => [
                 'required',
                 Rule::exists('users', 'id'),
@@ -38,5 +35,7 @@ class AddUser
                 }),
             ],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }

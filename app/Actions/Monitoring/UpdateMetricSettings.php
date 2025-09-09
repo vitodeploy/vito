@@ -14,7 +14,7 @@ class UpdateMetricSettings
      */
     public function update(Server $server, array $input): void
     {
-        Validator::make($input, self::rules())->validate();
+        $this->validate($input);
 
         /** @var Service $service */
         $service = $server->monitoring();
@@ -26,17 +26,14 @@ class UpdateMetricSettings
         $service->save();
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
+    private function validate(array $input): void
     {
-        return [
+        Validator::make($input, [
             'data_retention' => [
                 'required',
                 'numeric',
                 'min:1',
             ],
-        ];
+        ])->validate();
     }
 }

@@ -30,7 +30,7 @@ export default function InstallDialog({ repo }: { repo?: Repo }) {
   });
 
   const submit = () => {
-    form.post(route('plugins.install'), {
+    form.post(route('plugins.install.github'), {
       onSuccess: () => {
         form.reset();
         setOpen(false);

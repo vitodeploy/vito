@@ -7,6 +7,7 @@ use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
 use App\Facades\SSH;
+use App\ServerFeatures\ActionInterface;
 use App\SSH\OS\Cron;
 use App\SSH\OS\OS;
 use App\SSH\OS\Systemd;
@@ -89,6 +90,7 @@ class Server extends AbstractModel
         'progress_step',
         'updates',
         'last_update_check',
+        'feature_data',
     ];
 
     protected $casts = [
@@ -101,6 +103,7 @@ class Server extends AbstractModel
         'progress' => 'float',
         'updates' => 'integer',
         'last_update_check' => 'datetime',
+        'feature_data' => 'json',
     ];
 
     protected $hidden = [
@@ -550,5 +553,34 @@ class Server extends AbstractModel
         }
 
         return 'gray';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function features(): array
+    {
+        $features = config('server.features', []);
+        foreach ($features as $featureKey => $feature) {
+            foreach ($feature['actions'] ?? [] as $actionKey => $action) {
+                $handlerClass = $action['handler'] ?? null;
+                if ($handlerClass && class_exists($handlerClass)) {
+                    /** @var ActionInterface $handler */
+                    $handler = new $handlerClass($this);
+                    $action['active'] = $handler->active();
+                    if (! isset($action['form']) || empty($action['form'])) {
+                        $action['form'] = $handler->form()?->toArray() ?? [];
+                    }
+                }
+                $features[$featureKey]['actions'][$actionKey] = $action;
+            }
+        }
+
+        return $features;
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        return in_array($feature, config('server.features', []));
     }
 }

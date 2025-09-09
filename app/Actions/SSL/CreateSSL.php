@@ -22,7 +22,7 @@ class CreateSSL
      */
     public function create(Site $site, array $input): Ssl
     {
-        Validator::make($input, self::rules($input))->validate();
+        $this->validate($input);
 
         $site->ssls()
             ->where('type', $input['type'])
@@ -65,11 +65,7 @@ class CreateSSL
         return $ssl;
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public static function rules(array $input): array
+    private function validate(array $input): void
     {
         $rules = [
             'type' => [
@@ -93,6 +89,6 @@ class CreateSSL
             ];
         }
 
-        return $rules;
+        Validator::make($input, $rules)->validate();
     }
 }

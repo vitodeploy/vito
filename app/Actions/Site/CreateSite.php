@@ -28,7 +28,7 @@ class CreateSite
      */
     public function create(Server $server, array $input): Site
     {
-        Validator::make($input, self::rules($server, $input))->validate();
+        $this->validate($server, $input);
 
         DB::beginTransaction();
         try {
@@ -107,11 +107,7 @@ class CreateSite
         }
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public static function rules(Server $server, array $input): array
+    private function validate(Server $server, array $input): void
     {
         $rules = [
             'type' => [
@@ -136,14 +132,14 @@ class CreateSite
             ],
         ];
 
-        return array_merge($rules, self::typeRules($server, $input));
+        Validator::make($input, array_merge($rules, $this->typeRules($server, $input)))->validate();
     }
 
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, array<string>>
      */
-    private static function typeRules(Server $server, array $input): array
+    private function typeRules(Server $server, array $input): array
     {
         if (! isset($input['type']) || ! config('site.types.'.$input['type'])) {
             return [];

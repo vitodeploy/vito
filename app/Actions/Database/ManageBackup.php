@@ -22,7 +22,7 @@ class ManageBackup
      */
     public function create(Server $server, array $input): Backup
     {
-        Validator::make($input, self::rules($server, $input))->validate();
+        $this->validate($server, $input);
 
         $backup = new Backup([
             'type' => 'database',
@@ -40,9 +40,6 @@ class ManageBackup
         return $backup;
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     */
     public function update(Backup $backup, array $input): void
     {
         $backup->interval = $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'];
@@ -68,11 +65,13 @@ class ManageBackup
         })->onQueue('ssh');
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public static function rules(Server $server, array $input): array
+    public function stop(Backup $backup): void
+    {
+        $backup->status = BackupStatus::STOPPED;
+        $backup->save();
+    }
+
+    private function validate(Server $server, array $input): void
     {
         $rules = [
             'storage' => [
@@ -101,12 +100,6 @@ class ManageBackup
             ];
         }
 
-        return $rules;
-    }
-
-    public function stop(Backup $backup): void
-    {
-        $backup->status = BackupStatus::STOPPED;
-        $backup->save();
+        Validator::make($input, $rules)->validate();
     }
 }

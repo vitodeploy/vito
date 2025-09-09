@@ -17,7 +17,7 @@ class ConnectSourceControl
      */
     public function connect(Project $project, array $input): SourceControl
     {
-        Validator::make($input, self::rules($input))->validate();
+        $this->validate($input);
 
         $sourceControl = new SourceControl([
             'provider' => $input['provider'],
@@ -39,11 +39,7 @@ class ConnectSourceControl
         return $sourceControl;
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, array<int, mixed>>
-     */
-    public static function rules(array $input): array
+    private function validate(array $input): void
     {
         $rules = [
             'name' => [
@@ -55,7 +51,7 @@ class ConnectSourceControl
             ],
         ];
 
-        return array_merge($rules, self::providerRules($input));
+        Validator::make($input, array_merge($rules, $this->providerRules($input)))->validate();
     }
 
     /**
@@ -64,7 +60,7 @@ class ConnectSourceControl
      *
      * @throws ValidationException
      */
-    private static function providerRules(array $input): array
+    private function providerRules(array $input): array
     {
         if (! isset($input['provider'])) {
             return [];

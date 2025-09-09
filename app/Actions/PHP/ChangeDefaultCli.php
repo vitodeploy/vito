@@ -41,7 +41,7 @@ class ChangeDefaultCli
      *
      * @throws ValidationException
      */
-    public function validate(Server $server, array $input): void
+    private function validate(Server $server, array $input): void
     {
         if (! isset($input['version']) || ! in_array($input['version'], $server->installedPHPVersions())) {
             throw ValidationException::withMessages(

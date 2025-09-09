@@ -13,7 +13,11 @@ class EditServerProvider
      */
     public function edit(ServerProvider $serverProvider, Project $project, array $input): ServerProvider
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'name' => [
+                'required',
+            ],
+        ])->validate();
 
         $serverProvider->profile = $input['name'];
         $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $project->id;
@@ -21,17 +25,5 @@ class EditServerProvider
         $serverProvider->save();
 
         return $serverProvider;
-    }
-
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
-    {
-        return [
-            'name' => [
-                'required',
-            ],
-        ];
     }
 }

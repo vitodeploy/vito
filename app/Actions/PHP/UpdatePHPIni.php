@@ -22,7 +22,7 @@ class UpdatePHPIni
      */
     public function update(Server $server, array $input): void
     {
-        Validator::make($input, self::rules($server))->validate();
+        $this->validate($server, $input);
 
         /** @var Service $service */
         $service = $server->php($input['version']);
@@ -55,12 +55,9 @@ class UpdatePHPIni
         }
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(Server $server): array
+    private function validate(Server $server, array $input): void
     {
-        return [
+        $rules = [
             'ini' => [
                 'required',
                 'string',
@@ -76,5 +73,7 @@ class UpdatePHPIni
                 Rule::in([PHPIniType::CLI, PHPIniType::FPM]),
             ],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }

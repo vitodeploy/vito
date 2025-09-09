@@ -28,7 +28,7 @@ class CreateServer
      */
     public function create(User $creator, Project $project, array $input): Server
     {
-        Validator::make($input, self::rules($project, $input))->validate();
+        $this->validate($project, $input);
 
         $this->server = new Server([
             'project_id' => $project->id,
@@ -89,11 +89,7 @@ class CreateServer
         }
     }
 
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    public static function rules(Project $project, array $input): array
+    private function validate(Project $project, array $input): void
     {
         $rules = [
             'provider' => [
@@ -148,14 +144,14 @@ class CreateServer
             ],
         ];
 
-        return array_merge($rules, self::providerRules($input));
+        Validator::make($input, array_merge($rules, $this->providerRules($input)))->validate();
     }
 
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, array<string>>
      */
-    private static function providerRules(array $input): array
+    private function providerRules(array $input): array
     {
         if (
             ! isset($input['provider']) ||

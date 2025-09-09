@@ -17,7 +17,15 @@ class CreateTag
      */
     public function create(User $user, array $input): Tag
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'name' => [
+                'required',
+            ],
+            'color' => [
+                'required',
+                Rule::in(config('core.colors')),
+            ],
+        ])->validate();
 
         $tag = Tag::query()
             ->where('project_id', $user->current_project_id)
@@ -38,21 +46,5 @@ class CreateTag
         $tag->save();
 
         return $tag;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [
-            'name' => [
-                'required',
-            ],
-            'color' => [
-                'required',
-                Rule::in(config('core.colors')),
-            ],
-        ];
     }
 }

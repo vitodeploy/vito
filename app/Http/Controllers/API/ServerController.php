@@ -56,8 +56,6 @@ class ServerController extends Controller
     {
         $this->authorize('create', [Server::class, $project]);
 
-        $this->validate($request, CreateServer::rules($project, $request->input()));
-
         /** @var User $user */
         $user = auth()->user();
         $server = app(CreateServer::class)->create($user, $project, $request->all());
