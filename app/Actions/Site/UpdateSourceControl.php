@@ -19,7 +19,12 @@ class UpdateSourceControl
      */
     public function update(Site $site, array $input): void
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'source_control' => [
+                'required',
+                Rule::exists('source_controls', 'id'),
+            ],
+        ])->validate();
 
         $site->source_control_id = $input['source_control'];
         try {
@@ -40,18 +45,5 @@ class UpdateSourceControl
             ]);
         }
         $site->save();
-    }
-
-    /**
-     * @return array<string, array<int, mixed>>
-     */
-    public static function rules(): array
-    {
-        return [
-            'source_control' => [
-                'required',
-                Rule::exists('source_controls', 'id'),
-            ],
-        ];
     }
 }

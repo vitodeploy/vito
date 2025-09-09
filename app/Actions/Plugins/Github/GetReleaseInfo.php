@@ -4,7 +4,7 @@ namespace App\Actions\Plugins\Github;
 
 use App\DTOs\GitHub\ReleaseDto;
 
-final readonly class GetReleaseInfo
+class GetReleaseInfo
 {
     public function __construct() {}
 

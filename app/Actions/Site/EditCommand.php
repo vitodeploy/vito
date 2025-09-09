@@ -12,23 +12,15 @@ class EditCommand
      */
     public function edit(Command $command, array $input): Command
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'name' => ['required', 'string', 'max:255'],
+            'command' => ['required', 'string'],
+        ])->validate();
 
         $command->name = $input['name'];
         $command->command = $input['command'];
         $command->save();
 
         return $command;
-    }
-
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
-    {
-        return [
-            'name' => ['required', 'string', 'max:255'],
-            'command' => ['required', 'string'],
-        ];
     }
 }

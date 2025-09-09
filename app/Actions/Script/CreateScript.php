@@ -13,7 +13,7 @@ class CreateScript
      */
     public function create(User $user, array $input): Script
     {
-        Validator::make($input, self::rules())->validate();
+        $this->validate($input);
 
         $script = new Script([
             'user_id' => $user->id,
@@ -26,14 +26,13 @@ class CreateScript
         return $script;
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
+    private function validate(array $input): void
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }

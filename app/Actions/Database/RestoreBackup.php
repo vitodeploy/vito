@@ -17,7 +17,7 @@ class RestoreBackup
      */
     public function restore(BackupFile $backupFile, array $input): void
     {
-        Validator::make($input, self::rules($backupFile->backup->server))->validate();
+        $this->validate($backupFile->backup->server, $input);
 
         /** @var Database $database */
         $database = Database::query()->findOrFail($input['database']);
@@ -40,16 +40,13 @@ class RestoreBackup
         })->onQueue('ssh');
     }
 
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(Server $server): array
+    private function validate(Server $server, array $input): void
     {
-        return [
+        Validator::make($input, [
             'database' => [
                 'required',
                 Rule::exists('databases', 'id')->where('server_id', $server->id),
             ],
-        ];
+        ])->validate();
     }
 }

@@ -15,7 +15,7 @@ class UpdateLoadBalancer
      */
     public function update(Site $site, array $input): void
     {
-        Validator::make($input, self::rules($site))->validate();
+        $this->validate($site, $input);
 
         $site->loadBalancerServers()->delete();
 
@@ -36,12 +36,9 @@ class UpdateLoadBalancer
         ]);
     }
 
-    /**
-     * @return array<string, array<int, mixed>>
-     */
-    public static function rules(Site $site): array
+    private function validate(Site $site, array $input): void
     {
-        return [
+        $rules = [
             'servers' => [
                 'required',
                 'array',
@@ -71,5 +68,7 @@ class UpdateLoadBalancer
                 Rule::in(LoadBalancerMethod::all()),
             ],
         ];
+
+        Validator::make($input, $rules)->validate();
     }
 }

@@ -14,7 +14,15 @@ class CreateUser
      */
     public function create(array $input): User
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role' => [
+                'required',
+                Rule::in([UserRole::ADMIN, UserRole::USER]),
+            ],
+        ])->validate();
 
         /** @var User $user */
         $user = User::query()->create([
@@ -26,21 +34,5 @@ class CreateUser
         ]);
 
         return $user;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'role' => [
-                'required',
-                Rule::in([UserRole::ADMIN, UserRole::USER]),
-            ],
-        ];
     }
 }

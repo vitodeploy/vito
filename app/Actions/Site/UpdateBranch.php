@@ -16,21 +16,13 @@ class UpdateBranch
      */
     public function update(Site $site, array $input): void
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'branch' => 'required',
+        ])->validate();
 
         $site->branch = $input['branch'];
         app(Git::class)->fetchOrigin($site);
         app(Git::class)->checkout($site);
         $site->save();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public static function rules(): array
-    {
-        return [
-            'branch' => 'required',
-        ];
     }
 }

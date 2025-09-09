@@ -15,20 +15,12 @@ class UpdateLog
      */
     public function update(ServerLog $serverLog, array $input): void
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'path' => 'required',
+        ])->validate();
 
         $serverLog->update([
             'name' => $input['path'],
         ]);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public static function rules(): array
-    {
-        return [
-            'path' => 'required',
-        ];
     }
 }

@@ -13,7 +13,10 @@ class CreateCommand
      */
     public function create(Site $site, array $input): Command
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'name' => ['required', 'string', 'max:255'],
+            'command' => ['required', 'string'],
+        ])->validate();
 
         $script = new Command([
             'site_id' => $site->id,
@@ -23,16 +26,5 @@ class CreateCommand
         $script->save();
 
         return $script;
-    }
-
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
-    {
-        return [
-            'name' => ['required', 'string', 'max:255'],
-            'command' => ['required', 'string'],
-        ];
     }
 }

@@ -17,7 +17,13 @@ class CreateSshKey
      */
     public function create(User $user, array $input): SshKey
     {
-        Validator::make($input, self::rules())->validate();
+        Validator::make($input, [
+            'name' => 'required',
+            'public_key' => [
+                'required',
+                new SshKeyRule,
+            ],
+        ])->validate();
 
         $key = new SshKey([
             'user_id' => $user->id,
@@ -27,19 +33,5 @@ class CreateSshKey
         $key->save();
 
         return $key;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [
-            'name' => 'required',
-            'public_key' => [
-                'required',
-                new SshKeyRule,
-            ],
-        ];
     }
 }

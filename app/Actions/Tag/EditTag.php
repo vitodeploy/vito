@@ -13,20 +13,7 @@ class EditTag
      */
     public function edit(Tag $tag, array $input): void
     {
-        Validator::make($input, self::rules())->validate();
-
-        $tag->name = $input['name'];
-        $tag->color = $input['color'];
-
-        $tag->save();
-    }
-
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function rules(): array
-    {
-        return [
+        Validator::make($input, [
             'name' => [
                 'required',
             ],
@@ -34,6 +21,11 @@ class EditTag
                 'required',
                 Rule::in(config('core.colors')),
             ],
-        ];
+        ])->validate();
+
+        $tag->name = $input['name'];
+        $tag->color = $input['color'];
+
+        $tag->save();
     }
 }

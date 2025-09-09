@@ -7,12 +7,19 @@ use App\Actions\Plugins\DisablePlugin;
 use App\Actions\Plugins\DiscoverPlugins;
 use App\Actions\Plugins\EnablePlugin;
 use App\Actions\Plugins\GetPluginInstance;
+use App\Actions\Plugins\Github\DownloadRelease;
+use App\Actions\Plugins\Github\GetReleaseInfo;
 use App\Actions\Plugins\Github\InstallGithubPlugin;
 use App\Actions\Plugins\InstallPlugin;
 use App\Actions\Plugins\UninstallPlugin;
+use App\DTOs\GitHub\AuthorDto;
+use App\DTOs\GitHub\ReleaseDto;
 use App\Models\Plugin;
 use App\Models\PluginError;
+use Carbon\Carbon;
+use Exception;
 use File;
+use Mockery;
 use Tests\TestCase;
 
 class PluginTest extends TestCase
@@ -58,7 +65,10 @@ class PluginTest extends TestCase
         );
 
         File::ensureDirectoryExists(dirname($toFile));
-        $result = File::copy($fromFile, $toFile);
+        if (! File::copy($fromFile, $toFile)) {
+            $this->fail("Failed to copy example plugin from '$fromFile' to '$toFile'");
+        }
+
         $folder = implode(DIRECTORY_SEPARATOR, ['Example', 'Repo']);
 
         $discovery = app(DiscoverPlugins::class);
@@ -74,8 +84,49 @@ class PluginTest extends TestCase
         File::moveDirectory($from, $to, true);
     }
 
+    private function createTestReleaseDto(string $tagName = '1.0.2', string $repoName = 'repo'): ReleaseDto
+    {
+        return new ReleaseDto(
+            url: "https://api.github.com/repos/username/{$repoName}/releases/123456",
+            tagName: $tagName,
+            name: "Release {$tagName}",
+            draft: false,
+            preRelease: false,
+            createdAt: Carbon::now(),
+            updatedAt: Carbon::now(),
+            publishedAt: Carbon::now(),
+            author: new AuthorDto('username', 'https://api.github.com/username', 'individual'),
+            tarUrl: "https://api.github.com/repos/username/{$repoName}/tarball/{$tagName}",
+            zipUrl: "https://github.com/username/{$repoName}/archive/{$tagName}.zip",
+            body: "Release notes for version {$tagName}"
+        );
+    }
+
     private function installDemoPlugin(): Plugin
     {
+        $zip = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Artifacts', 'VitoOctanePlugin-1.0.2.zip']);
+
+        $this->app->bind(DownloadRelease::class, function () use ($zip) {
+            $mock = Mockery::mock(DownloadRelease::class);
+            $mock->shouldReceive('handle')
+                ->andReturnUsing(function ($release, $location) use ($zip) {
+                    File::ensureDirectoryExists(dirname($location));
+                    if (! File::copy($zip, $location)) {
+                        throw new Exception("Unable to copy file from $zip to $location");
+                    }
+                });
+
+            return $mock;
+        });
+
+        $this->app->bind(GetReleaseInfo::class, function () {
+            $mock = Mockery::mock(GetReleaseInfo::class);
+            $mock->shouldReceive('handle')
+                ->andReturn($this->createTestReleaseDto());
+
+            return $mock;
+        });
+
         $action = app(InstallGithubPlugin::class);
 
         return $action->handle($this->repoUrl);

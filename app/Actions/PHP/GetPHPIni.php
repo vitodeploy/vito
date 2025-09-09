@@ -42,7 +42,7 @@ class GetPHPIni
      *
      * @throws ValidationException
      */
-    public function validate(Server $server, array $input): void
+    private function validate(Server $server, array $input): void
     {
         Validator::make($input, [
             'type' => [
