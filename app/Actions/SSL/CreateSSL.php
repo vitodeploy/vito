@@ -34,7 +34,7 @@ class CreateSSL
             'type' => $input['type'],
             'certificate' => $input['certificate'] ?? null,
             'pk' => $input['private'] ?? null,
-            'expires_at' => $input['type'] == SslType::LETSENCRYPT->value ? now()->addMonths(3) : $input['expires_at'],
+            'expires_at' => $input['type'] === SslType::LETSENCRYPT->value ? now()->addMonths(3) : $input['expires_at'],
             'status' => SslStatus::CREATING,
             'email' => $input['email'] ?? null,
             'is_active' => ! $site->activeSsl,
