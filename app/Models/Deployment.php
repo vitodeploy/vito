@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $commit_id
  * @property string $commit_id_short
  * @property array<string, mixed> $commit_data
- * @property string $status
+ * @property DeploymentStatus $status
  * @property ?string $release
  * @property bool $active
  * @property Site $site
@@ -43,15 +43,7 @@ class Deployment extends AbstractModel
         'log_id' => 'integer',
         'commit_data' => 'json',
         'active' => 'boolean',
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        DeploymentStatus::DEPLOYING => 'warning',
-        DeploymentStatus::FINISHED => 'success',
-        DeploymentStatus::FAILED => 'danger',
+        'status' => DeploymentStatus::class,
     ];
 
     protected static function booted(): void

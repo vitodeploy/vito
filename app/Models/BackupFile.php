@@ -20,7 +20,7 @@ use Throwable;
  * @property int $backup_id
  * @property string $name
  * @property int $size
- * @property string $status
+ * @property BackupFileStatus $status
  * @property string $restored_to
  * @property Carbon $restored_at
  * @property Backup $backup
@@ -42,6 +42,7 @@ class BackupFile extends AbstractModel
     protected $casts = [
         'backup_id' => 'integer',
         'restored_at' => 'datetime',
+        'status' => BackupFileStatus::class,
     ];
 
     protected static function booted(): void
@@ -63,19 +64,6 @@ class BackupFile extends AbstractModel
             }
         });
     }
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        BackupFileStatus::CREATED => 'success',
-        BackupFileStatus::CREATING => 'warning',
-        BackupFileStatus::FAILED => 'danger',
-        BackupFileStatus::DELETING => 'warning',
-        BackupFileStatus::RESTORING => 'warning',
-        BackupFileStatus::RESTORED => 'primary',
-        BackupFileStatus::RESTORE_FAILED => 'danger',
-    ];
 
     public function isAvailable(): bool
     {

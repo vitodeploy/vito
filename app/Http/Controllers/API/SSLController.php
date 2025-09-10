@@ -71,7 +71,7 @@ class SSLController extends Controller
 
         $this->validateRoute($project, $server, $site);
 
-        $ssl = app(CreateSSL::class)->create($site, array_merge($request->all(), ['type' => SslType::LETSENCRYPT]));
+        $ssl = app(CreateSSL::class)->create($site, array_merge($request->all(), ['type' => SslType::LETSENCRYPT->value]));
 
         return new SslResource($ssl);
     }
@@ -90,7 +90,7 @@ class SSLController extends Controller
         $this->validateRoute($project, $server, $site);
 
         $ssl = app(CreateSSL::class)
-            ->create($site, array_merge($request->all(), ['type' => SslType::CUSTOM]));
+            ->create($site, array_merge($request->all(), ['type' => SslType::CUSTOM->value]));
 
         return new SslResource($ssl);
     }

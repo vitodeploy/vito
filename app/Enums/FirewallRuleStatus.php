@@ -2,15 +2,29 @@
 
 namespace App\Enums;
 
-final class FirewallRuleStatus
+use App\Contracts\VitoEnum;
+
+enum FirewallRuleStatus: string implements VitoEnum
 {
-    const string CREATING = 'creating';
+    case CREATING = 'creating';
+    case UPDATING = 'updating';
+    case READY = 'ready';
+    case DELETING = 'deleting';
+    case FAILED = 'failed';
 
-    const string UPDATING = 'updating';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::CREATING => 'info',
+            self::UPDATING => 'warning',
+            self::DELETING,
+            self::FAILED => 'danger',
+            self::READY => 'success',
+        };
+    }
 
-    const string READY = 'ready';
-
-    const string DELETING = 'deleting';
-
-    const string FAILED = 'failed';
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

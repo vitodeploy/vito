@@ -2,6 +2,7 @@
 
 namespace App\ServerProviders;
 
+use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
@@ -284,11 +285,11 @@ class AWS extends AbstractProvider
     /**
      * @throws Exception
      */
-    private function getImageId(string $os): string
+    private function getImageId(OperatingSystem $os): string
     {
         $this->connectToEc2Client();
 
-        $version = config('core.operating_system_versions.'.$os);
+        $version = $os->getVersion();
 
         $result = $this->ec2Client->describeImages([
             'Filters' => [

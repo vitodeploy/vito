@@ -66,7 +66,7 @@ class SitesTest extends TestCase
         $this->assertDatabaseHas('sites', [
             'domain' => $inputs['domain'],
             'aliases' => $this->castAsJson($inputs['aliases'] ?? []),
-            'status' => SiteStatus::READY,
+            'status' => SiteStatus::READY->value,
             'user' => $expectedUser,
             'path' => '/home/'.$expectedUser.'/'.$inputs['domain'],
         ]);
@@ -471,7 +471,7 @@ class SitesTest extends TestCase
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'user' => 'example',
-                    'method' => LoadBalancerMethod::ROUND_ROBIN,
+                    'method' => LoadBalancerMethod::ROUND_ROBIN->value,
                 ],
             ],
         ];

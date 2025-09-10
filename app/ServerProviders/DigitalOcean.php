@@ -2,6 +2,7 @@
 
 namespace App\ServerProviders;
 
+use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
@@ -210,9 +211,9 @@ class DigitalOcean extends AbstractProvider
     /**
      * @throws Exception
      */
-    private function getImageId(string $os, string $region): int
+    private function getImageId(OperatingSystem $os, string $region): int
     {
-        $version = config('core.operating_system_versions.'.$os);
+        $version = $os->getVersion();
 
         try {
             $result = Http::withToken($this->serverProvider->credentials['token'])
@@ -226,7 +227,7 @@ class DigitalOcean extends AbstractProvider
             $images = $result['images'] ?? []; // Ensure $images is an array
 
             $image = collect($images)
-                ->filter(fn (array $image): bool => in_array($region, $image['regions']) && str_contains($image['name'], (string) $version)
+                ->filter(fn (array $image): bool => in_array($region, $image['regions']) && str_contains($image['name'], $version)
                 )
                 ->where('distribution', 'Ubuntu')
                 ->where('status', 'available')

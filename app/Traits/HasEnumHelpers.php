@@ -4,7 +4,7 @@ namespace App\Traits;
 
 use ReflectionClass;
 
-trait Enum
+trait HasEnumHelpers
 {
     /**
      * @return array<string, mixed>
@@ -12,7 +12,8 @@ trait Enum
     public static function all(): array
     {
         $reflection = new ReflectionClass(self::class);
+        $constants = $reflection->getConstants();
 
-        return $reflection->getConstants();
+        return array_map(fn ($case) => $case->value, $constants);
     }
 }

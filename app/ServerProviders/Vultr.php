@@ -2,6 +2,7 @@
 
 namespace App\ServerProviders;
 
+use App\Enums\OperatingSystem;
 use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
@@ -211,9 +212,9 @@ class Vultr extends AbstractProvider
     /**
      * @throws Exception
      */
-    private function getImageId(string $os): int
+    private function getImageId(OperatingSystem $os): int
     {
-        $version = config('core.operating_system_versions.'.$os);
+        $version = $os->getVersion();
 
         try {
             /** @var array<string, mixed> $result */
@@ -225,7 +226,7 @@ class Vultr extends AbstractProvider
             $os = $result['os'] ?? [];
 
             $image = collect($os)
-                ->filter(fn (array $os): bool => str_contains((string) $os['name'], (string) $version))
+                ->filter(fn (array $os): bool => str_contains((string) $os['name'], $version))
                 ->where('family', 'ubuntu')
                 ->where('arch', 'x64')
                 ->first();

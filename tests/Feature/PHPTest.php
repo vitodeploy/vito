@@ -120,7 +120,7 @@ class PHPTest extends TestCase
     }
 
     #[DataProvider('php_ini_data')]
-    public function test_get_php_ini(string $version, string $type): void
+    public function test_get_php_ini(string $version, PHPIniType $type): void
     {
         SSH::fake('[PHP ini]');
 
@@ -132,7 +132,7 @@ class PHPTest extends TestCase
             'server' => $this->server,
             'service' => $php->id,
             'version' => '8.2',
-            'type' => $type,
+            'type' => $type->value,
         ]))
             ->assertSessionDoesntHaveErrors();
     }

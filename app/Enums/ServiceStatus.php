@@ -2,29 +2,43 @@
 
 namespace App\Enums;
 
-final class ServiceStatus
+use App\Contracts\VitoEnum;
+
+enum ServiceStatus: string implements VitoEnum
 {
-    const string READY = 'ready';
+    case READY = 'ready';
+    case INSTALLING = 'installing';
+    case INSTALLATION_FAILED = 'installation_failed';
+    case UNINSTALLING = 'uninstalling';
+    case FAILED = 'failed';
+    case STARTING = 'starting';
+    case STOPPING = 'stopping';
+    case RESTARTING = 'restarting';
+    case STOPPED = 'stopped';
+    case ENABLING = 'enabling';
+    case DISABLING = 'disabling';
+    case DISABLED = 'disabled';
 
-    const string INSTALLING = 'installing';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::READY => 'success',
+            self::INSTALLING,
+            self::STARTING,
+            self::UNINSTALLING,
+            self::STOPPING,
+            self::RESTARTING,
+            self::ENABLING,
+            self::DISABLING => 'warning',
+            self::INSTALLATION_FAILED,
+            self::FAILED,
+            self::STOPPED => 'danger',
+            self::DISABLED => 'gray',
+        };
+    }
 
-    const string INSTALLATION_FAILED = 'installation_failed';
-
-    const string UNINSTALLING = 'uninstalling';
-
-    const string FAILED = 'failed';
-
-    const string STARTING = 'starting';
-
-    const string STOPPING = 'stopping';
-
-    const string RESTARTING = 'restarting';
-
-    const string STOPPED = 'stopped';
-
-    const string ENABLING = 'enabling';
-
-    const string DISABLING = 'disabling';
-
-    const string DISABLED = 'disabled';
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

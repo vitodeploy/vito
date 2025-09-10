@@ -2,11 +2,25 @@
 
 namespace App\Enums;
 
-final class CommandExecutionStatus
+use App\Contracts\VitoEnum;
+
+enum CommandExecutionStatus: string implements VitoEnum
 {
-    const string EXECUTING = 'executing';
+    case EXECUTING = 'executing';
+    case COMPLETED = 'completed';
+    case FAILED = 'failed';
 
-    const string COMPLETED = 'completed';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::EXECUTING => 'warning',
+            self::COMPLETED => 'success',
+            self::FAILED => 'danger',
+        };
+    }
 
-    const string FAILED = 'failed';
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

@@ -2,13 +2,27 @@
 
 namespace App\Enums;
 
-final class SslStatus
+use App\Contracts\VitoEnum;
+
+enum SslStatus: string implements VitoEnum
 {
-    const string CREATED = 'created';
+    case CREATED = 'created';
+    case CREATING = 'creating';
+    case DELETING = 'deleting';
+    case FAILED = 'failed';
 
-    const string CREATING = 'creating';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::CREATED => 'success',
+            self::CREATING,
+            self::DELETING => 'warning',
+            self::FAILED => 'danger',
+        };
+    }
 
-    const string DELETING = 'deleting';
-
-    const string FAILED = 'failed';
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

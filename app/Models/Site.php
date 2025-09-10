@@ -38,7 +38,7 @@ use RuntimeException;
  * @property string $repository
  * @property string $ssh_key
  * @property string $branch
- * @property string $status
+ * @property SiteStatus $status
  * @property int $port
  * @property int $progress
  * @property string $user
@@ -98,16 +98,7 @@ class Site extends AbstractModel
         'aliases' => 'array',
         'source_control_id' => 'integer',
         'force_ssl' => 'boolean',
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        SiteStatus::READY => 'success',
-        SiteStatus::INSTALLING => 'warning',
-        SiteStatus::INSTALLATION_FAILED => 'danger',
-        SiteStatus::DELETING => 'danger',
+        'status' => SiteStatus::class,
     ];
 
     public static function boot(): void

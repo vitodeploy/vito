@@ -2,11 +2,25 @@
 
 namespace App\Enums;
 
-final class SshKeyStatus
+use App\Contracts\VitoEnum;
+
+enum SshKeyStatus: string implements VitoEnum
 {
-    const string ADDING = 'adding';
+    case ADDING = 'adding';
+    case ADDED = 'added';
+    case DELETING = 'deleting';
 
-    const string ADDED = 'added';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::ADDED => 'success',
+            self::ADDING => 'warning',
+            self::DELETING => 'danger',
+        };
+    }
 
-    const string DELETING = 'deleting';
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

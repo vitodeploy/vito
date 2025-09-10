@@ -2,9 +2,20 @@
 
 namespace App\Enums;
 
-final class PHPIniType
-{
-    const string CLI = 'cli';
+use App\Contracts\VitoEnum;
 
-    const string FPM = 'fpm';
+enum PHPIniType: string implements VitoEnum
+{
+    case CLI = 'cli';
+    case FPM = 'fpm';
+
+    public function getColor(): string
+    {
+        return 'default';
+    }
+
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

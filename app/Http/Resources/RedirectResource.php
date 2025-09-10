@@ -21,8 +21,8 @@ class RedirectResource extends JsonResource
             'from' => $this->from,
             'to' => $this->to,
             'mode' => $this->mode,
-            'status' => $this->status,
-            'status_color' => Redirect::$statusColors[$this->status] ?? 'gray',
+            'status' => $this->status->getText(),
+            'status_color' => $this->status->getColor(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

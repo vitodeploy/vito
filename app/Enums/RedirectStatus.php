@@ -2,13 +2,27 @@
 
 namespace App\Enums;
 
-final class RedirectStatus
+use App\Contracts\VitoEnum;
+
+enum RedirectStatus: string implements VitoEnum
 {
-    const string CREATING = 'creating';
+    case CREATING = 'creating';
+    case READY = 'ready';
+    case DELETING = 'deleting';
+    case FAILED = 'failed';
 
-    const string READY = 'ready';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::CREATING,
+            self::DELETING => 'warning',
+            self::READY => 'success',
+            self::FAILED => 'danger',
+        };
+    }
 
-    const string DELETING = 'deleting';
-
-    const string FAILED = 'failed';
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

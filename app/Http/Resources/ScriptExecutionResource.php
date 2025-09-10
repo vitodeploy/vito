@@ -23,8 +23,8 @@ class ScriptExecutionResource extends JsonResource
             'log' => ServerLogResource::make($this->serverLog),
             'user' => $this->user,
             'variables' => $this->variables,
-            'status' => $this->status,
-            'status_color' => ScriptExecution::$statusColors[$this->status] ?? 'gray',
+            'status' => $this->status->getText(),
+            'status_color' => $this->status->getColor(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

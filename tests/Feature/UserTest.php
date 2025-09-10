@@ -21,7 +21,7 @@ class UserTest extends TestCase
             'name' => 'new user',
             'email' => 'newuser@example.com',
             'password' => 'password',
-            'role' => UserRole::USER,
+            'role' => UserRole::USER->value,
         ])
             ->assertSessionDoesntHaveErrors()
             ->assertRedirect(route('users'));
@@ -87,7 +87,7 @@ class UserTest extends TestCase
         $this->patch(route('users.update', $user), [
             'name' => 'new-name',
             'email' => 'newemail@example.com',
-            'role' => UserRole::ADMIN,
+            'role' => UserRole::ADMIN->value,
         ])
             ->assertRedirect(route('users'));
 

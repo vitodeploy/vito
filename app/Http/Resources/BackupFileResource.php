@@ -23,8 +23,8 @@ class BackupFileResource extends JsonResource
             'size' => $this->size,
             'restored_to' => $this->restored_to,
             'restored_at' => $this->restored_at,
-            'status' => $this->status,
-            'status_color' => BackupFile::$statusColors[$this->status] ?? 'outline',
+            'status' => $this->status->getText(),
+            'status_color' => $this->status->getColor(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

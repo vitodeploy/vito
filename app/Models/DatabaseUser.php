@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $password
  * @property array<string> $databases
  * @property string $host
- * @property string $status
+ * @property DatabaseUserStatus $status
  * @property Server $server
  */
 class DatabaseUser extends AbstractModel
@@ -34,6 +34,7 @@ class DatabaseUser extends AbstractModel
         'server_id' => 'integer',
         'password' => 'encrypted',
         'databases' => 'array',
+        'status' => DatabaseUserStatus::class,
     ];
 
     protected $hidden = [
@@ -47,14 +48,4 @@ class DatabaseUser extends AbstractModel
     {
         return $this->belongsTo(Server::class);
     }
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        DatabaseUserStatus::READY => 'success',
-        DatabaseUserStatus::CREATING => 'warning',
-        DatabaseUserStatus::DELETING => 'warning',
-        DatabaseUserStatus::FAILED => 'danger',
-    ];
 }

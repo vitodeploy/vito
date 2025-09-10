@@ -61,7 +61,7 @@ class SiteController extends Controller
     #[BodyParam(name: 'composer', type: 'boolean', description: 'Run composer if site supports composer', example: true)]
     #[BodyParam(name: 'version', description: 'Version, if the site type requires a version like PHPMyAdmin', example: '5.2.1')]
     #[BodyParam(name: 'user', description: 'user, to isolate the website under a new user')]
-    #[BodyParam(name: 'method', description: 'Load balancer method, Required if the site type is Load balancer', enum: [LoadBalancerMethod::ROUND_ROBIN, LoadBalancerMethod::LEAST_CONNECTIONS, LoadBalancerMethod::IP_HASH])]
+    #[BodyParam(name: 'method', description: 'Load balancer method, Required if the site type is Load balancer', enum: [LoadBalancerMethod::ROUND_ROBIN->value, LoadBalancerMethod::LEAST_CONNECTIONS->value, LoadBalancerMethod::IP_HASH->value])]
     #[ResponseFromApiResource(SiteResource::class, Site::class)]
     public function create(Request $request, Project $project, Server $server): SiteResource
     {
@@ -102,7 +102,7 @@ class SiteController extends Controller
 
     #[Post('{site}/load-balancer', name: 'api.projects.servers.sites.load-balancer', middleware: 'ability:write')]
     #[Endpoint(title: 'load-balancer', description: 'Update load balancer.')]
-    #[BodyParam(name: 'method', description: 'Load balancer method, Required if the site type is Load balancer', enum: [LoadBalancerMethod::ROUND_ROBIN, LoadBalancerMethod::LEAST_CONNECTIONS, LoadBalancerMethod::IP_HASH])]
+    #[BodyParam(name: 'method', description: 'Load balancer method, Required if the site type is Load balancer', enum: [LoadBalancerMethod::ROUND_ROBIN->value, LoadBalancerMethod::LEAST_CONNECTIONS->value, LoadBalancerMethod::IP_HASH->value])]
     #[BodyParam(name: 'servers', type: 'array', description: 'Array of servers including server, port, weight, backup. (server is the local IP of the server)')]
     #[Response(status: 200)]
     public function updateLoadBalancer(Request $request, Project $project, Server $server, Site $site): SiteResource

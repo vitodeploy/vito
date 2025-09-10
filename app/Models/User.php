@@ -38,7 +38,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property ?int $current_project_id
  * @property ?Project $currentProject
  * @property Collection<int, Project> $projects
- * @property string $role
+ * @property UserRole $role
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -67,6 +67,10 @@ class User extends Authenticatable
         'remember_token',
         'two_factor_recovery_codes',
         'two_factor_secret',
+    ];
+
+    protected $casts = [
+        'role' => UserRole::class,
     ];
 
     protected $appends = [];

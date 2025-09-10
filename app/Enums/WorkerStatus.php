@@ -2,21 +2,35 @@
 
 namespace App\Enums;
 
-final class WorkerStatus
+use App\Contracts\VitoEnum;
+
+enum WorkerStatus: string implements VitoEnum
 {
-    const string RUNNING = 'running';
+    case RUNNING = 'running';
+    case CREATING = 'creating';
+    case DELETING = 'deleting';
+    case FAILED = 'failed';
+    case STARTING = 'starting';
+    case STOPPING = 'stopping';
+    case RESTARTING = 'restarting';
+    case STOPPED = 'stopped';
 
-    const string CREATING = 'creating';
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::RUNNING => 'success',
+            self::CREATING,
+            self::DELETING,
+            self::STARTING,
+            self::STOPPING,
+            self::RESTARTING => 'warning',
+            self::FAILED => 'danger',
+            self::STOPPED => 'gray',
+        };
+    }
 
-    const string DELETING = 'deleting';
-
-    const string FAILED = 'failed';
-
-    const string STARTING = 'starting';
-
-    const string STOPPING = 'stopping';
-
-    const string RESTARTING = 'restarting';
-
-    const string STOPPED = 'stopped';
+    public function getText(): string
+    {
+        return $this->value;
+    }
 }

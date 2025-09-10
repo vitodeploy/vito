@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user_id
  * @property ?int $server_log_id
  * @property array<mixed> $variables
- * @property string $status
+ * @property CommandExecutionStatus $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Command $command
@@ -43,15 +43,7 @@ class CommandExecution extends AbstractModel
         'user_id' => 'integer',
         'server_log_id' => 'integer',
         'variables' => 'array',
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        CommandExecutionStatus::EXECUTING => 'warning',
-        CommandExecutionStatus::COMPLETED => 'success',
-        CommandExecutionStatus::FAILED => 'danger',
+        'status' => CommandExecutionStatus::class,
     ];
 
     /**

@@ -34,7 +34,7 @@ class LoadBalancerTest extends TestCase
             'server' => $this->server->id,
             'site' => $this->site->id,
         ]), [
-            'method' => LoadBalancerMethod::ROUND_ROBIN,
+            'method' => LoadBalancerMethod::ROUND_ROBIN->value,
             'servers' => [
                 [
                     'ip' => $servers[0]->local_ip,

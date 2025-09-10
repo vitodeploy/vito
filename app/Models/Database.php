@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property string $collation
  * @property string $charset
- * @property string $status
+ * @property DatabaseStatus $status
  * @property Server $server
  * @property Backup[] $backups
  * @property ?Carbon $deleted_at
@@ -37,6 +37,7 @@ class Database extends AbstractModel
 
     protected $casts = [
         'server_id' => 'integer',
+        'status' => DatabaseStatus::class,
     ];
 
     public static function boot(): void
@@ -55,16 +56,6 @@ class Database extends AbstractModel
             });
         });
     }
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        DatabaseStatus::READY => 'success',
-        DatabaseStatus::CREATING => 'warning',
-        DatabaseStatus::DELETING => 'warning',
-        DatabaseStatus::FAILED => 'danger',
-    ];
 
     /**
      * @return BelongsTo<Server, covariant $this>

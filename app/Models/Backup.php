@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $database_id
  * @property string $interval
  * @property int $keep_backups
- * @property string $status
+ * @property BackupStatus $status
  * @property Server $server
  * @property StorageProvider $storage
  * @property Database $database
@@ -42,6 +42,7 @@ class Backup extends AbstractModel
         'storage_id' => 'integer',
         'database_id' => 'integer',
         'keep_backups' => 'integer',
+        'status' => BackupStatus::class,
     ];
 
     public static function boot(): void
@@ -56,16 +57,6 @@ class Backup extends AbstractModel
             });
         });
     }
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        BackupStatus::RUNNING => 'success',
-        BackupStatus::FAILED => 'danger',
-        BackupStatus::DELETING => 'warning',
-        BackupStatus::STOPPED => 'danger',
-    ];
 
     public function isCustomInterval(): bool
     {

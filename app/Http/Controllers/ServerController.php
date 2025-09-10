@@ -110,8 +110,8 @@ class ServerController extends Controller
         $server->refresh();
 
         return back()
-            ->with($server->getStatusColor(), __('Server status is :status', [
-                'status' => $server->status,
+            ->with($server->status->getColor(), __('Server status is :status', [
+                'status' => $server->status->getText(),
             ]));
     }
 

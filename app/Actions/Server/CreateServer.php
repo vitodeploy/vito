@@ -79,6 +79,9 @@ class CreateServer
                 })
                 ->onQueue('ssh');
 
+            // Ensure we get the default db values in the model
+            $this->server->refresh();
+
             return $this->server;
         } catch (Exception $e) {
             $this->server->delete();

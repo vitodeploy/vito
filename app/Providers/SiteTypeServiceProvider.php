@@ -169,9 +169,9 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->select()
                     ->label('Load Balancing Method')
                     ->options([
-                        LoadBalancerMethod::IP_HASH,
-                        LoadBalancerMethod::ROUND_ROBIN,
-                        LoadBalancerMethod::LEAST_CONNECTIONS,
+                        LoadBalancerMethod::IP_HASH->value,
+                        LoadBalancerMethod::ROUND_ROBIN->value,
+                        LoadBalancerMethod::LEAST_CONNECTIONS->value,
                     ]),
             ]))
             ->register();

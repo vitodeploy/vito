@@ -25,7 +25,7 @@ use InvalidArgumentException;
  * @property string $installed_version
  * @property string $unit
  * @property string $logs
- * @property string $status
+ * @property ServiceStatus $status
  * @property bool $is_default
  * @property Server $server
  */
@@ -51,24 +51,7 @@ class Service extends AbstractModel
         'server_id' => 'integer',
         'type_data' => 'json',
         'is_default' => 'boolean',
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        ServiceStatus::READY => 'success',
-        ServiceStatus::INSTALLING => 'warning',
-        ServiceStatus::INSTALLATION_FAILED => 'danger',
-        ServiceStatus::UNINSTALLING => 'warning',
-        ServiceStatus::FAILED => 'danger',
-        ServiceStatus::STARTING => 'warning',
-        ServiceStatus::STOPPING => 'warning',
-        ServiceStatus::RESTARTING => 'warning',
-        ServiceStatus::STOPPED => 'danger',
-        ServiceStatus::ENABLING => 'warning',
-        ServiceStatus::DISABLING => 'warning',
-        ServiceStatus::DISABLED => 'gray',
+        'status' => ServiceStatus::class,
     ];
 
     /**

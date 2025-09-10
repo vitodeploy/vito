@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $user
  * @property string $frequency
  * @property bool $hidden
- * @property string $status
+ * @property CronjobStatus $status
  * @property string $crontab
  * @property Server $server
  */
@@ -34,18 +34,7 @@ class CronJob extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'hidden' => 'boolean',
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        CronjobStatus::CREATING => 'warning',
-        CronjobStatus::READY => 'success',
-        CronjobStatus::DELETING => 'danger',
-        CronjobStatus::ENABLING => 'warning',
-        CronjobStatus::DISABLING => 'warning',
-        CronjobStatus::DISABLED => 'gray',
+        'status' => CronjobStatus::class,
     ];
 
     /**

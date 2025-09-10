@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
  * @property string $pk
  * @property string $ca
  * @property Carbon $expires_at
- * @property string $status
+ * @property SslStatus $status
  * @property Site $site
  * @property array<int, string>|string|null $domains
  * @property int $log_id
@@ -58,16 +58,7 @@ class Ssl extends AbstractModel
         'domains' => 'array',
         'log_id' => 'integer',
         'is_active' => 'boolean',
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        SslStatus::CREATED => 'success',
-        SslStatus::CREATING => 'warning',
-        SslStatus::DELETING => 'warning',
-        SslStatus::FAILED => 'danger',
+        'status' => SslStatus::class,
     ];
 
     /**

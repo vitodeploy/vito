@@ -20,14 +20,9 @@ return [
      * General
      */
     'operating_systems' => [
-        OperatingSystem::UBUNTU20,
-        OperatingSystem::UBUNTU22,
-        OperatingSystem::UBUNTU24,
-    ],
-    'operating_system_versions' => [
-        OperatingSystem::UBUNTU20 => '20.04',
-        OperatingSystem::UBUNTU22 => '22.04',
-        OperatingSystem::UBUNTU24 => '24.04',
+        OperatingSystem::UBUNTU20->value,
+        OperatingSystem::UBUNTU22->value,
+        OperatingSystem::UBUNTU24->value,
     ],
 
     /*
@@ -39,8 +34,8 @@ return [
     ),
 
     'ssl_types' => [
-        SslType::LETSENCRYPT,
-        SslType::CUSTOM,
+        SslType::LETSENCRYPT->value,
+        SslType::CUSTOM->value,
     ],
 
     'metrics_data_retention' => [

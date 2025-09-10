@@ -14,7 +14,7 @@ class DeploymentCompleted extends AbstractNotification
     {
         return __('Deployment for site [:site] has completed with status: :status', [
             'site' => $this->site->domain,
-            'status' => $this->deployment->status,
+            'status' => $this->deployment->status->getText(),
         ]);
     }
 
@@ -22,7 +22,7 @@ class DeploymentCompleted extends AbstractNotification
     {
         return (new MailMessage)
             ->subject(__('Deployment Completed'))
-            ->line('Deployment for site ['.$this->site->domain.'] has completed with status: '.$this->deployment->status);
+            ->line('Deployment for site ['.$this->site->domain.'] has completed with status: '.$this->deployment->status->getText());
     }
 
     public function toSlack(object $notifiable): string

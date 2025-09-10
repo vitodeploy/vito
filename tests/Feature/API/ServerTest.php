@@ -53,7 +53,7 @@ class ServerTest extends TestCase
             'name' => 'test',
             'ip' => '1.1.1.1',
             'port' => '22',
-            'os' => OperatingSystem::UBUNTU22,
+            'os' => OperatingSystem::UBUNTU22->value,
             'services' => [],
         ])
             ->assertSuccessful()

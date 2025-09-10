@@ -126,7 +126,7 @@ class ServerTest extends TestCase
         $this->server->update(['status' => ServerStatus::DISCONNECTED]);
 
         $this->patch(route('servers.status', $this->server))
-            ->assertSessionHas('success', 'Server status is '.ServerStatus::READY);
+            ->assertSessionHas('success', 'Server status is '.ServerStatus::READY->getText());
 
         $this->assertDatabaseHas('servers', [
             'id' => $this->server->id,
@@ -143,7 +143,7 @@ class ServerTest extends TestCase
         $this->server->update(['status' => ServerStatus::READY]);
 
         $this->patch(route('servers.status', $this->server))
-            ->assertSessionHas('gray', 'Server status is '.ServerStatus::DISCONNECTED);
+            ->assertSessionHas('gray', 'Server status is '.ServerStatus::DISCONNECTED->getText());
 
         $this->assertDatabaseHas('servers', [
             'id' => $this->server->id,

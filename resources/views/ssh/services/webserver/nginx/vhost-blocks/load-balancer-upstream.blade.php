@@ -3,11 +3,11 @@
     use App\Enums\LoadBalancerMethod;$backendName = preg_replace("/[^A-Za-z0-9 ]/", '', $site->domain).'_backend';
 @endphp
 upstream {{ $backendName }} {
-@switch($site->type_data['method'] ?? LoadBalancerMethod::ROUND_ROBIN)
-    @case(LoadBalancerMethod::LEAST_CONNECTIONS)
+@switch($site->type_data['method'] ?? LoadBalancerMethod::ROUND_ROBIN->value)
+    @case(LoadBalancerMethod::LEAST_CONNECTIONS->value)
         least_conn;
         @break
-    @case(LoadBalancerMethod::IP_HASH)
+    @case(LoadBalancerMethod::IP_HASH->value)
         ip_hash;
         @break
     @default

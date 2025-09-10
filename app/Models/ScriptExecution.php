@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?int $server_id
  * @property string $user
  * @property array<mixed> $variables
- * @property string $status
+ * @property ScriptExecutionStatus $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Script $script
@@ -41,15 +41,7 @@ class ScriptExecution extends AbstractModel
         'server_id' => 'integer',
         'server_log_id' => 'integer',
         'variables' => 'array',
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        ScriptExecutionStatus::EXECUTING => 'warning',
-        ScriptExecutionStatus::COMPLETED => 'success',
-        ScriptExecutionStatus::FAILED => 'danger',
+        'status' => ScriptExecutionStatus::class,
     ];
 
     /**
