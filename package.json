@@ -74,7 +74,7 @@
         "tailwindcss": "^4.0.0",
         "tailwindcss-animate": "^1.0.7",
         "typescript": "^5.7.2",
-        "vite": "^6.0",
+        "vite": "^6.3",
         "zustand": "^5.0.7"
     },
     "optionalDependencies": {
