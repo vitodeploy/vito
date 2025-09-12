@@ -70,6 +70,7 @@ class CreateRedirect
                     302,
                     307,
                     308,
+                    1000,
                 ]),
             ],
         ];
