@@ -7,6 +7,8 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class Gitlab extends AbstractSourceControlProvider
 {
@@ -152,7 +154,7 @@ class Gitlab extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): void
+    public function deployKey(string $title, string $repo, string $key): string
     {
         $repository = urlencode($repo);
         try {
@@ -164,12 +166,39 @@ class Gitlab extends AbstractSourceControlProvider
                     'can_push' => true,
                 ]
             );
+
+            if ($response->status() != 201) {
+                throw new FailedToDeployGitKey($response->body());
+            }
+
+            return $response->json()['id'] ?? '';
         } catch (Exception $e) {
             throw new FailedToDeployGitKey($e->getMessage());
         }
+    }
 
-        if ($response->status() != 201) {
-            throw new FailedToDeployGitKey($response->body());
+    public function deleteDeployKey(string $keyId, string $repo): void
+    {
+        try {
+            $repository = urlencode($repo);
+            $response = Http::withToken($this->data()['token'])->delete(
+                $this->getApiUrl().'/projects/'.$repository.'/deploy_keys/'.$keyId
+            );
+
+            if (! $response->successful()) {
+                Log::warning('Failed to delete Gitlab deploy key', [
+                    'repo' => $repo,
+                    'key_id' => $keyId,
+                    'response' => $response->body(),
+                ]);
+            }
+
+        } catch (Throwable $e) {
+            Log::error('Error deleting Gitlab deploy key', [
+                'repo' => $repo,
+                'key_id' => $keyId,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

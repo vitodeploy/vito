@@ -52,11 +52,12 @@ abstract class AbstractSiteType implements SiteType
         $os->generateSSHKey($this->site->getSshKeyName(), $this->site);
         $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName(), $this->site);
         $this->site->save();
-        $this->site->sourceControl?->provider()?->deployKey(
-            $this->site->domain.'-key-'.$this->site->id,
+        $keyId = $this->site->sourceControl?->provider()?->deployKey(
+            $this->site->getDeployKeyName(),
             $this->site->repository,
             $this->site->ssh_key
         );
+        $this->site->jsonUpdate('type_data', 'deploy_key_id', $keyId);
     }
 
     /**
