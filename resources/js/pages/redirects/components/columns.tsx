@@ -85,6 +85,9 @@ export const columns: ColumnDef<Redirect>[] = [
     header: 'Mode',
     enableColumnFilter: true,
     enableSorting: true,
+    cell: ({ row }) => {
+      return row.original.mode === '1000' ? 'Proxy' : row.original.mode;
+    },
   },
   {
     accessorKey: 'created_at',

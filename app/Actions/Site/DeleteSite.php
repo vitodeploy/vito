@@ -41,6 +41,13 @@ class DeleteSite
             $os->deleteIsolatedUser($site->user);
         }
 
+        if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
+            $site->sourceControl->provider()->deleteDeployKey(
+                $site->type_data['deploy_key_id'],
+                $site->repository,
+            );
+        }
+
         $site->delete();
     }
 
