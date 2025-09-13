@@ -90,7 +90,7 @@ class PluginController extends Controller
         return back()->with('success', "Plugin '$plugin->name' installed");
     }
 
-    #[Patch('/install', name: 'plugins.install.patch')]
+    #[Patch('/install', name: 'plugins.install')]
     public function install(Request $request, InstallPlugin $action): RedirectResponse
     {
         $data = $this->validate($request, ['id' => 'required']);
