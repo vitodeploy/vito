@@ -184,8 +184,8 @@ paths:
                       frequency: '* * * * *'
                       status: ready
                       status_color: success
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 6
                       server_id: 1
@@ -194,8 +194,8 @@ paths:
                       frequency: '* * * * *'
                       status: ready
                       status_color: success
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -234,8 +234,8 @@ paths:
                         frequency: '* * * * *'
                         status: ready
                         status_color: success
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 6
                         server_id: 1
@@ -244,8 +244,8 @@ paths:
                         frequency: '* * * * *'
                         status: ready
                         status_color: success
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -272,10 +272,10 @@ paths:
                           example: success
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -365,8 +365,8 @@ paths:
                   frequency: '* * * * *'
                   status: ready
                   status_color: success
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -391,10 +391,10 @@ paths:
                     example: success
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - cron-jobs
       requestBody:
@@ -465,8 +465,8 @@ paths:
                   frequency: '* * * * *'
                   status: ready
                   status_color: success
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -491,10 +491,10 @@ paths:
                     example: success
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - cron-jobs
       security: []
@@ -552,23 +552,23 @@ paths:
                     -
                       id: 5
                       server_id: 1
-                      username: jasmin83
+                      username: hjerde
                       databases: []
                       host: '%'
                       status: creating
                       status_color: warning
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 6
                       server_id: 1
-                      username: alexandra.fadel
+                      username: little.raina
                       databases: []
                       host: '%'
                       status: creating
                       status_color: warning
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -602,23 +602,23 @@ paths:
                       -
                         id: 5
                         server_id: 1
-                        username: jasmin83
+                        username: hjerde
                         databases: []
                         host: '%'
                         status: creating
                         status_color: warning
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 6
                         server_id: 1
-                        username: alexandra.fadel
+                        username: little.raina
                         databases: []
                         host: '%'
                         status: creating
                         status_color: warning
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -630,7 +630,7 @@ paths:
                           example: 1
                         username:
                           type: string
-                          example: jasmin83
+                          example: hjerde
                         databases:
                           type: array
                           example: []
@@ -645,10 +645,10 @@ paths:
                           example: warning
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -738,8 +738,8 @@ paths:
                   host: '%'
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -764,10 +764,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - database-users
       requestBody:
@@ -835,8 +835,8 @@ paths:
                   host: '%'
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -861,10 +861,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - database-users
       security: []
@@ -925,8 +925,8 @@ paths:
                   host: '%'
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -951,10 +951,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - database-users
       requestBody:
@@ -1020,8 +1020,8 @@ paths:
                       charset: null
                       status: ready
                       status_color: success
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 6
                       server_id: 1
@@ -1030,8 +1030,8 @@ paths:
                       charset: null
                       status: ready
                       status_color: success
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -1070,8 +1070,8 @@ paths:
                         charset: null
                         status: ready
                         status_color: success
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 6
                         server_id: 1
@@ -1080,8 +1080,8 @@ paths:
                         charset: null
                         status: ready
                         status_color: success
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -1108,10 +1108,10 @@ paths:
                           example: success
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -1201,8 +1201,8 @@ paths:
                   charset: null
                   status: ready
                   status_color: success
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -1227,10 +1227,10 @@ paths:
                     example: success
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - databases
       requestBody:
@@ -1298,8 +1298,8 @@ paths:
                   charset: null
                   status: ready
                   status_color: success
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -1324,10 +1324,10 @@ paths:
                     example: success
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - databases
       security: []
@@ -1418,11 +1418,11 @@ paths:
                         server_id: 1
                         site_id: null
                         type: install-ufw
-                        name: 1-1757248432-install-ufw.log
+                        name: 1-1757505880-install-ufw.log
                         disk: server-logs
                         is_remote: false
-                        created_at: '2025-09-07T12:33:52.000000Z'
-                        updated_at: '2025-09-07T12:33:52.000000Z'
+                        created_at: '2025-09-10T12:04:40.000000Z'
+                        updated_at: '2025-09-10T12:04:40.000000Z'
                       commit_id: id
                       commit_id_short: null
                       commit_data: []
@@ -1430,8 +1430,8 @@ paths:
                       status_color: success
                       release: null
                       active: false
-                      updated_at: '2025-09-07T12:33:54.000000Z'
-                      created_at: '2025-09-07T12:33:54.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 2
                       site_id: 1
@@ -1442,11 +1442,11 @@ paths:
                         server_id: 1
                         site_id: null
                         type: install-ufw
-                        name: 1-1757248432-install-ufw.log
+                        name: 1-1757505880-install-ufw.log
                         disk: server-logs
                         is_remote: false
-                        created_at: '2025-09-07T12:33:52.000000Z'
-                        updated_at: '2025-09-07T12:33:52.000000Z'
+                        created_at: '2025-09-10T12:04:40.000000Z'
+                        updated_at: '2025-09-10T12:04:40.000000Z'
                       commit_id: id
                       commit_id_short: null
                       commit_data: []
@@ -1454,8 +1454,8 @@ paths:
                       status_color: success
                       release: null
                       active: false
-                      updated_at: '2025-09-07T12:33:54.000000Z'
-                      created_at: '2025-09-07T12:33:54.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -1496,11 +1496,11 @@ paths:
                           server_id: 1
                           site_id: null
                           type: install-ufw
-                          name: 1-1757248432-install-ufw.log
+                          name: 1-1757505880-install-ufw.log
                           disk: server-logs
                           is_remote: false
-                          created_at: '2025-09-07T12:33:52.000000Z'
-                          updated_at: '2025-09-07T12:33:52.000000Z'
+                          created_at: '2025-09-10T12:04:40.000000Z'
+                          updated_at: '2025-09-10T12:04:40.000000Z'
                         commit_id: id
                         commit_id_short: null
                         commit_data: []
@@ -1508,8 +1508,8 @@ paths:
                         status_color: success
                         release: null
                         active: false
-                        updated_at: '2025-09-07T12:33:54.000000Z'
-                        created_at: '2025-09-07T12:33:54.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 2
                         site_id: 1
@@ -1520,11 +1520,11 @@ paths:
                           server_id: 1
                           site_id: null
                           type: install-ufw
-                          name: 1-1757248432-install-ufw.log
+                          name: 1-1757505880-install-ufw.log
                           disk: server-logs
                           is_remote: false
-                          created_at: '2025-09-07T12:33:52.000000Z'
-                          updated_at: '2025-09-07T12:33:52.000000Z'
+                          created_at: '2025-09-10T12:04:40.000000Z'
+                          updated_at: '2025-09-10T12:04:40.000000Z'
                         commit_id: id
                         commit_id_short: null
                         commit_data: []
@@ -1532,8 +1532,8 @@ paths:
                         status_color: success
                         release: null
                         active: false
-                        updated_at: '2025-09-07T12:33:54.000000Z'
-                        created_at: '2025-09-07T12:33:54.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -1566,7 +1566,7 @@ paths:
                               example: install-ufw
                             name:
                               type: string
-                              example: 1-1757248432-install-ufw.log
+                              example: 1-1757505880-install-ufw.log
                             disk:
                               type: string
                               example: server-logs
@@ -1575,10 +1575,10 @@ paths:
                               example: false
                             created_at:
                               type: string
-                              example: '2025-09-07T12:33:52.000000Z'
+                              example: '2025-09-10T12:04:40.000000Z'
                             updated_at:
                               type: string
-                              example: '2025-09-07T12:33:52.000000Z'
+                              example: '2025-09-10T12:04:40.000000Z'
                         commit_id:
                           type: string
                           example: id
@@ -1602,10 +1602,10 @@ paths:
                           example: false
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -1697,11 +1697,11 @@ paths:
                     server_id: 1
                     site_id: null
                     type: install-ufw
-                    name: 1-1757248432-install-ufw.log
+                    name: 1-1757505880-install-ufw.log
                     disk: server-logs
                     is_remote: false
-                    created_at: '2025-09-07T12:33:52.000000Z'
-                    updated_at: '2025-09-07T12:33:52.000000Z'
+                    created_at: '2025-09-10T12:04:40.000000Z'
+                    updated_at: '2025-09-10T12:04:40.000000Z'
                   commit_id: id
                   commit_id_short: null
                   commit_data: []
@@ -1709,8 +1709,8 @@ paths:
                   status_color: success
                   release: null
                   active: false
-                  updated_at: '2025-09-07T12:33:54.000000Z'
-                  created_at: '2025-09-07T12:33:54.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -1741,7 +1741,7 @@ paths:
                         example: install-ufw
                       name:
                         type: string
-                        example: 1-1757248432-install-ufw.log
+                        example: 1-1757505880-install-ufw.log
                       disk:
                         type: string
                         example: server-logs
@@ -1750,10 +1750,10 @@ paths:
                         example: false
                       created_at:
                         type: string
-                        example: '2025-09-07T12:33:52.000000Z'
+                        example: '2025-09-10T12:04:40.000000Z'
                       updated_at:
                         type: string
-                        example: '2025-09-07T12:33:52.000000Z'
+                        example: '2025-09-10T12:04:40.000000Z'
                   commit_id:
                     type: string
                     example: id
@@ -1777,10 +1777,10 @@ paths:
                     example: false
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - deployments
       security: []
@@ -1832,11 +1832,11 @@ paths:
                     server_id: 1
                     site_id: null
                     type: install-ufw
-                    name: 1-1757248432-install-ufw.log
+                    name: 1-1757505880-install-ufw.log
                     disk: server-logs
                     is_remote: false
-                    created_at: '2025-09-07T12:33:52.000000Z'
-                    updated_at: '2025-09-07T12:33:52.000000Z'
+                    created_at: '2025-09-10T12:04:40.000000Z'
+                    updated_at: '2025-09-10T12:04:40.000000Z'
                   commit_id: id
                   commit_id_short: null
                   commit_data: []
@@ -1844,8 +1844,8 @@ paths:
                   status_color: success
                   release: null
                   active: false
-                  updated_at: '2025-09-07T12:33:54.000000Z'
-                  created_at: '2025-09-07T12:33:54.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -1876,7 +1876,7 @@ paths:
                         example: install-ufw
                       name:
                         type: string
-                        example: 1-1757248432-install-ufw.log
+                        example: 1-1757505880-install-ufw.log
                       disk:
                         type: string
                         example: server-logs
@@ -1885,10 +1885,10 @@ paths:
                         example: false
                       created_at:
                         type: string
-                        example: '2025-09-07T12:33:52.000000Z'
+                        example: '2025-09-10T12:04:40.000000Z'
                       updated_at:
                         type: string
-                        example: '2025-09-07T12:33:52.000000Z'
+                        example: '2025-09-10T12:04:40.000000Z'
                   commit_id:
                     type: string
                     example: id
@@ -1912,10 +1912,10 @@ paths:
                     example: false
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - deployments
       security: []
@@ -1979,8 +1979,8 @@ paths:
                       note: test
                       status: creating
                       status_color: info
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 14
                       name: velit
@@ -1993,8 +1993,8 @@ paths:
                       note: test
                       status: creating
                       status_color: info
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -2037,8 +2037,8 @@ paths:
                         note: test
                         status: creating
                         status_color: info
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 14
                         name: velit
@@ -2051,8 +2051,8 @@ paths:
                         note: test
                         status: creating
                         status_color: info
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -2091,10 +2091,10 @@ paths:
                           example: info
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -2188,8 +2188,8 @@ paths:
                   note: test
                   status: creating
                   status_color: info
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -2226,10 +2226,10 @@ paths:
                     example: info
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - firewall-rules
       requestBody:
@@ -2247,7 +2247,7 @@ paths:
                 type:
                   type: string
                   description: ''
-                  example: allow
+                  example: deny
                   nullable: false
                   enum:
                     - allow
@@ -2324,8 +2324,8 @@ paths:
                   note: test
                   status: creating
                   status_color: info
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -2362,10 +2362,10 @@ paths:
                     example: info
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - firewall-rules
       requestBody:
@@ -2391,7 +2391,7 @@ paths:
                 protocol:
                   type: string
                   description: ''
-                  example: udp
+                  example: tcp
                   nullable: false
                   enum:
                     - tcp
@@ -2442,8 +2442,8 @@ paths:
                   note: test
                   status: creating
                   status_color: info
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -2480,10 +2480,10 @@ paths:
                     example: info
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - firewall-rules
       security: []
@@ -2563,13 +2563,13 @@ paths:
                     -
                       id: 3
                       name: 'Belle Dickens'
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 4
                       name: 'Mittie Considine'
-                      created_at: '2025-09-07T12:33:54.000000Z'
-                      updated_at: '2025-09-07T12:33:54.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -2603,13 +2603,13 @@ paths:
                       -
                         id: 3
                         name: 'Belle Dickens'
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 4
                         name: 'Mittie Considine'
-                        created_at: '2025-09-07T12:33:54.000000Z'
-                        updated_at: '2025-09-07T12:33:54.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -2621,10 +2621,10 @@ paths:
                           example: 'Belle Dickens'
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:54.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -2709,8 +2709,8 @@ paths:
                 example:
                   id: 3
                   name: 'Ms. Elisabeth Okuneva'
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -2720,10 +2720,10 @@ paths:
                     example: 'Ms. Elisabeth Okuneva'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - projects
       requestBody:
@@ -2757,8 +2757,8 @@ paths:
                 example:
                   id: 3
                   name: "Aleen O'Kon"
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -2768,10 +2768,10 @@ paths:
                     example: "Aleen O'Kon"
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - projects
       security: []
@@ -2790,8 +2790,8 @@ paths:
                 example:
                   id: 3
                   name: 'Ms. Elisabeth Okuneva'
-                  created_at: '2025-09-07T12:33:54.000000Z'
-                  updated_at: '2025-09-07T12:33:54.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -2801,10 +2801,10 @@ paths:
                     example: 'Ms. Elisabeth Okuneva'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:54.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - projects
       requestBody:
@@ -2876,8 +2876,8 @@ paths:
                       mode: 301
                       status: ready
                       status_color: success
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 2
                       server_id: 1
@@ -2887,8 +2887,8 @@ paths:
                       mode: 308
                       status: ready
                       status_color: success
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -2928,8 +2928,8 @@ paths:
                         mode: 301
                         status: ready
                         status_color: success
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 2
                         server_id: 1
@@ -2939,8 +2939,8 @@ paths:
                         mode: 308
                         status: ready
                         status_color: success
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -2970,10 +2970,10 @@ paths:
                           example: success
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -3078,7 +3078,7 @@ paths:
                 mode:
                   type: string
                   description: ''
-                  example: 301
+                  example: 302
                   nullable: false
                   enum:
                     - 301
@@ -3181,16 +3181,16 @@ paths:
                       global: true
                       name: ab
                       provider: custom
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 7
                       project_id: null
                       global: true
                       name: incidunt
                       provider: custom
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -3227,16 +3227,16 @@ paths:
                         global: true
                         name: ab
                         provider: custom
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 7
                         project_id: null
                         global: true
                         name: incidunt
                         provider: custom
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -3257,10 +3257,10 @@ paths:
                           example: custom
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -3348,8 +3348,8 @@ paths:
                   global: true
                   name: eius
                   provider: custom
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -3368,10 +3368,10 @@ paths:
                     example: custom
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - server-providers
       requestBody:
@@ -3441,8 +3441,8 @@ paths:
                   global: true
                   name: mollitia
                   provider: linode
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -3461,10 +3461,10 @@ paths:
                     example: linode
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - server-providers
       security: []
@@ -3486,8 +3486,8 @@ paths:
                   global: true
                   name: eius
                   provider: custom
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -3506,10 +3506,10 @@ paths:
                     example: custom
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - server-providers
       requestBody:
@@ -3527,7 +3527,7 @@ paths:
                 global:
                   type: string
                   description: 'Accessible in all projects'
-                  example: true
+                  example: false
                   nullable: false
                   enum:
                     - true
@@ -3604,8 +3604,9 @@ paths:
                       updates: 0
                       last_update_check: null
                       status_color: success
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      features: []
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 6
                       project_id: 1
@@ -3631,8 +3632,9 @@ paths:
                       updates: 0
                       last_update_check: null
                       status_color: success
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      features: []
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -3688,8 +3690,9 @@ paths:
                         updates: 0
                         last_update_check: null
                         status_color: success
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        features: []
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 6
                         project_id: 1
@@ -3715,8 +3718,9 @@ paths:
                         updates: 0
                         last_update_check: null
                         status_color: success
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        features: []
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -3790,12 +3794,15 @@ paths:
                         status_color:
                           type: string
                           example: success
+                        features:
+                          type: array
+                          example: []
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -3902,8 +3909,9 @@ paths:
                   updates: 0
                   last_update_check: null
                   status_color: success
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  features: []
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -3975,12 +3983,15 @@ paths:
                   status_color:
                     type: string
                     example: success
+                  features:
+                    type: array
+                    example: []
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - servers
       requestBody:
@@ -4105,8 +4116,9 @@ paths:
                   updates: 0
                   last_update_check: null
                   status_color: success
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  features: []
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -4178,12 +4190,15 @@ paths:
                   status_color:
                     type: string
                     example: success
+                  features:
+                    type: array
+                    example: []
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - servers
       security: []
@@ -4319,8 +4334,8 @@ paths:
                       status_color: success
                       icon: ''
                       is_default: true
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 30
                       server_id: 1
@@ -4334,8 +4349,8 @@ paths:
                       status_color: success
                       icon: ''
                       is_default: true
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -4379,8 +4394,8 @@ paths:
                         status_color: success
                         icon: ''
                         is_default: true
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 30
                         server_id: 1
@@ -4394,8 +4409,8 @@ paths:
                         status_color: success
                         icon: ''
                         is_default: true
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -4437,10 +4452,10 @@ paths:
                           example: true
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -4553,8 +4568,8 @@ paths:
                   status_color: success
                   icon: ''
                   is_default: true
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -4594,10 +4609,10 @@ paths:
                     example: true
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - services
       security: []
@@ -4904,6 +4919,7 @@ paths:
                                   options:
                                     type: warning
                                   link: null
+                                  className: null
                                 -
                                   type: alert
                                   name: alert-2
@@ -4916,6 +4932,7 @@ paths:
                                   link:
                                     label: Documentation
                                     url: 'https://vitodeploy.com/docs/sites/modern-deployment'
+                                  className: null
                                 -
                                   type: alert
                                   name: alert-3
@@ -4926,6 +4943,7 @@ paths:
                                   options:
                                     type: warning
                                   link: null
+                                  className: null
                                 -
                                   type: text
                                   name: shared_resources
@@ -4935,6 +4953,7 @@ paths:
                                   description: 'Comma separated list of resources to be shared between deployments'
                                   options: null
                                   link: null
+                                  className: null
                                 -
                                   type: text
                                   name: history
@@ -4944,6 +4963,7 @@ paths:
                                   description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                   options: null
                                   link: null
+                                  className: null
                               active: true
                             disable:
                               label: Disable
@@ -4959,6 +4979,7 @@ paths:
                                   options:
                                     type: warning
                                   link: null
+                                  className: null
                               active: false
                             configuration:
                               label: Configure
@@ -4973,6 +4994,7 @@ paths:
                                   description: 'Comma separated list of resources to be shared between deployments'
                                   options: null
                                   link: null
+                                  className: null
                                 -
                                   type: text
                                   name: history
@@ -4982,10 +5004,11 @@ paths:
                                   description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                   options: null
                                   link: null
+                                  className: null
                               active: false
                       modern_deployment: false
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 6
                       server_id: 1
@@ -5027,6 +5050,7 @@ paths:
                                   options:
                                     type: warning
                                   link: null
+                                  className: null
                                 -
                                   type: alert
                                   name: alert-2
@@ -5039,6 +5063,7 @@ paths:
                                   link:
                                     label: Documentation
                                     url: 'https://vitodeploy.com/docs/sites/modern-deployment'
+                                  className: null
                                 -
                                   type: alert
                                   name: alert-3
@@ -5049,6 +5074,7 @@ paths:
                                   options:
                                     type: warning
                                   link: null
+                                  className: null
                                 -
                                   type: text
                                   name: shared_resources
@@ -5058,6 +5084,7 @@ paths:
                                   description: 'Comma separated list of resources to be shared between deployments'
                                   options: null
                                   link: null
+                                  className: null
                                 -
                                   type: text
                                   name: history
@@ -5067,6 +5094,7 @@ paths:
                                   description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                   options: null
                                   link: null
+                                  className: null
                               active: true
                             disable:
                               label: Disable
@@ -5082,6 +5110,7 @@ paths:
                                   options:
                                     type: warning
                                   link: null
+                                  className: null
                               active: false
                             configuration:
                               label: Configure
@@ -5096,6 +5125,7 @@ paths:
                                   description: 'Comma separated list of resources to be shared between deployments'
                                   options: null
                                   link: null
+                                  className: null
                                 -
                                   type: text
                                   name: history
@@ -5105,10 +5135,11 @@ paths:
                                   description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                   options: null
                                   link: null
+                                  className: null
                               active: false
                       modern_deployment: false
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -5180,6 +5211,7 @@ paths:
                                     options:
                                       type: warning
                                     link: null
+                                    className: null
                                   -
                                     type: alert
                                     name: alert-2
@@ -5192,6 +5224,7 @@ paths:
                                     link:
                                       label: Documentation
                                       url: 'https://vitodeploy.com/docs/sites/modern-deployment'
+                                    className: null
                                   -
                                     type: alert
                                     name: alert-3
@@ -5202,6 +5235,7 @@ paths:
                                     options:
                                       type: warning
                                     link: null
+                                    className: null
                                   -
                                     type: text
                                     name: shared_resources
@@ -5211,6 +5245,7 @@ paths:
                                     description: 'Comma separated list of resources to be shared between deployments'
                                     options: null
                                     link: null
+                                    className: null
                                   -
                                     type: text
                                     name: history
@@ -5220,6 +5255,7 @@ paths:
                                     description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                     options: null
                                     link: null
+                                    className: null
                                 active: true
                               disable:
                                 label: Disable
@@ -5235,6 +5271,7 @@ paths:
                                     options:
                                       type: warning
                                     link: null
+                                    className: null
                                 active: false
                               configuration:
                                 label: Configure
@@ -5249,6 +5286,7 @@ paths:
                                     description: 'Comma separated list of resources to be shared between deployments'
                                     options: null
                                     link: null
+                                    className: null
                                   -
                                     type: text
                                     name: history
@@ -5258,10 +5296,11 @@ paths:
                                     description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                     options: null
                                     link: null
+                                    className: null
                                 active: false
                         modern_deployment: false
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 6
                         server_id: 1
@@ -5303,6 +5342,7 @@ paths:
                                     options:
                                       type: warning
                                     link: null
+                                    className: null
                                   -
                                     type: alert
                                     name: alert-2
@@ -5315,6 +5355,7 @@ paths:
                                     link:
                                       label: Documentation
                                       url: 'https://vitodeploy.com/docs/sites/modern-deployment'
+                                    className: null
                                   -
                                     type: alert
                                     name: alert-3
@@ -5325,6 +5366,7 @@ paths:
                                     options:
                                       type: warning
                                     link: null
+                                    className: null
                                   -
                                     type: text
                                     name: shared_resources
@@ -5334,6 +5376,7 @@ paths:
                                     description: 'Comma separated list of resources to be shared between deployments'
                                     options: null
                                     link: null
+                                    className: null
                                   -
                                     type: text
                                     name: history
@@ -5343,6 +5386,7 @@ paths:
                                     description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                     options: null
                                     link: null
+                                    className: null
                                 active: true
                               disable:
                                 label: Disable
@@ -5358,6 +5402,7 @@ paths:
                                     options:
                                       type: warning
                                     link: null
+                                    className: null
                                 active: false
                               configuration:
                                 label: Configure
@@ -5372,6 +5417,7 @@ paths:
                                     description: 'Comma separated list of resources to be shared between deployments'
                                     options: null
                                     link: null
+                                    className: null
                                   -
                                     type: text
                                     name: history
@@ -5381,10 +5427,11 @@ paths:
                                     description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                                     options: null
                                     link: null
+                                    className: null
                                 active: false
                         modern_deployment: false
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -5468,22 +5515,22 @@ paths:
                                   properties:
                                     enable:
                                       type: object
-                                      properties: { label: { type: string, example: Enable }, handler: { type: string, example: App\SiteFeatures\ModernDeployment\Enable }, form: { type: array, example: [{ type: alert, name: alert, label: '', default: null, placeholder: null, description: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!', options: { type: warning }, link: null }, { type: alert, name: alert-2, label: '', default: null, placeholder: null, description: "Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.", options: { type: warning }, link: { label: Documentation, url: 'https://vitodeploy.com/docs/sites/modern-deployment' } }, { type: alert, name: alert-3, label: '', default: null, placeholder: null, description: "If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.", options: { type: warning }, link: null }, { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null }, { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null }], items: { type: object, properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null } } } }, active: { type: boolean, example: true } }
+                                      properties: { label: { type: string, example: Enable }, handler: { type: string, example: App\SiteFeatures\ModernDeployment\Enable }, form: { type: array, example: [{ type: alert, name: alert, label: '', default: null, placeholder: null, description: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!', options: { type: warning }, link: null, className: null }, { type: alert, name: alert-2, label: '', default: null, placeholder: null, description: "Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.", options: { type: warning }, link: { label: Documentation, url: 'https://vitodeploy.com/docs/sites/modern-deployment' }, className: null }, { type: alert, name: alert-3, label: '', default: null, placeholder: null, description: "If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.", options: { type: warning }, link: null, className: null }, { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null, className: null }, { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null, className: null }], items: { type: object, properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null }, className: { type: string, example: null } } } }, active: { type: boolean, example: true } }
                                     disable:
                                       type: object
-                                      properties: { label: { type: string, example: Disable }, handler: { type: string, example: App\SiteFeatures\ModernDeployment\Disable }, form: { type: array, example: [{ type: alert, name: alert, label: '', default: null, placeholder: null, description: 'Disabling modern deployment will remove all releases and keep the current active one as default.', options: { type: warning }, link: null }], items: { type: object, properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'Disabling modern deployment will remove all releases and keep the current active one as default.' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null } } } }, active: { type: boolean, example: false } }
+                                      properties: { label: { type: string, example: Disable }, handler: { type: string, example: App\SiteFeatures\ModernDeployment\Disable }, form: { type: array, example: [{ type: alert, name: alert, label: '', default: null, placeholder: null, description: 'Disabling modern deployment will remove all releases and keep the current active one as default.', options: { type: warning }, link: null, className: null }], items: { type: object, properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'Disabling modern deployment will remove all releases and keep the current active one as default.' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null }, className: { type: string, example: null } } } }, active: { type: boolean, example: false } }
                                     configuration:
                                       type: object
-                                      properties: { label: { type: string, example: Configure }, handler: { type: string, example: App\SiteFeatures\ModernDeployment\Configuration }, form: { type: array, example: [{ type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null }, { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null }], items: { type: object, properties: { type: { type: string, example: text }, name: { type: string, example: shared_resources }, label: { type: string, example: 'Shared resouces' }, default: { type: string, example: '.env,storage' }, placeholder: { type: string, example: null }, description: { type: string, example: 'Comma separated list of resources to be shared between deployments' }, options: { type: string, example: null }, link: { type: string, example: null } } } }, active: { type: boolean, example: false } }
+                                      properties: { label: { type: string, example: Configure }, handler: { type: string, example: App\SiteFeatures\ModernDeployment\Configuration }, form: { type: array, example: [{ type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null, className: null }, { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null, className: null }], items: { type: object, properties: { type: { type: string, example: text }, name: { type: string, example: shared_resources }, label: { type: string, example: 'Shared resouces' }, default: { type: string, example: '.env,storage' }, placeholder: { type: string, example: null }, description: { type: string, example: 'Comma separated list of resources to be shared between deployments' }, options: { type: string, example: null }, link: { type: string, example: null }, className: { type: string, example: null } } } }, active: { type: boolean, example: false } }
                         modern_deployment:
                           type: boolean
                           example: false
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -5606,6 +5653,7 @@ paths:
                               options:
                                 type: warning
                               link: null
+                              className: null
                             -
                               type: alert
                               name: alert-2
@@ -5618,6 +5666,7 @@ paths:
                               link:
                                 label: Documentation
                                 url: 'https://vitodeploy.com/docs/sites/modern-deployment'
+                              className: null
                             -
                               type: alert
                               name: alert-3
@@ -5628,6 +5677,7 @@ paths:
                               options:
                                 type: warning
                               link: null
+                              className: null
                             -
                               type: text
                               name: shared_resources
@@ -5637,6 +5687,7 @@ paths:
                               description: 'Comma separated list of resources to be shared between deployments'
                               options: null
                               link: null
+                              className: null
                             -
                               type: text
                               name: history
@@ -5646,6 +5697,7 @@ paths:
                               description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                               options: null
                               link: null
+                              className: null
                           active: true
                         disable:
                           label: Disable
@@ -5661,6 +5713,7 @@ paths:
                               options:
                                 type: warning
                               link: null
+                              className: null
                           active: false
                         configuration:
                           label: Configure
@@ -5675,6 +5728,7 @@ paths:
                               description: 'Comma separated list of resources to be shared between deployments'
                               options: null
                               link: null
+                              className: null
                             -
                               type: text
                               name: history
@@ -5684,10 +5738,11 @@ paths:
                               description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                               options: null
                               link: null
+                              className: null
                           active: false
                   modern_deployment: false
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -5779,14 +5834,14 @@ paths:
                                   form:
                                     type: array
                                     example:
-                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!', options: { type: warning }, link: null }
-                                      - { type: alert, name: alert-2, label: '', default: null, placeholder: null, description: "Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.", options: { type: warning }, link: { label: Documentation, url: 'https://vitodeploy.com/docs/sites/modern-deployment' } }
-                                      - { type: alert, name: alert-3, label: '', default: null, placeholder: null, description: "If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.", options: { type: warning }, link: null }
-                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null }
-                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null }
+                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!', options: { type: warning }, link: null, className: null }
+                                      - { type: alert, name: alert-2, label: '', default: null, placeholder: null, description: "Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.", options: { type: warning }, link: { label: Documentation, url: 'https://vitodeploy.com/docs/sites/modern-deployment' }, className: null }
+                                      - { type: alert, name: alert-3, label: '', default: null, placeholder: null, description: "If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.", options: { type: warning }, link: null, className: null }
+                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null, className: null }
+                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null, className: null }
                                     items:
                                       type: object
-                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null } }
+                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null }, className: { type: string, example: null } }
                                   active:
                                     type: boolean
                                     example: true
@@ -5802,10 +5857,10 @@ paths:
                                   form:
                                     type: array
                                     example:
-                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'Disabling modern deployment will remove all releases and keep the current active one as default.', options: { type: warning }, link: null }
+                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'Disabling modern deployment will remove all releases and keep the current active one as default.', options: { type: warning }, link: null, className: null }
                                     items:
                                       type: object
-                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'Disabling modern deployment will remove all releases and keep the current active one as default.' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null } }
+                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'Disabling modern deployment will remove all releases and keep the current active one as default.' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null }, className: { type: string, example: null } }
                                   active:
                                     type: boolean
                                     example: false
@@ -5821,11 +5876,11 @@ paths:
                                   form:
                                     type: array
                                     example:
-                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null }
-                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null }
+                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null, className: null }
+                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null, className: null }
                                     items:
                                       type: object
-                                      properties: { type: { type: string, example: text }, name: { type: string, example: shared_resources }, label: { type: string, example: 'Shared resouces' }, default: { type: string, example: '.env,storage' }, placeholder: { type: string, example: null }, description: { type: string, example: 'Comma separated list of resources to be shared between deployments' }, options: { type: string, example: null }, link: { type: string, example: null } }
+                                      properties: { type: { type: string, example: text }, name: { type: string, example: shared_resources }, label: { type: string, example: 'Shared resouces' }, default: { type: string, example: '.env,storage' }, placeholder: { type: string, example: null }, description: { type: string, example: 'Comma separated list of resources to be shared between deployments' }, options: { type: string, example: null }, link: { type: string, example: null }, className: { type: string, example: null } }
                                   active:
                                     type: boolean
                                     example: false
@@ -5834,10 +5889,10 @@ paths:
                     example: false
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - sites
       requestBody:
@@ -5907,7 +5962,7 @@ paths:
                 method:
                   type: string
                   description: 'Load balancer method, Required if the site type is Load balancer'
-                  example: least-connections
+                  example: round-robin
                   nullable: false
                   enum:
                     - round-robin
@@ -5998,6 +6053,7 @@ paths:
                               options:
                                 type: warning
                               link: null
+                              className: null
                             -
                               type: alert
                               name: alert-2
@@ -6010,6 +6066,7 @@ paths:
                               link:
                                 label: Documentation
                                 url: 'https://vitodeploy.com/docs/sites/modern-deployment'
+                              className: null
                             -
                               type: alert
                               name: alert-3
@@ -6020,6 +6077,7 @@ paths:
                               options:
                                 type: warning
                               link: null
+                              className: null
                             -
                               type: text
                               name: shared_resources
@@ -6029,6 +6087,7 @@ paths:
                               description: 'Comma separated list of resources to be shared between deployments'
                               options: null
                               link: null
+                              className: null
                             -
                               type: text
                               name: history
@@ -6038,6 +6097,7 @@ paths:
                               description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                               options: null
                               link: null
+                              className: null
                           active: true
                         disable:
                           label: Disable
@@ -6053,6 +6113,7 @@ paths:
                               options:
                                 type: warning
                               link: null
+                              className: null
                           active: false
                         configuration:
                           label: Configure
@@ -6067,6 +6128,7 @@ paths:
                               description: 'Comma separated list of resources to be shared between deployments'
                               options: null
                               link: null
+                              className: null
                             -
                               type: text
                               name: history
@@ -6076,10 +6138,11 @@ paths:
                               description: 'This amount specifies how many previous deployments to keep for rollback purposes'
                               options: null
                               link: null
+                              className: null
                           active: false
                   modern_deployment: false
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -6171,14 +6234,14 @@ paths:
                                   form:
                                     type: array
                                     example:
-                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!', options: { type: warning }, link: null }
-                                      - { type: alert, name: alert-2, label: '', default: null, placeholder: null, description: "Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.", options: { type: warning }, link: { label: Documentation, url: 'https://vitodeploy.com/docs/sites/modern-deployment' } }
-                                      - { type: alert, name: alert-3, label: '', default: null, placeholder: null, description: "If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.", options: { type: warning }, link: null }
-                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null }
-                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null }
+                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!', options: { type: warning }, link: null, className: null }
+                                      - { type: alert, name: alert-2, label: '', default: null, placeholder: null, description: "Read the documentation first to see how Modern Deployment works. Enabling Modern Deployment will change your site's path.", options: { type: warning }, link: { label: Documentation, url: 'https://vitodeploy.com/docs/sites/modern-deployment' }, className: null }
+                                      - { type: alert, name: alert-3, label: '', default: null, placeholder: null, description: "If you have any workers, you need to delete it before enabling the modern deployment as your site's path will change and you need to create the workers with the new path.", options: { type: warning }, link: null, className: null }
+                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null, className: null }
+                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null, className: null }
                                     items:
                                       type: object
-                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null } }
+                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'While the feature is in beta, it is recommended to enable it on new websites than a live production site!' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null }, className: { type: string, example: null } }
                                   active:
                                     type: boolean
                                     example: true
@@ -6194,10 +6257,10 @@ paths:
                                   form:
                                     type: array
                                     example:
-                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'Disabling modern deployment will remove all releases and keep the current active one as default.', options: { type: warning }, link: null }
+                                      - { type: alert, name: alert, label: '', default: null, placeholder: null, description: 'Disabling modern deployment will remove all releases and keep the current active one as default.', options: { type: warning }, link: null, className: null }
                                     items:
                                       type: object
-                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'Disabling modern deployment will remove all releases and keep the current active one as default.' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null } }
+                                      properties: { type: { type: string, example: alert }, name: { type: string, example: alert }, label: { type: string, example: '' }, default: { type: string, example: null }, placeholder: { type: string, example: null }, description: { type: string, example: 'Disabling modern deployment will remove all releases and keep the current active one as default.' }, options: { type: object, properties: { type: { type: string, example: warning } } }, link: { type: string, example: null }, className: { type: string, example: null } }
                                   active:
                                     type: boolean
                                     example: false
@@ -6213,11 +6276,11 @@ paths:
                                   form:
                                     type: array
                                     example:
-                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null }
-                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null }
+                                      - { type: text, name: shared_resources, label: 'Shared resouces', default: '.env,storage', placeholder: null, description: 'Comma separated list of resources to be shared between deployments', options: null, link: null, className: null }
+                                      - { type: text, name: history, label: 'Deployments to keep', default: '10', placeholder: null, description: 'This amount specifies how many previous deployments to keep for rollback purposes', options: null, link: null, className: null }
                                     items:
                                       type: object
-                                      properties: { type: { type: string, example: text }, name: { type: string, example: shared_resources }, label: { type: string, example: 'Shared resouces' }, default: { type: string, example: '.env,storage' }, placeholder: { type: string, example: null }, description: { type: string, example: 'Comma separated list of resources to be shared between deployments' }, options: { type: string, example: null }, link: { type: string, example: null } }
+                                      properties: { type: { type: string, example: text }, name: { type: string, example: shared_resources }, label: { type: string, example: 'Shared resouces' }, default: { type: string, example: '.env,storage' }, placeholder: { type: string, example: null }, description: { type: string, example: 'Comma separated list of resources to be shared between deployments' }, options: { type: string, example: null }, link: { type: string, example: null }, className: { type: string, example: null } }
                                   active:
                                     type: boolean
                                     example: false
@@ -6226,10 +6289,10 @@ paths:
                     example: false
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - sites
       security: []
@@ -6321,7 +6384,7 @@ paths:
                 method:
                   type: string
                   description: 'Load balancer method, Required if the site type is Load balancer'
-                  example: ip-hash
+                  example: least-connections
                   nullable: false
                   enum:
                     - round-robin
@@ -6638,16 +6701,16 @@ paths:
                       global: true
                       name: 'Ms. Elisabeth Okuneva'
                       provider: github
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 5
                       project_id: null
                       global: true
                       name: "Aleen O'Kon"
                       provider: github
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -6684,16 +6747,16 @@ paths:
                         global: true
                         name: 'Ms. Elisabeth Okuneva'
                         provider: github
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 5
                         project_id: null
                         global: true
                         name: "Aleen O'Kon"
                         provider: github
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -6714,10 +6777,10 @@ paths:
                           example: github
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -6805,8 +6868,8 @@ paths:
                   global: true
                   name: 'Mrs. Justina Gaylord'
                   provider: github
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -6825,10 +6888,10 @@ paths:
                     example: github
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - source-controls
       requestBody:
@@ -6904,8 +6967,8 @@ paths:
                   global: true
                   name: 'Misael Runte'
                   provider: github
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -6924,10 +6987,10 @@ paths:
                     example: github
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - source-controls
       security: []
@@ -6949,8 +7012,8 @@ paths:
                   global: true
                   name: 'Mrs. Justina Gaylord'
                   provider: github
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -6969,10 +7032,10 @@ paths:
                     example: github
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - source-controls
       requestBody:
@@ -7010,7 +7073,7 @@ paths:
                 global:
                   type: string
                   description: 'Accessible in all projects'
-                  example: true
+                  example: false
                   nullable: false
                   enum:
                     - true
@@ -7069,13 +7132,13 @@ paths:
                     -
                       id: 5
                       name: 'Haven Romaguera'
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 6
                       name: 'Viva Marquardt'
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -7109,13 +7172,13 @@ paths:
                       -
                         id: 5
                         name: 'Haven Romaguera'
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 6
                         name: 'Viva Marquardt'
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -7127,10 +7190,10 @@ paths:
                           example: 'Haven Romaguera'
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -7215,8 +7278,8 @@ paths:
                 example:
                   id: 5
                   name: 'Ms. Elisabeth Okuneva'
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -7226,10 +7289,10 @@ paths:
                     example: 'Ms. Elisabeth Okuneva'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - ssh-keys
       requestBody:
@@ -7333,25 +7396,25 @@ paths:
                       server_id: 1
                       site_id: 1
                       is_active: false
-                      type: in
+                      type: dolor
                       status: created
                       log: null
                       status_color: success
-                      expires_at: '2025-09-08T12:33:55.000000Z'
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      expires_at: '2025-09-11T12:04:42.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                     -
                       id: 6
                       server_id: 1
                       site_id: 1
                       is_active: false
-                      type: voluptas
+                      type: vel
                       status: created
                       log: null
                       status_color: success
-                      expires_at: '2025-09-08T12:33:55.000000Z'
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      expires_at: '2025-09-11T12:04:42.000000Z'
+                      created_at: '2025-09-10T12:04:42.000000Z'
+                      updated_at: '2025-09-10T12:04:42.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -7387,25 +7450,25 @@ paths:
                         server_id: 1
                         site_id: 1
                         is_active: false
-                        type: in
+                        type: dolor
                         status: created
                         log: null
                         status_color: success
-                        expires_at: '2025-09-08T12:33:55.000000Z'
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        expires_at: '2025-09-11T12:04:42.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                       -
                         id: 6
                         server_id: 1
                         site_id: 1
                         is_active: false
-                        type: voluptas
+                        type: vel
                         status: created
                         log: null
                         status_color: success
-                        expires_at: '2025-09-08T12:33:55.000000Z'
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        expires_at: '2025-09-11T12:04:42.000000Z'
+                        created_at: '2025-09-10T12:04:42.000000Z'
+                        updated_at: '2025-09-10T12:04:42.000000Z'
                     items:
                       type: object
                       properties:
@@ -7423,7 +7486,7 @@ paths:
                           example: false
                         type:
                           type: string
-                          example: in
+                          example: dolor
                         status:
                           type: string
                           example: created
@@ -7435,13 +7498,13 @@ paths:
                           example: success
                         expires_at:
                           type: string
-                          example: '2025-09-08T12:33:55.000000Z'
+                          example: '2025-09-11T12:04:42.000000Z'
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:42.000000Z'
                   links:
                     type: object
                     properties:
@@ -7554,13 +7617,13 @@ paths:
                   server_id: 1
                   site_id: 1
                   is_active: false
-                  type: dignissimos
+                  type: voluptatem
                   status: created
                   log: null
                   status_color: success
-                  expires_at: '2025-09-08T12:33:55.000000Z'
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  expires_at: '2025-09-11T12:04:42.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -7576,7 +7639,7 @@ paths:
                     example: false
                   type:
                     type: string
-                    example: dignissimos
+                    example: voluptatem
                   status:
                     type: string
                     example: created
@@ -7588,13 +7651,13 @@ paths:
                     example: success
                   expires_at:
                     type: string
-                    example: '2025-09-08T12:33:55.000000Z'
+                    example: '2025-09-11T12:04:42.000000Z'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - ssls
       security: []
@@ -7653,9 +7716,9 @@ paths:
                   status: created
                   log: null
                   status_color: success
-                  expires_at: '2025-09-08T12:33:55.000000Z'
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  expires_at: '2025-09-11T12:04:42.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -7683,13 +7746,13 @@ paths:
                     example: success
                   expires_at:
                     type: string
-                    example: '2025-09-08T12:33:55.000000Z'
+                    example: '2025-09-11T12:04:42.000000Z'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - ssls
       requestBody:
@@ -7760,9 +7823,9 @@ paths:
                   status: created
                   log: null
                   status_color: success
-                  expires_at: '2025-09-08T12:33:55.000000Z'
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  expires_at: '2025-09-11T12:04:42.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -7790,13 +7853,13 @@ paths:
                     example: success
                   expires_at:
                     type: string
-                    example: '2025-09-08T12:33:55.000000Z'
+                    example: '2025-09-11T12:04:42.000000Z'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - ssls
       requestBody:
@@ -7879,9 +7942,9 @@ paths:
                   status: created
                   log: null
                   status_color: success
-                  expires_at: '2025-09-08T12:33:55.000000Z'
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  expires_at: '2025-09-11T12:04:42.000000Z'
+                  created_at: '2025-09-10T12:04:42.000000Z'
+                  updated_at: '2025-09-10T12:04:42.000000Z'
                 properties:
                   id:
                     type: integer
@@ -7909,13 +7972,13 @@ paths:
                     example: success
                   expires_at:
                     type: string
-                    example: '2025-09-08T12:33:55.000000Z'
+                    example: '2025-09-11T12:04:42.000000Z'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:42.000000Z'
       tags:
         - ssls
       security: []
@@ -7974,9 +8037,9 @@ paths:
                   status: created
                   log: null
                   status_color: success
-                  expires_at: '2025-09-08T12:33:55.000000Z'
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  expires_at: '2025-09-11T12:04:43.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -8004,13 +8067,13 @@ paths:
                     example: success
                   expires_at:
                     type: string
-                    example: '2025-09-08T12:33:55.000000Z'
+                    example: '2025-09-11T12:04:43.000000Z'
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - ssls
       security: []
@@ -8111,18 +8174,18 @@ paths:
                       id: 3
                       project_id: null
                       global: true
-                      name: libero
-                      provider: s3
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      name: animi
+                      provider: dropbox
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 4
                       project_id: null
                       global: true
-                      name: officiis
-                      provider: local
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      name: aut
+                      provider: dropbox
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -8157,18 +8220,18 @@ paths:
                         id: 3
                         project_id: null
                         global: true
-                        name: libero
-                        provider: s3
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        name: animi
+                        provider: dropbox
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 4
                         project_id: null
                         global: true
-                        name: officiis
-                        provider: local
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        name: aut
+                        provider: dropbox
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -8183,16 +8246,16 @@ paths:
                           example: true
                         name:
                           type: string
-                          example: libero
+                          example: animi
                         provider:
                           type: string
-                          example: s3
+                          example: dropbox
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -8280,8 +8343,8 @@ paths:
                   global: true
                   name: eius
                   provider: dropbox
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -8300,10 +8363,10 @@ paths:
                     example: dropbox
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - storage-providers
       requestBody:
@@ -8373,8 +8436,8 @@ paths:
                   global: true
                   name: commodi
                   provider: dropbox
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -8393,10 +8456,10 @@ paths:
                     example: dropbox
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - storage-providers
       security: []
@@ -8418,8 +8481,8 @@ paths:
                   global: true
                   name: eius
                   provider: dropbox
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -8438,10 +8501,10 @@ paths:
                     example: dropbox
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - storage-providers
       requestBody:
@@ -8459,7 +8522,7 @@ paths:
                 global:
                   type: string
                   description: 'Accessible in all projects'
-                  example: false
+                  example: true
                   nullable: false
                   enum:
                     - true
@@ -8522,8 +8585,8 @@ paths:
                       numprocs: 1
                       status: creating
                       status_color: warning
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 6
                       server_id: null
@@ -8535,8 +8598,8 @@ paths:
                       numprocs: 1
                       status: creating
                       status_color: warning
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -8578,8 +8641,8 @@ paths:
                         numprocs: 1
                         status: creating
                         status_color: warning
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 6
                         server_id: null
@@ -8591,8 +8654,8 @@ paths:
                         numprocs: 1
                         status: creating
                         status_color: warning
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -8628,10 +8691,10 @@ paths:
                           example: warning
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -8744,8 +8807,8 @@ paths:
                       numprocs: 1
                       status: creating
                       status_color: warning
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                     -
                       id: 6
                       server_id: null
@@ -8757,8 +8820,8 @@ paths:
                       numprocs: 1
                       status: creating
                       status_color: warning
-                      created_at: '2025-09-07T12:33:55.000000Z'
-                      updated_at: '2025-09-07T12:33:55.000000Z'
+                      created_at: '2025-09-10T12:04:43.000000Z'
+                      updated_at: '2025-09-10T12:04:43.000000Z'
                   links:
                     first: '/?page=1'
                     last: '/?page=1'
@@ -8800,8 +8863,8 @@ paths:
                         numprocs: 1
                         status: creating
                         status_color: warning
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                       -
                         id: 6
                         server_id: null
@@ -8813,8 +8876,8 @@ paths:
                         numprocs: 1
                         status: creating
                         status_color: warning
-                        created_at: '2025-09-07T12:33:55.000000Z'
-                        updated_at: '2025-09-07T12:33:55.000000Z'
+                        created_at: '2025-09-10T12:04:43.000000Z'
+                        updated_at: '2025-09-10T12:04:43.000000Z'
                     items:
                       type: object
                       properties:
@@ -8850,10 +8913,10 @@ paths:
                           example: warning
                         created_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                         updated_at:
                           type: string
-                          example: '2025-09-07T12:33:55.000000Z'
+                          example: '2025-09-10T12:04:43.000000Z'
                   links:
                     type: object
                     properties:
@@ -8972,8 +9035,8 @@ paths:
                   numprocs: 1
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -9007,10 +9070,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - workers
       security: []
@@ -9063,8 +9126,8 @@ paths:
                   numprocs: 1
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -9098,10 +9161,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - workers
       security: []
@@ -9162,8 +9225,8 @@ paths:
                   numprocs: 1
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:55.000000Z'
-                  updated_at: '2025-09-07T12:33:55.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -9197,10 +9260,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:55.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - workers
       requestBody:
@@ -9303,8 +9366,8 @@ paths:
                   numprocs: 1
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:56.000000Z'
-                  updated_at: '2025-09-07T12:33:56.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -9338,10 +9401,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - workers
       requestBody:
@@ -9452,8 +9515,8 @@ paths:
                   numprocs: 1
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:56.000000Z'
-                  updated_at: '2025-09-07T12:33:56.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -9487,10 +9550,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - workers
       security: []
@@ -9543,8 +9606,8 @@ paths:
                   numprocs: 1
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:56.000000Z'
-                  updated_at: '2025-09-07T12:33:56.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -9578,10 +9641,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - workers
       security: []
@@ -9634,8 +9697,8 @@ paths:
                   numprocs: 1
                   status: creating
                   status_color: warning
-                  created_at: '2025-09-07T12:33:56.000000Z'
-                  updated_at: '2025-09-07T12:33:56.000000Z'
+                  created_at: '2025-09-10T12:04:43.000000Z'
+                  updated_at: '2025-09-10T12:04:43.000000Z'
                 properties:
                   id:
                     type: integer
@@ -9669,10 +9732,10 @@ paths:
                     example: warning
                   created_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
                   updated_at:
                     type: string
-                    example: '2025-09-07T12:33:56.000000Z'
+                    example: '2025-09-10T12:04:43.000000Z'
       tags:
         - workers
       security: []

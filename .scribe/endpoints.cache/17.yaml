@@ -51,7 +51,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":5,"server_id":null,"name":"Mina Bauch","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:55.000000Z","updated_at":"2025-09-07T12:33:55.000000Z"},{"id":6,"server_id":null,"name":"Mr. Oswald Koch","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:55.000000Z","updated_at":"2025-09-07T12:33:55.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"server_id":null,"name":"Mina Bauch","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"},{"id":6,"server_id":null,"name":"Mr. Oswald Koch","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -120,7 +120,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":5,"server_id":null,"name":"Myrtis Tromp","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:55.000000Z","updated_at":"2025-09-07T12:33:55.000000Z"},{"id":6,"server_id":null,"name":"Henri Mitchell","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:55.000000Z","updated_at":"2025-09-07T12:33:55.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":5,"server_id":null,"name":"Myrtis Tromp","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"},{"id":6,"server_id":null,"name":"Henri Mitchell","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -189,7 +189,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"server_id":null,"name":"Matilda Feeney","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:55.000000Z","updated_at":"2025-09-07T12:33:55.000000Z"}'
+        content: '{"id":5,"server_id":null,"name":"Matilda Feeney","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -269,7 +269,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"server_id":null,"name":"Shayna Raynor Jr.","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:55.000000Z","updated_at":"2025-09-07T12:33:55.000000Z"}'
+        content: '{"id":5,"server_id":null,"name":"Shayna Raynor Jr.","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -404,7 +404,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"server_id":null,"name":"Ms. Elisabeth Okuneva","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:55.000000Z","updated_at":"2025-09-07T12:33:55.000000Z"}'
+        content: '{"id":5,"server_id":null,"name":"Ms. Elisabeth Okuneva","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -550,7 +550,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"server_id":null,"name":"Ms. Elisabeth Okuneva","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:56.000000Z","updated_at":"2025-09-07T12:33:56.000000Z"}'
+        content: '{"id":5,"server_id":null,"name":"Ms. Elisabeth Okuneva","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -619,7 +619,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"server_id":null,"name":"Aleen O''Kon","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:56.000000Z","updated_at":"2025-09-07T12:33:56.000000Z"}'
+        content: '{"id":5,"server_id":null,"name":"Aleen O''Kon","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -688,7 +688,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"server_id":null,"name":"Justina Gaylord","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:56.000000Z","updated_at":"2025-09-07T12:33:56.000000Z"}'
+        content: '{"id":5,"server_id":null,"name":"Justina Gaylord","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -757,7 +757,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":5,"server_id":null,"name":"Misael Runte","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-07T12:33:56.000000Z","updated_at":"2025-09-07T12:33:56.000000Z"}'
+        content: '{"id":5,"server_id":null,"name":"Misael Runte","command":"php artisan queue:work","user":"vito","auto_start":true,"auto_restart":true,"numprocs":1,"status":"creating","status_color":"warning","created_at":"2025-09-10T12:04:43.000000Z","updated_at":"2025-09-10T12:04:43.000000Z"}'
         headers: []
         description: ''
         custom: []
