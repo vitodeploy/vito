@@ -557,4 +557,9 @@ class Site extends AbstractModel
     {
         return preg_replace('#/current$#', '', $this->path);
     }
+
+    public function getDeployKeyName(): string
+    {
+        return $this->domain.'-key-'.$this->id;
+    }
 }
