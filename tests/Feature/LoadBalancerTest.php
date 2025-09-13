@@ -50,6 +50,7 @@ class LoadBalancerTest extends TestCase
                 ],
             ],
         ])
+            ->assertRedirect()
             ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('load_balancer_servers', [

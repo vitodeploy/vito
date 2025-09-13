@@ -44,6 +44,7 @@ class SslTest extends TestCase
             'type' => SslType::LETSENCRYPT->value,
             'email' => 'ssl@example.com',
         ])
+            ->assertRedirect()
             ->assertSessionDoesntHaveErrors();
 
         $ssl = Ssl::query()->where('site_id', $this->site->id)->first();
