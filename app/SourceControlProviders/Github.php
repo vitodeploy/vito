@@ -187,7 +187,7 @@ class Github extends AbstractSourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): void
+    public function deployKey(string $title, string $repo, string $key): string
     {
         try {
             $response = $this->getClient()
@@ -201,6 +201,8 @@ class Github extends AbstractSourceControlProvider
                 throw new FailedToDeployGitKey($response->body());
             }
 
+            return $response->json()['id'] ?? '';
+
         } catch (Throwable $e) {
             Log::error('Failed to deploy GitHub key', [
                 'repo' => $repo,
@@ -209,6 +211,29 @@ class Github extends AbstractSourceControlProvider
             ]);
 
             throw new FailedToDeployGitKey($e->getMessage());
+        }
+    }
+
+    public function deleteDeployKey(string $keyId, string $repo): void
+    {
+        try {
+            $response = $this->getClient()
+                ->delete(self::API_BASE_URL."/repos/$repo/keys/$keyId");
+
+            if (! $response->successful()) {
+                Log::warning('Failed to delete GitHub deploy key', [
+                    'repo' => $repo,
+                    'key_id' => $keyId,
+                    'response' => $response->body(),
+                ]);
+            }
+
+        } catch (Throwable $e) {
+            Log::error('Error deleting GitHub deploy key', [
+                'repo' => $repo,
+                'key_id' => $keyId,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

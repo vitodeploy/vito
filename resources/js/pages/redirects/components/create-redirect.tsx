@@ -65,6 +65,7 @@ export default function CreateRedirect({ site, children }: { site: Site; childre
                   <SelectItem value="302">302 - Found</SelectItem>
                   <SelectItem value="307">307 - Temporary Redirect</SelectItem>
                   <SelectItem value="308">308 - Permanent Redirect</SelectItem>
+                  <SelectItem value="1000">Proxy (/docs to https://docs.example.com)</SelectItem>
                 </SelectContent>
               </Select>
               <InputError message={form.errors.mode} />
@@ -77,7 +78,7 @@ export default function CreateRedirect({ site, children }: { site: Site; childre
                 name="from"
                 value={form.data.from}
                 onChange={(e) => form.setData('from', e.target.value)}
-                placeholder="/path/to/redirect"
+                placeholder="/path/to/redirect/"
               />
               <InputError message={form.errors.from} />
             </FormField>
@@ -89,7 +90,7 @@ export default function CreateRedirect({ site, children }: { site: Site; childre
                 name="to"
                 value={form.data.to}
                 onChange={(e) => form.setData('to', e.target.value)}
-                placeholder="https://new-url"
+                placeholder="https://new-url/"
               />
               <InputError message={form.errors.to} />
             </FormField>

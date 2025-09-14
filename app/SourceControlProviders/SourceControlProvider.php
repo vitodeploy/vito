@@ -54,7 +54,9 @@ interface SourceControlProvider
     /**
      * @throws FailedToDeployGitKey
      */
-    public function deployKey(string $title, string $repo, string $key): void;
+    public function deployKey(string $title, string $repo, string $key): string;
+
+    public function deleteDeployKey(string $keyId, string $repo): void;
 
     /**
      * @param  array<string, mixed>  $payload
