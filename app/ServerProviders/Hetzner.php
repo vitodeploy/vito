@@ -133,7 +133,7 @@ class Hetzner extends AbstractProvider
         $create = Http::withToken($this->server->serverProvider->credentials['token'])
             ->post($this->apiUrl.'/servers', [
                 'automount' => false,
-                'image' => config('serverproviders.hetzner.images')[$this->server->os],
+                'image' => config('serverproviders.hetzner.images')[$this->server->os->value],
                 // 'root_password' => $this->server->authentication['root_pass'],
                 'ssh_keys' => [
                     $sshKey->json()['ssh_key']['id'],

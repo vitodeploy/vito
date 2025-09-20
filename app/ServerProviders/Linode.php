@@ -123,7 +123,7 @@ class Linode extends AbstractProvider
             $create = Http::withToken($this->server->serverProvider->credentials['token'])
                 ->post($this->apiUrl.'/linode/instances', [
                     'backups_enabled' => false,
-                    'image' => config('serverproviders.linode.images')[$this->server->os],
+                    'image' => config('serverproviders.linode.images')[$this->server->os->value],
                     'root_pass' => $this->server->authentication['root_pass'],
                     'authorized_keys' => [
                         $this->server->sshKey()['public_key'],
