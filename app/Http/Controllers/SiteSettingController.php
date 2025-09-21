@@ -7,6 +7,7 @@ use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
+use App\Actions\Site\UpdateWebDirectory;
 use App\Exceptions\SSHError;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Server;
@@ -82,6 +83,19 @@ class SiteSettingController extends Controller
         app(UpdatePHPVersion::class)->update($site, $request->input());
 
         return back()->with('success', 'PHP version updated successfully.');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Patch('/web-directory', name: 'site-settings.update-web-directory')]
+    public function updateWebDirectory(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(UpdateWebDirectory::class)->update($site, $request->input());
+
+        return back()->with('success', 'Web directory updated successfully.');
     }
 
     #[Get('/vhost', name: 'site-settings.vhost')]

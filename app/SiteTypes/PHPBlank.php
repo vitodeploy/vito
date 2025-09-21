@@ -4,10 +4,13 @@ namespace App\SiteTypes;
 
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use App\Traits\NormalizesWebDirectory;
 use Illuminate\Validation\Rule;
 
 class PHPBlank extends PHPSite
 {
+    use NormalizesWebDirectory;
+
     public static function id(): string
     {
         return 'php-blank';
@@ -25,6 +28,8 @@ class PHPBlank extends PHPSite
                 'nullable',
                 'string',
                 'max:255',
+                'regex:/^[a-zA-Z0-9._\-\/]+$/',
+                'not_regex:/\.\./',
             ],
             'php_version' => [
                 'required',
@@ -36,7 +41,7 @@ class PHPBlank extends PHPSite
     public function createFields(array $input): array
     {
         return [
-            'web_directory' => $input['web_directory'] ?? '',
+            'web_directory' => $this->normalizeWebDirectory($input['web_directory'] ?? ''),
             'php_version' => $input['php_version'] ?? '',
         ];
     }
