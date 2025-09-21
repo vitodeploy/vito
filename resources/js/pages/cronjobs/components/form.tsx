@@ -20,26 +20,42 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { CronJob } from '@/types/cronjob';
 import { SharedData } from '@/types';
 import { Server } from '@/types/server';
+import { Site } from '@/types/site';
 
-export default function CronJobForm({ serverId, cronJob, children }: { serverId: number; cronJob?: CronJob; children: ReactNode }) {
-  const page = usePage<SharedData & { server: Server }>();
+export default function CronJobForm({
+  serverId,
+  site,
+  cronJob,
+  children,
+}: {
+  serverId: number;
+  site?: Site;
+  cronJob?: CronJob;
+  children: ReactNode;
+}) {
+  const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }> }>();
   const [open, setOpen] = useState(false);
   const form = useForm<{
     command: string;
     user: string;
     frequency: string;
     custom: string;
+    site_id: string;
   }>({
     command: cronJob?.command || '',
     user: cronJob?.user || '',
     frequency: cronJob ? (page.props.configs.cronjob_intervals[cronJob.frequency] ? cronJob.frequency : 'custom') : '',
     custom: cronJob?.frequency || '',
+    site_id: cronJob?.site_id?.toString() || '0',
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (cronJob) {
-      form.put(route('cronjobs.update', { server: serverId, cronJob: cronJob.id }), {
+      const routeName = site ? 'cronjobs.site.update' : 'cronjobs.update';
+      const routeParams = site ? { server: serverId, site: site.id, cronJob: cronJob.id } : { server: serverId, cronJob: cronJob.id };
+
+      form.put(route(routeName, routeParams), {
         onSuccess: () => {
           setOpen(false);
           form.reset();
@@ -48,7 +64,10 @@ export default function CronJobForm({ serverId, cronJob, children }: { serverId:
       return;
     }
 
-    form.post(route('cronjobs.store', { server: serverId }), {
+    const routeName = site ? 'cronjobs.site.store' : 'cronjobs.store';
+    const routeParams = site ? { server: serverId, site: site.id } : { server: serverId };
+
+    form.post(route(routeName, routeParams), {
       onSuccess: () => {
         setOpen(false);
         form.reset();
@@ -70,6 +89,29 @@ export default function CronJobForm({ serverId, cronJob, children }: { serverId:
               <Input type="text" id="command" value={form.data.command} onChange={(e) => form.setData('command', e.target.value)} />
               <InputError message={form.errors.command} />
             </FormField>
+
+            {/*site selection - only show if we have sites data and not in site context*/}
+            {page.props.sites && !site && (
+              <FormField>
+                <Label htmlFor="site_id">Site</Label>
+                <Select value={form.data.site_id} onValueChange={(value) => form.setData('site_id', value)}>
+                  <SelectTrigger id="site_id">
+                    <SelectValue placeholder="Select a site (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="0">Server (no site)</SelectItem>
+                      {page.props.sites.map((siteOption) => (
+                        <SelectItem key={`site-${siteOption.id}`} value={siteOption.id.toString()}>
+                          {siteOption.domain}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <InputError message={form.errors.site_id} />
+              </FormField>
+            )}
 
             {/*frequency*/}
             <FormField>

@@ -17,6 +17,7 @@ class CronJobFactory extends Factory
     {
         return [
             'server_id' => 1,
+            'site_id' => null,
             'command' => 'ls -la',
             'user' => 'root',
             'frequency' => '* * * * *',

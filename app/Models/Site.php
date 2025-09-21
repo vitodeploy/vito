@@ -251,6 +251,14 @@ class Site extends AbstractModel
     }
 
     /**
+     * @return HasMany<CronJob, covariant $this>
+     */
+    public function cronJobs(): HasMany
+    {
+        return $this->hasMany(CronJob::class);
+    }
+
+    /**
      * @return HasMany<Ssl, covariant $this>
      */
     public function ssls(): HasMany

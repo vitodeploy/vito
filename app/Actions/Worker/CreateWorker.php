@@ -23,9 +23,15 @@ class CreateWorker
     {
         $this->validate($server, $input, $site);
 
+        // Determine site_id: use provided site or from input
+        $siteId = $site?->id;
+        if (! $site && isset($input['site_id']) && ! empty($input['site_id'])) {
+            $siteId = (int) $input['site_id'];
+        }
+
         $worker = new Worker([
             'server_id' => $server->id,
-            'site_id' => $site?->id,
+            'site_id' => $siteId,
             'name' => $input['name'],
             'command' => $input['command'],
             'user' => $input['user'],

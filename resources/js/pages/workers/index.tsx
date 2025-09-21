@@ -18,6 +18,7 @@ export default function WorkerIndex() {
     server: Server;
     workers: PaginatedData<Worker>;
     site?: Site;
+    sites?: Array<{ id: number; domain: string }>;
   }>();
 
   return (
@@ -26,7 +27,10 @@ export default function WorkerIndex() {
 
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title="Workers" description="Here you can manage server's workers" />
+          <Heading
+            title="Workers"
+            description={page.props.site ? `Here you can manage ${page.props.site.domain}'s workers` : "Here you can manage server's workers"}
+          />
           <div className="flex items-center gap-2">
             <a href="https://vitodeploy.com/docs/servers/workers" target="_blank">
               <Button variant="outline">
@@ -43,7 +47,7 @@ export default function WorkerIndex() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.workers} />
+        <DataTable columns={columns(page.props.sites)} paginatedData={page.props.workers} />
       </Container>
     </ServerLayout>
   );
