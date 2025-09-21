@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Site\DeleteSite;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateBranch;
+use App\Actions\Site\UpdateDomain;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
 use App\Exceptions\SSHError;
@@ -69,6 +70,19 @@ class SiteSettingController extends Controller
         app(UpdateAliases::class)->update($site, $request->input());
 
         return back()->with('success', 'Aliases updated successfully.');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Patch('/domain', name: 'site-settings.update-domain')]
+    public function updateDomain(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(UpdateDomain::class)->update($site, $request->input());
+
+        return back()->with('success', 'Domain updated successfully.');
     }
 
     /**

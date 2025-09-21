@@ -161,6 +161,33 @@ class SitesTest extends TestCase
             ]);
     }
 
+    public function test_update_domain(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'domain' => 'oldsite.com',
+            'path' => '/home/vito/oldsite.com',
+        ]);
+
+        $this->json('PUT', route('api.projects.servers.sites.domain', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+        ]), [
+            'domain' => 'newsite.com',
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'domain' => 'newsite.com',
+                'path' => '/home/vito/newsite.com',
+            ]);
+    }
+
     public function test_update_load_balancer(): void
     {
         SSH::fake();

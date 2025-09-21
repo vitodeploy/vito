@@ -20,6 +20,7 @@ import DeleteSite from '@/pages/site-settings/components/delete-site';
 import VHost from '@/pages/site-settings/components/vhost';
 import ChangeSourceControl from '@/pages/site-settings/components/source-control';
 import Aliases from './components/aliases';
+import Domain from './components/domain';
 
 export default function Databases() {
   const page = usePage<{
@@ -60,9 +61,11 @@ export default function Databases() {
             <Separator />
             <div className="flex items-center justify-between p-4">
               <span>Domain</span>
-              <a href={page.props.site.url} target="_blank" className="text-muted-foreground hover:underline">
-                {page.props.site.domain}
-              </a>
+              <Domain site={page.props.site}>
+                <Button variant="outline" className="h-6">
+                  {page.props.site.domain}
+                </Button>
+              </Domain>
             </div>
             <Separator />
             <div className="flex items-center justify-between p-4">

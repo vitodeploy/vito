@@ -68,4 +68,28 @@ class LoadBalancerTest extends TestCase
             'backup' => false,
         ]);
     }
+
+    public function test_update_domain_for_load_balancer_site(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-domain', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'domain' => 'loadbalancer.com',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertEquals('loadbalancer.com', $this->site->domain);
+        $this->assertEquals('/home/vito/loadbalancer.com', $this->site->path);
+
+        // Verify that load balancer configuration was regenerated
+        SSH::assertExecuted('nginx -t');
+        SSH::assertExecuted('systemctl reload nginx');
+    }
 }

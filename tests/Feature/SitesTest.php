@@ -308,6 +308,74 @@ class SitesTest extends TestCase
         $this->assertEquals(['www.example.com', 'test.example.com'], $this->site->aliases);
     }
 
+    public function test_update_domain(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-domain', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'domain' => 'newsite.com',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+        $this->assertEquals('newsite.com', $this->site->domain);
+        $this->assertEquals('/home/vito/newsite.com', $this->site->path);
+    }
+
+    public function test_update_domain_same_domain_does_nothing(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $originalDomain = $this->site->domain;
+        $originalPath = $this->site->path;
+
+        $this->patch(route('site-settings.update-domain', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'domain' => $originalDomain,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        // Domain and path should remain unchanged
+        $this->assertEquals($originalDomain, $this->site->domain);
+        $this->assertEquals($originalPath, $this->site->path);
+    }
+
+    public function test_update_domain_prevents_when_modern_deployment_enabled(): void
+    {
+        SSH::fake();
+
+        // Enable modern deployment
+        $this->site->update([
+            'type' => Laravel::id(),
+            'type_data' => [
+                'modern_deployment' => true,
+                'modern_deployment_history' => 10,
+                'modern_deployment_shared_resources' => ['.env'],
+            ],
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-domain', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'domain' => 'newsite.com',
+        ])
+            ->assertStatus(500); // Expect 500 because exception is thrown
+    }
+
     /**
      * @return array<array<int, mixed>>
      */

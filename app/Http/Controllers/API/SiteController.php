@@ -6,6 +6,7 @@ use App\Actions\Site\CreateSite;
 use App\Actions\Site\Deploy;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateDeploymentScript;
+use App\Actions\Site\UpdateDomain;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Enums\LoadBalancerMethod;
@@ -127,6 +128,21 @@ class SiteController extends Controller
         $this->validateRoute($project, $server, $site);
 
         app(UpdateAliases::class)->update($site, $request->all());
+
+        return new SiteResource($site);
+    }
+
+    #[Put('{site}/domain', name: 'api.projects.servers.sites.domain', middleware: 'ability:write')]
+    #[Endpoint(title: 'domain', description: 'Update site domain.')]
+    #[BodyParam(name: 'domain', type: 'string', description: 'New domain name', example: 'newsite.com')]
+    #[Response(status: 200)]
+    public function updateDomain(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        app(UpdateDomain::class)->update($site, $request->all());
 
         return new SiteResource($site);
     }
