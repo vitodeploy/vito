@@ -14,6 +14,9 @@ class DeleteCronJob
      */
     public function delete(Server $server, CronJob $cronJob): void
     {
+        // Sync before deleting to preserve any manual cronjobs
+        app(SyncCronJobs::class)->sync($server);
+
         $user = $cronJob->user;
         $cronJob->status = CronjobStatus::DELETING;
         $cronJob->save();

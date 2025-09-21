@@ -22,6 +22,9 @@ class EditCronJob
     {
         $this->validate($input, $server, $site);
 
+        // Sync before editing to preserve any manual cronjobs
+        app(SyncCronJobs::class)->sync($server);
+
         // Determine site_id: use provided site or from input
         $siteId = $site?->id;
         if (! $site && isset($input['site_id'])) {

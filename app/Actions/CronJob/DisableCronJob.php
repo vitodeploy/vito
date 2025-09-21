@@ -14,6 +14,9 @@ class DisableCronJob
      */
     public function disable(Server $server, CronJob $cronJob): void
     {
+        // Sync before disabling to preserve any manual cronjobs
+        app(SyncCronJobs::class)->sync($server);
+
         $cronJob->status = CronjobStatus::DISABLING;
         $cronJob->save();
 

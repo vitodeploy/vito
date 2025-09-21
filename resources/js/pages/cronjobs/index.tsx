@@ -11,6 +11,7 @@ import { DataTable } from '@/components/data-table';
 import { CronJob } from '@/types/cronjob';
 import { columns } from '@/pages/cronjobs/components/columns';
 import CronJobForm from '@/pages/cronjobs/components/form';
+import SyncCronJobs from '@/pages/cronjobs/components/sync-cronjobs';
 import { Site } from '@/types/site';
 
 export default function CronJobIndex() {
@@ -38,6 +39,7 @@ export default function CronJobIndex() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
+            <SyncCronJobs server={page.props.server} />
             <CronJobForm serverId={page.props.server.id} site={page.props.site}>
               <Button>
                 <PlusIcon />
