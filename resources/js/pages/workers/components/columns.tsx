@@ -169,7 +169,7 @@ function getColumns(sites?: Array<{ id: number; domain: string }>): ColumnDef<Wo
       cell: ({ row }) => {
         const siteId = row.original.site_id;
         if (!siteId) {
-          return <span className="text-muted-foreground">Server</span>;
+          return <span>-</span>;
         }
         const site = sites?.find((s) => s.id === siteId);
         return <span>{site ? site.domain : `Site #${siteId}`}</span>;
