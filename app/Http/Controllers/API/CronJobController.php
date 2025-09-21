@@ -162,7 +162,7 @@ class CronJobController extends Controller
         }
 
         if ($cronJob && $cronJob->server_id !== $server->id) {
-            abort(404, 'Cron job not found in server');
+            abort(404, 'Cron job does not belong to the specified server');
         }
 
         if ($site && $cronJob && $cronJob->site_id !== $site->id) {
