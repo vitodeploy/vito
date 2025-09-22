@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\VitoBackup\BackupOperations;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,17 +23,7 @@ use ZipArchive;
 #[Middleware(['auth', 'must-be-admin'])]
 class VitoSettingController extends Controller
 {
-    /**
-     * @var array<string, string>
-     */
-    protected array $paths = [
-        'storage/database.sqlite' => 'file',
-        '.env' => 'file',
-        'storage/ssh-public.key' => 'file',
-        'storage/ssh-private.pem' => 'file',
-        'storage/app/key-pairs' => 'directory',
-        'storage/app/server-logs' => 'directory',
-    ];
+    use BackupOperations;
 
     #[Get('/', name: 'vito-settings')]
     public function index(): Response
@@ -50,32 +41,6 @@ class VitoSettingController extends Controller
         $export = $this->export($exportName);
 
         return response()->download($export, $exportName)->deleteFileAfterSend();
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function export(string $zipFileName): string
-    {
-        $zipPath = Storage::disk('tmp')->path($zipFileName);
-
-        $zip = new ZipArchive;
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new Exception('Could not create zip file at '.$zipPath);
-        }
-
-        foreach ($this->paths as $path => $type) {
-            $path = base_path($path);
-            if ($type === 'file' && File::exists($path)) {
-                $zip->addFile($path, basename($path));
-            } elseif ($type === 'directory' && File::exists($path)) {
-                $this->addDirectoryToZip($zip, $path, basename($path));
-            }
-        }
-
-        $zip->close();
-
-        return $zipPath;
     }
 
     /**
@@ -112,8 +77,10 @@ class VitoSettingController extends Controller
         $zip->extractTo($extractPath);
         $zip->close();
 
-        // Replace files
-        File::move($extractPath.'/database.sqlite', storage_path('database.sqlite'));
+        // Import database based on current driver
+        $this->importDatabase($extractPath);
+
+        // Replace other files
         if (File::exists($extractPath.'/.env')) {
             File::move($extractPath.'/.env', base_path('.env'));
         }
@@ -130,15 +97,5 @@ class VitoSettingController extends Controller
 
         return redirect()->route('vito-settings')
             ->with('success', 'Settings imported successfully.');
-    }
-
-    private function addDirectoryToZip(ZipArchive $zip, string $path, string $zipPath): void
-    {
-        $files = File::allFiles($path);
-
-        foreach ($files as $file) {
-            $relativePath = $zipPath.'/'.$file->getRelativePathname();
-            $zip->addFile($file->getRealPath(), $relativePath);
-        }
     }
 }

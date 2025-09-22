@@ -12,10 +12,25 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // ========================================
+        // Server Backups
+        // ========================================
         $schedule->command('backups:run "0 * * * *"')->hourly();
         $schedule->command('backups:run "0 0 * * *"')->daily();
         $schedule->command('backups:run "0 0 * * 0"')->weekly();
         $schedule->command('backups:run "0 0 1 * *"')->monthly();
+
+        // ========================================
+        // Vito Backups
+        // ========================================
+        $schedule->command('vito-backups:run "0 * * * *"')->hourly();
+        $schedule->command('vito-backups:run "0 0 * * *"')->daily();
+        $schedule->command('vito-backups:run "0 0 * * 0"')->weekly();
+        $schedule->command('vito-backups:run "0 0 1 * *"')->monthly();
+
+        // ========================================
+        // System Monitoring & Maintenance
+        // ========================================
         $schedule->command('metrics:delete-older-metrics')->daily();
         $schedule->command('metrics:get')->everyMinute();
         $schedule->command('servers:check')->everyFiveMinutes();

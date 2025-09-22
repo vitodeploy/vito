@@ -34,4 +34,14 @@ class FTP
     {
         return ftp_delete($connection, $path);
     }
+
+    public function put(Connection $connection, string $remoteFile, string $localFile): bool
+    {
+        return ftp_put($connection, $remoteFile, $localFile, FTP_BINARY);
+    }
+
+    public function get(Connection $connection, string $localFile, string $remoteFile): bool
+    {
+        return ftp_get($connection, $localFile, $remoteFile, FTP_BINARY);
+    }
 }
