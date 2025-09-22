@@ -61,6 +61,16 @@ class CreateCronJob
             ],
         ];
 
+        // Add site_id validation if provided in input
+        if (isset($input['site_id']) && ! empty($input['site_id'])) {
+            $rules['site_id'] = [
+                'required',
+                'integer',
+                'exists:sites,id',
+                Rule::exists('sites', 'id')->where('server_id', $server->id),
+            ];
+        }
+
         if (isset($input['frequency']) && $input['frequency'] == 'custom') {
             $rules['custom'] = [
                 'required',

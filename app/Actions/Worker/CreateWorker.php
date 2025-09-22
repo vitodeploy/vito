@@ -69,7 +69,7 @@ class CreateWorker
 
     private function validate(Server $server, array $input, ?Site $site = null): void
     {
-        Validator::make($input, [
+        $rules = [
             'name' => [
                 'required',
                 'string',
@@ -103,6 +103,18 @@ class CreateWorker
                 'numeric',
                 'min:1',
             ],
-        ])->validate();
+        ];
+
+        // Add site_id validation if provided in input
+        if (isset($input['site_id']) && ! empty($input['site_id'])) {
+            $rules['site_id'] = [
+                'required',
+                'integer',
+                'exists:sites,id',
+                Rule::exists('sites', 'id')->where('server_id', $server->id),
+            ];
+        }
+
+        Validator::make($input, $rules)->validate();
     }
 }

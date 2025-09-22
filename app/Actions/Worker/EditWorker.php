@@ -107,6 +107,16 @@ class EditWorker
             ],
         ];
 
+        // Add site_id validation if provided in input
+        if (isset($input['site_id']) && ! empty($input['site_id'])) {
+            $rules['site_id'] = [
+                'required',
+                'integer',
+                'exists:sites,id',
+                Rule::exists('sites', 'id')->where('server_id', $worker->server_id),
+            ];
+        }
+
         Validator::make($input, $rules)->validate();
     }
 }

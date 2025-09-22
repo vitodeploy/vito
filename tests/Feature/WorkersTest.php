@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\WorkerStatus;
 use App\Facades\SSH;
+use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -263,5 +264,201 @@ class WorkersTest extends TestCase
             'worker' => $worker,
         ]))
             ->assertSuccessful();
+    }
+
+    public function test_create_worker_with_valid_site_id(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->post(route('workers.store', [
+            'server' => $this->server,
+        ]), [
+            'name' => 'Test Worker',
+            'command' => 'php artisan worker:work',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 1,
+            'site_id' => $site->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('workers', [
+            'server_id' => $this->server->id,
+            'site_id' => $site->id,
+            'name' => 'Test Worker',
+            'command' => 'php artisan worker:work',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 1,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+    }
+
+    public function test_cannot_create_worker_with_invalid_site_id(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        $this->post(route('workers.store', [
+            'server' => $this->server,
+        ]), [
+            'name' => 'Test Worker',
+            'command' => 'php artisan worker:work',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 1,
+            'site_id' => 99999, // Non-existent site ID
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $this->assertDatabaseMissing('workers', [
+            'server_id' => $this->server->id,
+            'site_id' => 99999,
+        ]);
+    }
+
+    public function test_cannot_create_worker_with_site_id_from_different_server(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Server $otherServer */
+        $otherServer = Server::factory()->create(['user_id' => 1]);
+
+        /** @var Site $otherSite */
+        $otherSite = Site::factory()->create([
+            'server_id' => $otherServer->id,
+        ]);
+
+        $this->post(route('workers.store', [
+            'server' => $this->server,
+        ]), [
+            'name' => 'Test Worker',
+            'command' => 'php artisan worker:work',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 1,
+            'site_id' => $otherSite->id,
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $this->assertDatabaseMissing('workers', [
+            'server_id' => $this->server->id,
+            'site_id' => $otherSite->id,
+        ]);
+    }
+
+    public function test_edit_worker_with_valid_site_id(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->put(route('workers.update', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]), [
+            'name' => $worker->name,
+            'command' => 'updated command',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 2,
+            'site_id' => $site->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $worker->refresh();
+
+        $this->assertEquals($site->id, $worker->site_id);
+        $this->assertEquals('updated command', $worker->command);
+        $this->assertEquals(2, $worker->numprocs);
+    }
+
+    public function test_cannot_edit_worker_with_invalid_site_id(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->put(route('workers.update', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]), [
+            'name' => $worker->name,
+            'command' => 'updated command',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 2,
+            'site_id' => 99999, // Non-existent site ID
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $worker->refresh();
+
+        $this->assertNotEquals(99999, $worker->site_id);
+    }
+
+    public function test_cannot_edit_worker_with_site_id_from_different_server(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Server $otherServer */
+        $otherServer = Server::factory()->create(['user_id' => 1]);
+
+        /** @var Site $otherSite */
+        $otherSite = Site::factory()->create([
+            'server_id' => $otherServer->id,
+        ]);
+
+        $this->put(route('workers.update', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]), [
+            'name' => $worker->name,
+            'command' => 'updated command',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 2,
+            'site_id' => $otherSite->id,
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $worker->refresh();
+
+        $this->assertNotEquals($otherSite->id, $worker->site_id);
     }
 }
