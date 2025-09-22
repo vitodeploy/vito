@@ -307,6 +307,7 @@ class SitesTest extends TestCase
         $this->site->refresh();
         $this->assertEquals(['www.example.com', 'test.example.com'], $this->site->aliases);
     }
+
     public function test_update_web_directory(): void
     {
         SSH::fake();
