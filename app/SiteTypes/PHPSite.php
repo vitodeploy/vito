@@ -7,11 +7,14 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\SSH\OS\Composer;
 use App\SSH\OS\Git;
+use App\Traits\NormalizesWebDirectory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 
 class PHPSite extends AbstractSiteType
 {
+    use NormalizesWebDirectory;
+
     public static function id(): string
     {
         return 'php';
@@ -48,6 +51,10 @@ class PHPSite extends AbstractSiteType
             ],
             'web_directory' => [
                 'nullable',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z0-9._\-\/]+$/',
+                'not_regex:/\.\./',
             ],
             'repository' => [
                 'required',
@@ -64,7 +71,7 @@ class PHPSite extends AbstractSiteType
     public function createFields(array $input): array
     {
         return [
-            'web_directory' => $input['web_directory'] ?? '',
+            'web_directory' => $this->normalizeWebDirectory($input['web_directory'] ?? ''),
             'source_control_id' => $input['source_control'] ?? '',
             'repository' => $input['repository'] ?? '',
             'branch' => $input['branch'] ?? '',

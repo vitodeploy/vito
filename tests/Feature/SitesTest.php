@@ -308,6 +308,226 @@ class SitesTest extends TestCase
         $this->assertEquals(['www.example.com', 'test.example.com'], $this->site->aliases);
     }
 
+    public function test_update_web_directory(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-web-directory', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'web_directory' => 'public',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+        $this->assertEquals('public', $this->site->web_directory);
+    }
+
+    public function test_update_web_directory_empty(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-web-directory', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'web_directory' => '',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+        $this->assertNull($this->site->web_directory);
+    }
+
+    public function test_update_web_directory_normalizes_slashes(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-web-directory', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'web_directory' => '/public/dist/',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+        $this->assertEquals('public/dist', $this->site->web_directory);
+    }
+
+    public function test_update_web_directory_normalizes_root(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-web-directory', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'web_directory' => '/',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+        $this->assertNull($this->site->web_directory);
+    }
+
+    public function test_update_web_directory_rejects_invalid_characters(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-web-directory', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'web_directory' => 'public@invalid!',
+        ])
+            ->assertSessionHasErrors(['web_directory']);
+    }
+
+    public function test_update_web_directory_rejects_directory_traversal(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('site-settings.update-web-directory', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'web_directory' => '../etc/passwd',
+        ])
+            ->assertSessionHasErrors(['web_directory']);
+    }
+
+    public function test_create_site_with_valid_web_directory(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => PHPBlank::id(),
+            'domain' => 'example.com',
+            'php_version' => '8.2',
+            'web_directory' => 'public/dist',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'example.com',
+            'web_directory' => 'public/dist',
+        ]);
+    }
+
+    public function test_create_site_with_special_characters_web_directory(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => PHPBlank::id(),
+            'domain' => 'example.com',
+            'php_version' => '8.2',
+            'web_directory' => 'public-dist_v1.0',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'example.com',
+            'web_directory' => 'public-dist_v1.0',
+        ]);
+    }
+
+    public function test_create_site_normalizes_web_directory_slashes(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => PHPBlank::id(),
+            'domain' => 'example.com',
+            'php_version' => '8.2',
+            'web_directory' => '/public/',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'example.com',
+            'web_directory' => 'public',
+        ]);
+    }
+
+    public function test_create_site_normalizes_root_web_directory(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => PHPBlank::id(),
+            'domain' => 'example.com',
+            'php_version' => '8.2',
+            'web_directory' => '/',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'example.com',
+            'web_directory' => null,
+        ]);
+    }
+
+    public function test_create_site_rejects_invalid_web_directory_characters(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => PHPBlank::id(),
+            'domain' => 'example.com',
+            'php_version' => '8.2',
+            'web_directory' => 'public@invalid!',
+        ])
+            ->assertSessionHasErrors(['web_directory']);
+
+        $this->assertDatabaseMissing('sites', [
+            'domain' => 'example.com',
+        ]);
+    }
+
+    public function test_create_site_rejects_directory_traversal(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => PHPBlank::id(),
+            'domain' => 'example.com',
+            'php_version' => '8.2',
+            'web_directory' => '../etc/passwd',
+        ])
+            ->assertSessionHasErrors(['web_directory']);
+
+        $this->assertDatabaseMissing('sites', [
+            'domain' => 'example.com',
+        ]);
+    }
+
     /**
      * @return array<array<int, mixed>>
      */

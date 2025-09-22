@@ -20,6 +20,7 @@ import DeleteSite from '@/pages/site-settings/components/delete-site';
 import VHost from '@/pages/site-settings/components/vhost';
 import ChangeSourceControl from '@/pages/site-settings/components/source-control';
 import Aliases from './components/aliases';
+import WebDirectory from './components/web-directory';
 
 export default function Databases() {
   const page = usePage<{
@@ -121,7 +122,11 @@ export default function Databases() {
             <Separator />
             <div className="flex items-center justify-between p-4">
               <span>Web directory</span>
-              <span className="text-muted-foreground">{page.props.site.web_directory || '-'}</span>
+              <WebDirectory site={page.props.site}>
+                <Button variant="outline" className="h-6">
+                  {page.props.site.web_directory || '/'}
+                </Button>
+              </WebDirectory>
             </div>
             <Separator />
             <div className="flex items-center justify-between p-4">
