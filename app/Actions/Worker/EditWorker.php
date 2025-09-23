@@ -112,7 +112,6 @@ class EditWorker
             $rules['site_id'] = [
                 'required',
                 'integer',
-                'exists:sites,id',
                 Rule::exists('sites', 'id')->where('server_id', $worker->server_id),
             ];
         }

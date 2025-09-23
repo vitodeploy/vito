@@ -129,7 +129,7 @@ class SyncCronJobs
      */
     private function getUserCrontab(Server $server, string $user): string
     {
-        $output = $server->ssh()->exec("sudo -u {$user} crontab -l 2>/dev/null || echo ''", 'get-user-crontab');
+        $output = $server->ssh($user)->exec("crontab -l 2>/dev/null || echo ''", 'get-user-crontab');
 
         // Remove the "cron updated!" message that might be at the end
         $output = str_replace('cron updated!', '', $output);

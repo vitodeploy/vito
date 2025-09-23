@@ -110,7 +110,6 @@ class CreateWorker
             $rules['site_id'] = [
                 'required',
                 'integer',
-                'exists:sites,id',
                 Rule::exists('sites', 'id')->where('server_id', $server->id),
             ];
         }

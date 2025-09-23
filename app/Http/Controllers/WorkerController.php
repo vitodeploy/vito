@@ -49,7 +49,6 @@ class WorkerController extends Controller
             'workers' => WorkerResource::collection(
                 $site->workers()->latest()->simplePaginate(config('web.pagination_size'))
             ),
-            'site' => $site,
             'sites' => $server->sites()->select('id', 'domain')->get(),
         ]);
     }
