@@ -14,6 +14,9 @@ class EnableCronJob
      */
     public function enable(Server $server, CronJob $cronJob): void
     {
+        // Sync before enabling to preserve any manual cronjobs
+        app(SyncCronJobs::class)->sync($server);
+
         $cronJob->status = CronjobStatus::ENABLING;
         $cronJob->save();
 

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('updates_available')->default(false);
             $table->timestamps();
 
-            $table->index(['is_enabled', 'priority']);
+            $table->index(['is_enabled']);
         });
     }
 

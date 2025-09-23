@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $server_id
+ * @property int $site_id
  * @property string $command
  * @property string $user
  * @property string $frequency
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CronjobStatus $status
  * @property string $crontab
  * @property Server $server
+ * @property ?Site $site
  */
 class CronJob extends AbstractModel
 {
@@ -24,6 +26,7 @@ class CronJob extends AbstractModel
 
     protected $fillable = [
         'server_id',
+        'site_id',
         'command',
         'user',
         'frequency',
@@ -33,6 +36,7 @@ class CronJob extends AbstractModel
 
     protected $casts = [
         'server_id' => 'integer',
+        'site_id' => 'integer',
         'hidden' => 'boolean',
         'status' => CronjobStatus::class,
     ];
@@ -43,6 +47,25 @@ class CronJob extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<Site, covariant $this>
+     */
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    public function getServerIdAttribute(?int $value): ?int
+    {
+        if ($value === 0 && $this->site) {
+            $value = $this->site->server_id;
+            $this->fill(['server_id' => $this->site->server_id]);
+            $this->save();
+        }
+
+        return $value;
     }
 
     public static function crontab(Server $server, string $user): string

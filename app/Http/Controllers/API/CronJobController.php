@@ -10,6 +10,7 @@ use App\Http\Resources\CronJobResource;
 use App\Models\CronJob;
 use App\Models\Project;
 use App\Models\Server;
+use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -89,14 +90,83 @@ class CronJobController extends Controller
         return response()->noContent();
     }
 
-    private function validateRoute(Project $project, Server $server, ?CronJob $cronJob = null): void
+    #[Get('/sites/{site}/cron-jobs', name: 'api.projects.servers.sites.cron-jobs', middleware: 'ability:read')]
+    #[Endpoint(title: 'site-list', description: 'Get all site cron jobs.')]
+    #[ResponseFromApiResource(CronJobResource::class, CronJob::class, collection: true, paginate: 25)]
+    public function siteIndex(Project $project, Server $server, Site $site): ResourceCollection
+    {
+        $this->authorize('viewAny', [CronJob::class, $server, $site]);
+
+        $this->validateRoute($project, $server, site: $site);
+
+        return CronJobResource::collection($site->cronJobs()->simplePaginate(25));
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Post('/sites/{site}/cron-jobs', name: 'api.projects.servers.sites.cron-jobs.create', middleware: 'ability:write')]
+    #[Endpoint(title: 'site-create', description: 'Create a new site cron job.')]
+    #[BodyParam(name: 'command', required: true)]
+    #[BodyParam(name: 'user', required: true, enum: ['root', 'vito'])]
+    #[BodyParam(name: 'frequency', description: 'Frequency of the cron job.', required: true, example: '* * * * *')]
+    #[ResponseFromApiResource(CronJobResource::class, CronJob::class)]
+    public function siteCreate(Request $request, Project $project, Server $server, Site $site): CronJobResource
+    {
+        $this->authorize('create', [CronJob::class, $server, $site]);
+
+        $this->validateRoute($project, $server, site: $site);
+
+        $cronJob = app(CreateCronJob::class)->create($server, $request->all(), $site);
+
+        return new CronJobResource($cronJob);
+    }
+
+    #[Get('/sites/{site}/cron-jobs/{cronJob}', name: 'api.projects.servers.sites.cron-jobs.show', middleware: 'ability:read')]
+    #[Endpoint(title: 'site-show', description: 'Get a site cron job by ID.')]
+    #[ResponseFromApiResource(CronJobResource::class, CronJob::class)]
+    public function siteShow(Project $project, Server $server, Site $site, CronJob $cronJob): CronJobResource
+    {
+        $this->authorize('view', [$cronJob, $server, $site]);
+
+        $this->validateRoute($project, $server, $cronJob, $site);
+
+        return new CronJobResource($cronJob);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Delete('/sites/{site}/cron-jobs/{cronJob}', name: 'api.projects.servers.sites.cron-jobs.delete', middleware: 'ability:write')]
+    #[Endpoint(title: 'site-delete', description: 'Delete site cron job.')]
+    #[Response(status: 204)]
+    public function siteDelete(Project $project, Server $server, Site $site, CronJob $cronJob): \Illuminate\Http\Response
+    {
+        $this->authorize('delete', [$cronJob, $server, $site]);
+
+        $this->validateRoute($project, $server, $cronJob, $site);
+
+        app(DeleteCronJob::class)->delete($server, $cronJob);
+
+        return response()->noContent();
+    }
+
+    private function validateRoute(Project $project, Server $server, ?CronJob $cronJob = null, ?Site $site = null): void
     {
         if ($project->id !== $server->project_id) {
             abort(404, 'Server not found in project');
         }
 
+        if ($site && $site->server_id !== $server->id) {
+            abort(404, 'Site not found in server');
+        }
+
         if ($cronJob && $cronJob->server_id !== $server->id) {
-            abort(404, 'Firewall rule not found in server');
+            abort(404, 'Cron job does not belong to the specified server');
+        }
+
+        if ($site && $cronJob && $cronJob->site_id !== $site->id) {
+            abort(404, 'Cron job not found in site');
         }
     }
 }

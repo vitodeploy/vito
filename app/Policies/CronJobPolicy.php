@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\CronJob;
 use App\Models\Server;
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -11,31 +12,34 @@ class CronJobPolicy
 {
     use HandlesAuthorization;
 
-    public function viewAny(User $user, Server $server): bool
+    public function viewAny(User $user, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
     }
 
-    public function view(User $user, CronJob $cronjob): bool
+    public function view(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $cronjob->server->project->users->contains($user)) &&
-            $cronjob->server->isReady();
+            $cronjob->server->isReady() &&
+            $cronjob->server_id === $server->id;
     }
 
-    public function create(User $user, Server $server): bool
+    public function create(User $user, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
     }
 
-    public function update(User $user, CronJob $cronjob): bool
+    public function update(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $cronjob->server->project->users->contains($user)) &&
-            $cronjob->server->isReady();
+            $cronjob->server->isReady() &&
+            $cronjob->server_id === $server->id;
     }
 
-    public function delete(User $user, CronJob $cronjob): bool
+    public function delete(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
     {
         return ($user->isAdmin() || $cronjob->server->project->users->contains($user)) &&
-            $cronjob->server->isReady();
+            $cronjob->server->isReady() &&
+            $cronjob->server_id === $server->id;
     }
 }

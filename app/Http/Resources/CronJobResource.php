@@ -17,6 +17,7 @@ class CronJobResource extends JsonResource
         return [
             'id' => $this->id,
             'server_id' => $this->server_id,
+            'site_id' => $this->site_id,
             'command' => $this->command,
             'user' => $this->user,
             'frequency' => $this->frequency,

@@ -6,6 +6,7 @@ use App\Enums\CronjobStatus;
 use App\Exceptions\SSHError;
 use App\Models\CronJob;
 use App\Models\Server;
+use App\Models\Site;
 use App\ValidationRules\CronRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -17,12 +18,19 @@ class CreateCronJob
      *
      * @throws SSHError
      */
-    public function create(Server $server, array $input): CronJob
+    public function create(Server $server, array $input, ?Site $site = null): CronJob
     {
-        $this->validate($input, $server);
+        $this->validate($input, $server, $site);
+
+        // Determine site_id: use provided site or from input
+        $siteId = $site?->id;
+        if (! $site && isset($input['site_id']) && ! empty($input['site_id'])) {
+            $siteId = (int) $input['site_id'];
+        }
 
         $cronJob = new CronJob([
             'server_id' => $server->id,
+            'site_id' => $siteId,
             'user' => $input['user'],
             'command' => $input['command'],
             'frequency' => $input['frequency'] == 'custom' ? $input['custom'] : $input['frequency'],
@@ -37,7 +45,7 @@ class CreateCronJob
         return $cronJob;
     }
 
-    private function validate(array $input, Server $server): void
+    private function validate(array $input, Server $server, ?Site $site = null): void
     {
         $rules = [
             'command' => [
@@ -45,13 +53,22 @@ class CreateCronJob
             ],
             'user' => [
                 'required',
-                Rule::in($server->getSshUsers()),
+                Rule::in($site?->getSshUsers() ?? $server->getSshUsers()),
             ],
             'frequency' => [
                 'required',
                 new CronRule(acceptCustom: true),
             ],
         ];
+
+        // Add site_id validation if provided in input
+        if (isset($input['site_id']) && ! empty($input['site_id'])) {
+            $rules['site_id'] = [
+                'required',
+                'integer',
+                Rule::exists('sites', 'id')->where('server_id', $server->id),
+            ];
+        }
 
         if (isset($input['frequency']) && $input['frequency'] == 'custom') {
             $rules['custom'] = [

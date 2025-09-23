@@ -24,7 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { Site } from '@/types/site';
 
 export default function WorkerForm({ serverId, site, worker, children }: { serverId: number; site?: Site; worker?: Worker; children: ReactNode }) {
-  const page = usePage<SharedData & { server: Server }>();
+  const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }> }>();
   const [open, setOpen] = useState(false);
   const form = useForm<{
     name: string;
@@ -33,6 +33,7 @@ export default function WorkerForm({ serverId, site, worker, children }: { serve
     auto_start: boolean;
     auto_restart: boolean;
     numprocs: string;
+    site_id: string;
   }>({
     name: worker?.name || '',
     command: worker?.command || '',
@@ -40,6 +41,7 @@ export default function WorkerForm({ serverId, site, worker, children }: { serve
     auto_start: worker?.auto_start || true,
     auto_restart: worker?.auto_restart || true,
     numprocs: worker?.numprocs.toString() || '',
+    site_id: worker?.site_id?.toString() || '0',
   });
 
   const submit = (e: FormEvent) => {
@@ -92,6 +94,29 @@ export default function WorkerForm({ serverId, site, worker, children }: { serve
               <p className="text-muted-foreground text-sm">For specific version, use exact path to the php version like `/usr/bin/php8.4`</p>
               <InputError message={form.errors.command} />
             </FormField>
+
+            {/*site selection - only show if we have sites data and not in site context*/}
+            {page.props.sites && !site && (
+              <FormField>
+                <Label htmlFor="site_id">Site</Label>
+                <Select value={form.data.site_id} onValueChange={(value) => form.setData('site_id', value)}>
+                  <SelectTrigger id="site_id">
+                    <SelectValue placeholder="Select a site (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="0">Server (no site)</SelectItem>
+                      {page.props.sites.map((siteOption) => (
+                        <SelectItem key={`site-${siteOption.id}`} value={siteOption.id.toString()}>
+                          {siteOption.domain}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <InputError message={form.errors.site_id} />
+              </FormField>
+            )}
 
             {/*user*/}
             <FormField>

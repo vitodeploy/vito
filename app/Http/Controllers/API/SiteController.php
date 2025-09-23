@@ -8,6 +8,7 @@ use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
+use App\Actions\Site\UpdateWebDirectory;
 use App\Enums\LoadBalancerMethod;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Http\Controllers\Controller;
@@ -127,6 +128,21 @@ class SiteController extends Controller
         $this->validateRoute($project, $server, $site);
 
         app(UpdateAliases::class)->update($site, $request->all());
+
+        return new SiteResource($site);
+    }
+
+    #[Put('{site}/web-directory', name: 'api.projects.servers.sites.web-directory', middleware: 'ability:write')]
+    #[Endpoint(title: 'web-directory', description: 'Update web directory.')]
+    #[BodyParam(name: 'web_directory', type: 'string', description: 'Web directory path')]
+    #[Response(status: 200)]
+    public function updateWebDirectory(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        app(UpdateWebDirectory::class)->update($site, $request->all());
 
         return new SiteResource($site);
     }
