@@ -226,4 +226,172 @@ class CronjobTest extends TestCase
         SSH::assertExecutedContains("echo '' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
+
+    public function test_create_cronjob_with_valid_site_id(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->post(route('cronjobs.store', ['server' => $this->server]), [
+            'command' => 'ls -la',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'site_id' => $site->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('cron_jobs', [
+            'server_id' => $this->server->id,
+            'site_id' => $site->id,
+            'command' => 'ls -la',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'status' => CronjobStatus::READY,
+        ]);
+    }
+
+    public function test_cannot_create_cronjob_with_invalid_site_id(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        $this->post(route('cronjobs.store', ['server' => $this->server]), [
+            'command' => 'ls -la',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'site_id' => 99999, // Non-existent site ID
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $this->assertDatabaseMissing('cron_jobs', [
+            'server_id' => $this->server->id,
+            'site_id' => 99999,
+        ]);
+    }
+
+    public function test_cannot_create_cronjob_with_site_id_from_different_server(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Server $otherServer */
+        $otherServer = Server::factory()->create(['user_id' => 1]);
+
+        /** @var Site $otherSite */
+        $otherSite = Site::factory()->create([
+            'server_id' => $otherServer->id,
+        ]);
+
+        $this->post(route('cronjobs.store', ['server' => $this->server]), [
+            'command' => 'ls -la',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'site_id' => $otherSite->id,
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $this->assertDatabaseMissing('cron_jobs', [
+            'server_id' => $this->server->id,
+            'site_id' => $otherSite->id,
+        ]);
+    }
+
+    public function test_edit_cronjob_with_valid_site_id(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        /** @var CronJob $cronjob */
+        $cronjob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->put(route('cronjobs.update', [
+            'server' => $this->server,
+            'cronJob' => $cronjob,
+        ]), [
+            'command' => 'updated command',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'site_id' => $site->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $cronjob->refresh();
+
+        $this->assertEquals($site->id, $cronjob->site_id);
+        $this->assertEquals('updated command', $cronjob->command);
+    }
+
+    public function test_cannot_edit_cronjob_with_invalid_site_id(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var CronJob $cronjob */
+        $cronjob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->put(route('cronjobs.update', [
+            'server' => $this->server,
+            'cronJob' => $cronjob,
+        ]), [
+            'command' => 'updated command',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'site_id' => 99999, // Non-existent site ID
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $cronjob->refresh();
+
+        $this->assertNotEquals(99999, $cronjob->site_id);
+    }
+
+    public function test_cannot_edit_cronjob_with_site_id_from_different_server(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var CronJob $cronjob */
+        $cronjob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Server $otherServer */
+        $otherServer = Server::factory()->create(['user_id' => 1]);
+
+        /** @var Site $otherSite */
+        $otherSite = Site::factory()->create([
+            'server_id' => $otherServer->id,
+        ]);
+
+        $this->put(route('cronjobs.update', [
+            'server' => $this->server,
+            'cronJob' => $cronjob,
+        ]), [
+            'command' => 'updated command',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'site_id' => $otherSite->id,
+        ])
+            ->assertSessionHasErrors(['site_id']);
+
+        $cronjob->refresh();
+
+        $this->assertNotEquals($otherSite->id, $cronjob->site_id);
+    }
 }

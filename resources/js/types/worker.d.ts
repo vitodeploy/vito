@@ -1,6 +1,7 @@
 export interface Worker {
   id: number;
   server_id: number;
+  site_id: number | null;
   name: string;
   command: string;
   user: string;

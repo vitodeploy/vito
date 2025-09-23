@@ -76,4 +76,27 @@ class CronjobTest extends TestCase
             ->assertSuccessful()
             ->assertNoContent();
     }
+
+    public function test_cannot_create_cronjob_with_invalid_site_id_api(): void
+    {
+        SSH::fake();
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $this->json('POST', route('api.projects.servers.cron-jobs.create', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+        ]), [
+            'command' => 'ls -la',
+            'user' => 'vito',
+            'frequency' => '* * * * *',
+            'site_id' => 99999, // Non-existent site ID
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['site_id']);
+
+        $this->assertDatabaseMissing('cron_jobs', [
+            'server_id' => $this->server->id,
+            'site_id' => 99999,
+        ]);
+    }
 }

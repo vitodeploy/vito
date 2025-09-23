@@ -11,11 +11,15 @@ import { DataTable } from '@/components/data-table';
 import { CronJob } from '@/types/cronjob';
 import { columns } from '@/pages/cronjobs/components/columns';
 import CronJobForm from '@/pages/cronjobs/components/form';
+import SyncCronJobs from '@/pages/cronjobs/components/sync-cronjobs';
+import { Site } from '@/types/site';
 
 export default function CronJobIndex() {
   const page = usePage<{
     server: Server;
     cronjobs: PaginatedData<CronJob>;
+    site?: Site;
+    sites?: Array<{ id: number; domain: string }>;
   }>();
 
   return (
@@ -24,7 +28,10 @@ export default function CronJobIndex() {
 
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title="Cron jobs" description="Here you can manage server's cron jobs" />
+          <Heading
+            title="Cron jobs"
+            description={page.props.site ? `Here you can manage ${page.props.site.domain}'s cron jobs` : "Here you can manage server's cron jobs"}
+          />
           <div className="flex items-center gap-2">
             <a href="https://vitodeploy.com/docs/servers/cronjobs" target="_blank">
               <Button variant="outline">
@@ -32,7 +39,8 @@ export default function CronJobIndex() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <CronJobForm serverId={page.props.server.id}>
+            <SyncCronJobs server={page.props.server} />
+            <CronJobForm serverId={page.props.server.id} site={page.props.site}>
               <Button>
                 <PlusIcon />
                 <span className="hidden lg:block">Create</span>
@@ -41,7 +49,7 @@ export default function CronJobIndex() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.cronjobs} />
+        <DataTable columns={columns(page.props.site, page.props.sites)} paginatedData={page.props.cronjobs} />
       </Container>
     </ServerLayout>
   );

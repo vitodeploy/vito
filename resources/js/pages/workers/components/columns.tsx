@@ -138,80 +138,98 @@ function Logs({ worker }: { worker: Worker }) {
   );
 }
 
-export const columns: ColumnDef<Worker>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-    enableColumnFilter: true,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'command',
-    header: 'Command',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <CopyableBadge text={row.original.command} />;
+function getColumns(sites?: Array<{ id: number; domain: string }>): ColumnDef<Worker>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      enableColumnFilter: true,
+      enableSorting: true,
     },
-  },
-  {
-    accessorKey: 'user',
-    header: 'User',
-    enableColumnFilter: true,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'numprocs',
-    header: 'Numprocs',
-    enableColumnFilter: true,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Created at',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <DateTime date={row.original.created_at} />;
+    {
+      accessorKey: 'command',
+      header: 'Command',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => {
+        return <CopyableBadge text={row.original.command} />;
+      },
     },
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+    {
+      accessorKey: 'user',
+      header: 'User',
+      enableColumnFilter: true,
+      enableSorting: true,
     },
-  },
-  {
-    id: 'actions',
-    enableColumnFilter: false,
-    enableSorting: false,
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center justify-end">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVerticalIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <WorkerForm serverId={row.original.server_id} worker={row.original}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-              </WorkerForm>
-              <Action type="start" worker={row.original} />
-              <Action type="stop" worker={row.original} />
-              <Action type="restart" worker={row.original} />
-              <Logs worker={row.original} />
-              <DropdownMenuSeparator />
-              <Delete worker={row.original} />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
+    {
+      accessorKey: 'site_id',
+      header: 'Site',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => {
+        const siteId = row.original.site_id;
+        if (!siteId) {
+          return <span>-</span>;
+        }
+        const site = sites?.find((s) => s.id === siteId);
+        return <span>{site ? site.domain : `Site #${siteId}`}</span>;
+      },
     },
-  },
-];
+    {
+      accessorKey: 'numprocs',
+      header: 'Numprocs',
+      enableColumnFilter: true,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'created_at',
+      header: 'Created at',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => {
+        return <DateTime date={row.original.created_at} />;
+      },
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => {
+        return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+      },
+    },
+    {
+      id: 'actions',
+      enableColumnFilter: false,
+      enableSorting: false,
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center justify-end">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreVerticalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <WorkerForm serverId={row.original.server_id} worker={row.original}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
+                </WorkerForm>
+                <Action type="start" worker={row.original} />
+                <Action type="stop" worker={row.original} />
+                <Action type="restart" worker={row.original} />
+                <Logs worker={row.original} />
+                <DropdownMenuSeparator />
+                <Delete worker={row.original} />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+    },
+  ];
+}
+
+export { getColumns as columns };
