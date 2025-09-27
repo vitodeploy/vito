@@ -25,7 +25,7 @@ class CreateUserCommand extends Command
             'name' => $this->argument('name'),
             'email' => $this->argument('email'),
             'password' => bcrypt($this->argument('password')),
-            'role' => $this->option('role'),
+            'is_admin' => $this->option('role') === 'admin',
         ]);
 
         $user->createDefaultProject();

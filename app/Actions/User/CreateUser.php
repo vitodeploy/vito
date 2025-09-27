@@ -28,9 +28,9 @@ class CreateUser
         $user = User::query()->create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'role' => $input['role'],
             'password' => bcrypt($input['password']),
             'timezone' => 'UTC',
+            'is_admin' => $input['role'] === UserRole::ADMIN->value,
         ]);
 
         return $user;

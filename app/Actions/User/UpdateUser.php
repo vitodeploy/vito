@@ -18,7 +18,7 @@ class UpdateUser
 
         $user->name = $input['name'];
         $user->email = $input['email'];
-        $user->role = $input['role'];
+        $user->is_admin = $input['role'] === UserRole::ADMIN->value;
 
         if (isset($input['password'])) {
             $user->password = bcrypt($input['password']);

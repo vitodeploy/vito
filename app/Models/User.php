@@ -36,6 +36,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $profile_photo_url
  * @property string $timezone
  * @property ?int $current_project_id
+ * @property bool $is_admin
  * @property ?Project $currentProject
  * @property Collection<int, Project> $projects
  * @property UserRole $role
@@ -59,6 +60,7 @@ class User extends Authenticatable
         'password',
         'timezone',
         'current_project_id',
+        'is_admin',
         'role',
     ];
 
@@ -71,6 +73,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'role' => UserRole::class,
+        'is_admin' => 'boolean',
     ];
 
     protected $appends = [];
@@ -181,7 +184,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === UserRole::ADMIN;
+        return $this->is_admin;
     }
 
     /**

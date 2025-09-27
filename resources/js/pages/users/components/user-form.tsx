@@ -27,7 +27,7 @@ export default function UserForm({ user, children }: { user?: User; children: Re
     name: user?.name || '',
     email: user?.email || '',
     password: '',
-    role: user?.role || 'user',
+    role: user?.is_admin ? 'admin' : 'user',
   });
 
   const submit: FormEventHandler = (e) => {

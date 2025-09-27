@@ -11,6 +11,6 @@ export interface User {
   timezone: string;
   projects?: Project[];
   two_factor_enabled: boolean;
-  role: string;
+  is_admin: boolean;
   [key: string]: unknown; // This allows for additional properties...
 }

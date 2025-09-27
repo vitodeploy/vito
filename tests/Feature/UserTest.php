@@ -29,7 +29,7 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', [
             'name' => 'new user',
             'email' => 'newuser@example.com',
-            'role' => UserRole::USER,
+            'is_admin' => false,
         ]);
     }
 
@@ -46,7 +46,7 @@ class UserTest extends TestCase
 
     public function test_must_be_admin_to_see_users_list(): void
     {
-        $this->user->role = UserRole::USER;
+        $this->user->is_admin = false;
         $this->user->save();
 
         $this->actingAs($this->user);
@@ -95,7 +95,7 @@ class UserTest extends TestCase
             'id' => $user->id,
             'name' => 'new-name',
             'email' => 'newemail@example.com',
-            'role' => UserRole::ADMIN,
+            'is_admin' => true,
         ]);
     }
 
