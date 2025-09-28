@@ -36,7 +36,7 @@ class StorageProviderController extends Controller
     {
         $this->authorize('viewAny', StorageProvider::class);
 
-        $storageProviders = StorageProvider::getByProjectId($project->id)->simplePaginate(25);
+        $storageProviders = StorageProvider::getByProjectId($project->id, user())->simplePaginate(25);
 
         return StorageProviderResource::collection($storageProviders);
     }

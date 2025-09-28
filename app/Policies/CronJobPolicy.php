@@ -6,40 +6,48 @@ use App\Models\CronJob;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CronJobPolicy
 {
     use HandlesAuthorization;
+    use HasRolePolicies;
 
     public function viewAny(User $user, Server $server, ?Site $site = null): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
+        return $this->hasReadAccess($user, $server->project) && $server->isReady();
     }
 
     public function view(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
     {
-        return ($user->isAdmin() || $cronjob->server->project->users->contains($user)) &&
-            $cronjob->server->isReady() &&
+        $cronJobServer = $cronjob->server;
+
+        return $this->hasReadAccess($user, $cronJobServer->project) &&
+            $cronJobServer->isReady() &&
             $cronjob->server_id === $server->id;
     }
 
     public function create(User $user, Server $server, ?Site $site = null): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) && $server->isReady();
+        return $this->hasWriteAccess($user, $server->project) && $server->isReady();
     }
 
     public function update(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
     {
-        return ($user->isAdmin() || $cronjob->server->project->users->contains($user)) &&
-            $cronjob->server->isReady() &&
+        $cronJobServer = $cronjob->server;
+
+        return $this->hasWriteAccess($user, $cronJobServer->project) &&
+            $cronJobServer->isReady() &&
             $cronjob->server_id === $server->id;
     }
 
     public function delete(User $user, CronJob $cronjob, Server $server, ?Site $site = null): bool
     {
-        return ($user->isAdmin() || $cronjob->server->project->users->contains($user)) &&
-            $cronjob->server->isReady() &&
+        $cronJobServer = $cronjob->server;
+
+        return $this->hasWriteAccess($user, $cronJobServer->project) &&
+            $cronJobServer->isReady() &&
             $cronjob->server_id === $server->id;
     }
 }

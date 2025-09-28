@@ -5,63 +5,47 @@ namespace App\Policies;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ServerLogPolicy
 {
     use HandlesAuthorization;
+    use HasRolePolicies;
 
     public function viewAny(User $user, Server $server): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return $server->project->users->contains($user);
+        return $this->hasReadAccess($user, $server->project);
     }
 
     public function view(User $user, ServerLog $serverLog): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
+        $server = $serverLog->server;
 
-        return $serverLog->server->project->users->contains($user);
+        return $this->hasReadAccess($user, $server->project);
     }
 
     public function create(User $user, Server $server): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return $server->project->users->contains($user);
+        return $this->hasWriteAccess($user, $server->project);
     }
 
     public function update(User $user, ServerLog $serverLog): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
+        $server = $serverLog->server;
 
-        return $serverLog->server->project->users->contains($user);
+        return $this->hasWriteAccess($user, $server->project);
     }
 
     public function delete(User $user, ServerLog $serverLog): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
+        $server = $serverLog->server;
 
-        return $serverLog->server->project->users->contains($user);
+        return $this->hasWriteAccess($user, $server->project);
     }
 
     public function deleteMany(User $user, Server $server): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return $server->project->users->contains($user);
+        return $this->hasWriteAccess($user, $server->project);
     }
 }

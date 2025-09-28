@@ -6,34 +6,43 @@ use App\Models\Redirect;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
 
 class RedirectPolicy
 {
+    use HasRolePolicies;
+
     public function viewAny(User $user, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) &&
+        return $this->hasReadAccess($user, $server->project) &&
             $server->isReady() &&
             $site->isReady();
     }
 
     public function view(User $user, Redirect $redirect, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $site->server->project->users->contains($user))
+        $siteServer = $site->server;
+
+        return $this->hasReadAccess($user, $siteServer->project)
             && $site->server_id === $server->id
-            && $site->server->isReady()
+            && $siteServer->isReady()
             && $redirect->site_id === $site->id;
     }
 
     public function create(User $user, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $site->server->project->users->contains($user))
+        $siteServer = $site->server;
+
+        return $this->hasWriteAccess($user, $siteServer->project)
             && $site->server_id === $server->id
-            && $site->server->isReady();
+            && $siteServer->isReady();
     }
 
     public function delete(User $user, Redirect $redirect, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $site->server->project->users->contains($user))
+        $siteServer = $site->server;
+
+        return $this->hasWriteAccess($user, $siteServer->project)
             && $site->server_id === $server->id
             && $server->isReady()
             && $redirect->site_id === $site->id;

@@ -17,17 +17,7 @@ class ServerProviderPolicy
 
     public function view(User $user, ServerProvider $serverProvider): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-        if ($user->id === $serverProvider->user_id) {
-            return true;
-        }
-        if ($serverProvider->project_id === null) {
-            return true;
-        }
-
-        return (bool) $serverProvider->project?->users()->where('user_id', $user->id)->exists();
+        return $user->id === $serverProvider->user_id;
     }
 
     public function create(User $user): bool
@@ -37,19 +27,11 @@ class ServerProviderPolicy
 
     public function update(User $user, ServerProvider $serverProvider): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
         return $user->id === $serverProvider->user_id;
     }
 
     public function delete(User $user, ServerProvider $serverProvider): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
         return $user->id === $serverProvider->user_id;
     }
 }

@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\SourceControl;
+use App\Models\User;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -65,6 +67,7 @@ class SourceControlsTest extends TestCase
         $sourceControl = SourceControl::factory()->create([
             'provider' => $provider,
             'profile' => 'test',
+            'user_id' => $this->user->id,
         ]);
 
         $this->delete(route('source-controls.destroy', $sourceControl))
@@ -85,6 +88,7 @@ class SourceControlsTest extends TestCase
         $sourceControl = SourceControl::factory()->create([
             'provider' => $provider,
             'profile' => 'test',
+            'user_id' => $this->user->id,
         ]);
 
         $this->site->update([
@@ -116,6 +120,7 @@ class SourceControlsTest extends TestCase
             'provider' => $provider,
             'profile' => 'old-name',
             'url' => $url,
+            'user_id' => $this->user->id,
         ]);
 
         $input['name'] = 'new-name';
@@ -127,6 +132,136 @@ class SourceControlsTest extends TestCase
 
         $this->assertEquals('new-name', $sourceControl->profile);
         $this->assertEquals($url, $sourceControl->url);
+    }
+
+    public function test_user_cannot_update_other_users_source_control(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $sourceControl = SourceControl::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        Http::fake();
+
+        $this->patch(route('source-controls.update', $sourceControl), [
+            'name' => 'hacked',
+            'token' => 'hacked-token',
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_user_cannot_delete_other_users_source_control(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $sourceControl = SourceControl::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->delete(route('source-controls.destroy', $sourceControl))
+            ->assertForbidden();
+    }
+
+    public function test_guest_cannot_access_source_controls(): void
+    {
+        $sourceControl = SourceControl::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->get(route('source-controls'))
+            ->assertRedirect('/');
+
+        $this->post(route('source-controls.store'), [])
+            ->assertRedirect('/');
+
+        $this->patch(route('source-controls.update', $sourceControl), [])
+            ->assertRedirect('/');
+
+        $this->delete(route('source-controls.destroy', $sourceControl))
+            ->assertRedirect('/');
+    }
+
+    public function test_cannot_manipulate_user_id_on_creation(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+
+        Http::fake();
+
+        $data = [
+            'provider' => Github::id(),
+            'name' => 'test',
+            'token' => 'fake-token',
+            'user_id' => $otherUser->id,
+        ];
+
+        $this->post(route('source-controls.store'), $data);
+
+        $this->assertDatabaseHas('source_controls', [
+            'profile' => 'test',
+            'provider' => Github::id(),
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->assertDatabaseMissing('source_controls', [
+            'profile' => 'test',
+            'provider' => Github::id(),
+            'user_id' => $otherUser->id,
+        ]);
+    }
+
+    public function test_cannot_transfer_ownership_via_update(): void
+    {
+        Http::fake();
+
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $sourceControl = SourceControl::factory()->create([
+            'user_id' => $this->user->id,
+            'profile' => 'original',
+        ]);
+
+        $this->patch(route('source-controls.update', $sourceControl), [
+            'name' => 'updated',
+            'token' => 'new-token',
+            'user_id' => $otherUser->id,
+        ]);
+
+        $sourceControl->refresh();
+
+        $this->assertEquals($this->user->id, $sourceControl->user_id);
+        $this->assertNotEquals($otherUser->id, $sourceControl->user_id);
+    }
+
+    public function test_user_can_only_see_own_source_controls_in_list(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+
+        $ownSourceControl = SourceControl::factory()->create([
+            'user_id' => $this->user->id,
+            'profile' => 'own-source-control',
+        ]);
+
+        $otherSourceControl = SourceControl::factory()->create([
+            'user_id' => $otherUser->id,
+            'profile' => 'other-source-control',
+        ]);
+
+        $response = $this->get(route('source-controls'))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('source-controls/index'));
+
+        $response->assertInertia(fn (AssertableInertia $page) => $page->has('sourceControls.data')
+            ->where('sourceControls.data.0.id', $ownSourceControl->id)
+            ->whereNot('sourceControls.data.0.id', $otherSourceControl->id)
+        );
     }
 
     /**

@@ -11,7 +11,6 @@ use App\Http\Resources\SshKeyResource;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\SshKey;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Validation\ValidationException;
@@ -36,7 +35,7 @@ class ServerSSHKeyController extends Controller
     #[ResponseFromApiResource(SshKeyResource::class, SshKey::class, collection: true, paginate: 25)]
     public function index(Project $project, Server $server): ResourceCollection
     {
-        $this->authorize('viewAnyServer', [SshKey::class, $server]);
+        $this->authorize('view', $server);
 
         $this->validateRoute($project, $server);
 
@@ -54,12 +53,11 @@ class ServerSSHKeyController extends Controller
     #[ResponseFromApiResource(SshKeyResource::class, SshKey::class)]
     public function create(Request $request, Project $project, Server $server): SshKeyResource
     {
-        $this->authorize('create', [SshKey::class, $server]);
+        $this->authorize('update', $server);
 
         $this->validateRoute($project, $server);
 
-        /** @var User $user */
-        $user = auth()->user();
+        $user = user();
 
         $sshKey = null;
         if ($request->has('key_id')) {
@@ -91,7 +89,7 @@ class ServerSSHKeyController extends Controller
     #[Response(status: 204)]
     public function delete(Project $project, Server $server, SshKey $sshKey): \Illuminate\Http\Response
     {
-        $this->authorize('delete', [$sshKey, $server]);
+        $this->authorize('update', $server);
 
         $this->validateRoute($project, $server);
 

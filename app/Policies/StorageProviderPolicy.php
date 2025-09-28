@@ -12,26 +12,26 @@ class StorageProviderPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function view(User $user, StorageProvider $storageProvider): bool
     {
-        return $user->isAdmin();
+        return $user->id === $storageProvider->user_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function update(User $user, StorageProvider $storageProvider): bool
     {
-        return $user->isAdmin();
+        return $user->id === $storageProvider->user_id;
     }
 
     public function delete(User $user, StorageProvider $storageProvider): bool
     {
-        return $user->isAdmin();
+        return $user->id === $storageProvider->user_id;
     }
 }

@@ -27,8 +27,12 @@ class NotificationChannelController extends Controller
     {
         $this->authorize('viewAny', NotificationChannel::class);
 
+        $user = user();
+        $notificationChannels = NotificationChannel::getByProjectId($user->current_project_id, $user)
+            ->simplePaginate(config('web.pagination_size'));
+
         return Inertia::render('notification-channels/index', [
-            'notificationChannels' => NotificationChannelResource::collection(NotificationChannel::getByProjectId(user()->current_project_id)->simplePaginate(config('web.pagination_size'))),
+            'notificationChannels' => NotificationChannelResource::collection($notificationChannels),
         ]);
     }
 
@@ -37,7 +41,10 @@ class NotificationChannelController extends Controller
     {
         $this->authorize('viewAny', NotificationChannel::class);
 
-        return NotificationChannelResource::collection(NotificationChannel::getByProjectId(user()->current_project_id)->get());
+        $user = user();
+        $notificationChannels = NotificationChannel::getByProjectId($user->current_project_id, $user)->get();
+
+        return NotificationChannelResource::collection($notificationChannels);
     }
 
     #[Post('/', name: 'notification-channels.store')]

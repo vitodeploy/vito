@@ -85,14 +85,6 @@ class Project extends Model
         return $this->hasMany(SourceControl::class);
     }
 
-    /**
-     * @return HasMany<Tag, covariant $this>
-     */
-    public function tags(): HasMany
-    {
-        return $this->hasMany(Tag::class);
-    }
-
     public function registeredUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_project')

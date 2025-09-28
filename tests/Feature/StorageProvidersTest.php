@@ -6,6 +6,7 @@ use App\Facades\FTP;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider as StorageProviderModel;
+use App\Models\User;
 use App\StorageProviders\Dropbox;
 use App\StorageProviders\Local;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -102,6 +103,126 @@ class StorageProvidersTest extends TestCase
         $this->assertDatabaseHas('storage_providers', [
             'id' => $provider->id,
         ]);
+    }
+
+    public function test_user_cannot_update_other_users_storage_provider(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $storageProvider = StorageProviderModel::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->patch(route('storage-providers.update', $storageProvider), [
+            'name' => 'hacked',
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_user_cannot_delete_other_users_storage_provider(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $storageProvider = StorageProviderModel::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->delete(route('storage-providers.destroy', $storageProvider))
+            ->assertForbidden();
+    }
+
+    public function test_guest_cannot_access_storage_providers(): void
+    {
+        $storageProvider = StorageProviderModel::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->get(route('storage-providers'))
+            ->assertRedirect('/');
+
+        $this->post(route('storage-providers.store'), [])
+            ->assertRedirect('/');
+
+        $this->patch(route('storage-providers.update', $storageProvider), [])
+            ->assertRedirect('/');
+
+        $this->delete(route('storage-providers.destroy', $storageProvider))
+            ->assertRedirect('/');
+    }
+
+    public function test_cannot_manipulate_user_id_on_creation(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+
+        $this->post(route('storage-providers.store'), [
+            'provider' => Local::id(),
+            'name' => 'test',
+            'path' => '/home/test',
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->assertDatabaseHas('storage_providers', [
+            'profile' => 'test',
+            'provider' => Local::id(),
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->assertDatabaseMissing('storage_providers', [
+            'profile' => 'test',
+            'provider' => Local::id(),
+            'user_id' => $otherUser->id,
+        ]);
+    }
+
+    public function test_cannot_transfer_ownership_via_update(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $storageProvider = StorageProviderModel::factory()->create([
+            'user_id' => $this->user->id,
+            'profile' => 'original',
+        ]);
+
+        $this->patch(route('storage-providers.update', $storageProvider), [
+            'name' => 'updated',
+            'user_id' => $otherUser->id,
+        ]);
+
+        $storageProvider->refresh();
+
+        $this->assertEquals($this->user->id, $storageProvider->user_id);
+        $this->assertNotEquals($otherUser->id, $storageProvider->user_id);
+    }
+
+    public function test_user_can_only_see_own_storage_providers_in_list(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+
+        $ownProvider = StorageProviderModel::factory()->create([
+            'user_id' => $this->user->id,
+            'profile' => 'own-provider',
+        ]);
+
+        $otherProvider = StorageProviderModel::factory()->create([
+            'user_id' => $otherUser->id,
+            'profile' => 'other-provider',
+        ]);
+
+        $response = $this->get(route('storage-providers'))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('storage-providers/index'));
+
+        $response->assertInertia(fn (AssertableInertia $page) => $page->has('storageProviders.data')
+            ->where('storageProviders.data.0.id', $ownProvider->id)
+            ->whereNot('storageProviders.data.0.id', $otherProvider->id)
+        );
     }
 
     /**

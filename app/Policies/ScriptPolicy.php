@@ -5,11 +5,11 @@ namespace App\Policies;
 use App\Models\Script;
 use App\Models\Server;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Traits\HasRolePolicies;
 
 class ScriptPolicy
 {
-    use HandlesAuthorization;
+    use HasRolePolicies;
 
     public function viewAny(User $user): bool
     {
@@ -18,7 +18,7 @@ class ScriptPolicy
 
     public function view(User $user, Script $script): bool
     {
-        return $user->id === $script->user_id || $script->project?->users?->contains($user);
+        return $user->id === $script->user_id;
     }
 
     public function create(User $user): bool
@@ -33,7 +33,7 @@ class ScriptPolicy
 
     public function execute(User $user, Script $script, Server $server): bool
     {
-        return $user->id === $script->user_id && $server->project->users->contains($user);
+        return $user->id === $script->user_id && $this->hasWriteAccess($user, $server->project);
     }
 
     public function delete(User $user, Script $script): bool

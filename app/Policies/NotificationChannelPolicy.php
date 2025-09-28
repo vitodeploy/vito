@@ -12,26 +12,26 @@ class NotificationChannelPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function view(User $user, NotificationChannel $notificationChannel): bool
     {
-        return $user->isAdmin();
+        return $user->id === $notificationChannel->user_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function update(User $user, NotificationChannel $notificationChannel): bool
     {
-        return $user->isAdmin();
+        return $user->id === $notificationChannel->user_id;
     }
 
     public function delete(User $user, NotificationChannel $notificationChannel): bool
     {
-        return $user->isAdmin();
+        return $user->id === $notificationChannel->user_id;
     }
 }

@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
 
         if (config('app.demo')) {
             $seeders = array_merge($seeders, [
-                TagsSeeder::class,
                 ServerProvidersSeeder::class,
                 StorageProvidersSeeder::class,
                 SourceControlsSeeder::class,

@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\Project;
 use App\Models\ServerProvider;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Knuckles\Scribe\Attributes\BodyParam;
@@ -36,7 +35,7 @@ class ServerProviderController extends Controller
     {
         $this->authorize('viewAny', ServerProvider::class);
 
-        $serverProviders = ServerProvider::getByProjectId($project->id)->simplePaginate(25);
+        $serverProviders = ServerProvider::getByProjectId($project->id, user())->simplePaginate(25);
 
         return ServerProviderResource::collection($serverProviders);
     }
@@ -53,8 +52,7 @@ class ServerProviderController extends Controller
     {
         $this->authorize('create', ServerProvider::class);
 
-        /** @var User $user */
-        $user = auth()->user();
+        $user = user();
         $serverProvider = app(CreateServerProvider::class)->create($user, $project, $request->all());
 
         return new ServerProviderResource($serverProvider);

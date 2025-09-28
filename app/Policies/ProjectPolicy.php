@@ -2,12 +2,14 @@
 
 namespace App\Policies;
 
-use App\Enums\UserRole;
 use App\Models\Project;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
 
 class ProjectPolicy
 {
+    use HasRolePolicies;
+
     public function viewAny(User $user): bool
     {
         return true;
@@ -15,7 +17,7 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $project->hasRoles($user, [UserRole::OWNER, UserRole::ADMIN, UserRole::USER]);
+        return $this->hasReadAccess($user, $project);
     }
 
     public function create(User $user): bool
@@ -25,16 +27,16 @@ class ProjectPolicy
 
     public function update(User $user, Project $project): bool
     {
-        return $project->hasRoles($user, [UserRole::OWNER, UserRole::ADMIN]);
+        return $this->hasWriteAccess($user, $project);
     }
 
     public function delete(User $user, Project $project): bool
     {
-        return $project->hasRoles($user, [UserRole::OWNER]);
+        return $this->hasOwnerAccess($user, $project);
     }
 
     public function deleteUser(User $user, Project $project): bool
     {
-        return $project->hasRoles($user, [UserRole::OWNER]);
+        return $this->hasOwnerAccess($user, $project);
     }
 }

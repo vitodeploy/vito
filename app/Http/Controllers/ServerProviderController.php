@@ -29,8 +29,10 @@ class ServerProviderController extends Controller
     {
         $this->authorize('viewAny', ServerProvider::class);
 
+        $user = user();
+
         return Inertia::render('server-providers/index', [
-            'serverProviders' => ServerProviderResource::collection(ServerProvider::getByProjectId(user()->current_project_id)->simplePaginate(config('web.pagination_size'))),
+            'serverProviders' => ServerProviderResource::collection(ServerProvider::getByProjectId($user->current_project_id, $user)->simplePaginate(config('web.pagination_size'))),
         ]);
     }
 
@@ -39,7 +41,9 @@ class ServerProviderController extends Controller
     {
         $this->authorize('viewAny', ServerProvider::class);
 
-        return ServerProviderResource::collection(ServerProvider::getByProjectId(user()->current_project_id)->get());
+        $user = user();
+
+        return ServerProviderResource::collection(ServerProvider::getByProjectId($user->current_project_id, $user)->get());
     }
 
     #[Post('/', name: 'server-providers.store')]

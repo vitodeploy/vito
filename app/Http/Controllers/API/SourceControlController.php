@@ -35,7 +35,7 @@ class SourceControlController extends Controller
     {
         $this->authorize('viewAny', SourceControl::class);
 
-        $sourceControls = SourceControl::getByProjectId($project->id)->simplePaginate(25);
+        $sourceControls = SourceControl::getByProjectId($project->id, user())->simplePaginate(25);
 
         return SourceControlResource::collection($sourceControls);
     }
@@ -53,7 +53,7 @@ class SourceControlController extends Controller
     {
         $this->authorize('create', SourceControl::class);
 
-        $sourceControl = app(ConnectSourceControl::class)->connect($project, $request->all());
+        $sourceControl = app(ConnectSourceControl::class)->connect($project, user(), $request->all());
 
         return new SourceControlResource($sourceControl);
     }

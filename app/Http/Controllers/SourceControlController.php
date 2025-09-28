@@ -30,8 +30,12 @@ class SourceControlController extends Controller
     {
         $this->authorize('viewAny', SourceControl::class);
 
+        $user = user();
+        $sourceControls = SourceControl::getByProjectId($user->current_project_id, $user)
+            ->simplePaginate(config('web.pagination_size'), pageName: 'sourceControlsPage');
+
         return Inertia::render('source-controls/index', [
-            'sourceControls' => SourceControlResource::collection(SourceControl::getByProjectId(user()->current_project_id)->simplePaginate(config('web.pagination_size'))),
+            'sourceControls' => SourceControlResource::collection($sourceControls),
         ]);
     }
 
@@ -40,7 +44,11 @@ class SourceControlController extends Controller
     {
         $this->authorize('viewAny', SourceControl::class);
 
-        return SourceControlResource::collection(SourceControl::getByProjectId(user()->current_project_id)->get());
+        $user = user();
+        $sourceControls = SourceControl::getByProjectId($user->current_project_id, $user)
+            ->get();
+
+        return SourceControlResource::collection($sourceControls);
     }
 
     #[Get('/{source_control}/repos', name: 'source-controls.repos')]
@@ -82,7 +90,9 @@ class SourceControlController extends Controller
     {
         $this->authorize('create', SourceControl::class);
 
-        app(ConnectSourceControl::class)->connect(user()->currentProject, $request->all());
+        $user = user();
+
+        app(ConnectSourceControl::class)->connect($user->currentProject, $user, $request->all());
 
         return back()->with('success', 'Source control created.');
     }

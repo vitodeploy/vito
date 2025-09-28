@@ -8,7 +8,6 @@ use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
 use App\Models\Service;
-use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -29,26 +28,22 @@ class ServersSeeder extends Seeder
     {
         $providers = ServerProvider::all();
 
-        /** @var Tag $tag */
-        foreach ($project->tags()->get() as $tag) {
-            $provider = $providers->random();
-            /** @var Server $app */
-            $app = Server::factory()->create([
-                'user_id' => $user->id,
-                'project_id' => $project->id,
-                'name' => $tag->name.'-'.'app-1',
-                'provider' => $provider->provider,
-                'provider_id' => $provider->id,
-            ]);
-            $app->tags()->attach($tag->id);
-            $this->webserver($app);
-            $this->php($app);
-            $this->firewall($app);
-            $this->monitoring($app);
-            $this->database($app);
-            $this->supervisor($app);
-            $this->redis($app);
-        }
+        $provider = $providers->random();
+        /** @var Server $app */
+        $app = Server::factory()->create([
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'name' => 'app-1',
+            'provider' => $provider->provider,
+            'provider_id' => $provider->id,
+        ]);
+        $this->webserver($app);
+        $this->php($app);
+        $this->firewall($app);
+        $this->monitoring($app);
+        $this->database($app);
+        $this->supervisor($app);
+        $this->redis($app);
     }
 
     private function database(Server $server): void

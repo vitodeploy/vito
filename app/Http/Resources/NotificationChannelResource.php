@@ -17,6 +17,7 @@ class NotificationChannelResource extends JsonResource
         return [
             'id' => $this->id,
             'project_id' => $this->project_id,
+            'user_id' => $this->user_id,
             'global' => is_null($this->project_id),
             'name' => $this->label,
             'provider' => $this->provider,

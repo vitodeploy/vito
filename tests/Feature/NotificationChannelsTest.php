@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\NotificationChannel;
+use App\Models\User;
 use App\NotificationChannels\Discord;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Slack;
@@ -212,7 +213,9 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        NotificationChannel::factory()->create();
+        NotificationChannel::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
 
         $this->get(route('notification-channels'))
             ->assertInertia(fn (AssertableInertia $page) => $page->component('notification-channels/index'));
@@ -222,7 +225,9 @@ class NotificationChannelsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $channel = NotificationChannel::factory()->create();
+        $channel = NotificationChannel::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
 
         $this->delete(route('notification-channels.destroy', [
             'notificationChannel' => $channel->id,
@@ -231,5 +236,126 @@ class NotificationChannelsTest extends TestCase
         $this->assertDatabaseMissing('notification_channels', [
             'id' => $channel->id,
         ]);
+    }
+
+    public function test_user_cannot_update_other_users_notification_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $channel = NotificationChannel::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->patch(route('notification-channels.update', $channel), [
+            'name' => 'hacked',
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_user_cannot_delete_other_users_notification_channel(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $channel = NotificationChannel::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->delete(route('notification-channels.destroy', $channel))
+            ->assertForbidden();
+    }
+
+    public function test_guest_cannot_access_notification_channels(): void
+    {
+        $channel = NotificationChannel::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->get(route('notification-channels'))
+            ->assertRedirect('/');
+
+        $this->post(route('notification-channels.store'), [])
+            ->assertRedirect('/');
+
+        $this->patch(route('notification-channels.update', $channel), [])
+            ->assertRedirect('/');
+
+        $this->delete(route('notification-channels.destroy', $channel))
+            ->assertRedirect('/');
+    }
+
+    public function test_cannot_manipulate_user_id_on_creation(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+
+        $this->post(route('notification-channels.store'), [
+            'provider' => Email::id(),
+            'email' => 'test@example.com',
+            'name' => 'test',
+            'user_id' => $otherUser->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('notification_channels', [
+            'label' => 'test',
+            'provider' => Email::id(),
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->assertDatabaseMissing('notification_channels', [
+            'label' => 'test',
+            'provider' => Email::id(),
+            'user_id' => $otherUser->id,
+        ]);
+    }
+
+    public function test_cannot_transfer_ownership_via_update(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+        $channel = NotificationChannel::factory()->create([
+            'user_id' => $this->user->id,
+            'label' => 'original',
+        ]);
+
+        $this->patch(route('notification-channels.update', $channel), [
+            'name' => 'updated',
+            'user_id' => $otherUser->id,
+        ]);
+
+        $channel->refresh();
+
+        $this->assertEquals($this->user->id, $channel->user_id);
+        $this->assertNotEquals($otherUser->id, $channel->user_id);
+    }
+
+    public function test_user_can_only_see_own_notification_channels_in_list(): void
+    {
+        $this->actingAs($this->user);
+
+        $otherUser = User::factory()->create();
+
+        $ownChannel = NotificationChannel::factory()->create([
+            'user_id' => $this->user->id,
+            'label' => 'own-channel',
+        ]);
+
+        $otherChannel = NotificationChannel::factory()->create([
+            'user_id' => $otherUser->id,
+            'label' => 'other-channel',
+        ]);
+
+        $response = $this->get(route('notification-channels'))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('notification-channels/index'));
+
+        $response->assertInertia(fn (AssertableInertia $page) => $page->has('notificationChannels.data')
+            ->where('notificationChannels.data.0.id', $ownChannel->id)
+            ->whereNot('notificationChannels.data.0.id', $otherChannel->id)
+        );
     }
 }

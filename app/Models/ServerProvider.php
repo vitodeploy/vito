@@ -86,12 +86,13 @@ class ServerProvider extends AbstractModel
     /**
      * @return Builder<ServerProvider>
      */
-    public static function getByProjectId(int $projectId): Builder
+    public static function getByProjectId(int $projectId, User $user): Builder
     {
         /** @var Builder<ServerProvider> $query */
         $query = static::query();
 
         return $query
+            ->where('user_id', $user->id)
             ->where(function (Builder $query) use ($projectId): void {
                 $query->where('project_id', $projectId)->orWhereNull('project_id');
             });

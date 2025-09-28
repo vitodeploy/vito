@@ -6,22 +6,24 @@ use App\Models\Server;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SslPolicy
 {
     use HandlesAuthorization;
+    use HasRolePolicies;
 
     public function viewAny(User $user, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) &&
+        return $this->hasReadAccess($user, $server->project) &&
             $server->isReady() &&
             $site->isReady();
     }
 
     public function view(User $user, Ssl $ssl, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) &&
+        return $this->hasReadAccess($user, $server->project) &&
             $site->server_id === $server->id &&
             $server->isReady() &&
             $site->isReady() &&
@@ -30,14 +32,14 @@ class SslPolicy
 
     public function create(User $user, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) &&
+        return $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&
             $site->isReady();
     }
 
     public function update(User $user, Ssl $ssl, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) &&
+        return $this->hasWriteAccess($user, $server->project) &&
             $site->server_id === $server->id &&
             $server->isReady() &&
             $site->isReady() &&
@@ -46,7 +48,7 @@ class SslPolicy
 
     public function delete(User $user, Ssl $ssl, Site $site, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user)) &&
+        return $this->hasWriteAccess($user, $server->project) &&
             $site->server_id === $server->id &&
             $server->isReady() &&
             $site->isReady() &&

@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +60,6 @@ use Throwable;
  * @property Collection<int, Worker> $queues
  * @property Collection<int, Backup> $backups
  * @property Collection<int, SshKey> $sshKeys
- * @property Collection<int, Tag> $tags
  * @property string $hostname
  * @property int $updates
  * @property ?Carbon $last_update_check
@@ -290,14 +288,6 @@ class Server extends AbstractModel
         return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
             ->withPivot('status')
             ->withTimestamps();
-    }
-
-    /**
-     * @return MorphToMany<Tag, covariant $this>
-     */
-    public function tags(): MorphToMany
-    {
-        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     public function getSshUser(): string

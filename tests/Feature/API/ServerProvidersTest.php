@@ -3,6 +3,7 @@
 namespace Tests\Feature\API;
 
 use App\Models\ServerProvider;
+use App\Models\User;
 use App\ServerProviders\DigitalOcean;
 use App\ServerProviders\Hetzner;
 use App\ServerProviders\Linode;
@@ -128,6 +129,153 @@ class ServerProvidersTest extends TestCase
         ]))
             ->assertJsonValidationErrors([
                 'provider' => 'This server provider is being used by a server.',
+            ]);
+    }
+
+    public function test_api_user_cannot_access_other_users_server_provider(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $otherUser = User::factory()->create();
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers.show', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+        ]))
+            ->assertForbidden();
+    }
+
+    public function test_api_user_cannot_update_other_users_server_provider(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $otherUser = User::factory()->create();
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->json('PUT', route('api.projects.server-providers.update', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+        ]), [
+            'name' => 'hacked',
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_api_user_cannot_delete_other_users_server_provider(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $otherUser = User::factory()->create();
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->json('DELETE', route('api.projects.server-providers.delete', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+        ]))
+            ->assertForbidden();
+    }
+
+    public function test_api_guest_cannot_access_server_providers(): void
+    {
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers', [
+            'project' => $this->user->current_project_id,
+        ]))
+            ->assertUnauthorized();
+
+        $this->json('POST', route('api.projects.server-providers.create', [
+            'project' => $this->user->current_project_id,
+        ]), [])
+            ->assertUnauthorized();
+
+        $this->json('DELETE', route('api.projects.server-providers.delete', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+        ]))
+            ->assertUnauthorized();
+    }
+
+    public function test_api_insufficient_scopes_denies_access(): void
+    {
+        Sanctum::actingAs($this->user, ['read']); // Only read scope
+
+        $data = [
+            'provider' => DigitalOcean::id(),
+            'name' => 'test',
+            'token' => 'fake-token',
+        ];
+
+        $this->json('POST', route('api.projects.server-providers.create', [
+            'project' => $this->user->current_project_id,
+        ]), $data)
+            ->assertForbidden();
+    }
+
+    public function test_api_cannot_manipulate_user_id_on_creation(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $otherUser = User::factory()->create();
+
+        Http::fake();
+
+        $data = [
+            'provider' => DigitalOcean::id(),
+            'name' => 'test',
+            'token' => 'fake-token',
+            'user_id' => $otherUser->id,
+        ];
+
+        $this->json('POST', route('api.projects.server-providers.create', [
+            'project' => $this->user->current_project_id,
+        ]), $data)
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'provider' => DigitalOcean::id(),
+                'name' => 'test',
+                'user_id' => $this->user->id,
+            ])
+            ->assertJsonMissing([
+                'user_id' => $otherUser->id,
+            ]);
+    }
+
+    public function test_api_user_can_only_see_own_server_providers_in_list(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $otherUser = User::factory()->create();
+
+        $ownProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'profile' => 'own-provider',
+        ]);
+
+        $otherProvider = ServerProvider::factory()->create([
+            'user_id' => $otherUser->id,
+            'profile' => 'other-provider',
+        ]);
+
+        $response = $this->json('GET', route('api.projects.server-providers', [
+            'project' => $this->user->current_project_id,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'id' => $ownProvider->id,
+                'provider' => $ownProvider->provider,
+            ])
+            ->assertJsonMissing([
+                'id' => $otherProvider->id,
             ]);
     }
 

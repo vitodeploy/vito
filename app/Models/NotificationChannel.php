@@ -16,6 +16,9 @@ use Illuminate\Notifications\Notifiable;
  * @property string $label
  * @property bool $connected
  * @property ?int $project_id
+ * @property int $user_id
+ * @property ?Project $project
+ * @property User $user
  */
 class NotificationChannel extends AbstractModel
 {
@@ -31,6 +34,7 @@ class NotificationChannel extends AbstractModel
         'connected',
         'is_default',
         'project_id',
+        'user_id',
     ];
 
     protected $casts = [
@@ -38,6 +42,7 @@ class NotificationChannel extends AbstractModel
         'data' => 'array',
         'connected' => 'boolean',
         'is_default' => 'boolean',
+        'user_id' => 'integer',
     ];
 
     public function provider(): \App\NotificationChannels\NotificationChannel
@@ -67,15 +72,25 @@ class NotificationChannel extends AbstractModel
     }
 
     /**
+     * @return BelongsTo<User, covariant $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
      * @return Builder<NotificationChannel>
      */
-    public static function getByProjectId(int $projectId): Builder
+    public static function getByProjectId(int $projectId, User $user): Builder
     {
         /** @var Builder<NotificationChannel> $query */
-        $query = NotificationChannel::query();
+        $query = static::query();
 
-        return $query->where(function (Builder $query) use ($projectId): void {
-            $query->where('project_id', $projectId)->orWhereNull('project_id');
-        });
+        return $query
+            ->where('user_id', $user->id)
+            ->where(function (Builder $query) use ($projectId): void {
+                $query->where('project_id', $projectId)->orWhereNull('project_id');
+            });
     }
 }

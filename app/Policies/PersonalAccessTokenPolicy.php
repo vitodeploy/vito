@@ -12,31 +12,26 @@ class PersonalAccessTokenPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function view(User $user, PersonalAccessToken $personalAccessToken): bool
     {
-        return $user->isAdmin();
+        return $user->id === $personalAccessToken->tokenable_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function update(User $user, PersonalAccessToken $personalAccessToken): bool
     {
-        return $user->isAdmin();
+        return $user->id === $personalAccessToken->tokenable_id;
     }
 
     public function delete(User $user, PersonalAccessToken $personalAccessToken): bool
     {
-        return $user->isAdmin();
-    }
-
-    public function deleteMany(User $user): bool
-    {
-        return $user->isAdmin();
+        return $user->id === $personalAccessToken->tokenable_id;
     }
 }

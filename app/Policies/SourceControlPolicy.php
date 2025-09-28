@@ -12,26 +12,26 @@ class SourceControlPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function view(User $user, SourceControl $sourceControl): bool
     {
-        return $user->isAdmin();
+        return $user->id === $sourceControl->user_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     public function update(User $user, SourceControl $sourceControl): bool
     {
-        return $user->isAdmin();
+        return $user->id === $sourceControl->user_id;
     }
 
     public function delete(User $user, SourceControl $sourceControl): bool
     {
-        return $user->isAdmin();
+        return $user->id === $sourceControl->user_id;
     }
 }

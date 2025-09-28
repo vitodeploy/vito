@@ -35,7 +35,7 @@ class ServerTest extends TestCase
             'name' => 'test',
             'ip' => '1.1.1.1',
             'port' => '22',
-            'os' => OperatingSystem::UBUNTU22,
+            'os' => OperatingSystem::UBUNTU22->value,
             'services' => [
                 [
                     'name' => 'ufw',
@@ -308,5 +308,328 @@ class ServerTest extends TestCase
         ]);
 
         $this->assertEquals($newProject->id, $this->user->refresh()->current_project_id);
+    }
+
+    public function test_user_role_can_view_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::USER,
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('servers.show', $this->server))
+            ->assertOk();
+    }
+
+    public function test_admin_role_can_view_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('servers.show', $this->server))
+            ->assertOk();
+    }
+
+    public function test_owner_role_can_view_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::OWNER,
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('servers.show', $this->server))
+            ->assertOk();
+    }
+
+    public function test_user_role_cannot_create_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::USER,
+        ]);
+
+        $this->actingAs($this->user);
+
+        Storage::fake();
+        SSH::fake('Active: active');
+
+        $this->post(route('servers.store'), [
+            'provider' => Custom::id(),
+            'name' => 'test-user-server',
+            'ip' => '2.2.2.2',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22->value,
+            'services' => [
+                [
+                    'name' => 'ufw',
+                    'type' => 'firewall',
+                    'version' => 'latest',
+                ],
+            ],
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_admin_role_can_create_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $this->actingAs($this->user);
+
+        Storage::fake();
+        SSH::fake('Active: active');
+
+        $this->post(route('servers.store'), [
+            'provider' => Custom::id(),
+            'name' => 'test-admin-server',
+            'ip' => '3.3.3.3',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22->value,
+            'services' => [
+                [
+                    'name' => 'ufw',
+                    'type' => 'firewall',
+                    'version' => 'latest',
+                ],
+            ],
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'name' => 'test-admin-server',
+            'ip' => '3.3.3.3',
+        ]);
+    }
+
+    public function test_owner_role_can_create_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::OWNER,
+        ]);
+
+        $this->actingAs($this->user);
+
+        Storage::fake();
+        SSH::fake('Active: active');
+
+        $this->post(route('servers.store'), [
+            'provider' => Custom::id(),
+            'name' => 'test-owner-server',
+            'ip' => '4.4.4.4',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22->value,
+            'services' => [
+                [
+                    'name' => 'ufw',
+                    'type' => 'firewall',
+                    'version' => 'latest',
+                ],
+            ],
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'name' => 'test-owner-server',
+            'ip' => '4.4.4.4',
+        ]);
+    }
+
+    public function test_user_role_cannot_update_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::USER,
+        ]);
+
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('server-settings.update', $this->server), [
+            'name' => 'new-name',
+            'ip' => $this->server->ip,
+            'port' => $this->server->port,
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_admin_role_can_update_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('server-settings.update', $this->server), [
+            'name' => 'new-name',
+            'ip' => $this->server->ip,
+            'port' => $this->server->port,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'name' => 'new-name',
+        ]);
+    }
+
+    public function test_owner_role_can_update_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::OWNER,
+        ]);
+
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->patch(route('server-settings.update', $this->server), [
+            'name' => 'new-name',
+            'ip' => $this->server->ip,
+            'port' => $this->server->port,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+            'name' => 'new-name',
+        ]);
+    }
+
+    public function test_user_role_cannot_delete_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::USER,
+        ]);
+
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->delete(route('servers.destroy', $this->server), [
+            'name' => $this->server->name,
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_admin_role_cannot_delete_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->delete(route('servers.destroy', $this->server), [
+            'name' => $this->server->name,
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_owner_role_can_delete_server(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::OWNER,
+        ]);
+
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->delete(route('servers.destroy', $this->server), [
+            'name' => $this->server->name,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('servers', [
+            'id' => $this->server->id,
+        ]);
+    }
+
+    public function test_user_role_cannot_manage_server_operations(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::USER,
+        ]);
+
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        // Test reboot
+        $this->post(route('servers.reboot', $this->server))
+            ->assertForbidden();
+
+        // Test check updates
+        $this->post(route('servers.check-for-updates', $this->server))
+            ->assertForbidden();
+
+        // Test update server
+        $this->post(route('servers.update', $this->server))
+            ->assertForbidden();
+    }
+
+    public function test_admin_role_can_manage_server_operations(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        SSH::fake('Available updates:10');
+
+        $this->actingAs($this->user);
+
+        // Test reboot
+        $this->post(route('servers.reboot', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        // Reset server status for next test
+        $this->server->update(['status' => \App\Enums\ServerStatus::READY]);
+
+        // Test check updates
+        $this->post(route('servers.check-for-updates', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        // Test update server
+        SSH::fake('Available updates:0');
+        $this->post(route('servers.update', $this->server))
+            ->assertSessionDoesntHaveErrors();
+    }
+
+    public function test_owner_role_can_manage_server_operations(): void
+    {
+        $this->server->project->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::OWNER,
+        ]);
+
+        SSH::fake('Available updates:10');
+
+        $this->actingAs($this->user);
+
+        // Test reboot
+        $this->post(route('servers.reboot', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        // Reset server status for next test
+        $this->server->update(['status' => \App\Enums\ServerStatus::READY]);
+
+        // Test check updates
+        $this->post(route('servers.check-for-updates', $this->server))
+            ->assertSessionDoesntHaveErrors();
+
+        // Test update server
+        SSH::fake('Available updates:0');
+        $this->post(route('servers.update', $this->server))
+            ->assertSessionDoesntHaveErrors();
     }
 }

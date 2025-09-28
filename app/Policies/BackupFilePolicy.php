@@ -5,37 +5,44 @@ namespace App\Policies;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class BackupFilePolicy
 {
     use HandlesAuthorization;
+    use HasRolePolicies;
 
     public function viewAny(User $user, Backup $backup): bool
     {
-        return ($user->isAdmin() || $backup->server->project->users->contains($user)) && $backup->server->isReady();
+        return $this->hasReadAccess($user, $backup->server->project) && $backup->server->isReady();
     }
 
     public function view(User $user, BackupFile $backupFile): bool
     {
-        return ($user->isAdmin() || $backupFile->backup->server->project->users->contains($user)) &&
-            $backupFile->backup->server->isReady();
+        $server = $backupFile->backup->server;
+
+        return $this->hasReadAccess($user, $server->project) && $server->isReady();
     }
 
     public function create(User $user, Backup $backup): bool
     {
-        return ($user->isAdmin() || $backup->server->project->users->contains($user)) && $backup->server->isReady();
+        $server = $backup->server;
+
+        return $this->hasWriteAccess($user, $server->project) && $server->isReady();
     }
 
     public function update(User $user, BackupFile $backupFile): bool
     {
-        return ($user->isAdmin() || $backupFile->backup->server->project->users->contains($user)) &&
-            $backupFile->backup->server->isReady();
+        $server = $backupFile->backup->server;
+
+        return $this->hasWriteAccess($user, $server->project) && $server->isReady();
     }
 
     public function delete(User $user, BackupFile $backupFile): bool
     {
-        return ($user->isAdmin() || $backupFile->backup->server->project->users->contains($user)) &&
-            $backupFile->backup->server->isReady();
+        $server = $backupFile->backup->server;
+
+        return $this->hasWriteAccess($user, $server->project) && $server->isReady();
     }
 }

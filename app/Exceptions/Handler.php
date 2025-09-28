@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,6 +61,12 @@ class Handler extends ExceptionHandler
             }
 
             return response()->json(['error' => $e->getLog()?->getContent(30) ?? $e->getMessage()], 500);
+        }
+
+        if ($e instanceof AuthorizationException) {
+            if ($request->header('X-Inertia')) {
+                return back()->with('error', __('You don\'t have permission to perform this action.'));
+            }
         }
 
         return parent::render($request, $e);

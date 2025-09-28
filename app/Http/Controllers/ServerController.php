@@ -45,7 +45,7 @@ class ServerController extends Controller
         return Inertia::render('servers/index', [
             'servers' => ServerResource::collection($servers),
             'public_key' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
-            'server_providers' => ServerProviderResource::collection(ServerProvider::getByProjectId($project->id)->get()),
+            'server_providers' => ServerProviderResource::collection(ServerProvider::getByProjectId($project->id, user())->get()),
         ]);
     }
 

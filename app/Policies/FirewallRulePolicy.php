@@ -5,41 +5,49 @@ namespace App\Policies;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class FirewallRulePolicy
 {
     use HandlesAuthorization;
+    use HasRolePolicies;
 
     public function viewAny(User $user, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user))
+        return $this->hasReadAccess($user, $server->project)
             && $server->isReady()
             && $server->firewall();
     }
 
     public function view(User $user, FirewallRule $rule): bool
     {
-        return ($user->isAdmin() || $rule->server->project->users->contains($user)) &&
-            $rule->server->isReady();
+        $server = $rule->server;
+
+        return $this->hasReadAccess($user, $server->project) &&
+            $server->isReady();
     }
 
     public function create(User $user, Server $server): bool
     {
-        return ($user->isAdmin() || $server->project->users->contains($user))
+        return $this->hasWriteAccess($user, $server->project)
             && $server->isReady()
             && $server->firewall();
     }
 
     public function update(User $user, FirewallRule $rule): bool
     {
-        return ($user->isAdmin() || $rule->server->project->users->contains($user)) &&
-            $rule->server->isReady();
+        $server = $rule->server;
+
+        return $this->hasWriteAccess($user, $server->project) &&
+            $server->isReady();
     }
 
     public function delete(User $user, FirewallRule $rule): bool
     {
-        return ($user->isAdmin() || $rule->server->project->users->contains($user)) &&
-            $rule->server->isReady();
+        $server = $rule->server;
+
+        return $this->hasWriteAccess($user, $server->project) &&
+            $server->isReady();
     }
 }

@@ -26,3 +26,5 @@ laradumps.yaml
 /storage/pail
 .nvmrc
 /app/Vito/Plugins
+.mcp.json
+CLAUDE.md
