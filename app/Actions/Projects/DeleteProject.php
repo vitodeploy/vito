@@ -30,11 +30,8 @@ class DeleteProject
             ]);
         }
 
-        /** @var Project $randomProject */
-        $randomProject = $user->projects()->where('project_id', '!=', $project->id)->first();
-        $user->current_project_id = $randomProject->id;
-        $user->save();
-
         $project->delete();
+
+        $user->ensureHasDefaultProject();
     }
 }

@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -11,25 +11,30 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
-import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Project } from '@/types/project';
+import { Form, FormField, FormFields } from '@/components/ui/form';
 
 export default function DeleteProject({ project, children }: { project: Project; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
   const form = useForm({
     name: '',
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.delete(route('projects.destroy', project.id));
+    form.delete(`/settings/projects/${project.id}`, {
+      onSuccess: () => {
+        setOpen(false);
+      },
+    });
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>

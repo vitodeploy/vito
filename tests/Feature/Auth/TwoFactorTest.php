@@ -23,7 +23,7 @@ class TwoFactorTest extends TestCase
     {
         /** @var User $user */
         $user = User::factory()->create();
-        $user->createDefaultProject();
+        $user->ensureHasDefaultProject();
 
         $this->actingAs($user);
 
@@ -53,7 +53,7 @@ class TwoFactorTest extends TestCase
     {
         /** @var User $user */
         $user = User::factory()->create();
-        $user->createDefaultProject();
+        $user->ensureHasDefaultProject();
 
         $this->actingAs($user);
 
@@ -91,7 +91,7 @@ class TwoFactorTest extends TestCase
             'two_factor_secret' => encrypt((new Google2FA)->generateSecretKey()),
             'two_factor_confirmed_at' => now(),
         ]);
-        $user->createDefaultProject();
+        $user->ensureHasDefaultProject();
 
         $response = $this->post(route('login.store'), [
             'email' => $user->email,

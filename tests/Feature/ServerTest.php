@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
+use App\Enums\UserRole;
 use App\Facades\SSH;
 use App\Models\Project;
 use App\Models\Server;
@@ -254,13 +255,46 @@ class ServerTest extends TestCase
         $this->assertEquals(0, $this->server->updates);
     }
 
-    public function test_transfer_server(): void
+    public function test_only_owner_can_transfer_server(): void
     {
         $this->actingAs($this->user);
+
+        $oldProject = $this->server->project;
+        $oldProject->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::ADMIN,
+        ]);
 
         /** @var Project $newProject */
         $newProject = $this->user->projects()->create([
             'name' => 'New Project',
+        ]);
+        $newProject->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::OWNER,
+        ]);
+
+        $this->post(route('servers.transfer', $this->server), [
+            'project_id' => $newProject->id,
+        ])
+            ->assertForbidden();
+    }
+
+    public function test_transfer_server(): void
+    {
+        $this->actingAs($this->user);
+
+        $oldProject = $this->server->project;
+        $oldProject->users()->where('user_id', $this->user->id)->update([
+            'role' => UserRole::OWNER,
+        ]);
+
+        /** @var Project $newProject */
+        $newProject = $this->user->projects()->create([
+            'name' => 'New Project',
+        ]);
+        $newProject->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::OWNER,
         ]);
 
         $this->post(route('servers.transfer', $this->server), [

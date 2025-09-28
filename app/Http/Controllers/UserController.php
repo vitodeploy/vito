@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use App\Actions\User\CreateUser;
 use App\Actions\User\UpdateUser;
 use App\Http\Resources\UserResource;
-use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -74,36 +72,6 @@ class UserController extends Controller
         app(UpdateUser::class)->update($user, $request->all());
 
         return to_route('users')->with('success', 'User updated successfully.');
-    }
-
-    #[Post('/{user}/projects', name: 'users.projects.store')]
-    public function addToProject(Request $request, User $user): RedirectResponse
-    {
-        $this->authorize('update', $user);
-
-        $this->validate($request, [
-            'project' => [
-                'required',
-                Rule::exists('projects', 'id'),
-            ],
-        ]);
-
-        $project = Project::query()->findOrFail($request->input('project'));
-
-        $user->projects()->detach($project);
-        $user->projects()->attach($project);
-
-        return to_route('users')->with('success', 'Project was successfully added to user.');
-    }
-
-    #[Delete('/{user}/projects/{project}', name: 'users.projects.destroy')]
-    public function removeProject(User $user, Project $project): RedirectResponse
-    {
-        $this->authorize('update', $user);
-
-        $user->projects()->detach($project);
-
-        return to_route('users')->with('success', 'Project was successfully removed from user.');
     }
 
     #[Delete('/{user}', 'users.destroy')]

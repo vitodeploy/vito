@@ -14,7 +14,7 @@ class PasswordConfirmationTest extends TestCase
     {
         /** @var User $user */
         $user = User::factory()->create();
-        $user->createDefaultProject();
+        $user->ensureHasDefaultProject();
 
         $response = $this->actingAs($user)->get(route('password.confirm'));
 
@@ -25,7 +25,7 @@ class PasswordConfirmationTest extends TestCase
     {
         /** @var User $user */
         $user = User::factory()->create();
-        $user->createDefaultProject();
+        $user->ensureHasDefaultProject();
 
         $response = $this->actingAs($user)->post(route('password.confirm'), [
             'password' => 'password',
@@ -39,7 +39,7 @@ class PasswordConfirmationTest extends TestCase
     {
         /** @var User $user */
         $user = User::factory()->create();
-        $user->createDefaultProject();
+        $user->ensureHasDefaultProject();
 
         $response = $this->actingAs($user)->post(route('password.confirm'), [
             'password' => 'wrong-password',

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\API;
 
+use App\Enums\UserRole;
 use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -29,9 +30,12 @@ class ProjectsTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
+        /** @var Project $project */
         $project = Project::factory()->create();
-
-        $this->user->projects()->attach($project);
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
 
         $this->json('GET', '/api/projects')
             ->assertSuccessful()
@@ -44,9 +48,12 @@ class ProjectsTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
+        /** @var Project $project */
         $project = Project::factory()->create();
-
-        $this->user->projects()->attach($project);
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::OWNER,
+        ]);
 
         $this->json('DELETE', '/api/projects/'.$project->id)
             ->assertSuccessful();
@@ -60,9 +67,12 @@ class ProjectsTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
+        /** @var Project $project */
         $project = Project::factory()->create();
-
-        $this->user->projects()->attach($project);
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
 
         $this->json('PUT', "/api/projects/{$project->id}", [
             'name' => 'new-name',

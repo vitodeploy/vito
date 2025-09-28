@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $seeders = [
-            ProjectsSeeder::class,
             UsersSeeder::class,
         ];
 

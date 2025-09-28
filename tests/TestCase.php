@@ -45,7 +45,7 @@ abstract class TestCase extends BaseTestCase
         config()->set('filesystems.disks.key-pairs.root', storage_path('app/key-pairs-test'));
 
         $this->user = User::factory()->create();
-        $this->user->createDefaultProject();
+        $this->user->ensureHasDefaultProject();
 
         $this->notificationChannel = NotificationChannel::factory()->create([
             'provider' => Email::id(),

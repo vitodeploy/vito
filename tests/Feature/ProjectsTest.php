@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -34,7 +35,10 @@ class ProjectsTest extends TestCase
 
         $project = Project::factory()->create();
 
-        $this->user->projects()->attach($project);
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
 
         $this->get(route('projects'))
             ->assertSuccessful()
@@ -42,13 +46,39 @@ class ProjectsTest extends TestCase
 
     }
 
-    public function test_delete_project(): void
+    public function test_no_permission_to_delete_project(): void
     {
         $this->actingAs($this->user);
 
         $project = Project::factory()->create();
 
-        $this->user->projects()->attach($project);
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $this->delete(route('projects.destroy', $project), [
+            'name' => $project->name,
+        ])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+        ]);
+    }
+
+    public function test_delete_project(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->user->ensureHasDefaultProject();
+
+        $project = Project::factory()->create(['name' => 'new-project']);
+
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::OWNER,
+        ]);
 
         $this->delete(route('projects.destroy', $project), [
             'name' => $project->name,
@@ -61,13 +91,33 @@ class ProjectsTest extends TestCase
         ]);
     }
 
+    public function test_no_permission_to_edit_project(): void
+    {
+        $this->actingAs($this->user);
+
+        $project = Project::factory()->create();
+
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::USER,
+        ]);
+
+        $this->patch(route('projects.update', $project), [
+            'name' => 'new-name',
+        ])
+            ->assertForbidden();
+    }
+
     public function test_edit_project(): void
     {
         $this->actingAs($this->user);
 
         $project = Project::factory()->create();
 
-        $this->user->projects()->attach($project);
+        $project->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
 
         $this->patch(route('projects.update', $project), [
             'name' => 'new-name',

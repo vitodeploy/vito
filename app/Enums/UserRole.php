@@ -8,6 +8,7 @@ enum UserRole: string implements VitoEnum
 {
     case USER = 'user';
     case ADMIN = 'admin';
+    case OWNER = 'owner';
 
     public function getColor(): string
     {

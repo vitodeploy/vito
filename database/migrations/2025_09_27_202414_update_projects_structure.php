@@ -14,11 +14,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_project', function (Blueprint $table): void {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('project_id');
-            $table->timestamps();
+        Schema::table('user_project', function (Blueprint $table) {
+            $table->unsignedBigInteger('user_id')->nullable()->change();
+            $table->string('email')->after('id')->nullable();
+            $table->string('role')->after('project_id')->default(UserRole::USER);
         });
         Project::all()->each(function (Project $project): void {
             $project->users->each(function (User $user) use ($project): void {
@@ -29,9 +28,6 @@ return new class extends Migration
                 ]);
             });
         });
-        User::all()->each(function (User $user): void {
-            $user->ensureHasDefaultProject();
-        });
     }
 
     /**
@@ -39,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_project');
+        //
     }
 };

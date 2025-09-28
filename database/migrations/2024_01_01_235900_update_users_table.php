@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('current_project_id')->nullable()->after('timezone');
         });
         User::query()->each(function (User $user): void {
-            $project = $user->createDefaultProject();
+            $project = $user->ensureHasDefaultProject();
             $user->servers()->update(['project_id' => $project->id]);
         });
     }

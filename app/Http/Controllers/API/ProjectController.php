@@ -8,7 +8,6 @@ use App\Actions\Projects\UpdateProject;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
@@ -33,7 +32,7 @@ class ProjectController extends Controller
     {
         $this->authorize('viewAny', Project::class);
 
-        return ProjectResource::collection(Project::all());
+        return ProjectResource::collection(user()->projects()->get());
     }
 
     #[Post('api/projects', name: 'api.projects.create', middleware: 'ability:write')]
@@ -44,9 +43,7 @@ class ProjectController extends Controller
     {
         $this->authorize('create', Project::class);
 
-        /** @var User $user */
-        $user = auth()->user();
-        $project = app(CreateProject::class)->create($user, $request->all());
+        $project = app(CreateProject::class)->create(user(), $request->all());
 
         return new ProjectResource($project);
     }
@@ -81,9 +78,7 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        /** @var User $user */
-        $user = auth()->user();
-        app(DeleteProject::class)->delete($user, $project, [
+        app(DeleteProject::class)->delete(user(), $project, [
             'name' => $project->name,
         ]);
 

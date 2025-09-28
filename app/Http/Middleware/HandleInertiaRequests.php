@@ -48,11 +48,20 @@ class HandleInertiaRequests extends Middleware
 
         /** @var ?User $user */
         $user = $request->user();
+        $user?->refresh();
+        $currentProject = $user?->currentProject;
+        $canSeeCurrentProject = $user && $currentProject && $user->can('view', $currentProject);
+        if ($user && (! $currentProject || ! $canSeeCurrentProject)) {
+            $user->ensureHasDefaultProject();
+
+            return $this->share($request);
+        }
 
         // servers
         $servers = [];
-        if ($user && $user->currentProject && $user->can('viewAny', [Server::class, $user->currentProject])) {
-            $servers = ServerResource::collection($user->currentProject->servers);
+        if ($user && $currentProject && $user->can('viewAny', [Server::class, $currentProject])) {
+            // TODO: limit servers
+            $servers = ServerResource::collection($currentProject->servers);
         }
 
         $data = [];
@@ -69,6 +78,7 @@ class HandleInertiaRequests extends Middleware
             // sites
             $sites = [];
             if ($user && $user->can('viewAny', [Site::class, $server])) {
+                // TODO: limit sites
                 $sites = SiteResource::collection($server->sites);
             }
 
@@ -88,8 +98,9 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => $user ? [
                 'user' => UserResource::make($user->load('projects')),
-                'projects' => ProjectResource::collection($user->allProjects()->get()),
-                'currentProject' => ProjectResource::make($user->currentProject),
+                // TODO: limit projects
+                'projects' => ProjectResource::collection($user->projects()->get()),
+                'currentProject' => ProjectResource::make($currentProject),
             ] : null,
             'public_key_text' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
             'project_servers' => $servers,

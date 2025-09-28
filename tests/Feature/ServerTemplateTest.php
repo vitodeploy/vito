@@ -16,7 +16,7 @@ class ServerTemplateTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->user->createDefaultProject();
+        $this->user->ensureHasDefaultProject();
     }
 
     public function test_index_returns_user_server_templates(): void

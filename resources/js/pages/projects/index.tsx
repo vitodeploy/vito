@@ -1,21 +1,36 @@
-import SettingsLayout from '@/layouts/settings/layout';
-import { Head, usePage } from '@inertiajs/react';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/projects/components/columns';
-import { Project } from '@/types/project';
 import Container from '@/components/container';
+import { DataTable } from '@/components/data-table';
 import Heading from '@/components/heading';
-import ProjectForm from '@/pages/projects/components/project-form';
 import { Button } from '@/components/ui/button';
-import { PaginatedData } from '@/types';
+import SettingsLayout from '@/layouts/settings/layout';
+import { columns as projectColumns } from '@/pages/projects/components/columns';
+import { columns as invitationColumns } from '@/pages/projects/components/invitations';
+import ProjectForm from '@/pages/projects/components/project-form';
+import { BreadcrumbItem, PaginatedData } from '@/types';
+import { Project } from '@/types/project';
+import { Head, usePage } from '@inertiajs/react';
+import { PlusIcon } from 'lucide-react';
+import { ProjectUser } from '@/types/project-user';
+
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Settings',
+    href: '/settings',
+  },
+  {
+    title: 'Projects',
+    href: '/settings/projects',
+  },
+];
 
 export default function Projects() {
   const page = usePage<{
     projects: PaginatedData<Project>;
+    invitations: PaginatedData<ProjectUser>;
   }>();
 
   return (
-    <SettingsLayout>
+    <SettingsLayout breadcrumbs={breadcrumbs}>
       <Head title="Projects" />
 
       <Container className="max-w-5xl">
@@ -23,11 +38,21 @@ export default function Projects() {
           <Heading title="Projects" description="Here you can manage your projects" />
           <div className="flex items-center gap-2">
             <ProjectForm>
-              <Button>Create project</Button>
+              <Button>
+                <PlusIcon />
+                Create project
+              </Button>
             </ProjectForm>
           </div>
         </div>
-        <DataTable columns={columns} paginatedData={page.props.projects} />
+        <DataTable columns={projectColumns} paginatedData={page.props.projects} />
+
+        {page.props.invitations.data.length > 0 && (
+          <>
+            <Heading title="Invitations" description="Here you can see the projects you're invited to" />
+            <DataTable columns={invitationColumns} paginatedData={page.props.invitations} />
+          </>
+        )}
       </Container>
     </SettingsLayout>
   );

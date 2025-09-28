@@ -151,6 +151,8 @@ class ServerController extends Controller
     #[Post('/{server}/transfer', name: 'servers.transfer')]
     public function transfer(Server $server, Request $request): RedirectResponse
     {
+        $this->authorize('delete', $server);
+
         $server = app(TransferServer::class)->transfer(user(), $server, $request->all());
 
         user()->update(['current_project_id' => $server->project_id]);

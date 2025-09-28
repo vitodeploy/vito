@@ -48,7 +48,7 @@ class AuthenticationTest extends TestCase
     {
         /** @var User $user */
         $user = User::factory()->create();
-        $user->createDefaultProject();
+        $user->ensureHasDefaultProject();
 
         $response = $this->actingAs($user)->post(route('logout'));
 

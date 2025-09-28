@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\UserRole;
-use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -96,44 +95,6 @@ class UserTest extends TestCase
             'name' => 'new-name',
             'email' => 'newemail@example.com',
             'is_admin' => true,
-        ]);
-    }
-
-    public function test_add_user_to_project(): void
-    {
-        $this->actingAs($this->user);
-
-        $user = User::factory()->create();
-        $project = Project::factory()->create();
-
-        $this->post(route('users.projects.store', $user), [
-            'project' => $project->id,
-        ])
-            ->assertSessionDoesntHaveErrors()
-            ->assertRedirect(route('users'));
-
-        $this->assertDatabaseHas('user_project', [
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-        ]);
-    }
-
-    public function test_remove_user_from_project(): void
-    {
-        $this->actingAs($this->user);
-
-        $user = User::factory()->create();
-        $project = Project::factory()->create();
-
-        $user->projects()->attach($project);
-
-        $this->delete(route('users.projects.destroy', [$user, $project]))
-            ->assertSessionDoesntHaveErrors()
-            ->assertRedirect(route('users'));
-
-        $this->assertDatabaseMissing('user_project', [
-            'user_id' => $user->id,
-            'project_id' => $project->id,
         ]);
     }
 }
