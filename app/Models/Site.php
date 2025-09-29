@@ -449,10 +449,14 @@ class Site extends AbstractModel
         return $this->user != $this->server->getSshUser();
     }
 
-    public function webserver(): Webserver
+    public function webserver(): ?Webserver
     {
         /** @var Service $webserver */
-        $webserver = $this->server->webserver();
+        $webserver = $this->server?->webserver();
+
+        if (! $webserver) {
+            return null;
+        }
 
         /** @var Webserver $handler */
         $handler = $webserver->handler();
