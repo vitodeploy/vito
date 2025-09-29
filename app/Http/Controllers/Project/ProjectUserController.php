@@ -6,7 +6,7 @@ use App\Actions\Projects\InviteToProject;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Models\User;
+use App\Models\UserProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -28,25 +28,24 @@ class ProjectUserController extends Controller
         return back()->with('success', __('An invitation has been sent to the email address.'));
     }
 
-    #[Delete('{email}', name: 'projects.users.destroy')]
-    public function destroy(Project $project, string $email): RedirectResponse
+    #[Delete('{id}', name: 'projects.users.destroy')]
+    public function destroy(Project $project, int $id): RedirectResponse
     {
         $this->authorize('update', $project);
 
-        /** @var ?User $user */
-        $user = User::query()->where('email', $email)->first();
+        /** @var ?UserProject $userProject */
+        $userProject = $project->users()->where('id', $id)->first();
 
-        if ($user && $project->role($user) === UserRole::OWNER) {
+        if ($userProject?->user && $project->role($userProject->user) === UserRole::OWNER) {
             return back()->with('error', __('You cannot remove the project owner.'));
         }
 
-        if ($user?->id === user()->id) {
+        if ($userProject?->email === user()->email || $userProject?->user_id === user()->id) {
             return back()->with('error', __('You cannot remove yourself from the project.'));
         }
 
         $project->users()
-            ->where('user_id', $user?->id)
-            ->orWhere('email', $email)
+            ->where('id', $id)
             ->delete();
 
         return back()->with('success', __('The user has been removed.'));

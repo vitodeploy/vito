@@ -51,7 +51,7 @@ class ProjectsUserTest extends TestCase
         /** @var User $newUser */
         $newUser = User::factory()->create();
 
-        $project->users()->create([
+        $userProject = $project->users()->create([
             'project_id' => $project->id,
             'user_id' => $newUser->id,
             'role' => UserRole::USER,
@@ -59,7 +59,7 @@ class ProjectsUserTest extends TestCase
 
         $this
             ->from(route('projects'))
-            ->delete(route('projects.users.destroy', ['project' => $project, 'email' => $newUser->email]))
+            ->delete(route('projects.users.destroy', ['project' => $project, 'id' => $userProject->id]))
             ->assertRedirect(route('projects'))
             ->assertSessionDoesntHaveErrors()
             ->assertSessionHas('success');
@@ -77,9 +77,11 @@ class ProjectsUserTest extends TestCase
         // make sure the user has default project
         $project = $this->user->ensureHasDefaultProject();
 
+        $id = $project->users()->where('user_id', $this->user->id)->first()->id;
+
         $this
             ->from(route('projects'))
-            ->delete(route('projects.users.destroy', ['project' => $project, 'email' => $this->user->email]))
+            ->delete(route('projects.users.destroy', ['project' => $project, 'id' => $id]))
             ->assertSessionHas([
                 'error' => __('You cannot remove the project owner.'),
             ]);
@@ -92,7 +94,7 @@ class ProjectsUserTest extends TestCase
         // make sure the user has default project
         $project = $this->user->ensureHasDefaultProject();
 
-        $project->users()->create([
+        $userProject = $project->users()->create([
             'project_id' => $project->id,
             'email' => 'new-user@example.com',
             'role' => UserRole::USER,
@@ -100,7 +102,7 @@ class ProjectsUserTest extends TestCase
 
         $this
             ->from(route('projects'))
-            ->delete(route('projects.users.destroy', ['project' => $project, 'email' => 'new-user@example.com']))
+            ->delete(route('projects.users.destroy', ['project' => $project, 'id' => $userProject->id]))
             ->assertRedirect(route('projects'))
             ->assertSessionDoesntHaveErrors()
             ->assertSessionHas('success');
@@ -200,12 +202,12 @@ class ProjectsUserTest extends TestCase
 
         $project = Project::factory()->create();
 
-        $project->users()->create([
+        $userProject = $project->users()->create([
             'user_id' => $this->user->id,
             'role' => UserRole::ADMIN,
         ]);
 
-        $this->delete(route('projects.users.destroy', ['project' => $project->id, 'email' => $this->user->email]))
+        $this->delete(route('projects.users.destroy', ['project' => $project->id, 'id' => $userProject->id]))
             ->assertSessionHas([
                 'error' => 'You cannot remove yourself from the project.',
             ]);
@@ -217,12 +219,12 @@ class ProjectsUserTest extends TestCase
 
         $project = Project::factory()->create();
 
-        $project->users()->create([
+        $userProject = $project->users()->create([
             'user_id' => $this->user->id,
             'role' => UserRole::OWNER,
         ]);
 
-        $this->delete(route('projects.users.destroy', ['project' => $project->id, 'email' => $this->user->email]))
+        $this->delete(route('projects.users.destroy', ['project' => $project->id, 'id' => $userProject->id]))
             ->assertSessionHas([
                 'error' => 'You cannot remove the project owner.',
             ]);

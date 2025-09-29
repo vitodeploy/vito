@@ -20,7 +20,7 @@ export default function RemoveUser({ projectId, user, children }: { projectId: n
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.delete(`/settings/projects/${projectId}/users/${user.email}`, {
+    form.delete(`/settings/projects/${projectId}/users/${user.id}`, {
       onSuccess: () => {
         setOpen(false);
       },
