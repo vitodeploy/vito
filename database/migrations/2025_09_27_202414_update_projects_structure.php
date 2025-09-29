@@ -19,14 +19,16 @@ return new class extends Migration
             $table->string('email')->after('id')->nullable();
             $table->string('role')->after('project_id')->default(UserRole::USER);
         });
-        Project::all()->each(function (Project $project): void {
-            $project->users->each(function (User $user) use ($project): void {
-                $project->users()->updateOrCreate([
-                    'user_id' => $user->id,
-                ], [
-                    'role' => $user->is_admin ? UserRole::OWNER : UserRole::USER,
-                ]);
-            });
+        Project::query()->chunk(100, function ($projects) {
+            foreach ($projects as $project) {
+                $project->users->each(function (User $user) use ($project): void {
+                    $project->users()->updateOrCreate([
+                        'user_id' => $user->id,
+                    ], [
+                        'role' => $user->is_admin ? UserRole::OWNER : UserRole::USER,
+                    ]);
+                });
+            }
         });
     }
 
