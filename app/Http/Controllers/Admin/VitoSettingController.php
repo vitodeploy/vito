@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
-#[Prefix('settings/vito')]
+#[Prefix('admin/vito')]
 #[Middleware(['auth', 'must-be-admin'])]
 class VitoSettingController extends Controller
 {

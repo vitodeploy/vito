@@ -1,19 +1,13 @@
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { BellIcon, CloudIcon, CodeIcon, CommandIcon, DatabaseIcon, KeyIcon, ListIcon, PlugIcon, UserIcon, UsersIcon } from 'lucide-react';
+import { BellIcon, CloudIcon, CodeIcon, CommandIcon, DatabaseIcon, KeyIcon, ListIcon, UserIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Layout from '@/layouts/app/layout';
-import VitoIcon from '@/icons/vito';
 
 const sidebarNavItems: NavItem[] = [
   {
     title: 'Profile',
     href: route('profile'),
     icon: UserIcon,
-  },
-  {
-    title: 'Users',
-    href: route('users'),
-    icon: UsersIcon,
   },
   {
     title: 'Projects',
@@ -49,16 +43,6 @@ const sidebarNavItems: NavItem[] = [
     title: 'API Keys',
     href: route('api-keys'),
     icon: CommandIcon,
-  },
-  {
-    title: 'Plugins',
-    href: route('plugins'),
-    icon: PlugIcon,
-  },
-  {
-    title: 'Vito Settings',
-    href: route('vito-settings'),
-    icon: VitoIcon,
   },
 ];
 

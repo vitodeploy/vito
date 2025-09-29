@@ -51,7 +51,7 @@ class UserTest extends TestCase
         $this->actingAs($this->user);
 
         $this->get(route('users'))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_delete_user(): void

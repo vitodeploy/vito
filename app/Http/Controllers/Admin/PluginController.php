@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Actions\Plugins\ClearLogs;
 use App\Actions\Plugins\DisablePlugin;
@@ -11,6 +11,7 @@ use App\Actions\Plugins\Github\InstallGithubPlugin;
 use App\Actions\Plugins\Github\UpdateGithubPlugin;
 use App\Actions\Plugins\InstallPlugin;
 use App\Actions\Plugins\UninstallPlugin;
+use App\Http\Controllers\Controller;
 use App\Models\Plugin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 use Throwable;
 
-#[Prefix('settings/plugins')]
+#[Prefix('admin/plugins')]
 #[Middleware(['auth', 'must-be-admin'])]
 class PluginController extends Controller
 {

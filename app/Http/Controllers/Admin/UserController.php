@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Actions\User\CreateUser;
 use App\Actions\User\UpdateUser;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -18,8 +19,8 @@ use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
-#[Prefix('settings/users')]
-#[Middleware(['auth'])]
+#[Prefix('admin/users')]
+#[Middleware(['auth', 'must-be-admin'])]
 class UserController extends Controller
 {
     #[Get('/', name: 'users')]
@@ -29,7 +30,7 @@ class UserController extends Controller
 
         return Inertia::render('users/index', [
             'users' => UserResource::collection(
-                User::query()->with('projects')->simplePaginate(config('web.pagination_size'))
+                User::query()->simplePaginate(config('web.pagination_size'))
             ),
         ]);
     }

@@ -1,16 +1,15 @@
-import SettingsLayout from '@/layouts/settings/layout';
+import AdminLayout from '@/layouts/admin/layout';
 import { Head } from '@inertiajs/react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Card, CardContent, CardRow } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import React from 'react';
 import ExportVito from '@/pages/vito-settings/components/export';
 import ImportVito from '@/pages/vito-settings/components/import';
 
 export default function Users() {
   return (
-    <SettingsLayout>
+    <AdminLayout>
       <Head title="Vito Settings" />
 
       <Container className="max-w-5xl">
@@ -32,6 +31,6 @@ export default function Users() {
           </CardContent>
         </Card>
       </Container>
-    </SettingsLayout>
+    </AdminLayout>
   );
 }

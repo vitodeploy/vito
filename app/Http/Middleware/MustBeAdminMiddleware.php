@@ -9,8 +9,8 @@ class MustBeAdminMiddleware
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! user()->isAdmin()) {
-            abort(403, 'You must be an admin to perform this action.');
+        if (! $request->user()?->isAdmin()) {
+            abort(404);
         }
 
         return $next($request);

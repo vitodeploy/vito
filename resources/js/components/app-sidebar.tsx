@@ -14,60 +14,79 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, ChevronRightIcon, CogIcon, Folder, ListEndIcon, LogsIcon, MousePointerClickIcon, ServerIcon, ZapIcon } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronRightIcon,
+  CogIcon,
+  Folder,
+  ListEndIcon,
+  LogsIcon,
+  MousePointerClickIcon,
+  ServerIcon,
+  Settings2Icon,
+  ZapIcon,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-const mainNavItems: NavItem[] = [
-  {
-    title: 'Servers',
-    href: route('servers'),
-    icon: ServerIcon,
-  },
-  {
-    title: 'Sites',
-    href: route('sites.all'),
-    icon: MousePointerClickIcon,
-  },
-  {
-    title: 'Scripts',
-    href: route('scripts'),
-    icon: ZapIcon,
-  },
-  {
-    title: 'Settings',
-    href: route('settings'),
-    icon: CogIcon,
-  },
-];
-
-const footerNavItems: NavItem[] = [
-  {
-    title: 'Horizon Dashboard',
-    href: route('horizon.index'),
-    icon: ListEndIcon,
-  },
-  {
-    title: 'Vito Logs',
-    href: route('log-viewer.index'),
-    icon: LogsIcon,
-  },
-  {
-    title: 'Repository',
-    href: 'https://github.com/vitodeploy/vito',
-    icon: Folder,
-  },
-  {
-    title: 'Documentation',
-    href: 'https://vitodeploy.com',
-    icon: BookOpen,
-  },
-];
-
 export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?: NavItem[]; secondNavTitle?: string }) {
   const page = usePage<SharedData>();
+
+  const mainNavItems: NavItem[] = [
+    {
+      title: 'Servers',
+      href: route('servers'),
+      icon: ServerIcon,
+    },
+    {
+      title: 'Sites',
+      href: route('sites.all'),
+      icon: MousePointerClickIcon,
+    },
+    {
+      title: 'Scripts',
+      href: route('scripts'),
+      icon: ZapIcon,
+    },
+    {
+      title: 'Settings',
+      href: route('settings'),
+      icon: CogIcon,
+    },
+    {
+      title: 'Admin',
+      href: route('admin'),
+      icon: Settings2Icon,
+      hidden: !page.props.auth.user?.is_admin,
+    },
+  ];
+
+  const footerNavItems: NavItem[] = [
+    {
+      title: 'Horizon Dashboard',
+      href: route('horizon.index'),
+      icon: ListEndIcon,
+      hidden: !page.props.auth.user?.is_admin,
+    },
+    {
+      title: 'Vito Logs',
+      href: route('log-viewer.index'),
+      icon: LogsIcon,
+      hidden: !page.props.auth.user?.is_admin,
+    },
+    {
+      title: 'Repository',
+      href: 'https://github.com/vitodeploy/vito',
+      icon: Folder,
+    },
+    {
+      title: 'Documentation',
+      href: 'https://vitodeploy.com',
+      icon: BookOpen,
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row">
@@ -101,6 +120,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                       asChild
                       isActive={item.onlyActivePath ? window.location.href === item.href : window.location.href.startsWith(item.href)}
                       tooltip={{ children: item.title, hidden: false }}
+                      hidden={item.hidden}
                     >
                       {item.external ? (
                         <a href={item.href} target="_blank">
@@ -123,7 +143,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
         <SidebarFooter className="hidden md:flex">
           <SidebarMenu>
             {footerNavItems.map((item) => (
-              <SidebarMenuItem key={`${item.title}-${item.href}`}>
+              <SidebarMenuItem key={`${item.title}-${item.href}`} hidden={item.hidden}>
                 <SidebarMenuButton asChild tooltip={{ children: item.title, hidden: false }}>
                   <a href={item.href} target="_blank" rel="noopener noreferrer">
                     {item.icon && <Icon iconNode={item.icon} />}
