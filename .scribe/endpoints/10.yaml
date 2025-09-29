@@ -38,7 +38,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"data":[{"id":2,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Vesta Schuster PhD","ssh_user":"vito","ssh_users":["root","vito"],"ip":"224.61.31.27","local_ip":"92.153.233.186","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T09:51:40.000000Z","updated_at":"2025-09-29T09:51:40.000000Z"},{"id":3,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Leda Price","ssh_user":"vito","ssh_users":["root","vito"],"ip":"212.189.109.80","local_ip":"79.121.201.127","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T09:51:40.000000Z","updated_at":"2025-09-29T09:51:40.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
+        content: '{"data":[{"id":2,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Vesta Schuster PhD","ssh_user":"vito","ssh_users":["root","vito"],"ip":"224.61.31.27","local_ip":"92.153.233.186","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T11:34:37.000000Z","updated_at":"2025-09-29T11:34:37.000000Z"},{"id":3,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Leda Price","ssh_user":"vito","ssh_users":["root","vito"],"ip":"212.189.109.80","local_ip":"79.121.201.127","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T11:34:37.000000Z","updated_at":"2025-09-29T11:34:37.000000Z"}],"links":{"first":"\/?page=1","last":"\/?page=1","prev":null,"next":null},"meta":{"current_page":1,"from":1,"last_page":1,"links":[{"url":null,"label":"&laquo; Previous","active":false},{"url":"\/?page=1","label":"1","active":true},{"url":null,"label":"Next &raquo;","active":false}],"path":"\/","per_page":25,"to":2,"total":2}}'
         headers: []
         description: ''
         custom: []
@@ -206,7 +206,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":2,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Ms. Elisabeth Okuneva","ssh_user":"vito","ssh_users":["root","vito"],"ip":"75.13.66.152","local_ip":"199.172.126.144","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T09:51:40.000000Z","updated_at":"2025-09-29T09:51:40.000000Z"}'
+        content: '{"id":2,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Ms. Elisabeth Okuneva","ssh_user":"vito","ssh_users":["root","vito"],"ip":"75.13.66.152","local_ip":"199.172.126.144","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T11:34:37.000000Z","updated_at":"2025-09-29T11:34:37.000000Z"}'
         headers: []
         description: ''
         custom: []
@@ -264,7 +264,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"id":2,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Belle Dickens","ssh_user":"vito","ssh_users":["root","vito"],"ip":"51.210.32.30","local_ip":"82.174.132.158","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T09:51:40.000000Z","updated_at":"2025-09-29T09:51:40.000000Z"}'
+        content: '{"id":2,"project_id":1,"services":[],"user_id":1,"provider_id":null,"name":"Belle Dickens","ssh_user":"vito","ssh_users":["root","vito"],"ip":"51.210.32.30","local_ip":"82.174.132.158","port":22,"os":"ubuntu_22","provider":"custom","provider_data":null,"public_key":"test","status":"ready","auto_update":null,"progress":100,"progress_step":null,"updates":0,"last_update_check":null,"status_color":"success","features":[],"created_at":"2025-09-29T11:34:37.000000Z","updated_at":"2025-09-29T11:34:37.000000Z"}'
         headers: []
         description: ''
         custom: []
