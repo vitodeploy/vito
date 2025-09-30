@@ -138,6 +138,15 @@ export const columns: ColumnDef<DatabaseUser>[] = [
     enableSorting: true,
   },
   {
+    accessorKey: 'permission',
+    header: 'Permission',
+    enableColumnFilter: true,
+    enableSorting: true,
+    cell: ({ row }) => {
+      return <Badge variant="outline">{row.original.permission}</Badge>;
+    },
+  },
+  {
     accessorKey: 'databases',
     header: 'Linked databases',
     enableColumnFilter: true,

@@ -17,12 +17,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type CreateForm = {
   username: string;
   password: string;
   remote: boolean;
   host: string;
+  permission: string;
 };
 
 export default function CreateDatabaseUser({
@@ -41,6 +43,7 @@ export default function CreateDatabaseUser({
     password: '',
     remote: false,
     host: '',
+    permission: 'admin',
   });
 
   const submit = (e: FormEvent) => {
@@ -91,6 +94,20 @@ export default function CreateDatabaseUser({
                 onChange={(e) => form.setData('password', e.target.value)}
               />
               <InputError message={form.errors.password} />
+            </FormField>
+            <FormField>
+              <Label htmlFor="permission">Permission</Label>
+              <Select value={form.data.permission} onValueChange={(value) => form.setData('permission', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select permission" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin (Full Access)</SelectItem>
+                  <SelectItem value="write">Write (No Drop/Truncate)</SelectItem>
+                  <SelectItem value="read">Read Only</SelectItem>
+                </SelectContent>
+              </Select>
+              <InputError message={form.errors.permission} />
             </FormField>
             <FormField>
               <div className="flex items-center space-x-3">

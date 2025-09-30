@@ -2,10 +2,12 @@
 
 namespace App\Actions\Database;
 
+use App\Enums\DatabaseUserPermission;
 use App\Models\DatabaseUser;
 use App\Models\Service;
 use App\Services\Database\Database;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class UpdateDatabaseUser
@@ -20,8 +22,10 @@ class UpdateDatabaseUser
         $this->validate($databaseUser, $input);
 
         $oldHost = $databaseUser->host;
+        $oldPermission = $databaseUser->permission;
         $newPassword = $input['password'] ?? null;
         $newHost = null;
+        $permissionChanged = false;
 
         if (isset($input['remote'])) {
             $newHost = $input['remote'] ? ($input['host'] ?? '%') : 'localhost';
@@ -34,6 +38,11 @@ class UpdateDatabaseUser
 
         if ($newPassword) {
             $databaseUser->password = $newPassword;
+        }
+
+        if ($input['permission'] !== $oldPermission->value) {
+            $databaseUser->permission = $input['permission'];
+            $permissionChanged = true;
         }
 
         if ($newPassword || $newHost) {
@@ -52,7 +61,7 @@ class UpdateDatabaseUser
 
         $databaseUser->save();
 
-        if ($newHost) {
+        if ($newHost || $permissionChanged) {
             $this->updatePermissions($databaseUser, $oldHost, $newHost);
         }
 
@@ -74,10 +83,15 @@ class UpdateDatabaseUser
             $rules['host'] = 'required';
         }
 
+        $rules['permission'] = [
+            'required',
+            Rule::in(DatabaseUserPermission::cases()),
+        ];
+
         Validator::make($input, $rules)->validate();
     }
 
-    private function updatePermissions(DatabaseUser $databaseUser, string $oldHost, string $newHost): void
+    private function updatePermissions(DatabaseUser $databaseUser, string $oldHost, ?string $newHost): void
     {
         if (count($databaseUser->databases) > 0) {
             /** @var Service $service */
@@ -88,7 +102,12 @@ class UpdateDatabaseUser
 
             $databaseHandler->unlink($databaseUser->username, $oldHost);
 
-            $databaseHandler->link($databaseUser->username, $newHost, $databaseUser->databases);
+            $databaseHandler->link(
+                $databaseUser->username,
+                $newHost ?? $databaseUser->host,
+                $databaseUser->databases,
+                $databaseUser->permission->value
+            );
         }
     }
 }

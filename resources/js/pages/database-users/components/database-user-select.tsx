@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon, PlusIcon } from 'lucide-react';
 import CreateDatabaseUser from './create-database-user';
 import { DatabaseUser } from '@/types/database-user';
+import { Badge } from '@/components/ui/badge';
 
 export default function DatabaseUserSelect({
   serverId,
@@ -38,6 +39,7 @@ export default function DatabaseUserSelect({
               query.data.map((databaseUser: DatabaseUser) => (
                 <SelectItem key={`db-${databaseUser.username}`} value={databaseUser.id.toString()}>
                   {databaseUser.username}
+                  <Badge variant="outline">{databaseUser.permission}</Badge>
                 </SelectItem>
               ))}
           </SelectGroup>

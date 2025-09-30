@@ -178,7 +178,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
     /**
      * @throws SSHError
      */
-    public function link(string $username, string $host, array $databases): void
+    public function link(string $username, string $host, array $databases, string $permission = 'admin'): void
     {
         $ssh = $this->service->server->ssh();
         $version = $this->service->version;
@@ -190,6 +190,7 @@ abstract class AbstractDatabase extends AbstractService implements Database
                     'host' => $host,
                     'database' => $database,
                     'version' => $version,
+                    'permission' => $permission,
                 ]),
                 'link-user-to-database'
             );

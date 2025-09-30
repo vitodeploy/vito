@@ -48,11 +48,12 @@ class LinkUser
             $databaseUser->host
         );
 
-        // Link the user to the selected databases
+        // Link the user to the selected databases with the user's permission
         $handler->link(
             $databaseUser->username,
             $databaseUser->host,
-            $databaseUser->databases
+            $databaseUser->databases,
+            $databaseUser->permission->value
         );
 
         $databaseUser->save();

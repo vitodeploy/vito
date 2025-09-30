@@ -3,6 +3,7 @@ export interface DatabaseUser {
   server_id: number;
   username: string;
   databases: string[];
+  permission: string;
   host?: string;
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';

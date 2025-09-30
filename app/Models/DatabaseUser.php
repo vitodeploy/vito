@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DatabaseUserPermission;
 use App\Enums\DatabaseUserStatus;
 use Database\Factories\DatabaseUserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $username
  * @property string $password
  * @property array<string> $databases
+ * @property DatabaseUserPermission $permission
  * @property string $host
  * @property DatabaseUserStatus $status
  * @property Server $server
@@ -26,6 +28,7 @@ class DatabaseUser extends AbstractModel
         'username',
         'password',
         'databases',
+        'permission',
         'host',
         'status',
     ];
@@ -34,6 +37,7 @@ class DatabaseUser extends AbstractModel
         'server_id' => 'integer',
         'password' => 'encrypted',
         'databases' => 'array',
+        'permission' => DatabaseUserPermission::class,
         'status' => DatabaseUserStatus::class,
     ];
 

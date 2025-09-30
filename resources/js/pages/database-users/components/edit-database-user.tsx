@@ -19,11 +19,13 @@ import InputError from '@/components/ui/input-error';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DatabaseUser } from '@/types/database-user';
 import FormSuccessful from '@/components/form-successful';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type EditForm = {
   password: string;
   remote: boolean;
-  host: string;
+  host?: string;
+  permission: string;
 };
 
 export default function EditDatabaseUser({
@@ -41,6 +43,7 @@ export default function EditDatabaseUser({
     password: '',
     remote: databaseUser.host !== 'localhost',
     host: databaseUser.host,
+    permission: databaseUser.permission,
   });
 
   const submit = (e: FormEvent) => {
@@ -62,9 +65,10 @@ export default function EditDatabaseUser({
         password: '',
         remote: databaseUser.host !== 'localhost',
         host: databaseUser.host,
+        permission: databaseUser.permission,
       });
     }
-  }, [open, databaseUser.host]);
+  }, [open, databaseUser.host, databaseUser.permission]);
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
@@ -93,6 +97,20 @@ export default function EditDatabaseUser({
                 onChange={(e) => form.setData('password', e.target.value)}
               />
               <InputError message={form.errors.password} />
+            </FormField>
+            <FormField>
+              <Label htmlFor="permission">Permission</Label>
+              <Select value={form.data.permission} onValueChange={(value) => form.setData('permission', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select permission" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin (Full Access)</SelectItem>
+                  <SelectItem value="write">Write (No Drop/Truncate)</SelectItem>
+                  <SelectItem value="read">Read Only</SelectItem>
+                </SelectContent>
+              </Select>
+              <InputError message={form.errors.permission} />
             </FormField>
             <FormField>
               <div className="flex items-center space-x-3">

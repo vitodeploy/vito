@@ -20,7 +20,7 @@ interface Database extends ServiceInterface
     /**
      * @param  array<string>  $databases
      */
-    public function link(string $username, string $host, array $databases): void;
+    public function link(string $username, string $host, array $databases, string $permission = 'admin'): void;
 
     public function unlink(string $username, string $host): void;
 

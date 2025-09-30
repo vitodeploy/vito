@@ -29,6 +29,7 @@ class CreateDatabaseUser
             'password' => $input['password'],
             'host' => (isset($input['remote']) && $input['remote']) || isset($input['host']) ? $input['host'] : 'localhost',
             'databases' => $links,
+            'permission' => $input['permission'] ?? 'admin',
         ]);
 
         /** @var Service $service */
@@ -45,7 +46,9 @@ class CreateDatabaseUser
         $databaseUser->save();
 
         if (count($links) > 0) {
-            app(LinkUser::class)->link($databaseUser, ['databases' => $links]);
+            app(LinkUser::class)->link($databaseUser, [
+                'databases' => $links,
+            ]);
         }
 
         return $databaseUser;
@@ -62,6 +65,10 @@ class CreateDatabaseUser
             'password' => [
                 'required',
                 'min:6',
+            ],
+            'permission' => [
+                'nullable',
+                Rule::in(['read', 'write', 'admin']),
             ],
         ];
         if (isset($input['remote']) && $input['remote']) {

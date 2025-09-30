@@ -19,6 +19,7 @@ class DatabaseUserFactory extends Factory
             'username' => $this->faker->userName,
             'password' => 'password',
             'databases' => [],
+            'permission' => 'admin',
             'host' => '%',
         ];
     }
