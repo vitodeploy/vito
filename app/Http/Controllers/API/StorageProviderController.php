@@ -9,14 +9,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\StorageProviderResource;
 use App\Models\Project;
 use App\Models\StorageProvider;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Knuckles\Scribe\Attributes\BodyParam;
-use Knuckles\Scribe\Attributes\Endpoint;
-use Knuckles\Scribe\Attributes\Group;
-use Knuckles\Scribe\Attributes\Response;
-use Knuckles\Scribe\Attributes\ResponseFromApiResource;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -26,12 +20,9 @@ use Spatie\RouteAttributes\Attributes\Put;
 
 #[Prefix('api/projects/{project}/storage-providers')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
-#[Group(name: 'storage-providers')]
 class StorageProviderController extends Controller
 {
     #[Get('/', name: 'api.projects.storage-providers', middleware: 'ability:read')]
-    #[Endpoint(title: 'list')]
-    #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class, collection: true, paginate: 25)]
     public function index(Project $project): ResourceCollection
     {
         $this->authorize('viewAny', StorageProvider::class);
@@ -42,27 +33,17 @@ class StorageProviderController extends Controller
     }
 
     #[Post('/', name: 'api.projects.storage-providers.create', middleware: 'ability:write')]
-    #[Endpoint(title: 'create')]
-    #[BodyParam(name: 'provider', description: 'The provider (aws, linode, hetzner, digitalocean, vultr, ...)', required: true)]
-    #[BodyParam(name: 'name', description: 'The name of the storage provider.', required: true)]
-    #[BodyParam(name: 'token', description: 'The token if provider requires api token')]
-    #[BodyParam(name: 'key', description: 'The key if provider requires key')]
-    #[BodyParam(name: 'secret', description: 'The secret if provider requires key')]
-    #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class)]
     public function create(Request $request, Project $project): StorageProviderResource
     {
         $this->authorize('create', StorageProvider::class);
 
-        /** @var User $user */
-        $user = auth()->user();
+        $user = user();
         $storageProvider = app(CreateStorageProvider::class)->create($user, $project, $request->all());
 
         return new StorageProviderResource($storageProvider);
     }
 
     #[Get('{storageProvider}', name: 'api.projects.storage-providers.show', middleware: 'ability:read')]
-    #[Endpoint(title: 'show')]
-    #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class)]
     public function show(Project $project, StorageProvider $storageProvider): StorageProviderResource
     {
         $this->authorize('view', $storageProvider);
@@ -73,10 +54,6 @@ class StorageProviderController extends Controller
     }
 
     #[Put('{storageProvider}', name: 'api.projects.storage-providers.update', middleware: 'ability:write')]
-    #[Endpoint(title: 'update')]
-    #[BodyParam(name: 'name', description: 'The name of the storage provider.', required: true)]
-    #[BodyParam(name: 'global', description: 'Accessible in all projects', enum: [true, false])]
-    #[ResponseFromApiResource(StorageProviderResource::class, StorageProvider::class)]
     public function update(Request $request, Project $project, StorageProvider $storageProvider): StorageProviderResource
     {
         $this->authorize('update', $storageProvider);
@@ -89,8 +66,6 @@ class StorageProviderController extends Controller
     }
 
     #[Delete('{storageProvider}', name: 'api.projects.storage-providers.delete', middleware: 'ability:write')]
-    #[Endpoint(title: 'delete')]
-    #[Response(status: 204)]
     public function delete(Project $project, StorageProvider $storageProvider): \Illuminate\Http\Response
     {
         $this->authorize('delete', $storageProvider);

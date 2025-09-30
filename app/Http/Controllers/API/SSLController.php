@@ -15,11 +15,6 @@ use App\Models\Site;
 use App\Models\Ssl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Knuckles\Scribe\Attributes\BodyParam;
-use Knuckles\Scribe\Attributes\Endpoint;
-use Knuckles\Scribe\Attributes\Group;
-use Knuckles\Scribe\Attributes\Response;
-use Knuckles\Scribe\Attributes\ResponseFromApiResource;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -28,12 +23,9 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 
 #[Prefix('api/projects/{project}/servers/{server}/sites/{site}/ssls')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
-#[Group(name: 'ssls')]
 class SSLController extends Controller
 {
     #[Get('/', name: 'api.projects.servers.sites.ssls', middleware: 'ability:read')]
-    #[Endpoint(title: 'list', description: 'Get all SSL certificates.')]
-    #[ResponseFromApiResource(SslResource::class, Ssl::class, collection: true, paginate: 25)]
     public function index(Project $project, Server $server, Site $site): ResourceCollection
     {
         $this->authorize('view', [$project, $server, $site]);
@@ -49,8 +41,6 @@ class SSLController extends Controller
     }
 
     #[Get('{ssl}', name: 'api.projects.servers.sites.ssls.show', middleware: 'ability:read')]
-    #[Endpoint(title: 'show', description: 'Get an SSL certificate by ID.')]
-    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function show(Project $project, Server $server, Site $site, Ssl $ssl): SslResource
     {
         $this->authorize('view', [$project, $server, $site, $ssl]);
@@ -61,10 +51,6 @@ class SSLController extends Controller
     }
 
     #[Post('/letsencrypt', name: 'api.projects.servers.sites.ssls.create-letsencrypt', middleware: 'ability:write')]
-    #[Endpoint(title: 'create-letsencrypt', description: 'Create a new Let\'s Encrypt SSL certificate.')]
-    #[BodyParam(name: 'email', required: true)]
-    #[BodyParam(name: 'aliases', type: 'boolean', description: 'Set SSL for site\'s aliases as well')]
-    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function createLetsEncrypt(Request $request, Project $project, Server $server, Site $site): SslResource
     {
         $this->authorize('create', [$project, $server, $site]);
@@ -77,12 +63,6 @@ class SSLController extends Controller
     }
 
     #[Post('/custom', name: 'api.projects.servers.sites.ssls.create-custom', middleware: 'ability:write')]
-    #[Endpoint(title: 'create-custom', description: 'Create a custom SSL certificate.')]
-    #[BodyParam(name: 'private', required: true)]
-    #[BodyParam(name: 'certificate', required: true)]
-    #[BodyParam(name: 'expires_at', type: 'data', required: true)]
-    #[BodyParam(name: 'aliases', type: 'boolean', description: 'Set SSL for site\'s aliases as well')]
-    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function createCustom(Request $request, Project $project, Server $server, Site $site): SslResource
     {
         $this->authorize('create', [$project, $server, $site]);
@@ -96,8 +76,6 @@ class SSLController extends Controller
     }
 
     #[Post('/{ssl}/activate', name: 'api.projects.servers.sites.ssls.activate', middleware: 'ability:write')]
-    #[Endpoint(title: 'activate', description: 'Activate SSL certificate.')]
-    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function activate(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): SslResource
     {
         $this->authorize('update', [$project, $server, $site, $ssl]);
@@ -110,8 +88,6 @@ class SSLController extends Controller
     }
 
     #[Post('/{ssl}/deactivate', name: 'api.projects.servers.sites.ssls.deactivate', middleware: 'ability:write')]
-    #[Endpoint(title: 'deactivate', description: 'Deactivate SSL certificate.')]
-    #[ResponseFromApiResource(SslResource::class, Ssl::class)]
     public function deactivate(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): SslResource
     {
         $this->authorize('update', [$project, $server, $site, $ssl]);
@@ -124,8 +100,6 @@ class SSLController extends Controller
     }
 
     #[Delete('/{ssl}', name: 'api.projects.servers.sites.ssls.delete', middleware: 'ability:write')]
-    #[Endpoint(title: 'delete', description: 'Delete SSL certificate.')]
-    #[Response(status: 204)]
     public function delete(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$project, $server, $site, $ssl]);

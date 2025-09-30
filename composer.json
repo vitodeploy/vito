@@ -13,6 +13,7 @@
     "ext-intl": "*",
     "ext-zip": "*",
     "aws/aws-sdk-php": "^3.158",
+    "dedoc/scramble": "^0.12.35",
     "inertiajs/inertia-laravel": "^2.0",
     "laravel/fortify": "^1.17",
     "laravel/framework": "^12.0",
@@ -27,7 +28,6 @@
   },
   "require-dev": {
     "fakerphp/faker": "^1.9.1",
-    "knuckleswtf/scribe": "^5.0",
     "larastan/larastan": "^3.1",
     "laravel/boost": "^1.1",
     "laravel/pail": "^1.2",

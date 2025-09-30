@@ -75,41 +75,6 @@ jobs:
           script: |
             core.setFailed('Workflow failed. Release version does not match with selected target branch. Did you select the correct branch?')
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
-
-      - name: Install dependencies
-        if: steps.composer-cache.outputs.cache-hit != 'true'
-        run: composer install --prefer-dist --no-progress --no-suggest
-
-      - name: Create sqlite database
-        run: touch storage/database.sqlite
-
-      - name: Set up the .env file
-        run: cp .env.example .env
-
-      - name: Generate Application Key
-        run: php artisan key:generate
-
-      - name: Migrate database
-        run: php artisan migrate:refresh --seed
-        env:
-          APP_ENV: local
-          APP_DEMO: true
-
-      - name: Generate API Docs
-        run: php artisan scribe:generate
       - name: Update config/app.php
         run: sed -i "s/'version' => '[^']*'/'version' => '${{ steps.version.outputs.version }}'/" config/app.php
 

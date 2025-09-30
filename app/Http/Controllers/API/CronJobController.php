@@ -13,11 +13,6 @@ use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Knuckles\Scribe\Attributes\BodyParam;
-use Knuckles\Scribe\Attributes\Endpoint;
-use Knuckles\Scribe\Attributes\Group;
-use Knuckles\Scribe\Attributes\Response;
-use Knuckles\Scribe\Attributes\ResponseFromApiResource;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -26,12 +21,9 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 
 #[Prefix('api/projects/{project}/servers/{server}/cron-jobs')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
-#[Group(name: 'cron-jobs')]
 class CronJobController extends Controller
 {
     #[Get('/', name: 'api.projects.servers.cron-jobs', middleware: 'ability:read')]
-    #[Endpoint(title: 'list', description: 'Get all cron jobs.')]
-    #[ResponseFromApiResource(CronJobResource::class, CronJob::class, collection: true, paginate: 25)]
     public function index(Project $project, Server $server): ResourceCollection
     {
         $this->authorize('viewAny', [CronJob::class, $server]);
@@ -45,11 +37,6 @@ class CronJobController extends Controller
      * @throws SSHError
      */
     #[Post('/', name: 'api.projects.servers.cron-jobs.create', middleware: 'ability:write')]
-    #[Endpoint(title: 'create', description: 'Create a new cron job.')]
-    #[BodyParam(name: 'command', required: true)]
-    #[BodyParam(name: 'user', required: true, enum: ['root', 'vito'])]
-    #[BodyParam(name: 'frequency', description: 'Frequency of the cron job.', required: true, example: '* * * * *')]
-    #[ResponseFromApiResource(CronJobResource::class, CronJob::class)]
     public function create(Request $request, Project $project, Server $server): CronJobResource
     {
         $this->authorize('create', [CronJob::class, $server]);
@@ -62,8 +49,6 @@ class CronJobController extends Controller
     }
 
     #[Get('{cronJob}', name: 'api.projects.servers.cron-jobs.show', middleware: 'ability:read')]
-    #[Endpoint(title: 'show', description: 'Get a cron job by ID.')]
-    #[ResponseFromApiResource(CronJobResource::class, CronJob::class)]
     public function show(Project $project, Server $server, CronJob $cronJob): CronJobResource
     {
         $this->authorize('view', [$cronJob, $server]);
@@ -77,8 +62,6 @@ class CronJobController extends Controller
      * @throws SSHError
      */
     #[Delete('{cronJob}', name: 'api.projects.servers.cron-jobs.delete', middleware: 'ability:write')]
-    #[Endpoint(title: 'delete', description: 'Delete cron job.')]
-    #[Response(status: 204)]
     public function delete(Project $project, Server $server, CronJob $cronJob): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$cronJob, $server]);
@@ -91,8 +74,6 @@ class CronJobController extends Controller
     }
 
     #[Get('/sites/{site}/cron-jobs', name: 'api.projects.servers.sites.cron-jobs', middleware: 'ability:read')]
-    #[Endpoint(title: 'site-list', description: 'Get all site cron jobs.')]
-    #[ResponseFromApiResource(CronJobResource::class, CronJob::class, collection: true, paginate: 25)]
     public function siteIndex(Project $project, Server $server, Site $site): ResourceCollection
     {
         $this->authorize('viewAny', [CronJob::class, $server, $site]);
@@ -106,11 +87,6 @@ class CronJobController extends Controller
      * @throws SSHError
      */
     #[Post('/sites/{site}/cron-jobs', name: 'api.projects.servers.sites.cron-jobs.create', middleware: 'ability:write')]
-    #[Endpoint(title: 'site-create', description: 'Create a new site cron job.')]
-    #[BodyParam(name: 'command', required: true)]
-    #[BodyParam(name: 'user', required: true, enum: ['root', 'vito'])]
-    #[BodyParam(name: 'frequency', description: 'Frequency of the cron job.', required: true, example: '* * * * *')]
-    #[ResponseFromApiResource(CronJobResource::class, CronJob::class)]
     public function siteCreate(Request $request, Project $project, Server $server, Site $site): CronJobResource
     {
         $this->authorize('create', [CronJob::class, $server, $site]);
@@ -123,8 +99,6 @@ class CronJobController extends Controller
     }
 
     #[Get('/sites/{site}/cron-jobs/{cronJob}', name: 'api.projects.servers.sites.cron-jobs.show', middleware: 'ability:read')]
-    #[Endpoint(title: 'site-show', description: 'Get a site cron job by ID.')]
-    #[ResponseFromApiResource(CronJobResource::class, CronJob::class)]
     public function siteShow(Project $project, Server $server, Site $site, CronJob $cronJob): CronJobResource
     {
         $this->authorize('view', [$cronJob, $server, $site]);
@@ -138,8 +112,6 @@ class CronJobController extends Controller
      * @throws SSHError
      */
     #[Delete('/sites/{site}/cron-jobs/{cronJob}', name: 'api.projects.servers.sites.cron-jobs.delete', middleware: 'ability:write')]
-    #[Endpoint(title: 'site-delete', description: 'Delete site cron job.')]
-    #[Response(status: 204)]
     public function siteDelete(Project $project, Server $server, Site $site, CronJob $cronJob): \Illuminate\Http\Response
     {
         $this->authorize('delete', [$cronJob, $server, $site]);

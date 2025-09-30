@@ -11,9 +11,6 @@ use App\Models\Project;
 use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Knuckles\Scribe\Attributes\Endpoint;
-use Knuckles\Scribe\Attributes\Group;
-use Knuckles\Scribe\Attributes\ResponseFromApiResource;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -21,12 +18,9 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 
 #[Prefix('api/projects/{project}/servers/{server}/sites/{site}/deployments')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
-#[Group(name: 'deployments')]
 class DeploymentController extends Controller
 {
     #[Get('/', name: 'api.projects.servers.sites.deployments', middleware: 'ability:read')]
-    #[Endpoint(title: 'list', description: 'Get all sites.')]
-    #[ResponseFromApiResource(DeploymentResource::class, Deployment::class, collection: true, paginate: 25)]
     public function index(Project $project, Server $server, Site $site): ResourceCollection
     {
         $this->authorize('view', [$site, $server]);
@@ -42,8 +36,6 @@ class DeploymentController extends Controller
     }
 
     #[Post('/', name: 'api.projects.servers.sites.deployments.store', middleware: 'ability:write')]
-    #[Endpoint(title: 'deploy', description: 'Run site deployment script')]
-    #[ResponseFromApiResource(DeploymentResource::class, Deployment::class, status: 201)]
     public function store(Project $project, Server $server, Site $site): DeploymentResource
     {
         $this->authorize('update', [$site, $server]);
@@ -60,8 +52,6 @@ class DeploymentController extends Controller
     }
 
     #[Get('{deployment}', name: 'api.projects.servers.sites.deployments.show', middleware: 'ability:read')]
-    #[Endpoint(title: 'deployment', description: 'Show deployment details')]
-    #[ResponseFromApiResource(DeploymentResource::class, Deployment::class)]
     public function show(Project $project, Server $server, Site $site, Deployment $deployment): DeploymentResource
     {
         $this->authorize('view', [$site, $server]);

@@ -14,11 +14,6 @@ use App\Models\SshKey;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Validation\ValidationException;
-use Knuckles\Scribe\Attributes\BodyParam;
-use Knuckles\Scribe\Attributes\Endpoint;
-use Knuckles\Scribe\Attributes\Group;
-use Knuckles\Scribe\Attributes\Response;
-use Knuckles\Scribe\Attributes\ResponseFromApiResource;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -27,12 +22,9 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 
 #[Prefix('api/projects/{project}/servers/{server}/ssh-keys')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
-#[Group(name: 'ssh-keys')]
 class ServerSSHKeyController extends Controller
 {
     #[Get('/', name: 'api.projects.servers.ssh-keys', middleware: 'ability:read')]
-    #[Endpoint(title: 'list', description: 'Get all ssh keys.')]
-    #[ResponseFromApiResource(SshKeyResource::class, SshKey::class, collection: true, paginate: 25)]
     public function index(Project $project, Server $server): ResourceCollection
     {
         $this->authorize('view', $server);
@@ -46,11 +38,6 @@ class ServerSSHKeyController extends Controller
      * @throws SSHError
      */
     #[Post('/', name: 'api.projects.servers.ssh-keys.create', middleware: 'ability:write')]
-    #[Endpoint(title: 'create', description: 'Deploy ssh key to server.')]
-    #[BodyParam(name: 'key_id', description: 'The ID of the key.')]
-    #[BodyParam(name: 'name', description: 'Key name, required if key_id is not provided.')]
-    #[BodyParam(name: 'public_key', description: 'Public Key, required if key_id is not provided.')]
-    #[ResponseFromApiResource(SshKeyResource::class, SshKey::class)]
     public function create(Request $request, Project $project, Server $server): SshKeyResource
     {
         $this->authorize('update', $server);
@@ -85,8 +72,6 @@ class ServerSSHKeyController extends Controller
      * @throws SSHError
      */
     #[Delete('{sshKey}', name: 'api.projects.servers.ssh-keys.delete', middleware: 'ability:write')]
-    #[Endpoint(title: 'delete', description: 'Delete ssh key from server.')]
-    #[Response(status: 204)]
     public function delete(Project $project, Server $server, SshKey $sshKey): \Illuminate\Http\Response
     {
         $this->authorize('update', $server);
