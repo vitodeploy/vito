@@ -24,6 +24,8 @@ class SiteController extends Controller
     #[Get('/sites', name: 'sites.all')]
     public function index(): Response
     {
+        $this->authorize('viewAny', user()->currentProject);
+
         $sites = user()->currentProject->sites()->with('server')->latest();
 
         $sites = QueryBuilder::for($sites)

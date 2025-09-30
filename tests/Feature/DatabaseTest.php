@@ -16,6 +16,8 @@ class DatabaseTest extends TestCase
 
     public function test_create_database(): void
     {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
         $this->actingAs($this->user);
 
         SSH::fake();
@@ -34,19 +36,25 @@ class DatabaseTest extends TestCase
 
     public function test_create_database_with_user(): void
     {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
         $this->actingAs($this->user);
 
         SSH::fake();
+
+        $databaseUser = \App\Models\DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'user',
+            'databases' => [],
+            'status' => DatabaseUserStatus::READY,
+        ]);
 
         $this->post(route('databases.store', $this->server), [
             'name' => 'database',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'user' => true,
-            'username' => 'user',
-            'password' => 'password',
-            'remote' => true,
-            'host' => '%',
+            'existing_user_id' => $databaseUser->id,
         ])->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('databases', [
@@ -54,12 +62,47 @@ class DatabaseTest extends TestCase
             'status' => DatabaseStatus::READY,
         ]);
 
-        $this->assertDatabaseHas('database_users', [
-            'username' => 'user',
-            'databases' => $this->castAsJson(['database']),
-            'host' => '%',
+        $databaseUser->refresh();
+        $this->assertContains('database', $databaseUser->databases);
+    }
+
+    public function test_create_database_with_existing_user(): void
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        Database::factory()->create([
+            'server_id' => $this->server,
+            'name' => 'existing_db',
+            'status' => DatabaseStatus::READY,
+        ]);
+
+        $databaseUser = \App\Models\DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'username' => 'existing_user',
+            'databases' => ['existing_db'],
             'status' => DatabaseUserStatus::READY,
         ]);
+
+        $this->post(route('databases.store', $this->server), [
+            'name' => 'new_database',
+            'charset' => 'utf8mb3',
+            'collation' => 'utf8mb3_general_ci',
+            'user' => true,
+            'existing_user_id' => $databaseUser->id,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('databases', [
+            'name' => 'new_database',
+            'status' => DatabaseStatus::READY,
+        ]);
+
+        $databaseUser->refresh();
+        $this->assertContains('existing_db', $databaseUser->databases);
+        $this->assertContains('new_database', $databaseUser->databases);
     }
 
     public function test_see_databases_list(): void
@@ -77,6 +120,8 @@ class DatabaseTest extends TestCase
 
     public function test_delete_database(): void
     {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
         $this->actingAs($this->user);
 
         SSH::fake();

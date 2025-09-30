@@ -34,10 +34,12 @@ class CreateDatabase
         $database->status = DatabaseStatus::READY;
         $database->save();
 
-        if (isset($input['user']) && $input['user']) {
-            $databaseUser = app(CreateDatabaseUser::class)->create($server, $input, [$database->name]);
-
-            app(LinkUser::class)->link($databaseUser, ['databases' => [$database->name]]);
+        if (isset($input['user']) && $input['user'] && isset($input['existing_user_id']) && $input['existing_user_id']) {
+            // Link existing database user
+            $databaseUser = $server->databaseUsers()->findOrFail($input['existing_user_id']);
+            $databases = $databaseUser->databases ?? [];
+            $databases[] = $database->name;
+            app(LinkUser::class)->link($databaseUser, ['databases' => $databases]);
         }
 
         return $database;
@@ -61,18 +63,11 @@ class CreateDatabase
             ],
         ];
         if (isset($input['user']) && $input['user']) {
-            $rules['username'] = [
+            $rules['existing_user_id'] = [
                 'required',
-                'alpha_dash',
-                Rule::unique('database_users', 'username')->where('server_id', $server->id),
+                'integer',
+                Rule::exists('database_users', 'id')->where('server_id', $server->id),
             ];
-            $rules['password'] = [
-                'required',
-                'min:6',
-            ];
-        }
-        if (isset($input['remote']) && $input['remote']) {
-            $rules['host'] = 'required';
         }
 
         Validator::make($input, $rules)->validate();

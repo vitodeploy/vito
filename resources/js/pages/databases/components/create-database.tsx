@@ -19,16 +19,14 @@ import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import axios from 'axios';
 import { Checkbox } from '@/components/ui/checkbox';
+import DatabaseUserSelect from '@/pages/database-users/components/database-user-select';
 
 type CreateForm = {
   name: string;
   charset: string;
   collation: string;
   user: boolean;
-  username: string;
-  password: string;
-  remote: boolean;
-  host: string;
+  existing_user_id: string;
 };
 
 export default function CreateDatabase({
@@ -57,10 +55,7 @@ export default function CreateDatabase({
     charset: '',
     collation: '',
     user: withUser,
-    username: '',
-    password: '',
-    remote: false,
-    host: '',
+    existing_user_id: '',
   });
 
   const submit = (e: FormEvent) => {
@@ -144,49 +139,21 @@ export default function CreateDatabase({
             <FormField>
               <div className="flex items-center space-x-3">
                 <Checkbox id="user" name="user" checked={form.data.user} onClick={() => form.setData('user', !form.data.user)} />
-                <Label htmlFor="user">Create user</Label>
+                <Label htmlFor="user">Link user to database</Label>
               </div>
               <InputError message={form.errors.user} />
             </FormField>
             {form.data.user && (
-              <>
-                <FormField>
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    type="text"
-                    id="username"
-                    name="username"
-                    value={form.data.username}
-                    onChange={(e) => form.setData('username', e.target.value)}
-                  />
-                  <InputError message={form.errors.username} />
-                </FormField>
-                <FormField>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={form.data.password}
-                    onChange={(e) => form.setData('password', e.target.value)}
-                  />
-                  <InputError message={form.errors.password} />
-                </FormField>
-                <FormField>
-                  <div className="flex items-center space-x-3">
-                    <Checkbox id="remote" name="remote" checked={form.data.remote} onClick={() => form.setData('remote', !form.data.remote)} />
-                    <Label htmlFor="remote">Allow remote connection</Label>
-                  </div>
-                  <InputError message={form.errors.remote} />
-                </FormField>
-                {form.data.remote && (
-                  <FormField>
-                    <Label htmlFor="host">Allow connection from (% for all)</Label>
-                    <Input type="text" id="host" name="host" value={form.data.host} onChange={(e) => form.setData('host', e.target.value)} />
-                    <InputError message={form.errors.host} />
-                  </FormField>
-                )}
-              </>
+              <FormField>
+                <Label htmlFor="existing_user_id">Database User</Label>
+                <DatabaseUserSelect
+                  serverId={server}
+                  value={form.data.existing_user_id}
+                  onValueChange={(value) => form.setData('existing_user_id', value)}
+                  create={true}
+                />
+                <InputError message={form.errors.existing_user_id} />
+              </FormField>
             )}
           </FormFields>
         </Form>
