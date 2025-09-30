@@ -10,6 +10,7 @@ class RegisterServiceType
     /**
      * @param  array<string>  $versions
      * @param  array<string, mixed>  $data
+     * @param  array<int, array{name: string, path: string, sudo: bool}>  $configPaths
      */
     public function __construct(
         private string $name,
@@ -19,7 +20,8 @@ class RegisterServiceType
         private string $handler = '',
         private ?DynamicForm $form = null,
         private array $versions = ['latest'],
-        private array $data = []
+        private array $data = [],
+        private array $configPaths = []
     ) {}
 
     public static function make(string $name): self
@@ -89,6 +91,16 @@ class RegisterServiceType
         return $this;
     }
 
+    /**
+     * @param  array<int, array{name: string, path: string, sudo: bool}>  $configPaths
+     */
+    public function configPaths(array $configPaths): self
+    {
+        $this->configPaths = $configPaths;
+
+        return $this;
+    }
+
     public function register(): void
     {
         $types = config('service.services');
@@ -105,6 +117,7 @@ class RegisterServiceType
             'form' => $this->form ? $this->form->toArray() : [],
             'versions' => $this->versions,
             'data' => $this->data,
+            'config_paths' => $this->configPaths,
         ];
 
         config(['service.services' => $types]);

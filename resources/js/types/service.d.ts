@@ -1,3 +1,9 @@
+export interface ConfigPath {
+  name: string;
+  path: string;
+  sudo: boolean;
+}
+
 export interface Service {
   id: number;
   server_id: number;
@@ -6,6 +12,7 @@ export interface Service {
     extensions?: string[];
     [key: string]: unknown;
   };
+  config_paths?: ConfigPath[];
   name: string;
   version: string;
   installed_version?: string;

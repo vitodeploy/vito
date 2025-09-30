@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Service\GetConfigFile;
 use App\Actions\Service\Install;
 use App\Actions\Service\Manage;
 use App\Actions\Service\Uninstall;
+use App\Actions\Service\UpdateConfigFile;
 use App\Http\Resources\ServiceResource;
 use App\Models\Server;
 use App\Models\Service;
@@ -16,6 +18,7 @@ use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
@@ -145,5 +148,27 @@ class ServiceController extends Controller
         return back()->with('success', __('Fetched instaled version for :service', [
             'service' => $service->name,
         ]));
+    }
+
+    #[Get('/{service}/config', name: 'services.config')]
+    public function getConfig(Request $request, Server $server, Service $service): JsonResponse
+    {
+        $this->authorize('view', $service);
+
+        $content = app(GetConfigFile::class)->get($service, $request->input());
+
+        return response()->json([
+            'content' => $content,
+        ]);
+    }
+
+    #[Patch('/{service}/config', name: 'services.config.update')]
+    public function updateConfig(Request $request, Server $server, Service $service): RedirectResponse
+    {
+        $this->authorize('update', $service);
+
+        app(UpdateConfigFile::class)->update($service, $request->input());
+
+        return back()->with('success', __('Config file updated successfully.'));
     }
 }

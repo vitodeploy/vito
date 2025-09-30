@@ -19,6 +19,7 @@ class ServiceResource extends JsonResource
             'server_id' => $this->server_id,
             'type' => $this->type,
             'type_data' => $this->type_data,
+            'config_paths' => config("service.services.{$this->name}.config_paths", []),
             'name' => $this->name,
             'version' => $this->version,
             'installed_version' => $this->installed_version,

@@ -8,6 +8,7 @@ import DateTime from '@/components/date-time';
 import Uninstall from '@/pages/services/components/uninstall';
 import { Action } from '@/pages/services/components/action';
 import Version from './version';
+import ConfigFile from './config-file';
 
 export const columns: ColumnDef<Service>[] = [
   {
@@ -63,6 +64,14 @@ export const columns: ColumnDef<Service>[] = [
               <Action type="restart" service={row.original} />
               <Action type="enable" service={row.original} />
               <Action type="disable" service={row.original} />
+              {row.original.config_paths && row.original.config_paths.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  {row.original.config_paths.map((configPath) => (
+                    <ConfigFile key={configPath.name} service={row.original} configPath={configPath} />
+                  ))}
+                </>
+              )}
               <DropdownMenuSeparator />
               <Uninstall service={row.original} />
             </DropdownMenuContent>
