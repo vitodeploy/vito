@@ -85,7 +85,7 @@ class UpdateDatabaseUser
 
         $rules['permission'] = [
             'required',
-            Rule::in(DatabaseUserPermission::cases()),
+            Rule::in(array_map(fn($case) => $case->value, DatabaseUserPermission::cases())),
         ];
 
         Validator::make($input, $rules)->validate();
