@@ -9,6 +9,7 @@
 /vendor
 /storage/database.sqlite
 /storage/database-test.sqlite
+/storage/database.sqlite-journal
 .env
 .env.backup
 .env.production

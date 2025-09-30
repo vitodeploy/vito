@@ -16,8 +16,6 @@ class DatabaseTest extends TestCase
 
     public function test_create_database(): void
     {
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $this->actingAs($this->user);
 
         SSH::fake();
@@ -36,8 +34,6 @@ class DatabaseTest extends TestCase
 
     public function test_create_database_with_user(): void
     {
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $this->actingAs($this->user);
 
         SSH::fake();
@@ -68,8 +64,6 @@ class DatabaseTest extends TestCase
 
     public function test_create_database_with_existing_user(): void
     {
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $this->actingAs($this->user);
 
         SSH::fake();
@@ -120,8 +114,6 @@ class DatabaseTest extends TestCase
 
     public function test_delete_database(): void
     {
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $this->actingAs($this->user);
 
         SSH::fake();
