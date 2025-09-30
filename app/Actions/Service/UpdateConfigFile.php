@@ -47,8 +47,8 @@ class UpdateConfigFile
             );
 
             if ($sudo) {
-                $service->server->ssh('root')->exec("sudo chown root:root " . escapeshellarg($path));
-                $service->server->ssh('root')->exec("sudo chmod 644 " . escapeshellarg($path));
+                $service->server->ssh('root')->exec('sudo chown root:root '.escapeshellarg($path));
+                $service->server->ssh('root')->exec('sudo chmod 644 '.escapeshellarg($path));
             }
 
             $this->deleteTempFile($tmpName);

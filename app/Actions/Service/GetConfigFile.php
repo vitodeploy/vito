@@ -31,7 +31,7 @@ class GetConfigFile
             $path = str_replace('{version}', $service->version, $configPath['path']);
             $sudo = $configPath['sudo'] ?? false;
 
-            $command = $sudo ? "sudo cat " . escapeshellarg($path) : "cat " . escapeshellarg($path);
+            $command = $sudo ? 'sudo cat '.escapeshellarg($path) : 'cat '.escapeshellarg($path);
 
             return $service->server->ssh()->exec($command);
         } catch (Throwable $e) {
