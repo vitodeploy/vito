@@ -8,6 +8,7 @@ import { SshKey } from '@/types/ssh-key';
 import { columns } from '@/pages/ssh-keys/components/columns';
 import AddSshKey from '@/pages/ssh-keys/components/add-ssh-key';
 import { PaginatedData } from '@/types';
+import { PlusIcon } from 'lucide-react';
 
 type Page = {
   sshKeys: PaginatedData<SshKey>;
@@ -24,7 +25,10 @@ export default function SshKeys() {
           <Heading title="SSH Keys" description="Here you can manage all of your ssh keys" />
           <div className="flex items-center gap-2">
             <AddSshKey>
-              <Button>Add</Button>
+              <Button>
+                <PlusIcon />
+                Add
+              </Button>
             </AddSshKey>
           </div>
         </div>

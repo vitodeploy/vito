@@ -9,6 +9,7 @@ import { ApiKey } from '@/types/api-key';
 import { columns } from '@/pages/api-keys/components/columns';
 import CreateApiKey from '@/pages/api-keys/components/create-api-key';
 import { PaginatedData } from '@/types';
+import { BookOpenIcon, PlusIcon } from 'lucide-react';
 
 export default function ApiKeys() {
   const page = usePage<{
@@ -21,11 +22,17 @@ export default function ApiKeys() {
         <div className="flex items-start justify-between">
           <Heading title="API Keys" description="Here you can manage API keys" />
           <div className="flex items-center gap-2">
-            <a href="/api-docs/index.html" target="_blank">
-              <Button variant="outline">Docs</Button>
+            <a href="/docs/api" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                Docs
+              </Button>
             </a>
             <CreateApiKey>
-              <Button>Create</Button>
+              <Button>
+                <PlusIcon />
+                Create
+              </Button>
             </CreateApiKey>
           </div>
         </div>
