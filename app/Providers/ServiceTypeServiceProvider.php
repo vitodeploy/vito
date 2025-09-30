@@ -45,11 +45,6 @@ class ServiceTypeServiceProvider extends ServiceProvider
                     'path' => '/etc/nginx/nginx.conf',
                     'sudo' => true,
                 ],
-                [
-                    'name' => 'test.json',
-                    'path' => '/home/vito/test.json',
-                    'sudo' => false,
-                ],
             ])
             ->register();
 
