@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/ui/input-error';
 import { MultiSelect } from '@/components/multi-select';
 import { Badge } from '@/components/ui/badge';
+import EditDatabaseUser from './edit-database-user';
 
 function Link({ databaseUser }: { databaseUser: DatabaseUser }) {
   const [open, setOpen] = useState(false);
@@ -186,6 +187,9 @@ export const columns: ColumnDef<DatabaseUser>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <EditDatabaseUser databaseUser={row.original}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
+              </EditDatabaseUser>
               <Link databaseUser={row.original} />
               <DropdownMenuSeparator />
               <Delete databaseUser={row.original} />

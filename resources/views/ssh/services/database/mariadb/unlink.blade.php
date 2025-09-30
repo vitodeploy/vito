@@ -1,4 +1,6 @@
-if ! sudo mariadb -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '{{ $username }}'@'{{ $host }}'"; then
+sudo mariadb -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '{{ $username }}'@'{{ $host }}'" 2>/dev/null || true
+
+if ! sudo mariadb -e "FLUSH PRIVILEGES"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 

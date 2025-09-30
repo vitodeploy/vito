@@ -6,6 +6,7 @@ use App\Actions\Database\CreateDatabaseUser;
 use App\Actions\Database\DeleteDatabaseUser;
 use App\Actions\Database\LinkUser;
 use App\Actions\Database\SyncDatabaseUsers;
+use App\Actions\Database\UpdateDatabaseUser;
 use App\Http\Resources\DatabaseResource;
 use App\Http\Resources\DatabaseUserResource;
 use App\Models\DatabaseUser;
@@ -66,6 +67,17 @@ class DatabaseUserController extends Controller
 
         return back()
             ->with('success', 'Database users synced successfully.');
+    }
+
+    #[Put('/{databaseUser}', name: 'database-users.update')]
+    public function update(Request $request, Server $server, DatabaseUser $databaseUser): RedirectResponse
+    {
+        $this->authorize('update', [$databaseUser, $server]);
+
+        app(UpdateDatabaseUser::class)->update($databaseUser, $request->all());
+
+        return back()
+            ->with('success', 'Database user updated successfully.');
     }
 
     #[Put('/link/{databaseUser}', name: 'database-users.link')]

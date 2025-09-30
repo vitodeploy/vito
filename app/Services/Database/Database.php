@@ -13,6 +13,8 @@ interface Database extends ServiceInterface
 
     public function createUser(string $username, string $password, string $host): void;
 
+    public function updateUser(string $username, string $host, ?string $newPassword = null, ?string $newHost = null): void;
+
     public function deleteUser(string $username, string $host): void;
 
     /**

@@ -111,4 +111,79 @@ class DatabaseUserTest extends TestCase
             'databases' => $this->castAsJson([]),
         ]);
     }
+
+    public function test_update_database_user_password(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'password' => 'old_password',
+        ]);
+
+        $this->put(route('database-users.update', [
+            'server' => $this->server,
+            'databaseUser' => $databaseUser,
+        ]), [
+            'password' => 'new_password',
+        ])->assertSessionDoesntHaveErrors();
+
+        $databaseUser->refresh();
+
+        $this->assertEquals('new_password', $databaseUser->password);
+    }
+
+    public function test_update_database_user_host(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'host' => 'localhost',
+        ]);
+
+        $this->put(route('database-users.update', [
+            'server' => $this->server,
+            'databaseUser' => $databaseUser,
+        ]), [
+            'remote' => true,
+            'host' => '%',
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('database_users', [
+            'id' => $databaseUser->id,
+            'host' => '%',
+        ]);
+    }
+
+    public function test_update_database_user_password_and_host(): void
+    {
+        $this->actingAs($this->user);
+
+        SSH::fake();
+
+        $databaseUser = DatabaseUser::factory()->create([
+            'server_id' => $this->server,
+            'password' => 'old_password',
+            'host' => 'localhost',
+        ]);
+
+        $this->put(route('database-users.update', [
+            'server' => $this->server,
+            'databaseUser' => $databaseUser,
+        ]), [
+            'password' => 'new_password',
+            'remote' => true,
+            'host' => '192.168.1.1',
+        ])->assertSessionDoesntHaveErrors();
+
+        $databaseUser->refresh();
+
+        $this->assertEquals('new_password', $databaseUser->password);
+        $this->assertEquals('192.168.1.1', $databaseUser->host);
+    }
 }
