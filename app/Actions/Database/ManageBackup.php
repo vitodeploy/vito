@@ -4,6 +4,7 @@ namespace App\Actions\Database;
 
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
+use App\Enums\BackupType;
 use App\Enums\DatabaseStatus;
 use App\Models\Backup;
 use App\Models\Server;
@@ -24,10 +25,13 @@ class ManageBackup
     {
         $this->validate($server, $input);
 
+        $backupType = BackupType::from($input['type'] ?? BackupType::DATABASE->value);
+
         $backup = new Backup([
-            'type' => 'database',
+            'type' => $backupType,
             'server_id' => $server->id,
-            'database_id' => $input['database'] ?? null,
+            'database_id' => $backupType === BackupType::DATABASE ? $input['database'] : null,
+            'path' => $backupType === BackupType::FILE ? $input['path'] : null,
             'storage_id' => $input['storage'],
             'interval' => $input['interval'] == 'custom' ? $input['custom_interval'] : $input['interval'],
             'keep_backups' => $input['keep'],
@@ -73,7 +77,13 @@ class ManageBackup
 
     private function validate(Server $server, array $input): void
     {
+        $backupType = BackupType::from($input['type'] ?? BackupType::DATABASE->value);
+
         $rules = [
+            'type' => [
+                'required',
+                Rule::in([BackupType::DATABASE->value, BackupType::FILE->value]),
+            ],
             'storage' => [
                 'required',
                 Rule::exists('storage_providers', 'id'),
@@ -87,13 +97,23 @@ class ManageBackup
                 'required',
                 Rule::in(array_keys(config('core.cronjob_intervals'))),
             ],
-            'database' => [
+        ];
+
+        if ($backupType === BackupType::DATABASE) {
+            $rules['database'] = [
                 'required',
                 Rule::exists('databases', 'id')
                     ->where('server_id', $server->id)
                     ->where('status', DatabaseStatus::READY),
-            ],
-        ];
+            ];
+        } else {
+            $rules['path'] = [
+                'required',
+                'string',
+                'min:1',
+            ];
+        }
+
         if (isset($input['interval']) && $input['interval'] == 'custom') {
             $rules['custom_interval'] = [
                 'required',

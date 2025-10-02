@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BackupStatus;
+use App\Enums\BackupType;
 use Database\Factories\BackupFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,16 +11,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * @property string $type
+ * @property BackupType $type
  * @property int $server_id
  * @property int $storage_id
  * @property int $database_id
+ * @property string $path
  * @property string $interval
  * @property int $keep_backups
  * @property BackupStatus $status
  * @property Server $server
  * @property StorageProvider $storage
- * @property Database $database
+ * @property ?Database $database
  * @property BackupFile[] $files
  */
 class Backup extends AbstractModel
@@ -32,6 +34,7 @@ class Backup extends AbstractModel
         'server_id',
         'storage_id',
         'database_id',
+        'path',
         'interval',
         'keep_backups',
         'status',
@@ -42,6 +45,7 @@ class Backup extends AbstractModel
         'storage_id' => 'integer',
         'database_id' => 'integer',
         'keep_backups' => 'integer',
+        'type' => BackupType::class,
         'status' => BackupStatus::class,
     ];
 

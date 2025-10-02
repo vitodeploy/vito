@@ -40,12 +40,12 @@ function Delete({ backup }: { backup: Backup }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete backup [{backup.database.name}]</DialogTitle>
+          <DialogTitle>Delete backup [{backup.type === 'database' ? backup.database?.name : backup.path}]</DialogTitle>
           <DialogDescription className="sr-only">Delete backup</DialogDescription>
         </DialogHeader>
         <p className="p-4">
-          Are you sure you want to this backup: <strong>{backup.database.name}</strong>? All backup files will be deleted and this action cannot be
-          undone.
+          Are you sure you want to delete this backup: <strong>{backup.type === 'database' ? backup.database?.name : backup.path}</strong>? All backup
+          files will be deleted and this action cannot be undone.
         </p>
         <DialogFooter>
           <DialogClose asChild>
@@ -64,12 +64,22 @@ function Delete({ backup }: { backup: Backup }) {
 
 export const columns: ColumnDef<Backup>[] = [
   {
-    accessorKey: 'database_id',
-    header: 'Database',
+    accessorKey: 'type',
+    header: 'Type',
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return <span>{row.original.database.name}</span>;
+      return <Badge variant="outline">{row.original.type}</Badge>;
+    },
+  },
+  {
+    accessorKey: 'target',
+    header: 'Target',
+    enableColumnFilter: true,
+    enableSorting: true,
+    cell: ({ row }) => {
+      const backup = row.original;
+      return <span>{backup.type === 'database' ? backup.database?.name : backup.path}</span>;
     },
   },
   {

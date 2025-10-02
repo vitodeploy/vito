@@ -7,8 +7,9 @@ export interface Backup {
   server_id: number;
   storage_id: number;
   storage: StorageProvider;
-  database_id: number;
-  database: Database;
+  database_id: number | null;
+  database: Database | null;
+  path: string | null;
   type: string;
   keep_backups: number;
   interval: string;

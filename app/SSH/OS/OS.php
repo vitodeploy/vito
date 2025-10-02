@@ -360,4 +360,18 @@ class OS
     {
         return $this->server->ssh($user)->exec('mkdir -p '.$path);
     }
+
+    /**
+     * @throws SSHError
+     */
+    public function compress(string $sourcePath, string $zipPath): void
+    {
+        $this->server->ssh()->exec(
+            view('ssh.os.compress', [
+                'sourcePath' => $sourcePath,
+                'zipPath' => $zipPath,
+            ]),
+            'compress'
+        );
+    }
 }

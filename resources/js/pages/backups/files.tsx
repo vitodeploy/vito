@@ -32,7 +32,10 @@ export default function Files() {
 
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading title={`Backup files of ${page.props.backup.database.name}`} description="Here you can manage the backups of your database" />
+          <Heading
+            title={`Backup files of ${page.props.backup.type === 'database' ? page.props.backup.database?.name : page.props.backup.path}`}
+            description="Here you can manage the backup files"
+          />
           <div className="flex items-center gap-2">
             <Button onClick={runBackup}>
               {runBackupForm.processing ? <LoaderCircleIcon className="animate-spin" /> : <CloudUploadIcon />}

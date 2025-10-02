@@ -1,5 +1,5 @@
 import { Server } from '@/types/server';
-import React, { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { useForm, usePage } from '@inertiajs/react';
@@ -18,13 +18,17 @@ export default function CreateBackup({ server, children }: { server: Server; chi
   const page = usePage<SharedData>();
 
   const form = useForm<{
+    type: string;
     database: string;
+    path: string;
     storage: string;
     interval: string;
     custom_interval: string;
     keep: string;
   }>({
+    type: 'database',
     database: '',
+    path: '',
     storage: '',
     interval: 'daily',
     custom_interval: '',
@@ -50,18 +54,52 @@ export default function CreateBackup({ server, children }: { server: Server; chi
         </SheetHeader>
         <Form id="create-backup-form" onSubmit={submit} className="p-4">
           <FormFields>
-            {/*database*/}
+            {/*backup type*/}
             <FormField>
-              <Label htmlFor="database">Database</Label>
-              <DatabaseSelect
-                id="database"
-                name="database"
-                serverId={server.id}
-                value={form.data.database}
-                onValueChange={(value) => form.setData('database', value)}
-              />
-              <InputError message={form.errors.database} />
+              <Label htmlFor="type">Backup Type</Label>
+              <Select value={form.data.type} onValueChange={(value) => form.setData('type', value)}>
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Select backup type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="database">Database Backup</SelectItem>
+                    <SelectItem value="file">File Backup</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <InputError message={form.errors.type} />
             </FormField>
+
+            {/*database - only show for database backups*/}
+            {form.data.type === 'database' && (
+              <FormField>
+                <Label htmlFor="database">Database</Label>
+                <DatabaseSelect
+                  id="database"
+                  name="database"
+                  serverId={server.id}
+                  value={form.data.database}
+                  onValueChange={(value) => form.setData('database', value)}
+                />
+                <InputError message={form.errors.database} />
+              </FormField>
+            )}
+
+            {/*path - only show for file backups*/}
+            {form.data.type === 'file' && (
+              <FormField>
+                <Label htmlFor="path">File/Directory Path</Label>
+                <Input
+                  id="path"
+                  name="path"
+                  value={form.data.path}
+                  onChange={(e) => form.setData('path', e.target.value)}
+                  placeholder="/var/www/html or /home/user/documents"
+                />
+                <InputError message={form.errors.path} />
+              </FormField>
+            )}
 
             {/*storage*/}
             <FormField>

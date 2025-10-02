@@ -70,12 +70,13 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
           href: route('database-users', { server: page.props.server.id }),
           icon: UsersIcon,
         },
-        {
-          title: 'Backups',
-          href: route('backups', { server: page.props.server.id }),
-          icon: CloudUploadIcon,
-        },
       ],
+    },
+    {
+      title: 'Backups',
+      href: route('backups', { server: page.props.server.id }),
+      icon: CloudUploadIcon,
+      isDisabled: isMenuDisabled,
     },
     {
       title: 'Sites',

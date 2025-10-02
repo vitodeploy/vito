@@ -42,6 +42,7 @@ class DatabaseBackupTest extends TestCase
         $this->post(route('backups.store', [
             'server' => $this->server,
         ]), [
+            'type' => 'database',
             'database' => $database->id,
             'storage' => $storage->id,
             'interval' => '0 * * * *',
@@ -74,6 +75,7 @@ class DatabaseBackupTest extends TestCase
         ]);
 
         $this->post(route('backups.store', ['server' => $this->server]), [
+            'type' => 'database',
             'database' => $database->id,
             'storage' => $storage->id,
             'interval' => 'custom',

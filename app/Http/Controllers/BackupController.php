@@ -21,7 +21,7 @@ use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
-#[Prefix('servers/{server}/database/backups')]
+#[Prefix('servers/{server}/backups')]
 #[Middleware(['auth', 'has-project'])]
 class BackupController extends Controller
 {
