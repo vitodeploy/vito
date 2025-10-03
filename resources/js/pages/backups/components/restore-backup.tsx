@@ -36,6 +36,8 @@ export default function RestoreBackup({
   const form = useForm({
     database: '',
     path: '',
+    owner: 'vito:vito',
+    permissions: '755',
   });
 
   const submit = (e: FormEvent) => {
@@ -81,18 +83,50 @@ export default function RestoreBackup({
               </FormField>
             )}
             {backup.type === 'file' && (
-              <FormField>
-                <Label htmlFor="path">Restore to path</Label>
-                <Input
-                  id="path"
-                  name="path"
-                  type="text"
-                  placeholder="/home/vito/x.com"
-                  value={form.data.path}
-                  onChange={(e) => form.setData('path', e.target.value)}
-                />
-                <InputError message={form.errors.path} />
-              </FormField>
+              <>
+                <FormField>
+                  <Label htmlFor="path">Restore to path</Label>
+                  <Input
+                    id="path"
+                    name="path"
+                    type="text"
+                    placeholder="/home/username/restore-path"
+                    value={form.data.path}
+                    onChange={(e) => form.setData('path', e.target.value)}
+                  />
+                  <InputError message={form.errors.path} />
+                </FormField>
+
+                <FormField>
+                  <Label htmlFor="owner">Owner *</Label>
+                  <Input
+                    id="owner"
+                    name="owner"
+                    type="text"
+                    placeholder="vito:vito"
+                    value={form.data.owner}
+                    onChange={(e) => form.setData('owner', e.target.value)}
+                  />
+                  <div className="text-muted-foreground mt-1 text-sm">
+                    Default: vito:vito. If using isolated users, change this field. Examples: "user1", "user1:group1", "root:root"
+                  </div>
+                  <InputError message={form.errors.owner} />
+                </FormField>
+
+                <FormField>
+                  <Label htmlFor="permissions">Permissions *</Label>
+                  <Input
+                    id="permissions"
+                    name="permissions"
+                    type="text"
+                    placeholder="755"
+                    value={form.data.permissions}
+                    onChange={(e) => form.setData('permissions', e.target.value)}
+                  />
+                  <div className="text-muted-foreground mt-1 text-sm">Format: 3-4 digits (e.g., 755, 644, 0755)</div>
+                  <InputError message={form.errors.permissions} />
+                </FormField>
+              </>
             )}
           </FormFields>
         </Form>

@@ -378,12 +378,14 @@ class OS
     /**
      * @throws SSHError
      */
-    public function extractArchive(string $backupPath, string $restorePath): void
+    public function extractArchive(string $backupPath, string $restorePath, ?string $owner = null, ?string $permissions = null): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.extract-archive', [
                 'backupPath' => $backupPath,
                 'restorePath' => $restorePath,
+                'owner' => $owner,
+                'permissions' => $permissions,
             ]),
             'extract-archive'
         );

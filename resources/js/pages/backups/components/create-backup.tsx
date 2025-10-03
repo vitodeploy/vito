@@ -97,6 +97,7 @@ export default function CreateBackup({ server, children }: { server: Server; chi
                   onChange={(e) => form.setData('path', e.target.value)}
                   placeholder="/var/www/html or /home/user/documents"
                 />
+                <div className="text-muted-foreground mt-1 text-sm">Specify the file or directory path to backup.</div>
                 <InputError message={form.errors.path} />
               </FormField>
             )}

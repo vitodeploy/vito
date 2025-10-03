@@ -58,10 +58,13 @@ class RestoreBackup
     {
         // File backup restoration
         $restorePath = $input['path'];
+        $owner = $input['owner'] ?? 'vito:vito';
+        $permissions = $input['permissions'] ?? '755';
+
         $backupFile->restored_to = $restorePath;
         $backupFile->save();
 
-        dispatch(function () use ($backupFile, $restorePath): void {
+        dispatch(function () use ($backupFile, $restorePath, $owner, $permissions): void {
             $server = $backupFile->backup->server;
             $tempBackupPath = $backupFile->tempPath();
 
@@ -71,8 +74,8 @@ class RestoreBackup
                 $tempBackupPath
             );
 
-            // Extract the archive using OS service
-            $server->os()->extractArchive($tempBackupPath, $restorePath);
+            // Extract the archive using OS service with custom owner and permissions
+            $server->os()->extractArchive($tempBackupPath, $restorePath, $owner, $permissions);
 
             // Clean up temporary file
             $server->os()->deleteFile($tempBackupPath);
@@ -101,6 +104,16 @@ class RestoreBackup
                 'required',
                 'string',
                 'min:1',
+            ];
+            $rules['owner'] = [
+                'required',
+                'string',
+                'regex:/^[a-zA-Z0-9_-]+(:[a-zA-Z0-9_-]+)?$/',
+            ];
+            $rules['permissions'] = [
+                'required',
+                'string',
+                'regex:/^[0-7]{3,4}$/',
             ];
         }
 

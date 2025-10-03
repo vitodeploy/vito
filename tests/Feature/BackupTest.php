@@ -297,6 +297,8 @@ class BackupTest extends TestCase
 
         app(RestoreBackup::class)->restore($this->backupFile, [
             'path' => '/home/vito/restored-x.com',
+            'owner' => 'vito:vito',
+            'permissions' => '755',
         ]);
 
         $this->backupFile->refresh();
@@ -311,6 +313,8 @@ class BackupTest extends TestCase
 
         app(RestoreBackup::class)->restore($this->backupFile, [
             'path' => '/home/vito/restored-x.com',
+            'owner' => 'vito:vito',
+            'permissions' => '755',
         ]);
 
         // The job dispatch is tested by checking that the status is set correctly
