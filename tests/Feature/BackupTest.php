@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Actions\Database\RestoreBackup;
-use App\Actions\Database\RunBackup;
+use App\Actions\Backup\RestoreBackup;
+use App\Actions\Backup\RunBackup;
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Enums\BackupType;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Database\RestoreBackup;
+use App\Actions\Backup\RestoreBackup;
 use App\Http\Resources\BackupFileResource;
 use App\Http\Resources\BackupResource;
 use App\Models\Backup;

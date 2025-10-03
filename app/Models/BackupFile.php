@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Actions\Database\ManageBackupFile;
+use App\Actions\Backup\ManageBackupFile;
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupType;
 use App\Facades\Notifier;

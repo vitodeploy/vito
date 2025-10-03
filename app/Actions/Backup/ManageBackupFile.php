@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Database;
+namespace App\Actions\Backup;
 
 use App\Enums\BackupFileStatus;
 use App\Models\BackupFile;

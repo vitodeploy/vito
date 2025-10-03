@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Database\ManageBackup;
-use App\Actions\Database\RunBackup;
+use App\Actions\Backup\ManageBackup;
+use App\Actions\Backup\RunBackup;
 use App\Http\Resources\BackupFileResource;
 use App\Http\Resources\BackupResource;
 use App\Models\Backup;
