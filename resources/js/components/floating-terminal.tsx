@@ -15,19 +15,30 @@ interface FloatingTerminalProps {
   onClose: () => void;
 }
 
+interface TerminalState {
+  isExpanded: boolean;
+  user: string;
+  dir: string;
+  output: string;
+  shellPrefix: string;
+  commandHistory: string[];
+  historyIndex: number;
+  serverId: number;
+}
+
 export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTerminalProps) {
   const page = usePage<{ csrf_token: string }>();
 
   // Helper functions for localStorage
   const getServerKey = (serverId: number) => `terminal_state_${serverId}`;
 
-  const loadTerminalState = () => {
+  const loadTerminalState = (): TerminalState | null => {
     if (typeof window === 'undefined') return null;
 
     try {
       const stored = localStorage.getItem(getServerKey(server.id));
       if (stored) {
-        return JSON.parse(stored);
+        return JSON.parse(stored) as TerminalState;
       }
     } catch (error) {
       console.error('Failed to load terminal state from localStorage:', error);
@@ -35,7 +46,7 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
     return null;
   };
 
-  const saveTerminalState = (state: any) => {
+  const saveTerminalState = (state: TerminalState) => {
     if (typeof window === 'undefined') return;
 
     try {
@@ -105,21 +116,6 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
     }
   }, [running]);
 
-  const clearTerminalContent = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.removeItem(getServerKey(server.id));
-      } catch (error) {
-        console.error('Failed to clear terminal content:', error);
-      }
-    }
-    setOutput('');
-    setDir('~');
-    setShellPrefix('');
-    setCommandHistory([]);
-    setHistoryIndex(-1);
-  }, [server.id]);
-
   const initialize = useCallback(async () => {
     const currentDir = await getWorkingDir(user);
     updateShellPrefixCallback(user, currentDir);
@@ -169,7 +165,7 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
     // Add command to history
     addToCommandHistory(commandToRun);
 
-    setOutput((prev) => prev + commandOutput);
+    setOutput((prev: string) => prev + commandOutput);
     scrollToBottom();
 
     try {
@@ -196,16 +192,16 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
           if (done) break;
 
           const textChunk = decoder.decode(value, { stream: true });
-          setOutput((prev) => prev + textChunk);
+          setOutput((prev: string) => prev + textChunk);
           scrollToBottom();
         }
       }
 
-      setOutput((prev) => prev + '\n');
+      setOutput((prev: string) => prev + '\n');
       await getWorkingDir(user);
     } catch (error) {
       console.error('Command execution failed:', error);
-      setOutput((prev) => prev + '\nError executing command\n');
+      setOutput((prev: string) => prev + '\nError executing command\n');
     } finally {
       setRunning(false);
       setTimeout(() => focusCommand(), 100);
@@ -379,4 +375,3 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
     </Sheet>
   );
 }
-

@@ -10,7 +10,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CheckCircle2Icon, CircleXIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-
 export default function Layout({
   children,
   secondNavItems,
