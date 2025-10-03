@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
 import EditBackup from '@/pages/backups/components/edit-backup';
+import CopyableBadge from '@/components/copyable-badge';
 
 function Delete({ backup }: { backup: Backup }) {
   const [open, setOpen] = useState(false);
@@ -79,7 +80,7 @@ export const columns: ColumnDef<Backup>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       const backup = row.original;
-      return <span>{backup.type === 'database' ? backup.database?.name : backup.path}</span>;
+      return <CopyableBadge text={backup.type === 'database' ? backup.database?.name : backup.path} tooltip />;
     },
   },
   {

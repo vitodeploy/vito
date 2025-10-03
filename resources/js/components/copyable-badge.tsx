@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { CheckCircle2Icon } from 'lucide-react';
 
-export default function CopyableBadge({ text }: { text: string }) {
+export default function CopyableBadge({ text, tooltip }: { text: string | null | undefined; tooltip?: boolean }) {
   const [copySuccess, setCopySuccess] = useState(false);
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(text).then(() => {
+    navigator.clipboard.writeText(text || '').then(() => {
       setCopySuccess(true);
+      toast(
+        <div className="flex items-center gap-2">
+          <CheckCircle2Icon className="text-success size-5" />
+          Copied to clipboard!
+        </div>,
+      );
       setTimeout(() => {
         setCopySuccess(false);
       }, 2000);
@@ -23,7 +31,7 @@ export default function CopyableBadge({ text }: { text: string }) {
         </div>
       </TooltipTrigger>
       <TooltipContent side="top">
-        <span className="flex items-center space-x-2">Copy</span>
+        <span className="flex items-center space-x-2">{tooltip ? text : 'Copy'}</span>
       </TooltipContent>
     </Tooltip>
   );

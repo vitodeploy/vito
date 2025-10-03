@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import RestoreBackup from '@/pages/backups/components/restore-backup';
+import CopyableBadge from '@/components/copyable-badge';
 
 function Delete({ file, onDeleted }: { file: BackupFile; onDeleted?: (file: BackupFile) => void }) {
   const [open, setOpen] = useState(false);
@@ -69,12 +70,6 @@ function Delete({ file, onDeleted }: { file: BackupFile; onDeleted?: (file: Back
 
 export const columns: ColumnDef<BackupFile>[] = [
   {
-    accessorKey: 'name',
-    header: 'Name',
-    enableColumnFilter: true,
-    enableSorting: true,
-  },
-  {
     accessorKey: 'created_at',
     header: 'Created at',
     enableColumnFilter: true,
@@ -88,6 +83,9 @@ export const columns: ColumnDef<BackupFile>[] = [
     header: 'Restored to',
     enableColumnFilter: true,
     enableSorting: true,
+    cell: ({ row }) => {
+      return row.original.restored_to ? <CopyableBadge text={row.original.restored_to} tooltip /> : '-';
+    },
   },
   {
     accessorKey: 'restored_at',
@@ -95,7 +93,7 @@ export const columns: ColumnDef<BackupFile>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return row.original.restored_at ? <DateTime date={row.original.restored_at} /> : '';
+      return row.original.restored_at ? <DateTime date={row.original.restored_at} /> : '-';
     },
   },
   {
