@@ -1,47 +1,63 @@
-import { useRef, FormEvent, useCallback, useEffect } from 'react';
+import { useRef, FormEvent, useCallback, useEffect, useState } from 'react';
 import { Server } from '@/types/server';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  TerminalSquareIcon,
-  XIcon,
-  PanelBottomIcon,
-  PanelTopIcon,
-  Trash2Icon,
-  SquareIcon,
-  LoaderCircleIcon,
-  PinIcon,
-  PinOffIcon,
-} from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { TerminalSquareIcon, PanelBottomIcon, PanelTopIcon, Trash2Icon, SquareIcon, LoaderCircleIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
-import { useTerminal } from '@/contexts/terminal-context';
 
 interface FloatingTerminalProps {
   server: Server;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function FloatingTerminal({ server }: FloatingTerminalProps) {
+export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTerminalProps) {
   const page = usePage<{ csrf_token: string }>();
-  const {
-    state,
-    closeTerminal,
-    toggleExpanded,
-    togglePinned,
-    setUser,
-    setDir,
-    updateOutput,
-    setShellPrefix,
-    setCommandHistory,
-    setHistoryIndex,
-    setRunning,
-    setCommand,
-    clearOutput,
-  } = useTerminal();
 
-  const { isOpen, isExpanded, isPinned, user, dir, output, shellPrefix, commandHistory, historyIndex, running, command } = state;
+  // Helper functions for localStorage
+  const getServerKey = (serverId: number) => `terminal_state_${serverId}`;
+
+  const loadTerminalState = () => {
+    if (typeof window === 'undefined') return null;
+
+    try {
+      const stored = localStorage.getItem(getServerKey(server.id));
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Failed to load terminal state from localStorage:', error);
+    }
+    return null;
+  };
+
+  const saveTerminalState = (state: any) => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      localStorage.setItem(getServerKey(server.id), JSON.stringify(state));
+    } catch (error) {
+      console.error('Failed to save terminal state to localStorage:', error);
+    }
+  };
+
+  // Load initial state from localStorage
+  const savedState = loadTerminalState();
+
+  // Local state for terminal
+  const [isExpanded, setIsExpanded] = useState(savedState?.isExpanded || false);
+  const [user, setUser] = useState(savedState?.user || server.ssh_user);
+  const [dir, setDir] = useState(savedState?.dir || '~');
+  const [output, setOutput] = useState(savedState?.output || '');
+  const [shellPrefix, setShellPrefix] = useState(savedState?.shellPrefix || '');
+  const [commandHistory, setCommandHistory] = useState<string[]>(savedState?.commandHistory || []);
+  const [historyIndex, setHistoryIndex] = useState(savedState?.historyIndex || -1);
+  const [running, setRunning] = useState(false);
+  const [command, setCommand] = useState('');
 
   const outputRef = useRef<HTMLDivElement>(null);
   const commandRef = useRef<HTMLInputElement>(null);
@@ -50,7 +66,7 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
     (currentUser: string, currentDir: string) => {
       setShellPrefix(`${currentUser}@${server.name}:${currentDir}$`);
     },
-    [server.name, setShellPrefix],
+    [server.name],
   );
 
   const focusCommand = () => {
@@ -72,7 +88,7 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
       }
       return dir;
     },
-    [server.id, dir, updateShellPrefixCallback, setDir],
+    [server.id, dir, updateShellPrefixCallback],
   );
 
   const scrollToBottom = () => {
@@ -85,9 +101,24 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
 
   const clearOutputCallback = useCallback(() => {
     if (!running) {
-      clearOutput();
+      setOutput('');
     }
-  }, [running, clearOutput]);
+  }, [running]);
+
+  const clearTerminalContent = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(getServerKey(server.id));
+      } catch (error) {
+        console.error('Failed to clear terminal content:', error);
+      }
+    }
+    setOutput('');
+    setDir('~');
+    setShellPrefix('');
+    setCommandHistory([]);
+    setHistoryIndex(-1);
+  }, [server.id]);
 
   const initialize = useCallback(async () => {
     const currentDir = await getWorkingDir(user);
@@ -110,7 +141,7 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
     return () => {
       outputRef.current?.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [user, updateShellPrefixCallback, getWorkingDir, setCommandHistory]);
+  }, [user, updateShellPrefixCallback, getWorkingDir]);
 
   const handleUserChange = async (newUser: string) => {
     setUser(newUser);
@@ -134,12 +165,11 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
     setRunning(true);
     const commandToRun = command.trim();
     const commandOutput = `${shellPrefix} ${commandToRun}\n`;
-    const cancelled = false;
 
     // Add command to history
     addToCommandHistory(commandToRun);
 
-    updateOutput((prev) => prev + commandOutput);
+    setOutput((prev) => prev + commandOutput);
     scrollToBottom();
 
     try {
@@ -162,26 +192,20 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
         const decoder = new TextDecoder('utf-8');
 
         while (true) {
-          if (cancelled) {
-            await reader.cancel();
-            updateOutput((prev) => prev + '\nStopped!');
-            break;
-          }
-
           const { value, done } = await reader.read();
           if (done) break;
 
           const textChunk = decoder.decode(value, { stream: true });
-          updateOutput((prev) => prev + textChunk);
+          setOutput((prev) => prev + textChunk);
           scrollToBottom();
         }
       }
 
-      updateOutput((prev) => prev + '\n');
+      setOutput((prev) => prev + '\n');
       await getWorkingDir(user);
     } catch (error) {
       console.error('Command execution failed:', error);
-      updateOutput((prev) => prev + '\nError executing command\n');
+      setOutput((prev) => prev + '\nError executing command\n');
     } finally {
       setRunning(false);
       setTimeout(() => focusCommand(), 100);
@@ -197,12 +221,29 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
     run();
   };
 
-  // Initialize when terminal opens or server changes
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (isOpen) {
+      const stateToSave = {
+        isExpanded,
+        user,
+        dir,
+        output,
+        shellPrefix,
+        commandHistory,
+        historyIndex,
+        serverId: server.id,
+      };
+      saveTerminalState(stateToSave);
+    }
+  }, [isOpen, isExpanded, user, dir, output, shellPrefix, commandHistory, historyIndex, server.id]);
+
+  // Initialize when terminal opens
   useEffect(() => {
     if (isOpen) {
       initialize();
     }
-  }, [isOpen, initialize, server.id]);
+  }, [isOpen, initialize]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -215,43 +256,23 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
           clearOutputCallback();
         }
       }
-      if (event.key === 'Escape' && !isPinned) {
-        closeTerminal();
+      if (event.key === 'Escape') {
+        onClose();
       }
     };
 
     document.addEventListener('keydown', handleKeydown);
     return () => document.removeEventListener('keydown', handleKeydown);
-  }, [isOpen, running, clearOutputCallback, isPinned, closeTerminal]);
-
-  if (!isOpen) return null;
+  }, [isOpen, running, clearOutputCallback, onClose]);
 
   return (
-    <div id="floating-terminal" className={cn('fixed inset-0 z-50 flex items-end', isPinned ? 'pointer-events-none' : 'pointer-events-auto')}>
-      {/* Backdrop - only render when unpinned */}
-      {!isPinned && (
-        <div
-          className="pointer-events-auto absolute inset-0 bg-black/5 transition-opacity duration-300"
-          onClick={closeTerminal}
-          style={{
-            clipPath: `polygon(0 0, 100% 0, 100% ${isExpanded ? '25%' : '66.67%'}, 0 ${isExpanded ? '25%' : '66.67%'})`,
-          }}
-        />
-      )}
-
-      {/* Terminal Panel */}
-      <div
-        className={cn(
-          'bg-background pointer-events-auto relative flex w-full transform flex-col border-t shadow-lg transition-all duration-500 ease-out',
-          isExpanded ? 'h-3/4' : 'h-1/3',
-          isOpen ? 'translate-y-0' : 'translate-y-full',
-        )}
-      >
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()} modal>
+      <SheetContent side="bottom" className={cn('flex flex-col p-0', isExpanded ? 'h-3/4' : 'h-1/3')} showClose={false}>
         {/* Header */}
-        <div className="bg-muted/50 flex items-center justify-between border-b px-4 py-2">
+        <SheetHeader className="bg-muted/50 flex flex-row items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2">
             <TerminalSquareIcon className="h-4 w-4" />
-            <span className="text-sm font-medium">Terminal - {server.name}</span>
+            <SheetTitle className="text-sm font-medium">Terminal - {server.name}</SheetTitle>
           </div>
 
           <div className="flex items-center gap-1">
@@ -292,32 +313,14 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
 
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={togglePinned}>
-                  {isPinned ? <PinOffIcon className="h-3 w-3" /> : <PinIcon className="h-3 w-3" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{isPinned ? 'Unpin' : 'Pin'}</TooltipContent>
-            </Tooltip>
-
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggleExpanded}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsExpanded(!isExpanded)}>
                   {isExpanded ? <PanelBottomIcon className="h-3 w-3" /> : <PanelTopIcon className="h-3 w-3" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{isExpanded ? 'Minimize' : 'Maximize'}</TooltipContent>
             </Tooltip>
-
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={closeTerminal}>
-                  <XIcon className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Close</TooltipContent>
-            </Tooltip>
           </div>
-        </div>
+        </SheetHeader>
 
         {/* Terminal Content */}
         <div className="flex min-h-0 flex-1 flex-col">
@@ -372,7 +375,8 @@ export default function FloatingTerminal({ server }: FloatingTerminalProps) {
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
+

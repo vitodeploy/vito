@@ -8,32 +8,8 @@ import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CheckCircle2Icon, CircleXIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react';
-import { TerminalProvider, useTerminal } from '@/contexts/terminal-context';
-import FloatingTerminal from '@/components/floating-terminal';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-function GlobalTerminal() {
-  const { state, updateServer } = useTerminal();
-
-  // Get server from current page (if available)
-  const page = usePage<SharedData>();
-  const server = page.props.server;
-
-  // Update server in context when server changes, but only if terminal is open
-  useEffect(() => {
-    if (server && state.isOpen) {
-      updateServer(server);
-    }
-  }, [server, updateServer, state.isOpen]);
-
-  // Only render if terminal is open and we have a server in context
-  if (!state.isOpen || !state.currentServer) {
-    return null;
-  }
-
-  // Use the server from context (which persists across page changes)
-  return <FloatingTerminal server={state.currentServer} />;
-}
 
 export default function Layout({
   children,
@@ -85,19 +61,16 @@ export default function Layout({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TerminalProvider>
-        <TooltipProvider>
-          <SidebarProvider defaultOpen={!!(secondNavItems && secondNavItems.length > 0)}>
-            <AppSidebar secondNavItems={secondNavItems} secondNavTitle={secondNavTitle} />
-            <SidebarInset>
-              <AppHeader />
-              <div className="flex flex-1 flex-col">{children}</div>
-              <Toaster richColors position="bottom-center" />
-            </SidebarInset>
-          </SidebarProvider>
-          <GlobalTerminal />
-        </TooltipProvider>
-      </TerminalProvider>
+      <TooltipProvider>
+        <SidebarProvider defaultOpen={!!(secondNavItems && secondNavItems.length > 0)}>
+          <AppSidebar secondNavItems={secondNavItems} secondNavTitle={secondNavTitle} />
+          <SidebarInset>
+            <AppHeader />
+            <div className="flex flex-1 flex-col">{children}</div>
+            <Toaster richColors position="bottom-center" />
+          </SidebarInset>
+        </SidebarProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
