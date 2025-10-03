@@ -69,9 +69,6 @@ export const columns: ColumnDef<Backup>[] = [
     header: 'Type',
     enableColumnFilter: true,
     enableSorting: true,
-    cell: ({ row }) => {
-      return <Badge variant="outline">{row.original.type}</Badge>;
-    },
   },
   {
     accessorKey: 'target',
