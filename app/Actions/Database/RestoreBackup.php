@@ -83,6 +83,7 @@ class RestoreBackup
         })->catch(function () use ($backupFile): void {
             $backupFile->status = BackupFileStatus::RESTORE_FAILED;
             $backupFile->save();
+            $backupFile->backup->server->os()->deleteFile($backupFile->tempPath());
         })->onQueue('ssh');
     }
 
