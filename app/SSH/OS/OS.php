@@ -374,4 +374,18 @@ class OS
             'compress'
         );
     }
+
+    /**
+     * @throws SSHError
+     */
+    public function extractArchive(string $backupPath, string $restorePath): void
+    {
+        $this->server->ssh()->exec(
+            view('ssh.os.extract-archive', [
+                'backupPath' => $backupPath,
+                'restorePath' => $restorePath,
+            ]),
+            'extract-archive'
+        );
+    }
 }

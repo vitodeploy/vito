@@ -3,6 +3,7 @@
 namespace App\Actions\Database;
 
 use App\Enums\BackupFileStatus;
+use App\Enums\BackupType;
 use App\Models\BackupFile;
 use App\Models\Database;
 use App\Models\Server;
@@ -17,11 +18,24 @@ class RestoreBackup
      */
     public function restore(BackupFile $backupFile, array $input): void
     {
-        $this->validate($backupFile->backup->server, $input);
+        $this->validate($backupFile->backup->server, $input, $backupFile->backup->type);
 
+        $backup = $backupFile->backup;
+        $backupFile->status = BackupFileStatus::RESTORING;
+
+        if ($backup->type === BackupType::DATABASE) {
+            $this->restoreDatabase($backupFile, $input);
+        }
+
+        if ($backup->type === BackupType::FILE) {
+            $this->restoreFile($backupFile, $input);
+        }
+    }
+
+    private function restoreDatabase(BackupFile $backupFile, array $input): void
+    {
         /** @var Database $database */
         $database = Database::query()->findOrFail($input['database']);
-        $backupFile->status = BackupFileStatus::RESTORING;
         $backupFile->restored_to = $database->name;
         $backupFile->save();
 
@@ -40,13 +54,55 @@ class RestoreBackup
         })->onQueue('ssh');
     }
 
-    private function validate(Server $server, array $input): void
+    private function restoreFile(BackupFile $backupFile, array $input): void
     {
-        Validator::make($input, [
-            'database' => [
+        // File backup restoration
+        $restorePath = $input['path'];
+        $backupFile->restored_to = $restorePath;
+        $backupFile->save();
+
+        dispatch(function () use ($backupFile, $restorePath): void {
+            $server = $backupFile->backup->server;
+            $tempBackupPath = $backupFile->tempPath();
+
+            // Download backup from storage provider
+            $backupFile->backup->storage->provider()->ssh($server)->download(
+                $backupFile->path(),
+                $tempBackupPath
+            );
+
+            // Extract the archive using OS service
+            $server->os()->extractArchive($tempBackupPath, $restorePath);
+
+            // Clean up temporary file
+            $server->os()->deleteFile($tempBackupPath);
+
+            $backupFile->status = BackupFileStatus::RESTORED;
+            $backupFile->restored_at = now();
+            $backupFile->save();
+        })->catch(function () use ($backupFile): void {
+            $backupFile->status = BackupFileStatus::RESTORE_FAILED;
+            $backupFile->save();
+        })->onQueue('ssh');
+    }
+
+    private function validate(Server $server, array $input, BackupType $backupType): void
+    {
+        $rules = [];
+
+        if ($backupType === BackupType::DATABASE) {
+            $rules['database'] = [
                 'required',
                 Rule::exists('databases', 'id')->where('server_id', $server->id),
-            ],
-        ])->validate();
+            ];
+        } else {
+            $rules['path'] = [
+                'required',
+                'string',
+                'min:1',
+            ];
+        }
+
+        Validator::make($input, $rules)->validate();
     }
 }

@@ -13,7 +13,9 @@ class BackupFileFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->slug().'-'.now()->format('YmdHis'),
+            'size' => $this->faker->numberBetween(1000, 10000000),
+            'status' => \App\Enums\BackupFileStatus::CREATED,
         ];
     }
 }

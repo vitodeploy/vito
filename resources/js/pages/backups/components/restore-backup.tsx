@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import DatabaseSelect from '@/pages/databases/components/database-select';
 
@@ -34,6 +35,7 @@ export default function RestoreBackup({
 
   const form = useForm({
     database: '',
+    path: '',
   });
 
   const submit = (e: FormEvent) => {
@@ -65,17 +67,33 @@ export default function RestoreBackup({
         </DialogHeader>
         <Form id="restore-backup-form" onSubmit={submit} className="p-4">
           <FormFields>
-            <FormField>
-              <Label htmlFor="database">To database</Label>
-              <DatabaseSelect
-                id="database"
-                name="database"
-                serverId={backup.server_id}
-                value={form.data.database}
-                onValueChange={(value) => form.setData('database', value)}
-              />
-              <InputError message={form.errors.database} />
-            </FormField>
+            {backup.type === 'database' && (
+              <FormField>
+                <Label htmlFor="database">To database</Label>
+                <DatabaseSelect
+                  id="database"
+                  name="database"
+                  serverId={backup.server_id}
+                  value={form.data.database}
+                  onValueChange={(value) => form.setData('database', value)}
+                />
+                <InputError message={form.errors.database} />
+              </FormField>
+            )}
+            {backup.type === 'file' && (
+              <FormField>
+                <Label htmlFor="path">Restore to path</Label>
+                <Input
+                  id="path"
+                  name="path"
+                  type="text"
+                  placeholder="/home/vito/x.com"
+                  value={form.data.path}
+                  onChange={(e) => form.setData('path', e.target.value)}
+                />
+                <InputError message={form.errors.path} />
+              </FormField>
+            )}
           </FormFields>
         </Form>
         <DialogFooter>

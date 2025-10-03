@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
@@ -122,11 +122,9 @@ export const columns: ColumnDef<BackupFile>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {row.original.backup.type === 'database' && (
-                <RestoreBackup backup={row.original.backup} file={row.original}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restore</DropdownMenuItem>
-                </RestoreBackup>
-              )}
+              <RestoreBackup backup={row.original.backup} file={row.original}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restore</DropdownMenuItem>
+              </RestoreBackup>
               <Delete file={row.original} />
             </DropdownMenuContent>
           </DropdownMenu>

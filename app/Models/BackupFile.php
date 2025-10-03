@@ -89,7 +89,7 @@ class BackupFile extends AbstractModel
 
     public function tempPath(): string
     {
-        $extension = $this->backup->type === BackupType::FILE ? '.tar.gz' : '.zip';
+        $extension = $this->getBackupExtension();
 
         return '/home/'.$this->backup->server->getSshUser().'/'.$this->name.$extension;
     }
@@ -103,7 +103,7 @@ class BackupFile extends AbstractModel
             ? basename($this->backup->path)
             : $this->backup->database->name;
 
-        $extension = $this->backup->type === BackupType::FILE ? '.tar.gz' : '.zip';
+        $extension = $this->getBackupExtension();
 
         return match ($storage->provider) {
             Dropbox::id() => '/'.$backupName.'/'.$this->name.$extension,
@@ -126,5 +126,14 @@ class BackupFile extends AbstractModel
         }
 
         $this->delete();
+    }
+
+    private function getBackupExtension(): string
+    {
+        if ($this->backup->type === BackupType::DATABASE) {
+            return '.zip';
+        }
+
+        return '.tar.gz';
     }
 }

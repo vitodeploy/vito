@@ -3,7 +3,6 @@
 namespace App\Services\Database;
 
 use App\Actions\Database\SyncDatabases;
-use App\Enums\BackupStatus;
 use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Models\BackupFile;
@@ -78,12 +77,6 @@ abstract class AbstractDatabase extends AbstractService implements Database
                     $hasDatabaseUser = $this->service->server->databaseUsers()->exists();
                     if ($hasDatabaseUser) {
                         $fail('You have database user(s) on the server.');
-                    }
-                    $hasRunningBackup = $this->service->server->backups()
-                        ->where('status', BackupStatus::RUNNING)
-                        ->exists();
-                    if ($hasRunningBackup) {
-                        $fail('You have database backup(s) on the server.');
                     }
                 },
             ],
