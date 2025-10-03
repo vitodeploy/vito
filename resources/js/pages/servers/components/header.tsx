@@ -1,5 +1,5 @@
 import { Server } from '@/types/server';
-import { CheckIcon, CloudIcon, LoaderCircleIcon, MousePointerClickIcon, SlashIcon } from 'lucide-react';
+import { CheckIcon, CloudIcon, LoaderCircleIcon, MousePointerClickIcon, SlashIcon, TerminalSquareIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ServerActions from '@/pages/servers/components/actions';
 import { cn } from '@/lib/utils';
@@ -8,9 +8,12 @@ import { StatusRipple } from '@/components/status-ripple';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useTerminal } from '@/contexts/terminal-context';
 
 export default function ServerHeader({ server, site }: { server: Server; site?: Site }) {
   const statusForm = useForm();
+  const { openTerminal } = useTerminal();
 
   const checkStatus = () => {
     if (['installing', 'installation_failed'].includes(server.status)) {
@@ -131,6 +134,14 @@ export default function ServerHeader({ server, site }: { server: Server; site?: 
         </div>
       </div>
       <div className="flex items-center space-x-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 p-0" onClick={() => openTerminal(server)}>
+              <TerminalSquareIcon className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Open Terminal</TooltipContent>
+        </Tooltip>
         <ServerActions server={server} />
       </div>
     </div>
