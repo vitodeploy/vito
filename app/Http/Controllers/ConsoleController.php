@@ -7,8 +7,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
-use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -19,14 +17,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Middleware(['auth', 'has-project'])]
 class ConsoleController extends Controller
 {
-    #[Get('/', name: 'console')]
-    public function index(Server $server): Response
-    {
-        $this->authorize('update', $server);
-
-        return Inertia::render('console/index');
-    }
-
     #[Post('/run', name: 'console.run')]
     public function run(Server $server, Request $request): StreamedResponse
     {

@@ -26,7 +26,3 @@
     animation: indeterminate 1s linear infinite;
   }
 }
-
-html body[data-scroll-locked] #floating-terminal {
-  padding-right: 14px !important;
-}

@@ -4,21 +4,11 @@ namespace Tests\Feature;
 
 use App\Facades\SSH;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class ConsoleTest extends TestCase
 {
     use RefreshDatabase;
-
-    public function test_see_console(): void
-    {
-        $this->actingAs($this->user);
-
-        $this->get(route('console', $this->server))
-            ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('console/index'));
-    }
 
     public function test_run(): void
     {

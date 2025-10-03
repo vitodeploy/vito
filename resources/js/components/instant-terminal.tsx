@@ -1,19 +1,13 @@
-import { useRef, FormEvent, useCallback, useEffect, useState } from 'react';
+import { useRef, FormEvent, useCallback, useEffect, useState, ReactNode } from 'react';
 import { Server } from '@/types/server';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { TerminalSquareIcon, PanelBottomIcon, PanelTopIcon, Trash2Icon, SquareIcon, LoaderCircleIcon } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { TerminalSquareIcon, PanelBottomIcon, PanelTopIcon, Trash2Icon, SquareIcon, LoaderCircleIcon, RefreshCwIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
-
-interface FloatingTerminalProps {
-  server: Server;
-  isOpen: boolean;
-  onClose: () => void;
-}
 
 interface TerminalState {
   isExpanded: boolean;
@@ -26,8 +20,9 @@ interface TerminalState {
   serverId: number;
 }
 
-export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTerminalProps) {
+export default function InstantTerminal({ server, children }: { server: Server; children: ReactNode }) {
   const page = usePage<{ csrf_token: string }>();
+  const [open, setOpen] = useState(false);
 
   // Helper functions for localStorage
   const getServerKey = (serverId: number) => `terminal_state_${serverId}`;
@@ -69,9 +64,11 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
   const [historyIndex, setHistoryIndex] = useState(savedState?.historyIndex || -1);
   const [running, setRunning] = useState(false);
   const [command, setCommand] = useState('');
+  const [cancelled, setCancelled] = useState(false);
 
   const outputRef = useRef<HTMLDivElement>(null);
   const commandRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const updateShellPrefixCallback = useCallback(
     (currentUser: string, currentDir: string) => {
@@ -159,8 +156,12 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
     if (!command.trim() || running) return;
 
     setRunning(true);
+    setCancelled(false);
     const commandToRun = command.trim();
     const commandOutput = `${shellPrefix} ${commandToRun}\n`;
+
+    // Create abort controller for this request
+    abortControllerRef.current = new AbortController();
 
     // Add command to history
     addToCommandHistory(commandToRun);
@@ -179,6 +180,7 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
           user,
           command,
         }),
+        signal: abortControllerRef.current.signal,
       });
 
       setCommand('');
@@ -188,6 +190,12 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
         const decoder = new TextDecoder('utf-8');
 
         while (true) {
+          if (cancelled) {
+            await reader.cancel();
+            setOutput((prev) => prev + '\n');
+            break;
+          }
+
           const { value, done } = await reader.read();
           if (done) break;
 
@@ -197,19 +205,36 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
         }
       }
 
-      setOutput((prev: string) => prev + '\n');
-      await getWorkingDir(user);
+      if (!cancelled) {
+        setOutput((prev: string) => prev + '\n');
+        await getWorkingDir(user);
+      }
     } catch (error) {
-      console.error('Command execution failed:', error);
-      setOutput((prev: string) => prev + '\nError executing command\n');
+      if (error instanceof Error && error.name === 'AbortError') {
+        setOutput((prev) => prev + '\n');
+      } else {
+        console.error('Command execution failed:', error);
+        setOutput((prev: string) => prev + '\nError executing command\n');
+      }
     } finally {
       setRunning(false);
+      setCancelled(false);
+      abortControllerRef.current = null;
       setTimeout(() => focusCommand(), 100);
     }
   };
 
   const stop = () => {
-    setRunning(false);
+    setCancelled(true);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setCommand('');
+  };
+
+  const newSession = async () => {
+    await fetch(route('console.new-session', { server: server.id }), {});
+    getWorkingDir(user);
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -219,7 +244,7 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       const stateToSave = {
         isExpanded,
         user,
@@ -232,18 +257,18 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
       };
       saveTerminalState(stateToSave);
     }
-  }, [isOpen, isExpanded, user, dir, output, shellPrefix, commandHistory, historyIndex, server.id]);
+  }, [open, isExpanded, user, dir, output, shellPrefix, commandHistory, historyIndex, server.id]);
 
   // Initialize when terminal opens
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       initialize();
     }
-  }, [isOpen, initialize]);
+  }, [open, initialize]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
 
     const handleKeydown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === 'l') {
@@ -253,25 +278,43 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
         }
       }
       if (event.key === 'Escape') {
-        onClose();
+        setOpen(false);
+      }
+      if (event.ctrlKey && event.key === 'c') {
+        event.preventDefault();
+        stop();
       }
     };
 
     document.addEventListener('keydown', handleKeydown);
     return () => document.removeEventListener('keydown', handleKeydown);
-  }, [isOpen, running, clearOutputCallback, onClose]);
+  }, [open, running, clearOutputCallback, setOpen, stop]);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'K') {
+        event.preventDefault();
+        setOpen(!open);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => document.removeEventListener('keydown', handleKeydown);
+  }, [open, setOpen]);
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()} modal>
+    <Sheet open={open} onOpenChange={setOpen} modal>
+      <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent side="bottom" className={cn('flex flex-col p-0', isExpanded ? 'h-3/4' : 'h-1/3')} showClose={false}>
-        {/* Header */}
         <SheetHeader className="bg-muted/50 flex flex-row items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2">
             <TerminalSquareIcon className="h-4 w-4" />
             <SheetTitle className="text-sm font-medium">Terminal - {server.name}</SheetTitle>
+            <SheetDescription className="sr-only">Terminal</SheetDescription>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Select value={user} onValueChange={handleUserChange} disabled={running}>
               <SelectTrigger className="h-7 w-20">
                 <SelectValue />
@@ -309,6 +352,15 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
 
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => newSession()}>
+                  <RefreshCwIcon className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>New Session</TooltipContent>
+            </Tooltip>
+
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsExpanded(!isExpanded)}>
                   {isExpanded ? <PanelBottomIcon className="h-3 w-3" /> : <PanelTopIcon className="h-3 w-3" />}
                 </Button>
@@ -319,14 +371,14 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
         </SheetHeader>
 
         {/* Terminal Content */}
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col bg-black">
           {/* Output Area - takes remaining space and is scrollable */}
-          <div ref={outputRef} className="flex-1 overflow-auto bg-black">
+          <div ref={outputRef} className="flex-1 overflow-auto">
             <div className="min-h-full p-4 font-mono text-sm break-all whitespace-pre-wrap text-white">{output}</div>
           </div>
 
           {/* Command Input - always sticks to bottom */}
-          <div className="flex-shrink-0 bg-black p-4 text-white">
+          <div className="flex-shrink-0 border-0 p-4 text-white">
             {!running ? (
               <form onSubmit={handleSubmit} className="flex w-full items-center">
                 <span className="flex-none font-mono text-sm">{shellPrefix}</span>
@@ -361,12 +413,11 @@ export default function FloatingTerminal({ server, isOpen, onClose }: FloatingTe
                   autoComplete="off"
                   autoFocus
                 />
-                <button type="submit" className="hidden" />
               </form>
             ) : (
               <div className="flex items-center gap-2">
                 <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
-                <span className="text-muted-foreground text-sm">Running command...</span>
+                <span className="text-muted-foreground font-mono text-sm">Running command...</span>
               </div>
             )}
           </div>
