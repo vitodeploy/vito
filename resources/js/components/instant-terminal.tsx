@@ -311,7 +311,7 @@ export default function InstantTerminal({ server, children }: { server: Server; 
         <SheetHeader className="bg-muted/50 flex flex-row items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2">
             <TerminalSquareIcon className="h-4 w-4" />
-            <SheetTitle className="text-sm font-medium">Terminal - {server.name}</SheetTitle>
+            <SheetTitle className="text-sm font-medium">Headless Terminal - {server.name}</SheetTitle>
             <SheetDescription className="sr-only">Terminal</SheetDescription>
           </div>
 
