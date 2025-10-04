@@ -26,7 +26,7 @@ export default function CreateBackup({ server, children }: { server: Server; chi
     custom_interval: string;
     keep: string;
   }>({
-    type: 'database',
+    type: 'file',
     database: '',
     path: '',
     storage: '',
@@ -63,8 +63,8 @@ export default function CreateBackup({ server, children }: { server: Server; chi
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="database">Database Backup</SelectItem>
                     <SelectItem value="file">File Backup</SelectItem>
+                    {page.props.server?.services?.database && <SelectItem value="database">Database Backup</SelectItem>}
                   </SelectGroup>
                 </SelectContent>
               </Select>
