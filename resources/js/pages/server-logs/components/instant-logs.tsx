@@ -126,7 +126,7 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
             <div key={`log-${log.id}`}>
               <Button
                 variant="ghost"
-                className="flex w-full items-center justify-between rounded-none border-b px-4 py-2 text-sm"
+                className="flex w-full items-center justify-between rounded-none border-b px-4 py-2 font-mono text-xs"
                 onClick={() => fetchLog(log.id)}
               >
                 <div className="flex items-center gap-2">
