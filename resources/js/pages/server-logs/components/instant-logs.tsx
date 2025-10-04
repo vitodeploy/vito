@@ -122,12 +122,14 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
           </div>
         </SheetHeader>
         <div className="flex h-full flex-col overflow-y-auto">
-          {logs.map((log) => (
+          {logs.map((log, index) => (
             <div key={`log-${log.id}`}>
               <Button
                 variant="ghost"
                 className="flex w-full items-center justify-between rounded-none border-b px-4 py-2 font-mono text-xs"
                 onClick={() => fetchLog(log.id)}
+                tabIndex={index + 1}
+                autoFocus={index === 0}
               >
                 <div className="flex items-center gap-2">
                   <ChevronRightIcon className="size-4" />
@@ -142,7 +144,7 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
               )}
             </div>
           ))}
-          <Button variant="ghost" onClick={loadMore}>
+          <Button variant="ghost" onClick={loadMore} tabIndex={logs.length + 1}>
             {query.isFetching ? 'Loading...' : 'Load More'}
           </Button>
         </div>
