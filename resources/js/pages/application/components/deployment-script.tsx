@@ -56,24 +56,26 @@ export default function DeploymentScript({
           <SheetTitle className="capitalize">{script.name} script</SheetTitle>
           <SheetDescription>{description || 'Update script'}</SheetDescription>
         </SheetHeader>
-        <Form id="update-script-form" className="h-full gap-0" onSubmit={submit}>
-          <Editor
-            defaultLanguage="bash"
-            value={form.data.script}
-            theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
-            className="h-full"
-            onChange={(value) => form.setData('script', value ?? '')}
-            options={{
-              fontSize: 15,
-            }}
-          />
-          <div className="absolute! right-0 bottom-[140px] left-0 z-10 mx-auto max-w-5xl px-4">
-            <Alert>
-              <AlertDescription className="flex items-center gap-2">
-                <StatusRipple variant="default" />
-                <p>Using `php` command in your script will use the PHP version of the site.</p>
-              </AlertDescription>
-            </Alert>
+        <Form id="update-script-form" className="relative h-full flex-col gap-0" onSubmit={submit}>
+          <div className="relative flex-1">
+            <Editor
+              defaultLanguage="bash"
+              value={form.data.script}
+              theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
+              className="h-full"
+              onChange={(value) => form.setData('script', value ?? '')}
+              options={{
+                fontSize: 15,
+              }}
+            />
+            <div className="absolute! right-0 bottom-4 left-0 z-10 mx-auto max-w-5xl px-4">
+              <Alert>
+                <AlertDescription className="flex items-center gap-2">
+                  <StatusRipple variant="default" />
+                  <p>Using `php` command in your script will use the PHP version of the site.</p>
+                </AlertDescription>
+              </Alert>
+            </div>
           </div>
           {['default', 'pre-flight'].includes(script.name) && (
             <FormFields className="p-4">
