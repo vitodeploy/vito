@@ -56,14 +56,14 @@ class ServerLogController extends Controller
     }
 
     #[Get('/json/{site?}', name: 'logs.json')]
-    public function json(Server $server, ?Site $site = null): ResourceCollection
+    public function json(Request $request, Server $server, ?Site $site = null): ResourceCollection
     {
         $this->authorize('viewAny', [ServerLog::class, $server]);
 
         $logs = $server->logs()
             ->when($site, fn ($query) => $query->where('site_id', $site->id))
             ->latest()
-            ->simplePaginate(config('web.pagination_size'));
+            ->simplePaginate($request->query('count') ?? config('web.pagination_size'));
 
         return ServerLogResource::collection($logs);
     }

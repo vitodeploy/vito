@@ -235,6 +235,7 @@ export default function InstantTerminal({ server, children }: { server: Server; 
   const newSession = async () => {
     await fetch(route('console.new-session', { server: server.id }), {});
     getWorkingDir(user);
+    clearOutputCallback();
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -418,6 +419,7 @@ export default function InstantTerminal({ server, children }: { server: Server; 
               <div className="flex items-center gap-2">
                 <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
                 <span className="text-muted-foreground font-mono text-sm">Running command...</span>
+                <button tabIndex={0} autoFocus className="opacity-0"></button>
               </div>
             )}
           </div>

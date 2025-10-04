@@ -1,5 +1,5 @@
 import { Server } from '@/types/server';
-import { CheckIcon, CloudIcon, LoaderCircleIcon, MousePointerClickIcon, SlashIcon, TerminalSquareIcon } from 'lucide-react';
+import { CheckIcon, CloudIcon, LoaderCircleIcon, LogsIcon, MousePointerClickIcon, SlashIcon, TerminalSquareIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ServerActions from '@/pages/servers/components/actions';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import InstantTerminal from '@/components/instant-terminal';
+import { InstantLogs } from '@/pages/server-logs/components/instant-logs';
 
 export default function ServerHeader({ server, site }: { server: Server; site?: Site }) {
   const statusForm = useForm();
@@ -133,6 +134,17 @@ export default function ServerHeader({ server, site }: { server: Server; site?: 
         </div>
       </div>
       <div className="flex items-center space-x-1">
+        <Tooltip>
+          <InstantLogs server={server}>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                <LogsIcon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+          </InstantLogs>
+          <TooltipContent>Logs (Ctrl + Shift + L)</TooltipContent>
+        </Tooltip>
+
         <Tooltip>
           <InstantTerminal server={server}>
             <TooltipTrigger asChild>
