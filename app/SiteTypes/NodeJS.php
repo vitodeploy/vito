@@ -86,14 +86,14 @@ class NodeJS extends AbstractSiteType
         $this->deployKey();
         $this->progress(30);
         app(Git::class)->clone($this->site);
-        $this->site->server->ssh()->exec(
+        $this->site->server->ssh($this->site->user)->exec(
             __('npm install --prefix=:path', [
                 'path' => $this->site->path,
             ]),
             'install-npm-dependencies',
             $this->site->id
         );
-        $this->site->server->ssh()->exec(
+        $this->site->server->ssh($this->site->user)->exec(
             __('npm run build --prefix=:path', [
                 'path' => $this->site->path,
             ]),
