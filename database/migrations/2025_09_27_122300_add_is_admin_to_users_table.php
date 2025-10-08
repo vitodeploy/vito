@@ -16,12 +16,8 @@ return new class extends Migration
     {
         if (DB::getDriverName() === 'sqlite') {
             DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
-        } elseif (Schema::hasTable('plugins')) {
-            $indexes = DB::select("SHOW INDEXES FROM plugins WHERE Key_name = 'plugins_is_enabled_priority_index'");
-            if (! empty($indexes)) {
-                DB::statement('DROP INDEX plugins_is_enabled_priority_index ON plugins');
-            }
         }
+
         $admins = User::query()->where('role', UserRole::ADMIN)->get('id');
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('is_admin')->default(false)->after('password');

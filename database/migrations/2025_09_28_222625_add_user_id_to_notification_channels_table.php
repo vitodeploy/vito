@@ -16,11 +16,6 @@ return new class extends Migration
     {
         if (DB::getDriverName() === 'sqlite') {
             DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
-        } elseif (Schema::hasTable('plugins')) {
-            $indexes = DB::select("SHOW INDEXES FROM plugins WHERE Key_name = 'plugins_is_enabled_priority_index'");
-            if (! empty($indexes)) {
-                DB::statement('DROP INDEX plugins_is_enabled_priority_index ON plugins');
-            }
         }
         Schema::table('notification_channels', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->after('id')->nullable();
