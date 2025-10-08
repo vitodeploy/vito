@@ -14,7 +14,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
         Schema::table('source_controls', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->after('id')->nullable();
         });

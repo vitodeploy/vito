@@ -12,7 +12,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
         Schema::table('cron_jobs', function (Blueprint $table) {
             $table->unsignedInteger('site_id')->nullable()->after('server_id');
         });
