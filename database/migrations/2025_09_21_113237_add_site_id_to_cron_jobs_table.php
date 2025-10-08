@@ -16,7 +16,7 @@ return new class extends Migration
             DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
         } elseif (Schema::hasTable('plugins')) {
             $indexes = DB::select("SHOW INDEXES FROM plugins WHERE Key_name = 'plugins_is_enabled_priority_index'");
-            if (!empty($indexes)) {
+            if (! empty($indexes)) {
                 DB::statement('DROP INDEX plugins_is_enabled_priority_index ON plugins');
             }
         }
