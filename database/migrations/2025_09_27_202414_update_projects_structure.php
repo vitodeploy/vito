@@ -16,6 +16,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('plugins')) {
+            $indexes = DB::select("SHOW INDEXES FROM plugins WHERE Key_name = 'plugins_is_enabled_priority_index'");
+            if (!empty($indexes)) {
+                DB::statement('DROP INDEX plugins_is_enabled_priority_index ON plugins');
+            }
+        }
         Schema::table('user_project', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->nullable()->change();
             $table->string('email')->after('id')->nullable();
