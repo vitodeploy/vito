@@ -55,3 +55,15 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Safari + Chrome */
 }
+
+.react-flow__panel.react-flow__controls {
+  @apply mr-2 mb-6 !rounded-sm;
+}
+
+.react-flow__panel.react-flow__controls button:first-child {
+  @apply !rounded-t-sm;
+}
+
+.react-flow__panel.react-flow__controls button:last-child {
+  @apply !rounded-b-sm;
+}
