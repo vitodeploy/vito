@@ -19,6 +19,7 @@ interface DataTableProps<TData, TValue> {
   isFetching?: boolean;
   isLoading?: boolean;
   searchable?: boolean;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -31,6 +32,7 @@ export function DataTable<TData, TValue>({
   isFetching,
   isLoading,
   searchable,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   // Use paginatedData.data if available, otherwise fall back to data prop
   const tableData = paginatedData?.data || data || [];
@@ -133,7 +135,12 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={onRowClick ? 'hover:bg-muted/50 cursor-pointer' : ''}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}

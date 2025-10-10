@@ -1,0 +1,44 @@
+import { Head, router, usePage } from '@inertiajs/react';
+import Container from '@/components/container';
+import HeaderContainer from '@/components/header-container';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { PlusIcon } from 'lucide-react';
+import { DataTable } from '@/components/data-table';
+import { columns } from '@/pages/workflows/components/columns';
+import { PaginatedData } from '@/types';
+import { Workflow } from '@/types/workflow';
+import Layout from '@/layouts/app/layout';
+import CreateWorkflow from './components/create-workflow';
+
+export default function Workflows() {
+  const page = usePage<{
+    workflows: PaginatedData<Workflow>;
+  }>();
+
+  const onRowClick = (workflow: Workflow) => {
+    router.visit(route('workflows.show', { workflow: workflow.id }));
+  };
+
+  return (
+    <Layout>
+      <Head title={`Workflows`} />
+
+      <Container className="max-w-5xl">
+        <HeaderContainer>
+          <Heading title="Workflows" description="Workflows are chained scripts that will run in the defined order" />
+          <div className="flex items-center gap-2">
+            <CreateWorkflow>
+              <Button>
+                <PlusIcon />
+                <span className="hidden lg:block">Create</span>
+              </Button>
+            </CreateWorkflow>
+          </div>
+        </HeaderContainer>
+
+        <DataTable columns={columns} paginatedData={page.props.workflows} onRowClick={onRowClick} />
+      </Container>
+    </Layout>
+  );
+}

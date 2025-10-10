@@ -202,6 +202,7 @@ return [
         App\Providers\ServiceTypeServiceProvider::class,
         App\Providers\HorizonServiceProvider::class,
         App\Providers\ScrambleServiceProvider::class,
+        App\Providers\WorkflowServiceProvider::class,
     ],
 
     /*

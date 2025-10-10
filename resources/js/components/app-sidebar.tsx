@@ -24,6 +24,7 @@ import {
   MousePointerClickIcon,
   ServerIcon,
   Settings2Icon,
+  WorkflowIcon,
   ZapIcon,
 } from 'lucide-react';
 import AppLogo from './app-logo';
@@ -49,6 +50,11 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       title: 'Scripts',
       href: route('scripts'),
       icon: ZapIcon,
+    },
+    {
+      title: 'Workflows',
+      href: route('workflows'),
+      icon: WorkflowIcon,
     },
     {
       title: 'Settings',

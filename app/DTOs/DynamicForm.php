@@ -31,4 +31,18 @@ readonly class DynamicForm
 
         return $fields;
     }
+
+    public function getFieldNames(): array
+    {
+        $fields = [];
+
+        foreach ($this->fields as $field) {
+            $name = $field->toArray()['name'] ?? null;
+            if ($name) {
+                $fields[] = $name;
+            }
+        }
+
+        return $fields;
+    }
 }

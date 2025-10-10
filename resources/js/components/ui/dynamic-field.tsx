@@ -9,6 +9,7 @@ import InputError from '@/components/ui/input-error';
 import { FormField } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { TriangleAlertIcon } from 'lucide-react';
+import ServerProviderSelect from '@/pages/server-providers/components/server-provider-select';
 
 interface DynamicFieldProps {
   value: string | number | boolean | string[] | undefined;
@@ -114,6 +115,20 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
           onChange={(e) => onChange(e.target.value)}
           className={config.className}
         />
+        {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
+        <InputError message={error} />
+      </FormField>
+    );
+  }
+
+  // Handle server provider select
+  if (config?.type === 'component' && config?.name === 'server_provider') {
+    return (
+      <FormField>
+        <Label htmlFor={`field-${config.name}`} className="capitalize">
+          {label}
+        </Label>
+        <ServerProviderSelect value={value as string} onValueChange={(value) => onChange(value)} />
         {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
         <InputError message={error} />
       </FormField>

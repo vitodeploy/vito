@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property Collection<int, UserProject> $users
  * @property Collection<int, NotificationChannel> $notificationChannels
  * @property Collection<int, SourceControl> $sourceControls
+ * @property Collection<int, User> $registeredUsers
+ * @property Collection<int, Workflow> $workflows
  */
 class Project extends Model
 {
@@ -103,5 +105,10 @@ class Project extends Model
         $user = $this->users()->where('user_id', $user->id)->firstOrFail();
 
         return $user->role;
+    }
+
+    public function workflows(): HasMany
+    {
+        return $this->hasMany(Workflow::class);
     }
 }
