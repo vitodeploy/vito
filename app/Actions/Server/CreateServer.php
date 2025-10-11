@@ -26,7 +26,7 @@ class CreateServer
     /**
      * @param  array<string, mixed>  $input
      */
-    public function create(User $creator, Project $project, array $input): Server
+    public function create(User $creator, Project $project, array $input, string $queue = 'ssh'): Server
     {
         $this->validate($project, $input);
 
@@ -77,7 +77,7 @@ class CreateServer
                         'error' => (string) $e,
                     ]);
                 })
-                ->onQueue('ssh');
+                ->onQueue($queue);
 
             // Ensure we get the default db values in the model
             $this->server->refresh();

@@ -28,8 +28,9 @@ import { toast } from 'sonner';
 import { WorkflowAction } from '@/types/workflow-action';
 import Actions from './components/actions';
 import { Button } from '@/components/ui/button';
-import { DotIcon, LoaderCircleIcon, SaveIcon } from 'lucide-react';
+import { DotIcon, LoaderCircleIcon, SaveIcon, TrashIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import DeleteWorkflow from './components/delete-workflow';
 
 type Page = {
   workflow: Workflow;
@@ -109,7 +110,7 @@ export default function Show() {
         return;
       }
 
-      let colors = {
+      const colors = {
         success: 'oklch(51.1% 0.262 276.966)',
         failure: '',
       };
@@ -183,6 +184,13 @@ export default function Show() {
           <Button variant="ghost" className="size-7" onClick={saveWorkflow} disabled={form.processing}>
             {form.processing ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
           </Button>
+          <DeleteWorkflow workflow={page.props.workflow}>
+            <Button variant="ghost" className="size-7">
+              <TrashIcon />
+            </Button>
+          </DeleteWorkflow>
+          <DotIcon />
+          <Badge variant="default">Beta</Badge>
         </div>
         <Actions actions={page.props.actions} onActionAdded={onActionAdded} />
         <ReactFlow

@@ -16,7 +16,7 @@ class Install
      *
      * @throws SSHError
      */
-    public function install(Server $server, array $input): Service
+    public function install(Server $server, array $input, string $queue = 'ssh-unique'): Service
     {
         $this->validate($input);
 
@@ -50,7 +50,7 @@ class Install
         })->catch(function () use ($service): void {
             $service->status = ServiceStatus::INSTALLATION_FAILED;
             $service->save();
-        })->onQueue('ssh-unique');
+        })->onQueue($queue);
 
         return $service;
     }

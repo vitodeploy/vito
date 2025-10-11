@@ -13,6 +13,9 @@ class WorkflowServiceProvider extends ServiceProvider
     {
         $this->server();
         $this->service();
+        $this->site();
+        $this->general();
+        $this->database();
     }
 
     private function server(): void
@@ -30,6 +33,38 @@ class WorkflowServiceProvider extends ServiceProvider
             ->label('Install Service')
             ->category('service')
             ->handler(\App\WorkflowActions\Service\InstallService::class)
+            ->register();
+    }
+
+    private function site(): void
+    {
+        RegisterWorkflowAction::make('create-site')
+            ->label('Create Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreateSite::class)
+            ->register();
+        RegisterWorkflowAction::make('deploy-site')
+            ->label('Deploy Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\DeploySite::class)
+            ->register();
+    }
+
+    private function general(): void
+    {
+        RegisterWorkflowAction::make('notify')
+            ->label('Notify')
+            ->category('general')
+            ->handler(\App\WorkflowActions\General\Notify::class)
+            ->register();
+    }
+
+    private function database(): void
+    {
+        RegisterWorkflowAction::make('create-database')
+            ->label('Create Database')
+            ->category('database')
+            ->handler(\App\WorkflowActions\Database\CreateDatabase::class)
             ->register();
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -64,5 +65,15 @@ class WorkflowController extends Controller
         app(UpdateWorkflow::class)->update($workflow, $request->all());
 
         return back()->with('success', 'Changes saved!');
+    }
+
+    #[Delete('/{workflow}', name: 'workflows.destroy')]
+    public function destroy(Workflow $workflow): RedirectResponse
+    {
+        $this->authorize('delete', $workflow);
+
+        $workflow->delete();
+
+        return redirect()->route('workflows')->with('success', 'Workflow deleted!');
     }
 }
