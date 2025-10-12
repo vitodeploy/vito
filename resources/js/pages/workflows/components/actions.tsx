@@ -12,7 +12,7 @@ interface Props {
 
 export default function Actions({ actions, onActionAdded }: Props) {
   return (
-    <div className="bg-background absolute top-0 right-0 z-10 m-2 h-[215px] w-[200px] overflow-y-auto rounded-lg border p-3">
+    <div className="bg-background absolute top-0 right-0 z-10 m-2 h-[415px] w-[200px] overflow-y-auto rounded-lg border p-3">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-1 border-b pb-2">
           <h3 className="text-muted-foreground">Actions</h3>

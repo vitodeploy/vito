@@ -9,6 +9,7 @@ use App\Http\Resources\WorkflowResource;
 use App\Models\Workflow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -62,7 +63,11 @@ class WorkflowController extends Controller
     {
         $this->authorize('update', $workflow);
 
-        app(UpdateWorkflow::class)->update($workflow, $request->all());
+        try {
+            app(UpdateWorkflow::class)->update($workflow, $request->all());
+        } catch (ValidationException $e) {
+            return back()->with('error', collect($e->errors())->first()[0] ?? 'An error occurred');
+        }
 
         return back()->with('success', 'Changes saved!');
     }

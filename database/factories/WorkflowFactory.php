@@ -21,7 +21,6 @@ class WorkflowFactory extends Factory
             'project_id' => null,
             'name' => $this->faker->sentence(3),
             'payload' => null,
-            'is_draft' => true,
         ];
     }
 }

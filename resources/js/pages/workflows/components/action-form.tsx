@@ -23,11 +23,13 @@ import { ReactNode, useState, useEffect } from 'react';
 
 export default function ActionForm({
   action,
+  connectedActions,
   onActionChanged,
   type = 'add',
   children,
 }: {
   action: WorkflowAction;
+  connectedActions?: WorkflowAction[];
   onActionChanged: (action: WorkflowAction) => void;
   type: 'add' | 'edit';
   children: ReactNode;
@@ -69,10 +71,10 @@ export default function ActionForm({
     setOpen(false);
   };
 
-  const toggleStatic = (field: DynamicFieldConfig) => {
+  const toggleStatic = (field: DynamicFieldConfig, type: string) => {
     setIsStatic((prev) => ({
       ...prev,
-      [field.name]: !prev[field.name],
+      [field.name]: type === 'static',
     }));
   };
 
@@ -141,7 +143,15 @@ export default function ActionForm({
                         /*@ts-expect-error dynamic types*/
                         error={form.errors[field.name]}
                         autoComplete="off"
+                        list={`${field.name}-examples`}
                       />
+                      <datalist id={`${field.name}-examples`}>
+                        {connectedActions &&
+                          connectedActions.map(
+                            ({ outputs }) =>
+                              outputs && Object.entries(outputs).map(([key]) => <option key={`option-${field.name}-${key}`} value={`{${key}}`} />),
+                          )}
+                      </datalist>
                       {field.description && <p className="text-muted-foreground text-xs">{field.description}</p>}
                     </FormField>
                   )}
@@ -150,14 +160,14 @@ export default function ActionForm({
                   <Label className="opacity-0">Required</Label>
                   <div className="bg-card text-card-foreground border-input mx-auto inline-flex h-9 w-fit items-center justify-center rounded-lg border px-2">
                     <button
-                      onClick={() => toggleStatic(field)}
+                      onClick={() => toggleStatic(field, 'static')}
                       type="button"
                       className={cn('flex h-6 items-center rounded-md px-2', isStatic[field.name] ? 'bg-accent text-accent-foreground shadow' : '')}
                     >
                       Static
                     </button>
                     <button
-                      onClick={() => toggleStatic(field)}
+                      onClick={() => toggleStatic(field, 'dynamic')}
                       type="button"
                       className={cn('flex h-6 items-center rounded-md px-2', !isStatic[field.name] ? 'bg-accent text-accent-foreground shadow' : '')}
                     >

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $workflow_id
  * @property int|null $user_id
  * @property array|null $logs
+ * @property string|null $current_node_id
+ * @property string|null $current_node_label
  * @property WorkflowRunStatus $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -26,6 +28,8 @@ class WorkflowRun extends Model
         'workflow_id',
         'user_id',
         'logs',
+        'current_node_id',
+        'current_node_label',
         'status',
     ];
 

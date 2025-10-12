@@ -134,7 +134,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                           <span>{item.title}</span>
                         </a>
                       ) : (
-                        <Link href={item.href} prefetch>
+                        <Link href={item.href}>
                           {item.icon && <item.icon />}
                           <span>{item.title}</span>
                         </Link>
@@ -209,7 +209,7 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
                                           <span>{childItem.title}</span>
                                         </a>
                                       ) : (
-                                        <Link href={childItem.href} prefetch>
+                                        <Link href={childItem.href}>
                                           {childItem.icon && <childItem.icon />}
                                           <span>{childItem.title}</span>
                                         </Link>

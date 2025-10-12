@@ -69,12 +69,10 @@ export default function Show() {
     name: string;
     nodes: string;
     edges: string;
-    is_draft: boolean;
   }>({
     name: page.props.workflow.name,
     nodes: JSON.parse(JSON.stringify(page.props.workflow.nodes)),
     edges: JSON.parse(JSON.stringify(page.props.workflow.edges)),
-    is_draft: page.props.workflow.is_draft,
   });
 
   const onNodesChange: OnNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
@@ -137,6 +135,7 @@ export default function Show() {
       const newEdge: Edge = {
         ...connection,
         id: `${connection.source}-${connection.target}-${colors[color]}`,
+        data: { status: color },
         style: { stroke: colors[color], strokeWidth: 2 },
         markerEnd: { type: 'arrowclosed', color: colors[color] },
       };
@@ -168,7 +167,6 @@ export default function Show() {
   };
 
   const saveWorkflow = () => {
-    console.log('Saving workflow...', { nodes, edges });
     form.put(route('workflows.update', page.props.workflow.id));
   };
 
@@ -178,8 +176,6 @@ export default function Show() {
       <div className="bg-accent relative h-full w-full border-none">
         <div className="bg-background absolute top-0 left-0 z-10 m-2 flex items-center justify-between gap-2 rounded-lg border p-3">
           <h2 className="text-lg font-semibold tracking-tight">{`Workflow - ${page.props.workflow.name}`}</h2>
-          <DotIcon />
-          <Badge variant={page.props.workflow.is_draft ? 'outline' : 'default'}>{page.props.workflow.is_draft ? 'Draft' : 'Published'}</Badge>
           <DotIcon />
           <Button variant="ghost" className="size-7" onClick={saveWorkflow} disabled={form.processing}>
             {form.processing ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}

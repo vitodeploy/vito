@@ -4,6 +4,7 @@ export interface WorkflowAction {
   id: string;
   label: string;
   description?: string;
+  starting?: boolean;
   category?: string;
   handler: string;
   form?: DynamicFieldConfig[];

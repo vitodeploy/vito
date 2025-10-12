@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('project_id');
             $table->string('name');
             $table->json('payload')->nullable();
-            $table->boolean('is_draft')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

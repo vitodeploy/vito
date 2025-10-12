@@ -13,6 +13,8 @@ class WorkflowResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $startingNode = $this->getStartingNode();
+
         return [
             'id' => $this->id,
             'project_id' => $this->project_id,
@@ -20,7 +22,8 @@ class WorkflowResource extends JsonResource
             'name' => $this->name,
             'nodes' => $this->payload['nodes'] ?? [],
             'edges' => $this->payload['edges'] ?? [],
-            'is_draft' => $this->is_draft,
+            'run_inputs' => $startingNode?->data ?? [],
+            'run_form' => $startingNode?->form ?? [],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

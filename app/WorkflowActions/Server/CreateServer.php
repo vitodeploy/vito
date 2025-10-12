@@ -42,7 +42,7 @@ class CreateServer extends AbstractWorkflowAction
     public function run(array $input): array
     {
         $server = app(\App\Actions\Server\CreateServer::class)->create(
-            $this->workflow->user,
+            $this->user,
             $this->workflow->project,
             $input,
             'sync',

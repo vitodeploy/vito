@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('workflow_id');
             $table->unsignedBigInteger('user_id');
             $table->json('logs')->nullable();
+            $table->string('current_node_id')->nullable();
+            $table->string('current_node_label')->nullable();
             $table->string('status');
             $table->timestamps();
         });

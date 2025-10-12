@@ -69,6 +69,14 @@ class Handler extends ExceptionHandler
             }
         }
 
+        if ($e instanceof AppError) {
+            if ($request->header('X-Inertia')) {
+                return back()->with('error', $e->getMessage());
+            }
+
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
         return parent::render($request, $e);
     }
 }

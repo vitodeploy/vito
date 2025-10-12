@@ -14,7 +14,7 @@ class InstallService extends AbstractWorkflowAction
         return DynamicForm::make([
             DynamicField::make('server_id')
                 ->label('Server ID')
-                ->text(),
+                ->component(),
             DynamicField::make('name')
                 ->label('Service Name')
                 ->select()
