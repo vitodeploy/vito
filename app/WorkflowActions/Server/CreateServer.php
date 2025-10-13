@@ -36,7 +36,6 @@ class CreateServer extends AbstractWorkflowAction
             $this->user,
             $this->workflow->project,
             $input,
-            'sync',
         );
 
         return [

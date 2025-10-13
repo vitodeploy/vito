@@ -35,7 +35,6 @@ class InstallService extends AbstractWorkflowAction
         $service = app(\App\Actions\Service\Install::class)->install(
             $server,
             $input,
-            'sync',
         );
 
         return [

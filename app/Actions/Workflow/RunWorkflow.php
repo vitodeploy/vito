@@ -40,6 +40,10 @@ class RunWorkflow
         $run->refresh();
 
         dispatch(function () use ($run, $user, $workflow, $executionTree, $input) {
+            // set all queue drivers to sync for underlying actions
+            config()->set('queue.connections.ssh.driver', 'sync');
+            config()->set('queue.connections.default.driver', 'sync');
+
             if ($run->verbose && $run->log_disk && $run->log_path) {
                 SSH::useLog($run->log_disk, $run->log_path);
             }
