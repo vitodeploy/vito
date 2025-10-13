@@ -2,6 +2,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { WorkflowAction } from '@/types/workflow-action';
 import { MessageCircleQuestionIcon } from 'lucide-react';
 import ActionForm from './action-form';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 interface Props {
   actions: {
@@ -12,28 +13,36 @@ interface Props {
 
 export default function Actions({ actions, onActionAdded }: Props) {
   return (
-    <div className="bg-background absolute top-0 right-0 z-10 m-2 h-[415px] w-[200px] overflow-y-auto rounded-lg border p-3">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-1 border-b pb-2">
-          <h3 className="text-muted-foreground">Actions</h3>
-          <Tooltip>
-            <TooltipTrigger>
-              <MessageCircleQuestionIcon className="size-4" />
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="mt-2 mr-4 w-[180px]">
-              <div>Click on each action to add them to the workflow</div>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        {Object.entries(actions).map(([key, action]) => (
-          <ActionForm key={`add-action-${key}`} action={action} onActionChanged={onActionAdded} type="add">
-            <div key={`action-${key}`} className="hover:bg-accent cursor-pointer rounded border px-2 py-1">
-              <p className="font-normal">{action.label}</p>
-              {action.description && <p className="text-muted-foreground text-sm">{action.description}</p>}
-            </div>
-          </ActionForm>
-        ))}
-      </div>
+    <div className="absolute top-0 right-0 z-10 m-2 h-[415px] w-[200px] overflow-y-auto rounded-lg border p-0">
+      <Command className="bg-background">
+        <CommandInput
+          right={
+            <Tooltip>
+              <TooltipTrigger>
+                <MessageCircleQuestionIcon className="text-muted-foreground size-4" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="mt-2 mr-3 w-[190px]">
+                <div>Click on each action to add them to the workflow</div>
+              </TooltipContent>
+            </Tooltip>
+          }
+        />
+        <CommandList className="bg-transparent p-0">
+          <CommandEmpty>No results</CommandEmpty>
+          <CommandGroup>
+            {Object.entries(actions).map(([key, action]) => (
+              <CommandItem key={`cmd-item-${key}`} value={key} className="p-0">
+                <ActionForm action={action} onActionChanged={onActionAdded} type="add">
+                  <div key={`action-${key}`} className="w-full p-2">
+                    <p className="font-normal">{action.label}</p>
+                    {action.description && <p className="text-muted-foreground text-sm">{action.description}</p>}
+                  </div>
+                </ActionForm>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
     </div>
   );
 }

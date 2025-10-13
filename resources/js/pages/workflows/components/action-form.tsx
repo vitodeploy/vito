@@ -27,7 +27,7 @@ export default function ActionForm({
   const [open, setOpen] = useState(false);
   const form = useForm({
     label: action.label,
-    inputs: JSON.stringify(action.inputs || {}, null, 2),
+    inputs: JSON.stringify(Array.isArray(action.inputs) && action.inputs.length === 0 ? {} : action.inputs || {}, null, 2),
   });
   const { getActualAppearance } = useAppearance();
 
@@ -38,7 +38,8 @@ export default function ActionForm({
     newAction.inputs = newAction.inputs || {};
     newAction.label = form.data.label?.toString() || action.label;
     newAction.id = crypto.randomUUID();
-    newAction.inputs = JSON.parse(form.data.inputs || '{}');
+    const parsedInputs = JSON.parse(form.data.inputs || '{}');
+    newAction.inputs = Array.isArray(parsedInputs) && parsedInputs.length === 0 ? {} : parsedInputs;
     onActionChanged({ ...newAction });
     setOpen(false);
   };
@@ -46,7 +47,8 @@ export default function ActionForm({
   const reformatJson = () => {
     try {
       const parsed = JSON.parse(form.data.inputs || '{}');
-      const reformatted = JSON.stringify(parsed, null, 2);
+      const normalizedInputs = Array.isArray(parsed) && parsed.length === 0 ? {} : parsed;
+      const reformatted = JSON.stringify(normalizedInputs, null, 2);
       form.setData('inputs', reformatted);
     } catch (e) {
       toast.error('Invalid JSON format. Please correct it before reformatting.');
