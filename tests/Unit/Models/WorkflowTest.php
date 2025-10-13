@@ -41,7 +41,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Test Action',
                                 'handler' => 'TestHandler',
                                 'outputs' => [],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -73,7 +73,7 @@ class WorkflowTest extends TestCase
                                     'server_id' => 'The ID of the created server',
                                     'server_ip' => 'The IP address of the created server',
                                 ],
-                                'data' => [
+                                'inputs' => [
                                     'name' => 'test-server',
                                     'provider' => 'digitalocean',
                                 ],
@@ -92,7 +92,7 @@ class WorkflowTest extends TestCase
         $this->assertEquals('Create Server', $result->label);
         $this->assertEquals('App\\WorkflowActions\\Server\\CreateServer', $result->handler);
         $this->assertEquals(['server_id', 'server_ip'], $result->outputs);
-        $this->assertEquals(['name' => 'test-server', 'provider' => 'digitalocean'], $result->data);
+        $this->assertEquals(['name' => 'test-server', 'provider' => 'digitalocean'], $result->inputs);
         $this->assertEquals('node-1', $result->id);
         $this->assertNull($result->success);
         $this->assertNull($result->failure);
@@ -112,7 +112,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Create Server',
                                 'handler' => 'App\\WorkflowActions\\Server\\CreateServer',
                                 'outputs' => ['server_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => true,
                             ],
                         ],
@@ -124,7 +124,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Install Service',
                                 'handler' => 'App\\WorkflowActions\\Service\\InstallService',
                                 'outputs' => ['service_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -136,7 +136,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Create Site',
                                 'handler' => 'App\\WorkflowActions\\Site\\CreateSite',
                                 'outputs' => ['site_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -192,7 +192,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Start',
                                 'handler' => 'StartHandler',
                                 'outputs' => ['start_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => true,
                             ],
                         ],
@@ -204,7 +204,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Step 1',
                                 'handler' => 'Step1Handler',
                                 'outputs' => ['step1_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -216,7 +216,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Step 2',
                                 'handler' => 'Step2Handler',
                                 'outputs' => ['step2_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -228,7 +228,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Final',
                                 'handler' => 'FinalHandler',
                                 'outputs' => ['final_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -282,7 +282,7 @@ class WorkflowTest extends TestCase
                             'label' => 'Test Action',
                             'handler' => 'TestHandler',
                             'outputs' => ['test_id'],
-                            'data' => [],
+                            'inputs' => [],
                             'starting' => true,
                         ],
                     ],
@@ -294,7 +294,7 @@ class WorkflowTest extends TestCase
         $workflow = Workflow::factory()->create([
             'user_id' => $this->user->id,
             'project_id' => $this->user->current_project_id,
-            'payload' => json_encode($payload),
+            'payload' => $payload,
         ]);
 
         $result = $workflow->getExecutionTree();
@@ -330,7 +330,7 @@ class WorkflowTest extends TestCase
         $this->assertEquals('', $result->label);
         $this->assertEquals('', $result->handler);
         $this->assertEquals([], $result->outputs);
-        $this->assertEquals([], $result->data);
+        $this->assertEquals([], $result->inputs);
         $this->assertEquals('node-1', $result->id);
     }
 
@@ -348,7 +348,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Start',
                                 'handler' => 'StartHandler',
                                 'outputs' => [],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => true,
                             ],
                         ],
@@ -360,7 +360,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Next',
                                 'handler' => 'NextHandler',
                                 'outputs' => [],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -402,7 +402,7 @@ class WorkflowTest extends TestCase
                                     'server_id' => 'The ID of the created server',
                                     'server_ip' => 'The IP address of the created server',
                                 ],
-                                'data' => [
+                                'inputs' => [
                                     'name' => 'test-server',
                                 ],
                                 'starting' => true,
@@ -416,7 +416,7 @@ class WorkflowTest extends TestCase
                                 'label' => 'Install Service',
                                 'handler' => 'App\\WorkflowActions\\Service\\InstallService',
                                 'outputs' => ['service_id'],
-                                'data' => [],
+                                'inputs' => [],
                                 'starting' => false,
                             ],
                         ],
@@ -442,8 +442,8 @@ class WorkflowTest extends TestCase
 
         $this->assertEquals('Create Server', $array['run']['label']);
         $this->assertEquals('App\\WorkflowActions\\Server\\CreateServer', $array['run']['handler']);
+        $this->assertEquals(['name' => 'test-server'], $array['run']['inputs']);
         $this->assertEquals(['server_id', 'server_ip'], $array['run']['outputs']);
-        $this->assertEquals(['name' => 'test-server'], $array['run']['data']);
         $this->assertEquals('node-1', $array['run']['id']);
 
         $this->assertIsArray($array['success']);

@@ -1,9 +1,12 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Workflow } from '@/types/workflow';
 import DateTime from '@/components/date-time';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { PlayIcon } from 'lucide-react';
+import { MoreVerticalIcon } from 'lucide-react';
 import Run from './run';
+import { router } from '@inertiajs/react';
+import DeleteWorkflow from './delete-workflow';
 
 export const columns: ColumnDef<Workflow>[] = [
   {
@@ -36,12 +39,28 @@ export const columns: ColumnDef<Workflow>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       return (
-        <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
-          <Run workflow={row.original}>
-            <Button variant="outline" className="hover:text-success size-7">
-              <PlayIcon />
-            </Button>
-          </Run>
+        <div className="flex items-center justify-end">
+          <DropdownMenu modal={true}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreVerticalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <Run workflow={row.original}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Run</DropdownMenuItem>
+              </Run>
+              <DropdownMenuItem onSelect={() => router.visit(route('workflow-runs', { workflow: row.original.id }))}>History</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.visit(route('workflows.show', { workflow: row.original.id }))}>Edit</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DeleteWorkflow workflow={row.original}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                  Delete
+                </DropdownMenuItem>
+              </DeleteWorkflow>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       );
     },

@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('workflow_id');
             $table->unsignedBigInteger('user_id');
-            $table->json('logs')->nullable();
+            $table->string('log_disk')->nullable();
+            $table->string('log_path')->nullable();
             $table->string('current_node_id')->nullable();
             $table->string('current_node_label')->nullable();
             $table->string('status');
+            $table->boolean('verbose')->default(false);
             $table->timestamps();
         });
     }

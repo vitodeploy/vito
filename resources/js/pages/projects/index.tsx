@@ -6,22 +6,11 @@ import SettingsLayout from '@/layouts/settings/layout';
 import { columns as projectColumns } from '@/pages/projects/components/columns';
 import { columns as invitationColumns } from '@/pages/projects/components/invitations';
 import ProjectForm from '@/pages/projects/components/project-form';
-import { BreadcrumbItem, PaginatedData } from '@/types';
+import { PaginatedData } from '@/types';
 import { Project } from '@/types/project';
 import { Head, usePage } from '@inertiajs/react';
 import { PlusIcon } from 'lucide-react';
 import { ProjectUser } from '@/types/project-user';
-
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Settings',
-    href: '/settings',
-  },
-  {
-    title: 'Projects',
-    href: '/settings/projects',
-  },
-];
 
 export default function Projects() {
   const page = usePage<{
@@ -30,7 +19,7 @@ export default function Projects() {
   }>();
 
   return (
-    <SettingsLayout breadcrumbs={breadcrumbs}>
+    <SettingsLayout>
       <Head title="Projects" />
 
       <Container className="max-w-5xl">

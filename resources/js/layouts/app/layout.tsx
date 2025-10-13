@@ -7,13 +7,14 @@ import { usePage } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { CheckCircle2Icon, CircleXIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 
 export default function Layout({
   children,
   secondNavItems,
   secondNavTitle,
+  breadcrumbs,
 }: PropsWithChildren<{
   breadcrumbs?: BreadcrumbItem[];
   secondNavItems?: NavItem[];
@@ -23,36 +24,16 @@ export default function Layout({
 
   useEffect(() => {
     if (page.props.flash && page.props.flash.success) {
-      toast(
-        <div className="flex items-center gap-2">
-          <CheckCircle2Icon className="text-success size-5" />
-          {page.props.flash.success}
-        </div>,
-      );
+      toast.success(<div className="flex items-center gap-2">{page.props.flash.success}</div>);
     }
     if (page.props.flash && page.props.flash.error) {
-      toast(
-        <div className="flex items-center gap-2">
-          <CircleXIcon className="text-destructive size-5" />
-          {page.props.flash.error}
-        </div>,
-      );
+      toast.error(<div className="flex items-center gap-2">{page.props.flash.error}</div>);
     }
     if (page.props.flash && page.props.flash.warning) {
-      toast(
-        <div className="flex items-center gap-2">
-          <TriangleAlertIcon className="text-warning size-5" />
-          {page.props.flash.warning}
-        </div>,
-      );
+      toast.warning(<div className="flex items-center gap-2">{page.props.flash.warning}</div>);
     }
     if (page.props.flash && page.props.flash.info) {
-      toast(
-        <div className="flex items-center gap-2">
-          <InfoIcon className="text-info size-5" />
-          {page.props.flash.info}
-        </div>,
-      );
+      toast.info(<div className="flex items-center gap-2">{page.props.flash.info}</div>);
     }
   }, [page.props.flash]);
 
@@ -65,6 +46,13 @@ export default function Layout({
           <AppSidebar secondNavItems={secondNavItems} secondNavTitle={secondNavTitle} />
           <SidebarInset>
             <AppHeader />
+            {breadcrumbs && breadcrumbs.length > 1 && (
+              <div className="border-sidebar-border/70 flex w-full border-b">
+                <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500">
+                  <Breadcrumbs breadcrumbs={breadcrumbs} />
+                </div>
+              </div>
+            )}
             <div className="flex flex-1 flex-col">{children}</div>
             <Toaster richColors position="bottom-center" />
           </SidebarInset>

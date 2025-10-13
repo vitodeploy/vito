@@ -2,9 +2,9 @@
 
 namespace App\WorkflowActions;
 
-use App\DTOs\DynamicForm;
 use App\Models\User;
 use App\Models\Workflow;
+use Illuminate\Auth\Access\AuthorizationException;
 
 abstract class AbstractWorkflowAction implements WorkflowActionInterface
 {
@@ -16,8 +16,15 @@ abstract class AbstractWorkflowAction implements WorkflowActionInterface
         protected readonly Workflow $workflow
     ) {}
 
-    public function form(): ?DynamicForm
+    public function inputs(): array
     {
-        return null;
+        return [];
+    }
+
+    public function authorize(string $action, mixed $arguments = []): void
+    {
+        if (! $this->user->can($action, $arguments)) {
+            throw new AuthorizationException("User can't perform this action.");
+        }
     }
 }

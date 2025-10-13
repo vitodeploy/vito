@@ -17,13 +17,21 @@ class Uninstall
             'service' => $service->id,
         ], $service->handler()->deletionRules())->validate();
 
+        $previousStatus = $service->status;
+
         $service->status = ServiceStatus::UNINSTALLING;
         $service->save();
 
         dispatch(function () use ($service): void {
             $service->handler()->uninstall();
             $service->delete();
-        })->catch(function () use ($service): void {
+        })->catch(function () use ($service, $previousStatus): void {
+            // force delete if retried.
+            if ($previousStatus === ServiceStatus::FAILED) {
+                $service->delete();
+
+                return;
+            }
             $service->status = ServiceStatus::FAILED;
             $service->save();
         })->onQueue('ssh-unique');

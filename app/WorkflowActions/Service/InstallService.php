@@ -2,32 +2,24 @@
 
 namespace App\WorkflowActions\Service;
 
-use App\DTOs\DynamicField;
-use App\DTOs\DynamicForm;
 use App\Models\Server;
 use App\WorkflowActions\AbstractWorkflowAction;
 
 class InstallService extends AbstractWorkflowAction
 {
-    public function form(): ?DynamicForm
+    public function inputs(): array
     {
-        return DynamicForm::make([
-            DynamicField::make('server_id')
-                ->label('Server ID')
-                ->component(),
-            DynamicField::make('name')
-                ->label('Service Name')
-                ->select()
-                ->options(array_keys(config('service.services'))),
-            DynamicField::make('version')
-                ->label('Service Version')
-                ->text(),
-        ]);
+        return [
+            'server_id' => 'The ID of the server to install the service on',
+            'name' => 'The name of the service to install',
+            'version' => 'The version of the service to install',
+        ];
     }
 
     public function outputs(): array
     {
         return [
+            'server_id' => 'The ID of the server the service was installed on',
             'service_id' => 'The ID of the installed service',
             'service_status' => 'The status of the installed service',
         ];
@@ -38,6 +30,8 @@ class InstallService extends AbstractWorkflowAction
         /** @var Server $server */
         $server = Server::query()->findOrFail($input['server_id']);
 
+        $this->authorize('update', $server);
+
         $service = app(\App\Actions\Service\Install::class)->install(
             $server,
             $input,
@@ -45,6 +39,7 @@ class InstallService extends AbstractWorkflowAction
         );
 
         return [
+            'server_id' => $server->id,
             'service_id' => $service->id,
             'service_status' => $service->status->value,
         ];

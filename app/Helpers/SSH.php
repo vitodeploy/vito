@@ -37,6 +37,10 @@ class SSH
 
     protected PrivateKey $privateKey;
 
+    protected ?string $logDisk = null;
+
+    protected ?string $logPath = null;
+
     public function init(Server $server, ?string $asUser = null): self
     {
         $this->connection = null;
@@ -57,6 +61,14 @@ class SSH
     public function setLog(?ServerLog $log): self
     {
         $this->log = $log;
+
+        return $this;
+    }
+
+    public function useLog(string $disk, string $path): self
+    {
+        $this->logDisk = $disk;
+        $this->logPath = $path;
 
         return $this;
     }
@@ -103,7 +115,7 @@ class SSH
      */
     public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
-        if (! $this->log instanceof ServerLog && $log) {
+        if (! $this->log instanceof ServerLog && $log && ! $this->logDisk && ! $this->logPath) {
             $this->log = ServerLog::newLog($this->server, $log);
             if ($siteId !== null && $siteId !== 0) {
                 $this->log->forSite($siteId);
@@ -129,7 +141,11 @@ class SSH
             if ($stream === true) {
                 /** @var callable $streamCallback */
                 $this->connection->exec($command, function ($output) use ($streamCallback) {
-                    $this->log?->write($output);
+                    if ($this->logDisk && $this->logPath) {
+                        Storage::disk($this->logDisk)->append($this->logPath, $output);
+                    } else {
+                        $this->log?->write($output);
+                    }
 
                     return $streamCallback($output);
                 });
@@ -138,7 +154,12 @@ class SSH
             }
             $output = '';
             $this->connection->exec($command, function (string $out) use (&$output): void {
-                $this->log?->write($out);
+                if ($this->logDisk && $this->logPath) {
+                    Storage::disk($this->logDisk)->append($this->logPath, $out);
+                } else {
+                    $this->log?->write($out);
+                }
+
                 $output .= $out;
             });
             if ($this->connection->getExitStatus() !== 0 || Str::contains($output, 'VITO_SSH_ERROR')) {

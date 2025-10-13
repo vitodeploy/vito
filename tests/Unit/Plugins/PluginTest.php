@@ -18,7 +18,7 @@ use App\Models\Plugin;
 use App\Models\PluginError;
 use Carbon\Carbon;
 use Exception;
-use File;
+use Illuminate\Support\Facades\File;
 use Mockery;
 use Tests\TestCase;
 

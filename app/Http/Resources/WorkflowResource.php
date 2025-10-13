@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\DTOs\WorkflowActionDTO;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,6 +14,7 @@ class WorkflowResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var WorkflowActionDTO|null $startingNode */
         $startingNode = $this->getStartingNode();
 
         return [
@@ -22,8 +24,7 @@ class WorkflowResource extends JsonResource
             'name' => $this->name,
             'nodes' => $this->payload['nodes'] ?? [],
             'edges' => $this->payload['edges'] ?? [],
-            'run_inputs' => $startingNode?->data ?? [],
-            'run_form' => $startingNode?->form ?? [],
+            'run_inputs' => $startingNode->inputs ?? [],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

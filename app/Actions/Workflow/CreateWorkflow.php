@@ -15,6 +15,7 @@ class CreateWorkflow
             'name' => ['string', 'max:255'],
         ])->validate();
 
+        /** @var Workflow $workflow */
         $workflow = $project->workflows()->create([
             'user_id' => $user->id,
             'name' => $input['name'] ?? 'New Workflow',

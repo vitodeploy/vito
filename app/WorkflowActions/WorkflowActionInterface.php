@@ -2,11 +2,9 @@
 
 namespace App\WorkflowActions;
 
-use App\DTOs\DynamicForm;
-
 interface WorkflowActionInterface
 {
-    public function form(): ?DynamicForm;
+    public function inputs(): array;
 
     public function outputs(): array;
 

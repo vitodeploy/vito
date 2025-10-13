@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
@@ -15,10 +15,6 @@ export default function Workflows() {
   const page = usePage<{
     workflows: PaginatedData<Workflow>;
   }>();
-
-  const onRowClick = (workflow: Workflow) => {
-    router.visit(route('workflows.show', { workflow: workflow.id }));
-  };
 
   return (
     <Layout>
@@ -37,7 +33,7 @@ export default function Workflows() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.workflows} onRowClick={onRowClick} />
+        <DataTable columns={columns} paginatedData={page.props.workflows} />
       </Container>
     </Layout>
   );

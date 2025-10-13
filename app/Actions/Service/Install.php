@@ -50,7 +50,7 @@ class Install
         })->catch(function () use ($service): void {
             $service->status = ServiceStatus::INSTALLATION_FAILED;
             $service->save();
-        })->onQueue($queue);
+        })->onConnection($queue === 'sync' ? 'sync' : 'default')->onQueue('ssh-unique');
 
         return $service;
     }

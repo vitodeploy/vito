@@ -83,6 +83,11 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/server-logs'),
         ],
+
+        'app-logs' => [
+            'driver' => 'local',
+            'root' => storage_path('app/logs'),
+        ],
     ],
 
     /*

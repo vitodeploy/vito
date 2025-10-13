@@ -69,9 +69,7 @@ class Workflow extends Model
             if ($handlerClass && class_exists($handlerClass)) {
                 /** @var WorkflowActionInterface $handler */
                 $handler = new $handlerClass($this->user, $this);
-                if (! isset($action['form']) || empty($action['form'])) {
-                    $action['form'] = $handler->form()?->toArray() ?? [];
-                }
+                $action['inputs'] = $handler->inputs();
                 $action['outputs'] = $handler->outputs();
                 $actions[$actionKey] = $action;
             }
@@ -82,13 +80,9 @@ class Workflow extends Model
 
     public function getStartingNode(): ?WorkflowActionDTO
     {
-        $payload = $this->payload;
+        $payload = $this->payload ?? [];
 
         $startingNode = null;
-
-        if (is_string($payload)) {
-            $payload = json_decode($payload, true) ?? [];
-        }
 
         $nodes = data_get($payload, 'nodes', []);
 
@@ -111,11 +105,7 @@ class Workflow extends Model
 
     public function getExecutionTree(): ?WorkflowActionDTO
     {
-        $payload = $this->payload;
-
-        if (is_string($payload)) {
-            $payload = json_decode($payload, true) ?? [];
-        }
+        $payload = $this->payload ?? [];
 
         $nodes = data_get($payload, 'nodes', []);
         $edges = data_get($payload, 'edges', []);
@@ -191,7 +181,7 @@ class Workflow extends Model
             label: $dto->label,
             handler: $dto->handler,
             outputs: $dto->outputs,
-            data: $dto->data,
+            inputs: $dto->inputs,
             id: $dto->id,
             success: $successDto,
             failure: $failureDto,

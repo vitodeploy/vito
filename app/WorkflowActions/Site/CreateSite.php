@@ -2,19 +2,13 @@
 
 namespace App\WorkflowActions\Site;
 
-use App\DTOs\DynamicField;
-use App\DTOs\DynamicForm;
 use App\WorkflowActions\AbstractWorkflowAction;
 
 class CreateSite extends AbstractWorkflowAction
 {
-    public function form(): ?DynamicForm
+    public function inputs(): array
     {
-        return DynamicForm::make([
-            DynamicField::make('server_id')
-                ->label('Server ID')
-                ->text(),
-        ]);
+        return [];
     }
 
     public function outputs(): array

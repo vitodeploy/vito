@@ -7,18 +7,17 @@ use App\Models\User;
 use App\Models\Workflow;
 use App\WorkflowActions\WorkflowActionInterface;
 
-readonly class WorkflowActionDTO
+class WorkflowActionDTO
 {
     /**
      * @param  array<int, string>  $outputs
-     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $inputs
      */
     public function __construct(
         public string $label,
         public string $handler,
         public array $outputs,
-        public array $data,
-        public array $form,
+        public array $inputs,
         public string $id,
         public ?WorkflowActionDTO $success = null,
         public ?WorkflowActionDTO $failure = null,
@@ -44,8 +43,7 @@ readonly class WorkflowActionDTO
             label: $actionData['label'] ?? '',
             handler: $actionData['handler'] ?? '',
             outputs: array_keys($actionData['outputs'] ?? []),
-            data: $actionData['data'] ?? [],
-            form: $actionData['form'] ?? [],
+            inputs: $actionData['inputs'] ?? [],
             id: $nodeId,
         );
     }
@@ -60,8 +58,7 @@ readonly class WorkflowActionDTO
                 'label' => $this->label,
                 'handler' => $this->handler,
                 'outputs' => $this->outputs,
-                'data' => $this->data,
-                'form' => $this->form,
+                'inputs' => $this->inputs,
                 'id' => $this->id,
             ],
             'success' => $this->success?->toArray(),

@@ -7,12 +7,14 @@ use App\Contracts\VitoEnum;
 enum WorkflowRunStatus: string implements VitoEnum
 {
     case RUNNING = 'running';
+    case COMPLETED = 'completed';
     case FAILED = 'failed';
 
     public function getColor(): string
     {
         return match ($this) {
-            self::RUNNING => 'success',
+            self::RUNNING => 'warning',
+            self::COMPLETED => 'success',
             self::FAILED => 'danger',
         };
     }

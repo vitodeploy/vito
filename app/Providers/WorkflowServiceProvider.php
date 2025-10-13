@@ -57,6 +57,11 @@ class WorkflowServiceProvider extends ServiceProvider
             ->category('general')
             ->handler(\App\WorkflowActions\General\Notify::class)
             ->register();
+        RegisterWorkflowAction::make('run-command')
+            ->label('Run Command')
+            ->category('general')
+            ->handler(\App\WorkflowActions\General\RunCommand::class)
+            ->register();
     }
 
     private function database(): void

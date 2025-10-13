@@ -77,6 +77,7 @@ class CreateServer
                         'error' => (string) $e,
                     ]);
                 })
+                ->onConnection($queue === 'sync' ? 'sync' : 'default')
                 ->onQueue($queue);
 
             // Ensure we get the default db values in the model
