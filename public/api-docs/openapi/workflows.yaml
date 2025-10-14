@@ -1,0 +1,387 @@
+paths:
+  /api/projects/{project}/workflows:
+    get:
+      summary: List workflows
+      description: Get all workflows for a project
+      tags:
+        - Workflows
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Workflow.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/workflows/{workflow}:
+    get:
+      summary: Get workflow
+      description: Get a specific workflow by ID
+      tags:
+        - Workflows
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Workflow details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Workflow.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Delete workflow
+      description: Delete a workflow
+      tags:
+        - Workflows
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Workflow deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/workflows/{workflow}/runs:
+    get:
+      summary: List workflow runs
+      description: Get all runs for a workflow
+      tags:
+        - Workflow Runs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of workflow runs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/WorkflowRun.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Run workflow
+      description: Execute a workflow with the provided inputs
+      tags:
+        - Workflow Runs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 'Dynamic inputs based on workflow configuration.'
+              example:
+                branch: 'main'
+                environment: 'production'
+                verbose: true
+      responses:
+        '201':
+          description: Workflow run started successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/WorkflowRun.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/workflows/{workflow}/runs/{workflowRun}:
+    get:
+      summary: Get workflow run
+      description: Get a specific workflow run by ID
+      tags:
+        - Workflow Runs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflowRun
+          in: path
+          required: true
+          description: Workflow Run ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Workflow run details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/WorkflowRun.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Workflow run not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/workflows/{workflow}/runs/{workflowRun}/log:
+    get:
+      summary: Get workflow run logs
+      description: Get the log content for a specific workflow run
+      tags:
+        - Workflow Runs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflow
+          in: path
+          required: true
+          description: Workflow ID
+          schema:
+            type: integer
+            example: 1
+        - name: workflowRun
+          in: path
+          required: true
+          description: Workflow Run ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Workflow run log content
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  [2024-01-01 12:00:00] Starting workflow execution...
+                  [2024-01-01 12:00:01] Deploying to production...
+                  [2024-01-01 12:00:05] Deployment completed successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Workflow run not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sanctum bearer token authentication

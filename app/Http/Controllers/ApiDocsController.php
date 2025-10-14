@@ -29,6 +29,7 @@ class ApiDocsController extends Controller
             'workers.yaml',
             'firewall-rules.yaml',
             'ssl.yaml',
+            'workflows.yaml',
         ];
 
         $combinedPaths = [];

@@ -28,6 +28,8 @@ class WorkflowController extends Controller
     {
         $user = user();
 
+        $this->authorize('viewAny', [Workflow::class, $user->currentProject]);
+
         $workflows = $user->currentProject
             ->workflows()
             ->orderBy('created_at', 'desc')
@@ -42,6 +44,9 @@ class WorkflowController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = user();
+
+        $this->authorize('create', [Workflow::class, $user->currentProject]);
+
         $workflow = app(CreateWorkflow::class)->create($user, $user->currentProject, $request->all());
 
         return redirect()->route('workflows.show', $workflow->id);

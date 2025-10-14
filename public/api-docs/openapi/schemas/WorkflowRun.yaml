@@ -1,0 +1,32 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  workflow_id:
+    type: integer
+    example: 1
+  status:
+    type: string
+    enum: ['running', 'completed', 'failed']
+    example: 'completed'
+  status_color:
+    type: string
+    enum: ['warning', 'success', 'danger']
+    example: 'success'
+  current_node_label:
+    type: string
+    nullable: true
+    example: 'Deploy Application'
+  current_node_id:
+    type: string
+    nullable: true
+    example: 'node-1'
+  created_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'
+  updated_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'

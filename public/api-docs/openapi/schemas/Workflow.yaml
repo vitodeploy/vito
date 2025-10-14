@@ -1,0 +1,82 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  project_id:
+    type: integer
+    example: 1
+  user_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'Deploy to Production'
+  nodes:
+    type: array
+    description: 'Workflow nodes configuration'
+    items:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 'node-1'
+        data:
+          type: object
+          properties:
+            action:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: 'deploy'
+                label:
+                  type: string
+                  example: 'Deploy Application'
+                starting:
+                  type: boolean
+                  example: true
+  edges:
+    type: array
+    description: 'Workflow edges configuration'
+    items:
+      type: object
+      properties:
+        source:
+          type: string
+          example: 'node-1'
+        target:
+          type: string
+          example: 'node-2'
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: 'success'
+  run_inputs:
+    type: array
+    description: 'Inputs required for running the workflow'
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'branch'
+        type:
+          type: string
+          example: 'string'
+        required:
+          type: boolean
+          example: true
+        description:
+          type: string
+          example: 'Git branch to deploy'
+  created_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'
+  updated_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'

@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ApiDocsControllerTest extends TestCase
+class ApiDocsTest extends TestCase
 {
     use RefreshDatabase;
 

@@ -2,36 +2,39 @@
 
 namespace App\Policies;
 
+use App\Models\Project;
 use App\Models\User;
 use App\Models\Workflow;
+use App\Traits\HasRolePolicies;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class WorkflowPolicy
 {
     use HandlesAuthorization;
+    use HasRolePolicies;
 
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, Project $project): bool
     {
-        return true;
+        return $this->hasReadAccess($user, $project);
     }
 
     public function view(User $user, Workflow $workflow): bool
     {
-        return $user->id === $workflow->user_id;
+        return $this->hasReadAccess($user, $workflow->project);
     }
 
-    public function create(User $user): bool
+    public function create(User $user, Project $project): bool
     {
-        return true;
+        return $this->hasWriteAccess($user, $project);
     }
 
     public function update(User $user, Workflow $workflow): bool
     {
-        return $user->id === $workflow->user_id;
+        return $this->hasWriteAccess($user, $workflow->project);
     }
 
     public function delete(User $user, Workflow $workflow): bool
     {
-        return $user->id === $workflow->user_id;
+        return $this->hasWriteAccess($user, $workflow->project);
     }
 }
