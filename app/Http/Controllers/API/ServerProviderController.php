@@ -65,6 +65,26 @@ class ServerProviderController extends Controller
         return new ServerProviderResource($serverProvider);
     }
 
+    #[Get('{serverProvider}/regions', name: 'api.projects.server-providers.regions', middleware: 'ability:read')]
+    public function regions(Project $project, ServerProvider $serverProvider): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', $serverProvider);
+
+        $this->validateRoute($project, $serverProvider);
+
+        return response()->json($serverProvider->provider()->regions());
+    }
+
+    #[Get('{serverProvider}/regions/{region}/plans', name: 'api.projects.server-providers.plans', middleware: 'ability:read')]
+    public function plans(Project $project, ServerProvider $serverProvider, string $region): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', $serverProvider);
+
+        $this->validateRoute($project, $serverProvider);
+
+        return response()->json($serverProvider->provider()->plans($region));
+    }
+
     #[Delete('{serverProvider}', name: 'api.projects.server-providers.delete', middleware: 'ability:write')]
     public function delete(Project $project, ServerProvider $serverProvider): \Illuminate\Http\Response
     {

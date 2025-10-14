@@ -59,7 +59,7 @@ export default function ActionForm({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="sm:max-w-3xl">
+      <SheetContent className="sm:max-w-5xl">
         <SheetHeader>
           <SheetTitle>Add [{action.label}]</SheetTitle>
           <SheetDescription className="sr-only">Add [{action.label}] action</SheetDescription>
@@ -88,6 +88,7 @@ export default function ActionForm({
                 options={{
                   fontSize: 15,
                   minimap: { enabled: false },
+                  wordWrap: 'on',
                 }}
               />
             </FormField>

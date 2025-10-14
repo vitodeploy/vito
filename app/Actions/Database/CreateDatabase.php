@@ -3,6 +3,7 @@
 namespace App\Actions\Database;
 
 use App\Enums\DatabaseStatus;
+use App\Enums\DatabaseUserPermission;
 use App\Models\Database;
 use App\Models\Server;
 use App\Models\Service;
@@ -34,12 +35,22 @@ class CreateDatabase
         $database->status = DatabaseStatus::READY;
         $database->save();
 
+        $hasCreatedUser = false;
         if (isset($input['user']) && $input['user'] && isset($input['existing_user_id']) && $input['existing_user_id']) {
             // Link existing database user
             $databaseUser = $server->databaseUsers()->findOrFail($input['existing_user_id']);
             $databases = $databaseUser->databases ?? [];
             $databases[] = $database->name;
             app(LinkUser::class)->link($databaseUser, ['databases' => $databases]);
+            $hasCreatedUser = true;
+        }
+
+        if (! $hasCreatedUser && (isset($input['username']) && $input['username'])) {
+            app(CreateDatabaseUser::class)->create($server, [
+                'username' => $input['username'],
+                'password' => $input['password'],
+                'permission' => DatabaseUserPermission::ADMIN->value,
+            ], [$database->name]);
         }
 
         return $database;
@@ -59,6 +70,15 @@ class CreateDatabase
             ],
             'collation' => [
                 'required',
+                'string',
+            ],
+            'username' => [
+                'nullable',
+                'alpha_dash',
+                Rule::unique('database_users', 'username')->where('server_id', $server->id)->whereNull('deleted_at'),
+            ],
+            'password' => [
+                'nullable',
                 'string',
             ],
         ];

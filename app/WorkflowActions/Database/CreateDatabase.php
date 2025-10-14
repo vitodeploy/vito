@@ -13,8 +13,10 @@ class CreateDatabase extends AbstractWorkflowAction
         return [
             'server_id' => 'The ID of the server to create the database on',
             'name' => 'The name of the database to create',
-            'charset' => 'The character set of the database',
-            'collation' => 'The collation of the database',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_general_ci',
+            'username' => 'The username of the database user (optional)',
+            'password' => 'The password of the database user (optional)',
         ];
     }
 
@@ -24,6 +26,8 @@ class CreateDatabase extends AbstractWorkflowAction
             'server_id' => 'The ID of the server where the database was created',
             'database_name' => 'The name of the created database',
             'database_id' => 'The ID of the created database',
+            'database_user_id' => 'The ID of the created database user (if a user was created)',
+            'database_user_username' => 'The name of the created database user (if a user was created)',
         ];
     }
 
@@ -36,10 +40,19 @@ class CreateDatabase extends AbstractWorkflowAction
 
         $database = app(\App\Actions\Database\CreateDatabase::class)->create($server, $input);
 
-        return [
+        $outputs = [
             'server_id' => $server->id,
             'database_name' => $database->name,
             'database_id' => $database->id,
         ];
+        if (isset($input['username']) && $input['username']) {
+            $databaseUser = $server->databaseUsers()->where('username', $input['username'])->first();
+            if ($databaseUser) {
+                $outputs['database_user_id'] = $databaseUser->id;
+                $outputs['database_user_username'] = $databaseUser->username;
+            }
+        }
+
+        return $outputs;
     }
 }

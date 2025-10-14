@@ -10,6 +10,7 @@ class CreateServer extends AbstractWorkflowAction
     {
         return [
             'name' => 'The name of the server',
+            'provider' => 'The server provider. example: hetzner, digitalocean, aws, vultr, linode',
             'server_provider' => 'The server provider ID',
             'plan' => 'The server plan',
             'region' => 'The server region',

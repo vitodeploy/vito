@@ -1,0 +1,476 @@
+paths:
+  /api/projects/{project}/server-providers:
+    get:
+      summary: List server providers
+      description: Get all server providers for a project
+      tags:
+        - Server Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of server providers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/ServerProvider.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create server provider
+      description: Create a new server provider
+      tags:
+        - Server Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - credentials
+              properties:
+                name:
+                  type: string
+                  description: Server provider name
+                  example: 'DigitalOcean'
+                type:
+                  type: string
+                  enum: ['aws', 'hetzner', 'digitalocean', 'linode', 'vultr']
+                  description: Server provider type
+                  example: 'digitalocean'
+                credentials:
+                  type: object
+                  description: Provider-specific credentials
+                  example:
+                    token: 'dop_v1_xxxxxxxxxxxx'
+      responses:
+        '201':
+          description: Server provider created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ServerProvider.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/server-providers/{serverProvider}:
+    get:
+      summary: Get server provider
+      description: Get a specific server provider by ID
+      tags:
+        - Server Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: serverProvider
+          in: path
+          required: true
+          description: Server provider ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Server provider details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ServerProvider.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    put:
+      summary: Update server provider
+      description: Update a server provider
+      tags:
+        - Server Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: serverProvider
+          in: path
+          required: true
+          description: Server provider ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Server provider name
+                  example: 'DigitalOcean'
+                type:
+                  type: string
+                  enum: ['aws', 'hetzner', 'digitalocean', 'linode', 'vultr']
+                  description: Server provider type
+                  example: 'digitalocean'
+                credentials:
+                  type: object
+                  description: Provider-specific credentials
+                  example:
+                    token: 'dop_v1_xxxxxxxxxxxx'
+      responses:
+        '200':
+          description: Server provider updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ServerProvider.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+    delete:
+      summary: Delete server provider
+      description: Delete a server provider
+      tags:
+        - Server Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: serverProvider
+          in: path
+          required: true
+          description: Server provider ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Server provider deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/server-providers/{serverProvider}/regions:
+    get:
+      summary: Get server provider regions
+      description: Get available regions for a server provider
+      tags:
+        - Server Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: serverProvider
+          in: path
+          required: true
+          description: Server provider ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of available regions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Region identifier
+                      example: 'nyc1'
+                    name:
+                      type: string
+                      description: Region name
+                      example: 'New York 1'
+                    country:
+                      type: string
+                      description: Country code
+                      example: 'US'
+                    available:
+                      type: boolean
+                      description: Whether the region is available
+                      example: true
+              example:
+                - id: 'nyc1'
+                  name: 'New York 1'
+                  country: 'US'
+                  available: true
+                - id: 'sfo1'
+                  name: 'San Francisco 1'
+                  country: 'US'
+                  available: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/server-providers/{serverProvider}/regions/{region}/plans:
+    get:
+      summary: Get server provider plans
+      description: Get available plans for a server provider in a specific region
+      tags:
+        - Server Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: serverProvider
+          in: path
+          required: true
+          description: Server provider ID
+          schema:
+            type: integer
+            example: 1
+        - name: region
+          in: path
+          required: true
+          description: Region identifier
+          schema:
+            type: string
+            example: 'nyc1'
+      responses:
+        '200':
+          description: List of available plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Plan identifier
+                      example: 's-1vcpu-1gb'
+                    name:
+                      type: string
+                      description: Plan name
+                      example: 'Basic'
+                    memory:
+                      type: integer
+                      description: Memory in MB
+                      example: 1024
+                    vcpus:
+                      type: integer
+                      description: Number of vCPUs
+                      example: 1
+                    disk:
+                      type: integer
+                      description: Disk size in GB
+                      example: 25
+                    price_monthly:
+                      type: number
+                      format: float
+                      description: Monthly price in USD
+                      example: 5.0
+                    price_hourly:
+                      type: number
+                      format: float
+                      description: Hourly price in USD
+                      example: 0.007
+                    available:
+                      type: boolean
+                      description: Whether the plan is available
+                      example: true
+              example:
+                - id: 's-1vcpu-1gb'
+                  name: 'Basic'
+                  memory: 1024
+                  vcpus: 1
+                  disk: 25
+                  price_monthly: 5.0
+                  price_hourly: 0.007
+                  available: true
+                - id: 's-1vcpu-2gb'
+                  name: 'Standard'
+                  memory: 2048
+                  vcpus: 1
+                  disk: 50
+                  price_monthly: 10.0
+                  price_hourly: 0.014
+                  available: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server provider or region not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'

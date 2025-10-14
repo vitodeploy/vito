@@ -13,7 +13,7 @@ interface Props {
 
 export default function Actions({ actions, onActionAdded }: Props) {
   return (
-    <div className="absolute top-0 right-0 z-10 m-2 h-[415px] w-[200px] overflow-y-auto rounded-lg border p-0">
+    <div className="absolute top-0 right-0 z-10 m-2 w-[200px] overflow-y-auto rounded-lg border p-0">
       <Command className="bg-background">
         <CommandInput
           right={

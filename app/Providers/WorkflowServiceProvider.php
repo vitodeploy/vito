@@ -38,10 +38,45 @@ class WorkflowServiceProvider extends ServiceProvider
 
     private function site(): void
     {
-        RegisterWorkflowAction::make('create-site')
-            ->label('Create Site')
+        RegisterWorkflowAction::make('create-php-site')
+            ->label('Create PHP Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreateSite::class)
+            ->handler(\App\WorkflowActions\Site\CreatePHPSite::class)
+            ->register();
+        RegisterWorkflowAction::make('create-php-blank-site')
+            ->label('Create PHP Blank Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreatePHPBlankSite::class)
+            ->register();
+        RegisterWorkflowAction::make('create-wordpress-site')
+            ->label('Create WordPress Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreateWordpressSite::class)
+            ->register();
+        RegisterWorkflowAction::make('create-phpmyadmin-site')
+            ->label('Create PHPMyAdmin Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreatePHPMyAdminSite::class)
+            ->register();
+        RegisterWorkflowAction::make('create-laravel-site')
+            ->label('Create Laravel Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreateLaravelSite::class)
+            ->register();
+        RegisterWorkflowAction::make('create-nodejs-site')
+            ->label('Create NodeJS Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreateNodeJsSite::class)
+            ->register();
+        RegisterWorkflowAction::make('create-load-balancer-site')
+            ->label('Create Load Balancer Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreateLoadBalancerSite::class)
+            ->register();
+        RegisterWorkflowAction::make('create-nodejs-site')
+            ->label('Create NodeJS Site')
+            ->category('site')
+            ->handler(\App\WorkflowActions\Site\CreateNodeJsSite::class)
             ->register();
         RegisterWorkflowAction::make('deploy-site')
             ->label('Deploy Site')
@@ -70,6 +105,11 @@ class WorkflowServiceProvider extends ServiceProvider
             ->label('Create Database')
             ->category('database')
             ->handler(\App\WorkflowActions\Database\CreateDatabase::class)
+            ->register();
+        RegisterWorkflowAction::make('create-database-user')
+            ->label('Create Database User')
+            ->category('database')
+            ->handler(\App\WorkflowActions\Database\CreateDatabaseUser::class)
             ->register();
     }
 }

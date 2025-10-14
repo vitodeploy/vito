@@ -280,6 +280,179 @@ class ServerProvidersTest extends TestCase
     }
 
     /**
+     * @param  array<string, mixed>  $input
+     */
+    #[DataProvider('data')]
+    public function test_get_regions(string $provider, array $input): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        // Mock the provider's regions method
+        Http::fake([
+            '*' => Http::response([
+                ['id' => 'nyc1', 'name' => 'New York 1', 'country' => 'US', 'available' => true],
+                ['id' => 'sfo1', 'name' => 'San Francisco 1', 'country' => 'US', 'available' => true],
+            ], 200),
+        ]);
+
+        /** @var ServerProvider $serverProvider */
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'provider' => $provider,
+            'credentials' => $input,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers.regions', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+        ]))
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                '*' => [
+                    'id',
+                    'name',
+                    'country',
+                    'available',
+                ],
+            ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    #[DataProvider('data')]
+    public function test_get_plans(string $provider, array $input): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        // Mock the provider's plans method
+        Http::fake([
+            '*' => Http::response([
+                [
+                    'id' => 's-1vcpu-1gb',
+                    'name' => 'Basic',
+                    'memory' => 1024,
+                    'vcpus' => 1,
+                    'disk' => 25,
+                    'price_monthly' => 5.0,
+                    'price_hourly' => 0.007,
+                    'available' => true,
+                ],
+                [
+                    'id' => 's-1vcpu-2gb',
+                    'name' => 'Standard',
+                    'memory' => 2048,
+                    'vcpus' => 1,
+                    'disk' => 50,
+                    'price_monthly' => 10.0,
+                    'price_hourly' => 0.014,
+                    'available' => true,
+                ],
+            ], 200),
+        ]);
+
+        /** @var ServerProvider $serverProvider */
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'provider' => $provider,
+            'credentials' => $input,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers.plans', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+            'region' => 'nyc1',
+        ]))
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                '*' => [
+                    'id',
+                    'name',
+                    'memory',
+                    'vcpus',
+                    'disk',
+                    'price_monthly',
+                    'price_hourly',
+                    'available',
+                ],
+            ]);
+    }
+
+    public function test_cannot_access_regions_without_authentication(): void
+    {
+        /** @var ServerProvider $serverProvider */
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers.regions', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+        ]))
+            ->assertUnauthorized();
+    }
+
+    public function test_cannot_access_plans_without_authentication(): void
+    {
+        /** @var ServerProvider $serverProvider */
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers.plans', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+            'region' => 'nyc1',
+        ]))
+            ->assertUnauthorized();
+    }
+
+    public function test_cannot_access_other_users_server_provider_regions(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var User $otherUser */
+        $otherUser = User::factory()->create();
+
+        /** @var ServerProvider $serverProvider */
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $otherUser->id,
+            'project_id' => $otherUser->current_project_id,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers.regions', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+        ]))
+            ->assertForbidden();
+    }
+
+    public function test_cannot_access_other_users_server_provider_plans(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var User $otherUser */
+        $otherUser = User::factory()->create();
+
+        /** @var ServerProvider $serverProvider */
+        $serverProvider = ServerProvider::factory()->create([
+            'user_id' => $otherUser->id,
+            'project_id' => $otherUser->current_project_id,
+        ]);
+
+        $this->json('GET', route('api.projects.server-providers.plans', [
+            'project' => $this->user->current_project_id,
+            'serverProvider' => $serverProvider->id,
+            'region' => 'nyc1',
+        ]))
+            ->assertForbidden();
+    }
+
+    /**
      * @return array<array<int, mixed>>
      */
     public static function data(): array

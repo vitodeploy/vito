@@ -177,7 +177,9 @@ class CreateServer
     {
         $this->server->services()->forceDelete();
 
-        foreach ($input['services'] as $service) {
+        $services = $input['services'] ?? [];
+
+        foreach ($services as $service) {
             $this->server->services()->create([
                 'type' => $service['type'],
                 'name' => $service['name'],

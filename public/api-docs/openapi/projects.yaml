@@ -263,10 +263,3 @@ paths:
                 errors:
                   name: ['Cannot delete the last project.']
 
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Sanctum bearer token authentication

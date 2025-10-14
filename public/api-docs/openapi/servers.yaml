@@ -358,10 +358,3 @@ paths:
               schema:
                 $ref: './openapi/schemas/ErrorResponse.yaml'
 
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Sanctum bearer token authentication
