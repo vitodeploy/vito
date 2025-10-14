@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  server_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'SSH Access'
+  port:
+    type: string
+    example: '22'
+  from:
+    type: string
+    example: '0.0.0.0/0'
+  status:
+    type: string
+    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    example: 'ready'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

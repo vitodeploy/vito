@@ -1,0 +1,33 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  database_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'db_user'
+  password:
+    type: string
+    example: 'secure_password'
+  permissions:
+    type: array
+    items:
+      type: string
+    example: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+  status:
+    type: string
+    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    example: 'ready'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

@@ -1,0 +1,35 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  server_id:
+    type: integer
+    example: 1
+  site_id:
+    type: integer
+    nullable: true
+    example: 1
+  command:
+    type: string
+    example: 'php artisan schedule:run'
+  user:
+    type: string
+    example: 'www-data'
+  frequency:
+    type: string
+    example: '* * * * *'
+  status:
+    type: string
+    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    example: 'ready'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

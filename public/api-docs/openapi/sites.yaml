@@ -1,0 +1,1374 @@
+paths:
+  /api/projects/{project}/servers/{server}/sites:
+    get:
+      summary: List sites
+      description: Get all sites for a server
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of sites
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Site.yaml'
+              example:
+                data:
+                  - id: 1
+                    server_id: 1
+                    server:
+                      id: 1
+                      name: 'production-server'
+                      ip: '192.168.1.100'
+                    source_control_id: 1
+                    type: 'laravel'
+                    type_data: {}
+                    domain: 'example.com'
+                    aliases: ['www.example.com']
+                    web_directory: 'public'
+                    webserver: 'nginx'
+                    path: '/home/www-data/example.com'
+                    php_version: '8.2'
+                    repository: 'https://github.com/user/repo.git'
+                    branch: 'main'
+                    status: 'ready'
+                    status_color: 'success'
+                    auto_deploy: true
+                    port: 80
+                    user: 'www-data'
+                    url: 'https://example.com'
+                    force_ssl: true
+                    progress: 100
+                    features: ['ssl', 'backups', 'monitoring']
+                    modern_deployment: true
+                    created_at: '2024-01-01T00:00:00.000000Z'
+                    updated_at: '2024-01-01T00:00:00.000000Z'
+                links:
+                  first: 'http://localhost/api/projects/1/servers/1/sites?page=1'
+                  last: 'http://localhost/api/projects/1/servers/1/sites?page=10'
+                  prev: null
+                  next: 'http://localhost/api/projects/1/servers/1/sites?page=2'
+                meta:
+                  current_page: 1
+                  from: 1
+                  last_page: 10
+                  per_page: 25
+                  to: 25
+                  total: 250
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create site
+      description: Create a new site
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - domain
+              properties:
+                type:
+                  type: string
+                  description: Site type
+                  example: 'laravel'
+                domain:
+                  type: string
+                  format: hostname
+                  description: Site domain
+                  example: 'example.com'
+                aliases:
+                  type: array
+                  items:
+                    type: string
+                    format: hostname
+                  description: Domain aliases
+                  example: ['www.example.com', 'app.example.com']
+                user:
+                  type: string
+                  pattern: '^[a-z_][a-z0-9_-]*[a-z0-9]$'
+                  minLength: 3
+                  maxLength: 32
+                  description: System user for the site
+                  example: 'www-data'
+                repository:
+                  type: string
+                  format: uri
+                  description: Git repository URL
+                  example: 'https://github.com/user/repo.git'
+                branch:
+                  type: string
+                  description: Git branch
+                  example: 'main'
+                source_control_id:
+                  type: integer
+                  description: Source control provider ID
+                  example: 1
+            example:
+              type: 'laravel'
+              domain: 'example.com'
+              aliases: ['www.example.com']
+              user: 'www-data'
+              repository: 'https://github.com/user/repo.git'
+              branch: 'main'
+              source_control_id: 1
+      responses:
+        '201':
+          description: Site created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Site.yaml'
+              example:
+                id: 1
+                server_id: 1
+                server:
+                  id: 1
+                  name: 'production-server'
+                  ip: '192.168.1.100'
+                source_control_id: 1
+                type: 'laravel'
+                type_data: {}
+                domain: 'example.com'
+                aliases: ['www.example.com']
+                web_directory: 'public'
+                webserver: 'nginx'
+                path: '/home/www-data/example.com'
+                php_version: '8.2'
+                repository: 'https://github.com/user/repo.git'
+                branch: 'main'
+                status: 'installing'
+                status_color: 'warning'
+                auto_deploy: true
+                port: 80
+                user: 'www-data'
+                url: 'https://example.com'
+                force_ssl: true
+                progress: 0
+                features: []
+                modern_deployment: true
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  type: ['The type field is required.']
+                  domain: ['The domain field is required.']
+
+  /api/projects/{project}/servers/{server}/sites/{site}:
+    get:
+      summary: Get site
+      description: Get a specific site by ID
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Site details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Site.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Delete site
+      description: Delete a site
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Site deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/deploy:
+    post:
+      summary: Deploy site
+      description: Deploy a site
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '201':
+          description: Deployment started successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Deployment.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+              example:
+                message: 'Deployment script is empty'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/aliases:
+    put:
+      summary: Update site aliases
+      description: Update site domain aliases
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - aliases
+              properties:
+                aliases:
+                  type: array
+                  items:
+                    type: string
+                    format: hostname
+                  description: Domain aliases
+                  example: ['www.example.com', 'app.example.com']
+            example:
+              aliases: ['www.example.com', 'app.example.com']
+      responses:
+        '200':
+          description: Aliases updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Site.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/web-directory:
+    put:
+      summary: Update web directory
+      description: Update site web directory
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - web_directory
+              properties:
+                web_directory:
+                  type: string
+                  description: Web directory path
+                  example: 'public'
+            example:
+              web_directory: 'public'
+      responses:
+        '200':
+          description: Web directory updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Site.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/deployment-script:
+    get:
+      summary: Get deployment script
+      description: Get site deployment script
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Deployment script
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  script:
+                    type: string
+                    nullable: true
+                    description: Deployment script content
+                    example: "#!/bin/bash\necho 'Deploying...'"
+              example:
+                script: "#!/bin/bash\necho 'Deploying...'"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    put:
+      summary: Update deployment script
+      description: Update site deployment script
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  description: Deployment script content
+                  example: "#!/bin/bash\necho 'Deploying...'"
+            example:
+              content: "#!/bin/bash\necho 'Deploying...'"
+      responses:
+        '204':
+          description: Deployment script updated successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/env:
+    get:
+      summary: Get environment variables
+      description: Get site environment variables
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Environment variables
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      env:
+                        type: object
+                        additionalProperties:
+                          type: string
+                        description: Environment variables
+                        example:
+                          APP_NAME: 'My App'
+                          APP_ENV: 'production'
+                          APP_DEBUG: 'false'
+              example:
+                data:
+                  env:
+                    APP_NAME: 'My App'
+                    APP_ENV: 'production'
+                    APP_DEBUG: 'false'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    put:
+      summary: Update environment variables
+      description: Update site environment variables
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - env
+              properties:
+                env:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Environment variables
+                  example:
+                    APP_NAME: 'My App'
+                    APP_ENV: 'production'
+                    APP_DEBUG: 'false'
+            example:
+              env:
+                APP_NAME: 'My App'
+                APP_ENV: 'production'
+                APP_DEBUG: 'false'
+      responses:
+        '200':
+          description: Environment variables updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Site.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/deployments:
+    get:
+      summary: List deployments
+      description: Get all deployments for a site
+      tags:
+        - Deployments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of deployments
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Site.yaml'
+              example:
+                data:
+                  - id: 1
+                    site_id: 1
+                    status: 'success'
+                    status_color: 'success'
+                    commit: 'abc123def456'
+                    message: 'Fix bug in user authentication'
+                    created_at: '2024-01-01T00:00:00.000000Z'
+                    updated_at: '2024-01-01T00:00:00.000000Z'
+                links:
+                  first: 'http://localhost/api/projects/1/servers/1/sites/1/deployments?page=1'
+                  last: 'http://localhost/api/projects/1/servers/1/sites/1/deployments?page=10'
+                  prev: null
+                  next: 'http://localhost/api/projects/1/servers/1/sites/1/deployments?page=2'
+                meta:
+                  current_page: 1
+                  from: 1
+                  last_page: 10
+                  per_page: 25
+                  to: 25
+                  total: 250
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create deployment
+      description: Create a new deployment for a site
+      tags:
+        - Deployments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '201':
+          description: Deployment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Deployment.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+              example:
+                message: 'Deployment script is empty'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/deployments/{deployment}:
+    get:
+      summary: Get deployment
+      description: Get a specific deployment by ID
+      tags:
+        - Deployments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+        - name: deployment
+          in: path
+          required: true
+          description: Deployment ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Deployment details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Deployment.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Deployment not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sanctum bearer token authentication
+
+  schemas:
+    Site:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        server_id:
+          type: integer
+          example: 1
+        server:
+          $ref: './openapi/schemas/Server.yaml'
+        source_control_id:
+          type: integer
+          nullable: true
+          example: 1
+        type:
+          type: string
+          example: 'laravel'
+        type_data:
+          type: object
+          nullable: true
+        domain:
+          type: string
+          example: 'example.com'
+        aliases:
+          type: array
+          items:
+            type: string
+          example: ['www.example.com', 'app.example.com']
+        web_directory:
+          type: string
+          example: 'public'
+        webserver:
+          type: string
+          example: 'nginx'
+        path:
+          type: string
+          example: '/var/www/example.com'
+        php_version:
+          type: string
+          example: '8.2'
+        repository:
+          type: string
+          example: 'https://github.com/user/repo.git'
+        branch:
+          type: string
+          example: 'main'
+        status:
+          type: string
+          enum: ['ready', 'installing', 'installation_failed', 'deleting']
+          example: 'ready'
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        auto_deploy:
+          type: boolean
+          example: true
+        port:
+          type: integer
+          example: 80
+        user:
+          type: string
+          example: 'www-data'
+        url:
+          type: string
+          example: 'https://example.com'
+        force_ssl:
+          type: boolean
+          example: true
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 100
+        features:
+          type: array
+          items:
+            type: string
+          example: ['ssl', 'backups', 'monitoring']
+        modern_deployment:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Server:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        project_id:
+          type: integer
+          example: 1
+        services:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            php: '8.2'
+            nginx: '1.24'
+        user_id:
+          type: integer
+          example: 1
+        provider_id:
+          type: integer
+          nullable: true
+          example: 1
+        name:
+          type: string
+          example: 'production-server'
+        ssh_user:
+          type: string
+          example: 'root'
+        ssh_users:
+          type: array
+          items:
+            type: string
+          example: ['root', 'deploy']
+        ip:
+          type: string
+          example: '192.168.1.100'
+        local_ip:
+          type: string
+          nullable: true
+          example: '10.0.0.100'
+        port:
+          type: integer
+          example: 22
+        os:
+          type: string
+          example: 'ubuntu-22.04'
+        provider:
+          type: string
+          example: 'digitalocean'
+        provider_data:
+          type: object
+          nullable: true
+        public_key:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: ['ready', 'installing', 'installation_failed', 'disconnected', 'updating']
+          example: 'ready'
+        auto_update:
+          type: boolean
+          example: true
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 100
+        progress_step:
+          type: string
+          example: 'Installing services'
+        updates:
+          type: object
+          nullable: true
+        last_update_check:
+          type: string
+          format: date-time
+          nullable: true
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        features:
+          type: array
+          items:
+            type: string
+          example: ['ssl', 'backups', 'monitoring']
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Deployment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        site_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: ['pending', 'running', 'success', 'failed']
+          example: 'success'
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        commit:
+          type: string
+          example: 'abc123def456'
+        message:
+          type: string
+          example: 'Fix bug in user authentication'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              example: 'http://localhost/api/projects?page=1'
+            last:
+              type: string
+              example: 'http://localhost/api/projects?page=10'
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: 'http://localhost/api/projects?page=2'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            from:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 10
+            per_page:
+              type: integer
+              example: 25
+            to:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 250
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Error message'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['Error message for field']
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'The given data was invalid.'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['The field is required.']

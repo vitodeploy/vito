@@ -1,0 +1,24 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  project_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'DigitalOcean'
+  type:
+    type: string
+    example: 'digitalocean'
+  credentials:
+    type: object
+    example:
+      token: 'dop_v1_xxxxxxxxxxxx'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

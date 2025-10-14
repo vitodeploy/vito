@@ -1,0 +1,28 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  site_id:
+    type: integer
+    example: 1
+  status:
+    type: string
+    enum: ['pending', 'running', 'success', 'failed']
+    example: 'success'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  commit:
+    type: string
+    example: 'abc123def456'
+  message:
+    type: string
+    example: 'Fix bug in user authentication'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

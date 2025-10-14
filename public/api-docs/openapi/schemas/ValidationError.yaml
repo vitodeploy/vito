@@ -1,0 +1,13 @@
+type: object
+properties:
+  message:
+    type: string
+    example: 'The given data was invalid.'
+  errors:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: string
+    example:
+      field_name: ['The field name is required.']

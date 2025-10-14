@@ -13,7 +13,6 @@
     "ext-intl": "*",
     "ext-zip": "*",
     "aws/aws-sdk-php": "^3.158",
-    "dedoc/scramble": "^0.12.35",
     "inertiajs/inertia-laravel": "^2.0",
     "laravel/fortify": "^1.17",
     "laravel/framework": "^12.0",

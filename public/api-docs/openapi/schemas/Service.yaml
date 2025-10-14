@@ -1,0 +1,66 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  server_id:
+    type: integer
+    example: 1
+  type:
+    type: string
+    example: 'php'
+  type_data:
+    type: object
+    nullable: true
+  config_paths:
+    type: array
+    items:
+      type: string
+    example: ['/etc/php/8.2/fpm/php.ini']
+  name:
+    type: string
+    example: 'php'
+  version:
+    type: string
+    example: '8.2'
+  installed_version:
+    type: string
+    nullable: true
+    example: '8.2.0'
+  unit:
+    type: string
+    example: 'php8.2-fpm'
+  status:
+    type: string
+    enum:
+      [
+        'ready',
+        'installing',
+        'installation_failed',
+        'uninstalling',
+        'failed',
+        'starting',
+        'stopping',
+        'restarting',
+        'stopped',
+        'enabling',
+        'disabling',
+        'disabled',
+      ]
+    example: 'ready'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  icon:
+    type: string
+    example: 'fab fa-php'
+  is_default:
+    type: boolean
+    example: true
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

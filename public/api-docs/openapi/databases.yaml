@@ -1,0 +1,838 @@
+paths:
+  /api/projects/{project}/servers/{server}/databases:
+    get:
+      summary: List databases
+      description: Get all databases for a server
+      tags:
+        - Databases
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of databases
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Database.yaml'
+              example:
+                data:
+                  - id: 1
+                    server_id: 1
+                    name: 'my_database'
+                    collation: 'utf8mb4_unicode_ci'
+                    charset: 'utf8mb4'
+                    status: 'ready'
+                    status_color: 'success'
+                    created_at: '2024-01-01T00:00:00.000000Z'
+                    updated_at: '2024-01-01T00:00:00.000000Z'
+                links:
+                  first: 'http://localhost/api/projects/1/servers/1/databases?page=1'
+                  last: 'http://localhost/api/projects/1/servers/1/databases?page=10'
+                  prev: null
+                  next: 'http://localhost/api/projects/1/servers/1/databases?page=2'
+                meta:
+                  current_page: 1
+                  from: 1
+                  last_page: 10
+                  per_page: 25
+                  to: 25
+                  total: 250
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create database
+      description: Create a new database
+      tags:
+        - Databases
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - charset
+                - collation
+              properties:
+                name:
+                  type: string
+                  pattern: '^[a-zA-Z0-9_-]+$'
+                  description: Database name (alphanumeric, hyphens, underscores only)
+                  example: 'my_database'
+                charset:
+                  type: string
+                  description: Database character set
+                  example: 'utf8mb4'
+                collation:
+                  type: string
+                  description: Database collation
+                  example: 'utf8mb4_unicode_ci'
+                user:
+                  type: boolean
+                  description: Whether to create a database user
+                  example: true
+                existing_user_id:
+                  type: integer
+                  description: Existing database user ID to link (required if user is true)
+                  example: 1
+            example:
+              name: 'my_database'
+              charset: 'utf8mb4'
+              collation: 'utf8mb4_unicode_ci'
+              user: true
+              existing_user_id: 1
+      responses:
+        '201':
+          description: Database created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Database.yaml'
+              example:
+                id: 1
+                server_id: 1
+                name: 'my_database'
+                collation: 'utf8mb4_unicode_ci'
+                charset: 'utf8mb4'
+                status: 'ready'
+                status_color: 'success'
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  name: ['The name field is required.']
+                  charset: ['The charset field is required.']
+                  collation: ['The collation field is required.']
+
+  /api/projects/{project}/servers/{server}/databases/{database}:
+    get:
+      summary: Get database
+      description: Get a specific database by ID
+      tags:
+        - Databases
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: database
+          in: path
+          required: true
+          description: Database ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Database details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Database.yaml'
+              example:
+                id: 1
+                server_id: 1
+                name: 'my_database'
+                collation: 'utf8mb4_unicode_ci'
+                charset: 'utf8mb4'
+                status: 'ready'
+                status_color: 'success'
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Database not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Delete database
+      description: Delete a database
+      tags:
+        - Databases
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: database
+          in: path
+          required: true
+          description: Database ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Database deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Database not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/database-users:
+    get:
+      summary: List database users
+      description: Get all database users for a server
+      tags:
+        - Database Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of database users
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Database.yaml'
+              example:
+                data:
+                  - id: 1
+                    database_id: 1
+                    name: 'db_user'
+                    password: 'secure_password'
+                    permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+                    status: 'ready'
+                    status_color: 'success'
+                    created_at: '2024-01-01T00:00:00.000000Z'
+                    updated_at: '2024-01-01T00:00:00.000000Z'
+                links:
+                  first: 'http://localhost/api/projects/1/servers/1/database-users?page=1'
+                  last: 'http://localhost/api/projects/1/servers/1/database-users?page=10'
+                  prev: null
+                  next: 'http://localhost/api/projects/1/servers/1/database-users?page=2'
+                meta:
+                  current_page: 1
+                  from: 1
+                  last_page: 10
+                  per_page: 25
+                  to: 25
+                  total: 250
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create database user
+      description: Create a new database user
+      tags:
+        - Database Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  pattern: '^[a-zA-Z0-9_-]+$'
+                  description: Database username (alphanumeric, hyphens, underscores only)
+                  example: 'db_user'
+                password:
+                  type: string
+                  minLength: 6
+                  description: Database user password
+                  example: 'secure_password'
+                permission:
+                  type: string
+                  enum: ['read', 'write', 'admin']
+                  description: User permission level
+                  default: 'admin'
+                  example: 'admin'
+                remote:
+                  type: boolean
+                  description: Whether this is a remote user
+                  example: false
+                host:
+                  type: string
+                  description: Host for remote users (required if remote is true)
+                  example: 'localhost'
+            example:
+              username: 'db_user'
+              password: 'secure_password'
+              permission: 'admin'
+              remote: false
+      responses:
+        '201':
+          description: Database user created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DatabaseUser.yaml'
+              example:
+                id: 1
+                database_id: 1
+                name: 'db_user'
+                password: 'secure_password'
+                permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+                status: 'ready'
+                status_color: 'success'
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  username: ['The username field is required.']
+                  password: ['The password field is required.']
+
+  /api/projects/{project}/servers/{server}/database-users/{databaseUser}:
+    get:
+      summary: Get database user
+      description: Get a specific database user by ID
+      tags:
+        - Database Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: databaseUser
+          in: path
+          required: true
+          description: Database User ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Database user details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DatabaseUser.yaml'
+              example:
+                id: 1
+                database_id: 1
+                name: 'db_user'
+                password: 'secure_password'
+                permissions: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+                status: 'ready'
+                status_color: 'success'
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Database user not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Link database user
+      description: Link a database user to databases
+      tags:
+        - Database Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: databaseUser
+          in: path
+          required: true
+          description: Database User ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - databases
+              properties:
+                databases:
+                  type: array
+                  items:
+                    type: string
+                  description: List of database names to link
+                  example: ['my_database', 'another_database']
+            example:
+              databases: ['my_database', 'another_database']
+      responses:
+        '200':
+          description: Database user linked successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DatabaseUser.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Database user not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+    delete:
+      summary: Delete database user
+      description: Delete a database user
+      tags:
+        - Database Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: databaseUser
+          in: path
+          required: true
+          description: Database User ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Database user deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Database user not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sanctum bearer token authentication
+
+  schemas:
+    Database:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        server_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'my_database'
+        collation:
+          type: string
+          example: 'utf8mb4_unicode_ci'
+        charset:
+          type: string
+          example: 'utf8mb4'
+        status:
+          type: string
+          enum: ['ready', 'installing', 'installation_failed', 'deleting']
+          example: 'ready'
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DatabaseUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        database_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'db_user'
+        password:
+          type: string
+          example: 'secure_password'
+        permissions:
+          type: array
+          items:
+            type: string
+          example: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+        status:
+          type: string
+          enum: ['ready', 'installing', 'installation_failed', 'deleting']
+          example: 'ready'
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              example: 'http://localhost/api/projects?page=1'
+            last:
+              type: string
+              example: 'http://localhost/api/projects?page=10'
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: 'http://localhost/api/projects?page=2'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            from:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 10
+            per_page:
+              type: integer
+              example: 25
+            to:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 250
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Error message'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['Error message for field']
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'The given data was invalid.'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['The field is required.']

@@ -1,0 +1,33 @@
+type: object
+properties:
+  data:
+    type: array
+    items: {}
+  links:
+    type: object
+    properties:
+      first:
+        type: string
+      last:
+        type: string
+      prev:
+        type: string
+        nullable: true
+      next:
+        type: string
+        nullable: true
+  meta:
+    type: object
+    properties:
+      current_page:
+        type: integer
+      from:
+        type: integer
+      last_page:
+        type: integer
+      per_page:
+        type: integer
+      to:
+        type: integer
+      total:
+        type: integer

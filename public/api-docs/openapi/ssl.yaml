@@ -1,0 +1,386 @@
+paths:
+  /api/projects/{project}/servers/{server}/sites/{site}/ssl:
+    get:
+      summary: List SSL certificates
+      description: Get all SSL certificates for a site
+      tags:
+        - SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of SSL certificates
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project, server, or site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create SSL certificate
+      description: Create a new SSL certificate for a site
+      tags:
+        - SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - domains
+              properties:
+                type:
+                  type: string
+                  enum: ['letsencrypt', 'custom']
+                  description: SSL certificate type
+                  example: 'letsencrypt'
+                domains:
+                  type: array
+                  items:
+                    type: string
+                  description: Domains for the certificate
+                  example: ['example.com', 'www.example.com']
+            example:
+              type: 'letsencrypt'
+              domains: ['example.com', 'www.example.com']
+      responses:
+        '201':
+          description: SSL certificate created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project, server, or site not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/ssl/{ssl}:
+    get:
+      summary: Get SSL certificate
+      description: Get a specific SSL certificate by ID
+      tags:
+        - SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+        - name: ssl
+          in: path
+          required: true
+          description: SSL certificate ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: SSL certificate details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: SSL certificate not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Delete SSL certificate
+      description: Delete an SSL certificate
+      tags:
+        - SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+        - name: ssl
+          in: path
+          required: true
+          description: SSL certificate ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: SSL certificate deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: SSL certificate not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sanctum bearer token authentication
+
+  schemas:
+    SSL:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        site_id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          enum: ['letsencrypt', 'custom']
+          example: 'letsencrypt'
+        domains:
+          type: array
+          items:
+            type: string
+          example: ['example.com', 'www.example.com']
+        status:
+          type: string
+          enum: ['ready', 'installing', 'installation_failed', 'deleting']
+          example: 'ready'
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              example: 'http://localhost/api/projects?page=1'
+            last:
+              type: string
+              example: 'http://localhost/api/projects?page=10'
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: 'http://localhost/api/projects?page=2'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            from:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 10
+            per_page:
+              type: integer
+              example: 25
+            to:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 250
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Error message'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['Error message for field']
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'The given data was invalid.'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['The field is required.']

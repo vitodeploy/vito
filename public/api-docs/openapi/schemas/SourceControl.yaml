@@ -1,0 +1,23 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  project_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'GitHub'
+  type:
+    type: string
+    example: 'github'
+  token:
+    type: string
+    example: 'ghp_xxxxxxxxxxxx'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

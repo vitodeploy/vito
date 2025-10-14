@@ -1,0 +1,605 @@
+paths:
+  /api/projects/{project}/servers/{server}/services:
+    get:
+      summary: List services
+      description: Get all services for a server
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of services
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Service.yaml'
+              example:
+                data:
+                  - id: 1
+                    server_id: 1
+                    type: 'php'
+                    type_data: {}
+                    config_paths: ['/etc/php/8.2/fpm/php.ini']
+                    name: 'php'
+                    version: '8.2'
+                    installed_version: '8.2.0'
+                    unit: 'php8.2-fpm'
+                    status: 'ready'
+                    status_color: 'success'
+                    icon: 'fab fa-php'
+                    is_default: true
+                    created_at: '2024-01-01T00:00:00.000000Z'
+                    updated_at: '2024-01-01T00:00:00.000000Z'
+                links:
+                  first: 'http://localhost/api/projects/1/servers/1/services?page=1'
+                  last: 'http://localhost/api/projects/1/servers/1/services?page=10'
+                  prev: null
+                  next: 'http://localhost/api/projects/1/servers/1/services?page=2'
+                meta:
+                  current_page: 1
+                  from: 1
+                  last_page: 10
+                  per_page: 25
+                  to: 25
+                  total: 250
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/services/{service}:
+    get:
+      summary: Get service
+      description: Get a specific service by ID
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Service details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Service.yaml'
+              example:
+                id: 1
+                server_id: 1
+                type: 'php'
+                type_data: {}
+                config_paths: ['/etc/php/8.2/fpm/php.ini']
+                name: 'php'
+                version: '8.2'
+                installed_version: '8.2.0'
+                unit: 'php8.2-fpm'
+                status: 'ready'
+                status_color: 'success'
+                icon: 'fab fa-php'
+                is_default: true
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Uninstall service
+      description: Uninstall a service from the server
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Service uninstalled successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/services/{service}/start:
+    post:
+      summary: Start service
+      description: Start a service
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Service started successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/services/{service}/stop:
+    post:
+      summary: Stop service
+      description: Stop a service
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Service stopped successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/services/{service}/restart:
+    post:
+      summary: Restart service
+      description: Restart a service
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Service restarted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/services/{service}/enable:
+    post:
+      summary: Enable service
+      description: Enable a service to start automatically
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Service enabled successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/services/{service}/disable:
+    post:
+      summary: Disable service
+      description: Disable a service from starting automatically
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Service disabled successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sanctum bearer token authentication
+
+  schemas:
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        server_id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: 'php'
+        type_data:
+          type: object
+          nullable: true
+        config_paths:
+          type: array
+          items:
+            type: string
+          example: ['/etc/php/8.2/fpm/php.ini']
+        name:
+          type: string
+          example: 'php'
+        version:
+          type: string
+          example: '8.2'
+        installed_version:
+          type: string
+          nullable: true
+          example: '8.2.0'
+        unit:
+          type: string
+          example: 'php8.2-fpm'
+        status:
+          type: string
+          enum:
+            [
+              'ready',
+              'installing',
+              'installation_failed',
+              'uninstalling',
+              'failed',
+              'starting',
+              'stopping',
+              'restarting',
+              'stopped',
+              'enabling',
+              'disabling',
+              'disabled',
+            ]
+          example: 'ready'
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        icon:
+          type: string
+          example: 'fab fa-php'
+        is_default:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              example: 'http://localhost/api/projects?page=1'
+            last:
+              type: string
+              example: 'http://localhost/api/projects?page=10'
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: 'http://localhost/api/projects?page=2'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            from:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 10
+            per_page:
+              type: integer
+              example: 25
+            to:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 250
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Error message'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['Error message for field']

@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  server_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'my_database'
+  collation:
+    type: string
+    example: 'utf8mb4_unicode_ci'
+  charset:
+    type: string
+    example: 'utf8mb4'
+  status:
+    type: string
+    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    example: 'ready'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

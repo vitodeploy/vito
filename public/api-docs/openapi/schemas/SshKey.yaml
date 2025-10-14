@@ -1,0 +1,23 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  project_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'My SSH Key'
+  public_key:
+    type: string
+    example: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...'
+  fingerprint:
+    type: string
+    example: 'SHA256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

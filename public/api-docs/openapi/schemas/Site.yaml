@@ -1,0 +1,88 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  server_id:
+    type: integer
+    example: 1
+  server:
+    $ref: './Server.yaml'
+  source_control_id:
+    type: integer
+    nullable: true
+    example: 1
+  type:
+    type: string
+    example: 'laravel'
+  type_data:
+    type: object
+    nullable: true
+  domain:
+    type: string
+    example: 'example.com'
+  aliases:
+    type: array
+    items:
+      type: string
+    example: ['www.example.com', 'app.example.com']
+  web_directory:
+    type: string
+    example: 'public'
+  webserver:
+    type: string
+    example: 'nginx'
+  path:
+    type: string
+    example: '/var/www/example.com'
+  php_version:
+    type: string
+    example: '8.2'
+  repository:
+    type: string
+    example: 'https://github.com/user/repo.git'
+  branch:
+    type: string
+    example: 'main'
+  status:
+    type: string
+    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    example: 'ready'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  auto_deploy:
+    type: boolean
+    example: true
+  port:
+    type: integer
+    example: 80
+  user:
+    type: string
+    example: 'www-data'
+  url:
+    type: string
+    example: 'https://example.com'
+  force_ssl:
+    type: boolean
+    example: true
+  progress:
+    type: integer
+    minimum: 0
+    maximum: 100
+    example: 100
+  features:
+    type: array
+    items:
+      type: string
+    example: ['ssl', 'backups', 'monitoring']
+  modern_deployment:
+    type: boolean
+    example: true
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

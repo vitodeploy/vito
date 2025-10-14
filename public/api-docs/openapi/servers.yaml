@@ -1,0 +1,367 @@
+paths:
+  /api/projects/{project}/servers:
+    get:
+      summary: List servers
+      description: Get all servers for a project
+      tags:
+        - Servers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of servers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Server.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create server
+      description: Create a new server
+      tags:
+        - Servers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - provider
+                - name
+                - os
+              properties:
+                provider:
+                  type: string
+                  enum: ['custom', 'aws', 'hetzner', 'digitalocean', 'linode', 'vultr']
+                  description: Server provider type
+                  example: 'digitalocean'
+                name:
+                  type: string
+                  description: Server name
+                  example: 'production-server'
+                os:
+                  type: string
+                  enum: ['ubuntu_20', 'ubuntu_22', 'ubuntu_24']
+                  description: Operating system
+                  example: 'ubuntu_22'
+                server_provider:
+                  type: integer
+                  description: Server provider ID (required for non-custom providers)
+                  example: 1
+                plan:
+                  type: string
+                  description: Server plan (required for non-custom provider)
+                region:
+                  type: string
+                  description: Server region (required for non-custom provider)
+                ip:
+                  type: string
+                  description: Server IP address (required for custom provider)
+                  example: '192.168.1.100'
+                port:
+                  type: integer
+                  minimum: 1
+                  maximum: 65535
+                  description: SSH port (required for custom provider)
+                  example: 22
+                services:
+                  type: array
+                  description: Services to install on the server
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - name
+                      - version
+                    properties:
+                      type:
+                        type: string
+                        description: Service type
+                        example: 'php'
+                      name:
+                        type: string
+                        description: Service name
+                        example: 'php'
+                      version:
+                        type: string
+                        description: Service version
+                        example: '8.2'
+                  example:
+                    - type: 'php'
+                      name: 'php'
+                      version: '8.2'
+                    - type: 'webserver'
+                      name: 'nginx'
+                      version: '1.24'
+      responses:
+        '201':
+          description: Server created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Server.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  provider: ['The provider field is required.']
+                  name: ['The name field is required.']
+                  os: ['The os field is required.']
+
+  /api/projects/{project}/servers/{server}:
+    get:
+      summary: Get server
+      description: Get a specific server by ID
+      tags:
+        - Servers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Server details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Server.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Delete server
+      description: Delete a server
+      tags:
+        - Servers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Server deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/reboot:
+    post:
+      summary: Reboot server
+      description: Reboot a server
+      tags:
+        - Servers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Server reboot initiated successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/upgrade:
+    post:
+      summary: Upgrade server
+      description: Upgrade a server's packages and services
+      tags:
+        - Servers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Server upgrade initiated successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sanctum bearer token authentication

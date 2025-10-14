@@ -1,0 +1,361 @@
+paths:
+  /api/projects/{project}/servers/{server}/firewall-rules:
+    get:
+      summary: List firewall rules
+      description: Get all firewall rules for a server
+      tags:
+        - Firewall Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of firewall rules
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/FirewallRule.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create firewall rule
+      description: Create a new firewall rule for a server
+      tags:
+        - Firewall Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - port
+                - from
+              properties:
+                name:
+                  type: string
+                  description: Rule name
+                  example: 'SSH Access'
+                port:
+                  type: string
+                  description: Port number or range
+                  example: '22'
+                from:
+                  type: string
+                  description: Source IP or CIDR
+                  example: '0.0.0.0/0'
+            example:
+              name: 'SSH Access'
+              port: '22'
+              from: '0.0.0.0/0'
+      responses:
+        '201':
+          description: Firewall rule created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/FirewallRule.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/firewall-rules/{firewallRule}:
+    get:
+      summary: Get firewall rule
+      description: Get a specific firewall rule by ID
+      tags:
+        - Firewall Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: firewallRule
+          in: path
+          required: true
+          description: Firewall Rule ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Firewall rule details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/FirewallRule.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Firewall rule not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Delete firewall rule
+      description: Delete a firewall rule
+      tags:
+        - Firewall Rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: firewallRule
+          in: path
+          required: true
+          description: Firewall Rule ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Firewall rule deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Firewall rule not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sanctum bearer token authentication
+
+  schemas:
+    FirewallRule:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        server_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'SSH Access'
+        port:
+          type: string
+          example: '22'
+        from:
+          type: string
+          example: '0.0.0.0/0'
+        status:
+          type: string
+          enum: ['ready', 'installing', 'installation_failed', 'deleting']
+          example: 'ready'
+        status_color:
+          type: string
+          enum: ['success', 'warning', 'danger', 'gray']
+          example: 'success'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              example: 'http://localhost/api/projects?page=1'
+            last:
+              type: string
+              example: 'http://localhost/api/projects?page=10'
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: 'http://localhost/api/projects?page=2'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            from:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 10
+            per_page:
+              type: integer
+              example: 25
+            to:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 250
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Error message'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['Error message for field']
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'The given data was invalid.'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            field: ['The field is required.']

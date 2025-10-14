@@ -1,0 +1,92 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  project_id:
+    type: integer
+    example: 1
+  services:
+    type: object
+    additionalProperties:
+      type: string
+    example:
+      php: '8.2'
+      nginx: '1.24'
+  user_id:
+    type: integer
+    example: 1
+  provider_id:
+    type: integer
+    nullable: true
+    example: 1
+  name:
+    type: string
+    example: 'production-server'
+  ssh_user:
+    type: string
+    example: 'root'
+  ssh_users:
+    type: array
+    items:
+      type: string
+    example: ['root', 'deploy']
+  ip:
+    type: string
+    example: '192.168.1.100'
+  local_ip:
+    type: string
+    nullable: true
+    example: '10.0.0.100'
+  port:
+    type: integer
+    example: 22
+  os:
+    type: string
+    example: 'ubuntu-22.04'
+  provider:
+    type: string
+    example: 'digitalocean'
+  provider_data:
+    type: object
+    nullable: true
+  public_key:
+    type: string
+    nullable: true
+  status:
+    type: string
+    enum: ['ready', 'installing', 'installation_failed', 'disconnected', 'updating']
+    example: 'ready'
+  auto_update:
+    type: boolean
+    example: true
+  progress:
+    type: integer
+    minimum: 0
+    maximum: 100
+    example: 100
+  progress_step:
+    type: string
+    example: 'Installing services'
+  updates:
+    type: object
+    nullable: true
+  last_update_check:
+    type: string
+    format: date-time
+    nullable: true
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  features:
+    type: array
+    items:
+      type: string
+    example: ['ssl', 'backups', 'monitoring']
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

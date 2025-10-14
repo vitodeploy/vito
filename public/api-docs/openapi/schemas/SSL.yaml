@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  site_id:
+    type: integer
+    example: 1
+  type:
+    type: string
+    enum: ['letsencrypt', 'custom']
+    example: 'letsencrypt'
+  domains:
+    type: array
+    items:
+      type: string
+    example: ['example.com', 'www.example.com']
+  status:
+    type: string
+    enum: ['ready', 'installing', 'installation_failed', 'deleting']
+    example: 'ready'
+  status_color:
+    type: string
+    enum: ['success', 'warning', 'danger', 'gray']
+    example: 'success'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

@@ -1,0 +1,25 @@
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      description: Check API health status
+      tags:
+        - Health
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  version:
+                    type: string
+                    description: API version
+                    example: '1.0.0'
+              example:
+                success: true
+                version: '1.0.0'

@@ -1,0 +1,27 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  project_id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'AWS S3'
+  type:
+    type: string
+    example: 's3'
+  credentials:
+    type: object
+    example:
+      key: 'AKIAIOSFODNN7EXAMPLE'
+      secret: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+      region: 'us-east-1'
+      bucket: 'my-bucket'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

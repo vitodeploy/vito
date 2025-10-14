@@ -1,0 +1,24 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'my-project'
+  role:
+    type: string
+    enum: ['owner', 'admin', 'developer', 'viewer']
+    nullable: true
+    example: 'owner'
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time
+  users:
+    type: array
+    items:
+      $ref: './ProjectUser.yaml'
+    nullable: true

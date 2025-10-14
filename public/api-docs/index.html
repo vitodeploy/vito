@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitoDeploy API Documentation</title>
+    <link rel="stylesheet" type="text/css" href="/api-docs/swagger-ui/swagger-ui.css" />
+    <link rel="icon" type="image/png" href="/api-docs/swagger-ui/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/api-docs/swagger-ui/favicon-16x16.png" sizes="16x16" />
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            margin:0;
+            background: #fafafa;
+        }
+        .swagger-ui .topbar {
+            background-color: #1f2937;
+        }
+        .swagger-ui .topbar .download-url-wrapper {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+
+    <script src="/api-docs/swagger-ui/swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="/api-docs/swagger-ui/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script>
+        const ui = SwaggerUIBundle({
+            url: '/api-docs/api.yaml',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            plugins: [
+                SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            layout: "StandaloneLayout",
+            tryItOutEnabled: true,
+            requestInterceptor: (request) => {
+                // Add any custom request headers if needed
+                return request;
+            }
+        });
+    </script>
+</body>
+</html>
