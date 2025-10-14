@@ -1,16 +1,3 @@
-openapi: 3.0.0
-info:
-  title: VitoDeploy API - Servers
-  version: 1.0.0
-  description: API endpoints for managing servers
-
-servers:
-  - url: http://localhost
-    description: Local development server
-
-security:
-  - bearerAuth: []
-
 paths:
   /api/projects/{project}/servers:
     get:
@@ -34,66 +21,32 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
-              example:
-                data:
-                  - id: 1
-                    project_id: 1
-                    services:
-                      php: '8.2'
-                      nginx: '1.24'
-                    user_id: 1
-                    provider_id: 1
-                    name: 'production-server'
-                    ssh_user: 'root'
-                    ssh_users: ['root', 'deploy']
-                    ip: '192.168.1.100'
-                    local_ip: '10.0.0.100'
-                    port: 22
-                    os: 'ubuntu_22'
-                    provider: 'digitalocean'
-                    provider_data: {}
-                    public_key: 'ssh-rsa AAAAB3NzaC1yc2E...'
-                    status: 'ready'
-                    auto_update: true
-                    progress: 100
-                    progress_step: 'Ready'
-                    updates: {}
-                    last_update_check: '2024-01-01T12:00:00.000000Z'
-                    status_color: 'success'
-                    features: ['ssl', 'backups', 'monitoring']
-                    created_at: '2024-01-01T00:00:00.000000Z'
-                    updated_at: '2024-01-01T00:00:00.000000Z'
-                links:
-                  first: 'http://localhost/api/projects/1/servers?page=1'
-                  last: 'http://localhost/api/projects/1/servers?page=10'
-                  prev: null
-                  next: 'http://localhost/api/projects/1/servers?page=2'
-                meta:
-                  current_page: 1
-                  from: 1
-                  last_page: 10
-                  per_page: 25
-                  to: 25
-                  total: 250
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Server.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create server
@@ -139,6 +92,12 @@ paths:
                   type: integer
                   description: Server provider ID (required for non-custom providers)
                   example: 1
+                plan:
+                  type: string
+                  description: Server plan (required for non-custom provider)
+                region:
+                  type: string
+                  description: Server region (required for non-custom provider)
                 ip:
                   type: string
                   description: Server IP address (required for custom provider)
@@ -178,77 +137,37 @@ paths:
                     - type: 'webserver'
                       name: 'nginx'
                       version: '1.24'
-            example:
-              provider: 'digitalocean'
-              name: 'production-server'
-              os: 'ubuntu_22'
-              server_provider: 1
-              services:
-                - type: 'php'
-                  name: 'php'
-                  version: '8.2'
-                - type: 'webserver'
-                  name: 'nginx'
-                  version: '1.24'
       responses:
         '201':
           description: Server created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Server'
-              example:
-                id: 1
-                project_id: 1
-                services:
-                  php: '8.2'
-                  nginx: '1.24'
-                user_id: 1
-                provider_id: 1
-                name: 'production-server'
-                ssh_user: 'root'
-                ssh_users: ['root', 'deploy']
-                ip: '192.168.1.100'
-                local_ip: '10.0.0.100'
-                port: 22
-                os: 'ubuntu_22'
-                provider: 'digitalocean'
-                provider_data: {}
-                public_key: 'ssh-rsa AAAAB3NzaC1yc2E...'
-                status: 'installing'
-                auto_update: true
-                progress: 0
-                progress_step: 'Initializing'
-                updates: {}
-                last_update_check: null
-                status_color: 'warning'
-                features: []
-                created_at: '2024-01-01T00:00:00.000000Z'
-                updated_at: '2024-01-01T00:00:00.000000Z'
+                $ref: './openapi/schemas/Server.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationError'
+                $ref: './openapi/schemas/ValidationError.yaml'
               example:
                 message: 'The given data was invalid.'
                 errors:
@@ -285,53 +204,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Server'
-              example:
-                id: 1
-                project_id: 1
-                services:
-                  php: '8.2'
-                  nginx: '1.24'
-                user_id: 1
-                provider_id: 1
-                name: 'production-server'
-                ssh_user: 'root'
-                ssh_users: ['root', 'deploy']
-                ip: '192.168.1.100'
-                local_ip: '10.0.0.100'
-                port: 22
-                os: 'ubuntu_22'
-                provider: 'digitalocean'
-                provider_data: {}
-                public_key: 'ssh-rsa AAAAB3NzaC1yc2E...'
-                status: 'ready'
-                auto_update: true
-                progress: 100
-                progress_step: 'Ready'
-                updates: {}
-                last_update_check: '2024-01-01T12:00:00.000000Z'
-                status_color: 'success'
-                features: ['ssl', 'backups', 'monitoring']
-                created_at: '2024-01-01T00:00:00.000000Z'
-                updated_at: '2024-01-01T00:00:00.000000Z'
+                $ref: './openapi/schemas/Server.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
 
     delete:
       summary: Delete server
@@ -363,19 +254,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
 
   /api/projects/{project}/servers/{server}/reboot:
     post:
@@ -408,19 +299,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
 
   /api/projects/{project}/servers/{server}/upgrade:
     post:
@@ -453,19 +344,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: './openapi/schemas/ErrorResponse.yaml'
 
 components:
   securitySchemes:
@@ -474,173 +365,3 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Sanctum bearer token authentication
-  
-  schemas:
-    Server:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        project_id:
-          type: integer
-          example: 1
-        services:
-          type: object
-          additionalProperties:
-            type: string
-          example:
-            php: '8.2'
-            nginx: '1.24'
-        user_id:
-          type: integer
-          example: 1
-        provider_id:
-          type: integer
-          nullable: true
-          example: 1
-        name:
-          type: string
-          example: 'production-server'
-        ssh_user:
-          type: string
-          example: 'root'
-        ssh_users:
-          type: array
-          items:
-            type: string
-          example: ['root', 'deploy']
-        ip:
-          type: string
-          example: '192.168.1.100'
-        local_ip:
-          type: string
-          nullable: true
-          example: '10.0.0.100'
-        port:
-          type: integer
-          example: 22
-        os:
-          type: string
-          example: 'ubuntu-22.04'
-        provider:
-          type: string
-          example: 'digitalocean'
-        provider_data:
-          type: object
-          nullable: true
-        public_key:
-          type: string
-          nullable: true
-        status:
-          type: string
-          enum: ['ready', 'installing', 'installation_failed', 'disconnected', 'updating']
-          example: 'ready'
-        auto_update:
-          type: boolean
-          example: true
-        progress:
-          type: integer
-          minimum: 0
-          maximum: 100
-          example: 100
-        progress_step:
-          type: string
-          example: 'Installing services'
-        updates:
-          type: object
-          nullable: true
-        last_update_check:
-          type: string
-          format: date-time
-          nullable: true
-        status_color:
-          type: string
-          enum: ['success', 'warning', 'danger', 'gray']
-          example: 'success'
-        features:
-          type: array
-          items:
-            type: string
-          example: ['ssl', 'backups', 'monitoring']
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-    
-    PaginatedResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items: {}
-        links:
-          type: object
-          properties:
-            first:
-              type: string
-              example: 'http://localhost/api/projects?page=1'
-            last:
-              type: string
-              example: 'http://localhost/api/projects?page=10'
-            prev:
-              type: string
-              nullable: true
-              example: null
-            next:
-              type: string
-              nullable: true
-              example: 'http://localhost/api/projects?page=2'
-        meta:
-          type: object
-          properties:
-            current_page:
-              type: integer
-              example: 1
-            from:
-              type: integer
-              example: 1
-            last_page:
-              type: integer
-              example: 10
-            per_page:
-              type: integer
-              example: 25
-            to:
-              type: integer
-              example: 25
-            total:
-              type: integer
-              example: 250
-    
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: 'Error message'
-        errors:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
-          example:
-            field: ['Error message for field']
-    
-    ValidationError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: 'The given data was invalid.'
-        errors:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
-          example:
-            field: ['The field is required.']
