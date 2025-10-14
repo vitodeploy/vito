@@ -201,7 +201,6 @@ return [
         App\Providers\NotificationChannelServiceProvider::class,
         App\Providers\ServiceTypeServiceProvider::class,
         App\Providers\HorizonServiceProvider::class,
-        App\Providers\ScrambleServiceProvider::class,
     ],
 
     /*
