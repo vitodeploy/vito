@@ -97,6 +97,11 @@ class WorkflowServiceProvider extends ServiceProvider
             ->category('general')
             ->handler(\App\WorkflowActions\General\RunCommand::class)
             ->register();
+        RegisterWorkflowAction::make('http-call')
+            ->label('HTTP Call')
+            ->category('general')
+            ->handler(\App\WorkflowActions\General\HttpCall::class)
+            ->register();
     }
 
     private function database(): void
