@@ -1,21 +1,12 @@
 paths:
-  /api/projects/{project}/server-providers:
+  /api/server-providers:
     get:
-      summary: List server providers
-      description: "DEPRECATED: Use /api/server-providers instead. This endpoint will be removed in a future version."
-      deprecated: true
+      summary: List user's server providers
+      description: Get all server providers for the authenticated user
       tags:
-        - Server Providers
+        - User Server Providers
       security:
         - bearerAuth: []
-      parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
       responses:
         '200':
           description: List of server providers
@@ -42,29 +33,14 @@ paths:
             application/json:
               schema:
                 $ref: './openapi/schemas/ErrorResponse.yaml'
-        '404':
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create server provider
-      description: "DEPRECATED: Use /api/server-providers instead. This endpoint will be removed in a future version."
-      deprecated: true
+      description: Create a new server provider for the authenticated user
       tags:
-        - Server Providers
+        - User Server Providers
       security:
         - bearerAuth: []
-      parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
       requestBody:
         required: true
         content:
@@ -73,14 +49,14 @@ paths:
               type: object
               required:
                 - name
-                - type
+                - provider
                 - credentials
               properties:
                 name:
                   type: string
                   description: Server provider name
                   example: 'DigitalOcean'
-                type:
+                provider:
                   type: string
                   enum: ['aws', 'hetzner', 'digitalocean', 'linode', 'vultr']
                   description: Server provider type
@@ -90,6 +66,10 @@ paths:
                   description: Provider-specific credentials
                   example:
                     token: 'dop_v1_xxxxxxxxxxxx'
+                global:
+                  type: boolean
+                  description: Whether this provider should be available globally (not tied to current project)
+                  example: false
       responses:
         '201':
           description: Server provider created successfully
@@ -109,12 +89,6 @@ paths:
             application/json:
               schema:
                 $ref: './openapi/schemas/ErrorResponse.yaml'
-        '404':
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
@@ -122,23 +96,15 @@ paths:
               schema:
                 $ref: './openapi/schemas/ValidationError.yaml'
 
-  /api/projects/{project}/server-providers/{serverProvider}:
+  /api/server-providers/{serverProvider}:
     get:
       summary: Get server provider
-      description: "DEPRECATED: Use /api/server-providers/{serverProvider} instead. This endpoint will be removed in a future version."
-      deprecated: true
+      description: Get a specific server provider by ID
       tags:
-        - Server Providers
+        - User Server Providers
       security:
         - bearerAuth: []
       parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
         - name: serverProvider
           in: path
           required: true
@@ -174,20 +140,12 @@ paths:
 
     put:
       summary: Update server provider
-      description: "DEPRECATED: Use /api/server-providers/{serverProvider} instead. This endpoint will be removed in a future version."
-      deprecated: true
+      description: Update a server provider
       tags:
-        - Server Providers
+        - User Server Providers
       security:
         - bearerAuth: []
       parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
         - name: serverProvider
           in: path
           required: true
@@ -206,16 +164,10 @@ paths:
                   type: string
                   description: Server provider name
                   example: 'DigitalOcean'
-                type:
-                  type: string
-                  enum: ['aws', 'hetzner', 'digitalocean', 'linode', 'vultr']
-                  description: Server provider type
-                  example: 'digitalocean'
-                credentials:
-                  type: object
-                  description: Provider-specific credentials
-                  example:
-                    token: 'dop_v1_xxxxxxxxxxxx'
+                global:
+                  type: boolean
+                  description: Whether this provider should be available globally (not tied to current project)
+                  example: false
       responses:
         '200':
           description: Server provider updated successfully
@@ -250,20 +202,12 @@ paths:
 
     delete:
       summary: Delete server provider
-      description: "DEPRECATED: Use /api/server-providers/{serverProvider} instead. This endpoint will be removed in a future version."
-      deprecated: true
+      description: Delete a server provider
       tags:
-        - Server Providers
+        - User Server Providers
       security:
         - bearerAuth: []
       parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
         - name: serverProvider
           in: path
           required: true
@@ -293,23 +237,15 @@ paths:
               schema:
                 $ref: './openapi/schemas/ErrorResponse.yaml'
 
-  /api/projects/{project}/server-providers/{serverProvider}/regions:
+  /api/server-providers/{serverProvider}/regions:
     get:
       summary: Get server provider regions
-      description: "DEPRECATED: Use /api/server-providers/{serverProvider}/regions instead. This endpoint will be removed in a future version."
-      deprecated: true
+      description: Get available regions for a server provider
       tags:
-        - Server Providers
+        - User Server Providers
       security:
         - bearerAuth: []
       parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
         - name: serverProvider
           in: path
           required: true
@@ -371,23 +307,15 @@ paths:
               schema:
                 $ref: './openapi/schemas/ErrorResponse.yaml'
 
-  /api/projects/{project}/server-providers/{serverProvider}/regions/{region}/plans:
+  /api/server-providers/{serverProvider}/regions/{region}/plans:
     get:
       summary: Get server provider plans
-      description: "DEPRECATED: Use /api/server-providers/{serverProvider}/regions/{region}/plans instead. This endpoint will be removed in a future version."
-      deprecated: true
+      description: Get available plans for a server provider in a specific region
       tags:
-        - Server Providers
+        - User Server Providers
       security:
         - bearerAuth: []
       parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
         - name: serverProvider
           in: path
           required: true

@@ -54,7 +54,7 @@ class StorageProviderController extends Controller
     {
         $this->authorize('create', StorageProvider::class);
 
-        app(CreateStorageProvider::class)->create(user(), user()->currentProject, $request->all());
+        app(CreateStorageProvider::class)->create(user(), $request->all());
 
         return back()->with('success', 'Storage provider created.');
     }
@@ -64,7 +64,7 @@ class StorageProviderController extends Controller
     {
         $this->authorize('update', $storageProvider);
 
-        app(EditStorageProvider::class)->edit($storageProvider, user()->currentProject, $request->all());
+        app(EditStorageProvider::class)->edit($storageProvider, $request->all());
 
         return back()->with('success', 'Storage provider updated.');
     }

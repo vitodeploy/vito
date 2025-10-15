@@ -92,7 +92,7 @@ class SourceControlController extends Controller
 
         $user = user();
 
-        app(ConnectSourceControl::class)->connect($user->currentProject, $user, $request->all());
+        app(ConnectSourceControl::class)->connect($user, $request->all());
 
         return back()->with('success', 'Source control created.');
     }
@@ -102,7 +102,7 @@ class SourceControlController extends Controller
     {
         $this->authorize('update', $sourceControl);
 
-        app(EditSourceControl::class)->edit($sourceControl, user()->currentProject, $request->all());
+        app(EditSourceControl::class)->edit($sourceControl, $request->all());
 
         return back()->with('success', 'Source control updated.');
     }

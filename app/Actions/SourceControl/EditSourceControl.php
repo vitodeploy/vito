@@ -2,7 +2,6 @@
 
 namespace App\Actions\SourceControl;
 
-use App\Models\Project;
 use App\Models\SourceControl;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -14,7 +13,7 @@ class EditSourceControl
      *
      * @throws ValidationException
      */
-    public function edit(SourceControl $sourceControl, Project $project, array $input): SourceControl
+    public function edit(SourceControl $sourceControl, array $input): SourceControl
     {
         Validator::make($input, [
             'name' => [
@@ -23,7 +22,7 @@ class EditSourceControl
         ])->validate();
 
         $sourceControl->profile = $input['name'];
-        $sourceControl->project_id = isset($input['global']) && $input['global'] ? null : $project->id;
+        $sourceControl->project_id = isset($input['global']) && $input['global'] ? null : $sourceControl->user->currentProject?->id;
 
         $sourceControl->save();
 

@@ -18,10 +18,16 @@ use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
 
+/**
+ * @deprecated Use UserStorageProviderController instead. This controller will be removed in a future version.
+ */
 #[Prefix('api/projects/{project}/storage-providers')]
 #[Middleware(['auth:sanctum', 'can-see-project'])]
 class StorageProviderController extends Controller
 {
+    /**
+     * @deprecated Use GET /api/storage-providers instead
+     */
     #[Get('/', name: 'api.projects.storage-providers', middleware: 'ability:read')]
     public function index(Project $project): ResourceCollection
     {
@@ -32,17 +38,23 @@ class StorageProviderController extends Controller
         return StorageProviderResource::collection($storageProviders);
     }
 
+    /**
+     * @deprecated Use POST /api/storage-providers instead
+     */
     #[Post('/', name: 'api.projects.storage-providers.create', middleware: 'ability:write')]
     public function create(Request $request, Project $project): StorageProviderResource
     {
         $this->authorize('create', StorageProvider::class);
 
         $user = user();
-        $storageProvider = app(CreateStorageProvider::class)->create($user, $project, $request->all());
+        $storageProvider = app(CreateStorageProvider::class)->create($user, $request->all());
 
         return new StorageProviderResource($storageProvider);
     }
 
+    /**
+     * @deprecated Use GET /api/storage-providers/{storageProvider} instead
+     */
     #[Get('{storageProvider}', name: 'api.projects.storage-providers.show', middleware: 'ability:read')]
     public function show(Project $project, StorageProvider $storageProvider): StorageProviderResource
     {
@@ -53,6 +65,9 @@ class StorageProviderController extends Controller
         return new StorageProviderResource($storageProvider);
     }
 
+    /**
+     * @deprecated Use PUT /api/storage-providers/{storageProvider} instead
+     */
     #[Put('{storageProvider}', name: 'api.projects.storage-providers.update', middleware: 'ability:write')]
     public function update(Request $request, Project $project, StorageProvider $storageProvider): StorageProviderResource
     {
@@ -60,11 +75,14 @@ class StorageProviderController extends Controller
 
         $this->validateRoute($project, $storageProvider);
 
-        $storageProvider = app(EditStorageProvider::class)->edit($storageProvider, $project, $request->all());
+        $storageProvider = app(EditStorageProvider::class)->edit($storageProvider, $request->all());
 
         return new StorageProviderResource($storageProvider);
     }
 
+    /**
+     * @deprecated Use DELETE /api/storage-providers/{storageProvider} instead
+     */
     #[Delete('{storageProvider}', name: 'api.projects.storage-providers.delete', middleware: 'ability:write')]
     public function delete(Project $project, StorageProvider $storageProvider): \Illuminate\Http\Response
     {

@@ -2,7 +2,6 @@
 
 namespace App\Actions\StorageProvider;
 
-use App\Models\Project;
 use App\Models\StorageProvider;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
@@ -17,7 +16,7 @@ class CreateStorageProvider
      *
      * @throws ValidationException
      */
-    public function create(User $user, Project $project, array $input): StorageProvider
+    public function create(User $user, array $input): StorageProvider
     {
         $this->validate($input);
 
@@ -25,7 +24,7 @@ class CreateStorageProvider
             'user_id' => $user->id,
             'provider' => $input['provider'],
             'profile' => $input['name'],
-            'project_id' => isset($input['global']) && $input['global'] ? null : $project->id,
+            'project_id' => isset($input['global']) && $input['global'] ? null : $user->currentProject?->id,
         ]);
 
         $storageProvider->credentials = $storageProvider->provider()->credentialData($input);

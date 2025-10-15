@@ -2,7 +2,6 @@
 
 namespace App\Actions\SourceControl;
 
-use App\Models\Project;
 use App\Models\SourceControl;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
@@ -16,7 +15,7 @@ class ConnectSourceControl
      *
      * @throws ValidationException
      */
-    public function connect(Project $project, User $user, array $input): SourceControl
+    public function connect(User $user, array $input): SourceControl
     {
         $this->validate($input);
 
@@ -24,7 +23,7 @@ class ConnectSourceControl
             'provider' => $input['provider'],
             'profile' => $input['name'],
             'url' => isset($input['url']) && $input['url'] ? $input['url'] : null,
-            'project_id' => isset($input['global']) && $input['global'] ? null : $project->id,
+            'project_id' => isset($input['global']) && $input['global'] ? null : $user->currentProject?->id,
             'user_id' => $user->id,
         ]);
 

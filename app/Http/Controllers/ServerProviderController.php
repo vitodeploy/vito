@@ -51,7 +51,7 @@ class ServerProviderController extends Controller
     {
         $this->authorize('create', ServerProvider::class);
 
-        app(CreateServerProvider::class)->create(user(), user()->currentProject, $request->all());
+        app(CreateServerProvider::class)->create(user(), $request->all());
 
         return back()->with('success', 'Server provider created.');
     }
@@ -61,7 +61,7 @@ class ServerProviderController extends Controller
     {
         $this->authorize('update', $serverProvider);
 
-        app(EditServerProvider::class)->edit($serverProvider, user()->currentProject, $request->all());
+        app(EditServerProvider::class)->edit($serverProvider, $request->all());
 
         return back()->with('success', 'Server provider updated.');
     }

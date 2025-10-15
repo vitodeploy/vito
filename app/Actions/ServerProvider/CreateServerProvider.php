@@ -2,7 +2,6 @@
 
 namespace App\Actions\ServerProvider;
 
-use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
 use App\Models\User;
@@ -19,7 +18,7 @@ class CreateServerProvider
      *
      * @throws ValidationException
      */
-    public function create(User $user, Project $project, array $input): ServerProvider
+    public function create(User $user, array $input): ServerProvider
     {
         $this->validate($input);
 
@@ -40,7 +39,7 @@ class CreateServerProvider
         $serverProvider->profile = $input['name'];
         $serverProvider->provider = $input['provider'];
         $serverProvider->credentials = $provider->credentialData($input);
-        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $project->id;
+        $serverProvider->project_id = isset($input['global']) && $input['global'] ? null : $user->currentProject?->id;
         $serverProvider->save();
 
         return $serverProvider;

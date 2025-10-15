@@ -31,7 +31,12 @@ class ApiDocsController extends Controller
             'firewall-rules.yaml',
             'ssl.yaml',
             'workflows.yaml',
+            'user-server-providers.yaml',
+            'user-storage-providers.yaml',
+            'user-source-controls.yaml',
             'server-providers.yaml',
+            'storage-providers.yaml',
+            'source-controls.yaml',
         ];
 
         $combinedPaths = [];

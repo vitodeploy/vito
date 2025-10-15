@@ -1,0 +1,287 @@
+paths:
+  /api/projects/{project}/source-controls:
+    get:
+      summary: List source controls
+      description: "DEPRECATED: Use /api/source-controls instead. This endpoint will be removed in a future version."
+      deprecated: true
+      tags:
+        - Source Controls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of source controls
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/SourceControl.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create source control
+      description: "DEPRECATED: Use /api/source-controls instead. This endpoint will be removed in a future version."
+      deprecated: true
+      tags:
+        - Source Controls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - provider
+                - token
+              properties:
+                name:
+                  type: string
+                  description: Source control name
+                  example: 'GitHub'
+                provider:
+                  type: string
+                  enum: ['github', 'gitlab', 'bitbucket']
+                  description: Source control provider type
+                  example: 'github'
+                token:
+                  type: string
+                  description: Access token for the source control provider
+                  example: 'ghp_xxxxxxxxxxxxxxxxxxxx'
+                url:
+                  type: string
+                  description: Custom URL for self-hosted instances (optional)
+                  example: 'https://git.example.com'
+      responses:
+        '201':
+          description: Source control created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/SourceControl.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/source-controls/{sourceControl}:
+    get:
+      summary: Get source control
+      description: "DEPRECATED: Use /api/source-controls/{sourceControl} instead. This endpoint will be removed in a future version."
+      deprecated: true
+      tags:
+        - Source Controls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: sourceControl
+          in: path
+          required: true
+          description: Source control ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Source control details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/SourceControl.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Source control not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    put:
+      summary: Update source control
+      description: "DEPRECATED: Use /api/source-controls/{sourceControl} instead. This endpoint will be removed in a future version."
+      deprecated: true
+      tags:
+        - Source Controls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: sourceControl
+          in: path
+          required: true
+          description: Source control ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Source control name
+                  example: 'GitHub'
+      responses:
+        '200':
+          description: Source control updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/SourceControl.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Source control not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+    delete:
+      summary: Delete source control
+      description: "DEPRECATED: Use /api/source-controls/{sourceControl} instead. This endpoint will be removed in a future version."
+      deprecated: true
+      tags:
+        - Source Controls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: sourceControl
+          in: path
+          required: true
+          description: Source control ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Source control deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Source control not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
