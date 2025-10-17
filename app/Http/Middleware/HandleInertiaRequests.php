@@ -127,6 +127,9 @@ class HandleInertiaRequests extends Middleware
                 'service' => [
                     'services' => config('service.services'),
                 ],
+                'dns_provider' => [
+                    'providers' => config('dns-provider.providers'),
+                ],
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

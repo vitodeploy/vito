@@ -1,5 +1,5 @@
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { BellIcon, CloudIcon, CodeIcon, CommandIcon, DatabaseIcon, KeyIcon, ListIcon, UserIcon } from 'lucide-react';
+import { BellIcon, CloudIcon, CodeIcon, CommandIcon, DatabaseIcon, GlobeIcon, KeyIcon, ListIcon, UserIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Layout from '@/layouts/app/layout';
 
@@ -28,6 +28,11 @@ const sidebarNavItems: NavItem[] = [
     title: 'Storage Providers',
     href: route('storage-providers'),
     icon: DatabaseIcon,
+  },
+  {
+    title: 'DNS Providers',
+    href: route('dns-providers'),
+    icon: GlobeIcon,
   },
   {
     title: 'Notification Channels',

@@ -30,6 +30,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Collection<int, Server> $servers
  * @property Collection<int, Script> $scripts
  * @property Collection<int, StorageProvider> $storageProviders
+ * @property Collection<int, DNSProvider> $dnsProviders
+ * @property Collection<int, Domain> $domains
  * @property Collection<int, StorageProvider> $connectedStorageProviders
  * @property Collection<int, PersonalAccessToken> $tokens
  * @property string $profile_photo_url
@@ -128,6 +130,16 @@ class User extends Authenticatable
     public function storageProvider(string $provider): HasOne
     {
         return $this->hasOne(StorageProvider::class)->where('provider', $provider);
+    }
+
+    public function dnsProviders(): HasMany
+    {
+        return $this->hasMany(DNSProvider::class);
+    }
+
+    public function domains(): HasMany
+    {
+        return $this->hasMany(Domain::class);
     }
 
     public function allProjects(): Builder

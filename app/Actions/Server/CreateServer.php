@@ -110,6 +110,7 @@ class CreateServer
                 Rule::when(fn (): bool => isset($input['provider']) && $input['provider'] != Custom::id(), [
                     'required',
                     Rule::exists('server_providers', 'id')->where(function (Builder $query) use ($project): void {
+                        // @BUG: This has authorization issue!
                         $query->where('project_id', $project->id)
                             ->orWhereNull('project_id');
                     }),

@@ -19,6 +19,7 @@ import {
   ChevronRightIcon,
   CogIcon,
   Folder,
+  Globe,
   ListEndIcon,
   LogsIcon,
   MousePointerClickIcon,
@@ -55,6 +56,11 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
       title: 'Workflows',
       href: route('workflows'),
       icon: WorkflowIcon,
+    },
+    {
+      title: 'Domains',
+      href: route('domains'),
+      icon: Globe,
     },
     {
       title: 'Settings',

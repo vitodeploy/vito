@@ -70,6 +70,15 @@ export interface Configs {
       };
     };
   };
+  dns_provider: {
+    providers: {
+      [provider: string]: {
+        label: string;
+        handler: string;
+        form?: DynamicFieldConfig[];
+      };
+    };
+  };
   notification_channel: {
     providers: {
       [channel: string]: {
