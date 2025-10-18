@@ -1,0 +1,291 @@
+paths:
+  /api/domains:
+    get:
+      summary: List domains
+      description: Get all domains for the authenticated user
+      tags:
+        - Domains
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of domains
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/Domain.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Add domain
+      description: Add a domain from a DNS provider to the user's account
+      tags:
+        - Domains
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dns_provider_id
+                - provider_domain_id
+              properties:
+                dns_provider_id:
+                  type: integer
+                  description: 'ID of the DNS provider to add the domain from'
+                  example: 1
+                provider_domain_id:
+                  type: string
+                  description: 'Domain ID from the DNS provider'
+                  example: 'domain-123'
+            example:
+              dns_provider_id: 1
+              provider_domain_id: 'domain-123'
+      responses:
+        '201':
+          description: Domain added successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Domain.yaml'
+              example:
+                id: 1
+                domain: 'example.com'
+                dns_provider_id: 1
+                dns_provider:
+                  id: 1
+                  name: 'My Cloudflare Account'
+                  provider: 'cloudflare'
+                  connected: true
+                  project_id: 1
+                  global: false
+                  created_at: '2024-01-01T00:00:00.000000Z'
+                  updated_at: '2024-01-01T00:00:00.000000Z'
+                metadata:
+                  id: 'domain-123'
+                  status: 'active'
+                  name_servers: ['ns1.example.com', 'ns2.example.com']
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  domain: ['Domain not found in DNS provider.']
+
+  /api/domains/{domain}:
+    get:
+      summary: Get domain
+      description: Get a specific domain by ID
+      tags:
+        - Domains
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Domain details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/Domain.yaml'
+              example:
+                id: 1
+                domain: 'example.com'
+                dns_provider_id: 1
+                dns_provider:
+                  id: 1
+                  name: 'My Cloudflare Account'
+                  provider: 'cloudflare'
+                  connected: true
+                  project_id: 1
+                  global: false
+                  created_at: '2024-01-01T00:00:00.000000Z'
+                  updated_at: '2024-01-01T00:00:00.000000Z'
+                metadata:
+                  id: 'domain-123'
+                  status: 'active'
+                  name_servers: ['ns1.example.com', 'ns2.example.com']
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Remove domain
+      description: Remove a domain from the user's account
+      tags:
+        - Domains
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Domain removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Domain removed successfully'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+  /api/domains/{dnsProvider}/available:
+    get:
+      summary: Get available domains
+      description: Get domains available from a specific DNS provider
+      tags:
+        - Domains
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dnsProvider
+          in: path
+          required: true
+          description: DNS provider ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of available domains from the DNS provider
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: 'zone-id-123'
+                    name:
+                      type: string
+                      example: 'example.com'
+                    status:
+                      type: string
+                      example: 'active'
+                    created_on:
+                      type: string
+                      format: date-time
+                      example: '2024-01-01T00:00:00Z'
+                    modified_on:
+                      type: string
+                      format: date-time
+                      example: '2024-01-01T00:00:00Z'
+              example:
+                - id: 'zone-id-123'
+                  name: 'example.com'
+                  status: 'active'
+                  created_on: '2024-01-01T00:00:00Z'
+                  modified_on: '2024-01-01T00:00:00Z'
+                - id: 'zone-id-456'
+                  name: 'test.com'
+                  status: 'active'
+                  created_on: '2024-01-01T00:00:00Z'
+                  modified_on: '2024-01-01T00:00:00Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'

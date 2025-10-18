@@ -1,0 +1,30 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: 'My Cloudflare Account'
+  provider:
+    type: string
+    example: 'cloudflare'
+  connected:
+    type: boolean
+    example: true
+  project_id:
+    type: integer
+    nullable: true
+    example: 1
+  global:
+    type: boolean
+    example: false
+    description: 'True if the DNS provider is available globally (not project-specific)'
+  created_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'
+  updated_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'

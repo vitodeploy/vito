@@ -1,0 +1,395 @@
+paths:
+  /api/domains/{domain}/records:
+    get:
+      summary: List DNS records
+      description: Get all DNS records for a specific domain
+      tags:
+        - DNS Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of DNS records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: './openapi/schemas/DNSRecord.yaml'
+              example:
+                data:
+                  - id: 1
+                    type: 'A'
+                    name: 'www'
+                    formatted_name: 'www'
+                    content: '192.168.1.1'
+                    ttl: 3600
+                    formatted_ttl: '1h'
+                    proxied: false
+                    domain_id: 1
+                    created_at: '2024-01-01T00:00:00.000000Z'
+                    updated_at: '2024-01-01T00:00:00.000000Z'
+                  - id: 2
+                    type: 'CNAME'
+                    name: 'blog'
+                    formatted_name: 'blog'
+                    content: 'example.com'
+                    ttl: 3600
+                    formatted_ttl: '1h'
+                    proxied: true
+                    domain_id: 1
+                    created_at: '2024-01-01T00:00:00.000000Z'
+                    updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create DNS record
+      description: Create a new DNS record for a domain
+      tags:
+        - DNS Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - name
+                - content
+              properties:
+                type:
+                  type: string
+                  enum: ['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'NS', 'CAA', 'PTR', 'SOA']
+                  description: 'DNS record type'
+                  example: 'A'
+                name:
+                  type: string
+                  maxLength: 255
+                  description: 'Record name (subdomain or @ for root)'
+                  example: 'www'
+                content:
+                  type: string
+                  description: 'Record content/value'
+                  example: '192.168.1.1'
+                ttl:
+                  type: integer
+                  minimum: 1
+                  maximum: 86400
+                  description: 'Time to live in seconds (defaults to 1 for auto)'
+                  example: 3600
+                proxied:
+                  type: boolean
+                  description: 'Whether the record should be proxied through the DNS provider'
+                  example: false
+            example:
+              type: 'A'
+              name: 'www'
+              content: '192.168.1.1'
+              ttl: 3600
+              proxied: false
+      responses:
+        '201':
+          description: DNS record created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DNSRecord.yaml'
+              example:
+                id: 1
+                type: 'A'
+                name: 'www'
+                formatted_name: 'www'
+                content: '192.168.1.1'
+                ttl: 3600
+                formatted_ttl: '1h'
+                proxied: false
+                domain_id: 1
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  type: ['The type field is required.']
+
+  /api/domains/{domain}/records/{dnsRecord}:
+    get:
+      summary: Get DNS record
+      description: Get a specific DNS record by ID
+      tags:
+        - DNS Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+        - name: dnsRecord
+          in: path
+          required: true
+          description: DNS record ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: DNS record details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DNSRecord.yaml'
+              example:
+                id: 1
+                type: 'A'
+                name: 'www'
+                formatted_name: 'www'
+                content: '192.168.1.1'
+                ttl: 3600
+                formatted_ttl: '1h'
+                proxied: false
+                domain_id: 1
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS record not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    patch:
+      summary: Update DNS record
+      description: Update a DNS record
+      tags:
+        - DNS Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+        - name: dnsRecord
+          in: path
+          required: true
+          description: DNS record ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - name
+                - content
+              properties:
+                type:
+                  type: string
+                  enum: ['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'NS', 'CAA', 'PTR', 'SOA']
+                  description: 'DNS record type'
+                  example: 'A'
+                name:
+                  type: string
+                  maxLength: 255
+                  description: 'Record name (subdomain or @ for root)'
+                  example: 'www'
+                content:
+                  type: string
+                  description: 'Record content/value'
+                  example: '192.168.1.2'
+                ttl:
+                  type: integer
+                  minimum: 1
+                  maximum: 86400
+                  description: 'Time to live in seconds'
+                  example: 7200
+                proxied:
+                  type: boolean
+                  description: 'Whether the record should be proxied through the DNS provider'
+                  example: true
+            example:
+              type: 'A'
+              name: 'www'
+              content: '192.168.1.2'
+              ttl: 7200
+              proxied: true
+      responses:
+        '200':
+          description: DNS record updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DNSRecord.yaml'
+              example:
+                id: 1
+                type: 'A'
+                name: 'www'
+                formatted_name: 'www'
+                content: '192.168.1.2'
+                ttl: 7200
+                formatted_ttl: '2h'
+                proxied: true
+                domain_id: 1
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T12:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS record not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+    delete:
+      summary: Delete DNS record
+      description: Delete a DNS record
+      tags:
+        - DNS Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+        - name: dnsRecord
+          in: path
+          required: true
+          description: DNS record ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: DNS record deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'DNS record deleted successfully'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS record not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'

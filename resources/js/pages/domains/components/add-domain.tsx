@@ -82,7 +82,7 @@ export default function AddDomain({ children }: { children: ReactNode }) {
     } else {
       form.reset();
     }
-  }, [open]);
+  }, add - domain[open]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -112,7 +112,7 @@ export default function AddDomain({ children }: { children: ReactNode }) {
                   </SelectContent>
                 </Select>
                 <ConnectDNSProvider onProviderAdded={fetchProviders}>
-                  <Button variant="outline">
+                  <Button variant="outline" aria-label="Connect DNS Provider">
                     <WifiIcon />
                   </Button>
                 </ConnectDNSProvider>

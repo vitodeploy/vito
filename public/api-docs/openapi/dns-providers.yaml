@@ -1,0 +1,286 @@
+paths:
+  /api/dns-providers:
+    get:
+      summary: List DNS providers
+      description: Get all DNS providers for the authenticated user
+      tags:
+        - DNS Providers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of DNS providers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: './openapi/schemas/DNSProvider.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Create DNS provider
+      description: Create a new DNS provider connection
+      tags:
+        - DNS Providers
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - provider
+                - token
+              properties:
+                name:
+                  type: string
+                  description: 'Display name for the DNS provider'
+                  example: 'My Cloudflare Account'
+                provider:
+                  type: string
+                  enum: ['cloudflare']
+                  description: 'DNS provider type (currently only cloudflare is supported)'
+                  example: 'cloudflare'
+                global:
+                  type: boolean
+                  description: 'Whether this provider should be available globally (not project-specific)'
+                  example: false
+                token:
+                  type: string
+                  description: 'DNS provider API token'
+                  example: 'your-cloudflare-api-token'
+            example:
+              name: 'My Cloudflare Account'
+              provider: 'cloudflare'
+              global: false
+              token: 'your-cloudflare-api-token'
+      responses:
+        '201':
+          description: DNS provider created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DNSProvider.yaml'
+              example:
+                id: 1
+                name: 'My Cloudflare Account'
+                provider: 'cloudflare'
+                connected: true
+                project_id: 1
+                global: false
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+              example:
+                message: 'The given data was invalid.'
+                errors:
+                  provider: ['Couldn''t connect to cloudflare. Please check your credentials.']
+
+  /api/dns-providers/{dnsProvider}:
+    get:
+      summary: Get DNS provider
+      description: Get a specific DNS provider by ID
+      tags:
+        - DNS Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dnsProvider
+          in: path
+          required: true
+          description: DNS provider ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: DNS provider details
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DNSProvider.yaml'
+              example:
+                id: 1
+                name: 'My Cloudflare Account'
+                provider: 'cloudflare'
+                connected: true
+                project_id: 1
+                global: false
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T00:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
+    put:
+      summary: Update DNS provider
+      description: Update a DNS provider's details and credentials
+      tags:
+        - DNS Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dnsProvider
+          in: path
+          required: true
+          description: DNS provider ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: 'Display name for the DNS provider'
+                  example: 'Updated Cloudflare Account'
+                global:
+                  type: boolean
+                  description: 'Whether this provider should be available globally (not project-specific)'
+                  example: false
+            example:
+              name: 'Updated Cloudflare Account'
+              global: false
+      responses:
+        '200':
+          description: DNS provider updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/DNSProvider.yaml'
+              example:
+                id: 1
+                name: 'Updated Cloudflare Account'
+                provider: 'cloudflare'
+                connected: true
+                project_id: 1
+                global: false
+                created_at: '2024-01-01T00:00:00.000000Z'
+                updated_at: '2024-01-01T12:00:00.000000Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ValidationError.yaml'
+
+    delete:
+      summary: Delete DNS provider
+      description: Delete a DNS provider and all associated domains
+      tags:
+        - DNS Providers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dnsProvider
+          in: path
+          required: true
+          description: DNS provider ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: DNS provider deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'DNS provider deleted successfully'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: DNS provider not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'

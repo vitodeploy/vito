@@ -141,7 +141,7 @@ export const columns: ColumnDef<DNSProvider>[] = [
     enableSorting: true,
   },
   {
-    accessorKey: 'scope',
+    accessorKey: 'global',
     header: 'Scope',
     enableColumnFilter: true,
     enableSorting: true,

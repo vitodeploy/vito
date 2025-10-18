@@ -1,0 +1,49 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  type:
+    type: string
+    enum: ['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'NS', 'CAA', 'PTR', 'SOA']
+    example: 'A'
+  name:
+    type: string
+    example: 'www'
+    maxLength: 255
+  formatted_name:
+    type: string
+    example: 'www'
+    description: 'Formatted name for display (shows @ for root domain)'
+  content:
+    type: string
+    example: '192.168.1.1'
+  ttl:
+    type: integer
+    minimum: 1
+    maximum: 86400
+    example: 3600
+    description: 'Time to live in seconds'
+  formatted_ttl:
+    type: string
+    example: '1h'
+    description: 'Human readable TTL format (e.g., 1h, 30m, 3600s)'
+  proxied:
+    type: boolean
+    example: false
+    description: 'Whether the record is proxied through the DNS provider'
+  domain_id:
+    type: integer
+    example: 1
+  domain:
+    $ref: './Domain.yaml'
+    nullable: true
+    description: 'Domain information (when loaded)'
+  created_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'
+  updated_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'

@@ -1,0 +1,31 @@
+type: object
+properties:
+  id:
+    type: integer
+    example: 1
+  domain:
+    type: string
+    example: 'example.com'
+  dns_provider_id:
+    type: integer
+    example: 1
+  dns_provider:
+    $ref: './DNSProvider.yaml'
+    nullable: true
+    description: 'DNS provider information (when loaded)'
+  metadata:
+    type: object
+    nullable: true
+    description: 'Additional metadata from the DNS provider'
+    example:
+      id: 'domain-123'
+      status: 'active'
+      name_servers: ['ns1.example.com', 'ns2.example.com']
+  created_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'
+  updated_at:
+    type: string
+    format: date-time
+    example: '2024-01-01T00:00:00.000000Z'
