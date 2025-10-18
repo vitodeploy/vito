@@ -632,4 +632,42 @@ class ServerTest extends TestCase
         $this->post(route('servers.update', $this->server))
             ->assertSessionDoesntHaveErrors();
     }
+
+    public function test_cannot_create_server_with_unauthorized_provider(): void
+    {
+        $this->actingAs($this->user);
+
+        // Create a server provider that belongs to a different user
+        $otherUser = \App\Models\User::factory()->create();
+        $unauthorizedProvider = ServerProvider::factory()->create([
+            'user_id' => $otherUser->id,
+            'provider' => Hetzner::id(),
+            'credentials' => ['token' => 'test-token'],
+        ]);
+
+        Storage::fake();
+        SSH::fake('Active: active');
+
+        $this->post(route('servers.store'), [
+            'provider' => Hetzner::id(),
+            'server_provider' => $unauthorizedProvider->id,
+            'name' => 'test-unauthorized-server',
+            'os' => OperatingSystem::UBUNTU22->value,
+            'plan' => 'cx11',
+            'region' => 'nbg1',
+            'services' => [
+                [
+                    'name' => 'ufw',
+                    'type' => 'firewall',
+                    'version' => 'latest',
+                ],
+            ],
+        ])
+            ->assertStatus(403)
+            ->assertSee('You do not have permission to use this server provider.');
+
+        $this->assertDatabaseMissing('servers', [
+            'name' => 'test-unauthorized-server',
+        ]);
+    }
 }
