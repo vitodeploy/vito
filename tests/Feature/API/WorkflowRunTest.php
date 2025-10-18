@@ -83,20 +83,50 @@ class WorkflowRunTest extends TestCase
 
     public function test_can_run_workflow(): void
     {
-        $this->markTestSkipped('Requires fake workflow node and edge');
-
         SSH::fake();
         Sanctum::actingAs($this->user, ['read', 'write']);
+
+        // Create a workflow with proper nodes and edges
+        $workflow = Workflow::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->project->id,
+            'name' => 'Test Workflow',
+            'payload' => [
+                'nodes' => [
+                    [
+                        'id' => 'node-1',
+                        'data' => [
+                            'action' => [
+                                'label' => 'Deploy Application',
+                                'handler' => 'App\\WorkflowActions\\Deploy\\DeployApplication',
+                                'outputs' => [
+                                    'deployment_id' => 'The ID of the deployment',
+                                ],
+                                'inputs' => [
+                                    'branch' => 'main',
+                                ],
+                                'starting' => true,
+                            ],
+                        ],
+                    ],
+                ],
+                'edges' => [],
+            ],
+        ]);
 
         $mockRunWorkflow = Mockery::mock(RunWorkflow::class);
         $mockRunWorkflow->shouldReceive('run')
             ->once()
-            ->with($this->user, $this->workflow, ['branch' => 'main'])
+            ->with(Mockery::on(function ($user) {
+                return $user instanceof \App\Models\User && $user->id === $this->user->id;
+            }), Mockery::on(function ($wf) use ($workflow) {
+                return $wf instanceof \App\Models\Workflow && $wf->id === $workflow->id;
+            }), ['branch' => 'main'])
             ->andReturn($this->workflowRun);
 
         $this->app->instance(RunWorkflow::class, $mockRunWorkflow);
 
-        $response = $this->postJson("/api/projects/{$this->project->id}/workflows/{$this->workflow->id}/runs", [
+        $response = $this->postJson("/api/projects/{$this->project->id}/workflows/{$workflow->id}/runs", [
             'branch' => 'main',
         ]);
 
