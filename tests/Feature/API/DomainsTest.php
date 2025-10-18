@@ -4,6 +4,7 @@ namespace Tests\Feature\API;
 
 use App\Models\DNSProvider;
 use App\Models\Domain;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -89,11 +90,11 @@ class DomainsTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_user_can_only_see_their_own_domains(): void
+    public function test_user_can_see_all_domains_in_their_project(): void
     {
         Sanctum::actingAs($this->user, ['read']);
 
-        // Create domain for current user
+        // Create domain for current user in their project
         $dnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->user->id,
             'project_id' => $this->user->current_project_id,
@@ -105,23 +106,61 @@ class DomainsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        // Create domain for other user
-        $otherDnsProvider = DNSProvider::factory()->create([
+        // Create domain for other user in the SAME project
+        $otherUserDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
-        $otherDomain = Domain::factory()->create([
+        // Create domain for other user in a DIFFERENT project
+        $otherProject = Project::factory()->create();
+        $otherDnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'project_id' => $otherProject->id,
+        ]);
+
+        $otherProjectDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertOk();
+        // Should see both domains from the same project, regardless of who created them
         $response->assertJsonFragment(['id' => $userDomain->id]);
-        $response->assertJsonMissing(['id' => $otherDomain->id]);
+        $response->assertJsonFragment(['id' => $otherUserDomain->id]);
+        // Should NOT see domains from other projects
+        $response->assertJsonMissing(['id' => $otherProjectDomain->id]);
+    }
+
+    public function test_user_can_access_domains_created_by_other_users_in_same_project(): void
+    {
+        Sanctum::actingAs($this->user, ['read']);
+
+        // Create a DNS provider for the current user's project
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        // Create a domain for another user in the same project
+        $otherUserDomain = Domain::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        // User should be able to view the domain created by another user in the same project
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains/{$otherUserDomain->id}");
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'id' => $otherUserDomain->id,
+                'domain' => $otherUserDomain->domain,
+            ]);
     }
 
     public function test_authenticated_user_can_create_domain(): void
@@ -175,13 +214,15 @@ class DomainsTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_create_domain_with_other_users_dns_provider(): void
+    public function test_user_cannot_create_domain_with_dns_provider_from_other_project(): void
     {
         Sanctum::actingAs($this->user, ['write']);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $domainData = [
@@ -246,22 +287,24 @@ class DomainsTest extends TestCase
             ]);
     }
 
-    public function test_user_cannot_view_other_users_domain(): void
+    public function test_user_cannot_view_domains_from_other_projects(): void
     {
         Sanctum::actingAs($this->user, ['read']);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
-        $response = $this->getJson("/api/projects/{$this->otherUser->current_project_id}/domains/{$otherDomain->id}");
+        $response = $this->getJson("/api/projects/{$otherProject->id}/domains/{$otherDomain->id}");
 
         $response->assertForbidden();
     }
@@ -289,22 +332,24 @@ class DomainsTest extends TestCase
         $this->assertDatabaseMissing('domains', ['id' => $domain->id]);
     }
 
-    public function test_user_cannot_delete_other_users_domain(): void
+    public function test_user_cannot_delete_domains_from_other_projects(): void
     {
         Sanctum::actingAs($this->user, ['write']);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
-        $response = $this->deleteJson("/api/projects/{$this->otherUser->current_project_id}/domains/{$otherDomain->id}");
+        $response = $this->deleteJson("/api/projects/{$otherProject->id}/domains/{$otherDomain->id}");
 
         $response->assertForbidden();
 
@@ -345,21 +390,21 @@ class DomainsTest extends TestCase
         $response->assertNotFound();
     }
 
-    public function test_user_cannot_get_available_domains_from_other_users_dns_provider(): void
+    public function test_user_cannot_get_available_domains_from_dns_provider_in_other_project(): void
     {
         Sanctum::actingAs($this->user, ['read']);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
-        $response = $this->getJson("/api/projects/{$this->otherUser->current_project_id}/domains/{$otherDnsProvider->id}/available");
+        $response = $this->getJson("/api/projects/{$otherProject->id}/domains/{$otherDnsProvider->id}/available");
 
         $response->assertNotFound();
     }
-
-    // ==================== Edge Cases and Error Scenarios ====================
 
     public function test_domain_not_found_returns_404(): void
     {
@@ -407,8 +452,6 @@ class DomainsTest extends TestCase
         // Should have 25 items per page (as defined in controller)
         $this->assertCount(25, $response->json('data'));
     }
-
-    // ==================== Cross-Project Access Tests ====================
 
     public function test_user_cannot_access_domains_from_other_projects(): void
     {

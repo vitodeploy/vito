@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\DNSProvider;
 use App\Models\DNSRecord;
 use App\Models\Domain;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -63,32 +64,40 @@ class DomainsTest extends TestCase
         $response->assertRedirect();
     }
 
-    public function test_user_can_only_see_their_own_domains(): void
+    public function test_user_can_see_all_domains_in_their_current_project(): void
     {
         $this->actingAs($this->user);
 
-        // Create domain for current user
+        // Create a DNS provider for the current user's project
         $dnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->user->id,
             'project_id' => $this->user->current_project_id,
         ]);
 
+        // Create a domain for the current user in their project
         $userDomain = Domain::factory()->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
             'project_id' => $this->user->current_project_id,
         ]);
 
-        // Create domain for other user
-        $otherDnsProvider = DNSProvider::factory()->create([
+        // Create a domain for another user in the same project
+        $otherUserDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
+        // Create a domain for the other user in a different project
+        $otherProject = Project::factory()->create();
+        $otherDnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'project_id' => $otherProject->id,
+        ]);
         Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $response = $this->get('/domains');
@@ -96,8 +105,36 @@ class DomainsTest extends TestCase
         $response->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('domains/index')
-                ->has('domains.data', 1)
+                ->has('domains.data', 2)
                 ->where('domains.data.0.id', $userDomain->id)
+                ->where('domains.data.1.id', $otherUserDomain->id)
+            );
+    }
+
+    public function test_user_can_access_domains_created_by_other_users_in_same_project(): void
+    {
+        $this->actingAs($this->user);
+
+        // Create a DNS provider for the current user's project
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        // Create a domain for another user in the same project
+        $otherUserDomain = Domain::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        // User should be able to view the domain created by another user in the same project
+        $response = $this->get("/domains/{$otherUserDomain->id}");
+
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('domains/show')
+                ->where('domain.id', $otherUserDomain->id)
             );
     }
 
@@ -184,19 +221,21 @@ class DomainsTest extends TestCase
             );
     }
 
-    public function test_user_cannot_view_other_users_domain(): void
+    public function test_user_cannot_view_domains_from_other_projects(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $response = $this->get("/domains/{$otherDomain->id}");
@@ -244,13 +283,15 @@ class DomainsTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_create_domain_with_other_users_dns_provider(): void
+    public function test_user_cannot_create_domain_with_dns_provider_from_other_project(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $domainData = [
@@ -286,19 +327,21 @@ class DomainsTest extends TestCase
         $this->assertDatabaseMissing('domains', ['id' => $domain->id]);
     }
 
-    public function test_user_cannot_delete_other_users_domain(): void
+    public function test_user_cannot_delete_domains_from_other_projects(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $response = $this->delete("/domains/{$otherDomain->id}");
@@ -322,13 +365,15 @@ class DomainsTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_user_cannot_get_available_domains_from_other_users_dns_provider(): void
+    public function test_user_cannot_get_available_domains_from_dns_provider_in_other_project(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $response = $this->get("/domains/{$otherDnsProvider->id}/available");
@@ -369,19 +414,21 @@ class DomainsTest extends TestCase
             );
     }
 
-    public function test_user_cannot_view_dns_records_for_other_users_domain(): void
+    public function test_user_cannot_view_dns_records_for_domains_from_other_projects(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $response = $this->get("/domains/{$otherDomain->id}/records");
@@ -448,19 +495,21 @@ class DomainsTest extends TestCase
             ]);
     }
 
-    public function test_user_cannot_get_dns_records_json_for_other_users_domain(): void
+    public function test_user_cannot_get_dns_records_json_for_domains_from_other_projects(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $response = $this->get("/domains/{$otherDomain->id}/records/json");
@@ -520,19 +569,21 @@ class DomainsTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_create_dns_record_for_other_users_domain(): void
+    public function test_user_cannot_create_dns_record_for_domains_from_other_projects(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $recordData = [
@@ -604,19 +655,21 @@ class DomainsTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_update_dns_record_from_other_users_domain(): void
+    public function test_user_cannot_update_dns_record_from_domains_in_other_projects(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherRecord = DNSRecord::factory()->create([
@@ -689,19 +742,21 @@ class DomainsTest extends TestCase
         $this->assertDatabaseMissing('dns_records', ['id' => $record->id]);
     }
 
-    public function test_user_cannot_delete_dns_record_from_other_users_domain(): void
+    public function test_user_cannot_delete_dns_record_from_domains_in_other_projects(): void
     {
         $this->actingAs($this->user);
 
+        // Create a different project for the other user
+        $otherProject = Project::factory()->create();
         $otherDnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
-            'project_id' => $this->otherUser->current_project_id,
+            'project_id' => $otherProject->id,
         ]);
 
         $otherRecord = DNSRecord::factory()->create([
@@ -746,8 +801,6 @@ class DomainsTest extends TestCase
 
         $this->assertDatabaseHas('dns_records', ['id' => $record->id]);
     }
-
-    // ==================== Edge Cases and Error Scenarios ====================
 
     public function test_domain_not_found_returns_404(): void
     {
@@ -845,8 +898,6 @@ class DomainsTest extends TestCase
         $this->assertEquals('CNAME', $records[3]['type']);
         $this->assertEquals('zebra', $records[3]['name']);
     }
-
-    // ==================== Cross-Project Access Tests ====================
 
     public function test_user_cannot_access_domains_from_other_projects(): void
     {
