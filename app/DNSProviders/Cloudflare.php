@@ -3,11 +3,11 @@
 namespace App\DNSProviders;
 
 use App\Models\DNSProvider as DNSProviderModel;
-use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class Cloudflare extends AbstractDNSProvider
 {
@@ -61,7 +61,7 @@ class Cloudflare extends AbstractDNSProvider
             Log::error('Cloudflare connection failed', ['response' => $response->json()]);
 
             return false;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Cloudflare connection exception', ['error' => $e->getMessage()]);
 
             return false;
@@ -90,7 +90,7 @@ class Cloudflare extends AbstractDNSProvider
                     'modified_on' => $zone['modified_on'],
                 ];
             })->toArray();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Cloudflare getDomains exception', ['error' => $e->getMessage()]);
 
             return [];
@@ -117,7 +117,7 @@ class Cloudflare extends AbstractDNSProvider
                 'created_on' => $zone['created_on'],
                 'modified_on' => $zone['modified_on'],
             ];
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Cloudflare getDomain exception', ['error' => $e->getMessage()]);
 
             return [];
@@ -149,7 +149,7 @@ class Cloudflare extends AbstractDNSProvider
                     'modified_on' => $record['modified_on'],
                 ];
             })->toArray();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Cloudflare getRecords exception', ['error' => $e->getMessage()]);
 
             return [];
@@ -173,7 +173,7 @@ class Cloudflare extends AbstractDNSProvider
             }
 
             return $response->json('result');
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Cloudflare createRecord exception', ['error' => $e->getMessage()]);
             throw ValidationException::withMessages(['record' => 'Failed to create DNS record: '.$e->getMessage()]);
         }
@@ -196,7 +196,7 @@ class Cloudflare extends AbstractDNSProvider
             }
 
             return $response->json('result');
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Cloudflare updateRecord exception', ['error' => $e->getMessage()]);
             throw ValidationException::withMessages(['record' => 'Failed to update DNS record: '.$e->getMessage()]);
         }
@@ -214,7 +214,7 @@ class Cloudflare extends AbstractDNSProvider
             }
 
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Log::error('Cloudflare deleteRecord exception', ['error' => $e->getMessage()]);
 
             return false;

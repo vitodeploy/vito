@@ -15,7 +15,7 @@ class ApiDocsController extends Controller
         return response()->file(public_path('api-docs/index.html'));
     }
 
-    #[Get('/api.yaml', name: 'api-docs')]
+    #[Get('/api.yaml', name: 'api-docs.api-yaml')]
     public function apiYaml(): Response
     {
         $apiOrder = [

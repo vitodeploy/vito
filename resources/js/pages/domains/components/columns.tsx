@@ -80,7 +80,7 @@ export const columns: ColumnDef<Domain>[] = [
     enableSorting: true,
   },
   {
-    accessorKey: 'dns_provider.profile',
+    accessorKey: 'dns_provider.name',
     header: 'DNS Provider',
     enableColumnFilter: true,
     enableSorting: true,

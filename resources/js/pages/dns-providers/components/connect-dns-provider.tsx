@@ -25,7 +25,7 @@ import DynamicField from '@/components/ui/dynamic-field';
 type DNSProviderForm = {
   provider: string;
   name: string;
-  project_id: number | null;
+  global: boolean;
 };
 
 export default function ConnectDNSProvider({
@@ -44,7 +44,7 @@ export default function ConnectDNSProvider({
   const form = useForm<Required<DNSProviderForm>>({
     provider: defaultProvider || 'cloudflare',
     name: '',
-    project_id: null,
+    global: false,
   });
 
   const submit: FormEventHandler = (e) => {
@@ -128,15 +128,10 @@ export default function ConnectDNSProvider({
             ))}
             <FormField>
               <div className="flex items-center space-x-3">
-                <Checkbox
-                  id="project_id"
-                  name="project_id"
-                  checked={form.data.project_id === null}
-                  onClick={() => form.setData('project_id', form.data.project_id === null ? 1 : null)}
-                />
-                <Label htmlFor="project_id">Is global (accessible in all projects)</Label>
+                <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />
+                <Label htmlFor="global">Is global (accessible in all projects)</Label>
               </div>
-              <InputError message={form.errors.project_id} />
+              <InputError message={form.errors.global} />
             </FormField>
           </FormFields>
         </Form>

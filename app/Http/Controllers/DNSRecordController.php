@@ -56,6 +56,10 @@ class DNSRecordController extends Controller
     #[Patch('/{dnsRecord}', name: 'dns-records.update')]
     public function update(Request $request, Domain $domain, DNSRecord $dnsRecord): RedirectResponse
     {
+        if ($dnsRecord->domain_id !== $domain->id) {
+            abort(404);
+        }
+
         $this->authorize('update', $domain);
 
         app(UpdateDNSRecord::class)->update($dnsRecord, $request->all());
@@ -66,6 +70,10 @@ class DNSRecordController extends Controller
     #[Delete('/{dnsRecord}', name: 'dns-records.destroy')]
     public function destroy(Domain $domain, DNSRecord $dnsRecord): RedirectResponse
     {
+        if ($dnsRecord->domain_id !== $domain->id) {
+            abort(404);
+        }
+
         $this->authorize('update', $domain);
 
         app(DeleteDNSRecord::class)->delete($dnsRecord);

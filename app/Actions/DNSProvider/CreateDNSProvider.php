@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 class CreateDNSProvider
 {
@@ -18,9 +17,7 @@ class CreateDNSProvider
 
         $provider = self::getProvider($input['provider']);
 
-        try {
-            $provider->connect($provider->credentialData($input));
-        } catch (Throwable) {
+        if (! $provider->connect($provider->credentialData($input))) {
             throw ValidationException::withMessages([
                 'provider' => [
                     sprintf("Couldn't connect to %s. Please check your credentials.", $input['provider']),
@@ -61,7 +58,12 @@ class CreateDNSProvider
             ],
         ];
 
-        Validator::make($input, array_merge($rules, $this->providerRules($input)))->validate();
+        // Only get provider-specific rules if the provider exists
+        if (isset($input['provider']) && config('dns-provider.providers.'.$input['provider'])) {
+            $rules = array_merge($rules, $this->providerRules($input));
+        }
+
+        Validator::make($input, $rules)->validate();
     }
 
     private function providerRules(array $input): array

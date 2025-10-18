@@ -22,6 +22,7 @@ class EditDNSProvider
         ])->validate();
 
         $dnsProvider->name = $input['name'];
+        $dnsProvider->project_id = isset($input['global']) && $input['global'] ? null : $dnsProvider->user->currentProject?->id;
         $dnsProvider->connected = true;
         $dnsProvider->save();
 

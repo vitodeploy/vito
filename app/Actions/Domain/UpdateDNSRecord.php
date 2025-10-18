@@ -49,7 +49,7 @@ class UpdateDNSRecord
         $rules = [
             'type' => [
                 'required',
-                Rule::in(['A', 'AAAA', 'CNAME', 'TXT']),
+                Rule::in(['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'NS', 'CAA', 'PTR', 'SOA']),
             ],
             'name' => [
                 'required',

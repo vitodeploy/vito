@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('provider');
             $table->string('name');
-            $table->json('credentials');
+            $table->longText('credentials');
             $table->boolean('connected')->default(false);
             $table->timestamps();
         });

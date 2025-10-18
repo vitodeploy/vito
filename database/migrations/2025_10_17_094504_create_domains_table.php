@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('provider_domain_id');
             $table->json('metadata')->nullable();
             $table->timestamps();
+
+            $table->unique(['dns_provider_id', 'provider_domain_id']);
         });
     }
 

@@ -46,6 +46,10 @@ class DNSRecordController extends Controller
     #[Get('{dnsRecord}', name: 'api.dns-records.show', middleware: 'ability:read')]
     public function show(Domain $domain, DNSRecord $dnsRecord): DNSRecordResource
     {
+        if ($dnsRecord->domain_id !== $domain->id) {
+            abort(404);
+        }
+
         $this->authorize('view', $domain);
 
         return new DNSRecordResource($dnsRecord);
@@ -54,6 +58,10 @@ class DNSRecordController extends Controller
     #[Patch('{dnsRecord}', name: 'api.dns-records.update', middleware: 'ability:write')]
     public function update(Request $request, Domain $domain, DNSRecord $dnsRecord): DNSRecordResource
     {
+        if ($dnsRecord->domain_id !== $domain->id) {
+            abort(404);
+        }
+
         $this->authorize('update', $domain);
 
         app(UpdateDNSRecord::class)->update($dnsRecord, $request->all());
@@ -64,6 +72,10 @@ class DNSRecordController extends Controller
     #[Delete('{dnsRecord}', name: 'api.dns-records.destroy', middleware: 'ability:write')]
     public function destroy(Domain $domain, DNSRecord $dnsRecord): JsonResponse
     {
+        if ($dnsRecord->domain_id !== $domain->id) {
+            abort(404);
+        }
+
         $this->authorize('update', $domain);
 
         app(DeleteDNSRecord::class)->delete($dnsRecord);
