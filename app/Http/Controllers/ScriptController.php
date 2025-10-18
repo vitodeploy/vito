@@ -88,6 +88,8 @@ class ScriptController extends Controller
     #[Post('/{script}/execute', name: 'scripts.execute')]
     public function execute(Request $request, Script $script): RedirectResponse
     {
+        $this->authorize('view', $script);
+
         app(ExecuteScript::class)->execute($script, user(), $request->input());
 
         return redirect()->route('scripts.show', $script)->with('info', 'Script is being executed.');

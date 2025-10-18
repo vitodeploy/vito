@@ -9,7 +9,7 @@ import ProjectForm from '@/pages/projects/components/project-form';
 import { PaginatedData } from '@/types';
 import { Project } from '@/types/project';
 import { Head, usePage } from '@inertiajs/react';
-import { PlusIcon } from 'lucide-react';
+import { BookOpenIcon, PlusIcon } from 'lucide-react';
 import { ProjectUser } from '@/types/project-user';
 
 export default function Projects() {
@@ -26,6 +26,12 @@ export default function Projects() {
         <div className="flex items-start justify-between">
           <Heading title="Projects" description="Here you can manage your projects" />
           <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/settings/projects" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
             <ProjectForm>
               <Button>
                 <PlusIcon />

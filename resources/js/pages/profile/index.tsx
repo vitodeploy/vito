@@ -7,6 +7,8 @@ import Heading from '@/components/heading';
 import TwoFactor from '@/pages/profile/components/two-factor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
+import { BookOpenIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Profile() {
   const [tab, setTab] = useState('info');
@@ -15,8 +17,17 @@ export default function Profile() {
     <SettingsLayout>
       <Head title="Profile settings" />
       <Container className="max-w-5xl">
-        <Heading title="Profile settings" description="Manage your profile settings." />
-
+        <div className="flex items-start justify-between">
+          <Heading title="Profile settings" description="Manage your profile settings." />
+          <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/settings/profile" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
+          </div>
+        </div>
         <Tabs defaultValue={tab} onValueChange={setTab}>
           <TabsList>
             <TabsTrigger value="info">Info</TabsTrigger>

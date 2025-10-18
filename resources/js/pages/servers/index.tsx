@@ -10,7 +10,7 @@ import CreateServer from '@/pages/servers/components/create-server';
 import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/app/layout';
-import { PlusIcon } from 'lucide-react';
+import { BookOpenIcon, PlusIcon } from 'lucide-react';
 
 type Page = {
   servers: PaginatedData<Server>;
@@ -28,6 +28,12 @@ export default function Servers() {
         <div className="flex items-start justify-between">
           <Heading title="Servers" description="All of the servers of your project listed here" />
           <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/servers/create" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
             <CreateServer>
               <Button>
                 <PlusIcon />
