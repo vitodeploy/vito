@@ -29,7 +29,7 @@ class DNSRecordController extends Controller
     {
         $this->authorize('view', $domain);
 
-        return Inertia::render('domains/records', [
+        return Inertia::render('domains/show', [
             'domain' => new \App\Http\Resources\DomainResource($domain->load('dnsProvider')),
             'records' => DNSRecordResource::collection($domain->records()->orderByDesc('id')->get()),
         ]);
