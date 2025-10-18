@@ -4,6 +4,7 @@ namespace App\Actions\Domain;
 
 use App\Models\DNSProvider;
 use App\Models\Domain;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,7 @@ class AddDomain
      *
      * @throws ValidationException
      */
-    public function add(User $user, array $input): Domain
+    public function add(User $user, Project $project, array $input): Domain
     {
         $this->validate($input);
 
@@ -36,6 +37,7 @@ class AddDomain
         $domain = new Domain;
         $domain->dns_provider_id = $dnsProvider->id;
         $domain->user_id = $user->id;
+        $domain->project_id = $project->id;
         $domain->domain = $domainData['name'];
         $domain->provider_domain_id = $domainData['id'];
         $domain->metadata = $domainData;

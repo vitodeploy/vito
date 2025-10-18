@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property Collection<int, SourceControl> $sourceControls
  * @property Collection<int, User> $registeredUsers
  * @property Collection<int, Workflow> $workflows
+ * @property Collection<int, Domain> $domains
  */
 class Project extends Model
 {
@@ -110,5 +111,10 @@ class Project extends Model
     public function workflows(): HasMany
     {
         return $this->hasMany(Workflow::class);
+    }
+
+    public function domains(): HasMany
+    {
+        return $this->hasMany(Domain::class);
     }
 }

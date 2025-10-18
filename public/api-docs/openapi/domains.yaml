@@ -1,12 +1,20 @@
 paths:
-  /api/domains:
+  /api/projects/{project}/domains:
     get:
       summary: List domains
-      description: Get all domains for the authenticated user
+      description: Get all domains for a specific project
       tags:
         - Domains
       security:
         - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
       responses:
         '200':
           description: List of domains
@@ -36,11 +44,19 @@ paths:
 
     post:
       summary: Add domain
-      description: Add a domain from a DNS provider to the user's account
+      description: Add a domain from a DNS provider to the project
       tags:
         - Domains
       security:
         - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
       requestBody:
         required: true
         content:
@@ -111,15 +127,22 @@ paths:
                 errors:
                   domain: ['Domain not found in DNS provider.']
 
-  /api/domains/{domain}:
+  /api/projects/{project}/domains/{domain}:
     get:
       summary: Get domain
-      description: Get a specific domain by ID
+      description: Get a specific domain by ID within a project
       tags:
         - Domains
       security:
         - bearerAuth: []
       parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
         - name: domain
           in: path
           required: true
@@ -174,12 +197,19 @@ paths:
 
     delete:
       summary: Remove domain
-      description: Remove a domain from the user's account
+      description: Remove a domain from the project
       tags:
         - Domains
       security:
         - bearerAuth: []
       parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
         - name: domain
           in: path
           required: true

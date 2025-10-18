@@ -3,47 +3,38 @@
 namespace App\Policies;
 
 use App\Models\Domain;
+use App\Models\Project;
 use App\Models\User;
+use App\Traits\HasRolePolicies;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class DomainPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    use HasRolePolicies;
+
+    public function viewAny(User $user, Project $project): bool
     {
-        return true;
+        return $this->hasReadAccess($user, $project);
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Domain $domain): bool
     {
-        return $user->id === $domain->user_id;
+        return $this->hasReadAccess($user, $domain->project);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user, Project $project): bool
     {
-        return true;
+        return $this->hasWriteAccess($user, $project);
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Domain $domain): bool
     {
-        return $user->id === $domain->user_id;
+        return $this->hasWriteAccess($user, $domain->project);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Domain $domain): bool
     {
-        return $user->id === $domain->user_id;
+        return $this->hasWriteAccess($user, $domain->project);
     }
 }

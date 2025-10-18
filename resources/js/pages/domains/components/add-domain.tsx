@@ -82,7 +82,7 @@ export default function AddDomain({ children }: { children: ReactNode }) {
     } else {
       form.reset();
     }
-  }, add - domain[open]);
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

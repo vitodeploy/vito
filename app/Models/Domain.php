@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Database\Factories\DomainFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,11 +12,13 @@ use Throwable;
 /**
  * @property int $dns_provider_id
  * @property int $user_id
+ * @property int $project_id
  * @property string $domain
  * @property string $provider_domain_id
  * @property array<string, mixed> $metadata
  * @property DNSProvider $dnsProvider
  * @property User $user
+ * @property Project $project
  * @property DNSRecord[] $records
  */
 class Domain extends AbstractModel
@@ -28,6 +29,7 @@ class Domain extends AbstractModel
     protected $fillable = [
         'dns_provider_id',
         'user_id',
+        'project_id',
         'domain',
         'provider_domain_id',
         'metadata',
@@ -36,6 +38,7 @@ class Domain extends AbstractModel
     protected $casts = [
         'dns_provider_id' => 'integer',
         'user_id' => 'integer',
+        'project_id' => 'integer',
         'metadata' => 'array',
     ];
 
@@ -56,28 +59,19 @@ class Domain extends AbstractModel
     }
 
     /**
+     * @return BelongsTo<Project, covariant $this>
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    /**
      * @return HasMany<DNSRecord, covariant $this>
      */
     public function records(): HasMany
     {
         return $this->hasMany(DNSRecord::class);
-    }
-
-    /**
-     * @return Builder<Domain>
-     */
-    public static function getByProjectId(int $projectId, User $user): Builder
-    {
-        /** @var Builder<Domain> $query */
-        $query = static::query();
-
-        return $query
-            ->where('user_id', $user->id)
-            ->whereHas('dnsProvider', function (Builder $query) use ($projectId): void {
-                $query->where(function (Builder $query) use ($projectId): void {
-                    $query->where('project_id', $projectId)->orWhereNull('project_id');
-                });
-            });
     }
 
     public function syncDnsRecords(): void

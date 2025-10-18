@@ -19,6 +19,7 @@ class DomainFactory extends Factory
         return [
             'dns_provider_id' => \App\Models\DNSProvider::factory(),
             'user_id' => \App\Models\User::factory(),
+            'project_id' => \App\Models\Project::factory(),
             'domain' => $this->faker->domainName(),
             'provider_domain_id' => $this->faker->uuid(),
             'metadata' => [

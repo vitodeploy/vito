@@ -20,7 +20,7 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
 
 #[Prefix('workflows')]
-#[Middleware('auth')]
+#[Middleware(['auth', 'has-project'])]
 class WorkflowController extends Controller
 {
     #[Get('/', name: 'workflows')]

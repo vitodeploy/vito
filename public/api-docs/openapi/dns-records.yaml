@@ -1,13 +1,20 @@
 paths:
-  /api/domains/{domain}/records:
+  /api/projects/{project}/domains/{domain}/records:
     get:
       summary: List DNS records
-      description: Get all DNS records for a specific domain
+      description: Get all DNS records for a specific domain within a project
       tags:
         - DNS Records
       security:
         - bearerAuth: []
       parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
         - name: domain
           in: path
           required: true
@@ -72,12 +79,19 @@ paths:
 
     post:
       summary: Create DNS record
-      description: Create a new DNS record for a domain
+      description: Create a new DNS record for a domain within a project
       tags:
         - DNS Records
       security:
         - bearerAuth: []
       parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
         - name: domain
           in: path
           required: true
@@ -174,15 +188,22 @@ paths:
                 errors:
                   type: ['The type field is required.']
 
-  /api/domains/{domain}/records/{dnsRecord}:
+  /api/projects/{project}/domains/{domain}/records/{dnsRecord}:
     get:
       summary: Get DNS record
-      description: Get a specific DNS record by ID
+      description: Get a specific DNS record by ID within a project
       tags:
         - DNS Records
       security:
         - bearerAuth: []
       parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
         - name: domain
           in: path
           required: true
@@ -237,12 +258,19 @@ paths:
 
     patch:
       summary: Update DNS record
-      description: Update a DNS record
+      description: Update a DNS record within a project
       tags:
         - DNS Records
       security:
         - bearerAuth: []
       parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
         - name: domain
           in: path
           required: true
@@ -344,12 +372,19 @@ paths:
 
     delete:
       summary: Delete DNS record
-      description: Delete a DNS record
+      description: Delete a DNS record within a project
       tags:
         - DNS Records
       security:
         - bearerAuth: []
       parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
         - name: domain
           in: path
           required: true

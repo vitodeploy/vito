@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('dns_records', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('domain_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('domain_id');
             $table->string('type');
             $table->string('name');
             $table->text('content');

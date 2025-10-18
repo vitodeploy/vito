@@ -8,6 +8,7 @@ use App\Actions\DNSProvider\EditDNSProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DNSProviderResource;
 use App\Models\DNSProvider;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -68,5 +69,15 @@ class DNSProviderController extends Controller
         app(DeleteDNSProvider::class)->delete($dnsProvider);
 
         return response()->json(['message' => 'DNS provider deleted successfully']);
+    }
+
+    #[Get('{dnsProvider}/available', name: 'api.dns-providers.available', middleware: 'ability:read')]
+    public function availableDomains(DNSProvider $dnsProvider): JsonResponse
+    {
+        $this->authorize('view', $dnsProvider);
+
+        $domains = $dnsProvider->provider()->getDomains();
+
+        return response()->json($domains);
     }
 }

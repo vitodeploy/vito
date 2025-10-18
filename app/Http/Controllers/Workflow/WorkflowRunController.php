@@ -17,7 +17,7 @@ use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
 #[Prefix('workflows/{workflow}/runs')]
-#[Middleware('auth')]
+#[Middleware(['auth', 'has-project'])]
 class WorkflowRunController extends Controller
 {
     #[Get('/', name: 'workflow-runs')]

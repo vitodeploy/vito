@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('dns_providers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('project_id')->nullable();
             $table->string('provider');
             $table->string('name');
             $table->longText('credentials');

@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('domains', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dns_provider_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('dns_provider_id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('project_id');
             $table->string('domain');
             $table->string('provider_domain_id');
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->unique(['dns_provider_id', 'provider_domain_id']);
+            $table->unique(['dns_provider_id', 'provider_domain_id', 'project_id'], 'unique_provider_domain_per_project');
         });
     }
 

@@ -27,12 +27,14 @@ class DomainController extends Controller
     #[Get('/', name: 'domains')]
     public function index(): Response
     {
-        $this->authorize('viewAny', Domain::class);
-
         $user = user();
 
+        $this->authorize('viewAny', [Domain::class, $user->currentProject]);
+
+        $domains = $user->currentProject->domains()->latest()->with('dnsProvider')->simplePaginate(config('web.pagination_size'));
+
         return Inertia::render('domains/index', [
-            'domains' => DomainResource::collection(Domain::getByProjectId($user->current_project_id, $user)->with('dnsProvider')->simplePaginate(config('web.pagination_size'))),
+            'domains' => DomainResource::collection($domains),
             'dnsProviders' => DNSProvider::getByProjectId($user->current_project_id, $user)->where('connected', true)->get(),
         ]);
     }
@@ -40,11 +42,13 @@ class DomainController extends Controller
     #[Get('/json', name: 'domains.json')]
     public function json(): ResourceCollection
     {
-        $this->authorize('viewAny', Domain::class);
-
         $user = user();
 
-        return DomainResource::collection(Domain::getByProjectId($user->current_project_id, $user)->with('dnsProvider')->get());
+        $this->authorize('viewAny', [Domain::class, $user->currentProject]);
+
+        $domains = $user->currentProject->domains()->with('dnsProvider')->orderByDesc('id')->get();
+
+        return DomainResource::collection($domains);
     }
 
     #[Get('/{dnsProvider}/available', name: 'domains.available')]
@@ -60,9 +64,11 @@ class DomainController extends Controller
     #[Post('/', name: 'domains.store')]
     public function store(Request $request): RedirectResponse
     {
-        $this->authorize('create', Domain::class);
+        $user = user();
 
-        app(AddDomain::class)->add(user(), $request->all());
+        $this->authorize('create', [Domain::class, $user->currentProject]);
+
+        app(AddDomain::class)->add($user, $user->currentProject, $request->all());
 
         return back()->with('success', 'Domain added.');
     }

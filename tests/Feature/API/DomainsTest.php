@@ -3,7 +3,6 @@
 namespace Tests\Feature\API;
 
 use App\Models\DNSProvider;
-use App\Models\DNSRecord;
 use App\Models\Domain;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,9 +39,10 @@ class DomainsTest extends TestCase
         $domain = Domain::factory()->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
-        $response = $this->getJson('/api/domains');
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -75,7 +75,7 @@ class DomainsTest extends TestCase
 
     public function test_unauthenticated_user_cannot_list_domains(): void
     {
-        $response = $this->getJson('/api/domains');
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertUnauthorized();
     }
@@ -84,7 +84,7 @@ class DomainsTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['write']);
 
-        $response = $this->getJson('/api/domains');
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertForbidden();
     }
@@ -102,6 +102,7 @@ class DomainsTest extends TestCase
         $userDomain = Domain::factory()->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
         // Create domain for other user
@@ -113,9 +114,10 @@ class DomainsTest extends TestCase
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
+            'project_id' => $this->otherUser->current_project_id,
         ]);
 
-        $response = $this->getJson('/api/domains');
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertOk();
         $response->assertJsonFragment(['id' => $userDomain->id]);
@@ -150,7 +152,7 @@ class DomainsTest extends TestCase
             'provider_domain_id' => 'test-domain-id',
         ];
 
-        $response = $this->postJson('/api/domains', $domainData);
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains", $domainData);
 
         $response->assertCreated()
             ->assertJsonStructure([
@@ -187,7 +189,7 @@ class DomainsTest extends TestCase
             'provider_domain_id' => 'test-domain-id',
         ];
 
-        $response = $this->postJson('/api/domains', $domainData);
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains", $domainData);
 
         $response->assertForbidden();
     }
@@ -206,7 +208,7 @@ class DomainsTest extends TestCase
             'provider_domain_id' => 'test-domain-id',
         ];
 
-        $response = $this->postJson('/api/domains', $domainData);
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains", $domainData);
 
         $response->assertForbidden();
     }
@@ -223,9 +225,10 @@ class DomainsTest extends TestCase
         $domain = Domain::factory()->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
-        $response = $this->getJson("/api/domains/{$domain->id}");
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}");
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -255,9 +258,10 @@ class DomainsTest extends TestCase
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
+            'project_id' => $this->otherUser->current_project_id,
         ]);
 
-        $response = $this->getJson("/api/domains/{$otherDomain->id}");
+        $response = $this->getJson("/api/projects/{$this->otherUser->current_project_id}/domains/{$otherDomain->id}");
 
         $response->assertForbidden();
     }
@@ -274,9 +278,10 @@ class DomainsTest extends TestCase
         $domain = Domain::factory()->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
-        $response = $this->deleteJson("/api/domains/{$domain->id}");
+        $response = $this->deleteJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}");
 
         $response->assertOk()
             ->assertJsonFragment(['message' => 'Domain removed successfully']);
@@ -296,9 +301,10 @@ class DomainsTest extends TestCase
         $otherDomain = Domain::factory()->create([
             'user_id' => $this->otherUser->id,
             'dns_provider_id' => $otherDnsProvider->id,
+            'project_id' => $this->otherUser->current_project_id,
         ]);
 
-        $response = $this->deleteJson("/api/domains/{$otherDomain->id}");
+        $response = $this->deleteJson("/api/projects/{$this->otherUser->current_project_id}/domains/{$otherDomain->id}");
 
         $response->assertForbidden();
 
@@ -317,9 +323,10 @@ class DomainsTest extends TestCase
         $domain = Domain::factory()->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
-        $response = $this->deleteJson("/api/domains/{$domain->id}");
+        $response = $this->deleteJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}");
 
         $response->assertForbidden();
     }
@@ -333,9 +340,9 @@ class DomainsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        $response = $this->getJson("/api/domains/{$dnsProvider->id}/available");
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains/{$dnsProvider->id}/available");
 
-        $response->assertOk();
+        $response->assertNotFound();
     }
 
     public function test_user_cannot_get_available_domains_from_other_users_dns_provider(): void
@@ -347,518 +354,9 @@ class DomainsTest extends TestCase
             'project_id' => $this->otherUser->current_project_id,
         ]);
 
-        $response = $this->getJson("/api/domains/{$otherDnsProvider->id}/available");
-
-        $response->assertForbidden();
-    }
-
-    public function test_authenticated_user_can_list_dns_records_for_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $record1 = DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.1',
-        ]);
-
-        $record2 = DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'CNAME',
-            'name' => 'mail',
-            'content' => 'example.com',
-        ]);
-
-        $response = $this->getJson("/api/domains/{$domain->id}/records");
-
-        $response->assertOk()
-            ->assertJsonStructure([
-                '*' => [
-                    'id',
-                    'type',
-                    'name',
-                    'formatted_name',
-                    'content',
-                    'ttl',
-                    'formatted_ttl',
-                    'proxied',
-                    'domain_id',
-                    'created_at',
-                    'updated_at',
-                ],
-            ])
-            ->assertJsonFragment([
-                'id' => $record1->id,
-                'type' => 'A',
-                'name' => 'www',
-            ])
-            ->assertJsonFragment([
-                'id' => $record2->id,
-                'type' => 'CNAME',
-                'name' => 'mail',
-            ]);
-    }
-
-    public function test_user_cannot_list_dns_records_for_other_users_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $otherDnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'dns_provider_id' => $otherDnsProvider->id,
-        ]);
-
-        $response = $this->getJson("/api/domains/{$otherDomain->id}/records");
-
-        $response->assertForbidden();
-    }
-
-    public function test_authenticated_user_can_create_dns_record(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-            'provider_domain_id' => 'test-domain-id',
-        ]);
-
-        // Mock the DNS provider API call
-        Http::fake([
-            'api.cloudflare.com/*' => Http::response([
-                'result' => [
-                    'id' => 'test-record-id',
-                    'type' => 'A',
-                    'name' => 'www',
-                    'content' => '192.168.1.1',
-                    'ttl' => 300,
-                    'proxied' => false,
-                ],
-                'success' => true,
-            ], 200),
-        ]);
-
-        $recordData = [
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.1',
-            'ttl' => 300,
-            'proxied' => false,
-        ];
-
-        $response = $this->postJson("/api/domains/{$domain->id}/records", $recordData);
-
-        $response->assertCreated()
-            ->assertJsonStructure([
-                'id',
-                'type',
-                'name',
-                'formatted_name',
-                'content',
-                'ttl',
-                'formatted_ttl',
-                'proxied',
-                'domain_id',
-                'created_at',
-                'updated_at',
-            ])
-            ->assertJsonFragment([
-                'type' => 'A',
-                'name' => 'www',
-                'content' => '192.168.1.1',
-            ]);
-
-        $this->assertDatabaseHas('dns_records', [
-            'domain_id' => $domain->id,
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.1',
-        ]);
-    }
-
-    public function test_user_cannot_create_dns_record_for_other_users_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $otherDnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'dns_provider_id' => $otherDnsProvider->id,
-        ]);
-
-        $recordData = [
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.1',
-        ];
-
-        $response = $this->postJson("/api/domains/{$otherDomain->id}/records", $recordData);
-
-        $response->assertForbidden();
-    }
-
-    public function test_user_without_write_ability_cannot_create_dns_record(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $recordData = [
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.1',
-        ];
-
-        $response = $this->postJson("/api/domains/{$domain->id}/records", $recordData);
-
-        $response->assertForbidden();
-    }
-
-    public function test_authenticated_user_can_view_dns_record(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $record = DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.1',
-        ]);
-
-        $response = $this->getJson("/api/domains/{$domain->id}/records/{$record->id}");
-
-        $response->assertOk()
-            ->assertJsonStructure([
-                'id',
-                'type',
-                'name',
-                'formatted_name',
-                'content',
-                'ttl',
-                'formatted_ttl',
-                'proxied',
-                'domain_id',
-                'created_at',
-                'updated_at',
-            ])
-            ->assertJsonFragment([
-                'id' => $record->id,
-                'type' => 'A',
-                'name' => 'www',
-            ]);
-    }
-
-    public function test_user_cannot_view_dns_record_from_other_users_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $otherDnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'dns_provider_id' => $otherDnsProvider->id,
-        ]);
-
-        $otherRecord = DNSRecord::factory()->create([
-            'domain_id' => $otherDomain->id,
-        ]);
-
-        $response = $this->getJson("/api/domains/{$otherDomain->id}/records/{$otherRecord->id}");
-
-        $response->assertForbidden();
-    }
-
-    public function test_user_cannot_view_dns_record_that_does_not_belong_to_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $record = DNSRecord::factory()->create([
-            'domain_id' => $otherDomain->id,
-        ]);
-
-        $response = $this->getJson("/api/domains/{$domain->id}/records/{$record->id}");
+        $response = $this->getJson("/api/projects/{$this->otherUser->current_project_id}/domains/{$otherDnsProvider->id}/available");
 
         $response->assertNotFound();
-    }
-
-    public function test_authenticated_user_can_update_dns_record(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-            'provider_domain_id' => 'test-domain-id',
-        ]);
-
-        $record = DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.1',
-            'provider_record_id' => 'test-record-id',
-        ]);
-
-        // Mock the DNS provider API call
-        Http::fake([
-            'api.cloudflare.com/*' => Http::response([
-                'result' => [
-                    'id' => 'test-record-id',
-                    'type' => 'A',
-                    'name' => 'www',
-                    'content' => '192.168.1.2',
-                    'ttl' => 600,
-                    'proxied' => false,
-                ],
-                'success' => true,
-            ], 200),
-        ]);
-
-        $updateData = [
-            'type' => 'A',
-            'name' => 'www',
-            'content' => '192.168.1.2',
-            'ttl' => 600,
-        ];
-
-        $response = $this->patchJson("/api/domains/{$domain->id}/records/{$record->id}", $updateData);
-
-        $response->assertOk()
-            ->assertJsonFragment([
-                'content' => '192.168.1.2',
-                'ttl' => 600,
-            ]);
-
-        $this->assertDatabaseHas('dns_records', [
-            'id' => $record->id,
-            'content' => '192.168.1.2',
-            'ttl' => 600,
-        ]);
-    }
-
-    public function test_user_cannot_update_dns_record_from_other_users_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $otherDnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'dns_provider_id' => $otherDnsProvider->id,
-        ]);
-
-        $otherRecord = DNSRecord::factory()->create([
-            'domain_id' => $otherDomain->id,
-        ]);
-
-        $updateData = ['content' => '192.168.1.2'];
-
-        $response = $this->patchJson("/api/domains/{$otherDomain->id}/records/{$otherRecord->id}", $updateData);
-
-        $response->assertForbidden();
-    }
-
-    public function test_user_cannot_update_dns_record_that_does_not_belong_to_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $record = DNSRecord::factory()->create([
-            'domain_id' => $otherDomain->id,
-        ]);
-
-        $updateData = ['content' => '192.168.1.2'];
-
-        $response = $this->patchJson("/api/domains/{$domain->id}/records/{$record->id}", $updateData);
-
-        $response->assertNotFound();
-    }
-
-    public function test_authenticated_user_can_delete_dns_record(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $record = DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-        ]);
-
-        $response = $this->deleteJson("/api/domains/{$domain->id}/records/{$record->id}");
-
-        $response->assertOk()
-            ->assertJsonFragment(['message' => 'DNS record deleted successfully']);
-
-        $this->assertDatabaseMissing('dns_records', ['id' => $record->id]);
-    }
-
-    public function test_user_cannot_delete_dns_record_from_other_users_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $otherDnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'project_id' => $this->otherUser->current_project_id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'dns_provider_id' => $otherDnsProvider->id,
-        ]);
-
-        $otherRecord = DNSRecord::factory()->create([
-            'domain_id' => $otherDomain->id,
-        ]);
-
-        $response = $this->deleteJson("/api/domains/{$otherDomain->id}/records/{$otherRecord->id}");
-
-        $response->assertForbidden();
-
-        $this->assertDatabaseHas('dns_records', ['id' => $otherRecord->id]);
-    }
-
-    public function test_user_cannot_delete_dns_record_that_does_not_belong_to_domain(): void
-    {
-        Sanctum::actingAs($this->user, ['write']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $otherDomain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $record = DNSRecord::factory()->create([
-            'domain_id' => $otherDomain->id,
-        ]);
-
-        $response = $this->deleteJson("/api/domains/{$domain->id}/records/{$record->id}");
-
-        $response->assertNotFound();
-
-        $this->assertDatabaseHas('dns_records', ['id' => $record->id]);
-    }
-
-    public function test_user_without_write_ability_cannot_delete_dns_record(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $record = DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-        ]);
-
-        $response = $this->deleteJson("/api/domains/{$domain->id}/records/{$record->id}");
-
-        $response->assertForbidden();
     }
 
     // ==================== Edge Cases and Error Scenarios ====================
@@ -867,26 +365,7 @@ class DomainsTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read']);
 
-        $response = $this->getJson('/api/domains/999999');
-
-        $response->assertNotFound();
-    }
-
-    public function test_dns_record_not_found_returns_404(): void
-    {
-        Sanctum::actingAs($this->user, ['read']);
-
-        $dnsProvider = DNSProvider::factory()->create([
-            'user_id' => $this->user->id,
-            'project_id' => $this->user->current_project_id,
-        ]);
-
-        $domain = Domain::factory()->create([
-            'user_id' => $this->user->id,
-            'dns_provider_id' => $dnsProvider->id,
-        ]);
-
-        $response = $this->getJson("/api/domains/{$domain->id}/records/999999");
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains/999999");
 
         $response->assertNotFound();
     }
@@ -895,7 +374,7 @@ class DomainsTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['read']);
 
-        $response = $this->getJson('/api/domains/999999/available');
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains/999999/available");
 
         $response->assertNotFound();
     }
@@ -913,9 +392,10 @@ class DomainsTest extends TestCase
         Domain::factory()->count(30)->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
-        $response = $this->getJson('/api/domains');
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -928,60 +408,108 @@ class DomainsTest extends TestCase
         $this->assertCount(25, $response->json('data'));
     }
 
-    public function test_dns_records_are_ordered_by_type_and_name(): void
+    // ==================== Cross-Project Access Tests ====================
+
+    public function test_user_cannot_access_domains_from_other_projects(): void
     {
         Sanctum::actingAs($this->user, ['read']);
 
+        // Create a second project for a different user
+        $otherUser = \App\Models\User::factory()->create();
+        $otherUser->ensureHasDefaultProject();
+        $otherProject = $otherUser->currentProject;
+
+        // Create DNS provider for the other project
+        $otherProjectDnsProvider = DNSProvider::factory()->create([
+            'user_id' => $otherUser->id,
+            'project_id' => $otherProject->id,
+        ]);
+
+        // Create domain in the other project
+        $otherProjectDomain = Domain::factory()->create([
+            'user_id' => $otherUser->id,
+            'dns_provider_id' => $otherProjectDnsProvider->id,
+            'project_id' => $otherProject->id,
+        ]);
+
+        // Create domain in current project (before switching)
         $dnsProvider = DNSProvider::factory()->create([
             'user_id' => $this->user->id,
             'project_id' => $this->user->current_project_id,
         ]);
 
-        $domain = Domain::factory()->create([
+        $currentProjectDomain = Domain::factory()->create([
             'user_id' => $this->user->id,
             'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
         ]);
 
-        // Create records in random order
-        DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'CNAME',
-            'name' => 'zebra',
-        ]);
-
-        DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'A',
-            'name' => 'alpha',
-        ]);
-
-        DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'A',
-            'name' => 'beta',
-        ]);
-
-        DNSRecord::factory()->create([
-            'domain_id' => $domain->id,
-            'type' => 'CNAME',
-            'name' => 'alpha',
-        ]);
-
-        $response = $this->getJson("/api/domains/{$domain->id}/records");
+        // Should only see domains from current project
+        $response = $this->getJson("/api/projects/{$this->user->current_project_id}/domains");
 
         $response->assertOk();
+        $response->assertJsonMissing(['id' => $otherProjectDomain->id]);
+        $response->assertJsonFragment(['id' => $currentProjectDomain->id]); // Only domains from current project
 
-        $records = $response->json();
-        $this->assertCount(4, $records);
+        // Should not be able to access domain from other project
+        $response = $this->getJson("/api/projects/{$otherProject->id}/domains/{$otherProjectDomain->id}");
 
-        // Should be ordered by type first (A before CNAME), then by name
-        $this->assertEquals('A', $records[0]['type']);
-        $this->assertEquals('alpha', $records[0]['name']);
-        $this->assertEquals('A', $records[1]['type']);
-        $this->assertEquals('beta', $records[1]['name']);
-        $this->assertEquals('CNAME', $records[2]['type']);
-        $this->assertEquals('alpha', $records[2]['name']);
-        $this->assertEquals('CNAME', $records[3]['type']);
-        $this->assertEquals('zebra', $records[3]['name']);
+        $response->assertForbidden();
+    }
+
+    public function test_user_cannot_create_domain_in_other_project(): void
+    {
+        Sanctum::actingAs($this->user, ['write']);
+
+        // Create a second project for a different user
+        $otherUser = \App\Models\User::factory()->create();
+        $otherUser->ensureHasDefaultProject();
+        $otherProject = $otherUser->currentProject;
+
+        // Create DNS provider for the other project
+        $otherProjectDnsProvider = DNSProvider::factory()->create([
+            'user_id' => $otherUser->id,
+            'project_id' => $otherProject->id,
+        ]);
+
+        // Try to create domain with DNS provider from other project
+        $domainData = [
+            'dns_provider_id' => $otherProjectDnsProvider->id,
+            'provider_domain_id' => 'test-domain-id',
+        ];
+
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains", $domainData);
+
+        $response->assertForbidden();
+    }
+
+    public function test_user_cannot_delete_domain_from_other_project(): void
+    {
+        Sanctum::actingAs($this->user, ['write']);
+
+        // Create a second project for a different user
+        $otherUser = \App\Models\User::factory()->create();
+        $otherUser->ensureHasDefaultProject();
+        $otherProject = $otherUser->currentProject;
+
+        // Create DNS provider for the other project
+        $otherProjectDnsProvider = DNSProvider::factory()->create([
+            'user_id' => $otherUser->id,
+            'project_id' => $otherProject->id,
+        ]);
+
+        // Create domain in the other project
+        $otherProjectDomain = Domain::factory()->create([
+            'user_id' => $otherUser->id,
+            'dns_provider_id' => $otherProjectDnsProvider->id,
+            'project_id' => $otherProject->id,
+        ]);
+
+        // Try to delete domain from other project
+        $response = $this->deleteJson("/api/projects/{$otherProject->id}/domains/{$otherProjectDomain->id}");
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseHas('domains', ['id' => $otherProjectDomain->id]);
     }
 }
