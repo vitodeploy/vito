@@ -16,6 +16,7 @@ class WorkflowServiceProvider extends ServiceProvider
         $this->site();
         $this->general();
         $this->database();
+        $this->domain();
     }
 
     private function server(): void
@@ -115,6 +116,20 @@ class WorkflowServiceProvider extends ServiceProvider
             ->label('Create Database User')
             ->category('database')
             ->handler(\App\WorkflowActions\Database\CreateDatabaseUser::class)
+            ->register();
+    }
+
+    private function domain(): void
+    {
+        RegisterWorkflowAction::make('create-dns-record')
+            ->label('Create DNS Record')
+            ->category('domain')
+            ->handler(\App\WorkflowActions\Domain\CreateDNSRecord::class)
+            ->register();
+        RegisterWorkflowAction::make('delete-dns-record')
+            ->label('Delete DNS Record')
+            ->category('domain')
+            ->handler(\App\WorkflowActions\Domain\DeleteDNSRecord::class)
             ->register();
     }
 }
