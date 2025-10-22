@@ -210,20 +210,6 @@ return [
             'timeout' => env('HORIZON_SSH_TIMEOUT', 600),
             'nice' => env('HORIZON_SSH_NICE', 0),
         ],
-
-        'ssh-unique' => [
-            'connection' => 'redis',
-            'queue' => ['ssh-unique'],
-            'balance' => 'auto',
-            'autoScalingStrategy' => 'time',
-            'maxProcesses' => env('HORIZON_SSH_UNIQUE_MAX_PROCESSES', 1),
-            'maxTime' => env('HORIZON_SSH_UNIQUE_MAX_TIME', 0),
-            'maxJobs' => env('HORIZON_SSH_UNIQUE_MAX_JOBS', 0),
-            'memory' => env('HORIZON_SSH_UNIQUE_MEMORY', 128),
-            'tries' => env('HORIZON_SSH_UNIQUE_TRIES', 1),
-            'timeout' => env('HORIZON_SSH_UNIQUE_TIMEOUT', 600),
-            'nice' => env('HORIZON_SSH_UNIQUE_NICE', 0),
-        ],
     ],
 
     'environments' => [
@@ -233,9 +219,6 @@ return [
             ],
             'ssh' => [
                 'maxProcesses' => env('HORIZON_SSH_MAX_PROCESSES', 3),
-            ],
-            'ssh-unique' => [
-                'maxProcesses' => env('HORIZON_SSH_UNIQUE_MAX_PROCESSES', 1),
             ],
         ],
     ],
