@@ -3,7 +3,7 @@
 namespace App\Actions\Server;
 
 use App\Enums\ServerStatus;
-use App\Jobs\Server\ServerUpdateJob;
+use App\Jobs\Server\UpdateJob;
 use App\Models\Server;
 
 class Update
@@ -12,6 +12,6 @@ class Update
     {
         $server->status = ServerStatus::UPDATING;
         $server->save();
-        dispatch(new ServerUpdateJob($server))->onQueue('ssh');
+        dispatch(new UpdateJob($server))->onQueue('ssh');
     }
 }

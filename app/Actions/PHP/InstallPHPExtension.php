@@ -2,7 +2,7 @@
 
 namespace App\Actions\PHP;
 
-use App\Jobs\PHP\PHPInstallExtensionJob;
+use App\Jobs\PHP\InstallExtensionJob;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
@@ -33,7 +33,7 @@ class InstallPHPExtension
         $service->type_data = $typeData;
         $service->save();
 
-        dispatch(new PHPInstallExtensionJob($service, $input['extension']))->onQueue('ssh');
+        dispatch(new InstallExtensionJob($service, $input['extension']))->onQueue('ssh');
 
         return $service;
     }

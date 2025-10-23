@@ -10,7 +10,7 @@ use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class SiteRollbackJob implements ShouldQueue
+class RollbackJob implements ShouldQueue
 {
     use Queueable;
     use UniqueQueue;

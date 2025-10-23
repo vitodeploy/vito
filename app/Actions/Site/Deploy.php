@@ -4,7 +4,7 @@ namespace App\Actions\Site;
 
 use App\Enums\DeploymentStatus;
 use App\Exceptions\DeploymentScriptIsEmptyException;
-use App\Jobs\Site\SiteDeployJob;
+use App\Jobs\Site\DeployJob;
 use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Models\Site;
@@ -52,7 +52,7 @@ class Deploy
 
     private function deployClassic(Site $site, Deployment $deployment, ServerLog $log): Deployment
     {
-        dispatch(new SiteDeployJob($deployment, false))->onQueue('ssh');
+        dispatch(new DeployJob($deployment, false))->onQueue('ssh');
 
         return $deployment;
     }
@@ -64,7 +64,7 @@ class Deploy
         /** @var ?Deployment $current */
         $current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
 
-        dispatch(new SiteDeployJob($deployment, true))->onQueue('ssh');
+        dispatch(new DeployJob($deployment, true))->onQueue('ssh');
 
         return $deployment;
     }

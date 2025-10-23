@@ -9,7 +9,7 @@ use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ServerUpdateJob implements ShouldQueue
+class UpdateJob implements ShouldQueue
 {
     use Queueable;
     use UniqueQueue;

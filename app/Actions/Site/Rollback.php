@@ -3,7 +3,7 @@
 namespace App\Actions\Site;
 
 use App\Enums\DeploymentStatus;
-use App\Jobs\Site\SiteRollbackJob;
+use App\Jobs\Site\RollbackJob;
 use App\Models\Deployment;
 use Illuminate\Validation\ValidationException;
 
@@ -30,6 +30,6 @@ class Rollback
         $deployment->status = DeploymentStatus::DEPLOYING;
         $deployment->save();
 
-        dispatch(new SiteRollbackJob($deployment))->onQueue('ssh');
+        dispatch(new RollbackJob($deployment))->onQueue('ssh');
     }
 }

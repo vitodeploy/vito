@@ -13,7 +13,7 @@ use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class SiteDeployJob implements ShouldQueue
+class DeployJob implements ShouldQueue
 {
     use Queueable;
     use UniqueQueue;

@@ -3,7 +3,7 @@
 namespace App\Actions\Redirect;
 
 use App\Enums\RedirectStatus;
-use App\Jobs\Redirect\RedirectCreateJob;
+use App\Jobs\Redirect\CreateJob;
 use App\Models\Redirect;
 use App\Models\Site;
 use Illuminate\Support\Facades\Validator;
@@ -27,7 +27,7 @@ class CreateRedirect
         $redirect->status = RedirectStatus::CREATING;
         $redirect->save();
 
-        dispatch(new RedirectCreateJob($site, $redirect))->onQueue('ssh');
+        dispatch(new CreateJob($site, $redirect))->onQueue('ssh');
 
         return $redirect->refresh();
     }

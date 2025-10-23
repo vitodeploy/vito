@@ -6,7 +6,7 @@ use App\Enums\SiteStatus;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
-use App\Jobs\Site\SiteCreateJob;
+use App\Jobs\Site\CreateJob;
 use App\Models\Server;
 use App\Models\Site;
 use App\ValidationRules\DomainRule;
@@ -81,7 +81,7 @@ class CreateSite
             $site->commands()->createMany($site->type()->baseCommands());
 
             // install site
-            dispatch(new SiteCreateJob($site))->onQueue('ssh');
+            dispatch(new CreateJob($site))->onQueue('ssh');
 
             DB::commit();
 

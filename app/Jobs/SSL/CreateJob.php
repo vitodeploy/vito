@@ -11,7 +11,7 @@ use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class SSLCreateJob implements ShouldQueue
+class CreateJob implements ShouldQueue
 {
     use Queueable;
     use UniqueQueue;

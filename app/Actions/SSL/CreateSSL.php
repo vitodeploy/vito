@@ -4,7 +4,7 @@ namespace App\Actions\SSL;
 
 use App\Enums\SslStatus;
 use App\Enums\SslType;
-use App\Jobs\SSL\SSLCreateJob;
+use App\Jobs\SSL\CreateJob;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -45,7 +45,7 @@ class CreateSSL
         $ssl->log_id = ServerLog::log($site->server, 'create-ssl', '', $site)->id;
         $ssl->save();
 
-        dispatch(new SSLCreateJob($site, $ssl))->onQueue('ssh');
+        dispatch(new CreateJob($site, $ssl))->onQueue('ssh');
 
         return $ssl;
     }

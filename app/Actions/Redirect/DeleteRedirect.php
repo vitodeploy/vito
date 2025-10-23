@@ -3,7 +3,7 @@
 namespace App\Actions\Redirect;
 
 use App\Enums\RedirectStatus;
-use App\Jobs\Redirect\RedirectDeleteJob;
+use App\Jobs\Redirect\DeleteJob;
 use App\Models\Redirect;
 use App\Models\Site;
 
@@ -14,6 +14,6 @@ class DeleteRedirect
         $redirect->status = RedirectStatus::DELETING;
         $redirect->save();
 
-        dispatch(new RedirectDeleteJob($site, $redirect))->onQueue('ssh');
+        dispatch(new DeleteJob($site, $redirect))->onQueue('ssh');
     }
 }

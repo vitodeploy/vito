@@ -11,7 +11,7 @@ use App\Traits\UniqueQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class RedirectCreateJob implements ShouldQueue
+class DeleteJob implements ShouldQueue
 {
     use Queueable;
     use UniqueQueue;
@@ -28,8 +28,7 @@ class RedirectCreateJob implements ShouldQueue
             $webserver->updateVHost($this->site, regenerate: [
                 'redirects',
             ]);
-            $this->redirect->status = RedirectStatus::READY;
-            $this->redirect->save();
+            $this->redirect->delete();
         });
     }
 
