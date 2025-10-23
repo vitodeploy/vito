@@ -13,7 +13,7 @@ class UninstallJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public function __construct(protected Service $service) {}
+    public function __construct(protected Service $service, protected ServiceStatus $previousStatus) {}
 
     public function handle(): void
     {
@@ -25,6 +25,13 @@ class UninstallJob implements ShouldQueue
 
     public function failed(): void
     {
+        // force delete if retried.
+        if ($this->previousStatus === ServiceStatus::FAILED) {
+            $this->service->delete();
+
+            return;
+        }
+
         $this->service->status = ServiceStatus::FAILED;
         $this->service->save();
     }

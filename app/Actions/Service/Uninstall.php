@@ -18,9 +18,11 @@ class Uninstall
             'service' => $service->id,
         ], $service->handler()->deletionRules())->validate();
 
+        $previousStatus = $service->status;
+
         $service->status = ServiceStatus::UNINSTALLING;
         $service->save();
 
-        dispatch(new UninstallJob($service))->onQueue('ssh');
+        dispatch(new UninstallJob($service, $previousStatus))->onQueue('ssh');
     }
 }

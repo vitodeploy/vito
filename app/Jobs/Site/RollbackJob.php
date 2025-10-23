@@ -15,12 +15,16 @@ class RollbackJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public function __construct(protected Deployment $deployment) {}
+    protected ?Deployment $current = null;
+
+    public function __construct(
+        protected Deployment $deployment,
+    ) {}
 
     public function handle(): void
     {
         $site = $this->deployment->site;
-        $current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
+        $this->current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
 
         $this->run("server-{$site->server_id}", function () use ($site) {
             $this->deployment->site->server->ssh($site->user)->exec(
@@ -40,22 +44,21 @@ class RollbackJob implements ShouldQueue
     public function failed(): void
     {
         $site = $this->deployment->site;
-        $current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
 
         $this->deployment->status = DeploymentStatus::FAILED;
         $this->deployment->save();
         Notifier::send($site, new DeploymentCompleted($this->deployment, $site));
 
-        if ($current) {
+        if ($this->current) {
             $this->deployment->site->server->ssh($site->user)->exec(
                 view('ssh.modern-deployment.release', [
                     'site' => $site,
-                    'releasePath' => $current->path(),
+                    'releasePath' => $this->current->path(),
                 ]),
                 'release',
                 $site->id
             );
-            $current->activate();
+            $this->current->activate();
         }
     }
 }
