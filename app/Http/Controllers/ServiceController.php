@@ -145,7 +145,7 @@ class ServiceController extends Controller
         $service->installed_version = $service->handler()->version();
         $service->save();
 
-        return back()->with('success', __('Fetched instaled version for :service', [
+        return back()->with('success', __('Fetched installed version for :service', [
             'service' => $service->name,
         ]));
     }
