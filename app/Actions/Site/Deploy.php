@@ -61,8 +61,6 @@ class Deploy
     {
         $deployment->release = now()->format('YmdHis');
         $deployment->save();
-        /** @var ?Deployment $current */
-        $current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
 
         dispatch(new DeployJob($deployment, true))->onQueue('ssh');
 
