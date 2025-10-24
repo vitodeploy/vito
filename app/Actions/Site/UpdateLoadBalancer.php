@@ -19,6 +19,13 @@ class UpdateLoadBalancer
 
         $site->loadBalancerServers()->delete();
 
+        // Update the load balancer method in type_data
+        $typeData = $site->type_data ?? [];
+        $typeData['method'] = $input['method'];
+        $site->update([
+            'type_data' => $typeData,
+        ]);
+
         foreach ($input['servers'] as $server) {
             $loadBalancerServer = new LoadBalancerServer([
                 'load_balancer_id' => $site->id,
