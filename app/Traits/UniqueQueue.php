@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Closure;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 trait UniqueQueue
 {
@@ -23,12 +24,14 @@ trait UniqueQueue
         if ($lock->get()) {
             try {
                 $callback();
+            } catch (Throwable $e) {
+                $lock->release();
+                $this->fail($e);
             } finally {
                 $lock->release();
             }
         } else {
             $this->release(30);
         }
-
     }
 }

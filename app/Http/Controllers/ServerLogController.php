@@ -116,4 +116,14 @@ class ServerLogController extends Controller
 
         return back()->with('success', 'Log deleted successfully');
     }
+
+    #[Post('{log}/clear', name: 'logs.clear')]
+    public function clear(Server $server, ServerLog $log): RedirectResponse
+    {
+        $this->authorize('update', $log);
+
+        $log->clear();
+
+        return back()->with('success', 'Log cleared successfully');
+    }
 }

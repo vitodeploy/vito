@@ -10,6 +10,7 @@ use App\Notifications\DeploymentCompleted;
 use App\Services\ProcessManager\ProcessManager;
 use App\SSH\OS\Git;
 use App\Traits\UniqueQueue;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -42,7 +43,7 @@ class DeployJob implements ShouldQueue
         });
     }
 
-    public function failed(): void
+    public function failed(Exception $e): void
     {
         $site = $this->deployment->site;
         $current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
@@ -50,6 +51,7 @@ class DeployJob implements ShouldQueue
         $this->deployment->status = DeploymentStatus::FAILED;
         $this->deployment->save();
         $this->deployment->activate();
+        $this->deployment->log?->write("Deployment failed: {$e->getMessage()}");
         Notifier::send($site, new DeploymentCompleted($this->deployment, $site));
 
         if ($this->isModern && $current) {
