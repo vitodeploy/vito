@@ -194,4 +194,17 @@ class ServerLog extends AbstractModel
 
         return $this;
     }
+
+    /**
+     * Clear the contents of a remote log file
+     *
+     * @throws Throwable
+     */
+    public function clear(): void
+    {
+        if ($this->is_remote) {
+            // For remote logs, use the dedicated script that preserves permissions and ownership
+            $this->server->os()->clearFile($this->name);
+        }
+    }
 }

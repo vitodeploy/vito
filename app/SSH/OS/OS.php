@@ -390,4 +390,19 @@ class OS
             'extract-archive'
         );
     }
+
+    /**
+     * Clear a remote log file while preserving permissions and ownership
+     *
+     * @throws SSHError
+     */
+    public function clearFile(string $path): void
+    {
+        $this->server->ssh()->exec(
+            view('ssh.os.clear-file', [
+                'path' => $path,
+            ]),
+            'clear-file'
+        );
+    }
 }
