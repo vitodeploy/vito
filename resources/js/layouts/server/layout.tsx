@@ -120,7 +120,7 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
               hidden: !page.props.server.services['process_manager'],
             },
             {
-              title: 'CronJobs',
+              title: 'Cron Jobs',
               href: route('cronjobs.site', { server: page.props.server.id, site: site.id }),
               icon: ClockIcon,
               isDisabled: isMenuDisabled,
