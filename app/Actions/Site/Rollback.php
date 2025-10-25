@@ -3,9 +3,8 @@
 namespace App\Actions\Site;
 
 use App\Enums\DeploymentStatus;
-use App\Facades\Notifier;
+use App\Jobs\Site\RollbackJob;
 use App\Models\Deployment;
-use App\Notifications\DeploymentCompleted;
 use Illuminate\Validation\ValidationException;
 
 class Rollback
@@ -31,34 +30,6 @@ class Rollback
         $deployment->status = DeploymentStatus::DEPLOYING;
         $deployment->save();
 
-        dispatch(function () use ($deployment, $site) {
-            $deployment->site->server->ssh($site->user)->exec(
-                view('ssh.modern-deployment.release', [
-                    'site' => $site,
-                    'releasePath' => $deployment->path(),
-                ]),
-                'release',
-                $site->id
-            );
-            $deployment->activate();
-            $deployment->status = DeploymentStatus::FINISHED;
-            $deployment->save();
-        })->catch(function () use ($deployment, $site, $current): void {
-            $deployment->status = DeploymentStatus::FAILED;
-            $deployment->save();
-            Notifier::send($site, new DeploymentCompleted($deployment, $site));
-            if ($current) {
-                $deployment->site->server->ssh($site->user)->exec(
-                    view('ssh.modern-deployment.release', [
-                        'site' => $site,
-                        'releasePath' => $current->path(),
-                    ]),
-                    'release',
-                    $site->id
-                );
-                $current->activate();
-
-            }
-        })->onQueue('ssh-unique');
+        dispatch(new RollbackJob($deployment))->onQueue('ssh');
     }
 }

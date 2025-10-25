@@ -4,11 +4,10 @@ namespace App\Actions\SSL;
 
 use App\Enums\SslStatus;
 use App\Enums\SslType;
+use App\Jobs\SSL\CreateJob;
 use App\Models\ServerLog;
-use App\Models\Service;
 use App\Models\Site;
 use App\Models\Ssl;
-use App\Services\Webserver\Webserver;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -46,21 +45,7 @@ class CreateSSL
         $ssl->log_id = ServerLog::log($site->server, 'create-ssl', '', $site)->id;
         $ssl->save();
 
-        dispatch(function () use ($site, $ssl): void {
-            /** @var Service $service */
-            $service = $site->server->webserver();
-            /** @var Webserver $webserver */
-            $webserver = $service->handler();
-            $webserver->setupSSL($ssl);
-            $ssl->status = SslStatus::CREATED;
-            $ssl->save();
-            $webserver->updateVHost($site->refresh(), regenerate: [
-                'port',
-            ]);
-        })->catch(function () use ($ssl): void {
-            $ssl->status = SslStatus::FAILED;
-            $ssl->save();
-        })->onQueue('ssh-unique');
+        dispatch(new CreateJob($site, $ssl))->onQueue('ssh');
 
         return $ssl;
     }

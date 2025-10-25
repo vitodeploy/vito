@@ -6,11 +6,9 @@ use App\Enums\SiteStatus;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
-use App\Facades\Notifier;
+use App\Jobs\Site\CreateJob;
 use App\Models\Server;
 use App\Models\Site;
-use App\Notifications\SiteInstallationFailed;
-use App\Notifications\SiteInstallationSucceed;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -83,18 +81,7 @@ class CreateSite
             $site->commands()->createMany($site->type()->baseCommands());
 
             // install site
-            dispatch(function () use ($site): void {
-                $site->type()->install();
-                $site->update([
-                    'status' => SiteStatus::READY,
-                    'progress' => 100,
-                ]);
-                Notifier::send($site, new SiteInstallationSucceed($site));
-            })->catch(function () use ($site): void {
-                $site->status = SiteStatus::INSTALLATION_FAILED;
-                $site->save();
-                Notifier::send($site, new SiteInstallationFailed($site));
-            })->onQueue('ssh-unique');
+            dispatch(new CreateJob($site))->onQueue('ssh');
 
             DB::commit();
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Facades\SSH;
 use App\Models\ServerLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -53,5 +54,41 @@ class LogsTest extends TestCase
             'is_remote' => true,
             'name' => 'test-path',
         ]);
+    }
+
+    public function test_clear_remote_log(): void
+    {
+        $this->actingAs($this->user);
+
+        $log = ServerLog::factory()->create([
+            'server_id' => $this->server->id,
+            'is_remote' => true,
+            'type' => 'remote',
+            'name' => 'test-remote-log',
+        ]);
+
+        // Mock the SSH connection to avoid actual SSH calls
+        SSH::fake();
+
+        $this->post(route('logs.clear', [$this->server, 'log' => $log->id]))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Log cleared successfully');
+    }
+
+    public function test_unauthorized_user_cannot_clear_log(): void
+    {
+        /** @var \App\Models\User $unauthorizedUser */
+        $unauthorizedUser = \App\Models\User::factory()->create();
+        $this->actingAs($unauthorizedUser);
+
+        $log = ServerLog::factory()->create([
+            'server_id' => $this->server->id,
+            'is_remote' => true,
+            'type' => 'remote',
+            'name' => 'test-remote-log',
+        ]);
+
+        $this->post(route('logs.clear', [$this->server, 'log' => $log->id]))
+            ->assertForbidden();
     }
 }

@@ -3,10 +3,9 @@
 namespace App\Actions\Redirect;
 
 use App\Enums\RedirectStatus;
+use App\Jobs\Redirect\CreateJob;
 use App\Models\Redirect;
-use App\Models\Service;
 use App\Models\Site;
-use App\Services\Webserver\Webserver;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -28,22 +27,7 @@ class CreateRedirect
         $redirect->status = RedirectStatus::CREATING;
         $redirect->save();
 
-        dispatch(function () use ($site, $redirect): void {
-            /** @var Service $service */
-            $service = $site->server->webserver();
-            /** @var Webserver $webserver */
-            $webserver = $service->handler();
-            $webserver->updateVHost($site, regenerate: [
-                'redirects',
-            ]);
-            $redirect->status = RedirectStatus::READY;
-            $redirect->save();
-        })
-            ->catch(function () use ($redirect): void {
-                $redirect->status = RedirectStatus::FAILED;
-                $redirect->save();
-            })
-            ->onQueue('ssh-unique');
+        dispatch(new CreateJob($site, $redirect))->onQueue('ssh');
 
         return $redirect->refresh();
     }

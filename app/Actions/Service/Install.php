@@ -4,6 +4,7 @@ namespace App\Actions\Service;
 
 use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
+use App\Jobs\Service\InstallJob;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
@@ -42,15 +43,7 @@ class Install
 
         $service->save();
 
-        dispatch(function () use ($service): void {
-            $service->handler()->install();
-            $service->status = ServiceStatus::READY;
-            $service->installed_version = $service->handler()->version();
-            $service->save();
-        })->catch(function () use ($service): void {
-            $service->status = ServiceStatus::INSTALLATION_FAILED;
-            $service->save();
-        })->onQueue('ssh-unique');
+        dispatch(new InstallJob($service))->onQueue('ssh');
 
         return $service;
     }

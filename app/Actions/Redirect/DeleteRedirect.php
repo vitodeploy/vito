@@ -3,10 +3,9 @@
 namespace App\Actions\Redirect;
 
 use App\Enums\RedirectStatus;
+use App\Jobs\Redirect\DeleteJob;
 use App\Models\Redirect;
-use App\Models\Service;
 use App\Models\Site;
-use App\Services\Webserver\Webserver;
 
 class DeleteRedirect
 {
@@ -15,18 +14,6 @@ class DeleteRedirect
         $redirect->status = RedirectStatus::DELETING;
         $redirect->save();
 
-        dispatch(function () use ($site, $redirect): void {
-            /** @var Service $service */
-            $service = $site->server->webserver();
-            /** @var Webserver $webserver */
-            $webserver = $service->handler();
-            $webserver->updateVHost($site, regenerate: [
-                'redirects',
-            ]);
-            $redirect->delete();
-        })->catch(function () use ($redirect): void {
-            $redirect->status = RedirectStatus::FAILED;
-            $redirect->save();
-        })->onQueue('ssh-unique');
+        dispatch(new DeleteJob($site, $redirect))->onQueue('ssh');
     }
 }

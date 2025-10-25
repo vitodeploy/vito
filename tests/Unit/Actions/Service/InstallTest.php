@@ -41,16 +41,20 @@ class InstallTest extends TestCase
     public function test_install_vito_agent_failed(): void
     {
         $this->server->monitoring()?->delete();
-        $this->expectExceptionMessage('Failed to fetch tags');
         SSH::fake('Active: inactive');
         Http::fake([
             'https://api.github.com/repos/vitodeploy/agent/tags' => Http::response([]),
         ]);
-        app(Install::class)->install($this->server, [
+
+        $service = app(Install::class)->install($this->server, [
             'type' => 'monitoring',
             'name' => 'vito-agent',
             'version' => 'latest',
         ]);
+
+        // Wait for the job to complete and check the service status
+        $service->refresh();
+        $this->assertEquals(ServiceStatus::INSTALLATION_FAILED, $service->status);
     }
 
     public function test_install_nginx(): void

@@ -3,9 +3,8 @@
 namespace App\Actions\Server;
 
 use App\Enums\ServerStatus;
-use App\Facades\Notifier;
+use App\Jobs\Server\UpdateJob;
 use App\Models\Server;
-use App\Notifications\ServerUpdateFailed;
 
 class Update
 {
@@ -13,13 +12,6 @@ class Update
     {
         $server->status = ServerStatus::UPDATING;
         $server->save();
-        dispatch(function () use ($server): void {
-            $server->os()->upgrade();
-            $server->checkConnection();
-            $server->checkForUpdates();
-        })->catch(function () use ($server): void {
-            Notifier::send($server, new ServerUpdateFailed($server));
-            $server->checkConnection();
-        })->onQueue('ssh-unique');
+        dispatch(new UpdateJob($server))->onQueue('ssh');
     }
 }

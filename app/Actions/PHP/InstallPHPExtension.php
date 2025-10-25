@@ -2,9 +2,9 @@
 
 namespace App\Actions\PHP;
 
+use App\Jobs\PHP\InstallExtensionJob;
 use App\Models\Server;
 use App\Models\Service;
-use App\Services\PHP\PHP;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -33,18 +33,7 @@ class InstallPHPExtension
         $service->type_data = $typeData;
         $service->save();
 
-        dispatch(
-            function () use ($service, $input): void {
-                /** @var PHP $handler */
-                $handler = $service->handler();
-                $handler->installExtension($input['extension']);
-            })->catch(function () use ($service, $input): void {
-                $service->refresh();
-                $typeData = $service->type_data;
-                $typeData['extensions'] = array_values(array_diff($typeData['extensions'], [$input['extension']]));
-                $service->type_data = $typeData;
-                $service->save();
-            })->onQueue('ssh-unique');
+        dispatch(new InstallExtensionJob($service, $input['extension']))->onQueue('ssh');
 
         return $service;
     }
