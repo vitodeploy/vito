@@ -9,6 +9,7 @@ use App\Exceptions\SSHError;
 use App\Facades\Notifier;
 use App\Models\Server;
 use App\Notifications\ServerInstallationSucceed;
+use App\ServerProviders\Custom;
 use App\Services\PHP\PHP;
 
 class InstallServer
@@ -76,11 +77,16 @@ class InstallServer
      */
     protected function createUser(): void
     {
+        // For custom servers, clear all existing keys after deploying the unique key
+        $clearKeys = $this->server->provider === Custom::id();
+
         $this->server->os()->createUser(
             $this->server->authentication['user'],
             $this->server->authentication['pass'],
-            $this->server->sshKey()['public_key']
+            $this->server->sshKey()['public_key'],
+            $clearKeys
         );
+
         $this->server->ssh_user = config('core.ssh_user');
         $this->server->save();
         $this->server->refresh();

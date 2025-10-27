@@ -55,13 +55,14 @@ class OS
     /**
      * @throws SSHError
      */
-    public function createUser(string $user, string $password, string $key): void
+    public function createUser(string $user, string $password, string $key, bool $clearKeys = false): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.create-user', [
                 'user' => $user,
                 'password' => $password,
                 'key' => $key,
+                'clearKeys' => $clearKeys,
             ]),
             'create-user'
         );
