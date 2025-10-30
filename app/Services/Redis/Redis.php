@@ -70,6 +70,6 @@ class Redis extends AbstractService
 
     public function version(): string
     {
-        return $this->service->server->ssh()->exec('redis-server --version | awk \'{print $3}\' | cut -d= -f2');
+        return $this->service->server->ssh()->exec('redis-server --version | awk \'{print $3}\' | cut -d= -f2', 'get-redis-version');
     }
 }

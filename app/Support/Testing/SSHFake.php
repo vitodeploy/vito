@@ -82,13 +82,14 @@ class SSHFake extends SSH
         return $output;
     }
 
-    public function upload(string $local, string $remote, ?string $owner = null): void
+    public function upload(string $local, string $remote, ?string $owner = null, ?string $log = null, ?int $siteId = null): void
     {
         $this->uploadedLocalPath = $local;
         $this->uploadedRemotePath = $remote;
         $this->uploadedContent = file_get_contents($local) ?: '';
-        $this->log = null;
     }
+
+    public function download(string $local, string $remote, ?string $log = null, ?int $siteId = null): void {}
 
     /**
      * @param  array<string>|string  $commands

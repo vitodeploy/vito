@@ -106,7 +106,8 @@ class OS
         return $this->server->ssh()->exec(
             view('ssh.os.read-file', [
                 'path' => '/home/'.$user.'/.ssh/id_rsa.pub',
-            ])
+            ]),
+            'get-public-key'
         );
     }
 
@@ -160,6 +161,7 @@ class OS
             view('ssh.os.read-ssh-key', [
                 'name' => $name,
             ]),
+            'read-ssh-key'
         );
     }
 
@@ -170,6 +172,7 @@ class OS
     {
         $this->server->ssh()->exec(
             view('ssh.os.reboot'),
+            'reboot'
         );
     }
 
@@ -270,7 +273,8 @@ class OS
             view('ssh.os.download', [
                 'url' => $url,
                 'path' => $path,
-            ])
+            ]),
+            'download'
         );
     }
 
@@ -350,7 +354,8 @@ class OS
         $this->server->ssh()->write(
             $path,
             $content,
-            $user
+            $user,
+            'write-file'
         );
     }
 
