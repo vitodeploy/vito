@@ -11,7 +11,7 @@ class ApiDocsTest extends TestCase
 
     public function test_api_docs_endpoint_returns_html_documentation(): void
     {
-        $response = $this->get('/api-docs');
+        $response = $this->get('/api/docs');
 
         $response->assertSuccessful();
         $response->assertHeader('content-type', 'text/html; charset=UTF-8');

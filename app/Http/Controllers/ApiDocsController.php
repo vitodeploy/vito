@@ -9,13 +9,13 @@ use Symfony\Component\Yaml\Yaml;
 
 class ApiDocsController extends Controller
 {
-    #[Get('/api-docs', name: 'api-docs')]
+    #[Get('/api/docs', name: 'api.docs')]
     public function index(): BinaryFileResponse
     {
         return response()->file(public_path('api-docs/index.html'));
     }
 
-    #[Get('/api.yaml', name: 'api-docs.api-yaml')]
+    #[Get('/api.yaml', name: 'api-yaml')]
     public function apiYaml(): Response
     {
         $apiOrder = [
