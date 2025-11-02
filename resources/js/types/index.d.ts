@@ -8,7 +8,6 @@ import { DynamicFieldConfig } from './dynamic-field-config';
 
 export interface Auth {
   user: User;
-  projects: Project[];
   currentProject?: Project;
 }
 

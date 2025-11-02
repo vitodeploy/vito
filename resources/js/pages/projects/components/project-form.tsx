@@ -31,10 +31,8 @@ export default function ProjectForm({
 }) {
   const [open, setOpen] = useState(defaultOpen || false);
   useEffect(() => {
-    if (defaultOpen) {
-      setOpen(defaultOpen);
-    }
-  }, [setOpen, defaultOpen]);
+    setOpen(defaultOpen || false);
+  }, [defaultOpen]);
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);

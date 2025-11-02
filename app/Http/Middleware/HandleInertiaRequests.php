@@ -98,8 +98,6 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => $user ? [
                 'user' => UserResource::make($user->load('projects')),
-                // TODO: limit projects
-                'projects' => ProjectResource::collection($user->projects()->get()),
                 'currentProject' => ProjectResource::make($currentProject),
             ] : null,
             'public_key_text' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),

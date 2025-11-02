@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Project;
 
 use App\Actions\Projects\CreateProject;
 use App\Actions\Projects\DeleteProject;
+use App\Actions\Projects\GetProjects;
 use App\Actions\Projects\UpdateProject;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectResource;
@@ -12,6 +13,7 @@ use App\Models\Project;
 use App\Models\UserProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -44,6 +46,16 @@ class ProjectController extends Controller
                     ->simplePaginate(20)
             ),
         ]);
+    }
+
+    #[Get('/json', name: 'projects.json')]
+    public function json(Request $request): ResourceCollection
+    {
+        $this->authorize('viewAny', Project::class);
+
+        $projects = app(GetProjects::class)->get(user(), $request->input(), 10);
+
+        return ProjectResource::collection($projects);
     }
 
     #[Post('/', name: 'projects.store')]
