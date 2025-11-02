@@ -33,9 +33,32 @@ type CreateSiteForm = {
   user: string;
 };
 
-export default function CreateSite({ server, children }: { server?: Server; children: ReactNode }) {
+export default function CreateSite({
+  server,
+  defaultOpen,
+  onOpenChange,
+  children,
+}: {
+  server?: Server;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children: ReactNode;
+}) {
   const page = usePage<SharedData>();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen || false);
+
+  useEffect(() => {
+    if (defaultOpen !== undefined) {
+      setOpen(defaultOpen);
+    }
+  }, [defaultOpen]);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (onOpenChange) {
+      onOpenChange(isOpen);
+    }
+  };
 
   const form = useForm<CreateSiteForm>({
     server: server?.id.toString() || '',
@@ -189,7 +212,7 @@ export default function CreateSite({ server, children }: { server?: Server; chil
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="w-full lg:max-w-3xl">
         <SheetHeader>

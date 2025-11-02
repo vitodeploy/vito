@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\CreateSite;
+use App\Actions\Site\GetSites;
 use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
 use App\Http\Resources\SiteResource;
@@ -10,6 +11,7 @@ use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -52,6 +54,16 @@ class SiteController extends Controller
         return Inertia::render('sites/index', [
             'sites' => SiteResource::collection($sites),
         ]);
+    }
+
+    #[Get('/servers/{server}/sites-json', name: 'sites.json')]
+    public function json(Request $request, Server $server): ResourceCollection
+    {
+        $this->authorize('viewAny', [Site::class, $server]);
+
+        $sites = app(GetSites::class)->get($server, $request->input(), 10);
+
+        return SiteResource::collection($sites);
     }
 
     /**
