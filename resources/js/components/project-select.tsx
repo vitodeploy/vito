@@ -1,5 +1,5 @@
 import { type Project } from '@/types/project';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,6 @@ interface ProjectSelectProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   footer?: ReactNode;
-  onRefetch?: (refetch: () => void) => void;
 }
 
 export function ProjectSelect({
@@ -30,7 +29,6 @@ export function ProjectSelect({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   footer,
-  onRefetch,
 }: ProjectSelectProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -52,6 +50,9 @@ export function ProjectSelect({
     refetchOnWindowFocus: false,
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage || !Array.isArray(lastPage)) {
+        return undefined;
+      }
       return lastPage.length === 10 ? allPages.length + 1 : undefined;
     },
   });
@@ -60,23 +61,11 @@ export function ProjectSelect({
   const selectedProject = projects.find((project) => project.id.toString() === value);
   const refetchRef = useRef<(() => void) | null>(null);
 
-  const safeRefetch = useCallback(() => {
-    if (refetchRef.current) {
-      refetchRef.current();
-    }
-  }, []);
-
   useEffect(() => {
     if (refetch) {
       refetchRef.current = refetch;
     }
   }, [refetch]);
-
-  useEffect(() => {
-    if (onRefetch && open) {
-      onRefetch(safeRefetch);
-    }
-  }, [onRefetch, open, safeRefetch]);
 
   useEffect(() => {
     if (!open || !hasNextPage) return;

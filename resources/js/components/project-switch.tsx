@@ -16,19 +16,12 @@ export function ProjectSwitch() {
   const [open, setOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
   const [selected, setSelected] = useState<string>(auth.currentProject?.id?.toString() ?? '');
-  const [refetchFn, setRefetchFn] = useState<(() => void) | null>(null);
   const initials = useInitials();
   const form = useForm();
 
   useEffect(() => {
     setSelected(auth.currentProject?.id?.toString() ?? '');
   }, [auth.currentProject?.id]);
-
-  useEffect(() => {
-    if (!projectFormOpen && open && refetchFn) {
-      refetchFn();
-    }
-  }, [projectFormOpen, open, refetchFn]);
 
   const handleProjectChange = (value: string, project: Project) => {
     setSelected(value);
@@ -67,15 +60,7 @@ export function ProjectSwitch() {
 
   return (
     <div className="flex items-center">
-      <ProjectSelect
-        value={selected}
-        onValueChange={handleProjectChange}
-        trigger={trigger}
-        open={open}
-        onOpenChange={setOpen}
-        footer={footer}
-        onRefetch={setRefetchFn}
-      />
+      <ProjectSelect value={selected} onValueChange={handleProjectChange} trigger={trigger} open={open} onOpenChange={setOpen} footer={footer} />
     </div>
   );
 }

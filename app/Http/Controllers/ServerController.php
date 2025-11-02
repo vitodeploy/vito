@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Server\CreateServer;
+use App\Actions\Server\GetServers;
 use App\Actions\Server\RebootServer;
 use App\Actions\Server\TransferServer;
 use App\Actions\Server\Update;
@@ -56,16 +57,7 @@ class ServerController extends Controller
 
         $this->authorize('viewAny', [Server::class, $project]);
 
-        $this->validate($request, [
-            'query' => [
-                'nullable',
-                'string',
-            ],
-        ]);
-
-        $servers = $project->servers()->where('name', 'like', "%{$request->input('query')}%")
-            ->take(10)
-            ->get();
+        $servers = app(GetServers::class)->get($project, $request->input(), 10);
 
         return ServerResource::collection($servers);
     }
