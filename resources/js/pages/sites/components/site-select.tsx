@@ -168,12 +168,7 @@ export default function SiteSelect({
                 {sites.map((site: Site) => {
                   const siteValue = String(site[valueBy] as Site[keyof Site]);
                   return (
-                    <CommandItem
-                      key={`site-select-${site.id}`}
-                      value={siteValue}
-                      onSelect={() => handleSelect(site, siteValue)}
-                      className="truncate"
-                    >
+                    <CommandItem key={`site-select-${site.id}`} value={siteValue} onSelect={() => handleSelect(site, siteValue)} className="truncate">
                       {site.domain}
                       <CheckIcon className={cn('ml-auto', selected === siteValue ? 'opacity-100' : 'opacity-0')} />
                     </CommandItem>
