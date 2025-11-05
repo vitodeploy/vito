@@ -154,6 +154,26 @@ class Supervisor extends AbstractProcessManager
     }
 
     /**
+     * @param  array<int>  $workerIds
+     *
+     * @throws Throwable
+     */
+    public function restartByIds(array $workerIds, ?int $siteId = null): void
+    {
+        if (empty($workerIds)) {
+            return;
+        }
+
+        $this->service->server->ssh()->exec(
+            view('ssh.services.process-manager.supervisor.restart-workers', [
+                'workerIds' => $workerIds,
+            ]),
+            'restart-workers',
+            $siteId
+        );
+    }
+
+    /**
      * @throws Throwable
      */
     public function getLogs(string $user, string $logPath): string
