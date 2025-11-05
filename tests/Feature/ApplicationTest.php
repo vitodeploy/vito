@@ -683,8 +683,6 @@ class ApplicationTest extends TestCase
 
     /**
      * Assert that the given worker's restart command was not executed via SSH.
-     *
-     * @param  int|string  $workerId
      */
     private function assertWorkerNotRestarted(int|string $workerId): void
     {
