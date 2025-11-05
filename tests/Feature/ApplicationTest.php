@@ -612,16 +612,8 @@ class ApplicationTest extends TestCase
         SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
 
         // Verify that other site's worker and "restart all" are not executed
-        $reflection = new \ReflectionClass($sshFake);
-        $commandsProperty = $reflection->getProperty('commands');
-        $commandsProperty->setAccessible(true);
-        $allCommands = $commandsProperty->getValue($sshFake);
-
-        foreach ($allCommands as $command) {
-            $commandStr = is_string($command) ? $command : (string) $command;
-            $this->assertStringNotContainsString('supervisorctl restart '.$otherSiteWorker->id.':*', $commandStr, 'Other site worker should not be restarted');
-            $this->assertStringNotContainsString('supervisorctl restart all', $commandStr, 'Should not restart all workers');
-        }
+        $this->assertWorkerNotRestarted($otherSiteWorker->id);
+        SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
     }
 
     public function test_deploy_modern_restarts_only_site_workers(): void
@@ -685,15 +677,20 @@ class ApplicationTest extends TestCase
         SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
 
         // Verify that other site's worker and "restart all" are not executed
-        $reflection = new \ReflectionClass($sshFake);
-        $commandsProperty = $reflection->getProperty('commands');
-        $commandsProperty->setAccessible(true);
-        $allCommands = $commandsProperty->getValue($sshFake);
+        $this->assertWorkerNotRestarted($otherSiteWorker->id);
+        SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
+    }
 
-        foreach ($allCommands as $command) {
-            $commandStr = is_string($command) ? $command : (string) $command;
-            $this->assertStringNotContainsString('supervisorctl restart '.$otherSiteWorker->id.':*', $commandStr, 'Other site worker should not be restarted');
-            $this->assertStringNotContainsString('supervisorctl restart all', $commandStr, 'Should not restart all workers');
-        }
+    /**
+     * Assert that the given worker's restart command was not executed via SSH.
+     *
+     * @param  int|string  $workerId
+     */
+    private function assertWorkerNotRestarted(int|string $workerId): void
+    {
+        SSH::assertNotExecutedContains(
+            'supervisorctl restart '.$workerId.':*',
+            "Worker {$workerId} should not be restarted"
+        );
     }
 }

@@ -130,6 +130,18 @@ class SSHFake extends SSH
         );
     }
 
+    public function assertNotExecutedContains(string $command, string $message = ''): void
+    {
+        foreach ($this->commands as $executedCommand) {
+            $commandStr = is_string($executedCommand) ? $executedCommand : (string) $executedCommand;
+            if (str($commandStr)->contains($command)) {
+                Assert::fail(
+                    $message ?: "The command '{$command}' should not be executed, but it was found in: {$commandStr}"
+                );
+            }
+        }
+    }
+
     public function assertFileUploaded(string $toPath, ?string $content = null): void
     {
         if ($this->uploadedLocalPath === '' || $this->uploadedLocalPath === '0' || ($this->uploadedRemotePath === '' || $this->uploadedRemotePath === '0')) {
