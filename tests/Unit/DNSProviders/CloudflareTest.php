@@ -59,12 +59,9 @@ class CloudflareTest extends TestCase
     public function test_connect_success(): void
     {
         Http::fake([
-            'api.cloudflare.com/client/v4/user/tokens/verify' => Http::response([
+            'api.cloudflare.com/client/v4/zones*' => Http::response([
                 'success' => true,
-                'result' => [
-                    'id' => 'test-id',
-                    'status' => 'active',
-                ],
+                'result' => [],
             ], 200),
         ]);
 
@@ -75,7 +72,8 @@ class CloudflareTest extends TestCase
         $this->assertTrue($result);
 
         Http::assertSent(function (Request $request) {
-            return str_contains($request->url(), 'api.cloudflare.com/client/v4/user/tokens/verify')
+            return str_contains($request->url(), 'api.cloudflare.com/client/v4/zones')
+                && str_contains($request->url(), 'per_page=1')
                 && $request->header('Authorization')[0] === 'Bearer test-token-123'
                 && $request->header('Content-Type')[0] === 'application/json';
         });
@@ -84,7 +82,7 @@ class CloudflareTest extends TestCase
     public function test_connect_failure_invalid_response(): void
     {
         Http::fake([
-            'api.cloudflare.com/client/v4/user/tokens/verify' => Http::response([
+            'api.cloudflare.com/client/v4/zones*' => Http::response([
                 'success' => false,
                 'errors' => [
                     ['message' => 'Invalid token'],
@@ -102,7 +100,7 @@ class CloudflareTest extends TestCase
     public function test_connect_failure_http_error(): void
     {
         Http::fake([
-            'api.cloudflare.com/client/v4/user/tokens/verify' => Http::response([], 401),
+            'api.cloudflare.com/client/v4/zones*' => Http::response([], 401),
         ]);
 
         $credentials = ['token' => 'invalid-token'];
