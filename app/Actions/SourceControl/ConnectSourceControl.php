@@ -29,9 +29,21 @@ class ConnectSourceControl
 
         $sourceControl->provider_data = $sourceControl->provider()->createData($input);
 
-        if (! $sourceControl->provider()->connect()) {
+        try {
+            if (! $sourceControl->provider()->connect()) {
+                throw ValidationException::withMessages([
+                    'provider' => __('Cannot connect to :provider or invalid credentials!', ['provider' => $sourceControl->provider]),
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Re-throw validation exceptions as-is
+            if ($e instanceof ValidationException) {
+                throw $e;
+            }
+
+            // For all other exceptions, wrap in validation exception to show the error message in the frontend
             throw ValidationException::withMessages([
-                'token' => __('Cannot connect to :provider or invalid token!', ['provider' => $sourceControl->provider]),
+                'provider' => $e->getMessage(),
             ]);
         }
 
