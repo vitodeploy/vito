@@ -91,51 +91,21 @@ class BitbucketV2 extends AbstractSourceControlProvider
             }
 
             $errorBody = $response->json();
-            $errorDescription = $errorBody['error_description'] ?? '';
-
-            // Check if the error is about public consumer
-            if (str_contains($errorDescription, 'public') || str_contains($errorDescription, 'Cannot use client_credentials')) {
-                Log::error('Bitbucket OAuth consumer is marked as public. It must be marked as private.', [
-                    'status' => $response->status(),
-                    'error' => $errorBody['error'] ?? 'unknown',
-                    'error_description' => $errorDescription,
-                    'instructions' => 'Go to Bitbucket Workspace Settings > OAuth consumers > Edit your consumer > Check "This is a private consumer" > Save',
-                ]);
-
-                throw new Exception('Your Bitbucket OAuth consumer is marked as "public" but must be marked as "private consumer" to use client credentials grant. Please edit your OAuth consumer in Bitbucket settings and check the "This is a private consumer" option.');
-            }
-
-            // Check if the error is about missing callback URL
-            if (str_contains($errorDescription, 'callback') || str_contains($errorDescription, 'callback uri')) {
-                Log::error('Bitbucket OAuth consumer is missing callback URL', [
-                    'status' => $response->status(),
-                    'error' => $errorBody['error'] ?? 'unknown',
-                    'error_description' => $errorDescription,
-                    'instructions' => 'Go to Bitbucket Workspace Settings > OAuth consumers > Edit your consumer > Set a Callback URL (e.g., https://your-domain.com/callback) > Save',
-                ]);
-
-                throw new Exception('Your Bitbucket OAuth consumer is missing a callback URL. Please edit your OAuth consumer in Bitbucket settings and set a Callback URL (any valid URL will work, e.g., https://example.com/callback).');
-            }
+            $errorMessage = $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $response->body();
 
             Log::error('Failed to get Bitbucket access token with client credentials', [
                 'status' => $response->status(),
                 'body' => $response->body(),
-                'error' => $errorBody['error'] ?? 'unknown',
-                'error_description' => $errorDescription,
+                'error' => $errorMessage,
             ]);
 
-            throw new Exception('Failed to obtain Bitbucket access token. Error: '.$errorDescription);
+            throw new Exception($errorMessage);
         } catch (Exception $e) {
-            // Re-throw configuration errors so they can be displayed to the user
-            if (str_contains($e->getMessage(), 'private consumer') || str_contains($e->getMessage(), 'callback URL')) {
-                throw $e;
-            }
-
             Log::error('Error getting Bitbucket access token with client credentials', [
                 'error' => $e->getMessage(),
             ]);
 
-            throw new Exception('Failed to obtain Bitbucket access token: '.$e->getMessage());
+            throw $e;
         }
     }
 
@@ -153,7 +123,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
         }
 
         $errorBody = $res->json();
-        $errorMessage = $errorBody['error_description'] ?? $errorBody['error'] ?? $res->body();
+        $errorMessage = $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $res->body();
 
         Log::error('Bitbucket V2 connection failed', [
             'status' => $res->status(),
@@ -161,16 +131,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
             'error' => $errorMessage,
         ]);
 
-        // Provide user-friendly error messages based on status code
-        if ($res->status() === 401) {
-            throw new Exception('Bitbucket authentication failed. Please verify your Key and Secret are correct.');
-        }
-
-        if ($res->status() === 403) {
-            throw new Exception('Bitbucket access denied. Please check that your OAuth consumer has the necessary permissions.');
-        }
-
-        throw new Exception('Failed to connect to Bitbucket: '.$errorMessage);
+        throw new Exception($errorMessage);
     }
 
     /**
@@ -213,7 +174,9 @@ class BitbucketV2 extends AbstractSourceControlProvider
                 ]);
 
             if ($response->status() !== 201) {
-                throw new FailedToDeployGitHook($response->body());
+                $errorBody = $response->json();
+                $errorMessage = $errorBody['error']['message'] ?? $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $response->body();
+                throw new FailedToDeployGitHook($errorMessage);
             }
 
             $hookData = $response->json();
@@ -245,7 +208,9 @@ class BitbucketV2 extends AbstractSourceControlProvider
         }
 
         if ($response->status() !== 204) {
-            throw new FailedToDestroyGitHook($response->body());
+            $errorBody = $response->json();
+            $errorMessage = $errorBody['error']['message'] ?? $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $response->body();
+            throw new FailedToDestroyGitHook($errorMessage);
         }
     }
 
@@ -293,7 +258,9 @@ class BitbucketV2 extends AbstractSourceControlProvider
             );
 
             if ($res->status() !== 200) {
-                throw new FailedToDeployGitKey($res->json()['error']['message']);
+                $errorBody = $res->json();
+                $errorMessage = $errorBody['error']['message'] ?? $errorBody['error_description'] ?? $errorBody['error'] ?? $errorBody['message'] ?? $res->body();
+                throw new FailedToDeployGitKey($errorMessage);
             }
 
             return $res->json()['id'] ?? '';
