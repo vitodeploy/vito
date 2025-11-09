@@ -6,15 +6,24 @@ use App\Exceptions\FailedToDeployGitHook;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\FailedToDestroyGitHook;
 use Exception;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class BitbucketV2 extends AbstractSourceControlProvider
 {
     protected string $apiUrl = 'https://api.bitbucket.org/2.0';
 
     protected string $oauthTokenUrl = 'https://bitbucket.org/site/oauth2/access_token';
+
+    private const int CACHE_TTL = 60 * 15; // 15 minutes
+
+    private const int MAX_PAGELEN = 100; // Bitbucket's max pagelen
+
+    private const int MAX_PAGES = 25; // Safety limit
 
     public static function id(): string
     {
@@ -42,41 +51,33 @@ class BitbucketV2 extends AbstractSourceControlProvider
         return [
             'key' => $this->sourceControl->provider_data['key'] ?? '',
             'secret' => $this->sourceControl->provider_data['secret'] ?? '',
-            'access_token' => $this->sourceControl->provider_data['access_token'] ?? null,
         ];
     }
 
     /**
-     * Get or refresh access token for OAuth consumer
+     * Get access token for OAuth consumer
      * Uses client credentials grant for private OAuth consumers
+     * Caches token for 10 minutes to avoid unnecessary API calls
      */
     private function getAccessToken(): ?string
     {
         $data = $this->data();
-        $accessToken = $data['access_token'] ?? null;
+        $key = $data['key'];
+        $secret = $data['secret'];
+        $cacheKey = "bitbucket_v2_token_{$this->sourceControl->id}";
 
-        // If we have an access token, return it (we'll handle expiration on API errors)
-        // Bitbucket access tokens expire in 2 hours, so we'll refresh when we get 401
-        if ($accessToken !== null) {
-            return $accessToken;
-        }
-
-        // No token, get one using client credentials grant
-        // This works for private OAuth consumers
-        return $this->getAccessTokenWithClientCredentials();
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($key, $secret) {
+            return $this->getAccessTokenWithClientCredentials($key, $secret);
+        });
     }
 
     /**
      * Get access token using client credentials grant
      * This works for private OAuth consumers only
      */
-    private function getAccessTokenWithClientCredentials(): ?string
+    private function getAccessTokenWithClientCredentials(string $key, string $secret): ?string
     {
         try {
-            $data = $this->data();
-            $key = $data['key'];
-            $secret = $data['secret'];
-
             $response = Http::withBasicAuth($key, $secret)
                 ->asForm()
                 ->post($this->oauthTokenUrl, [
@@ -85,7 +86,6 @@ class BitbucketV2 extends AbstractSourceControlProvider
 
             if ($response->successful()) {
                 $tokenData = $response->json();
-                $this->saveTokens($tokenData);
 
                 return $tokenData['access_token'] ?? null;
             }
@@ -140,34 +140,12 @@ class BitbucketV2 extends AbstractSourceControlProvider
     }
 
     /**
-     * Save access token to provider_data
-     */
-    private function saveTokens(array $tokenData): void
-    {
-        $providerData = $this->sourceControl->provider_data;
-        $providerData['access_token'] = $tokenData['access_token'] ?? null;
-        $this->sourceControl->provider_data = $providerData;
-        $this->sourceControl->save();
-    }
-
-    /**
      * @throws Exception
      */
     public function connect(): bool
     {
-        // Get access token using client credentials grant (for private OAuth consumers)
-        $accessToken = $this->getAccessToken();
-
-        if ($accessToken === null) {
-            Log::error('Bitbucket V2: Failed to obtain access token', [
-                'hint' => 'Make sure your OAuth consumer is marked as "private consumer" in Bitbucket settings',
-            ]);
-
-            throw new Exception('Failed to obtain Bitbucket access token. Please check your OAuth consumer configuration in Bitbucket settings.');
-        }
-
         // Test the access token by making an API call
-        $res = Http::withToken($accessToken)
+        $res = Http::withHeaders($this->getAuthenticationHeaders())
             ->get($this->apiUrl.'/user');
 
         if ($res->successful()) {
@@ -208,6 +186,13 @@ class BitbucketV2 extends AbstractSourceControlProvider
         return $res->json();
     }
 
+    /**
+     * Generate the full repository URL for Git operations
+     *
+     * @param  string  $repo  The repository identifier (e.g., workspace/repo)
+     * @param  string  $key  The SSH key identifier
+     * @return string The full Git URL
+     */
     public function fullRepoUrl(string $repo, string $key): string
     {
         return sprintf('git@bitbucket.org-%s:%s.git', $key, $repo);
@@ -223,25 +208,27 @@ class BitbucketV2 extends AbstractSourceControlProvider
                 ->post($this->apiUrl."/repositories/$repo/hooks", [
                     'description' => 'deploy',
                     'url' => url('/api/git-hooks?secret='.$secret),
-                    'events' => [
-                        'repo:'.implode(',', $events),
-                    ],
+                    'events' => array_map(fn ($event) => 'repo:'.$event, $events),
                     'active' => true,
                 ]);
+
+            if ($response->status() !== 201) {
+                throw new FailedToDeployGitHook($response->body());
+            }
+
+            $hookData = $response->json();
+
+            return [
+                'hook_id' => $hookData['uuid'] ?? null,
+                'hook_response' => $hookData,
+            ];
         } catch (Exception $e) {
+            if ($e instanceof FailedToDeployGitHook) {
+                throw $e;
+            }
+
             throw new FailedToDeployGitHook($e->getMessage());
         }
-
-        if ($response->status() != 201) {
-            throw new FailedToDeployGitHook($response->body());
-        }
-
-        $hookData = $response->json();
-
-        return [
-            'hook_id' => $hookData['uuid'] ?? null,
-            'hook_response' => $hookData,
-        ];
     }
 
     /**
@@ -257,7 +244,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
             throw new FailedToDestroyGitHook($e->getMessage());
         }
 
-        if ($response->status() != 204) {
+        if ($response->status() !== 204) {
             throw new FailedToDestroyGitHook($response->body());
         }
     }
@@ -275,11 +262,13 @@ class BitbucketV2 extends AbstractSourceControlProvider
         $commits = $res->json();
 
         if (isset($commits['values']) && count($commits['values']) > 0) {
+            $committer = $this->getCommitter($commits['values'][0]['author']['raw'] ?? '');
+
             return [
                 'commit_id' => $commits['values'][0]['hash'],
                 'commit_data' => [
-                    'name' => $this->getCommitter($commits['values'][0]['author']['raw'])['name'] ?? null,
-                    'email' => $this->getCommitter($commits['values'][0]['author']['raw'])['email'] ?? null,
+                    'name' => $committer['name'] ?? null,
+                    'email' => $committer['email'] ?? null,
                     'message' => str_replace("\n", '', $commits['values'][0]['message']),
                     'url' => $commits['values'][0]['links']['html']['href'] ?? null,
                 ],
@@ -337,11 +326,23 @@ class BitbucketV2 extends AbstractSourceControlProvider
     }
 
     /**
-     * @return array<string, mixed>
+     * Parse committer information from raw author string
+     *
+     * @param  string  $raw  Raw author string in format "Name <email@example.com>"
+     * @return array<string, string> Array with 'name' and 'email' keys
      */
     protected function getCommitter(string $raw): array
     {
-        $committer = explode(' <', $raw);
+        $committer = explode(' <', $raw, 2);
+
+        if (count($committer) < 2) {
+            // Malformed input, return empty values
+            // explode() always returns at least one element, so $committer[0] always exists
+            return [
+                'name' => $committer[0],
+                'email' => '',
+            ];
+        }
 
         return [
             'name' => $committer[0],
@@ -350,11 +351,15 @@ class BitbucketV2 extends AbstractSourceControlProvider
     }
 
     /**
+     * Get authentication headers with access token
+     * Token is cached for 10 minutes to avoid unnecessary API calls
+     *
      * @return array<string, string>
+     *
+     * @throws Exception
      */
     private function getAuthenticationHeaders(): array
     {
-        // Get access token (will obtain one if needed using client credentials grant)
         $accessToken = $this->getAccessToken();
 
         if ($accessToken === null) {
@@ -369,5 +374,118 @@ class BitbucketV2 extends AbstractSourceControlProvider
     public function getWebhookBranch(array $payload): string
     {
         return data_get($payload, 'push.changes.0.new.name', 'default-branch');
+    }
+
+    public function getRepos(bool $useCache = true): array
+    {
+        $cacheKey = 'bitbucket_v2_repos_'.$this->sourceControl->id;
+
+        if ($useCache && Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        try {
+            $repos = $this->fetchAllPages('/repositories', [
+                'pagelen' => self::MAX_PAGELEN,
+                'role' => 'member', // Only repos where user is a member
+            ]);
+
+            $repoNames = $repos->pluck('full_name')->toArray();
+            Cache::put($cacheKey, $repoNames, self::CACHE_TTL);
+
+            return $repoNames;
+
+        } catch (Throwable $e) {
+            Log::error('Failed to fetch Bitbucket repositories', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+    }
+
+    public function getBranches(string $repo, bool $useCache = true): array
+    {
+        $cacheKey = 'bitbucket_v2_branches_'.md5($repo.$this->sourceControl->id);
+
+        if ($useCache && Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        try {
+            $branches = $this->fetchAllPages("/repositories/$repo/refs/branches", [
+                'pagelen' => self::MAX_PAGELEN,
+            ]);
+
+            $branchNames = $branches->pluck('name')->toArray();
+            Cache::put($cacheKey, $branchNames, self::CACHE_TTL);
+
+            return $branchNames;
+
+        } catch (Throwable $e) {
+            Log::error('Failed to fetch Bitbucket branches', [
+                'repo' => $repo,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+    }
+
+    /**
+     * Fetch all pages from Bitbucket API
+     * Bitbucket uses pagination with 'next' field and 'values' array
+     *
+     * @param  string  $endpoint  API endpoint (without base URL)
+     * @param  array<string, mixed>  $params  Query parameters
+     * @return Collection<int, mixed>
+     */
+    private function fetchAllPages(string $endpoint, array $params = []): Collection
+    {
+        $allData = collect();
+        $nextUrl = $this->apiUrl.$endpoint.'?'.http_build_query($params);
+        $pageCount = 0;
+
+        while ($nextUrl !== null && $pageCount < self::MAX_PAGES) {
+            try {
+                $response = Http::withHeaders($this->getAuthenticationHeaders())
+                    ->get($nextUrl);
+
+                if (! $response->successful()) {
+                    Log::error('Bitbucket API request failed', [
+                        'endpoint' => $nextUrl,
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                    break;
+                }
+
+                $data = $response->json();
+
+                if (isset($data['values']) && is_array($data['values'])) {
+                    $allData = $allData->concat($data['values']);
+                }
+
+                // Bitbucket pagination uses 'next' field in the response
+                $nextUrl = $data['next'] ?? null;
+                $pageCount++;
+
+            } catch (Throwable $e) {
+                Log::error('Error fetching Bitbucket API page', [
+                    'endpoint' => $nextUrl,
+                    'error' => $e->getMessage(),
+                ]);
+                break;
+            }
+        }
+
+        if ($pageCount >= self::MAX_PAGES) {
+            Log::warning('Reached pagination limit', [
+                'endpoint' => $endpoint,
+                'pages_fetched' => $pageCount,
+            ]);
+        }
+
+        return $allData;
     }
 }

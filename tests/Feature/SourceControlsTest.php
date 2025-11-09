@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\SourceControl;
 use App\Models\User;
 use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\BitbucketV2;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,7 +26,20 @@ class SourceControlsTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        Http::fake();
+        // Configure HTTP fake responses for BitbucketV2 OAuth flow
+        if ($provider === BitbucketV2::id()) {
+            Http::fake([
+                'bitbucket.org/site/oauth2/access_token' => Http::response([
+                    'access_token' => 'fake-access-token',
+                    'token_type' => 'Bearer',
+                ], 200),
+                'api.bitbucket.org/2.0/user' => Http::response([
+                    'username' => 'test-user',
+                ], 200),
+            ]);
+        } else {
+            Http::fake();
+        }
 
         $input = array_merge([
             'name' => 'test',
@@ -275,6 +289,7 @@ class SourceControlsTest extends TestCase
             [Gitlab::id(), null, ['token' => 'test']],
             [Gitlab::id(), 'https://git.example.com/', ['token' => 'test']],
             [Bitbucket::id(), null, ['username' => 'test', 'password' => 'test']],
+            [BitbucketV2::id(), null, ['key' => 'test', 'secret' => 'test']],
         ];
     }
 }
