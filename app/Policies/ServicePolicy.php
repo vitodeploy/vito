@@ -59,6 +59,11 @@ class ServicePolicy
         return $this->update($user, $service);
     }
 
+    public function reload(User $user, Service $service): bool
+    {
+        return $this->update($user, $service);
+    }
+
     public function disable(User $user, Service $service): bool
     {
         return $this->update($user, $service);

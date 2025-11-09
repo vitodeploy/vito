@@ -76,6 +76,18 @@ class ServiceController extends Controller
         return response()->noContent();
     }
 
+    #[Post('{service}/reload', name: 'api.projects.servers.services.reload', middleware: 'ability:write')]
+    public function reload(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    {
+        $this->authorize('update', [$service, $server]);
+
+        $this->validateRoute($project, $server, $service);
+
+        app(Manage::class)->reload($service);
+
+        return response()->noContent();
+    }
+
     #[Post('{service}/enable', name: 'api.projects.servers.services.enable', middleware: 'ability:write')]
     public function enable(Project $project, Server $server, Service $service): \Illuminate\Http\Response
     {

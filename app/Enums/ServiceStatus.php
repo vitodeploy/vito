@@ -14,6 +14,7 @@ enum ServiceStatus: string implements VitoEnum
     case STARTING = 'starting';
     case STOPPING = 'stopping';
     case RESTARTING = 'restarting';
+    case RELOADING = 'reloading';
     case STOPPED = 'stopped';
     case ENABLING = 'enabling';
     case DISABLING = 'disabling';
@@ -28,6 +29,7 @@ enum ServiceStatus: string implements VitoEnum
             self::UNINSTALLING,
             self::STOPPING,
             self::RESTARTING,
+            self::RELOADING,
             self::ENABLING,
             self::DISABLING => 'warning',
             self::INSTALLATION_FAILED,

@@ -93,11 +93,11 @@ class Systemd
      */
     public function reload(string $unit): string
     {
-        $command = <<<'EOD'
+        $command = <<<EOD
             sudo systemctl reload $unit
             sudo systemctl status $unit | cat
         EOD;
 
-        return $this->server->ssh()->exec($command, 'reload-'.$unit);
+        return $this->server->ssh()->exec($command, sprintf('reload-%s', $unit));
     }
 }

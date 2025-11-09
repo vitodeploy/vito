@@ -17,7 +17,7 @@ import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import InputError from '@/components/ui/input-error';
 
-export function Action({ type, service }: { type: 'start' | 'stop' | 'restart' | 'enable' | 'disable'; service: Service }) {
+export function Action({ type, service }: { type: 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable'; service: Service }) {
   const [open, setOpen] = useState(false);
   const form = useForm();
 

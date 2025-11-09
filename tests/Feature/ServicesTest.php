@@ -50,6 +50,48 @@ class ServicesTest extends TestCase
     }
 
     #[DataProvider('data')]
+    public function test_reload_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+        $service->status = ServiceStatus::READY;
+        $service->save();
+
+        SSH::fake('Active: active');
+
+        $this->post(route('services.reload', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::READY, $service->status);
+    }
+
+    #[DataProvider('data')]
+    public function test_failed_to_reload_service(string $name): void
+    {
+        $this->actingAs($this->user);
+
+        $service = $this->server->services()->where('name', $name)->firstOrFail();
+
+        SSH::fake('Active: inactive');
+
+        $this->post(route('services.reload', [
+            'server' => $this->server,
+            'service' => $service->id,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        $service->refresh();
+
+        $this->assertEquals(ServiceStatus::FAILED, $service->status);
+    }
+
+    #[DataProvider('data')]
     public function test_failed_to_restart_service(string $name): void
     {
         $this->actingAs($this->user);

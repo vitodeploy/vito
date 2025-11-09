@@ -102,6 +102,11 @@ class Service extends AbstractModel
         $this->handler()->unit() && app(Manage::class)->restart($this);
     }
 
+    public function reload(): void
+    {
+        $this->handler()->unit() && app(Manage::class)->reload($this);
+    }
+
     public function enable(): void
     {
         $this->handler()->unit() && app(Manage::class)->enable($this);

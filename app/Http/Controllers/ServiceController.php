@@ -89,6 +89,18 @@ class ServiceController extends Controller
         ]));
     }
 
+    #[Post('/{service}/reload', name: 'services.reload')]
+    public function reload(Server $server, Service $service): RedirectResponse
+    {
+        $this->authorize('reload', $service);
+
+        app(Manage::class)->reload($service);
+
+        return back()->with('success', __(':service is being reloaded.', [
+            'service' => $service->name,
+        ]));
+    }
+
     #[Post('/{service}/stop', name: 'services.stop')]
     public function stop(Server $server, Service $service): RedirectResponse
     {

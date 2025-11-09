@@ -56,6 +56,22 @@ class Manage
         })->onQueue('ssh');
     }
 
+    public function reload(Service $service): void
+    {
+        $this->validate($service);
+        $service->status = ServiceStatus::RELOADING;
+        $service->save();
+        dispatch(function () use ($service): void {
+            $status = $service->server->systemd()->reload($service->handler()->unit());
+            if (str($status)->contains('Active: active')) {
+                $service->status = ServiceStatus::READY;
+            } else {
+                $service->status = ServiceStatus::FAILED;
+            }
+            $service->save();
+        })->onQueue('ssh');
+    }
+
     public function enable(Service $service): void
     {
         $this->validate($service);

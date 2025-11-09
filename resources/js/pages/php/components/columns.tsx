@@ -72,6 +72,7 @@ export const columns: ColumnDef<Service>[] = [
               <Action type="start" service={row.original} />
               <Action type="stop" service={row.original} />
               <Action type="restart" service={row.original} />
+              <Action type="reload" service={row.original} />
               <Action type="enable" service={row.original} />
               <Action type="disable" service={row.original} />
               <DropdownMenuSeparator />

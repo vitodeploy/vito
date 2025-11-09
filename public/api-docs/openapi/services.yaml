@@ -363,6 +363,58 @@ paths:
               schema:
                 $ref: './openapi/schemas/ErrorResponse.yaml'
 
+  /api/projects/{project}/servers/{server}/services/{service}/reload:
+    post:
+      summary: Reload service
+      description: Reload a service to apply configuration changes without fully restarting
+      tags:
+        - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: service
+          in: path
+          required: true
+          description: Service ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Service reloaded successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: './openapi/schemas/ErrorResponse.yaml'
+
   /api/projects/{project}/servers/{server}/services/{service}/enable:
     post:
       summary: Enable service
