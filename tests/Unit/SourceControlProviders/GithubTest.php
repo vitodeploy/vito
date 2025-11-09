@@ -99,6 +99,7 @@ class GithubTest extends TestCase
             ->github()
             ->create([
                 'provider_data' => [],
+                'access_token' => null,
             ]);
 
         $github = new Github($sourceControlModel);

@@ -153,6 +153,7 @@ class GiteaTest extends TestCase
             ->create([
                 'provider' => Gitea::id(),
                 'provider_data' => [],
+                'access_token' => null,
             ]);
 
         $gitea = new Gitea($sourceControlModel);
