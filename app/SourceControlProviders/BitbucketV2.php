@@ -303,7 +303,7 @@ class BitbucketV2 extends AbstractSourceControlProvider
                 ]
             );
 
-            if ($res->status() != 200) {
+            if ($res->status() !== 200) {
                 throw new FailedToDeployGitKey($res->json()['error']['message']);
             }
 
