@@ -23,31 +23,31 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
                   - type: object
                     properties:
                       data:
                         type: array
                         items:
-                          $ref: './openapi/schemas/SourceControl.yaml'
+                          $ref: '/api-docs/openapi/schemas/SourceControl.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create source control
@@ -99,31 +99,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/SourceControl.yaml'
+                $ref: '/api-docs/openapi/schemas/SourceControl.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/source-controls/{sourceControl}:
     get:
@@ -155,25 +155,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/SourceControl.yaml'
+                $ref: '/api-docs/openapi/schemas/SourceControl.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Source control not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     put:
       summary: Update source control
@@ -215,31 +215,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/SourceControl.yaml'
+                $ref: '/api-docs/openapi/schemas/SourceControl.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Source control not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
     delete:
       summary: Delete source control
@@ -272,16 +272,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Source control not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'

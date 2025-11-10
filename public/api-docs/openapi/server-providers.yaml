@@ -23,31 +23,31 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
                   - type: object
                     properties:
                       data:
                         type: array
                         items:
-                          $ref: './openapi/schemas/ServerProvider.yaml'
+                          $ref: '/api-docs/openapi/schemas/ServerProvider.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create server provider
@@ -96,31 +96,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ServerProvider.yaml'
+                $ref: '/api-docs/openapi/schemas/ServerProvider.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/server-providers/{serverProvider}:
     get:
@@ -152,25 +152,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ServerProvider.yaml'
+                $ref: '/api-docs/openapi/schemas/ServerProvider.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server provider not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     put:
       summary: Update server provider
@@ -222,31 +222,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ServerProvider.yaml'
+                $ref: '/api-docs/openapi/schemas/ServerProvider.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server provider not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
     delete:
       summary: Delete server provider
@@ -279,19 +279,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server provider not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
   /api/projects/{project}/server-providers/{serverProvider}/regions:
     get:
@@ -357,19 +357,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server provider not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
   /api/projects/{project}/server-providers/{serverProvider}/regions/{region}/plans:
     get:
@@ -468,16 +468,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Server provider or region not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'

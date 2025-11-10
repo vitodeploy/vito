@@ -29,13 +29,13 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
                   - type: object
                     properties:
                       data:
                         type: array
                         items:
-                          $ref: './openapi/schemas/Site.yaml'
+                          $ref: '/api-docs/openapi/schemas/Site.yaml'
               example:
                 data:
                   - id: 1
@@ -84,19 +84,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project or server not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create site
@@ -180,7 +180,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Site.yaml'
+                $ref: '/api-docs/openapi/schemas/Site.yaml'
               example:
                 id: 1
                 server_id: 1
@@ -216,25 +216,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Project or server not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
               example:
                 message: 'The given data was invalid.'
                 errors:
@@ -277,25 +277,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Site.yaml'
+                $ref: '/api-docs/openapi/schemas/Site.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     delete:
       summary: Delete site
@@ -334,19 +334,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/deploy:
     post:
@@ -384,31 +384,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Deployment.yaml'
+                $ref: '/api-docs/openapi/schemas/Deployment.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
               example:
                 message: 'Deployment script is empty'
 
@@ -466,31 +466,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Site.yaml'
+                $ref: '/api-docs/openapi/schemas/Site.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/web-directory:
     put:
@@ -543,31 +543,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Site.yaml'
+                $ref: '/api-docs/openapi/schemas/Site.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/deployment-script:
     get:
@@ -619,19 +619,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     put:
       summary: Update deployment script
@@ -685,25 +685,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/env:
     get:
@@ -766,19 +766,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     put:
       summary: Update environment variables
@@ -838,31 +838,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Site.yaml'
+                $ref: '/api-docs/openapi/schemas/Site.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/deployments:
     get:
@@ -901,13 +901,13 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
                   - type: object
                     properties:
                       data:
                         type: array
                         items:
-                          $ref: './openapi/schemas/Site.yaml'
+                          $ref: '/api-docs/openapi/schemas/Site.yaml'
               example:
                 data:
                   - id: 1
@@ -935,19 +935,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create deployment
@@ -984,31 +984,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Deployment.yaml'
+                $ref: '/api-docs/openapi/schemas/Deployment.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Site not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
               example:
                 message: 'Deployment script is empty'
 
@@ -1055,23 +1055,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/Deployment.yaml'
+                $ref: '/api-docs/openapi/schemas/Deployment.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Deployment not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 

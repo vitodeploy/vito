@@ -80,4 +80,14 @@ class DNSRecordController extends Controller
 
         return back()->with('success', 'DNS record deleted.');
     }
+
+    #[Post('/sync', name: 'dns-records.sync')]
+    public function sync(Domain $domain): RedirectResponse
+    {
+        $this->authorize('update', $domain);
+
+        $domain->syncDnsRecords();
+
+        return back()->with('success', 'DNS records synced successfully.');
+    }
 }

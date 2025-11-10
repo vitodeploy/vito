@@ -33,7 +33,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: './openapi/schemas/DNSRecord.yaml'
+                      $ref: '/api-docs/openapi/schemas/DNSRecord.yaml'
               example:
                 data:
                   - id: 1
@@ -63,19 +63,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Domain not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create DNS record
@@ -146,7 +146,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/DNSRecord.yaml'
+                $ref: '/api-docs/openapi/schemas/DNSRecord.yaml'
               example:
                 id: 1
                 type: 'A'
@@ -164,25 +164,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: Domain not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
               example:
                 message: 'The given data was invalid.'
                 errors:
@@ -224,7 +224,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/DNSRecord.yaml'
+                $ref: '/api-docs/openapi/schemas/DNSRecord.yaml'
               example:
                 id: 1
                 type: 'A'
@@ -242,19 +242,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: DNS record not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     patch:
       summary: Update DNS record
@@ -332,7 +332,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/DNSRecord.yaml'
+                $ref: '/api-docs/openapi/schemas/DNSRecord.yaml'
               example:
                 id: 1
                 type: 'A'
@@ -350,25 +350,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: DNS record not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
     delete:
       summary: Delete DNS record
@@ -415,16 +415,71 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: DNS record not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/domains/{domain}/records/sync:
+    post:
+      summary: Sync DNS records
+      description: Sync DNS records from the DNS provider. This will replace all existing records with the current records from the provider.
+      tags:
+        - DNS Records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: domain
+          in: path
+          required: true
+          description: Domain ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: DNS records synced successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'DNS records synced successfully'
+              example:
+                message: 'DNS records synced successfully'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'

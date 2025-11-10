@@ -14,25 +14,25 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: './openapi/schemas/PaginatedResponse.yaml'
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
                   - type: object
                     properties:
                       data:
                         type: array
                         items:
-                          $ref: './openapi/schemas/DNSProvider.yaml'
+                          $ref: '/api-docs/openapi/schemas/DNSProvider.yaml'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     post:
       summary: Create DNS provider
@@ -80,7 +80,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/DNSProvider.yaml'
+                $ref: '/api-docs/openapi/schemas/DNSProvider.yaml'
               example:
                 id: 1
                 name: 'My Cloudflare Account'
@@ -95,19 +95,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
               example:
                 message: 'The given data was invalid.'
                 errors:
@@ -135,7 +135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/DNSProvider.yaml'
+                $ref: '/api-docs/openapi/schemas/DNSProvider.yaml'
               example:
                 id: 1
                 name: 'My Cloudflare Account'
@@ -150,19 +150,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: DNS provider not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
 
     put:
       summary: Update DNS provider
@@ -205,7 +205,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/DNSProvider.yaml'
+                $ref: '/api-docs/openapi/schemas/DNSProvider.yaml'
               example:
                 id: 1
                 name: 'Updated Cloudflare Account'
@@ -220,25 +220,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: DNS provider not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ValidationError.yaml'
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
     delete:
       summary: Delete DNS provider
@@ -271,16 +271,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '404':
           description: DNS provider not found
           content:
             application/json:
               schema:
-                $ref: './openapi/schemas/ErrorResponse.yaml'
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'

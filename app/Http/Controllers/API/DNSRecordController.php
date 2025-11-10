@@ -86,6 +86,17 @@ class DNSRecordController extends Controller
         return response()->json(['message' => 'DNS record deleted successfully']);
     }
 
+    #[Post('/sync', name: 'api.dns-records.sync', middleware: 'ability:write')]
+    public function sync(Project $project, Domain $domain): JsonResponse
+    {
+        $this->authorize('update', $domain);
+        $this->validateRoute($project, $domain);
+
+        $domain->syncDnsRecords();
+
+        return response()->json(['message' => 'DNS records synced successfully']);
+    }
+
     private function validateRoute(Project $project, Domain $domain): void
     {
         if ($project->id !== $domain->project_id) {

@@ -9,6 +9,7 @@ import { PlusIcon } from 'lucide-react';
 import Layout from '@/layouts/app/layout';
 import RecordForm from './components/record-form';
 import { columns } from './components/record-columns';
+import SyncRecords from './components/sync-records';
 
 type Page = {
   domain: Domain;
@@ -25,6 +26,7 @@ export default function DomainShow() {
         <div className="flex items-start justify-between">
           <Heading title={`DNS Records for ${page.props.domain.domain}`} description="Manage DNS records for this domain" />
           <div className="flex items-center gap-2">
+            <SyncRecords domain={page.props.domain} />
             <RecordForm domain={page.props.domain}>
               <Button>
                 <PlusIcon />

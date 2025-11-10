@@ -670,4 +670,125 @@ class DNSRecordTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_authenticated_user_can_sync_dns_records(): void
+    {
+        Sanctum::actingAs($this->user, ['write']);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $domain = Domain::factory()->create([
+            'user_id' => $this->user->id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
+            'provider_domain_id' => 'test-domain-id',
+        ]);
+
+        // Create an existing record that will be replaced
+        DNSRecord::factory()->create([
+            'domain_id' => $domain->id,
+            'type' => 'A',
+            'name' => 'old',
+            'content' => '192.168.1.1',
+        ]);
+
+        // Mock the DNS provider API call to return records
+        Http::fake([
+            'api.cloudflare.com/*' => Http::response([
+                'result' => [
+                    [
+                        'id' => 'record-1',
+                        'type' => 'A',
+                        'name' => 'www',
+                        'content' => '192.168.1.1',
+                        'ttl' => 300,
+                        'proxied' => false,
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-01T00:00:00Z',
+                    ],
+                    [
+                        'id' => 'record-2',
+                        'type' => 'CNAME',
+                        'name' => 'mail',
+                        'content' => 'example.com',
+                        'ttl' => 600,
+                        'proxied' => false,
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-01T00:00:00Z',
+                    ],
+                ],
+                'success' => true,
+            ], 200),
+        ]);
+
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}/records/sync");
+
+        $response->assertOk()
+            ->assertJsonFragment(['message' => 'DNS records synced successfully']);
+
+        // Check that old record was deleted and new records were created
+        $this->assertDatabaseMissing('dns_records', [
+            'domain_id' => $domain->id,
+            'name' => 'old',
+        ]);
+
+        $this->assertDatabaseHas('dns_records', [
+            'domain_id' => $domain->id,
+            'provider_record_id' => 'record-1',
+            'type' => 'A',
+            'name' => 'www',
+            'content' => '192.168.1.1',
+        ]);
+
+        $this->assertDatabaseHas('dns_records', [
+            'domain_id' => $domain->id,
+            'provider_record_id' => 'record-2',
+            'type' => 'CNAME',
+            'name' => 'mail',
+            'content' => 'example.com',
+        ]);
+    }
+
+    public function test_user_cannot_sync_dns_records_for_other_users_domain(): void
+    {
+        Sanctum::actingAs($this->user, ['write']);
+
+        $otherDnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'project_id' => $this->otherUser->current_project_id,
+        ]);
+
+        $otherDomain = Domain::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'dns_provider_id' => $otherDnsProvider->id,
+            'project_id' => $this->otherUser->current_project_id,
+        ]);
+
+        $response = $this->postJson("/api/projects/{$this->otherUser->current_project_id}/domains/{$otherDomain->id}/records/sync");
+
+        $response->assertForbidden();
+    }
+
+    public function test_user_without_write_ability_cannot_sync_dns_records(): void
+    {
+        Sanctum::actingAs($this->user, ['read']);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $domain = Domain::factory()->create([
+            'user_id' => $this->user->id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $response = $this->postJson("/api/projects/{$this->user->current_project_id}/domains/{$domain->id}/records/sync");
+
+        $response->assertForbidden();
+    }
 }

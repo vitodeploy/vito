@@ -49,6 +49,9 @@
             tryItOutEnabled: true,
             requestInterceptor: (request) => {
                 // Add any custom request headers if needed
+                delete request.headers['accept']
+                delete request.headers['Accept']
+                request.headers["Accept"] = "application/json";
                 return request;
             }
         });
