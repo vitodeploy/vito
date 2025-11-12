@@ -4,6 +4,10 @@ echo "Updating Vito..."
 
 cd /home/vito/vito
 
+echo "Discarding any possible local changes..."
+git reset --hard HEAD
+git clean -fd
+
 echo "Pulling changes..."
 git fetch --all
 
