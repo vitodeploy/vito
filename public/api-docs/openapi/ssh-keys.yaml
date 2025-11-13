@@ -1,0 +1,185 @@
+paths:
+  /api/projects/{project}/servers/{server}/ssh-keys:
+    get:
+      summary: List SSH keys
+      description: Get all SSH keys deployed to a server
+      tags:
+        - SSH Keys
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of SSH keys
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '/api-docs/openapi/schemas/SshKey.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+    post:
+      summary: Deploy SSH key
+      description: Deploy an SSH key to a server for a specific user
+      tags:
+        - SSH Keys
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key_id:
+                  type: integer
+                  description: Existing SSH key ID to deploy
+                  example: 1
+                name:
+                  type: string
+                  description: Name for new SSH key (required if key_id not provided)
+                  example: 'My SSH Key'
+                public_key:
+                  type: string
+                  description: Public key content (required if key_id not provided)
+                  example: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...'
+                user:
+                  type: string
+                  description: Server user to deploy the key to (must be in server's ssh_users list)
+                  example: 'vito'
+      responses:
+        '200':
+          description: SSH key deployed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/SshKey.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
+    delete:
+      summary: Remove SSH key
+      description: Remove an SSH key from a server
+      tags:
+        - SSH Keys
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: sshKey
+          in: path
+          required: true
+          description: SSH Key ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: SSH key removed successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project, server, or SSH key not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+

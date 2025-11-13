@@ -1,1 +1,6 @@
-bash -c 'ssh_key_to_delete="$1"; sed -i "\#${ssh_key_to_delete//\//\\/}#d" /home/vito/.ssh/authorized_keys' bash '{{ $key }}'
+if [ -f ~/.ssh/authorized_keys ]; then
+    grep -vF '{!! addslashes(trim($key)) !!}' ~/.ssh/authorized_keys > ~/.ssh/authorized_keys.tmp 2>/dev/null || true
+    if [ -f ~/.ssh/authorized_keys.tmp ]; then
+        mv ~/.ssh/authorized_keys.tmp ~/.ssh/authorized_keys
+    fi
+fi

@@ -50,7 +50,7 @@ class ServerSshKeyController extends Controller
             ]);
         }
 
-        app(DeployKeyToServer::class)->deploy($server, $sshKey);
+        app(DeployKeyToServer::class)->deploy($server, $sshKey, $request->input());
 
         return back()->with('success', 'SSH key deployed.');
     }

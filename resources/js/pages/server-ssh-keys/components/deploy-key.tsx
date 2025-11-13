@@ -15,6 +15,7 @@ import { FormEventHandler, ReactNode, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Server } from '@/types/server';
 import SshKeySelect from '@/pages/ssh-keys/components/ssh-key-select';
 
@@ -27,9 +28,11 @@ export default function DeployKey({ children }: { children: ReactNode }) {
   const form = useForm<
     Required<{
       key: string;
+      user: string;
     }>
   >({
     key: '',
+    user: page.props.server.ssh_user || page.props.server.ssh_users[0] || '',
   });
 
   const submit: FormEventHandler = (e) => {
@@ -52,9 +55,27 @@ export default function DeployKey({ children }: { children: ReactNode }) {
         <Form id="deploy-ssh-key-form" onSubmit={submit} className="p-4">
           <FormFields>
             <FormField>
-              <Label htmlFor="name">Key</Label>
+              <Label htmlFor="key">Key</Label>
               <SshKeySelect value={form.data.key} onValueChange={(value) => form.setData('key', value)} />
               <InputError message={form.errors.key} />
+            </FormField>
+            <FormField>
+              <Label htmlFor="user">User</Label>
+              <Select value={form.data.user} onValueChange={(value) => form.setData('user', value)}>
+                <SelectTrigger id="user">
+                  <SelectValue placeholder="Select a user" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {page.props.server.ssh_users.map((user) => (
+                      <SelectItem key={`user-${user}`} value={user}>
+                        {user}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <InputError message={form.errors.user} />
             </FormField>
           </FormFields>
         </Form>

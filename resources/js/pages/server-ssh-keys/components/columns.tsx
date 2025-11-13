@@ -80,7 +80,7 @@ export const columns: ColumnDef<SshKey>[] = [
   },
   {
     accessorKey: 'user',
-    header: 'User',
+    header: 'Owner',
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
@@ -89,6 +89,15 @@ export const columns: ColumnDef<SshKey>[] = [
           {row.original.user?.name} ({row.original.user?.email})
         </span>
       );
+    },
+  },
+  {
+    accessorKey: 'deployment_user',
+    header: 'Deployed to User',
+    enableColumnFilter: true,
+    enableSorting: true,
+    cell: ({ row }) => {
+      return <span>{row.original.deployment_user || '-'}</span>;
     },
   },
   {

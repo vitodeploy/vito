@@ -63,7 +63,7 @@ class ServerSSHKeyController extends Controller
             $sshKey = app(CreateSshKey::class)->create($user, $request->all());
         }
 
-        app(DeployKeyToServer::class)->deploy($server, $sshKey);
+        app(DeployKeyToServer::class)->deploy($server, $sshKey, $request->input());
 
         return new SshKeyResource($sshKey);
     }

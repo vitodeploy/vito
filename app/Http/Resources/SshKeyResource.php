@@ -18,6 +18,9 @@ class SshKeyResource extends JsonResource
             'id' => $this->id,
             'user' => new UserResource($this->whenLoaded('user')),
             'name' => $this->name,
+            'deployment_user' => $this->whenPivotLoaded('server_ssh_keys', function () {
+                return $this->pivot->user ?? null;
+            }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

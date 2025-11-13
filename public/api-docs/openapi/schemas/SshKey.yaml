@@ -3,18 +3,14 @@ properties:
   id:
     type: integer
     example: 1
-  project_id:
-    type: integer
-    example: 1
   name:
     type: string
     example: 'My SSH Key'
-  public_key:
+  deployment_user:
     type: string
-    example: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...'
-  fingerprint:
-    type: string
-    example: 'SHA256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    nullable: true
+    description: Server user the key is deployed to
+    example: 'vito'
   created_at:
     type: string
     format: date-time

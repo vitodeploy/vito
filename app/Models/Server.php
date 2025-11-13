@@ -286,7 +286,7 @@ class Server extends AbstractModel
     public function sshKeys(): BelongsToMany
     {
         return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
-            ->withPivot('status')
+            ->withPivot('status', 'user')
             ->withTimestamps();
     }
 

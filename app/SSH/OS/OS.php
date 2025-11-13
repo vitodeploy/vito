@@ -114,9 +114,9 @@ class OS
     /**
      * @throws SSHError
      */
-    public function deploySSHKey(string $key): void
+    public function deploySSHKey(string $key, string $user): void
     {
-        $this->server->ssh()->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.deploy-ssh-key', [
                 'key' => $key,
             ]),
@@ -127,12 +127,11 @@ class OS
     /**
      * @throws SSHError
      */
-    public function deleteSSHKey(string $key): void
+    public function deleteSSHKey(string $key, string $user): void
     {
-        $this->server->ssh()->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.delete-ssh-key', [
                 'key' => $key,
-                'user' => $this->server->getSshUser(),
             ]),
             'delete-ssh-key'
         );

@@ -25,6 +25,7 @@ class ServerSshKeysTest extends TestCase
 
         $this->server->sshKeys()->attach($sshKey, [
             'status' => SshKeyStatus::ADDED,
+            'user' => $this->server->getSshUser(),
         ]);
 
         $this->json('GET', route('api.projects.servers.ssh-keys', [
@@ -74,11 +75,70 @@ class ServerSshKeysTest extends TestCase
             'server' => $this->server,
         ]), [
             'key_id' => $sshKey->id,
+            'user' => $this->server->getSshUser(),
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
                 'name' => 'My first key',
             ]);
+    }
+
+    public function test_add_key_to_specific_user()
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var SshKey $sshKey */
+        $sshKey = SshKey::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'My first key',
+            'public_key' => 'public-key-content',
+        ]);
+
+        $targetUser = 'root';
+
+        $this->json('POST', route('api.projects.servers.ssh-keys.create', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+        ]), [
+            'key_id' => $sshKey->id,
+            'user' => $targetUser,
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'name' => 'My first key',
+            ]);
+
+        $this->assertDatabaseHas('server_ssh_keys', [
+            'server_id' => $this->server->id,
+            'ssh_key_id' => $sshKey->id,
+            'user' => $targetUser,
+        ]);
+    }
+
+    public function test_add_key_to_invalid_user_fails()
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var SshKey $sshKey */
+        $sshKey = SshKey::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'My first key',
+            'public_key' => 'public-key-content',
+        ]);
+
+        $this->json('POST', route('api.projects.servers.ssh-keys.create', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+        ]), [
+            'key_id' => $sshKey->id,
+            'user' => 'invalid-user',
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['user']);
     }
 
     public function test_delete_ssh_key()
@@ -96,6 +156,7 @@ class ServerSshKeysTest extends TestCase
 
         $this->server->sshKeys()->attach($sshKey, [
             'status' => SshKeyStatus::ADDED,
+            'user' => $this->server->getSshUser(),
         ]);
 
         $this->json('DELETE', route('api.projects.servers.ssh-keys.delete', [
