@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('server_ssh_keys', function (Blueprint $table): void {
-            $table->string('user')->default(config('core.ssh_user'))->after('status');
+            $table->string('user')->nullable()->default(config('core.ssh_user'))->after('status');
         });
     }
 
