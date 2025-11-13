@@ -3,18 +3,32 @@ properties:
   id:
     type: integer
     example: 1
-  server_id:
-    type: integer
-    example: 1
   name:
     type: string
     example: 'SSH Access'
+  server_id:
+    type: integer
+    example: 1
+  type:
+    type: string
+    example: 'allow'
+  protocol:
+    type: string
+    example: 'tcp'
   port:
     type: string
     example: '22'
-  from:
+  source:
     type: string
     example: '0.0.0.0/0'
+  mask:
+    type: string
+    nullable: true
+    example: '0.0.0.0'
+  note:
+    type: string
+    nullable: true
+    example: 'Allow SSH access from anywhere'
   status:
     type: string
     enum: ['ready', 'installing', 'installation_failed', 'deleting']

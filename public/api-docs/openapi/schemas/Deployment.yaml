@@ -6,6 +6,61 @@ properties:
   site_id:
     type: integer
     example: 1
+  deployment_script_id:
+    type: integer
+    nullable: true
+    example: 1
+  log_id:
+    type: integer
+    nullable: true
+    example: 1
+  log:
+    type: object
+    nullable: true
+    description: Server log information (when loaded)
+    properties:
+      id:
+        type: integer
+        example: 1
+      server_id:
+        type: integer
+        example: 1
+      site_id:
+        type: integer
+        nullable: true
+        example: 1
+      type:
+        type: string
+        example: 'deployment'
+      name:
+        type: string
+        example: 'deployment.log'
+      disk:
+        type: string
+        example: 'local'
+      is_remote:
+        type: boolean
+        example: false
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  commit_id:
+    type: string
+    nullable: true
+    example: 'abc123def456789'
+  commit_id_short:
+    type: string
+    nullable: true
+    example: 'abc123'
+  commit_data:
+    type: object
+    nullable: true
+    example:
+      message: 'Fix bug in user authentication'
+      author: 'John Doe'
   status:
     type: string
     enum: ['pending', 'running', 'success', 'failed']
@@ -14,12 +69,13 @@ properties:
     type: string
     enum: ['success', 'warning', 'danger', 'gray']
     example: 'success'
-  commit:
+  release:
     type: string
-    example: 'abc123def456'
-  message:
-    type: string
-    example: 'Fix bug in user authentication'
+    nullable: true
+    example: '2024-01-01-120000'
+  active:
+    type: boolean
+    example: true
   created_at:
     type: string
     format: date-time

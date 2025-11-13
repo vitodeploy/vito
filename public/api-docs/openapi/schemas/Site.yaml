@@ -8,6 +8,8 @@ properties:
     example: 1
   server:
     $ref: './Server.yaml'
+    nullable: true
+    description: 'Server information (when loaded)'
   source_control_id:
     type: integer
     nullable: true

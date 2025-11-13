@@ -3,26 +3,65 @@ properties:
   id:
     type: integer
     example: 1
+  server_id:
+    type: integer
+    example: 1
   site_id:
     type: integer
     example: 1
+  is_active:
+    type: boolean
+    example: true
   type:
     type: string
     enum: ['letsencrypt', 'custom']
     example: 'letsencrypt'
-  domains:
-    type: array
-    items:
-      type: string
-    example: ['example.com', 'www.example.com']
   status:
     type: string
     enum: ['ready', 'installing', 'installation_failed', 'deleting']
     example: 'ready'
+  log:
+    type: object
+    nullable: true
+    description: Server log information (when log_id is present)
+    properties:
+      id:
+        type: integer
+        example: 1
+      server_id:
+        type: integer
+        example: 1
+      site_id:
+        type: integer
+        nullable: true
+        example: 1
+      type:
+        type: string
+        example: 'ssl'
+      name:
+        type: string
+        example: 'ssl.log'
+      disk:
+        type: string
+        example: 'local'
+      is_remote:
+        type: boolean
+        example: false
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
   status_color:
     type: string
     enum: ['success', 'warning', 'danger', 'gray']
     example: 'success'
+  expires_at:
+    type: string
+    format: date-time
+    nullable: true
+    example: '2025-01-01T00:00:00.000000Z'
   created_at:
     type: string
     format: date-time

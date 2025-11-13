@@ -3,6 +3,9 @@ properties:
   id:
     type: integer
     example: 1
+  server_id:
+    type: integer
+    example: 1
   site_id:
     type: integer
     example: 1
@@ -12,6 +15,9 @@ properties:
   to:
     type: string
     example: 'www.example.com'
+  mode:
+    type: string
+    example: '301'
   status:
     type: string
     enum: ['ready', 'installing', 'installation_failed', 'deleting']

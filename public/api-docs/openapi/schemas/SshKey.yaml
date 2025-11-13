@@ -3,13 +3,39 @@ properties:
   id:
     type: integer
     example: 1
+  user:
+    type: object
+    nullable: true
+    description: User information (when loaded)
+    properties:
+      id:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: 'John Doe'
+      email:
+        type: string
+        example: 'john@example.com'
+      is_admin:
+        type: boolean
+        example: false
+      two_factor_enabled:
+        type: boolean
+        example: false
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
   name:
     type: string
     example: 'My SSH Key'
   deployment_user:
     type: string
     nullable: true
-    description: Server user the key is deployed to
+    description: Server user the key is deployed to (when loaded via pivot)
     example: 'vito'
   created_at:
     type: string

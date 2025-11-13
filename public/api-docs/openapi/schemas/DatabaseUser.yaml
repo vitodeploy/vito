@@ -3,20 +3,23 @@ properties:
   id:
     type: integer
     example: 1
-  database_id:
+  server_id:
     type: integer
     example: 1
-  name:
+  username:
     type: string
     example: 'db_user'
-  password:
-    type: string
-    example: 'secure_password'
-  permissions:
+  databases:
     type: array
     items:
       type: string
-    example: ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+    example: ['my_database', 'another_database']
+  host:
+    type: string
+    example: 'localhost'
+  permission:
+    type: string
+    example: 'all'
   status:
     type: string
     enum: ['ready', 'installing', 'installation_failed', 'deleting']
