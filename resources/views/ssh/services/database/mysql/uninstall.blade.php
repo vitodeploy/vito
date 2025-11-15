@@ -5,6 +5,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove --purge -y
 sudo DEBIAN_FRONTEND=noninteractive apt-get autoclean -y
 
 sudo rm -f /etc/apt/trusted.gpg.d/mysql.gpg
+sudo rm -f /usr/share/keyrings/mysql-archive-keyring.gpg
 sudo rm -rf /var/lib/apt/lists/*mysql*
 sudo rm -rf /var/lib/dpkg/info/mysql*
 sudo rm -rf /var/cache/apt/archives/*mysql*

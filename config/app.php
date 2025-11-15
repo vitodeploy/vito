@@ -225,4 +225,6 @@ return [
     'demo' => env('APP_DEMO', false),
 
     'force_https' => env('FORCE_HTTPS', false),
+
+    'self_hosted' => env('SELF_HOSTED', true),
 ];
