@@ -45,6 +45,17 @@ export function DataTable<TData, TValue>({
 
   const extraClasses = modal && 'border-none shadow-none';
 
+  // Initialize search query from URL parameters on component mount
+  const [isInitialSearch, setIsInitialSearch] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('search') || '';
+    }
+    return '';
+  });
+  const [isSearching, setIsSearching] = useState(false);
+
   const handlePageChange = (url: string) => {
     if (onPageChange) {
       // Use custom page change handler (for axios/API calls)
@@ -58,14 +69,18 @@ export function DataTable<TData, TValue>({
       onPageChange(1);
     } else {
       // Use Inertia router for server-side rendered pages
-      router.get(url, {}, { preserveState: true });
+      const urlObj = new URL(url);
+
+      // Preserve the current search parameter when navigating between pages
+      if (searchQuery) {
+        urlObj.searchParams.set('search', searchQuery);
+      }
+
+      router.get(urlObj.toString(), {}, { preserveState: true, preserveScroll: true });
     }
   };
 
-  // handle search
-  const [isInitialSearch, setIsInitialSearch] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  // handle search with debouncing
   useEffect(() => {
     const handler = setTimeout(() => {
       if (!isInitialSearch) {
@@ -75,6 +90,7 @@ export function DataTable<TData, TValue>({
 
     return () => clearTimeout(handler);
   }, [searchQuery]);
+
   const handleSearch = () => {
     if (paginatedData) {
       setIsSearching(true);
@@ -87,6 +103,7 @@ export function DataTable<TData, TValue>({
         {},
         {
           preserveState: true,
+          preserveScroll: true,
           onSuccess: () => {
             setIsSearching(false);
           },
@@ -103,6 +120,7 @@ export function DataTable<TData, TValue>({
             <Input
               placeholder="Search..."
               className="max-w-sm"
+              value={searchQuery}
               onChange={(e) => {
                 setIsInitialSearch(false);
                 setSearchQuery(e.target.value);
