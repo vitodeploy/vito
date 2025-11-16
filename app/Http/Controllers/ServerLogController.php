@@ -32,8 +32,9 @@ class ServerLogController extends Controller
     {
         $this->authorize('viewAny', [ServerLog::class, $server]);
 
-        $logs = QueryBuilder::for($server->logs()->where('is_remote', 0)->latest())
+        $logs = QueryBuilder::for($server->logs()->where('is_remote', 0))
             ->searchableFields(['name'])
+            ->sortable('created_at', 'desc')
             ->query()
             ->simplePaginate(config('web.pagination_size'));
 

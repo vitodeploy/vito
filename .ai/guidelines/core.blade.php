@@ -1,5 +1,7 @@
 # Core Guidelines
 
+**This is the core guidelines. These are very important and high prio and have precedence over other guidelines in this file.**
+
 ## General Rules
 
 - If you find yourself in a loop of failing, ask the user before continuing.

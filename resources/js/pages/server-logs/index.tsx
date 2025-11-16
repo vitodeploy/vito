@@ -45,7 +45,7 @@ export default function ServerLogs() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.logs} searchable />
+        <DataTable columns={columns} paginatedData={page.props.logs} searchable sortable />
       </Container>
     </ServerLayout>
   );
