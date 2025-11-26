@@ -216,7 +216,8 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('database')
                     ->text()
                     ->label('Database Name')
-                    ->placeholder('wordpress'),
+                    ->placeholder('wordpress')
+                    ->componentProps(['defaultCharset' => 'utf8mb4', 'defaultCollation' => 'utf8mb4_0900_ai_ci']),
                 DynamicField::make('database_user')
                     ->text()
                     ->label('Database User')

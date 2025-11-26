@@ -11,12 +11,16 @@ export default function DatabaseSelect({
   serverId,
   value,
   createWithUser,
+  defaultCharset,
+  defaultCollation,
   onValueChange,
   ...props
 }: {
   serverId: number;
   value: string;
   createWithUser?: boolean;
+  defaultCharset?: string;
+  defaultCollation?: string;
   onValueChange: (value: string) => void;
 } & SelectTriggerProps) {
   const query = useQuery<Database[]>({
@@ -43,7 +47,13 @@ export default function DatabaseSelect({
           </SelectGroup>
         </SelectContent>
       </Select>
-      <CreateDatabase server={serverId} withUser={createWithUser} onDatabaseCreated={() => query.refetch()}>
+      <CreateDatabase
+        server={serverId}
+        withUser={createWithUser}
+        defaultCharset={defaultCharset}
+        defaultCollation={defaultCollation}
+        onDatabaseCreated={() => query.refetch()}
+      >
         <Button variant="outline">
           <PlusIcon />
         </Button>

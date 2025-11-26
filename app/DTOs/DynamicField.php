@@ -14,6 +14,7 @@ class DynamicField
         private ?array $options = null,
         private ?array $link = null,
         private ?string $className = null,
+        private ?array $componentProps = null,
     ) {}
 
     public static function make(string $name): self
@@ -123,6 +124,16 @@ class DynamicField
     }
 
     /**
+     * @param  array<string, mixed>  $props
+     */
+    public function componentProps(array $props): self
+    {
+        $this->componentProps = $props;
+
+        return $this;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -137,6 +148,7 @@ class DynamicField
             'options' => $this->options,
             'link' => $this->link,
             'className' => $this->className,
+            'componentProps' => $this->componentProps,
         ];
     }
 }

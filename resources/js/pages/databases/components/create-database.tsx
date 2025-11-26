@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -32,11 +32,15 @@ type CreateForm = {
 export default function CreateDatabase({
   server,
   withUser = false,
+  defaultCharset,
+  defaultCollation,
   onDatabaseCreated,
   children,
 }: {
   server: number;
   withUser?: boolean;
+  defaultCharset?: string;
+  defaultCollation?: string;
   onDatabaseCreated?: () => void;
   children: ReactNode;
 }) {
@@ -52,11 +56,20 @@ export default function CreateDatabase({
 
   const form = useForm<CreateForm>({
     name: '',
-    charset: '',
-    collation: '',
+    charset: defaultCharset || '',
+    collation: defaultCollation || '',
     user: withUser,
     existing_user_id: '',
   });
+
+  // Auto-load collations when modal opens with a default charset
+  useEffect(() => {
+    if (open && defaultCharset && charsets.includes(defaultCharset) && collations.length === 0) {
+      axios.get(route('databases.collations', { server: server, charset: defaultCharset })).then((response) => {
+        setCollations(response.data);
+      });
+    }
+  }, [open, charsets, defaultCharset]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -106,7 +119,7 @@ export default function CreateDatabase({
             </FormField>
             <FormField>
               <Label htmlFor="charset">Charset</Label>
-              <Select onValueChange={handleCharsetChange} defaultValue={form.data.charset}>
+              <Select onValueChange={handleCharsetChange} value={form.data.charset}>
                 <SelectTrigger id="charset">
                   <SelectValue placeholder="Select charset" />
                 </SelectTrigger>
@@ -122,7 +135,7 @@ export default function CreateDatabase({
             </FormField>
             <FormField>
               <Label htmlFor="collation">Collation</Label>
-              <Select onValueChange={(value) => form.setData('collation', value)} defaultValue={form.data.collation}>
+              <Select onValueChange={(value) => form.setData('collation', value)} value={form.data.collation}>
                 <SelectTrigger id="collation">
                   <SelectValue placeholder="Select collation" />
                 </SelectTrigger>

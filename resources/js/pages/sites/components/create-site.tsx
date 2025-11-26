@@ -169,6 +169,8 @@ export default function CreateSite({
             /*@ts-expect-error dynamic types*/
             onValueChange={(value) => form.setData('database', value)}
             createWithUser={true}
+            defaultCharset={field.componentProps?.defaultCharset as string | undefined}
+            defaultCollation={field.componentProps?.defaultCollation as string | undefined}
           />
           {/*@ts-expect-error dynamic types*/}
           <InputError message={form.errors.database} />

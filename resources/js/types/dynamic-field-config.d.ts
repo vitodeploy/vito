@@ -12,4 +12,5 @@ export interface DynamicFieldConfig {
     url: string;
   };
   className?: string;
+  componentProps?: Record<string, unknown>;
 }
