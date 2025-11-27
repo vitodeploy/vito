@@ -69,7 +69,7 @@ export default function CreateDatabase({
         setCollations(response.data);
       });
     }
-  }, [open, charsets, defaultCharset]);
+  }, [open, charsets, defaultCharset, server, collations]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
