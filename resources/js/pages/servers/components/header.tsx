@@ -84,7 +84,7 @@ export default function ServerHeader({ server, site }: { server: Server; site?: 
                 <TooltipTrigger asChild>
                   <div className="flex items-center space-x-1">
                     <LoaderCircleIcon className={cn('size-4', server.status === 'installing' ? 'text-brand animate-spin' : '')} />
-                    <div>%{parseInt(server.progress || '0')}</div>
+                    <div>{parseInt(server.progress || '0')}%</div>
                     {server.status === 'installation_failed' && (
                       <Badge className="ml-1" variant={server.status_color}>
                         {server.status}
