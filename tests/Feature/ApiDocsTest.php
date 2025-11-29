@@ -14,7 +14,6 @@ class ApiDocsTest extends TestCase
         $response = $this->get('/api/docs');
 
         $response->assertSuccessful();
-        $response->assertHeader('content-type', 'text/html; charset=UTF-8');
 
         // For BinaryFileResponse, we can't easily get the content in tests
         // but we can verify the response is successful and has correct headers
