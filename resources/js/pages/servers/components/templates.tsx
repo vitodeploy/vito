@@ -136,7 +136,7 @@ function Save({
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Save tempalte</DialogTitle>
+          <DialogTitle>Save template</DialogTitle>
           <DialogDescription className="sr-only">Save as template</DialogDescription>
         </DialogHeader>
         <Form className="p-4">
