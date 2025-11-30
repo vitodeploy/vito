@@ -232,14 +232,18 @@ export function AppSidebar({ secondNavItems, secondNavTitle }: { secondNavItems?
 
                     return (
                       <SidebarMenuItem key={`${item.title}-${item.href}`} hidden={item.hidden}>
-                        <SidebarMenuButton isActive={isActive} disabled={item.isDisabled || false} asChild>
+                        <SidebarMenuButton isActive={isActive} asChild>
                           {item.external ? (
                             <a href={item.href} target="_blank">
                               {item.icon && <item.icon />}
                               <span>{item.title}</span>
                             </a>
                           ) : (
-                            <Link href={item.href} disabled={item.isDisabled || false}>
+                            <Link
+                              href={item.isDisabled ? '#' : item.href}
+                              disabled={item.isDisabled || false}
+                              className={item.isDisabled ? 'pointer-events-none opacity-50' : ''}
+                            >
                               {item.icon && <item.icon />}
                               <span>{item.title}</span>
                             </Link>

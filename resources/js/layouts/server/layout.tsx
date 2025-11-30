@@ -211,6 +211,7 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       title: 'Features',
       href: route('server-features', { server: page.props.server.id }),
       icon: BoxIcon,
+      isDisabled: isMenuDisabled,
     },
     {
       title: 'Settings',
