@@ -28,7 +28,7 @@ class ServerTest extends TestCase
         $this->actingAs($this->user);
 
         Storage::fake();
-        SSH::fake('Active: active'); // fake output for service installations
+        SSH::fake('user_not_found'); // fake output for vito user check and service installations
 
         $this->post(route('servers.store', [
             'provider' => Custom::id(),
@@ -355,7 +355,7 @@ class ServerTest extends TestCase
         $this->actingAs($this->user);
 
         Storage::fake();
-        SSH::fake('Active: active');
+        SSH::fake('user_not_found');
 
         $this->post(route('servers.store'), [
             'provider' => Custom::id(),
@@ -383,7 +383,7 @@ class ServerTest extends TestCase
         $this->actingAs($this->user);
 
         Storage::fake();
-        SSH::fake('Active: active');
+        SSH::fake('user_not_found');
 
         $this->post(route('servers.store'), [
             'provider' => Custom::id(),
@@ -416,7 +416,7 @@ class ServerTest extends TestCase
         $this->actingAs($this->user);
 
         Storage::fake();
-        SSH::fake('Active: active');
+        SSH::fake('user_not_found');
 
         $this->post(route('servers.store'), [
             'provider' => Custom::id(),
@@ -646,7 +646,7 @@ class ServerTest extends TestCase
         ]);
 
         Storage::fake();
-        SSH::fake('Active: active');
+        SSH::fake('user_not_found');
 
         $this->post(route('servers.store'), [
             'provider' => Hetzner::id(),
@@ -668,6 +668,50 @@ class ServerTest extends TestCase
 
         $this->assertDatabaseMissing('servers', [
             'name' => 'test-unauthorized-server',
+        ]);
+    }
+
+    public function test_cannot_create_server_with_ssh_connection_failure(): void
+    {
+        $this->actingAs($this->user);
+
+        Storage::fake();
+        SSH::fake()->connectionWillFail();
+
+        $this->post(route('servers.store'), [
+            'provider' => Custom::id(),
+            'name' => 'test-connection-fail',
+            'ip' => '5.5.5.5',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22->value,
+            'services' => [],
+        ])
+            ->assertSessionHasErrors();
+
+        $this->assertDatabaseMissing('servers', [
+            'name' => 'test-connection-fail',
+        ]);
+    }
+
+    public function test_cannot_create_server_on_vito_server(): void
+    {
+        $this->actingAs($this->user);
+
+        Storage::fake();
+        SSH::fake('1000'); // Simulates vito user exists (returns user ID)
+
+        $this->post(route('servers.store'), [
+            'provider' => Custom::id(),
+            'name' => 'test-vito-server',
+            'ip' => '6.6.6.6',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22->value,
+            'services' => [],
+        ])
+            ->assertSessionHasErrors();
+
+        $this->assertDatabaseMissing('servers', [
+            'name' => 'test-vito-server',
         ]);
     }
 }
