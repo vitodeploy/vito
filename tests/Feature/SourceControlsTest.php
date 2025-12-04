@@ -6,6 +6,7 @@ use App\Models\SourceControl;
 use App\Models\User;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\BitbucketV2;
+use App\SourceControlProviders\Forgejo;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -290,6 +291,8 @@ class SourceControlsTest extends TestCase
             [Gitlab::id(), 'https://git.example.com/', ['token' => 'test']],
             [Bitbucket::id(), null, ['username' => 'test', 'password' => 'test']],
             [BitbucketV2::id(), null, ['key' => 'test', 'secret' => 'test']],
+            [Forgejo::id(), null, ['token' => 'test']],
+            [Forgejo::id(), 'https://forgejo.example.com/', ['token' => 'test']],
         ];
     }
 }

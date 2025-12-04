@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\SourceControl;
 use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\Forgejo;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Database\Seeder;
@@ -34,6 +35,14 @@ class SourceControlsSeeder extends Seeder
             'provider_data' => [
                 'username' => 'bitbucket_username',
                 'password' => 'bitbucket_password',
+            ],
+        ]);
+
+        SourceControl::factory()->create([
+            'profile' => 'Forgejo',
+            'provider' => Forgejo::id(),
+            'provider_data' => [
+                'token' => 'forgejo_token',
             ],
         ]);
     }

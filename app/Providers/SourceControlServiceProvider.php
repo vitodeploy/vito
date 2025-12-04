@@ -7,6 +7,7 @@ use App\DTOs\DynamicForm;
 use App\Plugins\RegisterSourceControl;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\BitbucketV2;
+use App\SourceControlProviders\Forgejo;
 use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
@@ -23,6 +24,7 @@ class SourceControlServiceProvider extends ServiceProvider
         $this->bitbucket();
         $this->bitbucketV2();
         $this->gitea();
+        $this->forgejo();
     }
 
     private function github(): void
@@ -99,6 +101,24 @@ class SourceControlServiceProvider extends ServiceProvider
         RegisterSourceControl::make(Gitea::id())
             ->label('Gitea')
             ->handler(Gitea::class)
+            ->form(
+                DynamicForm::make([
+                    DynamicField::make('token')
+                        ->text()
+                        ->label('Token'),
+                    DynamicField::make('url')
+                        ->text()
+                        ->label('Self hosted URL'),
+                ])
+            )
+            ->register();
+    }
+
+    private function forgejo(): void
+    {
+        RegisterSourceControl::make(Forgejo::id())
+            ->label('Forgejo')
+            ->handler(Forgejo::class)
             ->form(
                 DynamicForm::make([
                     DynamicField::make('token')

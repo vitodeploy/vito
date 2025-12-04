@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\SourceControl;
 use App\SourceControlProviders\Bitbucket;
+use App\SourceControlProviders\Forgejo;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -53,6 +54,16 @@ class SourceControlFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'provider' => Bitbucket::id(),
+        ]);
+    }
+
+    /**
+     * @return Factory<SourceControl>
+     */
+    public function forgejo(): Factory
+    {
+        return $this->state(fn (array $attributes): array => [
+            'provider' => Forgejo::id(),
         ]);
     }
 }
