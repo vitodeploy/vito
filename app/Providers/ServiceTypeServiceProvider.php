@@ -177,6 +177,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->label('PHP')
             ->handler(PHP::class)
             ->versions([
+                '8.5',
                 '8.4',
                 '8.3',
                 '8.2',
