@@ -21,7 +21,7 @@ import {
   SignpostIcon,
   UsersIcon,
 } from 'lucide-react';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Server } from '@/types/server';
 import ServerHeader from '@/pages/servers/components/header';
 import Layout from '@/layouts/app/layout';
@@ -42,7 +42,16 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
   }
 
   const isMenuDisabled = page.props.server.status !== 'ready';
-  const site = page.props.site || siteHelper.getStoredSite() || null;
+  const storedSite = siteHelper.getStoredSite();
+  // Only use stored site if it belongs to the current server
+  const site = page.props.site || (storedSite?.server_id === page.props.server.id ? storedSite : null) || null;
+
+  // Clear stored site if it doesn't belong to the current server
+  useEffect(() => {
+    if (storedSite && storedSite.server_id !== page.props.server.id) {
+      siteHelper.storeSite(undefined);
+    }
+  }, [page.props.server.id, storedSite]);
 
   const sidebarNavItems: NavItem[] = [
     {
@@ -83,7 +92,7 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       icon: MousePointerClickIcon,
       isDisabled: isMenuDisabled,
       hidden: !page.props.server.services['webserver'],
-      children: site
+      children: site && site.id
         ? [
             {
               title: 'All sites',

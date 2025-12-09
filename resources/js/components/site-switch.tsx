@@ -16,15 +16,17 @@ export function SiteSwitch() {
   const [open, setOpen] = useState(false);
   const [siteFormOpen, setSiteFormOpen] = useState(false);
   const storedSite = siteHelper.getStoredSite();
-  const currentSite = page.props.site || storedSite || null;
+  // Only use site from route, not stored site (when no site in route, show "Select a site")
+  const currentSite = page.props.site || null;
   const [selected, setSelected] = useState<string>(currentSite?.id?.toString() ?? '');
   const initials = useInitials();
   const form = useForm();
 
   useEffect(() => {
-    const site = page.props.site || storedSite || null;
+    // Only use site from route, clear selection if no site in route
+    const site = page.props.site || null;
     setSelected(site?.id?.toString() ?? '');
-  }, [page.props.site?.id, storedSite?.id]);
+  }, [page.props.site?.id, page.props.server?.id]);
 
   // Sync stored site with current site
   useEffect(() => {
@@ -34,7 +36,21 @@ export function SiteSwitch() {
     }
   }, [page.props.site]);
 
+  // Clear stored site if it doesn't belong to the current server
+  useEffect(() => {
+    if (storedSite && page.props.server && storedSite.server_id !== page.props.server.id) {
+      siteHelper.storeSite(undefined);
+      setSelected('');
+    }
+  }, [page.props.server?.id, storedSite]);
+
   const handleSiteChange = (value: string, site: Site) => {
+    // Don't process if site is invalid (e.g., when clearing due to server change)
+    if (!site || !site.id || !site.server_id) {
+      setSelected(value);
+      setOpen(false);
+      return;
+    }
     setSelected(value);
     setOpen(false);
     siteHelper.storeSite(site);

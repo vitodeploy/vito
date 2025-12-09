@@ -46,13 +46,33 @@ export default function SiteSelect({
   const [selected, setSelected] = useState<string>(value);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const refetchRef = useRef<(() => void) | null>(null);
+  const prevServerIdRef = useRef<number>(serverId);
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
+  // Clear selected value when serverId changes
   useEffect(() => {
-    setSelected(value);
-  }, [value]);
+    if (prevServerIdRef.current !== serverId) {
+      prevServerIdRef.current = serverId;
+      setSelected('');
+      // Only notify parent via onValueChange (not onValueChangeAdvanced) when clearing due to server change
+      // onValueChangeAdvanced expects a valid site object, which we don't have when clearing
+      if (onValueChange) {
+        onValueChange(undefined);
+      }
+      // Don't call onValueChangeAdvanced with empty site - let parent handle server change separately
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverId]);
+
+  // Sync selected with value prop (only if serverId matches current)
+  useEffect(() => {
+    // Only sync if serverId hasn't changed (prevServerIdRef is updated in the previous effect)
+    if (prevServerIdRef.current === serverId) {
+      setSelected(value);
+    }
+  }, [value, serverId]);
 
   // Debounce query input
   useEffect(() => {
@@ -130,7 +150,8 @@ export default function SiteSelect({
     }
   };
 
-  const selectedSite = sites.find((site) => String(site[valueBy] as Site[keyof Site]) === selected);
+  // Only find selectedSite if selected value exists in current server's sites list
+  const selectedSite = selected && sites.length > 0 ? sites.find((site) => String(site[valueBy] as Site[keyof Site]) === selected) : undefined;
 
   const handleSelect = (site: Site, currentValue: string) => {
     const newSelected = currentValue === selected ? '' : currentValue;
