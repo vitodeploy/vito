@@ -16,17 +16,16 @@ export function SiteSwitch() {
   const [open, setOpen] = useState(false);
   const [siteFormOpen, setSiteFormOpen] = useState(false);
   const storedSite = siteHelper.getStoredSite();
-  const currentSite = page.props.site || storedSite || null;
+  const currentSite = page.props.site || null;
   const [selected, setSelected] = useState<string>(currentSite?.id?.toString() ?? '');
   const initials = useInitials();
   const form = useForm();
 
   useEffect(() => {
-    const site = page.props.site || storedSite || null;
+    const site = page.props.site || null;
     setSelected(site?.id?.toString() ?? '');
-  }, [page.props.site?.id, storedSite?.id]);
+  }, [page.props.site?.id, page.props.server?.id]);
 
-  // Sync stored site with current site
   useEffect(() => {
     const currentStoredSite = siteHelper.getStoredSite();
     if (currentStoredSite && page.props.site && currentStoredSite.id !== page.props.site.id) {
@@ -34,7 +33,19 @@ export function SiteSwitch() {
     }
   }, [page.props.site]);
 
+  useEffect(() => {
+    if (storedSite && page.props.server && storedSite.server_id !== page.props.server.id) {
+      siteHelper.storeSite(undefined);
+      setSelected('');
+    }
+  }, [page.props.server?.id, storedSite]);
+
   const handleSiteChange = (value: string, site: Site) => {
+    if (!site || !site.id || !site.server_id) {
+      setSelected(value);
+      setOpen(false);
+      return;
+    }
     setSelected(value);
     setOpen(false);
     siteHelper.storeSite(site);
