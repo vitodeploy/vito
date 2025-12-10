@@ -7,6 +7,7 @@ use App\Facades\Notifier;
 use App\Models\Deployment;
 use App\Notifications\DeploymentCompleted;
 use App\Traits\UniqueQueue;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -41,12 +42,13 @@ class RollbackJob implements ShouldQueue
         });
     }
 
-    public function failed(): void
+    public function failed(Exception $e): void
     {
         $site = $this->deployment->site;
 
         $this->deployment->status = DeploymentStatus::FAILED;
         $this->deployment->save();
+        $this->deployment->log?->write("Rollback failed: {$e->getMessage()}");
         Notifier::send($site, new DeploymentCompleted($this->deployment, $site));
 
         if ($this->current) {

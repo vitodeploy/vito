@@ -29,7 +29,7 @@ export function View({ serverLog, children }: { serverLog: ServerLog; children?:
     queryFn: async () => {
       try {
         const response = await axios.get(route('logs.show', { server: serverLog.server_id, log: serverLog.id }));
-        return response.data;
+        return typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2);
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           throw new Error(error.response?.data?.error || 'An error occurred while fetching the log');

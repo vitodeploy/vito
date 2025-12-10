@@ -3,8 +3,10 @@
 namespace App\Jobs\Service;
 
 use App\Enums\ServiceStatus;
+use App\Models\ServerLog;
 use App\Models\Service;
 use App\Traits\UniqueQueue;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -28,9 +30,15 @@ class InstallJob implements ShouldQueue
         });
     }
 
-    public function failed(): void
+    public function failed(Exception $e): void
     {
         $this->service->status = ServiceStatus::INSTALLATION_FAILED;
         $this->service->save();
+
+        ServerLog::log(
+            $this->service->server,
+            'service-installation-failed',
+            $e->getMessage()
+        );
     }
 }

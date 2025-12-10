@@ -3,8 +3,10 @@
 namespace App\Jobs\Service;
 
 use App\Enums\ServiceStatus;
+use App\Models\ServerLog;
 use App\Models\Service;
 use App\Traits\UniqueQueue;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -23,7 +25,7 @@ class UninstallJob implements ShouldQueue
         });
     }
 
-    public function failed(): void
+    public function failed(Exception $e): void
     {
         // force delete if retried.
         if ($this->previousStatus === ServiceStatus::FAILED) {
@@ -34,5 +36,11 @@ class UninstallJob implements ShouldQueue
 
         $this->service->status = ServiceStatus::FAILED;
         $this->service->save();
+
+        ServerLog::log(
+            $this->service->server,
+            'service-installation-failed',
+            $e->getMessage()
+        );
     }
 }
