@@ -36,22 +36,19 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
     site?: Site;
   }>();
 
-  // When server-side rendering, we only render the layout on the client...
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
   const isMenuDisabled = page.props.server.status !== 'ready';
   const storedSite = siteHelper.getStoredSite();
-  // Only use stored site if it belongs to the current server
   const site = page.props.site || (storedSite?.server_id === page.props.server.id ? storedSite : null) || null;
 
-  // Clear stored site if it doesn't belong to the current server
   useEffect(() => {
     if (storedSite && storedSite.server_id !== page.props.server.id) {
       siteHelper.storeSite(undefined);
     }
   }, [page.props.server.id, storedSite]);
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
   const sidebarNavItems: NavItem[] = [
     {
@@ -92,65 +89,66 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       icon: MousePointerClickIcon,
       isDisabled: isMenuDisabled,
       hidden: !page.props.server.services['webserver'],
-      children: site && site.id
-        ? [
-            {
-              title: 'All sites',
-              href: route('sites', { server: page.props.server.id }),
-              onlyActivePath: route('sites', { server: page.props.server.id }),
-              icon: ListIcon,
-            },
-            {
-              title: 'Application',
-              href: route('application', { server: page.props.server.id, site: site.id }),
-              onlyActivePath: route('application', { server: page.props.server.id, site: site.id }),
-              icon: RocketIcon,
-            },
-            {
-              title: 'Features',
-              href: route('site-features', { server: page.props.server.id, site: site.id }),
-              icon: BoxIcon,
-            },
-            {
-              title: 'Commands',
-              href: route('commands', { server: page.props.server.id, site: site.id }),
-              icon: CommandIcon,
-            },
-            {
-              title: 'SSL',
-              href: route('ssls', { server: page.props.server.id, site: site.id }),
-              icon: LockIcon,
-            },
-            {
-              title: 'Workers',
-              href: route('workers.site', { server: page.props.server.id, site: site.id }),
-              icon: ListEndIcon,
-              isDisabled: isMenuDisabled,
-              hidden: !page.props.server.services['process_manager'],
-            },
-            {
-              title: 'CronJobs',
-              href: route('cronjobs.site', { server: page.props.server.id, site: site.id }),
-              icon: ClockIcon,
-              isDisabled: isMenuDisabled,
-            },
-            {
-              title: 'Redirects',
-              href: route('redirects', { server: page.props.server.id, site: site.id }),
-              icon: SignpostIcon,
-            },
-            {
-              title: 'Logs',
-              href: route('sites.logs', { server: page.props.server.id, site: site.id }),
-              icon: LogsIcon,
-            },
-            {
-              title: 'Settings',
-              href: route('site-settings', { server: page.props.server.id, site: site.id }),
-              icon: Settings2Icon,
-            },
-          ]
-        : [],
+      children:
+        site && site.id
+          ? [
+              {
+                title: 'All sites',
+                href: route('sites', { server: page.props.server.id }),
+                onlyActivePath: route('sites', { server: page.props.server.id }),
+                icon: ListIcon,
+              },
+              {
+                title: 'Application',
+                href: route('application', { server: page.props.server.id, site: site.id }),
+                onlyActivePath: route('application', { server: page.props.server.id, site: site.id }),
+                icon: RocketIcon,
+              },
+              {
+                title: 'Features',
+                href: route('site-features', { server: page.props.server.id, site: site.id }),
+                icon: BoxIcon,
+              },
+              {
+                title: 'Commands',
+                href: route('commands', { server: page.props.server.id, site: site.id }),
+                icon: CommandIcon,
+              },
+              {
+                title: 'SSL',
+                href: route('ssls', { server: page.props.server.id, site: site.id }),
+                icon: LockIcon,
+              },
+              {
+                title: 'Workers',
+                href: route('workers.site', { server: page.props.server.id, site: site.id }),
+                icon: ListEndIcon,
+                isDisabled: isMenuDisabled,
+                hidden: !page.props.server.services['process_manager'],
+              },
+              {
+                title: 'CronJobs',
+                href: route('cronjobs.site', { server: page.props.server.id, site: site.id }),
+                icon: ClockIcon,
+                isDisabled: isMenuDisabled,
+              },
+              {
+                title: 'Redirects',
+                href: route('redirects', { server: page.props.server.id, site: site.id }),
+                icon: SignpostIcon,
+              },
+              {
+                title: 'Logs',
+                href: route('sites.logs', { server: page.props.server.id, site: site.id }),
+                icon: LogsIcon,
+              },
+              {
+                title: 'Settings',
+                href: route('site-settings', { server: page.props.server.id, site: site.id }),
+                icon: Settings2Icon,
+              },
+            ]
+          : [],
     },
     {
       title: 'PHP',
