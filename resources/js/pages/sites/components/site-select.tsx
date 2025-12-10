@@ -46,15 +46,27 @@ export default function SiteSelect({
   const [selected, setSelected] = useState<string>(value);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const refetchRef = useRef<(() => void) | null>(null);
+  const prevServerIdRef = useRef<number>(serverId);
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
   useEffect(() => {
-    setSelected(value);
-  }, [value]);
+    if (prevServerIdRef.current !== serverId) {
+      prevServerIdRef.current = serverId;
+      setSelected('');
+      if (onValueChange) {
+        onValueChange(undefined);
+      }
+    }
+  }, [serverId]);
 
-  // Debounce query input
+  useEffect(() => {
+    if (prevServerIdRef.current === serverId) {
+      setSelected(value);
+    }
+  }, [value, serverId]);
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedQuery(query);
@@ -130,7 +142,7 @@ export default function SiteSelect({
     }
   };
 
-  const selectedSite = sites.find((site) => String(site[valueBy] as Site[keyof Site]) === selected);
+  const selectedSite = selected && sites.length > 0 ? sites.find((site) => String(site[valueBy] as Site[keyof Site]) === selected) : undefined;
 
   const handleSelect = (site: Site, currentValue: string) => {
     const newSelected = currentValue === selected ? '' : currentValue;
