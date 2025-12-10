@@ -274,6 +274,11 @@ export default function CreateSite({
                     onValueChange={(value) => form.setData('aliases', value)}
                   />
                   <InputError message={form.errors.aliases} />
+                  {Object.keys(form.errors)
+                    .filter((key) => key.startsWith('aliases.'))
+                    .map((key) => (
+                      <InputError key={key} message={form.errors[key as keyof typeof form.errors] as string} />
+                    ))}
                 </FormField>
 
                 {page.props.configs.site.types[form.data.type].form?.map((config) => getFormField(config))}

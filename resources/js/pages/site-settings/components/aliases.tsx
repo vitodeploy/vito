@@ -56,6 +56,11 @@ export default function Aliases({ site, children }: { site: Site; children: Reac
                 onValueChange={(value) => form.setData('aliases', value)}
               />
               <InputError message={form.errors.aliases} />
+              {Object.keys(form.errors)
+                .filter((key) => key.startsWith('aliases.'))
+                .map((key) => (
+                  <InputError key={key} message={form.errors[key as keyof typeof form.errors] as string} />
+                ))}
             </FormField>
           </FormFields>
         </Form>
