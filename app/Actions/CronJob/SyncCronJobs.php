@@ -74,6 +74,20 @@ class SyncCronJobs
                 continue;
             }
 
+            // Validate that the first 5 parts look like cron time fields
+            // Valid cron fields contain: numbers, *, -, /, and ,
+            $isValidCronFormat = true;
+            for ($i = 0; $i < 5; $i++) {
+                if (! preg_match('/^[\d\*\-\/,]+$/', $parts[$i])) {
+                    $isValidCronFormat = false;
+                    break;
+                }
+            }
+
+            if (! $isValidCronFormat) {
+                continue;
+            }
+
             $frequency = $this->normalizeFrequency(implode(' ', array_slice($parts, 0, 5)));
             $command = $parts[5];
 

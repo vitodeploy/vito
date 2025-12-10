@@ -460,4 +460,31 @@ class SyncCronjobTest extends TestCase
         $existingCronJob->refresh();
         $this->assertEquals(CronjobStatus::READY, $existingCronJob->status);
     }
+
+    public function test_sync_ignores_crontab_documentation_comments(): void
+    {
+        // Mock SSH to return crontab with documentation comments (like the default crontab header)
+        $crontabWithComments = "# Edit this file to introduce tasks to be run by cron.
+#
+# Each task to run has to be defined through a single line
+# m h  dom mon dow   command
+#
+0 2 * * * /usr/bin/backup.sh";
+
+        SSH::fake($crontabWithComments);
+
+        $this->actingAs($this->user)
+            ->post(route('cronjobs.sync', $this->server))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Cron jobs synced successfully.');
+
+        // Should only create cronjobs for the actual cron line, not the documentation comments
+        $cronJobs = CronJob::where('server_id', $this->server->id)->get();
+
+        // Should have 2 cronjobs (1 for root, 1 for vito), not 6 (which would include the comment lines)
+        $this->assertCount(2, $cronJobs);
+
+        // Both should have the actual backup command
+        $this->assertTrue($cronJobs->every(fn ($cronJob) => $cronJob->command === '/usr/bin/backup.sh'));
+    }
 }
