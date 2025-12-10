@@ -89,7 +89,7 @@ class SyncCronJobs
             }
 
             $frequency = $this->normalizeFrequency(implode(' ', array_slice($parts, 0, 5)));
-            $command = $parts[5];
+            $command = $this->normalizeCommand($parts[5]);
 
             $serverCronJobs[] = [
                 'frequency' => $frequency,
@@ -99,7 +99,7 @@ class SyncCronJobs
 
             // Check if this matches any Vito-managed cronjob (including site-level ones)
             $matchingCronJob = $vitoCronJobs->first(function ($cronJob) use ($frequency, $command) {
-                return $this->normalizeFrequency($cronJob->frequency) === $frequency && $cronJob->command === $command;
+                return $this->normalizeFrequency($cronJob->frequency) === $frequency && $this->normalizeCommand($cronJob->command) === $command;
             });
 
             if ($matchingCronJob) {
@@ -126,7 +126,7 @@ class SyncCronJobs
         // Create new cronjobs for manually created ones (not in Vito)
         foreach ($serverCronJobs as $cronJobData) {
             $isVitoManaged = $vitoCronJobs->contains(function ($cronJob) use ($cronJobData) {
-                return $this->normalizeFrequency($cronJob->frequency) === $cronJobData['frequency'] && $cronJob->command === $cronJobData['command'];
+                return $this->normalizeFrequency($cronJob->frequency) === $cronJobData['frequency'] && $this->normalizeCommand($cronJob->command) === $cronJobData['command'];
             });
 
             if (! $isVitoManaged) {
@@ -146,6 +146,12 @@ class SyncCronJobs
     {
         // Normalize frequency by ensuring single spaces between parts
         return preg_replace('/\s+/', ' ', trim($frequency));
+    }
+
+    private function normalizeCommand(string $command): string
+    {
+        // Normalize command by ensuring single spaces between parts
+        return preg_replace('/\s+/', ' ', trim($command));
     }
 
     /**

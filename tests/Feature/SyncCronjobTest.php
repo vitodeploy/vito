@@ -464,12 +464,12 @@ class SyncCronjobTest extends TestCase
     public function test_sync_ignores_crontab_documentation_comments(): void
     {
         // Mock SSH to return crontab with documentation comments (like the default crontab header)
-        $crontabWithComments = "# Edit this file to introduce tasks to be run by cron.
+        $crontabWithComments = '# Edit this file to introduce tasks to be run by cron.
 #
 # Each task to run has to be defined through a single line
 # m h  dom mon dow   command
 #
-0 2 * * * /usr/bin/backup.sh";
+0 2 * * * /usr/bin/backup.sh';
 
         SSH::fake($crontabWithComments);
 
@@ -486,5 +486,39 @@ class SyncCronjobTest extends TestCase
 
         // Both should have the actual backup command
         $this->assertTrue($cronJobs->every(fn ($cronJob) => $cronJob->command === '/usr/bin/backup.sh'));
+    }
+
+    public function test_sync_normalizes_command_with_extra_spaces(): void
+    {
+        // Create a cronjob with normal spacing in command
+        $existingCronJob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'root',
+            'command' => 'ls -la',
+            'frequency' => '* * * * *',
+            'status' => CronjobStatus::READY,
+            'site_id' => null,
+        ]);
+
+        // Mock SSH to return the same cronjob with extra spaces in command
+        SSH::fake('* * *  * * ls  -la');
+
+        $this->actingAs($this->user)
+            ->post(route('cronjobs.sync', $this->server))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Cron jobs synced successfully.');
+
+        // Should not create duplicate, existing cronjob should remain
+        $cronJobs = CronJob::where('server_id', $this->server->id)
+            ->where('site_id', null)
+            ->get();
+
+        // Should only have the one existing cronjob for each user (root + vito = 2 total)
+        $this->assertCount(2, $cronJobs);
+
+        // The original cronjob should still be ready
+        $existingCronJob->refresh();
+        $this->assertEquals(CronjobStatus::READY, $existingCronJob->status);
+        $this->assertEquals('ls -la', $existingCronJob->command);
     }
 }
