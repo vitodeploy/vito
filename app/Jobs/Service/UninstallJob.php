@@ -39,7 +39,7 @@ class UninstallJob implements ShouldQueue
 
         ServerLog::log(
             $this->service->server,
-            'service-installation-failed',
+            'service-uninstallation-failed',
             $e->getMessage()
         );
     }
