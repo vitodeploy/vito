@@ -7,6 +7,8 @@ import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
+import { usePage } from '@inertiajs/react';
+import { type SharedData } from '@/types';
 
 interface ServerSelectProps {
   value: string;
@@ -40,6 +42,7 @@ export default function ServerSelect({
   footer,
   showIp = true,
 }: ServerSelectProps) {
+  const page = usePage<SharedData>();
   const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -64,7 +67,7 @@ export default function ServerSelect({
   }, [query]);
 
   const { data, isFetching, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<Server[]>({
-    queryKey: ['servers', debouncedQuery],
+    queryKey: ['servers', page.props.auth.currentProject?.id, debouncedQuery],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await axios.get(route('servers.json', { query: debouncedQuery || '', page: pageParam }));
       return response.data;
