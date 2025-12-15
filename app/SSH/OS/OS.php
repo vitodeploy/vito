@@ -237,7 +237,9 @@ class OS
         if ($serverLog instanceof ServerLog) {
             $ssh->setLog($serverLog);
         }
-        $command = "shopt -s expand_aliases\n";
+        $command = "set -e\n";
+        $command .= "set -o pipefail\n";
+        $command .= "shopt -s expand_aliases\n";
         if ($aliases !== null && $aliases !== []) {
             foreach ($aliases as $key => $alias) {
                 $command .= "alias $key=$alias\n";
