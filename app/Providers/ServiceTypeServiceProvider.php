@@ -78,6 +78,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->label('PostgreSQL')
             ->handler(Postgresql::class)
             ->versions([
+                '18',
                 '17',
                 '16',
                 '15',
