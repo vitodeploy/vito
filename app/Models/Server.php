@@ -385,6 +385,21 @@ class Server extends AbstractModel
         return $versions;
     }
 
+    /**
+     * @return array<int, string>
+     */
+    public function installedBunVersions(): array
+    {
+        $versions = [];
+        $buns = $this->services()->where('type', 'bun')->get(['version']);
+        /** @var Service $bun */
+        foreach ($buns as $bun) {
+            $versions[] = $bun->version;
+        }
+
+        return $versions;
+    }
+
     public function provider(): \App\ServerProviders\ServerProvider
     {
         $providerClass = config('server-provider.providers.'.$this->provider.'.handler');
@@ -447,6 +462,15 @@ class Server extends AbstractModel
         }
 
         return $this->service('nodejs', $version);
+    }
+
+    public function bun(?string $version = null): ?Service
+    {
+        if ($version === null || $version === '' || $version === '0') {
+            return $this->defaultService('bun');
+        }
+
+        return $this->service('bun', $version);
     }
 
     public function memoryDatabase(?string $version = null): ?Service

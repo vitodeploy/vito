@@ -8,6 +8,7 @@ use App\Enums\LoadBalancerMethod;
 use App\Plugins\RegisterSiteFeature;
 use App\Plugins\RegisterSiteFeatureAction;
 use App\Plugins\RegisterSiteType;
+use App\SiteTypes\Bun;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
 use App\SiteTypes\NodeJS;
@@ -27,6 +28,7 @@ class SiteTypeServiceProvider extends ServiceProvider
         $this->phpBlank();
         $this->laravel();
         $this->nodeJS();
+        $this->bun();
         $this->loadBalancer();
         $this->phpMyAdmin();
         $this->wordpress();
@@ -137,6 +139,33 @@ class SiteTypeServiceProvider extends ServiceProvider
         RegisterSiteType::make(NodeJS::id())
             ->label('NodeJS with NPM')
             ->handler(NodeJS::class)
+            ->form(DynamicForm::make([
+                DynamicField::make('source_control')
+                    ->component()
+                    ->label('Source Control'),
+                DynamicField::make('port')
+                    ->text()
+                    ->label('Port')
+                    ->placeholder('3000')
+                    ->description('On which port your app will be running'),
+                DynamicField::make('repository')
+                    ->text()
+                    ->label('Repository')
+                    ->placeholder('organization/repository')
+                    ->description('Your package.json must have start and build scripts'),
+                DynamicField::make('branch')
+                    ->text()
+                    ->label('Branch')
+                    ->default('main'),
+            ]))
+            ->register();
+    }
+
+    private function bun(): void
+    {
+        RegisterSiteType::make(Bun::id())
+            ->label('Bun')
+            ->handler(Bun::class)
             ->form(DynamicForm::make([
                 DynamicField::make('source_control')
                     ->component()

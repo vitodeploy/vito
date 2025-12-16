@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Plugins\RegisterServiceType;
+use App\Services\Bun\Bun;
 use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
@@ -31,6 +32,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
         $this->monitoring();
         $this->php();
         $this->node();
+        $this->bun();
     }
 
     private function webservers(): void
@@ -215,6 +217,21 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '20',
                 '18',
                 '16',
+            ])
+            ->register();
+    }
+
+    private function bun(): void
+    {
+        RegisterServiceType::make(Bun::id())
+            ->type(Bun::type())
+            ->label('Bun')
+            ->handler(Bun::class)
+            ->versions([
+                '1.3.4',
+                '1.2.23',
+                '1.1.45',
+                '1.0.36',
             ])
             ->register();
     }
