@@ -101,7 +101,7 @@ class Bun extends AbstractSiteType
             $this->site->id
         );
         $this->progress(65);
-        $command = __('bun --bun run --cwd :path start &', [
+        $command = __('bun --bun run --cwd :path start', [
             'path' => $this->site->path,
         ]);
         $this->progress(80);
