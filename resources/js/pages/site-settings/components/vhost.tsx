@@ -55,6 +55,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   const monaco = useMonaco();

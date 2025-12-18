@@ -57,6 +57,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   registerDotEnvLanguage(useMonaco());

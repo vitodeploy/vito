@@ -56,6 +56,7 @@ export default function ConfigFile({ service, configPath }: { service: Service; 
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   return (

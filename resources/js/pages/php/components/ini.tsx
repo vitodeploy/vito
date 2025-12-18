@@ -60,6 +60,7 @@ export default function PHPIni({ service, type }: { service: Service; type: 'fpm
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   registerIniLanguage(useMonaco());
