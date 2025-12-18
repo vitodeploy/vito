@@ -99,4 +99,3 @@ class Bun extends AbstractService
         return trim($version);
     }
 }
-
