@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { StatusRipple } from '@/components/status-ripple';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function DeploymentScript({
   site,
@@ -27,6 +28,7 @@ export default function DeploymentScript({
   children: ReactNode;
 }) {
   const { getActualAppearance } = useAppearance();
+  const setFocused = useInputFocus((state) => state.setFocused);
 
   const [open, setOpen] = useState(false);
   const form = useForm<{
@@ -37,11 +39,16 @@ export default function DeploymentScript({
     restart_workers: script.configs.restart_workers,
   });
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    setFocused(isOpen);
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.put(route('application.update-deployment-script', { server: site.server_id, site: site.id, deploymentScript: script.id }), {
       onSuccess: () => {
-        setOpen(false);
+        handleOpenChange(false);
       },
     });
   };
@@ -49,7 +56,7 @@ export default function DeploymentScript({
   registerBashLanguage(useMonaco());
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>
