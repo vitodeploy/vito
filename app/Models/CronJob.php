@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $server_id
- * @property int $site_id
+ * @property ?int $site_id
  * @property string $command
  * @property string $user
  * @property string $frequency

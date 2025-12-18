@@ -353,4 +353,172 @@ class SyncCronjobTest extends TestCase
             'site_id' => null,
         ]);
     }
+
+    public function test_sync_normalizes_frequency_with_extra_spaces(): void
+    {
+        // Create a cronjob with normal spacing
+        $existingCronJob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'root',
+            'command' => '/usr/bin/backup.sh',
+            'frequency' => '5 15 * * *',
+            'status' => CronjobStatus::READY,
+            'site_id' => null,
+        ]);
+
+        // Mock SSH to return the same cronjob with extra spaces
+        SSH::fake('5  15   *    *  * /usr/bin/backup.sh');
+
+        $this->actingAs($this->user)
+            ->post(route('cronjobs.sync', $this->server))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Cron jobs synced successfully.');
+
+        // Should not create duplicate, existing cronjob should remain
+        $cronJobs = CronJob::where('server_id', $this->server->id)
+            ->where('command', '/usr/bin/backup.sh')
+            ->where('site_id', null)
+            ->get();
+
+        // Should only have the one existing cronjob for each user (root + vito = 2 total)
+        $this->assertCount(2, $cronJobs);
+
+        // The original cronjob should still be ready
+        $existingCronJob->refresh();
+        $this->assertEquals(CronjobStatus::READY, $existingCronJob->status);
+    }
+
+    public function test_sync_recognizes_site_level_cronjobs(): void
+    {
+        // Create a site-level cronjob with the same command as what will be on the server
+        $siteCronJob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'root',
+            'command' => '/usr/bin/backup.sh',
+            'frequency' => '5 15 * * *',
+            'status' => CronjobStatus::READY,
+            'site_id' => $this->site->id,
+        ]);
+
+        // Mock SSH to return a cronjob with the same frequency and command
+        SSH::fake('5 15 * * * /usr/bin/backup.sh');
+
+        $countBefore = CronJob::where('server_id', $this->server->id)
+            ->where('command', '/usr/bin/backup.sh')
+            ->count();
+
+        $this->actingAs($this->user)
+            ->post(route('cronjobs.sync', $this->server))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Cron jobs synced successfully.');
+
+        $countAfter = CronJob::where('server_id', $this->server->id)
+            ->where('command', '/usr/bin/backup.sh')
+            ->count();
+
+        // Before fix: would create duplicate with site_id = null
+        // After fix: recognizes site-level cronjob and doesn't duplicate it, only creates for vito user
+        // countBefore = 1 (site-level), countAfter should be 2 (site-level + vito user)
+        $this->assertEquals($countBefore + 1, $countAfter);
+
+        // The site-level cronjob should remain unchanged
+        $siteCronJob->refresh();
+        $this->assertEquals($this->site->id, $siteCronJob->site_id);
+        $this->assertEquals(CronjobStatus::READY, $siteCronJob->status);
+    }
+
+    public function test_sync_handles_frequency_with_mixed_spacing_in_db(): void
+    {
+        // Create a cronjob with extra spaces in the frequency (simulating old data)
+        $existingCronJob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'root',
+            'command' => '/usr/bin/backup.sh',
+            'frequency' => '5  15  *  *  *', // Double spaces
+            'status' => CronjobStatus::READY,
+            'site_id' => null,
+        ]);
+
+        // Mock SSH to return the same cronjob with normalized spacing
+        SSH::fake('5 15 * * * /usr/bin/backup.sh');
+
+        $this->actingAs($this->user)
+            ->post(route('cronjobs.sync', $this->server))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Cron jobs synced successfully.');
+
+        // Should not create duplicate
+        $cronJobs = CronJob::where('server_id', $this->server->id)
+            ->where('command', '/usr/bin/backup.sh')
+            ->where('site_id', null)
+            ->get();
+
+        // Should only have the one existing cronjob for each user (root + vito = 2 total)
+        $this->assertCount(2, $cronJobs);
+
+        // The original cronjob should still be ready
+        $existingCronJob->refresh();
+        $this->assertEquals(CronjobStatus::READY, $existingCronJob->status);
+    }
+
+    public function test_sync_ignores_crontab_documentation_comments(): void
+    {
+        // Mock SSH to return crontab with documentation comments (like the default crontab header)
+        $crontabWithComments = '# Edit this file to introduce tasks to be run by cron.
+#
+# Each task to run has to be defined through a single line
+# m h  dom mon dow   command
+#
+0 2 * * * /usr/bin/backup.sh';
+
+        SSH::fake($crontabWithComments);
+
+        $this->actingAs($this->user)
+            ->post(route('cronjobs.sync', $this->server))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Cron jobs synced successfully.');
+
+        // Should only create cronjobs for the actual cron line, not the documentation comments
+        $cronJobs = CronJob::where('server_id', $this->server->id)->get();
+
+        // Should have 2 cronjobs (1 for root, 1 for vito), not 6 (which would include the comment lines)
+        $this->assertCount(2, $cronJobs);
+
+        // Both should have the actual backup command
+        $this->assertTrue($cronJobs->every(fn ($cronJob) => $cronJob->command === '/usr/bin/backup.sh'));
+    }
+
+    public function test_sync_normalizes_command_with_extra_spaces(): void
+    {
+        // Create a cronjob with normal spacing in command
+        $existingCronJob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'root',
+            'command' => 'ls -la',
+            'frequency' => '* * * * *',
+            'status' => CronjobStatus::READY,
+            'site_id' => null,
+        ]);
+
+        // Mock SSH to return the same cronjob with extra spaces in command
+        SSH::fake('* * *  * * ls  -la');
+
+        $this->actingAs($this->user)
+            ->post(route('cronjobs.sync', $this->server))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Cron jobs synced successfully.');
+
+        // Should not create duplicate, existing cronjob should remain
+        $cronJobs = CronJob::where('server_id', $this->server->id)
+            ->where('site_id', null)
+            ->get();
+
+        // Should only have the one existing cronjob for each user (root + vito = 2 total)
+        $this->assertCount(2, $cronJobs);
+
+        // The original cronjob should still be ready
+        $existingCronJob->refresh();
+        $this->assertEquals(CronjobStatus::READY, $existingCronJob->status);
+        $this->assertEquals('ls -la', $existingCronJob->command);
+    }
 }
