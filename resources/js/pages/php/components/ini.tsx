@@ -12,9 +12,11 @@ import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { registerIniLanguage } from '@/lib/editor';
 import { useAppearance } from '@/hooks/use-appearance';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function PHPIni({ service, type }: { service: Service; type: 'fpm' | 'cli' }) {
   const { getActualAppearance } = useAppearance();
+  const setFocused = useInputFocus((state) => state.setFocused);
   const [open, setOpen] = useState(false);
   const form = useForm<{
     ini: string;
@@ -26,11 +28,16 @@ export default function PHPIni({ service, type }: { service: Service; type: 'fpm
     version: service.version,
   });
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    setFocused(isOpen);
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.patch(route('php.ini.update', { server: service.server_id, service: service.id }), {
       onSuccess: () => {
-        setOpen(false);
+        handleOpenChange(false);
       },
     });
   };
@@ -53,12 +60,13 @@ export default function PHPIni({ service, type }: { service: Service; type: 'fpm
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   registerIniLanguage(useMonaco());
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit {type} ini</DropdownMenuItem>
       </SheetTrigger>

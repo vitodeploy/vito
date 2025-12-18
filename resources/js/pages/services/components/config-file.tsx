@@ -11,9 +11,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useAppearance } from '@/hooks/use-appearance';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function ConfigFile({ service, configPath }: { service: Service; configPath: ConfigPath }) {
   const { getActualAppearance } = useAppearance();
+  const setFocused = useInputFocus((state) => state.setFocused);
   const [open, setOpen] = useState(false);
   const form = useForm<{
     content: string;
@@ -23,11 +25,16 @@ export default function ConfigFile({ service, configPath }: { service: Service; 
     config_name: configPath.name,
   });
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    setFocused(isOpen);
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.patch(route('services.config.update', { server: service.server_id, service: service.id }), {
       onSuccess: () => {
-        setOpen(false);
+        handleOpenChange(false);
       },
     });
   };
@@ -49,10 +56,11 @@ export default function ConfigFile({ service, configPath }: { service: Service; 
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit {configPath.name}</DropdownMenuItem>
       </SheetTrigger>

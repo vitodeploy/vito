@@ -11,9 +11,11 @@ import { registerBashLanguage } from '@/lib/editor';
 import { Editor, useMonaco } from '@monaco-editor/react';
 import { useAppearance } from '@/hooks/use-appearance';
 import { Script } from '@/types/script';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function ScriptForm({ script, children }: { script?: Script; children: ReactNode }) {
   const { getActualAppearance } = useAppearance();
+  const setFocused = useInputFocus((state) => state.setFocused);
 
   const [open, setOpen] = useState(false);
 
@@ -25,12 +27,17 @@ export default function ScriptForm({ script, children }: { script?: Script; chil
     content: script?.content ?? '',
   });
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    setFocused(isOpen);
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (script) {
       form.put(route('scripts.update', { script: script.id }), {
         onSuccess: () => {
-          setOpen(false);
+          handleOpenChange(false);
         },
       });
       return;
@@ -38,7 +45,7 @@ export default function ScriptForm({ script, children }: { script?: Script; chil
 
     form.post(route('scripts'), {
       onSuccess: () => {
-        setOpen(false);
+        handleOpenChange(false);
       },
     });
   };
@@ -46,7 +53,7 @@ export default function ScriptForm({ script, children }: { script?: Script; chil
   registerBashLanguage(useMonaco());
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>

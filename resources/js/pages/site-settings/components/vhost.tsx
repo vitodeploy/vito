@@ -13,9 +13,11 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { Site } from '@/types/site';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { StatusRipple } from '@/components/status-ripple';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function VHost({ site, children }: { site: Site; children: ReactNode }) {
   const { getActualAppearance } = useAppearance();
+  const setFocused = useInputFocus((state) => state.setFocused);
   const [open, setOpen] = useState(false);
   const form = useForm<{
     vhost: string;
@@ -23,11 +25,16 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
     vhost: '',
   });
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    setFocused(isOpen);
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.put(route('site-settings.update-vhost', { server: site.server_id, site: site.id }), {
       onSuccess: () => {
-        setOpen(false);
+        handleOpenChange(false);
       },
     });
   };
@@ -48,6 +55,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   const monaco = useMonaco();
@@ -55,7 +63,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   registerCaddyLanguage(monaco);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>

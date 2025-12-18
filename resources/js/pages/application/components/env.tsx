@@ -12,9 +12,11 @@ import { registerDotEnvLanguage } from '@/lib/editor';
 import { Site } from '@/types/site';
 import { useAppearance } from '@/hooks/use-appearance';
 import { Input } from '@/components/ui/input';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function Env({ site, children }: { site: Site; children: ReactNode }) {
   const { getActualAppearance } = useAppearance();
+  const setFocused = useInputFocus((state) => state.setFocused);
   const [open, setOpen] = useState(false);
   const form = useForm<{
     env: string;
@@ -24,11 +26,16 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     path: site.type_data.env_path || `${site.path}/.env`,
   });
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    setFocused(isOpen);
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.put(route('application.update-env', { server: site.server_id, site: site.id }), {
       onSuccess: () => {
-        setOpen(false);
+        handleOpenChange(false);
       },
     });
   };
@@ -50,12 +57,13 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     },
     retry: false,
     enabled: open,
+    refetchOnWindowFocus: false,
   });
 
   registerDotEnvLanguage(useMonaco());
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>

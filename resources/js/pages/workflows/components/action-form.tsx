@@ -10,6 +10,7 @@ import { useAppearance } from '@/hooks/use-appearance';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { useInputFocus } from '@/stores/useInputFocus';
 
 export default function ActionForm({
   action,
@@ -24,12 +25,18 @@ export default function ActionForm({
   type: 'add' | 'edit';
   children: ReactNode;
 }) {
+  const setFocused = useInputFocus((state) => state.setFocused);
   const [open, setOpen] = useState(false);
   const form = useForm({
     label: action.label,
     inputs: JSON.stringify(Array.isArray(action.inputs) && action.inputs.length === 0 ? {} : action.inputs || {}, null, 2),
   });
   const { getActualAppearance } = useAppearance();
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    setFocused(isOpen);
+  };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -41,7 +48,7 @@ export default function ActionForm({
     const parsedInputs = JSON.parse(form.data.inputs || '{}');
     newAction.inputs = Array.isArray(parsedInputs) && parsedInputs.length === 0 ? {} : parsedInputs;
     onActionChanged({ ...newAction });
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   const reformatJson = () => {
@@ -57,7 +64,7 @@ export default function ActionForm({
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>

@@ -29,15 +29,17 @@ class SyncCronJobs
         // Get existing cronjobs from server for this user
         $crontabOutput = $this->getUserCrontab($server, $user);
 
-        // Get all Vito-managed cronjobs for this user
+        // Get all Vito-managed cronjobs for this user (including both server-level and site-level)
         $vitoCronJobs = $server->cronJobs()
             ->where('user', $user)
-            ->where('site_id', null) // Only server-level cronjobs
             ->get();
 
+        // Filter only server-level cronjobs (site_id = null) for status updates
+        $serverLevelCronJobs = $vitoCronJobs->where('site_id', null);
+
         if (empty($crontabOutput)) {
-            // If crontab is empty, mark all Vito cronjobs as disabled
-            foreach ($vitoCronJobs as $cronJob) {
+            // If crontab is empty, mark all server-level Vito cronjobs as disabled
+            foreach ($serverLevelCronJobs as $cronJob) {
                 if ($cronJob->status === CronjobStatus::READY) {
                     $cronJob->update(['status' => CronjobStatus::DISABLED]);
                 }
@@ -72,8 +74,22 @@ class SyncCronJobs
                 continue;
             }
 
-            $frequency = implode(' ', array_slice($parts, 0, 5));
-            $command = $parts[5];
+            // Validate that the first 5 parts look like cron time fields
+            // Valid cron fields contain: numbers, *, -, /, and ,
+            $isValidCronFormat = true;
+            for ($i = 0; $i < 5; $i++) {
+                if (! preg_match('/^[\d\*\-\/,]+$/', $parts[$i])) {
+                    $isValidCronFormat = false;
+                    break;
+                }
+            }
+
+            if (! $isValidCronFormat) {
+                continue;
+            }
+
+            $frequency = $this->normalizeFrequency(implode(' ', array_slice($parts, 0, 5)));
+            $command = $this->normalizeCommand($parts[5]);
 
             $serverCronJobs[] = [
                 'frequency' => $frequency,
@@ -81,25 +97,27 @@ class SyncCronJobs
                 'commented' => $isCommented,
             ];
 
-            // Check if this matches a Vito-managed cronjob
+            // Check if this matches any Vito-managed cronjob (including site-level ones)
             $matchingCronJob = $vitoCronJobs->first(function ($cronJob) use ($frequency, $command) {
-                return $cronJob->frequency === $frequency && $cronJob->command === $command;
+                return $this->normalizeFrequency($cronJob->frequency) === $frequency && $this->normalizeCommand($cronJob->command) === $command;
             });
 
             if ($matchingCronJob) {
                 $foundCronJobs[] = $matchingCronJob->id;
 
-                // Update status based on comment state
-                if ($isCommented && $matchingCronJob->status === CronjobStatus::READY) {
-                    $matchingCronJob->update(['status' => CronjobStatus::DISABLED]);
-                } elseif (! $isCommented && $matchingCronJob->status === CronjobStatus::DISABLED) {
-                    $matchingCronJob->update(['status' => CronjobStatus::READY]);
+                // Update status based on comment state (only for server-level cronjobs)
+                if ($matchingCronJob->site_id === null) {
+                    if ($isCommented && $matchingCronJob->status === CronjobStatus::READY) {
+                        $matchingCronJob->update(['status' => CronjobStatus::DISABLED]);
+                    } elseif (! $isCommented && $matchingCronJob->status === CronjobStatus::DISABLED) {
+                        $matchingCronJob->update(['status' => CronjobStatus::READY]);
+                    }
                 }
             }
         }
 
-        // Mark Vito cronjobs that are no longer on the server as disabled
-        foreach ($vitoCronJobs as $cronJob) {
+        // Mark server-level Vito cronjobs that are no longer on the server as disabled
+        foreach ($serverLevelCronJobs as $cronJob) {
             if (! in_array($cronJob->id, $foundCronJobs) && $cronJob->status === CronjobStatus::READY) {
                 $cronJob->update(['status' => CronjobStatus::DISABLED]);
             }
@@ -108,7 +126,7 @@ class SyncCronJobs
         // Create new cronjobs for manually created ones (not in Vito)
         foreach ($serverCronJobs as $cronJobData) {
             $isVitoManaged = $vitoCronJobs->contains(function ($cronJob) use ($cronJobData) {
-                return $cronJob->frequency === $cronJobData['frequency'] && $cronJob->command === $cronJobData['command'];
+                return $this->normalizeFrequency($cronJob->frequency) === $cronJobData['frequency'] && $this->normalizeCommand($cronJob->command) === $cronJobData['command'];
             });
 
             if (! $isVitoManaged) {
@@ -122,6 +140,18 @@ class SyncCronJobs
                 ]);
             }
         }
+    }
+
+    private function normalizeFrequency(string $frequency): string
+    {
+        // Normalize frequency by ensuring single spaces between parts
+        return preg_replace('/\s+/', ' ', trim($frequency));
+    }
+
+    private function normalizeCommand(string $command): string
+    {
+        // Normalize command by ensuring single spaces between parts
+        return preg_replace('/\s+/', ' ', trim($command));
     }
 
     /**
