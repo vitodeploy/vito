@@ -86,14 +86,14 @@ class Bun extends AbstractSiteType
         $this->deployKey();
         $this->progress(30);
         app(Git::class)->clone($this->site);
-        $this->site->server->ssh()->exec(
+        $this->site->server->ssh($this->site->user)->exec(
             __('bun install --cwd :path', [
                 'path' => $this->site->path,
             ]),
             'install-bun-dependencies',
             $this->site->id
         );
-        $this->site->server->ssh()->exec(
+        $this->site->server->ssh($this->site->user)->exec(
             __('bun --bun run --cwd :path build', [
                 'path' => $this->site->path,
             ]),
