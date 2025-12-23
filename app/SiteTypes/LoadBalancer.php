@@ -82,13 +82,14 @@ class LoadBalancer extends AbstractSiteType
 
         if ($webserver === 'caddy') {
             return view('ssh.services.webserver.caddy.vhost', [
-                'main' => implode("\n", [
+                'site' => $this->site,
+                'main' => [
                     view('ssh.services.webserver.caddy.vhost-blocks.force-ssl', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.port', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.core', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.load-balancer', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.redirects', ['site' => $this->site]),
-                ]),
+                ],
             ]);
         }
 

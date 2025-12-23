@@ -134,6 +134,7 @@ class PHPSite extends AbstractSiteType
 
         if ($webserver === 'caddy') {
             return view('ssh.services.webserver.caddy.vhost', [
+                'site' => $this->site,
                 'main' => [
                     view('ssh.services.webserver.caddy.vhost-blocks.force-ssl', ['site' => $this->site]),
                     view('ssh.services.webserver.caddy.vhost-blocks.port', ['site' => $this->site]),
