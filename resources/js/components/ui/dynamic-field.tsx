@@ -1,6 +1,7 @@
 import { InputHTMLAttributes, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -114,6 +115,51 @@ export default function DynamicField({ value, onChange, config, error }: Dynamic
           placeholder={config.placeholder}
           onChange={(e) => onChange(e.target.value)}
           className={config.className}
+        />
+        {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
+        <InputError message={error} />
+      </FormField>
+    );
+  }
+
+  // Handle password
+  if (config?.type === 'password') {
+    return (
+      <FormField>
+        <Label htmlFor={`field-${config.name}`} className="capitalize">
+          {label}
+        </Label>
+        <Input
+          type="password"
+          name={config.name}
+          id={`field-${config.name}`}
+          defaultValue={(value as string) || ''}
+          placeholder={config.placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+        />
+        {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
+        <InputError message={error} />
+      </FormField>
+    );
+  }
+
+  // Handle password with visibility toggle
+  if (config?.type === 'password-with-toggle') {
+    return (
+      <FormField>
+        <Label htmlFor={`field-${config.name}`} className="capitalize">
+          {label}
+        </Label>
+        <PasswordInput
+          name={config.name}
+          id={`field-${config.name}`}
+          defaultValue={(value as string) || ''}
+          placeholder={config.placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
         />
         {config.description && <p className="text-muted-foreground text-xs">{config.description}</p>}
         <InputError message={error} />

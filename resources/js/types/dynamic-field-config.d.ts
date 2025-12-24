@@ -1,5 +1,5 @@
 export interface DynamicFieldConfig {
-  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'component' | 'alert';
+  type: 'text' | 'password' | 'password-with-toggle' | 'textarea' | 'select' | 'checkbox' | 'component' | 'alert';
   name: string;
   options?: string[] | { [key: string]: string };
   component?: string;

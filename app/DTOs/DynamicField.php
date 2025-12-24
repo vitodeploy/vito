@@ -36,6 +36,20 @@ class DynamicField
         return $this;
     }
 
+    public function password(): self
+    {
+        $this->type = 'password';
+
+        return $this;
+    }
+
+    public function passwordWithToggle(): self
+    {
+        $this->type = 'password-with-toggle';
+
+        return $this;
+    }
+
     public function textarea(): self
     {
         $this->type = 'textarea';
