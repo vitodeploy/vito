@@ -12,6 +12,7 @@ use App\Models\User;
 use App\NotificationChannels\Email;
 use App\Services\Database\Mysql;
 use App\Services\Firewall\Ufw;
+use App\Services\NodeJS\NodeJS;
 use App\Services\PHP\PHP;
 use App\Services\ProcessManager\Supervisor;
 use App\Services\Redis\Redis;
@@ -113,6 +114,11 @@ abstract class TestCase extends BaseTestCase
             'type' => Redis::type(),
             'name' => Redis::id(),
             'version' => 'latest',
+        ]);
+        $this->server->services()->create([
+            'type' => NodeJS::type(),
+            'name' => NodeJS::id(),
+            'version' => '20',
         ]);
 
         $this->server->services()->update([

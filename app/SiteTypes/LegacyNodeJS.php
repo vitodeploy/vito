@@ -12,11 +12,11 @@ use App\SSH\OS\Git;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 
-class NodeJS extends AbstractSiteType
+class LegacyNodeJS extends AbstractSiteType
 {
     public static function id(): string
     {
-        return 'nodejs';
+        return 'legacy-nodejs';
     }
 
     public function language(): string

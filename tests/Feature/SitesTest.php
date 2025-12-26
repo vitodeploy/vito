@@ -10,7 +10,9 @@ use App\Models\DatabaseUser;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SiteTypes\Laravel;
+use App\SiteTypes\LegacyNodeJS;
 use App\SiteTypes\LoadBalancer;
+use App\SiteTypes\MiseNodeJS;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\Wordpress;
@@ -692,6 +694,39 @@ class SitesTest extends TestCase
                     'aliases' => ['www.example.com'],
                     'user' => 'example',
                     'method' => LoadBalancerMethod::ROUND_ROBIN->value,
+                ],
+            ],
+            [
+                [
+                    'type' => MiseNodeJS::id(),
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'node_version' => '20',
+                    'port' => '3000',
+                    'repository' => 'test/test',
+                    'branch' => 'main',
+                ],
+            ],
+            [
+                [
+                    'type' => MiseNodeJS::id(),
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'node_version' => '22',
+                    'port' => '3000',
+                    'repository' => 'test/test',
+                    'branch' => 'main',
+                    'user' => 'example',
+                ],
+            ],
+            [
+                [
+                    'type' => LegacyNodeJS::id(),
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'port' => '3000',
+                    'repository' => 'test/test',
+                    'branch' => 'main',
                 ],
             ],
         ];

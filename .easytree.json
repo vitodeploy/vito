@@ -1,0 +1,6 @@
+{
+  "scripts": [
+    "composer install",
+    "cp $PROJECT_PATH/.env .env"
+  ]
+}

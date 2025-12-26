@@ -209,7 +209,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
     {
         RegisterServiceType::make(NodeJS::id())
             ->type(NodeJS::type())
-            ->label('Node.js')
+            ->label('Node.js (Legacy)')
             ->handler(NodeJS::class)
             ->versions([
                 '22',
