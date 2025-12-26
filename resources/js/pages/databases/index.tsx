@@ -21,6 +21,10 @@ type Page = {
 export default function Databases() {
   const page = usePage<Page>();
 
+  const dbType = page.props.server.services['database'];
+  const defaultCharset = dbType === 'postgresql' ? 'UTF8' : 'utf8mb4';
+  const defaultCollation = dbType === 'postgresql' ? 'C.utf8' : 'utf8mb4_0900_ai_ci';
+
   return (
     <ServerLayout>
       <Head title={`Databases - ${page.props.server.name}`} />
@@ -36,7 +40,7 @@ export default function Databases() {
               </Button>
             </a>
             <SyncDatabases server={page.props.server} />
-            <CreateDatabase server={page.props.server.id}>
+            <CreateDatabase server={page.props.server.id}  defaultCharset={defaultCharset} defaultCollation={defaultCollation}>
               <Button>
                 <PlusIcon />
                 <span className="hidden lg:block">Create</span>
