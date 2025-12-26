@@ -1,3 +1,5 @@
+set -e
+
 cd $SITE_PATH
 
 git pull origin $BRANCH

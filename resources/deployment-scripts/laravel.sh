@@ -1,3 +1,5 @@
+set -e
+
 git pull origin $BRANCH
 
 composer install --no-interaction --prefer-dist --optimize-autoloader
