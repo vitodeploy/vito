@@ -9,9 +9,9 @@ use App\Plugins\RegisterSiteFeature;
 use App\Plugins\RegisterSiteFeatureAction;
 use App\Plugins\RegisterSiteType;
 use App\SiteTypes\Laravel;
-use App\SiteTypes\LegacyNodeJS;
 use App\SiteTypes\LoadBalancer;
 use App\SiteTypes\MiseNodeJS;
+use App\SiteTypes\NodeJS;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
@@ -28,7 +28,7 @@ class SiteTypeServiceProvider extends ServiceProvider
         $this->phpBlank();
         $this->laravel();
         $this->nodeJS();
-        $this->legacyNodeJS();
+        $this->miseNodeJS();
         $this->loadBalancer();
         $this->phpMyAdmin();
         $this->wordpress();
@@ -136,15 +136,10 @@ class SiteTypeServiceProvider extends ServiceProvider
 
     private function nodeJS(): void
     {
-        RegisterSiteType::make(MiseNodeJS::id())
-            ->label('Node.js')
-            ->handler(MiseNodeJS::class)
+        RegisterSiteType::make(NodeJS::id())
+            ->label('NodeJS with NPM (Deprecated)')
+            ->handler(NodeJS::class)
             ->form(DynamicForm::make([
-                DynamicField::make('node_version')
-                    ->select()
-                    ->label('Node.js Version')
-                    ->options(MiseNodeJS::NODE_VERSIONS)
-                    ->default('22'),
                 DynamicField::make('source_control')
                     ->component()
                     ->label('Source Control'),
@@ -166,12 +161,17 @@ class SiteTypeServiceProvider extends ServiceProvider
             ->register();
     }
 
-    private function legacyNodeJS(): void
+    private function miseNodeJS(): void
     {
-        RegisterSiteType::make(LegacyNodeJS::id())
-            ->label('NodeJS with NPM (Legacy)')
-            ->handler(LegacyNodeJS::class)
+        RegisterSiteType::make(MiseNodeJS::id())
+            ->label('Node.js')
+            ->handler(MiseNodeJS::class)
             ->form(DynamicForm::make([
+                DynamicField::make('node_version')
+                    ->select()
+                    ->label('Node.js Version')
+                    ->options(MiseNodeJS::NODE_VERSIONS)
+                    ->default('22'),
                 DynamicField::make('source_control')
                     ->component()
                     ->label('Source Control'),

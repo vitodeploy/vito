@@ -10,9 +10,9 @@ use App\Models\DatabaseUser;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SiteTypes\Laravel;
-use App\SiteTypes\LegacyNodeJS;
 use App\SiteTypes\LoadBalancer;
 use App\SiteTypes\MiseNodeJS;
+use App\SiteTypes\NodeJS;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\Wordpress;
@@ -721,7 +721,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => LegacyNodeJS::id(),
+                    'type' => NodeJS::id(),
                     'domain' => 'example.com',
                     'aliases' => ['www.example.com'],
                     'port' => '3000',

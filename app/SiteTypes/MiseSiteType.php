@@ -9,7 +9,7 @@ abstract class MiseSiteType extends AbstractSiteType
 {
     abstract protected function runtime(): string;
 
-    abstract protected function runtimeVersion(): ?string;
+    abstract protected function runtimeVersion(): string;
 
     /**
      * @throws SSHError
@@ -20,28 +20,15 @@ abstract class MiseSiteType extends AbstractSiteType
 
         $mise->ensureInstalled();
 
-        $version = $this->runtimeVersion();
-        if ($version) {
-            $mise->installRuntime(
-                $this->site,
-                $this->runtime(),
-                $version
-            );
-        }
+        $mise->installRuntime(
+            $this->site,
+            $this->runtime(),
+            $this->runtimeVersion()
+        );
     }
 
     protected function runtimePrefix(): string
     {
-        $version = $this->runtimeVersion();
-
-        return 'mise exec '.$this->runtime().'@'.$version.' --';
-    }
-
-    public function requiredServices(): array
-    {
-        return [
-            'webserver',
-            'process_manager',
-        ];
+        return 'mise exec '.$this->runtime().'@'.$this->runtimeVersion().' --';
     }
 }

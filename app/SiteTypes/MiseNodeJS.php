@@ -23,7 +23,15 @@ class MiseNodeJS extends MiseSiteType
 
     public static function id(): string
     {
-        return 'nodejs';
+        return 'mise_nodejs';
+    }
+
+    public function requiredServices(): array
+    {
+        return [
+            'webserver',
+            'process_manager',
+        ];
     }
 
     public function language(): string
@@ -36,9 +44,9 @@ class MiseNodeJS extends MiseSiteType
         return 'node';
     }
 
-    protected function runtimeVersion(): ?string
+    protected function runtimeVersion(): string
     {
-        return $this->site->type_data['node_version'] ?? null;
+        return $this->site->type_data['node_version'] ?? '22';
     }
 
     public static function make(): self
@@ -84,7 +92,7 @@ class MiseNodeJS extends MiseSiteType
     public function data(array $input): array
     {
         return [
-            'node_version' => $input['node_version'] ?? '20',
+            'node_version' => $input['node_version'] ?? '22',
         ];
     }
 
@@ -158,12 +166,7 @@ class MiseNodeJS extends MiseSiteType
 
     public function baseCommands(): array
     {
-        return [
-            [
-                'name' => 'npm:install',
-                'command' => $this->runtimePrefix().' npm install',
-            ],
-        ];
+        return [];
     }
 
     public function vhost(string $webserver): string|View
