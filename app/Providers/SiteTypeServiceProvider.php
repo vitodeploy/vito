@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Enums\LoadBalancerMethod;
+use App\Enums\NodePackageManager;
 use App\Plugins\RegisterSiteFeature;
 use App\Plugins\RegisterSiteFeatureAction;
 use App\Plugins\RegisterSiteType;
@@ -172,6 +173,11 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->label('Node.js Version')
                     ->options(MiseNodeJS::NODE_VERSIONS)
                     ->default('22'),
+                DynamicField::make('package_manager')
+                    ->select()
+                    ->label('Package Manager')
+                    ->options(array_column(NodePackageManager::cases(), 'value'))
+                    ->default(NodePackageManager::Npm->value),
                 DynamicField::make('source_control')
                     ->component()
                     ->label('Source Control'),
@@ -183,12 +189,21 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('repository')
                     ->text()
                     ->label('Repository')
-                    ->placeholder('organization/repository')
-                    ->description('Your package.json must have start and build scripts'),
+                    ->placeholder('organization/repository'),
                 DynamicField::make('branch')
                     ->text()
                     ->label('Branch')
                     ->default('main'),
+                DynamicField::make('build_command')
+                    ->text()
+                    ->label('Build Command')
+                    ->placeholder('e.g., npm run build')
+                    ->description('Command to build your application. Leave empty to use the build script of package.json'),
+                DynamicField::make('start_command')
+                    ->text()
+                    ->label('Start Command')
+                    ->placeholder('e.g., npm start')
+                    ->description('Command to start your application. Leave empty to use the start script of package.json'),
             ]))
             ->register();
     }

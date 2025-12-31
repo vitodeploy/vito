@@ -4,6 +4,7 @@ namespace App\SiteTypes;
 
 use App\Actions\Worker\CreateWorker;
 use App\Actions\Worker\ManageWorker;
+use App\Enums\NodePackageManager;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
@@ -76,6 +77,18 @@ class MiseNodeJS extends MiseSiteType
                 'required',
                 Rule::in(self::NODE_VERSIONS),
             ],
+            'package_manager' => [
+                'required',
+                Rule::in(array_column(NodePackageManager::cases(), 'value')),
+            ],
+            'build_command' => [
+                'nullable',
+                'string',
+            ],
+            'start_command' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 
@@ -91,9 +104,31 @@ class MiseNodeJS extends MiseSiteType
 
     public function data(array $input): array
     {
+        $packageManager = NodePackageManager::tryFrom($input['package_manager'] ?? '') ?? NodePackageManager::Npm;
+
         return [
             'node_version' => $input['node_version'] ?? '22',
+            'package_manager' => $packageManager->value,
+            'build_command' => ! empty($input['build_command']) ? $input['build_command'] : $packageManager->buildCommand(),
+            'start_command' => ! empty($input['start_command']) ? $input['start_command'] : $packageManager->startCommand(),
         ];
+    }
+
+    protected function packageManager(): NodePackageManager
+    {
+        $value = $this->site->type_data['package_manager'] ?? NodePackageManager::Npm->value;
+
+        return NodePackageManager::from($value);
+    }
+
+    protected function buildCommand(): string
+    {
+        return $this->site->type_data['build_command'] ?? $this->packageManager()->buildCommand();
+    }
+
+    protected function startCommand(): string
+    {
+        return $this->site->type_data['start_command'] ?? $this->packageManager()->startCommand();
     }
 
     /**
@@ -106,6 +141,7 @@ class MiseNodeJS extends MiseSiteType
         $this->progress(10);
 
         $this->setupRuntime();
+        $this->setupPackageManager();
         $this->progress(25);
 
         $this->site->webserver()->createVHost($this->site);
@@ -117,10 +153,10 @@ class MiseNodeJS extends MiseSiteType
         app(Git::class)->clone($this->site);
         $this->progress(55);
 
-        $this->runNpmCommand('install');
+        $this->runPackageManagerInstall();
         $this->progress(70);
 
-        $this->runNpmCommand('run build');
+        $this->runPackageManagerBuild();
         $this->progress(85);
 
         $this->createWorker();
@@ -130,19 +166,60 @@ class MiseNodeJS extends MiseSiteType
     /**
      * @throws SSHError
      */
-    protected function runNpmCommand(string $command): void
+    protected function setupPackageManager(): void
     {
-        $fullCommand = $this->runtimePrefix().' npm '.$command.' --prefix='.$this->site->path;
+        $packageManager = $this->packageManager();
+
+        if ($packageManager === NodePackageManager::Npm) {
+            return;
+        }
+
+        $command = $this->misePathExport().' && mise exec '.$this->runtime().'@'.$this->runtimeVersion().' -- npm install -g '.$packageManager->value;
+
         $this->site->server->ssh($this->site->user)->exec(
-            $fullCommand,
-            'npm-'.str_replace(' ', '-', $command),
+            $command,
+            'install-'.$packageManager->value,
             $this->site->id
         );
     }
 
+    /**
+     * @throws SSHError
+     */
+    protected function runPackageManagerInstall(): void
+    {
+        $packageManager = $this->packageManager();
+        $fullCommand = $this->buildPackageManagerCommand($packageManager->installCommand());
+
+        $this->site->server->ssh($this->site->user)->exec(
+            $fullCommand,
+            $packageManager->value.'-install',
+            $this->site->id
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function runPackageManagerBuild(): void
+    {
+        $fullCommand = $this->buildPackageManagerCommand($this->buildCommand());
+
+        $this->site->server->ssh($this->site->user)->exec(
+            $fullCommand,
+            'build',
+            $this->site->id
+        );
+    }
+
+    protected function buildPackageManagerCommand(string $command): string
+    {
+        return $this->runtimePrefix().' '.$command;
+    }
+
     protected function createWorker(): void
     {
-        $command = $this->runtimePrefix().' npm start --prefix='.$this->site->path;
+        $command = $this->runtimePrefix(false).' '.$this->startCommand();
 
         /** @var ?Worker $worker */
         $worker = $this->site->workers()->where('name', 'app')->first();

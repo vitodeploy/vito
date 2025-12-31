@@ -27,8 +27,24 @@ abstract class MiseSiteType extends AbstractSiteType
         );
     }
 
-    protected function runtimePrefix(): string
+    protected function miseShimsPath(): string
     {
-        return 'mise exec '.$this->runtime().'@'.$this->runtimeVersion().' --';
+        $user = $this->site->user ?? $this->site->server->getSshUser();
+
+        return '/home/'.$user.'/.local/share/mise/shims';
+    }
+
+    protected function misePathExport(): string
+    {
+        return 'export PATH='.$this->miseShimsPath().':$PATH';
+    }
+
+    protected function runtimePrefix(bool $withPath = true): string
+    {
+        return sprintf(
+            '%s && mise exec %s'.$this->runtime().'@'.$this->runtimeVersion().' --verbose --',
+            $this->misePathExport(),
+            $withPath ? '-C '.$this->site->path.' ' : '',
+        );
     }
 }
