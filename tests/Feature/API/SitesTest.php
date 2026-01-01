@@ -374,6 +374,9 @@ class SitesTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'env',
+                    'variables' => [
+                        '*' => ['key', 'value', 'is_secret'],
+                    ],
                 ],
             ])
             ->assertJsonFragment([

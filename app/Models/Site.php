@@ -27,6 +27,7 @@ use RuntimeException;
  * @property int $server_id
  * @property string $type
  * @property array<string, mixed> $type_data
+ * @property ?array<int, array{key: string, value: string, is_secret: bool}> $env_variables
  * @property string $domain
  * @property array<int, string> $aliases
  * @property string $web_directory
@@ -72,6 +73,7 @@ class Site extends AbstractModel
         'server_id',
         'type',
         'type_data',
+        'env_variables',
         'domain',
         'aliases',
         'web_directory',
@@ -92,6 +94,7 @@ class Site extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'type_data' => 'json',
+        'env_variables' => 'encrypted:array',
         'port' => 'integer',
         'progress' => 'integer',
         'aliases' => 'array',

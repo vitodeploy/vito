@@ -708,7 +708,7 @@ paths:
   /api/projects/{project}/servers/{server}/sites/{site}/env:
     get:
       summary: Get environment variables
-      description: Get site environment variables
+      description: Get site environment variables. Returns both raw env content and structured variables array.
       tags:
         - Sites
       security:
@@ -747,20 +747,40 @@ paths:
                     type: object
                     properties:
                       env:
-                        type: object
-                        additionalProperties:
-                          type: string
-                        description: Environment variables
-                        example:
-                          APP_NAME: 'My App'
-                          APP_ENV: 'production'
-                          APP_DEBUG: 'false'
+                        type: string
+                        description: Raw .env file content
+                        example: "APP_NAME=MyApp\nAPP_ENV=production"
+                      variables:
+                        type: array
+                        description: Parsed environment variables
+                        items:
+                          type: object
+                          properties:
+                            key:
+                              type: string
+                              description: Variable name
+                              example: 'APP_NAME'
+                            value:
+                              type: string
+                              description: Variable value
+                              example: 'MyApp'
+                            is_secret:
+                              type: boolean
+                              description: Whether the variable contains sensitive data (PASSWORD, SECRET, TOKEN, KEY, PRIVATE)
+                              example: false
               example:
                 data:
-                  env:
-                    APP_NAME: 'My App'
-                    APP_ENV: 'production'
-                    APP_DEBUG: 'false'
+                  env: "APP_NAME=MyApp\nAPP_ENV=production\nDB_PASSWORD=secret123"
+                  variables:
+                    - key: 'APP_NAME'
+                      value: 'MyApp'
+                      is_secret: false
+                    - key: 'APP_ENV'
+                      value: 'production'
+                      is_secret: false
+                    - key: 'DB_PASSWORD'
+                      value: 'secret123'
+                      is_secret: true
         '401':
           description: Unauthorized
           content:
@@ -782,7 +802,7 @@ paths:
 
     put:
       summary: Update environment variables
-      description: Update site environment variables
+      description: Update site environment variables. You can provide either raw env content or structured variables array.
       tags:
         - Sites
       security:
@@ -815,23 +835,44 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - env
               properties:
                 env:
-                  type: object
-                  additionalProperties:
-                    type: string
-                  description: Environment variables
-                  example:
-                    APP_NAME: 'My App'
-                    APP_ENV: 'production'
-                    APP_DEBUG: 'false'
-            example:
-              env:
-                APP_NAME: 'My App'
-                APP_ENV: 'production'
-                APP_DEBUG: 'false'
+                  type: string
+                  description: Raw .env file content (use this OR variables, not both)
+                  example: "APP_NAME=MyApp\nAPP_ENV=production"
+                variables:
+                  type: array
+                  description: Structured environment variables (use this OR env, not both)
+                  items:
+                    type: object
+                    required:
+                      - key
+                    properties:
+                      key:
+                        type: string
+                        description: Variable name
+                        example: 'APP_NAME'
+                      value:
+                        type: string
+                        description: Variable value
+                        example: 'MyApp'
+                path:
+                  type: string
+                  description: Custom path to the .env file
+                  example: '/home/vito/myapp/.env'
+            examples:
+              raw:
+                summary: Using raw env content
+                value:
+                  env: "APP_NAME=MyApp\nAPP_ENV=production"
+              structured:
+                summary: Using structured variables
+                value:
+                  variables:
+                    - key: 'APP_NAME'
+                      value: 'MyApp'
+                    - key: 'APP_ENV'
+                      value: 'production'
       responses:
         '200':
           description: Environment variables updated successfully

@@ -7,6 +7,7 @@ use App\Actions\Site\Rollback;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
+use App\Helpers\EnvParser;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
@@ -116,10 +117,37 @@ class ApplicationController extends Controller
             $site->jsonUpdate('type_data', 'env_path', $request->input('env'), false);
         }
 
+        // Get raw env from server
         $env = $site->getEnv();
+
+        // If we have stored variables in DB, use them (with secrets masked)
+        // Otherwise, parse from server file (for backward compatibility/initial import)
+        if ($site->env_variables !== null) {
+            $variables = EnvParser::maskSecrets($site->env_variables);
+        } else {
+            // First time: parse from server and auto-detect secrets by keyword
+            $variables = EnvParser::parse($env);
+        }
 
         return response()->json([
             'env' => $env,
+            'variables' => $variables,
+        ]);
+    }
+
+    #[Post('/env/parse', name: 'application.parse-env')]
+    public function parseEnv(Request $request, Server $server, Site $site): JsonResponse
+    {
+        $this->authorize('view', [$site, $server]);
+
+        $request->validate([
+            'content' => ['required', 'string'],
+        ]);
+
+        $variables = EnvParser::parse($request->input('content'));
+
+        return response()->json([
+            'variables' => $variables,
         ]);
     }
 

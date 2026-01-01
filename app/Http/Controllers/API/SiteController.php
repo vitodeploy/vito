@@ -9,6 +9,7 @@ use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
 use App\Actions\Site\UpdateWebDirectory;
+use App\Helpers\EnvParser;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DeploymentResource;
@@ -157,9 +158,21 @@ class SiteController extends Controller
 
         $this->validateRoute($project, $server, $site);
 
+        $env = $site->getEnv();
+
+        // If we have stored variables in DB, use them (with secrets masked)
+        // Otherwise, parse from server file (for backward compatibility/initial import)
+        if ($site->env_variables !== null) {
+            $variables = EnvParser::maskSecrets($site->env_variables);
+        } else {
+            // First time: parse from server and auto-detect secrets by keyword
+            $variables = EnvParser::parse($env);
+        }
+
         return response()->json([
             'data' => [
-                'env' => $site->getEnv(),
+                'env' => $env,
+                'variables' => $variables,
             ],
         ]);
     }

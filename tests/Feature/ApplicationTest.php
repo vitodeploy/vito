@@ -332,6 +332,157 @@ class ApplicationTest extends TestCase
         $this->assertEquals('/home/vito/some-path/.env', data_get($this->site->type_data, 'env_path'));
     }
 
+    public function test_update_env_file_with_variables(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'APP_ENV', 'value' => 'production'],
+                ['key' => 'APP_DEBUG', 'value' => 'false'],
+                ['key' => 'DB_PASSWORD', 'value' => 'secret123'],
+            ],
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertEquals($this->site->path.'/.env', data_get($this->site->type_data, 'env_path'));
+    }
+
+    public function test_get_env_returns_variables(): void
+    {
+        SSH::fake('APP_NAME=TestApp'.PHP_EOL.'DB_PASSWORD=secret');
+
+        $this->actingAs($this->user);
+
+        $response = $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'env',
+            'variables' => [
+                '*' => ['key', 'value', 'is_secret'],
+            ],
+        ]);
+    }
+
+    public function test_secret_values_are_masked_when_stored_in_db(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        // First, save some variables with secrets
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'APP_NAME', 'value' => 'TestApp', 'is_secret' => false],
+                ['key' => 'DB_PASSWORD', 'value' => 'supersecret123', 'is_secret' => true],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        // Verify stored in DB
+        $this->assertNotNull($this->site->env_variables);
+        $this->assertCount(2, $this->site->env_variables);
+
+        // Now fetch the variables - secrets should be masked
+        $response = $this->get(route('application.env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]));
+
+        $response->assertOk();
+        $data = $response->json('variables');
+
+        // Find the secret variable
+        $secretVar = collect($data)->firstWhere('key', 'DB_PASSWORD');
+        $this->assertTrue($secretVar['is_secret']);
+        $this->assertEquals('', $secretVar['value']); // Value should be empty/masked
+
+        // Non-secret should have value
+        $normalVar = collect($data)->firstWhere('key', 'APP_NAME');
+        $this->assertFalse($normalVar['is_secret']);
+        $this->assertEquals('TestApp', $normalVar['value']);
+    }
+
+    public function test_secret_values_preserved_when_updating_with_empty_value(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        // First, save variables with secrets
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'DB_PASSWORD', 'value' => 'original_secret', 'is_secret' => true],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        // Now update with empty value for the secret (simulating frontend behavior)
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'variables' => [
+                ['key' => 'DB_PASSWORD', 'value' => '', 'is_secret' => true],
+            ],
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        // The original secret value should be preserved
+        $storedVar = collect($this->site->env_variables)->firstWhere('key', 'DB_PASSWORD');
+        $this->assertEquals('original_secret', $storedVar['value']);
+    }
+
+    public function test_parse_env_endpoint(): void
+    {
+        $this->actingAs($this->user);
+
+        $envContent = "APP_NAME=TestApp\nDB_PASSWORD=secret123\nAPP_DEBUG=true";
+
+        $response = $this->post(route('application.parse-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'content' => $envContent,
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'variables' => [
+                '*' => ['key', 'value', 'is_secret'],
+            ],
+        ]);
+
+        $variables = $response->json('variables');
+        $this->assertCount(3, $variables);
+
+        // Check that DB_PASSWORD is detected as secret
+        $passwordVar = collect($variables)->firstWhere('key', 'DB_PASSWORD');
+        $this->assertTrue($passwordVar['is_secret']);
+
+        // Check that APP_NAME is not secret
+        $nameVar = collect($variables)->firstWhere('key', 'APP_NAME');
+        $this->assertFalse($nameVar['is_secret']);
+    }
+
     /**
      * @param  array<string, mixed>  $webhook
      * @param  array<string, mixed>  $payload
