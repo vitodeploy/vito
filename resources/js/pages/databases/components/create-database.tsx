@@ -64,12 +64,12 @@ export default function CreateDatabase({
 
   // Auto-load collations when modal opens with a default charset
   useEffect(() => {
-    if (open && defaultCharset && charsets.includes(defaultCharset) && collations.length === 0) {
-      axios.get(route('databases.collations', { server: server, charset: defaultCharset })).then((response) => {
+    if (open && form.data.charset && charsets.includes(form.data.charset) && collations.length === 0) {
+      axios.get(route('databases.collations', { server: server, charset: form.data.charset })).then((response) => {
         setCollations(response.data);
       });
     }
-  }, [open, charsets, defaultCharset, server, collations]);
+  }, [open, charsets, form.data.charset, server, collations]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
