@@ -30,7 +30,7 @@ class CreateSite
 
         DB::beginTransaction();
         try {
-            $user = $input['user'] ?? $server->getSshUser();
+            $user = $input['user'];
             $site = new Site([
                 'server_id' => $server->id,
                 'type' => $input['type'],
@@ -110,7 +110,7 @@ class CreateSite
                 new DomainRule,
             ],
             'user' => [
-                'nullable',
+                'required',
                 'regex:/^[a-z_][a-z0-9_-]*[a-z0-9]$/',
                 'min:3',
                 'max:32',

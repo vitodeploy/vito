@@ -284,13 +284,13 @@ export default function CreateSite({
                 {page.props.configs.site.types[form.data.type].form?.map((config) => getFormField(config))}
 
                 <FormField>
-                  <Label htmlFor="user">Isolated User (Optional)</Label>
+                  <Label htmlFor="user">Isolated User</Label>
                   <Input
                     id="user"
                     type="text"
                     value={form.data.user}
                     onChange={(e) => form.setData('user', e.target.value)}
-                    placeholder="Leave empty for using server's default user"
+                    placeholder="e.g. mysite"
                   />
                   <InputError message={form.errors.user} />
                 </FormField>
