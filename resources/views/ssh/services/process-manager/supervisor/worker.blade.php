@@ -8,6 +8,9 @@ autostart={{ $autoStart }}
 autorestart={{ $autoRestart }}
 user={{ $user }}
 numprocs={{ $numprocs }}
+@if (!empty($environment))
+environment={!! collect($environment)->map(fn ($value, $key) => $key.'="'.$value.'"')->implode(',') !!}
+@endif
 redirect_stderr=true
 stdout_logfile={{ $logFile }}
 stopwaitsecs=3600

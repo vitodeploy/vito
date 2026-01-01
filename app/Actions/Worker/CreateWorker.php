@@ -38,6 +38,7 @@ class CreateWorker
             'auto_start' => $input['auto_start'] ? 1 : 0,
             'auto_restart' => $input['auto_restart'] ? 1 : 0,
             'numprocs' => $input['numprocs'],
+            'environment' => $input['environment'] ?? null,
             'status' => WorkerStatus::CREATING,
         ]);
         $worker->save();
@@ -56,7 +57,8 @@ class CreateWorker
                 $worker->numprocs,
                 $worker->getLogFile(),
                 $worker->site?->path,
-                $worker->site_id
+                $worker->site_id,
+                $worker->environment,
             );
             $worker->status = WorkerStatus::RUNNING;
             $worker->save();

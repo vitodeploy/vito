@@ -174,10 +174,8 @@ class MiseNodeJS extends MiseSiteType
             return;
         }
 
-        $command = $this->misePathExport().' && mise exec '.$this->runtime().'@'.$this->runtimeVersion().' -- npm install -g '.$packageManager->value;
-
         $this->site->server->ssh($this->site->user)->exec(
-            $command,
+            $this->wrapCommand('npm install -g '.$packageManager->value),
             'install-'.$packageManager->value,
             $this->site->id
         );
@@ -189,10 +187,9 @@ class MiseNodeJS extends MiseSiteType
     protected function runPackageManagerInstall(): void
     {
         $packageManager = $this->packageManager();
-        $fullCommand = $this->buildPackageManagerCommand($packageManager->installCommand());
 
         $this->site->server->ssh($this->site->user)->exec(
-            $fullCommand,
+            $this->wrapCommand($packageManager->installCommand(), true),
             $packageManager->value.'-install',
             $this->site->id
         );
@@ -203,24 +200,15 @@ class MiseNodeJS extends MiseSiteType
      */
     protected function runPackageManagerBuild(): void
     {
-        $fullCommand = $this->buildPackageManagerCommand($this->buildCommand());
-
         $this->site->server->ssh($this->site->user)->exec(
-            $fullCommand,
+            $this->wrapCommand($this->buildCommand(), true),
             'build',
             $this->site->id
         );
     }
 
-    protected function buildPackageManagerCommand(string $command): string
-    {
-        return $this->runtimePrefix().' '.$command;
-    }
-
     protected function createWorker(): void
     {
-        $command = $this->runtimePrefix(false).' '.$this->startCommand();
-
         /** @var ?Worker $worker */
         $worker = $this->site->workers()->where('name', 'app')->first();
         if ($worker) {
@@ -230,11 +218,12 @@ class MiseNodeJS extends MiseSiteType
                 $this->site->server,
                 [
                     'name' => 'app',
-                    'command' => $command,
+                    'command' => $this->workerCommand(),
                     'user' => $this->site->user ?? $this->site->server->getSshUser(),
                     'auto_start' => true,
                     'auto_restart' => true,
                     'numprocs' => 1,
+                    'environment' => $this->workerEnvironment(),
                 ],
                 $this->site,
             );

@@ -49,6 +49,8 @@ class Supervisor extends AbstractProcessManager
     }
 
     /**
+     * @param  ?array<string, string>  $environment
+     *
      * @throws SSHError
      */
     public function create(
@@ -60,7 +62,8 @@ class Supervisor extends AbstractProcessManager
         int $numprocs,
         string $logFile,
         ?string $directory = null,
-        ?int $siteId = null
+        ?int $siteId = null,
+        ?array $environment = null,
     ): void {
         $this->service->server->ssh()->write(
             "/etc/supervisor/conf.d/$id.conf",
@@ -73,6 +76,7 @@ class Supervisor extends AbstractProcessManager
                 'autoRestart' => var_export($autoRestart, true),
                 'numprocs' => (string) $numprocs,
                 'logFile' => $logFile,
+                'environment' => $environment,
             ]),
             'root'
         );

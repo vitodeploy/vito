@@ -18,6 +18,7 @@ use Throwable;
  * @property bool $auto_start
  * @property bool $auto_restart
  * @property int $numprocs
+ * @property ?array<string, string> $environment
  * @property int $redirect_stderr
  * @property string $stdout_logfile
  * @property WorkerStatus $status
@@ -38,6 +39,7 @@ class Worker extends AbstractModel
         'auto_start',
         'auto_restart',
         'numprocs',
+        'environment',
         'redirect_stderr',
         'stdout_logfile',
         'status',
@@ -50,6 +52,7 @@ class Worker extends AbstractModel
         'auto_start' => 'boolean',
         'auto_restart' => 'boolean',
         'numprocs' => 'integer',
+        'environment' => 'array',
         'redirect_stderr' => 'boolean',
         'status' => WorkerStatus::class,
     ];

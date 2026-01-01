@@ -461,4 +461,55 @@ class WorkersTest extends TestCase
 
         $this->assertNotEquals($otherSite->id, $worker->site_id);
     }
+
+    public function test_create_worker_with_environment(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->post(route('workers.store', [
+            'server' => $this->server,
+        ]), [
+            'name' => 'Test Worker',
+            'command' => 'npm run start',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 1,
+            'environment' => [
+                'PATH' => '/home/vito/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin',
+                'NODE_ENV' => 'production',
+            ],
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('workers', [
+            'server_id' => $this->server->id,
+            'name' => 'Test Worker',
+            'command' => 'npm run start',
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        $worker = Worker::where('name', 'Test Worker')->first();
+        $this->assertNotNull($worker);
+        $this->assertEquals([
+            'PATH' => '/home/vito/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin',
+            'NODE_ENV' => 'production',
+        ], $worker->environment);
+    }
+
+    public function test_worker_environment_is_stored_as_array(): void
+    {
+        $worker = Worker::factory()->withEnvironment([
+            'PATH' => '/custom/path',
+            'NODE_ENV' => 'production',
+        ])->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        $this->assertIsArray($worker->environment);
+        $this->assertEquals('/custom/path', $worker->environment['PATH']);
+        $this->assertEquals('production', $worker->environment['NODE_ENV']);
+    }
 }

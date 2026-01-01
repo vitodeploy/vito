@@ -34,17 +34,34 @@ abstract class MiseSiteType extends AbstractSiteType
         return '/home/'.$user.'/.local/share/mise/shims';
     }
 
-    protected function misePathExport(): string
+    /**
+     * @return array<string, string>
+     */
+    protected function workerEnvironment(): array
     {
-        return 'export PATH='.$this->miseShimsPath().':$PATH';
+        return [
+            'PATH' => $this->shimPath(),
+        ];
     }
 
-    protected function runtimePrefix(bool $withPath = true): string
+    protected function shimPath(): string
     {
-        return sprintf(
-            '%s && mise exec %s'.$this->runtime().'@'.$this->runtimeVersion().' --verbose --',
-            $this->misePathExport(),
-            $withPath ? '-C '.$this->site->path.' ' : '',
-        );
+        $user = $this->site->user ?? $this->site->server->getSshUser();
+
+        return $this->miseShimsPath().':/usr/local/bin:/usr/bin:/bin:/home/'.$user.'/.local/bin';
+    }
+
+    protected function workerCommand(): string
+    {
+        return $this->startCommand();
+    }
+
+    abstract protected function startCommand(): string;
+
+    protected function wrapCommand(string $command, bool $cdToSitePath = false): string
+    {
+        $cdPath = $cdToSitePath && $this->site->path ? 'cd '.$this->site->path.' && ' : '';
+
+        return "bash -c \"export PATH={$this->shimPath()} && {$cdPath}{$command}\"";
     }
 }

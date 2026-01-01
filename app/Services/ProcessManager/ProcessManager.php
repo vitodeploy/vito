@@ -6,6 +6,9 @@ use App\Services\ServiceInterface;
 
 interface ProcessManager extends ServiceInterface
 {
+    /**
+     * @param  ?array<string, string>  $environment
+     */
     public function create(
         int $id,
         string $command,
@@ -16,6 +19,7 @@ interface ProcessManager extends ServiceInterface
         string $logFile,
         ?string $directory = null,
         ?int $siteId = null,
+        ?array $environment = null,
     ): void;
 
     public function delete(int $id, ?int $siteId = null): void;
