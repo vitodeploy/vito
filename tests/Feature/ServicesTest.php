@@ -382,6 +382,11 @@ class ServicesTest extends TestCase
                 'latest',
             ],
             [
+                'valkey',
+                'memory_database',
+                'latest',
+            ],
+            [
                 'mysql',
                 'database',
                 '8.0',

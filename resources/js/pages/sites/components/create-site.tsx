@@ -305,8 +305,8 @@ export default function CreateSite({
                           <DialogTitle>Why Isolated Users?</DialogTitle>
                           <DialogDescription>
                             Isolated users are mandatory to ensure security for your sites. If a site has security vulnerabilities and gets
-                            compromised, the attacker cannot take full control of the server because the site runs under its own isolated user
-                            with limited permissions.
+                            compromised, the attacker cannot take full control of the server because the site runs under its own isolated user with
+                            limited permissions.
                           </DialogDescription>
                         </DialogHeader>
                       </DialogContent>

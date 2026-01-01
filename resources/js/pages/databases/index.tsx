@@ -40,7 +40,7 @@ export default function Databases() {
               </Button>
             </a>
             <SyncDatabases server={page.props.server} />
-            <CreateDatabase server={page.props.server.id}  defaultCharset={defaultCharset} defaultCollation={defaultCollation}>
+            <CreateDatabase server={page.props.server.id} defaultCharset={defaultCharset} defaultCollation={defaultCollation}>
               <Button>
                 <PlusIcon />
                 <span className="hidden lg:block">Create</span>

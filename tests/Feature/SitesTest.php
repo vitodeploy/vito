@@ -668,6 +668,7 @@ class SitesTest extends TestCase
                     'port' => '3000',
                     'repository' => 'test/test',
                     'branch' => 'main',
+                    'user' => 'example',
                 ],
             ],
             [
@@ -695,6 +696,7 @@ class SitesTest extends TestCase
                     'branch' => 'main',
                     'build_command' => 'pnpm run build:prod',
                     'start_command' => 'pnpm run start:prod',
+                    'user' => 'example',
                 ],
             ],
             [
@@ -705,6 +707,7 @@ class SitesTest extends TestCase
                     'port' => '3000',
                     'repository' => 'test/test',
                     'branch' => 'main',
+                    'user' => 'example',
                 ],
             ],
         ];

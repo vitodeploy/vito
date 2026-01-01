@@ -13,6 +13,7 @@ use App\Services\NodeJS\NodeJS;
 use App\Services\PHP\PHP;
 use App\Services\ProcessManager\Supervisor;
 use App\Services\Redis\Redis;
+use App\Services\Valkey\Valkey;
 use App\Services\Webserver\Caddy;
 use App\Services\Webserver\Nginx;
 use Illuminate\Support\ServiceProvider;
@@ -125,6 +126,19 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 [
                     'name' => 'redis.conf',
                     'path' => '/etc/redis/redis.conf',
+                    'sudo' => true,
+                ],
+            ])
+            ->register();
+
+        RegisterServiceType::make(Valkey::id())
+            ->type(Valkey::type())
+            ->label('Valkey')
+            ->handler(Valkey::class)
+            ->configPaths([
+                [
+                    'name' => 'valkey.conf',
+                    'path' => '/etc/valkey/valkey.conf',
                     'sudo' => true,
                 ],
             ])
