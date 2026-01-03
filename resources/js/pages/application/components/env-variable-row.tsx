@@ -37,10 +37,48 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
   };
 
   const renderValueInput = () => {
-    // Existing secret: show placeholder, user must enter new value to change
+    // Existing secret: show placeholder, user can toggle visibility once they start typing
     if (isExistingSecret) {
+      const hasNewValue = variable.value.length > 0;
+
+      if (!showValue) {
+        return (
+          <div className="relative min-h-9 flex-1">
+            <Input
+              type="password"
+              value={variable.value}
+              onChange={handleValueChange}
+              placeholder="Enter new value to change..."
+              className="h-9 w-full pr-10"
+            />
+            <button
+              type="button"
+              className={cn(
+                'absolute top-0 right-0 flex h-9 w-9 items-center justify-center',
+                hasNewValue ? 'text-muted-foreground hover:text-foreground' : 'text-muted-foreground/50 pointer-events-none',
+              )}
+              onClick={() => hasNewValue && setShowValue(true)}
+              aria-label="Show value"
+              disabled={!hasNewValue}
+            >
+              <EyeIcon className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        );
+      }
+
       return (
-        <Input type="password" value={variable.value} onChange={handleValueChange} placeholder="Enter new value to change..." className="flex-1" />
+        <div className="relative min-h-9 flex-1">
+          <AutoGrowTextarea value={variable.value} onChange={handleValueChange} placeholder="Enter new value to change..." className="w-full pr-10" />
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-9 w-9 items-center justify-center"
+            onClick={() => setShowValue(false)}
+            aria-label="Hide value"
+          >
+            <EyeOffIcon className="size-4" aria-hidden="true" />
+          </button>
+        </div>
       );
     }
 
@@ -48,8 +86,8 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
     if (variable.isSecret && variable.isNew) {
       if (!showValue) {
         return (
-          <div className="relative flex-1">
-            <Input type="password" value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="pr-10" />
+          <div className="relative min-h-9 flex-1">
+            <Input type="password" value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="h-9 w-full pr-10" />
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-9 w-9 items-center justify-center"
@@ -63,11 +101,11 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
       }
 
       return (
-        <div className="relative flex-1">
-          <AutoGrowTextarea value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="pr-10" />
+        <div className="relative min-h-9 flex-1">
+          <AutoGrowTextarea value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="w-full pr-10" />
           <button
             type="button"
-            className="text-muted-foreground hover:text-foreground absolute top-1 right-0 flex h-9 w-9 items-center justify-center"
+            className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-9 w-9 items-center justify-center"
             onClick={() => setShowValue(false)}
             aria-label="Hide value"
           >
@@ -78,13 +116,17 @@ export default function EnvVariableRow({ variable, onChange, onDelete, error }: 
     }
 
     // Non-secret value - use AutoGrowTextarea for multiline support
-    return <AutoGrowTextarea value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="flex-1" />;
+    return (
+      <div className="min-h-9 flex-1">
+        <AutoGrowTextarea value={variable.value} onChange={handleValueChange} placeholder="Enter value..." className="w-full" />
+      </div>
+    );
   };
 
   const renderSecretToggle = () => {
-    // Only show toggle for new variables
+    // Only show toggle for new variables, but keep placeholder for alignment
     if (!variable.isNew) {
-      return null;
+      return <div className="size-9 shrink-0" />;
     }
 
     return (

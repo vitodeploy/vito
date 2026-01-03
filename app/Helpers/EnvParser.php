@@ -87,8 +87,8 @@ class EnvParser
         $lines = [];
 
         foreach ($variables as $variable) {
-            $key = trim($variable['key'] ?? '');
-            $value = $variable['value'] ?? '';
+            $key = trim($variable['key']);
+            $value = $variable['value'];
 
             if ($key === '') {
                 continue;
@@ -123,7 +123,7 @@ class EnvParser
     public static function maskSecrets(array $variables): array
     {
         return array_map(function ($variable) {
-            if ($variable['is_secret'] ?? false) {
+            if ($variable['is_secret']) {
                 $variable['value'] = '';
             }
 
@@ -154,12 +154,12 @@ class EnvParser
         // Merge incoming with stored, keeping stored secret values if incoming is empty
         return array_map(function ($variable) use ($storedMap) {
             $key = $variable['key'];
-            $isSecret = $variable['is_secret'] ?? false;
-            $value = $variable['value'] ?? '';
+            $isSecret = $variable['is_secret'];
+            $value = $variable['value'];
 
             // If it's a secret with empty value and we have a stored value, use stored
             if ($isSecret && $value === '' && isset($storedMap[$key])) {
-                $variable['value'] = $storedMap[$key]['value'] ?? '';
+                $variable['value'] = $storedMap[$key]['value'];
             }
 
             return $variable;

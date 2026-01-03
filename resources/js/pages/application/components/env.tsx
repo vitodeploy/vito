@@ -8,7 +8,7 @@ import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { LoaderCircleIcon, PlusIcon, RefreshCwIcon, UploadIcon, AlertCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon, PlusIcon, RefreshCwIcon, UploadIcon, AlertCircleIcon, ClipboardIcon } from 'lucide-react';
 import { Site } from '@/types/site';
 import { Input } from '@/components/ui/input';
 import { useInputFocus } from '@/stores/useInputFocus';
@@ -32,6 +32,7 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
   const [open, setOpen] = useState(false);
   const [variables, setVariables] = useState<EnvVariable[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isPasting, setIsPasting] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -191,6 +192,45 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
     fileInputRef.current?.click();
   };
 
+  const handlePasteFromClipboard = async () => {
+    try {
+      const content = await navigator.clipboard.readText();
+      if (!content.trim()) {
+        setUploadError('Clipboard is empty');
+        return;
+      }
+
+      setIsPasting(true);
+      setUploadError(null);
+
+      const response = await axios.post(
+        route('application.parse-env', {
+          server: site.server_id,
+          site: site.id,
+        }),
+        { content },
+      );
+
+      if (response.data?.variables) {
+        const parsed = response.data.variables.map((v: { key: string; value: string; is_secret: boolean }) => ({
+          key: v.key,
+          value: v.value,
+          isSecret: v.is_secret,
+          isNew: true,
+        }));
+        setVariables(parsed);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setUploadError(error.response?.data?.message || 'Failed to parse clipboard content');
+      } else {
+        setUploadError('Failed to read from clipboard');
+      }
+    } finally {
+      setIsPasting(false);
+    }
+  };
+
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -204,7 +244,13 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
             <Input name="path" value={form.data.path} onChange={(e) => form.setData('path', e.target.value)} autoFocus={false} className="flex-1" />
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button type="button" variant="outline" size="icon" onClick={() => query.refetch()} disabled={query.isFetching || isUploading}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => query.refetch()}
+                  disabled={query.isFetching || isUploading || isPasting}
+                >
                   <RefreshCwIcon className={query.isFetching ? 'animate-spin' : ''} />
                 </Button>
               </TooltipTrigger>
@@ -212,11 +258,31 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button type="button" variant="outline" size="icon" onClick={handleUploadClick} disabled={query.isFetching || isUploading}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleUploadClick}
+                  disabled={query.isFetching || isUploading || isPasting}
+                >
                   {isUploading ? <LoaderCircleIcon className="animate-spin" /> : <UploadIcon />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Upload .env file</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handlePasteFromClipboard}
+                  disabled={query.isFetching || isUploading || isPasting}
+                >
+                  {isPasting ? <LoaderCircleIcon className="animate-spin" /> : <ClipboardIcon />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Paste from clipboard</TooltipContent>
             </Tooltip>
             <input ref={fileInputRef} type="file" accept="*" onChange={handleFileUpload} className="hidden" />
           </div>
