@@ -97,6 +97,15 @@ function Delete({ cronJob, site }: { cronJob: CronJob; site?: Site }) {
 function getColumns(site?: Site, sites?: Array<{ id: number; domain: string }>): ColumnDef<CronJob>[] {
   return [
     {
+      accessorKey: 'name',
+      header: 'Name',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => {
+        return <span>{row.original.name || <i className="text-muted-foreground">No name</i>}</span>;
+      },
+    },
+    {
       accessorKey: 'command',
       header: 'Command',
       enableColumnFilter: true,

@@ -1,5 +1,6 @@
 export interface CronJob {
   id: number;
+  name: string | null;
   server_id: number;
   site_id: number | null;
   command: string;

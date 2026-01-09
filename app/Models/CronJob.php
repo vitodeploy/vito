@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $user
  * @property string $frequency
  * @property bool $hidden
+ * @property string|null $name
  * @property CronjobStatus $status
  * @property string $crontab
  * @property Server $server
@@ -32,6 +33,7 @@ class CronJob extends AbstractModel
         'frequency',
         'hidden',
         'status',
+        'name',
     ];
 
     protected $casts = [
@@ -82,7 +84,7 @@ class CronJob extends AbstractModel
             ->get();
         /** @var CronJob $cronJob */
         foreach ($cronJobs as $key => $cronJob) {
-            $data .= $cronJob->frequency.' '.$cronJob->command;
+            $data .= $cronJob->frequency . ' ' . $cronJob->command;
             if ($key != count($cronJobs) - 1) {
                 $data .= "\n";
             }

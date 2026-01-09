@@ -38,6 +38,7 @@ class EditCronJob
 
         $cronJob->update([
             'site_id' => $siteId,
+            'name' => $input['name'] ?? null,
             'user' => $input['user'],
             'command' => $input['command'],
             'frequency' => $input['frequency'] == 'custom' ? $input['custom'] : $input['frequency'],
@@ -71,6 +72,11 @@ class EditCronJob
             'frequency' => [
                 'required',
                 new CronRule(acceptCustom: true),
+            ],
+            'name' => [
+                'nullable',
+                'string',
+                'max:255',
             ],
         ];
 

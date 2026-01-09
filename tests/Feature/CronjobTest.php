@@ -25,8 +25,7 @@ class CronjobTest extends TestCase
 
         $this->get(route('cronjobs', $this->server))
             ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('cronjobs/index'));
-
+            ->assertInertia(fn(AssertableInertia $page) => $page->component('cronjobs/index'));
     }
 
     public function test_delete_cronjob(): void
@@ -64,6 +63,7 @@ class CronjobTest extends TestCase
             'command' => 'ls -la',
             'user' => 'vito',
             'frequency' => '* * * * *',
+            'name' => 'My Cronjob',
         ])
             ->assertSessionDoesntHaveErrors();
 
@@ -73,6 +73,7 @@ class CronjobTest extends TestCase
             'user' => 'vito',
             'frequency' => '* * * * *',
             'status' => CronjobStatus::READY,
+            'name' => 'My Cronjob',
         ]);
 
         SSH::assertExecutedContains("echo '* * * * * ls -la' | sudo -u vito crontab -");
@@ -326,6 +327,7 @@ class CronjobTest extends TestCase
             'user' => 'vito',
             'frequency' => '* * * * *',
             'site_id' => $site->id,
+            'name' => 'Updated Cronjob',
         ])
             ->assertSessionDoesntHaveErrors();
 
@@ -333,6 +335,7 @@ class CronjobTest extends TestCase
 
         $this->assertEquals($site->id, $cronjob->site_id);
         $this->assertEquals('updated command', $cronjob->command);
+        $this->assertEquals('Updated Cronjob', $cronjob->name);
     }
 
     public function test_cannot_edit_cronjob_with_invalid_site_id(): void

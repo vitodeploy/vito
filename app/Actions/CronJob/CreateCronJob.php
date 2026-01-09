@@ -29,6 +29,7 @@ class CreateCronJob
         }
 
         $cronJob = new CronJob([
+            'name' => $input['name'] ?? null,
             'server_id' => $server->id,
             'site_id' => $siteId,
             'user' => $input['user'],
@@ -58,6 +59,11 @@ class CreateCronJob
             'frequency' => [
                 'required',
                 new CronRule(acceptCustom: true),
+            ],
+            'name' => [
+                'nullable',
+                'string',
+                'max:255',
             ],
         ];
 

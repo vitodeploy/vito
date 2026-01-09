@@ -74,6 +74,7 @@ class SiteCronjobTest extends TestCase
             'command' => 'ls -la',
             'user' => 'vito',
             'frequency' => '* * * * *',
+            'name' => 'My Site Cronjob',
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
@@ -91,6 +92,7 @@ class SiteCronjobTest extends TestCase
             'user' => 'vito',
             'frequency' => '* * * * *',
             'status' => CronjobStatus::READY,
+            'name' => 'My Site Cronjob',
         ]);
     }
 

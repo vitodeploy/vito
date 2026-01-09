@@ -16,6 +16,7 @@ class CronJobFactory extends Factory
     public function definition(): array
     {
         return [
+            'name' => $this->faker->optional()->sentence(3),
             'server_id' => 1,
             'site_id' => null,
             'command' => 'ls -la',

@@ -36,12 +36,14 @@ export default function CronJobForm({
   const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }> }>();
   const [open, setOpen] = useState(false);
   const form = useForm<{
+    name: string;
     command: string;
     user: string;
     frequency: string;
     custom: string;
     site_id: string;
   }>({
+    name: cronJob?.name || '',
     command: cronJob?.command || '',
     user: cronJob?.user || '',
     frequency: cronJob ? (page.props.configs.cronjob_intervals[cronJob.frequency] ? cronJob.frequency : 'custom') : '',
@@ -84,11 +86,21 @@ export default function CronJobForm({
         </DialogHeader>
         <Form id="cronjob-form" onSubmit={submit} className="p-4">
           <FormFields>
+            {/* Name */}
+            <FormField>
+              <Label htmlFor="name">Name</Label>
+              <Input type="text" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} 
+              placeholder="Optional name for the cron job" />
+              <InputError message={form.errors.name} />
+            </FormField>
+
+            {/* Command */}
             <FormField>
               <Label htmlFor="command">Command</Label>
               <Input type="text" id="command" value={form.data.command} onChange={(e) => form.setData('command', e.target.value)} />
               <InputError message={form.errors.command} />
             </FormField>
+
 
             {/*site selection - only show if we have sites data and not in site context*/}
             {page.props.sites && !site && (
