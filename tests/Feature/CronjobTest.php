@@ -25,7 +25,7 @@ class CronjobTest extends TestCase
 
         $this->get(route('cronjobs', $this->server))
             ->assertSuccessful()
-            ->assertInertia(fn(AssertableInertia $page) => $page->component('cronjobs/index'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('cronjobs/index'));
     }
 
     public function test_delete_cronjob(): void

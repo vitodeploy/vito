@@ -84,7 +84,7 @@ class CronJob extends AbstractModel
             ->get();
         /** @var CronJob $cronJob */
         foreach ($cronJobs as $key => $cronJob) {
-            $data .= $cronJob->frequency . ' ' . $cronJob->command;
+            $data .= $cronJob->frequency.' '.$cronJob->command;
             if ($key != count($cronJobs) - 1) {
                 $data .= "\n";
             }

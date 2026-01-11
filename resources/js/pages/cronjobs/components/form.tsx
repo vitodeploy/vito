@@ -89,8 +89,13 @@ export default function CronJobForm({
             {/* Name */}
             <FormField>
               <Label htmlFor="name">Name</Label>
-              <Input type="text" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} 
-              placeholder="Optional name for the cron job" />
+              <Input
+                type="text"
+                id="name"
+                value={form.data.name}
+                onChange={(e) => form.setData('name', e.target.value)}
+                placeholder="Optional name for the cron job"
+              />
               <InputError message={form.errors.name} />
             </FormField>
 
@@ -100,7 +105,6 @@ export default function CronJobForm({
               <Input type="text" id="command" value={form.data.command} onChange={(e) => form.setData('command', e.target.value)} />
               <InputError message={form.errors.command} />
             </FormField>
-
 
             {/*site selection - only show if we have sites data and not in site context*/}
             {page.props.sites && !site && (
