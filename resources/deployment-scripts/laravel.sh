@@ -6,7 +6,7 @@ php artisan migrate --force
 php artisan optimize:clear
 php artisan optimize
 
-npm install
+npm ci
 npm run build
 
 echo "✅ Deployment completed successfully!"
