@@ -4,7 +4,10 @@ namespace Tests\Unit\Models;
 
 use App\Enums\ServerStatus;
 use App\Facades\SSH;
+use App\Helpers\SSH as SSHHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use phpseclib3\Net\SSH2;
+use ReflectionProperty;
 use Tests\TestCase;
 
 class ServerModelTest extends TestCase
@@ -46,5 +49,62 @@ class ServerModelTest extends TestCase
             'id' => $this->server->id,
             'status' => ServerStatus::DISCONNECTED,
         ]);
+    }
+
+    public function test_exec_wraps_command_when_using_custom_user(): void
+    {
+        $ssh = (new SSHHelper)->init($this->server, 'deploy');
+
+        $connection = $this->getMockBuilder(SSH2::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['setTimeout', 'exec', 'getExitStatus', 'disconnect'])
+            ->getMock();
+
+        $executedCommand = null;
+
+        $connection->expects($this->once())
+            ->method('setTimeout')
+            ->with(0);
+
+        $connection->expects($this->once())
+            ->method('exec')
+            ->with(
+                $this->isType('string'),
+                $this->isType('callable')
+            )
+            ->willReturnCallback(function ($command, $callback) use (&$executedCommand) {
+                $executedCommand = $command;
+                $callback('');
+
+                return '';
+            });
+
+        $connection->expects($this->once())
+            ->method('getExitStatus')
+            ->willReturn(0);
+
+        $connection->method('disconnect');
+
+        $reflection = new ReflectionProperty(SSHHelper::class, 'connection');
+        $reflection->setAccessible(true);
+        $reflection->setValue($ssh, $connection);
+
+        $command = <<<'BASH'
+pwd
+ls -la
+BASH;
+
+        $output = $ssh->exec($command);
+        $ssh->disconnect();
+
+        $expected = <<<'BASH'
+sudo -u deploy bash <<'EOF'
+pwd
+ls -la
+EOF
+BASH;
+
+        $this->assertSame('', $output);
+        $this->assertSame($expected, $executedCommand);
     }
 }
