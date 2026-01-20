@@ -44,7 +44,7 @@ class ServiceController extends Controller
         $this->authorize('viewAny', [Service::class, $server]);
 
         $versions = [];
-        $services = $server->services()->where('type', $service)->get(['version']);
+        $services = $server->services()->where('type', $service)->latest('version')->get(['version']);
         /** @var Service $service */
         foreach ($services as $service) {
             $versions[] = $service->version;
