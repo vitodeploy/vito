@@ -68,3 +68,7 @@ Laravel 12 (L10 structure), PHP 8.4, Inertia v2, React 19, Tailwind v4, PHPUnit 
 
 - Use `gh` CLI for issues/PRs.
 - Don't change dependencies or create new base folders without approval.
+
+## SSH
+
+- All SSH commands are being run using app/Helpers/SSH.php
