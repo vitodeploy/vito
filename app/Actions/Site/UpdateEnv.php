@@ -28,20 +28,16 @@ class UpdateEnv
         $typeData = $site->type_data ?? [];
         $path = $input['path'] ?? data_get($typeData, 'env_path', $site->path.'/.env');
 
-        // Process variables
         $variables = $this->processVariables($site, $input);
 
-        // Convert to raw env string for the server file
         $envContent = EnvParser::stringify($variables);
 
-        // Write to server
         $site->server->os()->write(
             $path,
             $envContent,
             $site->user,
         );
 
-        // Store variables in database (encrypted)
         $site->env_variables = $variables;
         $site->save();
 
@@ -57,7 +53,6 @@ class UpdateEnv
     private function processVariables(Site $site, array $input): array
     {
         if (isset($input['variables']) && is_array($input['variables'])) {
-            // Normalize the variables array
             $incoming = array_map(function ($var) {
                 return [
                     'key' => $var['key'] ?? '',
@@ -66,14 +61,11 @@ class UpdateEnv
                 ];
             }, $input['variables']);
 
-            // Merge with stored variables to preserve secret values
             return EnvParser::mergeWithStored($incoming, $site->env_variables);
         }
 
-        // Parse raw env string
         $parsed = EnvParser::parse(trim((string) $input['env']));
 
-        // If we have stored variables, preserve is_secret flags
         if ($site->env_variables) {
             $storedMap = [];
             foreach ($site->env_variables as $var) {
@@ -81,7 +73,6 @@ class UpdateEnv
             }
 
             return array_map(function ($var) use ($storedMap) {
-                // Keep existing is_secret flag if the variable existed before
                 if (isset($storedMap[$var['key']])) {
                     $var['is_secret'] = $storedMap[$var['key']]['is_secret'];
                 }

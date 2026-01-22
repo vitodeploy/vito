@@ -117,15 +117,11 @@ class ApplicationController extends Controller
             $site->jsonUpdate('type_data', 'env_path', $request->input('env'), false);
         }
 
-        // Get raw env from server
         $env = $site->getEnv();
 
-        // If we have stored variables in DB, use them (with secrets masked)
-        // Otherwise, parse from server file (for backward compatibility/initial import)
         if ($site->env_variables !== null) {
             $variables = EnvParser::maskSecrets($site->env_variables);
         } else {
-            // First time: parse from server and auto-detect secrets by keyword
             $variables = EnvParser::parse($env);
         }
 

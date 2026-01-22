@@ -94,7 +94,6 @@ class EnvParser
                 continue;
             }
 
-            // Check if value needs quoting
             $needsQuotes = str_contains($value, "\n") ||
                 str_contains($value, ' ') ||
                 str_contains($value, '"') ||
@@ -102,7 +101,6 @@ class EnvParser
                 str_contains($value, '#');
 
             if ($needsQuotes) {
-                // Escape newlines and double quotes, use double quotes
                 $escapedValue = str_replace(["\n", '"'], ['\\n', '\\"'], $value);
                 $lines[] = "{$key}=\"{$escapedValue}\"";
             } else {
@@ -145,19 +143,16 @@ class EnvParser
             return $incoming;
         }
 
-        // Create a lookup map for stored variables by key
         $storedMap = [];
         foreach ($stored as $variable) {
             $storedMap[$variable['key']] = $variable;
         }
 
-        // Merge incoming with stored, keeping stored secret values if incoming is empty
         return array_map(function ($variable) use ($storedMap) {
             $key = $variable['key'];
             $isSecret = $variable['is_secret'];
             $value = $variable['value'];
 
-            // If it's a secret with empty value and we have a stored value, use stored
             if ($isSecret && $value === '' && isset($storedMap[$key])) {
                 $variable['value'] = $storedMap[$key]['value'];
             }
