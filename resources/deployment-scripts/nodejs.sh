@@ -2,7 +2,7 @@ cd $SITE_PATH
 
 git pull origin $BRANCH
 
-npm install
+npm ci
 
 npm run build
 
