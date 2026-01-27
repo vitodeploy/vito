@@ -6,6 +6,7 @@ use App\Exceptions\CouldNotConnectToProvider;
 use App\Exceptions\ServerProviderError;
 use App\Facades\Notifier;
 use App\Notifications\FailedToDeleteServerFromProvider;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -80,7 +81,15 @@ class Hetzner extends AbstractProvider
                 ->filter(function (array $type) use ($region): bool {
                     $location = collect($type['locations'])->firstWhere('name', $region);
 
-                    return $location && $location['deprecation'] === null;
+                    if (! $location) {
+                        return false;
+                    }
+
+                    if ($location['deprecation'] === null) {
+                        return true;
+                    }
+
+                    return Carbon::parse($location['deprecation']['unavailable_after'])->isFuture();
                 })
                 ->mapWithKeys(fn (array $value): array => [
                     $value['name'] => __('server_providers.plan', [
