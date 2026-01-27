@@ -67,17 +67,21 @@ class Hetzner extends AbstractProvider
     public function plans(?string $region): array
     {
         try {
-            /** @var array{server_types?: array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>}>} $plans */
+            /** @var array{server_types?: array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>, locations: array<int, array{name: string, deprecation: ?array}>}>} $plans */
             $plans = Http::withToken($this->serverProvider->credentials['token'])
                 ->get($this->apiUrl.'/server_types', ['per_page' => 50])
                 ->json();
 
-            /** @var array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>}> $serverTypes */
+            /** @var array<int, array{name: string, cores: int, memory: int, disk: int, prices: array<int, array{location: string}>, locations: array<int, array{name: string, deprecation: ?array}>}> $serverTypes */
             $serverTypes = $plans['server_types'] ?? [];
 
             return collect($serverTypes)
-                ->filter(fn (array $type): bool => collect($type['prices'])->contains(fn (array $price): bool => $price['location'] === $region)
-                )
+                ->filter(fn (array $type): bool => collect($type['prices'])->contains(fn (array $price): bool => $price['location'] === $region))
+                ->filter(function (array $type) use ($region): bool {
+                    $location = collect($type['locations'])->firstWhere('name', $region);
+
+                    return $location && $location['deprecation'] === null;
+                })
                 ->mapWithKeys(fn (array $value): array => [
                     $value['name'] => __('server_providers.plan', [
                         'name' => $value['name'],
