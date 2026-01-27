@@ -89,7 +89,13 @@ class Hetzner extends AbstractProvider
                         return true;
                     }
 
-                    return Carbon::parse($location['deprecation']['unavailable_after'])->isFuture();
+                    $unavailableAfter = $location['deprecation']['unavailable_after'] ?? null;
+
+                    if ($unavailableAfter === null) {
+                        return false;
+                    }
+
+                    return Carbon::parse($unavailableAfter)->isFuture();
                 })
                 ->mapWithKeys(fn (array $value): array => [
                     $value['name'] => __('server_providers.plan', [
