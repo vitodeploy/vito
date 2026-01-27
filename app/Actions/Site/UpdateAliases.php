@@ -2,9 +2,7 @@
 
 namespace App\Actions\Site;
 
-use App\Models\Service;
 use App\Models\Site;
-use App\Services\Webserver\Webserver;
 use App\ValidationRules\DomainRule;
 use Illuminate\Support\Facades\Validator;
 
@@ -19,14 +17,8 @@ class UpdateAliases
 
         $site->aliases = $input['aliases'] ?? [];
 
-        /** @var Service $service */
-        $service = $site->server->webserver();
-
-        /** @var Webserver $webserver */
-        $webserver = $service->handler();
-        $webserver->updateVHost($site, regenerate: [
-            'core',
-        ], restart: false);
+        $webserver = $site->webserver();
+        $webserver->updateVHost($site, vhost: (string) $site->type()->vhost($webserver::id()), restart: false);
 
         $site->save();
     }
