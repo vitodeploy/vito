@@ -6,6 +6,7 @@ use App\Exceptions\FailedToDestroyGitHook;
 use Database\Factories\GitHookFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @property int $site_id
@@ -64,14 +65,16 @@ class GitHook extends AbstractModel
         );
     }
 
-    /**
-     * @throws FailedToDestroyGitHook
-     */
     public function destroyHook(): void
     {
-        if ($this->hook_id) {
-            $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
+        try {
+            if ($this->hook_id) {
+                $this->sourceControl->provider()->destroyHook($this->site->repository, $this->hook_id);
+            }
+        } catch (FailedToDestroyGitHook $e) {
+            Log::warning('Failed to destroy git hook', ['error' => $e->getMessage()]);
+        } finally {
+            $this->delete();
         }
-        $this->delete();
     }
 }

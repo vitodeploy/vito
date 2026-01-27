@@ -293,6 +293,32 @@ class ApplicationTest extends TestCase
         $this->assertFalse($this->site->isAutoDeployment());
     }
 
+    public function test_disable_auto_deployment_even_if_hook_destroy_fails(): void
+    {
+        Http::fake([
+            'api.github.com/repos/organization/repository' => Http::response([
+                'id' => '123',
+            ], 200),
+            'api.github.com/repos/organization/repository/hooks/*' => Http::response([], 404),
+        ]);
+
+        $this->actingAs($this->user);
+
+        GitHook::factory()->create([
+            'site_id' => $this->site->id,
+            'source_control_id' => $this->site->source_control_id,
+        ]);
+
+        $this->post(route('application.disable-auto-deployment', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertFalse($this->site->isAutoDeployment());
+    }
+
     public function test_update_env_file(): void
     {
         SSH::fake();

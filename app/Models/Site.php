@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
-use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Services\PHP\PHP;
@@ -112,11 +111,7 @@ class Site extends AbstractModel
             $site->ssls()->delete();
             $site->deployments()->delete();
             $site->deploymentScript()->delete();
-            try {
-                $site->gitHook?->destroyHook();
-            } catch (FailedToDestroyGitHook) {
-                $site->refresh()->gitHook?->delete();
-            }
+            $site->gitHook?->destroyHook();
         });
 
         static::created(function (Site $site): void {
@@ -386,7 +381,6 @@ class Site extends AbstractModel
 
     /**
      * @throws SourceControlIsNotConnected
-     * @throws FailedToDestroyGitHook
      */
     public function disableAutoDeployment(): void
     {
