@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\Server\CheckConnection;
+use App\Contracts\ServerConnection;
 use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
@@ -356,7 +357,7 @@ class Server extends AbstractModel
         return $service;
     }
 
-    public function ssh(?string $user = null): \App\Helpers\SSH|SSHFake
+    public function ssh(?string $user = null): ServerConnection|SSHFake
     {
         return SSH::init($this, $user);
     }
