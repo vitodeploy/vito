@@ -78,7 +78,7 @@ class LocalSocket implements ServerConnection
      */
     protected function getSocketPath(): string
     {
-        $socketUser = $this->asUser ?? 'root';
+        $socketUser = $this->asUser ?? 'vito';
 
         return "/run/vito-{$socketUser}.sock";
     }
