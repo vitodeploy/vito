@@ -150,6 +150,7 @@ class LocalSocket implements ServerConnection
             // Build the request
             $request = [
                 'command' => $commandStr,
+                'cwd' => '/tmp',
             ];
 
             // Send the request
