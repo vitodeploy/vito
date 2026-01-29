@@ -63,6 +63,8 @@ use Throwable;
  * @property string $hostname
  * @property int $updates
  * @property ?Carbon $last_update_check
+ * @property bool $is_local
+ * @property ?array<string, mixed> $local_data
  */
 class Server extends AbstractModel
 {
@@ -90,6 +92,8 @@ class Server extends AbstractModel
         'updates',
         'last_update_check',
         'feature_data',
+        'is_local',
+        'local_data',
     ];
 
     protected $casts = [
@@ -105,6 +109,8 @@ class Server extends AbstractModel
         'feature_data' => 'json',
         'os' => OperatingSystem::class,
         'status' => ServerStatus::class,
+        'is_local' => 'boolean',
+        'local_data' => 'json',
     ];
 
     protected $hidden = [
