@@ -128,7 +128,7 @@ class PHP extends AbstractService
      */
     public function installComposer(): void
     {
-        $this->service->server->ssh()->exec(
+        $this->service->server->ssh('root')->exec(
             view('ssh.services.php.install-composer'),
             'install-composer'
         );
