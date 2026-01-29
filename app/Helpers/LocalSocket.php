@@ -134,10 +134,14 @@ class LocalSocket implements ServerConnection
         try {
             $commandStr = (string) $command;
 
-            // Wrap command for user execution if needed
-            if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
+            // Wrap command for user execution (default to 'vito' user)
+            $execUser = $this->asUser;
+            if ($execUser === null || $execUser === '' || $execUser === '0') {
+                $execUser = $this->user ?: 'vito';
+            }
+            if ($execUser !== 'root') {
                 $commandStr = <<<BASH
-                sudo -u {$this->asUser} bash <<'EOF'
+                sudo -u {$execUser} bash <<'EOF'
                 {$commandStr}
                 EOF
                 BASH;
