@@ -74,13 +74,11 @@ class LocalSocket implements ServerConnection
     }
 
     /**
-     * Get the socket path based on the user.
+     * Get the socket path.
      */
     protected function getSocketPath(): string
     {
-        $socketUser = $this->asUser ?? 'vito';
-
-        return "/run/vito-{$socketUser}.sock";
+        return '/run/vito-root.sock';
     }
 
     /**
@@ -135,6 +133,15 @@ class LocalSocket implements ServerConnection
 
         try {
             $commandStr = (string) $command;
+
+            // Wrap command for user execution if needed
+            if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
+                $commandStr = <<<BASH
+                sudo -u {$this->asUser} bash <<'EOF'
+                {$commandStr}
+                EOF
+                BASH;
+            }
 
             // Build the request
             $request = [
