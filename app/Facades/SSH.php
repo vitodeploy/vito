@@ -2,6 +2,8 @@
 
 namespace App\Facades;
 
+use App\Contracts\ServerConnection;
+use App\Helpers\LocalSocket;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Support\Testing\SSHFake;
@@ -11,7 +13,6 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
 /**
  * Class SSH
  *
- * @method static \App\Helpers\SSH|SSHFake init(Server $server, string $asUser = null)
  * @method static setLog(?ServerLog $log)
  * @method static \App\Helpers\SSH useLog(string $disk, string $path)
  * @method static connect()
@@ -28,11 +29,34 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
  */
 class SSH extends FacadeAlias
 {
+    protected static ?SSHFake $fake = null;
+
     public static function fake(?string $output = null): SSHFake
     {
-        static::swap($fake = new SSHFake($output));
+        static::$fake = new SSHFake($output);
+        static::swap(static::$fake);
 
-        return $fake;
+        return static::$fake;
+    }
+
+    /**
+     * Initialize a connection to the server.
+     * Routes to LocalSocket for local servers, SSH for remote servers.
+     */
+    public static function init(Server $server, ?string $asUser = null): ServerConnection|SSHFake
+    {
+        // If we're using a fake, return it
+        if (static::$fake !== null) {
+            return static::$fake->init($server, $asUser);
+        }
+
+        // Route to LocalSocket for local servers
+        if ($server->is_local) {
+            return app(LocalSocket::class)->init($server, $asUser);
+        }
+
+        // Use regular SSH for remote servers
+        return app('ssh')->init($server, $asUser);
     }
 
     protected static function getFacadeAccessor(): string

@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Support\Testing;
+
+use App\Helpers\LocalSocket;
+use App\Models\Server;
+use App\Models\ServerLog;
+use Illuminate\Contracts\View\View;
+use PHPUnit\Framework\Assert;
+
+class LocalSocketFake extends LocalSocket
+{
+    /** @var array<string> */
+    protected array $commands = [];
+
+    protected bool $connectionWillFail = false;
+
+    protected string $uploadedLocalPath = '';
+
+    protected string $uploadedRemotePath = '';
+
+    protected string $uploadedContent = '';
+
+    public function __construct(protected ?string $output = null) {}
+
+    public function init(Server $server, ?string $asUser = null): self
+    {
+        $this->log = null;
+        $this->asUser = null;
+        $this->server = $server->refresh();
+        $this->user = $server->getSshUser();
+        if ($asUser && $asUser !== $server->getSshUser()) {
+            $this->asUser = $asUser;
+        }
+
+        return $this;
+    }
+
+    public function connectionWillFail(): void
+    {
+        $this->connectionWillFail = true;
+    }
+
+    public function connect(bool $sftp = false): void
+    {
+        // No connection needed for fake
+    }
+
+    public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
+    {
+        if (! $this->log instanceof ServerLog && $log) {
+            /** @var ServerLog $log */
+            $log = $this->server->logs()->create([
+                'site_id' => $siteId,
+                'name' => $this->server->id.'-'.strtotime('now').'-'.$log.'.log',
+                'type' => $log,
+                'disk' => config('core.logs_disk'),
+            ]);
+            $this->log = $log;
+        }
+
+        $this->commands[] = $command;
+
+        $output = $this->output ?? 'fake output';
+        $this->log?->write($output);
+
+        if ($stream === true) {
+            echo $output;
+            ob_flush();
+            flush();
+
+            return '';
+        }
+
+        return $output;
+    }
+
+    public function upload(string $local, string $remote, ?string $owner = null, ?string $log = null, ?int $siteId = null): void
+    {
+        $this->uploadedLocalPath = $local;
+        $this->uploadedRemotePath = $remote;
+        $this->uploadedContent = file_get_contents($local) ?: '';
+    }
+
+    public function download(string $local, string $remote, ?string $log = null, ?int $siteId = null): void {}
+
+    /**
+     * @param  array<string>|string  $commands
+     */
+    public function assertExecuted(array|string $commands): void
+    {
+        if ($this->commands === []) {
+            Assert::fail('No commands are executed');
+        }
+        if (! is_array($commands)) {
+            $commands = [$commands];
+        }
+        $allExecuted = true;
+        foreach ($commands as $command) {
+            if (! in_array($command, $commands)) {
+                $allExecuted = false;
+            }
+        }
+        if (! $allExecuted) {
+            Assert::fail('The expected commands are not executed. executed commands: '.implode(', ', $this->commands));
+        }
+    }
+
+    public function assertExecutedContains(string $command): void
+    {
+        if ($this->commands === []) {
+            Assert::fail('No commands are executed');
+        }
+        foreach ($this->commands as $executedCommand) {
+            if (str($executedCommand)->contains($command)) {
+                return;
+            }
+        }
+
+        Assert::fail(
+            'The expected command is not executed in the executed commands: '.implode(', ', $this->commands)
+        );
+    }
+
+    public function assertNotExecutedContains(string $command, string $message = ''): void
+    {
+        foreach ($this->commands as $executedCommand) {
+            $commandStr = (string) $executedCommand;
+            if (str($commandStr)->contains($command)) {
+                Assert::fail(
+                    $message ?: "The command '{$command}' should not be executed, but it was found in: {$commandStr}"
+                );
+            }
+        }
+    }
+
+    public function assertFileUploaded(string $toPath, ?string $content = null): void
+    {
+        if ($this->uploadedLocalPath === '' || $this->uploadedRemotePath === '') {
+            Assert::fail('File is not uploaded');
+        }
+
+        Assert::assertEquals($toPath, $this->uploadedRemotePath);
+
+        if ($content !== null && $content !== '') {
+            Assert::assertEquals($content, $this->uploadedContent);
+        }
+    }
+
+    public function getUploadedLocalPath(): string
+    {
+        return $this->uploadedLocalPath;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getExecutedCommands(): array
+    {
+        return $this->commands;
+    }
+}

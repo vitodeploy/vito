@@ -34,6 +34,7 @@ class ServerFactory extends Factory
             'public_key' => 'test',
             'status' => ServerStatus::READY,
             'progress' => 100,
+            'is_local' => false,
         ];
     }
 }

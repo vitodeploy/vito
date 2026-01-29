@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Contracts\ServerConnection;
 use App\Exceptions\SSHAuthenticationError;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHConnectionError;
@@ -21,7 +22,7 @@ use phpseclib3\Net\SSH2;
 use RuntimeException;
 use Throwable;
 
-class SSH
+class SSH implements ServerConnection
 {
     public Server $server;
 
