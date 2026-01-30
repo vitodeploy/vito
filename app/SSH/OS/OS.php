@@ -258,7 +258,7 @@ class OS
         $ssh->exec($command, 'run-script');
 
         /** @var ServerLog $log */
-        $log = $ssh->log;
+        $log = $ssh->getLog();
 
         return $log;
     }

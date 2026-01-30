@@ -123,7 +123,10 @@ class CreateLocalServerCommand extends Command
             return Project::query()->find($projectId);
         }
 
-        return $user->currentProject ?? $user->projects()->first();
+        /** @var Project|null $project */
+        $project = $user->currentProject ?? $user->projects()->first();
+
+        return $project;
     }
 
     private function createNginxService(Server $server): void

@@ -115,7 +115,10 @@ class HandleInertiaRequests extends Middleware
                     'providers' => config('notification-channel.providers'),
                 ],
                 'service' => [
-                    'services' => config('service.services'),
+                    'services' => collect(config('service.services'))
+                        ->filter(fn ($service) => ! ($service['internal'] ?? false))
+                        ->map(fn ($service) => collect($service)->except('internal')->all())
+                        ->all(),
                 ],
                 'dns_provider' => [
                     'providers' => config('dns-provider.providers'),

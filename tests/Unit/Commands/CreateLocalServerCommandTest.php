@@ -7,7 +7,6 @@ use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Enums\UserRole;
-use App\Models\FirewallRule;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\Service;

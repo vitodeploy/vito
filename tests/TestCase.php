@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Enums\ServiceStatus;
+use App\Facades\SSH;
 use App\Models\NotificationChannel;
 use App\Models\Redirect;
 use App\Models\Server;
@@ -40,6 +41,8 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        SSH::clearFake();
 
         config()->set('queue.connections.ssh.driver', 'sync');
         config()->set('queue.connections.default.driver', 'sync');
