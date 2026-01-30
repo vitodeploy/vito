@@ -2,14 +2,11 @@
 
 namespace App\Helpers;
 
-use App\Contracts\ServerConnection;
 use App\Exceptions\SSHAuthenticationError;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHConnectionError;
 use App\Exceptions\SSHError;
 use App\Models\Server;
-use App\Models\ServerLog;
-use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Log;
@@ -22,25 +19,11 @@ use phpseclib3\Net\SSH2;
 use RuntimeException;
 use Throwable;
 
-class SSH implements ServerConnection
+class SSH extends AbstractServerConnection
 {
-    public Server $server;
-
-    public ?ServerLog $log = null;
-
     protected SSH2|SFTP|null $connection = null;
 
-    protected string $user = '';
-
-    protected ?string $asUser = null;
-
-    protected string $publicKey;
-
     protected PrivateKey $privateKey;
-
-    protected ?string $logDisk = null;
-
-    protected ?string $logPath = null;
 
     public function init(Server $server, ?string $asUser = null): self
     {
@@ -60,20 +43,6 @@ class SSH implements ServerConnection
     }
 
     /**
-     * Ensure a server log exists when a log message is provided.
-     */
-    private function ensureLog(?string $log, ?int $siteId = null): void
-    {
-        if (! $this->log instanceof ServerLog && $log && ! $this->logDisk && ! $this->logPath) {
-            $this->log = ServerLog::newLog($this->server, $log);
-            if ($siteId !== null && $siteId !== 0) {
-                $this->log->forSite($siteId);
-            }
-            $this->log->save();
-        }
-    }
-
-    /**
      * Ensure there is an active SFTP connection and return it.
      */
     private function ensureSftp(): SFTP
@@ -90,45 +59,10 @@ class SSH implements ServerConnection
     }
 
     /**
-     * Write a chunk of output to either a file on a disk or the server log.
-     */
-    private function writeOutput(string $chunk): void
-    {
-        if ($this->logDisk && $this->logPath) {
-            Storage::disk($this->logDisk)->append($this->logPath, $chunk);
-        } else {
-            $this->log?->write($chunk);
-        }
-    }
-
-    public function setLog(?ServerLog $log): self
-    {
-        $this->log = $log;
-
-        return $this;
-    }
-
-    public function useLog(string $disk, string $path): self
-    {
-        $this->logDisk = $disk;
-        $this->logPath = $path;
-
-        return $this;
-    }
-
-    public function asUser(?string $user): self
-    {
-        $this->asUser = $user;
-
-        return $this;
-    }
-
-    /**
      * @throws SSHConnectionError
      */
     public function connect(bool $sftp = false): void
     {
-        // If the IP is an IPv6 address, we need to wrap it in square brackets
         $ip = $this->server->ip;
         if (str($ip)->contains(':')) {
             $ip = '['.$ip.']';
@@ -170,18 +104,15 @@ class SSH implements ServerConnection
         }
 
         try {
+            $commandStr = (string) $command;
             if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
-                $command = <<<BASH
-                sudo -u {$this->asUser} bash <<'EOF'
-                {$command}
-                EOF
-                BASH;
+                $commandStr = $this->wrapCommandForUser($commandStr, $this->asUser);
             }
 
             $this->connection->setTimeout(0);
             if ($stream === true) {
                 /** @var callable $streamCallback */
-                $this->connection->exec($command, function ($output) use ($streamCallback) {
+                $this->connection->exec($commandStr, function ($output) use ($streamCallback) {
                     $this->writeOutput($output);
 
                     return $streamCallback($output);
@@ -190,7 +121,7 @@ class SSH implements ServerConnection
                 return '';
             }
             $output = '';
-            $this->connection->exec($command, function (string $out) use (&$output): void {
+            $this->connection->exec($commandStr, function (string $out) use (&$output): void {
                 $this->writeOutput($out);
 
                 $output .= $out;
@@ -229,12 +160,10 @@ class SSH implements ServerConnection
 
         $sftp->put($tempPath, $local, SFTP::SOURCE_LOCAL_FILE);
 
-        $this->exec(sprintf('sudo mv %s %s', $tempPath, $remote));
-        if ($owner === null || $owner === '' || $owner === '0') {
-            $owner = $this->user;
-        }
-        $this->exec(sprintf('sudo chown %s:%s %s', $owner, $owner, $remote));
-        $this->exec(sprintf('sudo chmod 644 %s', $remote));
+        $owner = $this->resolveOwner($owner);
+        $this->exec(sprintf('sudo mv %s %s && sudo chown %s:%s %s && sudo chmod 644 %s',
+            $tempPath, $remote, $owner, $owner, $remote, $remote
+        ));
     }
 
     /**
@@ -273,22 +202,11 @@ class SSH implements ServerConnection
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function disconnect(): void
     {
         if ($this->connection instanceof SSH2) {
             $this->connection->disconnect();
             $this->connection = null;
         }
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function __destruct()
-    {
-        $this->disconnect();
     }
 }

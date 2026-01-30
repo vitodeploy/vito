@@ -21,7 +21,8 @@ class RegisterServiceType
         private ?DynamicForm $form = null,
         private array $versions = ['latest'],
         private array $data = [],
-        private array $configPaths = []
+        private array $configPaths = [],
+        private bool $internal = false
     ) {}
 
     public static function make(string $name): self
@@ -101,6 +102,13 @@ class RegisterServiceType
         return $this;
     }
 
+    public function internal(): self
+    {
+        $this->internal = true;
+
+        return $this;
+    }
+
     public function register(): void
     {
         $types = config('service.services');
@@ -118,6 +126,7 @@ class RegisterServiceType
             'versions' => $this->versions,
             'data' => $this->data,
             'config_paths' => $this->configPaths,
+            'internal' => $this->internal,
         ];
 
         config(['service.services' => $types]);

@@ -12,6 +12,8 @@ interface ServerConnection
 
     public function setLog(?ServerLog $log): self;
 
+    public function getLog(): ?ServerLog;
+
     public function useLog(string $disk, string $path): self;
 
     public function asUser(?string $user): self;

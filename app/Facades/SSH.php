@@ -39,6 +39,12 @@ class SSH extends FacadeAlias
         return static::$fake;
     }
 
+    public static function clearFake(): void
+    {
+        static::$fake = null;
+        static::clearResolvedInstance(static::getFacadeAccessor());
+    }
+
     /**
      * Initialize a connection to the server.
      * Routes to LocalSocket for local servers, SSH for remote servers.

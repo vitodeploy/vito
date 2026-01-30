@@ -7,6 +7,7 @@ use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
 use App\Services\Firewall\Ufw;
+use App\Services\Local\VitoLocal;
 use App\Services\Monitoring\RemoteMonitor\RemoteMonitor;
 use App\Services\Monitoring\VitoAgent\VitoAgent;
 use App\Services\NodeJS\NodeJS;
@@ -31,6 +32,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
         $this->monitoring();
         $this->php();
         $this->node();
+        $this->local();
     }
 
     private function webservers(): void
@@ -217,6 +219,16 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '18',
                 '16',
             ])
+            ->register();
+    }
+
+    private function local(): void
+    {
+        RegisterServiceType::make(VitoLocal::id())
+            ->type(VitoLocal::type())
+            ->label('VitoLocal')
+            ->handler(VitoLocal::class)
+            ->internal()
             ->register();
     }
 }

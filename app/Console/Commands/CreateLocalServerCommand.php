@@ -12,7 +12,11 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\User;
 use App\ServerProviders\Custom;
+use App\Services\Firewall\Ufw;
+use App\Services\Local\VitoLocal;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class CreateLocalServerCommand extends Command
 {
@@ -39,6 +43,13 @@ class CreateLocalServerCommand extends Command
         $webPort = (int) $this->option('web-port');
         $sslEnabled = strtoupper($this->option('ssl') ?? 'N') === 'Y';
 
+        // Validate IP address
+        if (! filter_var($ip, FILTER_VALIDATE_IP)) {
+            $this->error("Invalid IP address: {$ip}");
+
+            return Command::FAILURE;
+        }
+
         $user = $this->getUser();
         if (! $user) {
             $this->error('No user found. Please create a user first or specify a valid user ID.');
@@ -62,40 +73,63 @@ class CreateLocalServerCommand extends Command
 
         $this->info("Creating local server '{$name}' with IP {$ip}...");
 
-        $server = Server::query()->create([
-            'project_id' => $project->id,
-            'user_id' => $user->id,
-            'name' => $name,
-            'ssh_user' => config('core.ssh_user'),
-            'ip' => $ip,
-            'local_ip' => $ip,
-            'port' => 22,
-            'os' => OperatingSystem::UBUNTU22,
-            'provider' => Custom::id(),
-            'authentication' => [
-                'user' => config('core.ssh_user'),
-                'pass' => '',
-            ],
-            'public_key' => '',
-            'status' => ServerStatus::READY,
-            'progress' => 100,
-            'is_local' => true,
-            'local_data' => [
-                'domain' => $domain,
-                'port' => $webPort,
-                'ssl_enabled' => $sslEnabled,
-            ],
-        ]);
+        try {
+            /** @var Server $server */
+            $server = DB::transaction(function () use ($project, $user, $name, $ip, $domain, $webPort, $sslEnabled, $nginxInstalled, $ports) {
+                $server = Server::query()->create([
+                    'project_id' => $project->id,
+                    'user_id' => $user->id,
+                    'name' => $name,
+                    'ssh_user' => config('core.ssh_user'),
+                    'ip' => $ip,
+                    'local_ip' => $ip,
+                    'port' => 22,
+                    'os' => OperatingSystem::UBUNTU22,
+                    'provider' => Custom::id(),
+                    'authentication' => [
+                        'user' => config('core.ssh_user'),
+                        'pass' => '',
+                    ],
+                    'public_key' => '',
+                    'status' => ServerStatus::READY,
+                    'progress' => 100,
+                    'is_local' => true,
+                    'local_data' => [
+                        'domain' => $domain,
+                        'port' => $webPort,
+                        'ssl_enabled' => $sslEnabled,
+                    ],
+                ]);
+
+                // Create default services for local server
+                $this->createVitoLocalService($server);
+                $this->createFirewallService($server);
+
+                if ($nginxInstalled) {
+                    $this->createNginxService($server);
+                }
+
+                if (! empty($ports)) {
+                    $this->createFirewallRules($server, $ports);
+                }
+
+                return $server;
+            });
+        } catch (Throwable $e) {
+            $this->error('Failed to create local server: '.$e->getMessage());
+
+            return Command::FAILURE;
+        }
 
         $this->info("Server created with ID: {$server->id}");
+        $this->info('VitoLocal service created.');
+        $this->info('Firewall service created.');
 
         if ($nginxInstalled) {
-            $this->createNginxService($server);
             $this->info('Nginx service created.');
         }
 
         if (! empty($ports)) {
-            $this->createFirewallRules($server, $ports);
             $this->info('Firewall rules created for ports: '.implode(', ', $ports));
         }
 
@@ -123,7 +157,34 @@ class CreateLocalServerCommand extends Command
             return Project::query()->find($projectId);
         }
 
-        return $user->currentProject ?? $user->projects()->first();
+        /** @var Project|null $project */
+        $project = $user->currentProject ?? $user->projects()->first();
+
+        return $project;
+    }
+
+    private function createVitoLocalService(Server $server): void
+    {
+        Service::query()->create([
+            'server_id' => $server->id,
+            'type' => VitoLocal::type(),
+            'name' => VitoLocal::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+            'is_default' => true,
+        ]);
+    }
+
+    private function createFirewallService(Server $server): void
+    {
+        Service::query()->create([
+            'server_id' => $server->id,
+            'type' => Ufw::type(),
+            'name' => Ufw::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+            'is_default' => true,
+        ]);
     }
 
     private function createNginxService(Server $server): void
