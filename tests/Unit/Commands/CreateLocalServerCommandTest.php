@@ -177,6 +177,38 @@ class CreateLocalServerCommandTest extends TestCase
             ->assertExitCode(Command::FAILURE);
     }
 
+    public function test_fails_with_invalid_ip_address(): void
+    {
+        $this->artisan('servers:create-local', [
+            'ip' => 'invalid-ip',
+        ])
+            ->expectsOutput('Invalid IP address: invalid-ip')
+            ->assertExitCode(Command::FAILURE);
+
+        $this->assertDatabaseMissing('servers', ['ip' => 'invalid-ip']);
+    }
+
+    public function test_fails_with_malformed_ip_address(): void
+    {
+        $this->artisan('servers:create-local', [
+            'ip' => '999.999.999.999',
+        ])
+            ->expectsOutput('Invalid IP address: 999.999.999.999')
+            ->assertExitCode(Command::FAILURE);
+
+        $this->assertDatabaseMissing('servers', ['ip' => '999.999.999.999']);
+    }
+
+    public function test_accepts_valid_ipv6_address(): void
+    {
+        $this->artisan('servers:create-local', [
+            'ip' => '::1',
+        ])
+            ->assertExitCode(Command::SUCCESS);
+
+        $this->assertDatabaseHas('servers', ['ip' => '::1']);
+    }
+
     public function test_fails_when_no_user_exists(): void
     {
         User::query()->delete();
@@ -352,7 +384,7 @@ class CreateLocalServerCommandTest extends TestCase
         $this->assertTrue($service->is_default);
     }
 
-    public function test_no_services_created_when_nginx_not_specified(): void
+    public function test_default_services_created_when_nginx_not_specified(): void
     {
         $this->artisan('servers:create-local', [
             'ip' => '192.168.1.118',
@@ -360,7 +392,10 @@ class CreateLocalServerCommandTest extends TestCase
             ->assertExitCode(Command::SUCCESS);
 
         $server = Server::query()->where('ip', '192.168.1.118')->first();
-        $this->assertCount(0, $server->services);
+        // VitoLocal and Firewall (UFW) services are always created
+        $this->assertCount(2, $server->services);
+        $this->assertTrue($server->services->contains('name', 'vito-local'));
+        $this->assertTrue($server->services->contains('name', 'ufw'));
     }
 
     public function test_no_firewall_rules_created_when_ports_not_specified(): void
