@@ -99,7 +99,7 @@ BASH;
 
         $expected = <<<'BASH'
 sudo -u deploy bash <<'EOF'
-pwd
+set -e; pwd
 ls -la
 EOF
 BASH;

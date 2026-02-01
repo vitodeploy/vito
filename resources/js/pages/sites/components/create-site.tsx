@@ -35,6 +35,17 @@ type CreateSiteForm = {
   user: string;
 };
 
+function extractNameFromDomain(domain: string): string {
+  if (!domain) return '';
+  let name = domain.replace(/^https?:\/\//, '');
+  name = name.replace(/^www\./, '');
+  const parts = name.split('.');
+  if (parts.length > 0 && parts[0]) {
+    return parts[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+  return '';
+}
+
 export default function CreateSite({
   server,
   defaultOpen,
@@ -48,6 +59,7 @@ export default function CreateSite({
 }) {
   const page = usePage<SharedData>();
   const [open, setOpen] = useState(defaultOpen || false);
+  const [userManuallyEdited, setUserManuallyEdited] = useState(false);
 
   useEffect(() => {
     if (defaultOpen !== undefined) {
@@ -64,7 +76,7 @@ export default function CreateSite({
 
   const form = useForm<CreateSiteForm>({
     server: server?.id.toString() || '',
-    type: 'php',
+    type: 'laravel',
     domain: '',
     aliases: [],
     php_version: '',
@@ -260,7 +272,14 @@ export default function CreateSite({
                     id="domain"
                     type="text"
                     value={form.data.domain}
-                    onChange={(e) => form.setData('domain', e.target.value)}
+                    onChange={(e) => {
+                      const newDomain = e.target.value;
+                      form.setData('domain', newDomain);
+                      if (!userManuallyEdited) {
+                        const extractedName = extractNameFromDomain(newDomain);
+                        form.setData('user', extractedName);
+                      }
+                    }}
                     placeholder="vitodeploy.com"
                   />
                   <InputError message={form.errors.domain} />
@@ -292,7 +311,7 @@ export default function CreateSite({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <DialogTrigger asChild>
-                              <button type="button" className="text-muted-foreground hover:text-foreground">
+                              <button type="button" tabIndex={-1} className="text-muted-foreground hover:text-foreground">
                                 <HelpCircle className="h-4 w-4" />
                               </button>
                             </DialogTrigger>
@@ -316,7 +335,10 @@ export default function CreateSite({
                     id="user"
                     type="text"
                     value={form.data.user}
-                    onChange={(e) => form.setData('user', e.target.value)}
+                    onChange={(e) => {
+                      setUserManuallyEdited(true);
+                      form.setData('user', e.target.value);
+                    }}
                     placeholder="e.g. mysite"
                   />
                   <p className="text-muted-foreground text-xs">The isolated user for the site. Must be unique on the server.</p>

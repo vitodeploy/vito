@@ -57,7 +57,10 @@ export function TagsInput({
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === 'Tab') {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag(inputValue);
+    } else if (e.key === 'Tab' && inputValue.trim()) {
       e.preventDefault();
       addTag(inputValue);
     } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
