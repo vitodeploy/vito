@@ -57,7 +57,9 @@ abstract class AbstractDatabase extends AbstractService implements Database
     {
         $version = str_replace('.', '', $this->service->version);
         $command = view($this->getScriptView('install-'.$version));
-        $this->service->server->ssh()->exec($command, 'install-'.$this->service->name.'-'.$version);
+        $this->service->server->ssh()
+            ->setLog($this->service->log)
+            ->exec($command, 'install-'.$this->service->name.'-'.$version);
         $status = $this->service->server->systemd()->status($this->unit());
         $this->service->validateInstall($status);
         $this->service->server->os()->cleanup();

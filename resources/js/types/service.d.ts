@@ -1,3 +1,5 @@
+import { ServerLog } from './server-log';
+
 export interface ConfigPath {
   name: string;
   path: string;
@@ -21,6 +23,7 @@ export interface Service {
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   icon: string;
+  log?: ServerLog | null;
   created_at: string;
   updated_at: string;
   [key: string]: unknown;

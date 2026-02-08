@@ -313,6 +313,43 @@ class ServicesTest extends TestCase
         ]);
     }
 
+    public function test_install_service_creates_installation_log(): void
+    {
+        Http::fake([
+            'https://api.github.com/repos/vito/vito-agent/releases/latest' => Http::response([
+                'tag_name' => '0.1.0',
+            ]),
+        ]);
+        SSH::fake('Active: active');
+
+        $this->actingAs($this->user);
+
+        $server = Server::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $keys = $server->sshKey();
+        if (! File::exists($keys['public_key_path']) || ! File::exists($keys['private_key_path'])) {
+            $server->provider()->generateKeyPair();
+        }
+
+        $this->post(route('services.store', [
+            'server' => $server,
+        ]), [
+            'name' => 'redis',
+            'version' => 'latest',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $service = $server->services()->where('name', 'redis')->firstOrFail();
+
+        // Verify that the installation log is linked to the service
+        $this->assertNotNull($service->log_id);
+        $this->assertNotNull($service->log);
+        $this->assertStringStartsWith('install-redis', $service->log->type);
+    }
+
     public function test_fetch_php_installed_version(): void
     {
         SSH::fake('8.4.10');

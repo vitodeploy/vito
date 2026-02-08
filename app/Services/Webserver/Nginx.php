@@ -30,10 +30,12 @@ class Nginx extends AbstractWebserver
      */
     public function install(): void
     {
-        $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.install-nginx'),
-            'install-nginx'
-        );
+        $this->service->server->ssh()
+            ->setLog($this->service->log)
+            ->exec(
+                view('ssh.services.webserver.nginx.install-nginx'),
+                'install-nginx'
+            );
 
         $this->service->server->ssh()->write(
             '/etc/nginx/nginx.conf',

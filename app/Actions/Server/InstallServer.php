@@ -60,6 +60,9 @@ class InstallServer
         foreach ($services as $service) {
             $currentProgress += $progressPerService;
             $this->progress($currentProgress, 'installing- '.$service->name);
+
+            $service->newLog();
+
             $service->handler()->install();
             $service->update(['status' => ServiceStatus::READY]);
             if ($service->type == 'php') {

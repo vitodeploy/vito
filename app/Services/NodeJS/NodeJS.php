@@ -87,13 +87,15 @@ class NodeJS extends AbstractService
         if ($this->service->server->services()->where('type', 'nodejs')->count() > 1) {
             return;
         }
-        $this->service->server->ssh()->exec(
-            view('ssh.services.nodejs.uninstall-nodejs', [
-                'version' => $this->service->version,
-                'default' => $this->service->is_default,
-            ]),
-            'uninstall-nodejs-'.$this->service->version
-        );
+        $this->service->server->ssh()
+            ->setLog($this->service->log)
+            ->exec(
+                view('ssh.services.nodejs.uninstall-nodejs', [
+                    'version' => $this->service->version,
+                    'default' => $this->service->is_default,
+                ]),
+                'uninstall-nodejs-'.$this->service->version
+            );
         event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
     }

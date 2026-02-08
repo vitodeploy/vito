@@ -22,6 +22,9 @@ class InstallJob implements ShouldQueue
     {
         $this->run("server-{$this->service->server_id}", function () {
             Log::info("Installing service ID {$this->service->id} on server ID {$this->service->server_id}");
+
+            $this->service->newLog();
+
             $this->service->handler()->install();
             $this->service->status = ServiceStatus::READY;
             $this->service->installed_version = $this->service->handler()->version();

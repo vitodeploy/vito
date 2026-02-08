@@ -61,13 +61,15 @@ class PHP extends AbstractService
     public function install(): void
     {
         $server = $this->service->server;
-        $server->ssh()->exec(
-            view('ssh.services.php.install-php', [
-                'version' => $this->service->version,
-                'user' => $server->getSshUser(),
-            ]),
-            'install-php-'.$this->service->version
-        );
+        $server->ssh()
+            ->setLog($this->service->log)
+            ->exec(
+                view('ssh.services.php.install-php', [
+                    'version' => $this->service->version,
+                    'user' => $server->getSshUser(),
+                ]),
+                'install-php-'.$this->service->version
+            );
         $this->installComposer();
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();

@@ -90,14 +90,16 @@ class VitoAgent extends AbstractService
         $this->service->save();
         $this->service->refresh();
 
-        $this->service->server->ssh()->exec(
-            view('ssh.services.monitoring.vito-agent.install', [
-                'downloadUrl' => $downloadUrl,
-                'configUrl' => $this->data()['url'],
-                'configSecret' => $this->data()['secret'],
-            ]),
-            'install-vito-agent'
-        );
+        $this->service->server->ssh()
+            ->setLog($this->service->log)
+            ->exec(
+                view('ssh.services.monitoring.vito-agent.install', [
+                    'downloadUrl' => $downloadUrl,
+                    'configUrl' => $this->data()['url'],
+                    'configSecret' => $this->data()['secret'],
+                ]),
+                'install-vito-agent'
+            );
         $status = $this->service->server->systemd()->status($this->unit());
         event('service.installed', $this->service);
         $this->service->validateInstall($status);

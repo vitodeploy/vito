@@ -18,6 +18,7 @@ use InvalidArgumentException;
 
 /**
  * @property int $server_id
+ * @property ?int $log_id
  * @property string $type
  * @property array<string, mixed> $type_data
  * @property string $name
@@ -28,6 +29,7 @@ use InvalidArgumentException;
  * @property ServiceStatus $status
  * @property bool $is_default
  * @property Server $server
+ * @property ?ServerLog $log
  */
 class Service extends AbstractModel
 {
@@ -36,6 +38,7 @@ class Service extends AbstractModel
 
     protected $fillable = [
         'server_id',
+        'log_id',
         'type',
         'type_data',
         'name',
@@ -49,6 +52,7 @@ class Service extends AbstractModel
 
     protected $casts = [
         'server_id' => 'integer',
+        'log_id' => 'integer',
         'type_data' => 'json',
         'is_default' => 'boolean',
         'status' => ServiceStatus::class,
@@ -60,6 +64,14 @@ class Service extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<ServerLog, covariant $this>
+     */
+    public function log(): BelongsTo
+    {
+        return $this->belongsTo(ServerLog::class, 'log_id');
     }
 
     public function handler(): ServiceInterface|Webserver|PHP|Firewall|\App\Services\Database\Database|ProcessManager
@@ -115,5 +127,19 @@ class Service extends AbstractModel
     public function disable(): void
     {
         $this->handler()->unit() && app(Manage::class)->disable($this);
+    }
+
+    public function newLog(): ServerLog
+    {
+
+        $serverLog = ServerLog::newLog(
+            $this->server,
+            'install-'.$this->name.'-'.$this->version
+        );
+        $serverLog->save();
+        $this->log_id = $serverLog->id;
+        $this->save();
+
+        return $serverLog;
     }
 }

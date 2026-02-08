@@ -27,7 +27,7 @@ class ServiceController extends Controller
 
         $this->validateRoute($project, $server);
 
-        return ServiceResource::collection($server->services()->simplePaginate(25));
+        return ServiceResource::collection($server->services()->with('log')->simplePaginate(25));
     }
 
     #[Get('{service}', name: 'api.projects.servers.services.show', middleware: 'ability:read')]
@@ -36,6 +36,8 @@ class ServiceController extends Controller
         $this->authorize('view', [$service, $server]);
 
         $this->validateRoute($project, $server, $service);
+
+        $service->load('log');
 
         return new ServiceResource($service);
     }

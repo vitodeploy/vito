@@ -31,7 +31,7 @@ class ServiceController extends Controller
     {
         $this->authorize('viewAny', [Service::class, $server]);
 
-        $services = $server->services()->simplePaginate(config('web.pagination_size'));
+        $services = $server->services()->with('log')->simplePaginate(config('web.pagination_size'));
 
         return Inertia::render('services/index', [
             'services' => ServiceResource::collection($services),

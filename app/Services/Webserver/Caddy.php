@@ -30,10 +30,12 @@ class Caddy extends AbstractWebserver
      */
     public function install(): void
     {
-        $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.caddy.install-caddy'),
-            'install-caddy'
-        );
+        $this->service->server->ssh()
+            ->setLog($this->service->log)
+            ->exec(
+                view('ssh.services.webserver.caddy.install-caddy'),
+                'install-caddy'
+            );
 
         $this->service->server->ssh()->write(
             '/etc/caddy/Caddyfile',

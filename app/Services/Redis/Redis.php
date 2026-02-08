@@ -45,10 +45,12 @@ class Redis extends AbstractService
      */
     public function install(): void
     {
-        $this->service->server->ssh()->exec(
-            view('ssh.services.redis.install'),
-            'install-redis'
-        );
+        $this->service->server->ssh()
+            ->setLog($this->service->log)
+            ->exec(
+                view('ssh.services.redis.install'),
+                'install-redis'
+            );
         $status = $this->service->server->systemd()->status($this->unit());
         $this->service->validateInstall($status);
         event('service.installed', $this->service);

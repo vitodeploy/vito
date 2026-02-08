@@ -28,6 +28,7 @@ class ServiceResource extends JsonResource
             'status_color' => $this->status->getColor(),
             'icon' => config('core.service_icons')[$this->name] ?? '',
             'is_default' => $this->is_default,
+            'log' => $this->log ? new ServerLogResource($this->log) : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

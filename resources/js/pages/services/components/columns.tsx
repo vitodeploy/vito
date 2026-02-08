@@ -9,6 +9,7 @@ import Uninstall from '@/pages/services/components/uninstall';
 import { Action } from '@/pages/services/components/action';
 import Version from './version';
 import ConfigFile from './config-file';
+import InstallationLog from './installation-log';
 
 export const columns: ColumnDef<Service>[] = [
   {
@@ -71,6 +72,12 @@ export const columns: ColumnDef<Service>[] = [
                   {row.original.config_paths.map((configPath) => (
                     <ConfigFile key={configPath.name} service={row.original} configPath={configPath} />
                   ))}
+                </>
+              )}
+              {row.original.log && (
+                <>
+                  <DropdownMenuSeparator />
+                  <InstallationLog service={row.original} />
                 </>
               )}
               <DropdownMenuSeparator />
