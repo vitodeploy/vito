@@ -9,6 +9,7 @@ use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
 use App\StorageProviders\Local;
 use App\StorageProviders\S3;
+use App\StorageProviders\SFTP;
 use Illuminate\Support\ServiceProvider;
 
 class StorageProviderServiceProvider extends ServiceProvider
@@ -21,6 +22,7 @@ class StorageProviderServiceProvider extends ServiceProvider
         $this->aws();
         $this->dropbox();
         $this->ftp();
+        $this->sftp();
     }
 
     private function local(): void
@@ -114,6 +116,34 @@ class StorageProviderServiceProvider extends ServiceProvider
                         ->checkbox()
                         ->label('Use Passive Mode')
                         ->default(true),
+                ])
+            )
+            ->register();
+    }
+
+    private function sftp(): void
+    {
+        RegisterStorageProvider::make(SFTP::id())
+            ->label('SFTP')
+            ->handler(SFTP::class)
+            ->form(
+                DynamicForm::make([
+                    DynamicField::make('host')
+                        ->text()
+                        ->label('Host'),
+                    DynamicField::make('port')
+                        ->text()
+                        ->label('Port')
+                        ->default(22),
+                    DynamicField::make('path')
+                        ->text()
+                        ->label('Path'),
+                    DynamicField::make('username')
+                        ->text()
+                        ->label('Username'),
+                    DynamicField::make('password')
+                        ->password()
+                        ->label('Password'),
                 ])
             )
             ->register();

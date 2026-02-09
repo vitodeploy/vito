@@ -11,6 +11,7 @@ use App\StorageProviders\Dropbox;
 use App\StorageProviders\FTP;
 use App\StorageProviders\Local;
 use App\StorageProviders\S3;
+use App\StorageProviders\SFTP;
 use Carbon\Carbon;
 use Database\Factories\BackupFileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -107,7 +108,7 @@ class BackupFile extends AbstractModel
 
         return match ($storage->provider) {
             Dropbox::id() => '/'.$backupName.'/'.$this->name.$extension,
-            S3::id(), FTP::id(), Local::id() => implode('/', [
+            S3::id(), FTP::id(), SFTP::id(), Local::id() => implode('/', [
                 rtrim((string) $storage->credentials['path'], '/'),
                 $backupName,
                 $this->name.$extension,

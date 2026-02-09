@@ -3,6 +3,7 @@
 namespace Tests\Feature\API;
 
 use App\Facades\FTP;
+use App\Facades\SFTP;
 use App\Models\Backup;
 use App\Models\Database;
 use App\Models\StorageProvider as StorageProviderModel;
@@ -33,6 +34,10 @@ class StorageProvidersTest extends TestCase
 
         if ($input['provider'] === \App\StorageProviders\FTP::id()) {
             FTP::fake();
+        }
+
+        if ($input['provider'] === \App\StorageProviders\SFTP::id()) {
+            SFTP::fake();
         }
 
         $this->json('POST', route('api.projects.storage-providers.create', [
@@ -306,6 +311,29 @@ class StorageProvidersTest extends TestCase
                     'provider' => Dropbox::id(),
                     'name' => 'dropbox-test',
                     'token' => 'token',
+                    'global' => 1,
+                ],
+            ],
+            [
+                [
+                    'provider' => \App\StorageProviders\SFTP::id(),
+                    'name' => 'sftp-test',
+                    'host' => '1.2.3.4',
+                    'port' => '22',
+                    'path' => '/home/vito',
+                    'username' => 'username',
+                    'password' => 'password',
+                ],
+            ],
+            [
+                [
+                    'provider' => \App\StorageProviders\SFTP::id(),
+                    'name' => 'sftp-test',
+                    'host' => '1.2.3.4',
+                    'port' => '22',
+                    'path' => '/home/vito',
+                    'username' => 'username',
+                    'password' => 'password',
                     'global' => 1,
                 ],
             ],
