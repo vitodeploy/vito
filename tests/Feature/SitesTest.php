@@ -11,6 +11,7 @@ use App\Models\Site;
 use App\Models\SourceControl;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
+use App\SiteTypes\MiseBun;
 use App\SiteTypes\MiseNodeJS;
 use App\SiteTypes\NodeJS;
 use App\SiteTypes\PHPBlank;
@@ -707,6 +708,32 @@ class SitesTest extends TestCase
                     'port' => '3000',
                     'repository' => 'test/test',
                     'branch' => 'main',
+                    'user' => 'example',
+                ],
+            ],
+            [
+                [
+                    'type' => MiseBun::id(),
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'bun_version' => '1.2',
+                    'port' => '3000',
+                    'repository' => 'test/test',
+                    'branch' => 'main',
+                    'user' => 'example',
+                ],
+            ],
+            [
+                [
+                    'type' => MiseBun::id(),
+                    'domain' => 'example.com',
+                    'aliases' => ['www.example.com'],
+                    'bun_version' => '1.1',
+                    'port' => '3000',
+                    'repository' => 'test/test',
+                    'branch' => 'main',
+                    'build_command' => 'bun run build:prod',
+                    'start_command' => 'bun run start:prod',
                     'user' => 'example',
                 ],
             ],

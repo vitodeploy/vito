@@ -30,9 +30,9 @@ enum NodePackageManager: string implements VitoEnum
     public function installCommand(): string
     {
         return match ($this) {
-            self::Npm => 'npm install',
-            self::Pnpm => 'pnpm install',
-            self::Yarn => 'yarn install',
+            self::Npm => 'npm ci',
+            self::Pnpm => 'pnpm install --frozen-lockfile',
+            self::Yarn => 'yarn install --frozen-lockfile',
         };
     }
 

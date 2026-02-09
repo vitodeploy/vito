@@ -11,6 +11,7 @@ use App\Plugins\RegisterSiteFeatureAction;
 use App\Plugins\RegisterSiteType;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
+use App\SiteTypes\MiseBun;
 use App\SiteTypes\MiseNodeJS;
 use App\SiteTypes\NodeJS;
 use App\SiteTypes\PHPBlank;
@@ -30,6 +31,7 @@ class SiteTypeServiceProvider extends ServiceProvider
         $this->laravel();
         $this->nodeJS();
         $this->miseNodeJS();
+        $this->miseBun();
         $this->loadBalancer();
         $this->phpMyAdmin();
         $this->wordpress();
@@ -203,6 +205,47 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->text()
                     ->label('Start Command')
                     ->placeholder('e.g., npm start')
+                    ->description('Command to start your application. Leave empty to use the start script of package.json'),
+            ]))
+            ->register();
+    }
+
+    private function miseBun(): void
+    {
+        RegisterSiteType::make(MiseBun::id())
+            ->label('Bun')
+            ->handler(MiseBun::class)
+            ->form(DynamicForm::make([
+                DynamicField::make('bun_version')
+                    ->select()
+                    ->label('Bun Version')
+                    ->options(MiseBun::BUN_VERSIONS)
+                    ->default('1.2'),
+                DynamicField::make('source_control')
+                    ->component()
+                    ->label('Source Control'),
+                DynamicField::make('port')
+                    ->text()
+                    ->label('Port')
+                    ->placeholder('3000')
+                    ->description('On which port your app will be running'),
+                DynamicField::make('repository')
+                    ->text()
+                    ->label('Repository')
+                    ->placeholder('organization/repository'),
+                DynamicField::make('branch')
+                    ->text()
+                    ->label('Branch')
+                    ->default('main'),
+                DynamicField::make('build_command')
+                    ->text()
+                    ->label('Build Command')
+                    ->placeholder('e.g., bun run build')
+                    ->description('Command to build your application. Leave empty to use the build script of package.json'),
+                DynamicField::make('start_command')
+                    ->text()
+                    ->label('Start Command')
+                    ->placeholder('e.g., bun run start')
                     ->description('Command to start your application. Leave empty to use the start script of package.json'),
             ]))
             ->register();
