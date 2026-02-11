@@ -64,6 +64,6 @@ interface SourceControlProvider
     public function getWebhookBranch(array $payload): string;
 
     public function getRepos(bool $useCache = true): array;
-
     public function getBranches(string $repo, bool $useCache = true): array;
+    public function getSshPort(): ?int;
 }

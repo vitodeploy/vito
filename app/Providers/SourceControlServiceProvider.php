@@ -53,6 +53,9 @@ class SourceControlServiceProvider extends ServiceProvider
                     DynamicField::make('url')
                         ->text()
                         ->label('Self hosted URL'),
+                    DynamicField::make('port')
+                        ->text()
+                        ->label('SSH Port'),
                 ])
             )
             ->register();

@@ -38,6 +38,7 @@ class Gitlab extends AbstractSourceControlProvider
                 'url:http,https',
                 'ends_with:/',
             ],
+            'port' => 'nullable|integer',
         ];
     }
 
@@ -45,7 +46,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         try {
             $res = Http::withToken($this->data()['token'])
-                ->get($this->getApiUrl().'/version');
+                ->get($this->getApiUrl() . '/version');
         } catch (Exception) {
             return false;
         }
@@ -60,7 +61,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = $repo !== '' && $repo !== '0' ? urlencode($repo) : null;
         $res = Http::withToken($this->data()['token'])
-            ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits');
+            ->get($this->getApiUrl() . '/projects/' . $repository . '/repository/commits');
 
         $this->handleResponseErrors($res, $repo);
 
@@ -82,10 +83,10 @@ class Gitlab extends AbstractSourceControlProvider
         $repository = urlencode($repo);
         try {
             $response = Http::withToken($this->data()['token'])->post(
-                $this->getApiUrl().'/projects/'.$repository.'/hooks',
+                $this->getApiUrl() . '/projects/' . $repository . '/hooks',
                 [
                     'description' => 'deploy',
-                    'url' => url('/api/git-hooks?secret='.$secret),
+                    'url' => url('/api/git-hooks?secret=' . $secret),
                     'push_events' => in_array('push', $events),
                     'issues_events' => false,
                     'job_events' => false,
@@ -121,7 +122,7 @@ class Gitlab extends AbstractSourceControlProvider
         $repository = urlencode($repo);
         try {
             $response = Http::withToken($this->data()['token'])->delete(
-                $this->getApiUrl().'/projects/'.$repository.'/hooks/'.$hookId
+                $this->getApiUrl() . '/projects/' . $repository . '/hooks/' . $hookId
             );
         } catch (Exception $e) {
             throw new FailedToDestroyGitHook($e->getMessage());
@@ -139,7 +140,7 @@ class Gitlab extends AbstractSourceControlProvider
     {
         $repository = urlencode($repo);
         $res = Http::withToken($this->data()['token'])
-            ->get($this->getApiUrl().'/projects/'.$repository.'/repository/commits?ref_name='.$branch);
+            ->get($this->getApiUrl() . '/projects/' . $repository . '/repository/commits?ref_name=' . $branch);
 
         $this->handleResponseErrors($res, $repo);
 
@@ -167,7 +168,7 @@ class Gitlab extends AbstractSourceControlProvider
         $repository = urlencode($repo);
         try {
             $response = Http::withToken($this->data()['token'])->post(
-                $this->getApiUrl().'/projects/'.$repository.'/deploy_keys',
+                $this->getApiUrl() . '/projects/' . $repository . '/deploy_keys',
                 [
                     'title' => $title,
                     'key' => $key,
@@ -190,10 +191,10 @@ class Gitlab extends AbstractSourceControlProvider
         try {
             $repository = urlencode($repo);
             $response = Http::withToken($this->data()['token'])->delete(
-                $this->getApiUrl().'/projects/'.$repository.'/deploy_keys/'.$keyId
+                $this->getApiUrl() . '/projects/' . $repository . '/deploy_keys/' . $keyId
             );
 
-            if (! $response->successful()) {
+            if (!$response->successful()) {
                 Log::warning('Failed to delete Gitlab deploy key', [
                     'repo' => $repo,
                     'key_id' => $keyId,
@@ -210,16 +211,29 @@ class Gitlab extends AbstractSourceControlProvider
         }
     }
 
+    public function createData(array $input): array
+    {
+        return [
+            'token' => $input['token'] ?? '',
+            'port' => $input['port'] ?? null,
+        ];
+    }
+
+    public function getSshPort(): ?int
+    {
+        return (int) ($this->sourceControl->provider_data['port'] ?? null) ?: null;
+    }
+
     public function getApiUrl(): string
     {
         $host = $this->sourceControl->url ?? $this->defaultApiHost;
 
-        return $host.$this->apiVersion;
+        return $host . $this->apiVersion;
     }
 
     public function getRepos(bool $useCache = true): array
     {
-        $cacheKey = 'gitlab_repos_'.md5($this->getApiUrl().$this->data()['token']);
+        $cacheKey = 'gitlab_repos_' . md5($this->getApiUrl() . $this->data()['token']);
 
         if ($useCache && Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
@@ -247,7 +261,7 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function getBranches(string $repo, bool $useCache = true): array
     {
-        $cacheKey = 'gitlab_branches_'.md5($repo.$this->getApiUrl().$this->data()['token']);
+        $cacheKey = 'gitlab_branches_' . md5($repo . $this->getApiUrl() . $this->data()['token']);
 
         if ($useCache && Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
@@ -291,9 +305,9 @@ class Gitlab extends AbstractSourceControlProvider
         while ($hasMore) {
             $params['page'] = $page;
             $response = Http::withToken($this->data()['token'])
-                ->get($this->getApiUrl().$endpoint, $params);
+                ->get($this->getApiUrl() . $endpoint, $params);
 
-            if (! $response->successful()) {
+            if (!$response->successful()) {
                 Log::error('GitLab API request failed', [
                     'endpoint' => $endpoint,
                     'status' => $response->status(),

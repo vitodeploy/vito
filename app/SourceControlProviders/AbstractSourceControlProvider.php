@@ -70,4 +70,9 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
     {
         return [];
     }
+
+    public function getSshPort(): ?int
+    {
+        return null;
+    }
 }

@@ -19,6 +19,7 @@ class Git
                 'path' => $path ?? $site->path,
                 'branch' => $site->branch,
                 'key' => $site->getSshKeyName(),
+                'port' => $site->sourceControl?->provider()?->getSshPort() ?? 22,
             ]),
             'clone-repository',
             $site->id
