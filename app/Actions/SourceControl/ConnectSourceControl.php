@@ -23,6 +23,7 @@ class ConnectSourceControl
             'provider' => $input['provider'],
             'profile' => $input['name'],
             'url' => isset($input['url']) && $input['url'] ? $input['url'] : null,
+            'port' => isset($input['port']) && $input['port'] ? (int) $input['port'] : null,
             'project_id' => isset($input['global']) && $input['global'] ? null : $user->currentProject?->id,
             'user_id' => $user->id,
         ]);
@@ -30,7 +31,7 @@ class ConnectSourceControl
         $sourceControl->provider_data = $sourceControl->provider()->createData($input);
 
         try {
-            if (! $sourceControl->provider()->connect()) {
+            if (!$sourceControl->provider()->connect()) {
                 throw ValidationException::withMessages([
                     'provider' => __('Cannot connect to :provider or invalid credentials!', ['provider' => $sourceControl->provider]),
                 ]);
@@ -75,7 +76,7 @@ class ConnectSourceControl
      */
     private function providerRules(array $input): array
     {
-        if (! isset($input['provider'])) {
+        if (!isset($input['provider'])) {
             return [];
         }
 

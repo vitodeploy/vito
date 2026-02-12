@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array<string, string> $provider_data
  * @property string $profile
  * @property ?string $url
+ * @property ?int $port
  * @property string $access_token
  * @property ?int $project_id
  * @property int $user_id
@@ -33,6 +34,7 @@ class SourceControl extends AbstractModel
         'provider_data',
         'profile',
         'url',
+        'port',
         'access_token',
         'project_id',
         'user_id',
@@ -41,13 +43,14 @@ class SourceControl extends AbstractModel
     protected $casts = [
         'access_token' => 'encrypted',
         'provider_data' => 'encrypted:array',
+        'port' => 'integer',
         'project_id' => 'integer',
         'user_id' => 'integer',
     ];
 
     public function provider(): SourceControlProvider
     {
-        $providerClass = config('source-control.providers.'.$this->provider.'.handler');
+        $providerClass = config('source-control.providers.' . $this->provider . '.handler');
 
         /** @var SourceControlProvider $provider */
         $provider = new $providerClass($this);

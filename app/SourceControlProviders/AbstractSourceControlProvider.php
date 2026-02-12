@@ -73,6 +73,6 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
 
     public function getSshPort(): ?int
     {
-        return null;
+        return (int) $this->sourceControl->port ?: ((int) ($this->sourceControl->provider_data['port'] ?? null) ?: null);
     }
 }

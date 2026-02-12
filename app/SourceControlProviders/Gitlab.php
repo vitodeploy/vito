@@ -211,18 +211,6 @@ class Gitlab extends AbstractSourceControlProvider
         }
     }
 
-    public function createData(array $input): array
-    {
-        return [
-            'token' => $input['token'] ?? '',
-            'port' => $input['port'] ?? null,
-        ];
-    }
-
-    public function getSshPort(): ?int
-    {
-        return (int) ($this->sourceControl->provider_data['port'] ?? null) ?: null;
-    }
 
     public function getApiUrl(): string
     {
