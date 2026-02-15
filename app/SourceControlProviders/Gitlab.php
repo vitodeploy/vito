@@ -338,4 +338,8 @@ class Gitlab extends AbstractSourceControlProvider
 
         return $allData;
     }
+    public function getSshPort(): ?int
+    {
+        return (int) $this->sourceControl->port ?: ((int) ($this->sourceControl->provider_data['port'] ?? null) ?: null);
+    }
 }
