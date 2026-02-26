@@ -18,10 +18,6 @@ class HealthController extends Controller
         ]);
     }
 
-    /**
-     * Simple health check endpoint for container orchestration.
-     * No throttling, minimal overhead.
-     */
     #[Get('up', name: 'up')]
     public function up(): Response
     {
