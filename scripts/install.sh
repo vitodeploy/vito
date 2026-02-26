@@ -11,7 +11,7 @@ echo "
                                  |_|            |___/
 "
 
-export VITO_VERSION="3.x"
+export VITO_VERSION="4.x"
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
@@ -104,11 +104,11 @@ export V_NODE_VERSION="20.x"
 curl -fsSL https://deb.nodesource.com/setup_${V_NODE_VERSION} | sudo -E bash -
 apt install -y nodejs
 
-# php
+# php (CLI and FPM - FPM needed for managed sites)
 export V_PHP_VERSION="8.4"
 add-apt-repository ppa:ondrej/php -y
 apt update
-apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-intl
+apt install -y php${V_PHP_VERSION} php${V_PHP_VERSION}-fpm php${V_PHP_VERSION}-mbstring php${V_PHP_VERSION}-mcrypt php${V_PHP_VERSION}-gd php${V_PHP_VERSION}-xml php${V_PHP_VERSION}-curl php${V_PHP_VERSION}-gettext php${V_PHP_VERSION}-zip php${V_PHP_VERSION}-bcmath php${V_PHP_VERSION}-soap php${V_PHP_VERSION}-redis php${V_PHP_VERSION}-sqlite3 php${V_PHP_VERSION}-intl php${V_PHP_VERSION}-pcntl
 if ! sed -i "s/www-data/vito/g" /etc/php/${V_PHP_VERSION}/fpm/pool.d/www.conf; then
   echo 'Error installing PHP' && exit 1
 fi
@@ -119,6 +119,8 @@ service php${V_PHP_VERSION}-fpm restart
 sed -i "s/memory_limit = .*/memory_limit = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
 sed -i "s/post_max_size = .*/post_max_size = 1G/" /etc/php/${V_PHP_VERSION}/fpm/php.ini
+# Also update CLI php.ini for Octane
+sed -i "s/memory_limit = .*/memory_limit = 1G/" /etc/php/${V_PHP_VERSION}/cli/php.ini
 
 # composer
 curl -sS https://getcomposer.org/installer -o composer-setup.php
@@ -129,45 +131,26 @@ apt install redis-server -y
 service redis enable
 service redis start
 
-# setup website
-export COMPOSER_ALLOW_SUPERUSER=1
-export V_REPO="https://github.com/vitodeploy/vito.git"
+# Vito nginx vhost (proxy to Octane)
 export V_VHOST_CONFIG="
 server {
     listen 80;
     listen [::]:80;
     server_name _;
-    root /home/vito/vito/public;
-
-    add_header X-Frame-Options \"SAMEORIGIN\";
-    add_header X-Content-Type-Options \"nosniff\";
 
     client_max_body_size 100M;
 
-    index index.php;
-
-    charset utf-8;
-
     location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
-    }
-
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
-
-    error_page 404 /index.php;
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php${V_PHP_VERSION}-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_hide_header X-Powered-By;
-        fastcgi_buffers 16 16k;
-        fastcgi_buffer_size 32k;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \"upgrade\";
+        proxy_read_timeout 300;
+        proxy_connect_timeout 300;
     }
 }
 "
@@ -180,7 +163,11 @@ rm /etc/nginx/sites-enabled/default
 echo "${V_VHOST_CONFIG}" | tee /etc/nginx/sites-available/vito
 ln -s /etc/nginx/sites-available/vito /etc/nginx/sites-enabled/
 service nginx restart
+
+# clone repository
 rm -rf /home/vito/vito
+export COMPOSER_ALLOW_SUPERUSER=1
+export V_REPO="https://github.com/vitodeploy/vito.git"
 git config --global core.fileMode false
 git clone -b ${VITO_VERSION} ${V_REPO} /home/vito/vito
 find /home/vito/vito -type d -exec chmod 755 {} \;
@@ -192,6 +179,11 @@ composer install --no-dev
 cp .env.prod .env
 sed -i "s|^APP_URL=.*|APP_URL=${VITO_APP_URL}|" .env
 touch /home/vito/vito/storage/database.sqlite
+
+# Install FrankenPHP via Octane
+echo "Installing FrankenPHP..."
+php artisan octane:install --server=frankenphp --no-interaction
+
 php artisan key:generate
 php artisan storage:link
 php artisan migrate --force
@@ -208,38 +200,50 @@ php artisan optimize
 # cleanup
 chown -R vito:vito /home/vito
 
-# setup supervisor
-export V_WORKER_CONFIG="
-[program:worker]
-process_name=%(program_name)s_%(process_num)02d
-command=php /home/vito/vito/artisan horizon
-autostart=1
-autorestart=1
+# setup supervisor with Octane and Horizon
+export V_SUPERVISOR_CONFIG="
+[program:octane]
+process_name=%(program_name)s
+command=php /home/vito/vito/artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8000
+autostart=true
+autorestart=true
 user=vito
 redirect_stderr=true
-stdout_logfile=/home/vito/.logs/workers/worker.log
+stdout_logfile=/home/vito/.logs/octane.log
+stopwaitsecs=10
+
+[program:horizon]
+process_name=%(program_name)s
+command=php /home/vito/vito/artisan horizon
+autostart=true
+autorestart=true
+user=vito
+redirect_stderr=true
+stdout_logfile=/home/vito/.logs/horizon.log
 stopwaitsecs=3600
 "
 apt-get install supervisor -y
 service supervisor enable
 service supervisor start
 mkdir -p /home/vito/.logs
-mkdir -p /home/vito/.logs/workers
-touch /home/vito/.logs/workers/worker.log
-echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
+touch /home/vito/.logs/octane.log
+touch /home/vito/.logs/horizon.log
+chown -R vito:vito /home/vito/.logs
+echo "${V_SUPERVISOR_CONFIG}" | tee /etc/supervisor/conf.d/vito.conf
 supervisorctl reread
 supervisorctl update
 
-# start worker
-supervisorctl start worker:*
+# start Octane and Horizon
+supervisorctl start octane
+supervisorctl start horizon
 
 # setup cronjobs
 echo "* * * * * cd /home/vito/vito && php artisan schedule:run >> /dev/null 2>&1" | sudo -u vito crontab -
 
 # print info
-echo "🎉 Congratulations!"
-echo "✅ You can access Vito at: ${VITO_APP_URL}"
-echo "✅ SSH User: vito"
-echo "✅ SSH Password: ${V_PASSWORD}"
-echo "✅ Admin Email: ${V_ADMIN_EMAIL}"
-echo "✅ Admin Password: ${V_ADMIN_PASSWORD}"
+echo "Congratulations!"
+echo "You can access Vito at: ${VITO_APP_URL}"
+echo "SSH User: vito"
+echo "SSH Password: ${V_PASSWORD}"
+echo "Admin Email: ${V_ADMIN_EMAIL}"
+echo "Admin Password: ${V_ADMIN_PASSWORD}"

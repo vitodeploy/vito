@@ -54,21 +54,27 @@ if [ ! -f "$INIT_FLAG" ]; then
   touch "$INIT_FLAG"
 fi
 
-chown -R www-data:www-data /var/www/html &&
-  chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
-service php8.4-fpm start
+chown -R www-data:www-data /var/www/html
+chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Start Redis
 service redis-server start
-service nginx start
 
+# Run migrations and optimize
 php /var/www/html/artisan migrate --force
 php /var/www/html/artisan optimize:clear
 php /var/www/html/artisan optimize
 
+# Create user if needed
 php /var/www/html/artisan user:create "$NAME" "$EMAIL" "$PASSWORD"
 
+# Start cron
 cron
 
-echo "Vito is running! 🚀"
+# Start Supervisor (Horizon) in background
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &
 
-/usr/bin/supervisord
+echo "Vito is running with Octane!"
+
+# Start Octane (foreground - this keeps container alive)
+exec php /var/www/html/artisan octane:start --server=frankenphp --host=0.0.0.0 --port=80

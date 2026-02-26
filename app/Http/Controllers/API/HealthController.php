@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Get;
 
 class HealthController extends Controller
@@ -15,5 +16,15 @@ class HealthController extends Controller
             'success' => true,
             'version' => config('app.version'),
         ]);
+    }
+
+    /**
+     * Simple health check endpoint for container orchestration.
+     * No throttling, minimal overhead.
+     */
+    #[Get('up', name: 'up')]
+    public function up(): Response
+    {
+        return response('ok', 200);
     }
 }

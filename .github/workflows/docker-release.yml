@@ -41,6 +41,8 @@ jobs:
             TAGS="$TAGS,vitodeploy/vito:2.x"
           elif [[ "$COMMIT_REF" == 3.x* ]]; then
             TAGS="$TAGS,vitodeploy/vito:3.x"
+          elif [[ "$COMMIT_REF" == 4.x* ]]; then
+            TAGS="$TAGS,vitodeploy/vito:4.x"
             if [[ "$IS_PRERELEASE" == "false" ]]; then
               TAGS="$TAGS,vitodeploy/vito:latest"
             fi

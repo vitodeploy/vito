@@ -11,12 +11,12 @@ git clean -fd
 echo "Pulling changes..."
 git fetch --all
 
-INCLUDE_PATTERN='^3\.[0-9]+\.[0-9]+$' # stable only
+INCLUDE_PATTERN='^4\.[0-9]+\.[0-9]+$' # stable only
 
 if [[ "$1" == "--alpha" ]]; then
-  INCLUDE_PATTERN='^3\.[0-9]+\.[0-9]+(-alpha-[0-9]+|-beta-[0-9]+|-rc-[0-9]+)?$'
+  INCLUDE_PATTERN='^4\.[0-9]+\.[0-9]+(-alpha-[0-9]+|-beta-[0-9]+|-rc-[0-9]+)?$'
 elif [[ "$1" == "--beta" ]]; then
-  INCLUDE_PATTERN='^3\.[0-9]+\.[0-9]+(-beta-[0-9]+|-rc-[0-9]+)?$'
+  INCLUDE_PATTERN='^4\.[0-9]+\.[0-9]+(-beta-[0-9]+|-rc-[0-9]+)?$'
 fi
 
 # Filter and sort matching tags
@@ -26,7 +26,7 @@ MATCHING_TAGS=$(git tag | grep -E "$INCLUDE_PATTERN" | sort -V)
 NEW_RELEASE=$(echo "$MATCHING_TAGS" | tail -n 1)
 
 if [[ -z "$NEW_RELEASE" ]]; then
-  echo "❌ No matching tag found."
+  echo "No matching tag found."
   exit 1
 fi
 
@@ -44,9 +44,12 @@ echo "Optimizing..."
 php artisan optimize:clear
 php artisan optimize
 
-echo "Restarting workers..."
-sudo supervisorctl restart worker:*
+echo "Restarting Octane..."
+sudo supervisorctl restart octane
+
+echo "Restarting Horizon..."
+sudo supervisorctl restart horizon
 
 bash scripts/post-update.sh
 
-echo "✅ Vito updated successfully to $NEW_RELEASE! 🎉"
+echo "Vito updated successfully to $NEW_RELEASE!"

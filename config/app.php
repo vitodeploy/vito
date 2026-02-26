@@ -202,6 +202,7 @@ return [
         App\Providers\NotificationChannelServiceProvider::class,
         App\Providers\ServiceTypeServiceProvider::class,
         App\Providers\HorizonServiceProvider::class,
+        App\Providers\OctaneServiceProvider::class,
         App\Providers\WorkflowServiceProvider::class,
     ],
 

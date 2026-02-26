@@ -17,6 +17,7 @@
     "laravel/fortify": "^1.17",
     "laravel/framework": "^12.0",
     "laravel/horizon": "^5.33",
+    "laravel/octane": "^2.9",
     "laravel/sanctum": "^4.0",
     "laravel/tinker": "^2.8",
     "mobiledetect/mobiledetectlib": "^4.8",
@@ -78,7 +79,7 @@
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#fabb74\" \"php artisan serve\" \"php artisan horizon\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,horizon,logs,vite"
+      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#fabb74\" \"php artisan octane:start --watch\" \"php artisan horizon\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=octane,horizon,scheduler,logs,vite"
     ]
   },
   "repositories": [
