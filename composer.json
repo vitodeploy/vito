@@ -22,6 +22,9 @@
     "mobiledetect/mobiledetectlib": "^4.8",
     "opcodesio/log-viewer": "^3.17",
     "phpseclib/phpseclib": "3.0.43",
+    "ratchet/rfc6455": "^0.4",
+    "react/event-loop": "^1.5",
+    "react/socket": "^1.17",
     "spatie/laravel-route-attributes": "^1.24",
     "symfony/yaml": "^7.3",
     "tightenco/ziggy": "^2.5"
@@ -78,7 +81,7 @@
     ],
     "dev": [
       "Composer\\Config::disableProcessTimeout",
-      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#fabb74\" \"php artisan serve\" \"php artisan horizon\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,horizon,logs,vite"
+      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#fabb74,#86efac\" \"php artisan serve\" \"php artisan horizon\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"npm run dev\" \"php artisan ws:serve\" --names=server,horizon,schedule,logs,vite,websocket"
     ]
   },
   "repositories": [

@@ -17,6 +17,12 @@ return [
     'key_pairs_disk' => env('KEY_PAIRS_DISK', 'key-pairs'), // should be FilesystemAdapter storage
 
     /*
+     * WebSocket
+     */
+    'ws_host' => env('WS_HOST', '127.0.0.1'),
+    'ws_port' => env('WS_PORT', '8085'),
+
+    /*
      * General
      */
     'operating_systems' => [

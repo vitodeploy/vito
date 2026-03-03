@@ -1,0 +1,231 @@
+<?php
+
+namespace App\WebSocket;
+
+use GuzzleHttp\Psr7\HttpFactory;
+use Illuminate\Support\Facades\Log;
+use Ratchet\RFC6455\Handshake\RequestVerifier;
+use Ratchet\RFC6455\Handshake\ServerNegotiator;
+use Ratchet\RFC6455\Messaging\CloseFrameChecker;
+use Ratchet\RFC6455\Messaging\Frame;
+use Ratchet\RFC6455\Messaging\MessageBuffer;
+use React\EventLoop\LoopInterface;
+use React\Socket\ConnectionInterface;
+
+class WebSocketServer
+{
+    protected const MAX_HANDSHAKE_BUFFER = 8192;
+
+    protected const PING_INTERVAL = 30;
+
+    protected ServerNegotiator $negotiator;
+
+    /**
+     * Map of connection ID → [handler, messageBuffer].
+     *
+     * @var array<string, array{handler: WebSocketHandler, buffer: MessageBuffer, connection: WebSocketConnection}>
+     */
+    protected array $connections = [];
+
+    /**
+     * Registered route handlers keyed by URI path prefix.
+     *
+     * @var array<string, WebSocketHandler>
+     */
+    protected array $handlers = [];
+
+    protected int $maxConnections;
+
+    public function __construct(
+        protected LoopInterface $loop,
+        int $maxConnections = 50,
+    ) {
+        $this->negotiator = new ServerNegotiator(
+            new RequestVerifier,
+            new HttpFactory,
+        );
+        $this->maxConnections = $maxConnections;
+
+        $this->loop->addPeriodicTimer(self::PING_INTERVAL, function (): void {
+            $this->pingConnections();
+        });
+    }
+
+    /**
+     * Register a handler for a given URI path.
+     *
+     * Example: $server->route('/ws/terminal', new TerminalHandler(...))
+     */
+    public function route(string $path, WebSocketHandler $handler): void
+    {
+        $this->handlers[$path] = $handler;
+    }
+
+    public function handleConnection(ConnectionInterface $conn): void
+    {
+        $totalConnections = count($this->connections);
+        if ($totalConnections >= $this->maxConnections) {
+            $conn->close();
+
+            return;
+        }
+
+        $connId = spl_object_hash($conn);
+        $httpBuffer = '';
+
+        $conn->on('data', function (string $data) use ($conn, $connId, &$httpBuffer): void {
+            if (! isset($this->connections[$connId])) {
+                $httpBuffer .= $data;
+                if (strlen($httpBuffer) > self::MAX_HANDSHAKE_BUFFER) {
+                    $conn->close();
+
+                    return;
+                }
+                $this->handleHandshake($conn, $connId, $httpBuffer);
+
+                return;
+            }
+
+            $this->connections[$connId]['buffer']->onData($data);
+        });
+
+        $conn->on('close', function () use ($connId): void {
+            $this->handleClose($connId);
+        });
+
+        $conn->on('error', function (\Throwable $e) use ($connId): void {
+            Log::error('WebSocket connection error', ['error' => $e->getMessage()]);
+            $this->handleClose($connId);
+        });
+    }
+
+    protected function handleHandshake(ConnectionInterface $conn, string $connId, string $httpBuffer): void
+    {
+        if (! str_contains($httpBuffer, "\r\n\r\n")) {
+            return;
+        }
+
+        try {
+            $psrRequest = \GuzzleHttp\Psr7\Message::parseRequest($httpBuffer);
+            $response = $this->negotiator->handshake($psrRequest);
+
+            if ($response->getStatusCode() !== 101) {
+                $conn->write(\GuzzleHttp\Psr7\Message::toString($response));
+                $conn->close();
+
+                return;
+            }
+
+            // Route to the correct handler based on URI path
+            $path = $psrRequest->getUri()->getPath();
+            $handler = $this->resolveHandler($path);
+
+            if ($handler === null) {
+                $this->sendErrorAndClose($conn, "No handler registered for path: {$path}");
+
+                return;
+            }
+
+            // Let the handler authenticate the request
+            $authError = $handler->authenticate($psrRequest);
+            if ($authError !== null) {
+                $this->sendErrorAndClose($conn, $authError);
+
+                return;
+            }
+
+            // Complete the WebSocket handshake
+            $conn->write(\GuzzleHttp\Psr7\Message::toString($response));
+
+            $wsConnection = new WebSocketConnection($conn);
+
+            $messageBuffer = new MessageBuffer(
+                new CloseFrameChecker,
+                function ($message) use ($connId): void {
+                    $entry = $this->connections[$connId] ?? null;
+                    if ($entry) {
+                        $entry['handler']->onMessage($connId, $message->getPayload());
+                    }
+                },
+                function ($frame) use ($conn): void {
+                    if ($frame->getOpcode() === Frame::OP_CLOSE) {
+                        $conn->write((new Frame($frame->getPayload(), true, Frame::OP_CLOSE))->getContents());
+                        $conn->close();
+                    } elseif ($frame->getOpcode() === Frame::OP_PING) {
+                        $conn->write((new Frame($frame->getPayload(), true, Frame::OP_PONG))->getContents());
+                    }
+                },
+                true,
+                null,
+                null,
+                null,
+                function (string $data) use ($conn): void {
+                    $conn->write($data);
+                },
+            );
+
+            $this->connections[$connId] = [
+                'handler' => $handler,
+                'buffer' => $messageBuffer,
+                'connection' => $wsConnection,
+            ];
+
+            $handler->onOpen($connId, $wsConnection, $psrRequest);
+        } catch (\Throwable $e) {
+            Log::error('WebSocket handshake error', ['error' => $e->getMessage()]);
+            $conn->close();
+        }
+    }
+
+    protected function resolveHandler(string $path): ?WebSocketHandler
+    {
+        // Exact match first
+        if (isset($this->handlers[$path])) {
+            return $this->handlers[$path];
+        }
+
+        // Prefix match (longest prefix wins)
+        $bestMatch = null;
+        $bestLength = 0;
+        foreach ($this->handlers as $prefix => $handler) {
+            if (str_starts_with($path, $prefix) && strlen($prefix) > $bestLength) {
+                $bestMatch = $handler;
+                $bestLength = strlen($prefix);
+            }
+        }
+
+        return $bestMatch;
+    }
+
+    protected function handleClose(string $connId): void
+    {
+        $entry = $this->connections[$connId] ?? null;
+        if ($entry) {
+            $entry['handler']->onClose($connId);
+            unset($this->connections[$connId]);
+        }
+    }
+
+    protected function sendErrorAndClose(ConnectionInterface $conn, string $message): void
+    {
+        $response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\n{$message}";
+        $conn->write($response);
+        $conn->close();
+    }
+
+    public function getConnectionCount(): int
+    {
+        return count($this->connections);
+    }
+
+    protected function pingConnections(): void
+    {
+        foreach ($this->connections as $connId => $entry) {
+            try {
+                $entry['handler']->ping($connId);
+            } catch (\Throwable) {
+                $this->handleClose($connId);
+            }
+        }
+    }
+}

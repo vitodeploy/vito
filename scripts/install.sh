@@ -167,6 +167,17 @@ server {
         fastcgi_buffer_size 32k;
     }
 
+    location /ws/ {
+        proxy_pass http://127.0.0.1:8085;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \"upgrade\";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_read_timeout 86400;
+    }
+
     location ~ /\.(?!well-known).* {
         deny all;
     }
@@ -236,11 +247,26 @@ mkdir -p /home/vito/.logs
 mkdir -p /home/vito/.logs/workers
 touch /home/vito/.logs/workers/worker.log
 echo "${V_WORKER_CONFIG}" | tee /etc/supervisor/conf.d/worker.conf
+
+# websocket server
+export V_WEBSOCKET_CONFIG="
+[program:websocket]
+process_name=%(program_name)s
+command=php /home/vito/vito/artisan ws:serve
+autostart=1
+autorestart=1
+user=vito
+redirect_stderr=true
+stdout_logfile=/home/vito/.logs/workers/websocket.log
+"
+touch /home/vito/.logs/workers/websocket.log
+echo "${V_WEBSOCKET_CONFIG}" | tee /etc/supervisor/conf.d/websocket.conf
 supervisorctl reread
 supervisorctl update
 
 # start worker
 supervisorctl start worker:*
+supervisorctl start websocket
 
 # setup cronjobs
 echo "* * * * * cd /home/vito/vito && php artisan schedule:run >> /dev/null 2>&1" | sudo -u vito crontab -

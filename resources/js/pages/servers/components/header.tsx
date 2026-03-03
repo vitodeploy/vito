@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import InstantTerminal from '@/components/instant-terminal';
+
 import { InstantLogs } from '@/pages/server-logs/components/instant-logs';
 
 export default function ServerHeader({ server, site }: { server: Server; site?: Site }) {
@@ -146,14 +146,20 @@ export default function ServerHeader({ server, site }: { server: Server; site?: 
         </Tooltip>
 
         <Tooltip>
-          <InstantTerminal server={server}>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                <TerminalSquareIcon className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-          </InstantTerminal>
-          <TooltipContent>Terminal (Ctrl + Shift + K)</TooltipContent>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0"
+              onClick={() => {
+                const url = route('console', { server: server.id });
+                window.open(url, `terminal-${server.id}`, 'width=900,height=600,menubar=no,toolbar=no,location=no,status=no');
+              }}
+            >
+              <TerminalSquareIcon className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Terminal</TooltipContent>
         </Tooltip>
 
         <ServerActions server={server} />
