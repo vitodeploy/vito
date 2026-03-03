@@ -11,12 +11,12 @@ git clean -fd
 echo "Pulling changes..."
 git fetch --all
 
-INCLUDE_PATTERN='^3\.[0-9]+\.[0-9]+$' # stable only
+INCLUDE_PATTERN='^4\.[0-9]+\.[0-9]+$' # stable only
 
 if [[ "$1" == "--alpha" ]]; then
-  INCLUDE_PATTERN='^3\.[0-9]+\.[0-9]+(-alpha-[0-9]+|-beta-[0-9]+|-rc-[0-9]+)?$'
+  INCLUDE_PATTERN='^4\.[0-9]+\.[0-9]+(-alpha-[0-9]+|-beta-[0-9]+|-rc-[0-9]+)?$'
 elif [[ "$1" == "--beta" ]]; then
-  INCLUDE_PATTERN='^3\.[0-9]+\.[0-9]+(-beta-[0-9]+|-rc-[0-9]+)?$'
+  INCLUDE_PATTERN='^4\.[0-9]+\.[0-9]+(-beta-[0-9]+|-rc-[0-9]+)?$'
 fi
 
 # Filter and sort matching tags
@@ -46,6 +46,7 @@ php artisan optimize
 
 echo "Restarting workers..."
 sudo supervisorctl restart worker:*
+sudo supervisorctl restart websocket 2>/dev/null || true
 
 bash scripts/post-update.sh
 

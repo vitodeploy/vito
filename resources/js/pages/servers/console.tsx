@@ -212,13 +212,13 @@ export default function Console() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="bg-background flex h-screen flex-col">
       <Head title={`Terminal - ${server.name}${statusLabel}`} />
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-border bg-card px-3 py-1.5">
+      <div className="border-border bg-card flex items-center justify-between border-b px-3 py-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">{server.name}</span>
+          <span className="text-foreground text-sm font-medium">{server.name}</span>
           {statusDot()}
         </div>
 
@@ -236,7 +236,13 @@ export default function Console() {
             </SelectContent>
           </Select>
 
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={newSession} title="New Session">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground h-7 w-7"
+            onClick={newSession}
+            title="New Session"
+          >
             <RefreshCwIcon className="h-3.5 w-3.5" />
           </Button>
         </div>
