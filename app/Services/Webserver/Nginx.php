@@ -43,6 +43,22 @@ class Nginx extends AbstractWebserver
             'root'
         );
 
+        $this->service->server->ssh()->exec(
+            view('ssh.services.webserver.nginx.create-default-ssl'),
+            'create-default-ssl'
+        );
+
+        $this->service->server->ssh()->write(
+            '/etc/nginx/sites-available/000-default-ssl',
+            view('ssh.services.webserver.nginx.default-ssl-vhost'),
+            'root'
+        );
+
+        $this->service->server->ssh()->exec(
+            'sudo ln -sf /etc/nginx/sites-available/000-default-ssl /etc/nginx/sites-enabled/000-default-ssl',
+            'enable-default-ssl'
+        );
+
         $this->service->server->systemd()->restart('nginx');
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();

@@ -87,6 +87,7 @@ class HandleInertiaRequests extends Middleware
             ...$data,
             'name' => config('app.name'),
             'version' => config('app.version'),
+            'env' => config('app.env'),
             'demo' => config('app.demo'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => $user ? [

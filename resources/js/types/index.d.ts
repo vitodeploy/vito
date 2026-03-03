@@ -113,6 +113,7 @@ export interface Configs {
 export interface SharedData {
   name: string;
   version: string;
+  env: string;
   demo: boolean;
   quote: { message: string; author: string };
   auth: Auth;

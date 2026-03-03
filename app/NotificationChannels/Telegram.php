@@ -67,7 +67,7 @@ class Telegram extends AbstractNotificationChannel
         Http::post($this->apiUrl.$this->data()['bot_token'].'/sendMessage', [
             'chat_id' => $this->data()['chat_id'],
             'text' => $text,
-            'parse_mode' => 'markdown',
+            'parse_mode' => 'HTML',
             'disable_web_page_preview' => true,
         ])->throw();
     }

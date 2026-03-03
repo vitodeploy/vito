@@ -76,7 +76,7 @@ class TelegramTest extends TestCase
                 return $request->data() === [
                     'chat_id' => '12345',
                     'text' => 'Connected!',
-                    'parse_mode' => 'markdown',
+                    'parse_mode' => 'HTML',
                     'disable_web_page_preview' => true,
                 ];
             }
@@ -103,7 +103,7 @@ class TelegramTest extends TestCase
                 return $request->data() === [
                     'chat_id' => '12345',
                     'text' => 'Hello',
-                    'parse_mode' => 'markdown',
+                    'parse_mode' => 'HTML',
                     'disable_web_page_preview' => true,
                 ];
             }

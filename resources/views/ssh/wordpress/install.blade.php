@@ -1,4 +1,10 @@
-if ! curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; then
+if [ "{{ $isIsolated }}" == "true" ]; then
+    cd /home/{{ $isolatedUsername }}
+else
+    cd /tmp
+fi
+
+if ! curl -sS -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
@@ -8,7 +14,7 @@ fi
 
 if [ "{{ $isIsolated }}" == "true" ]; then
     mv wp-cli.phar /home/{{ $isolatedUsername }}/bin/
-    ln -s /home/{{ $isolatedUsername }}/bin/wp-cli.phar /home/{{ $isolatedUsername }}/bin/wp
+    ln -sf /home/{{ $isolatedUsername }}/bin/wp-cli.phar /home/{{ $isolatedUsername }}/bin/wp
 else
     if ! sudo mv wp-cli.phar /usr/local/bin/wp; then
         echo 'VITO_SSH_ERROR' && exit 1

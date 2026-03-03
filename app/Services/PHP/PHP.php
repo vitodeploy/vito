@@ -128,7 +128,7 @@ class PHP extends AbstractService
      */
     public function installComposer(): void
     {
-        $this->service->server->ssh()->exec(
+        $this->service->server->ssh('root')->exec(
             view('ssh.services.php.install-composer'),
             'install-composer'
         );
@@ -179,8 +179,12 @@ class PHP extends AbstractService
     public function version(): string
     {
         $version = $this->service->server->ssh()->exec(
-            '/usr/bin/php'.$this->service->version.' -r \'echo PHP_VERSION;\''
+            '/usr/bin/php'.$this->service->version.' -r \'echo PHP_VERSION;\' 2>/dev/null'
         );
+
+        if (preg_match('/(\d+\.\d+\.\d+)/', $version, $matches)) {
+            return $matches[1];
+        }
 
         return trim($version);
     }
