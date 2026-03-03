@@ -6,12 +6,6 @@ use Illuminate\Support\Facades\Log;
 use Ratchet\RFC6455\Messaging\Frame;
 use React\Socket\ConnectionInterface;
 
-/**
- * Wraps a raw TCP connection with WebSocket frame helpers.
- *
- * Handlers receive this instead of the raw TCP connection so they
- * can send JSON messages without dealing with framing themselves.
- */
 class WebSocketConnection
 {
     public function __construct(
@@ -19,8 +13,6 @@ class WebSocketConnection
     ) {}
 
     /**
-     * Send a JSON-encoded message to the client as a WebSocket text frame.
-     *
      * @param  array<string, mixed>  $data
      */
     public function send(array $data): void
@@ -34,9 +26,6 @@ class WebSocketConnection
         }
     }
 
-    /**
-     * Send a raw string as a WebSocket text frame.
-     */
     public function sendRaw(string $data): void
     {
         try {
@@ -47,18 +36,12 @@ class WebSocketConnection
         }
     }
 
-    /**
-     * Send a WebSocket ping frame.
-     */
     public function ping(): void
     {
         $frame = new Frame('', true, Frame::OP_PING);
         $this->tcpConnection->write($frame->getContents());
     }
 
-    /**
-     * Close the underlying TCP connection.
-     */
     public function close(): void
     {
         $this->tcpConnection->close();

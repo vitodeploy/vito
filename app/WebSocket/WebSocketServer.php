@@ -21,15 +21,11 @@ class WebSocketServer
     protected ServerNegotiator $negotiator;
 
     /**
-     * Map of connection ID → [handler, messageBuffer].
-     *
      * @var array<string, array{handler: WebSocketHandler, buffer: MessageBuffer, connection: WebSocketConnection}>
      */
     protected array $connections = [];
 
     /**
-     * Registered route handlers keyed by URI path prefix.
-     *
      * @var array<string, WebSocketHandler>
      */
     protected array $handlers = [];
@@ -51,11 +47,6 @@ class WebSocketServer
         });
     }
 
-    /**
-     * Register a handler for a given URI path.
-     *
-     * Example: $server->route('/ws/terminal', new TerminalHandler(...))
-     */
     public function route(string $path, WebSocketHandler $handler): void
     {
         $this->handlers[$path] = $handler;

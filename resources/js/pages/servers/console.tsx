@@ -212,19 +212,19 @@ export default function Console() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-black">
+    <div className="flex h-screen flex-col bg-background">
       <Head title={`Terminal - ${server.name}${statusLabel}`} />
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-900 px-3 py-1.5">
+      <div className="flex items-center justify-between border-b border-border bg-card px-3 py-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-neutral-300">{server.name}</span>
+          <span className="text-sm font-medium text-foreground">{server.name}</span>
           {statusDot()}
         </div>
 
         <div className="flex items-center gap-2">
           <Select value={user} onValueChange={handleUserChange} disabled={status === 'connecting'}>
-            <SelectTrigger className="h-7 w-24 border-neutral-700 bg-neutral-800 text-xs text-neutral-300">
+            <SelectTrigger className="h-7 w-24 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -236,7 +236,7 @@ export default function Console() {
             </SelectContent>
           </Select>
 
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-400 hover:text-neutral-200" onClick={newSession} title="New Session">
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={newSession} title="New Session">
             <RefreshCwIcon className="h-3.5 w-3.5" />
           </Button>
         </div>
