@@ -3,6 +3,7 @@
 namespace App\WorkflowActions\Site;
 
 use App\Models\Server;
+use App\Models\Site;
 use App\WorkflowActions\AbstractWorkflowAction;
 use Illuminate\Support\Facades\Validator;
 
@@ -40,6 +41,8 @@ abstract class CreateSite extends AbstractWorkflowAction
 
         /** @var Server $server */
         $server = Server::query()->findOrFail($input['server_id']);
+
+        $this->authorize('create', [Site::class, $server]);
 
         $site = app(\App\Actions\Site\CreateSite::class)->create(
             $server,
