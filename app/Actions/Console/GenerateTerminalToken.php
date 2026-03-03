@@ -10,8 +10,6 @@ use Illuminate\Support\Str;
 class GenerateTerminalToken
 {
     /**
-     * Generate a short-lived one-time token for WebSocket terminal authentication.
-     *
      * @return array{token: string}
      */
     public function generate(Server $server, User $user, string $sshUser): array
@@ -28,8 +26,6 @@ class GenerateTerminalToken
     }
 
     /**
-     * Validate and consume a terminal token.
-     *
      * @return array{server_id: int, user_id: int, ssh_user: string}|null
      */
     public function validate(string $token): ?array

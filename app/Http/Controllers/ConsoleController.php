@@ -19,9 +19,6 @@ use Spatie\RouteAttributes\Attributes\Prefix;
 #[Middleware(['auth', 'has-project'])]
 class ConsoleController extends Controller
 {
-    /**
-     * Render the terminal page (opened in a popup window).
-     */
     #[Get('/', name: 'console')]
     public function index(Server $server): Response
     {
@@ -32,9 +29,6 @@ class ConsoleController extends Controller
         ]);
     }
 
-    /**
-     * Generate a one-time token for WebSocket terminal authentication.
-     */
     #[Post('/token', name: 'console.token')]
     public function token(Server $server, Request $request): JsonResponse
     {
@@ -53,15 +47,12 @@ class ConsoleController extends Controller
             $request->input('user'),
         );
 
-        // Build the WebSocket URL
         $appUrl = parse_url(config('app.url'));
         $isSecure = ($appUrl['scheme'] ?? 'http') === 'https';
         $wsProtocol = $isSecure ? 'wss' : 'ws';
         $host = $appUrl['host'] ?? 'localhost';
         $port = $appUrl['port'] ?? ($isSecure ? 443 : 80);
 
-        // In production, nginx proxies /ws/ to the WebSocket server
-        // In development, connect directly to the WebSocket server port
         if (app()->environment('local')) {
             $wsPort = config('core.ws_port', 8085);
             $result['url'] = "{$wsProtocol}://{$host}:{$wsPort}/ws/terminal";

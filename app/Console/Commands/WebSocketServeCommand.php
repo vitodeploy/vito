@@ -27,7 +27,6 @@ class WebSocketServeCommand extends Command
 
         $server = new WebSocketServer($loop, $maxConnections);
 
-        // Register handlers
         $server->route('/ws/terminal', new TerminalHandler($loop));
 
         $socket = new SocketServer("{$host}:{$port}", [], $loop);
