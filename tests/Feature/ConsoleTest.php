@@ -18,6 +18,7 @@ class ConsoleTest extends TestCase
 
     public function test_see_console_page(): void
     {
+        $this->withoutVite();
         $this->actingAs($this->user);
 
         $this->get(route('console', $this->server))
@@ -155,7 +156,7 @@ class ConsoleTest extends TestCase
 
         $handler = new TerminalHandler(Loop::get());
 
-        $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token'] . '&cols=80&rows=24');
+        $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token'].'&cols=80&rows=24');
 
         $error = $handler->authenticate($request);
         $this->assertNull($error);
@@ -190,7 +191,7 @@ class ConsoleTest extends TestCase
         Cache::forget("terminal_token:{$result['token']}");
 
         $handler = new TerminalHandler(Loop::get());
-        $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token']);
+        $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token']);
 
         $error = $handler->authenticate($request);
         $this->assertEquals('Invalid or expired token', $error);
@@ -207,7 +208,7 @@ class ConsoleTest extends TestCase
         $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
 
         $handler = new TerminalHandler(Loop::get());
-        $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token']);
+        $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token']);
 
         $error = $handler->authenticate($request);
         $this->assertEquals('Unauthorized', $error);
@@ -222,7 +223,7 @@ class ConsoleTest extends TestCase
         $this->server->forceDelete();
 
         $handler = new TerminalHandler(Loop::get());
-        $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token']);
+        $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token']);
 
         $error = $handler->authenticate($request);
         $this->assertEquals('Server not found', $error);
@@ -237,7 +238,7 @@ class ConsoleTest extends TestCase
         $this->user->forceDelete();
 
         $handler = new TerminalHandler(Loop::get());
-        $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token']);
+        $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token']);
 
         $error = $handler->authenticate($request);
         $this->assertEquals('Server not found', $error);
@@ -251,7 +252,7 @@ class ConsoleTest extends TestCase
         // Authenticate MAX_CONNECTIONS_PER_USER (5) times
         for ($i = 0; $i < 5; $i++) {
             $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
-            $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token'] . '&cols=80&rows=24');
+            $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token'].'&cols=80&rows=24');
             $error = $handler->authenticate($request);
             $this->assertNull($error, "Connection $i should succeed");
 
@@ -275,7 +276,7 @@ class ConsoleTest extends TestCase
 
         // 6th connection should be rate limited
         $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
-        $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token'] . '&cols=80&rows=24');
+        $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token'].'&cols=80&rows=24');
         $error = $handler->authenticate($request);
         $this->assertEquals('Too many connections', $error);
     }
@@ -310,7 +311,7 @@ class ConsoleTest extends TestCase
         ]);
 
         $result = $action->generate($this->server, $otherUser, $this->server->getSshUser());
-        $request = new PsrRequest('GET', '/ws/terminal?token=' . $result['token'] . '&cols=80&rows=24');
+        $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token'].'&cols=80&rows=24');
         $error = $handler->authenticate($request);
         $this->assertNull($error);
     }

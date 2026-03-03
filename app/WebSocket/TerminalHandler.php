@@ -5,9 +5,9 @@ namespace App\WebSocket;
 use App\Actions\Console\GenerateTerminalToken;
 use App\Models\Server;
 use App\Models\User;
-use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\RequestInterface;
 use React\EventLoop\LoopInterface;
 
 class TerminalHandler implements WebSocketHandler
@@ -15,8 +15,6 @@ class TerminalHandler implements WebSocketHandler
     protected const MAX_CONNECTIONS_PER_USER = 5;
 
     /**
-     * Active connections keyed by connection ID.
-     *
      * @var array<string, array{
      *     connection: WebSocketConnection,
      *     session: ?TerminalSession,
@@ -30,9 +28,6 @@ class TerminalHandler implements WebSocketHandler
     protected array $connections = [];
 
     /**
-     * Token data stored between authenticate() and onOpen(),
-     * keyed by the token string from the query params.
-     *
      * @var array<string, array{server_id: int, user_id: int, ssh_user: string}>
      */
     protected array $pendingAuth = [];
@@ -41,7 +36,7 @@ class TerminalHandler implements WebSocketHandler
         protected LoopInterface $loop,
     ) {}
 
-    public function authenticate(Request $psrRequest): ?string
+    public function authenticate(RequestInterface $psrRequest): ?string
     {
         $queryString = $psrRequest->getUri()->getQuery();
         parse_str($queryString, $queryParams);
@@ -76,7 +71,7 @@ class TerminalHandler implements WebSocketHandler
         return null;
     }
 
-    public function onOpen(string $connId, WebSocketConnection $connection, Request $psrRequest): void
+    public function onOpen(string $connId, WebSocketConnection $connection, RequestInterface $psrRequest): void
     {
         $queryString = $psrRequest->getUri()->getQuery();
         parse_str($queryString, $queryParams);
