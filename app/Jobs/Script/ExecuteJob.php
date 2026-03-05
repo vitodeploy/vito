@@ -22,7 +22,7 @@ class ExecuteJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->run("script-exec-{$this->execution->id}", function () {
+        $this->run("server-{$this->execution->server_id}", function () {
             $server = $this->execution->server;
             $content = $this->execution->getContent();
             $this->execution->server_log_id = $this->log->id;
