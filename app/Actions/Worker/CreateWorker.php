@@ -3,11 +3,10 @@
 namespace App\Actions\Worker;
 
 use App\Enums\WorkerStatus;
+use App\Jobs\Worker\CreateJob;
 use App\Models\Server;
-use App\Models\Service;
 use App\Models\Site;
 use App\Models\Worker;
-use App\Services\ProcessManager\ProcessManager;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -43,28 +42,7 @@ class CreateWorker
         ]);
         $worker->save();
 
-        dispatch(function () use ($worker): void {
-            /** @var Service $service */
-            $service = $worker->server->processManager();
-            /** @var ProcessManager $processManager */
-            $processManager = $service->handler();
-            $processManager->create(
-                $worker->id,
-                $worker->command,
-                $worker->user,
-                $worker->auto_start,
-                $worker->auto_restart,
-                $worker->numprocs,
-                $worker->getLogFile(),
-                $worker->site?->path,
-                $worker->site_id,
-                $worker->environment,
-            );
-            $worker->status = WorkerStatus::RUNNING;
-            $worker->save();
-        })->catch(function () use ($worker): void {
-            $worker->delete();
-        })->onQueue('ssh');
+        dispatch(new CreateJob($worker))->onQueue('ssh');
 
         return $worker;
     }

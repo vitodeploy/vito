@@ -3,6 +3,7 @@
 namespace App\Actions\Script;
 
 use App\Enums\ScriptExecutionStatus;
+use App\Jobs\Script\ExecuteJob;
 use App\Models\Script;
 use App\Models\ScriptExecution;
 use App\Models\Server;
@@ -49,20 +50,7 @@ class ExecuteScript
         $execution->server_log_id = $log->id;
         $execution->save();
 
-        dispatch(function () use ($execution, $log): void {
-            /** @var Server $server */
-            $server = $execution->server;
-
-            $content = $execution->getContent();
-            $execution->server_log_id = $log->id;
-            $execution->save();
-            $server->os()->runScript('~/', $content, $log, $execution->user);
-            $execution->status = ScriptExecutionStatus::COMPLETED;
-            $execution->save();
-        })->catch(function () use ($execution): void {
-            $execution->status = ScriptExecutionStatus::FAILED;
-            $execution->save();
-        })->onQueue('ssh');
+        dispatch(new ExecuteJob($execution, $log))->onQueue('ssh');
 
         return $execution;
     }

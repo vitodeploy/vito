@@ -4,10 +4,11 @@ namespace App\Actions\Backup;
 
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupType;
+use App\Jobs\Backup\RestoreDatabaseJob;
+use App\Jobs\Backup\RestoreFileJob;
 use App\Models\BackupFile;
 use App\Models\Database;
 use App\Models\Server;
-use App\Models\Service;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -39,24 +40,11 @@ class RestoreBackup
         $backupFile->restored_to = $database->name;
         $backupFile->save();
 
-        dispatch(function () use ($backupFile, $database): void {
-            /** @var Service $service */
-            $service = $database->server->database();
-            /** @var \App\Services\Database\Database $databaseHandler */
-            $databaseHandler = $service->handler();
-            $databaseHandler->restoreBackup($backupFile, $database->name);
-            $backupFile->status = BackupFileStatus::RESTORED;
-            $backupFile->restored_at = now();
-            $backupFile->save();
-        })->catch(function () use ($backupFile): void {
-            $backupFile->status = BackupFileStatus::RESTORE_FAILED;
-            $backupFile->save();
-        })->onQueue('ssh');
+        dispatch(new RestoreDatabaseJob($backupFile, $database))->onQueue('ssh');
     }
 
     private function restoreFile(BackupFile $backupFile, array $input): void
     {
-        // File backup restoration
         $restorePath = $input['path'];
         $owner = $input['owner'] ?? 'vito:vito';
         $permissions = $input['permissions'] ?? '755';
@@ -64,30 +52,7 @@ class RestoreBackup
         $backupFile->restored_to = $restorePath;
         $backupFile->save();
 
-        dispatch(function () use ($backupFile, $restorePath, $owner, $permissions): void {
-            $server = $backupFile->backup->server;
-            $tempBackupPath = $backupFile->tempPath();
-
-            // Download backup from storage provider
-            $backupFile->backup->storage->provider()->ssh($server)->download(
-                $backupFile->path(),
-                $tempBackupPath
-            );
-
-            // Extract the archive using OS service with custom owner and permissions
-            $server->os()->extractArchive($tempBackupPath, $restorePath, $owner, $permissions);
-
-            // Clean up temporary file
-            $server->os()->deleteFile($tempBackupPath);
-
-            $backupFile->status = BackupFileStatus::RESTORED;
-            $backupFile->restored_at = now();
-            $backupFile->save();
-        })->catch(function () use ($backupFile): void {
-            $backupFile->status = BackupFileStatus::RESTORE_FAILED;
-            $backupFile->save();
-            $backupFile->backup->server->os()->deleteFile($backupFile->tempPath());
-        })->onQueue('ssh');
+        dispatch(new RestoreFileJob($backupFile, $restorePath, $owner, $permissions))->onQueue('ssh');
     }
 
     private function validate(Server $server, array $input, BackupType $backupType): void

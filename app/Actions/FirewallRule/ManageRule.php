@@ -3,11 +3,9 @@
 namespace App\Actions\FirewallRule;
 
 use App\Enums\FirewallRuleStatus;
+use App\Jobs\FirewallRule\ApplyRulesJob;
 use App\Models\FirewallRule;
 use App\Models\Server;
-use App\Models\Service;
-use App\Services\Firewall\Firewall;
-use Exception;
 use Illuminate\Support\Facades\Validator;
 
 class ManageRule
@@ -34,7 +32,7 @@ class ManageRule
 
         $rule->save();
 
-        dispatch(fn () => $this->applyRule($rule))->onQueue('ssh');
+        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
 
         return $rule;
     }
@@ -58,7 +56,7 @@ class ManageRule
             'status' => FirewallRuleStatus::UPDATING,
         ]);
 
-        dispatch(fn () => $this->applyRule($rule))->onQueue('ssh');
+        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
 
         return $rule;
     }
@@ -68,33 +66,7 @@ class ManageRule
         $rule->status = FirewallRuleStatus::DELETING;
         $rule->save();
 
-        dispatch(fn () => $this->applyRule($rule))->onQueue('ssh');
-    }
-
-    protected function applyRule(FirewallRule $rule): void
-    {
-        try {
-            /** @var Service $service */
-            $service = $rule->server->firewall();
-            /** @var Firewall $handler */
-            $handler = $service->handler();
-            $handler->applyRules();
-        } catch (Exception) {
-            $rule->server->firewallRules()
-                ->where('status', '!=', FirewallRuleStatus::READY)
-                ->update(['status' => FirewallRuleStatus::FAILED]);
-
-            return;
-        }
-
-        if ($rule->status === FirewallRuleStatus::DELETING) {
-            $rule->delete();
-
-            return;
-        }
-
-        $rule->status = FirewallRuleStatus::READY;
-        $rule->save();
+        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
     }
 
     private function validate(array $input): void

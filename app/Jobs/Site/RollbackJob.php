@@ -27,7 +27,7 @@ class RollbackJob implements ShouldQueue
         $site = $this->deployment->site;
         $this->current = $site->deployments()->where('active', 1)->whereNotNull('release')->first();
 
-        $this->run("server-{$site->server_id}", function () use ($site) {
+        $this->run("site-{$site->id}", function () use ($site) {
             $this->deployment->site->server->ssh($site->user)->exec(
                 view('ssh.modern-deployment.release', [
                     'site' => $site,

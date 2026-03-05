@@ -2,23 +2,19 @@
 
 namespace App\Actions\Server;
 
-use App\Enums\ServerStatus;
-use App\Facades\Notifier;
+use App\Jobs\Server\InstallJob;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
 use App\Models\User;
-use App\Notifications\ServerInstallationFailed;
 use App\ServerProviders\Custom;
 use App\ValidationRules\RestrictedIPAddressesRule;
 use Exception;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 class CreateServer
 {
@@ -73,19 +69,7 @@ class CreateServer
             $this->createServices($input);
 
             // install server
-            dispatch(function (): void {
-                app(InstallServer::class)->run($this->server);
-            })
-                ->catch(function (Throwable $e): void {
-                    $this->server->update([
-                        'status' => ServerStatus::INSTALLATION_FAILED,
-                    ]);
-                    Notifier::send($this->server, new ServerInstallationFailed($this->server));
-                    Log::error('server-installation-error', [
-                        'error' => (string) $e,
-                    ]);
-                })
-                ->onQueue('ssh');
+            dispatch(new InstallJob($this->server))->onQueue('ssh');
 
             // Ensure we get the default db values in the model
             $this->server->refresh();

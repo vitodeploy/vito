@@ -29,7 +29,7 @@ class DeployJob implements ShouldQueue
         $site = $this->deployment->site;
         $log = ServerLog::find($this->deployment->log_id);
 
-        $this->run("server-{$site->server_id}", function () use ($site, $log) {
+        $this->run("site-{$site->id}", function () use ($site, $log) {
             if ($this->isModern) {
                 $this->handleModernDeployment($site, $log);
             } else {

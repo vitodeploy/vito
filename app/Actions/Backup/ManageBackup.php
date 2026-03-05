@@ -2,10 +2,10 @@
 
 namespace App\Actions\Backup;
 
-use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Enums\BackupType;
 use App\Enums\DatabaseStatus;
+use App\Jobs\Backup\DeleteJob;
 use App\Models\Backup;
 use App\Models\Server;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -56,17 +56,7 @@ class ManageBackup
         $backup->status = BackupStatus::DELETING;
         $backup->save();
 
-        dispatch(function () use ($backup): void {
-            $files = $backup->files;
-            foreach ($files as $file) {
-                $file->status = BackupFileStatus::DELETING;
-                $file->save();
-
-                $file->deleteFile();
-            }
-
-            $backup->delete();
-        })->onQueue('ssh');
+        dispatch(new DeleteJob($backup))->onQueue('ssh');
     }
 
     public function stop(Backup $backup): void

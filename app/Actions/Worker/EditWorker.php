@@ -3,10 +3,9 @@
 namespace App\Actions\Worker;
 
 use App\Enums\WorkerStatus;
-use App\Models\Service;
+use App\Jobs\Worker\EditJob;
 use App\Models\Site;
 use App\Models\Worker;
-use App\Services\ProcessManager\ProcessManager;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -40,30 +39,7 @@ class EditWorker
         ]);
         $worker->save();
 
-        dispatch(function () use ($worker): void {
-            /** @var Service $service */
-            $service = $worker->server->processManager();
-            /** @var ProcessManager $processManager */
-            $processManager = $service->handler();
-            $processManager->delete($worker->id, $worker->site_id);
-
-            $processManager->create(
-                $worker->id,
-                $worker->command,
-                $worker->user,
-                $worker->auto_start,
-                $worker->auto_restart,
-                $worker->numprocs,
-                $worker->getLogFile(),
-                $worker->site?->path,
-                $worker->site_id
-            );
-            $worker->status = WorkerStatus::RUNNING;
-            $worker->save();
-        })->catch(function () use ($worker): void {
-            $worker->status = WorkerStatus::FAILED;
-            $worker->save();
-        })->onQueue('ssh');
+        dispatch(new EditJob($worker))->onQueue('ssh');
 
         return $worker;
     }

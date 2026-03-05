@@ -3,6 +3,7 @@
 namespace App\Actions\Backup;
 
 use App\Enums\BackupFileStatus;
+use App\Jobs\Backup\DeleteFileJob;
 use App\Models\BackupFile;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -28,8 +29,6 @@ class ManageBackupFile
         $file->status = BackupFileStatus::DELETING;
         $file->save();
 
-        dispatch(function () use ($file): void {
-            $file->deleteFile();
-        })->onQueue('ssh');
+        dispatch(new DeleteFileJob($file))->onQueue('ssh');
     }
 }

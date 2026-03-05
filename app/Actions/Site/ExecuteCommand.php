@@ -3,6 +3,7 @@
 namespace App\Actions\Site;
 
 use App\Enums\CommandExecutionStatus;
+use App\Jobs\Site\ExecuteCommandJob;
 use App\Models\Command;
 use App\Models\CommandExecution;
 use App\Models\ServerLog;
@@ -39,24 +40,7 @@ class ExecuteCommand
         $execution->server_log_id = $log->id;
         $execution->save();
 
-        dispatch(function () use ($execution, $command, $log): void {
-            $content = $execution->getContent();
-            $execution->server_log_id = $log->id;
-            $execution->save();
-            $execution->server->os()->runScript(
-                path: $command->site->path,
-                script: $content,
-                serverLog: $log,
-                user: $command->site->user,
-                variables: $execution->variables,
-                aliases: $command->site->environmentAliases(),
-            );
-            $execution->status = CommandExecutionStatus::COMPLETED;
-            $execution->save();
-        })->catch(function () use ($execution): void {
-            $execution->status = CommandExecutionStatus::FAILED;
-            $execution->save();
-        })->onQueue('ssh');
+        dispatch(new ExecuteCommandJob($execution, $command, $log))->onQueue('ssh');
 
         return $execution;
     }

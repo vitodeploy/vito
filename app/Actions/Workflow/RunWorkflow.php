@@ -5,7 +5,7 @@ namespace App\Actions\Workflow;
 use App\DTOs\WorkflowActionDTO;
 use App\Enums\WorkflowRunStatus;
 use App\Exceptions\AppError;
-use App\Facades\SSH;
+use App\Jobs\Workflow\RunJob;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
@@ -39,29 +39,12 @@ class RunWorkflow
         $run->log('Starting workflow ['.$workflow->name.']');
         $run->refresh();
 
-        dispatch(function () use ($run, $user, $workflow, $executionTree, $input) {
-            // set all queue drivers to sync for underlying actions
-            config()->set('queue.connections.ssh.driver', 'sync');
-            config()->set('queue.connections.default.driver', 'sync');
-
-            if ($run->verbose && $run->log_disk && $run->log_path) {
-                SSH::useLog($run->log_disk, $run->log_path);
-            }
-            if ($input['inputs']) {
-                $executionTree->inputs = $input['inputs'];
-            }
-            $this->executeAction($run, $user, $workflow, $executionTree, $input['inputs'] ?? []);
-            $run->status = WorkflowRunStatus::COMPLETED;
-            $run->save();
-        })->catch(function () use ($run) {
-            $run->status = WorkflowRunStatus::FAILED;
-            $run->save();
-        })->onQueue('ssh');
+        dispatch(new RunJob($run, $user, $workflow, $executionTree, $input))->onQueue('ssh');
 
         return $run;
     }
 
-    private function executeAction(WorkflowRun $run, User $user, Workflow $workflow, ?WorkflowActionDTO $workflowActionDto, ?array $input): void
+    public function executeAction(WorkflowRun $run, User $user, Workflow $workflow, ?WorkflowActionDTO $workflowActionDto, ?array $input): void
     {
         if (! $workflowActionDto) {
             return;
