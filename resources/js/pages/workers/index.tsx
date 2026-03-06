@@ -12,6 +12,7 @@ import { Worker } from '@/types/worker';
 import { columns } from '@/pages/workers/components/columns';
 import WorkerForm from '@/pages/workers/components/form';
 import { Site } from '@/types/site';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function WorkerIndex() {
   const page = usePage<{
@@ -20,6 +21,8 @@ export default function WorkerIndex() {
     site?: Site;
     sites?: Array<{ id: number; domain: string }>;
   }>();
+
+  const [workers] = useRealtime<Worker>(page.props.workers, 'worker');
 
   return (
     <ServerLayout>
@@ -47,7 +50,7 @@ export default function WorkerIndex() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns(page.props.sites)} paginatedData={page.props.workers} />
+        <DataTable columns={columns(page.props.sites)} paginatedData={workers} />
       </Container>
     </ServerLayout>
   );

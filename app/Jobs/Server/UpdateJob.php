@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Server;
 
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
 use App\Facades\Notifier;
+use App\Http\Resources\ServerResource;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Notifications\ServerUpdateFailed;
@@ -24,6 +27,7 @@ class UpdateJob implements ShouldQueue
             $this->server->os()->upgrade();
             $this->server->checkConnection();
             $this->server->checkForUpdates();
+            $this->broadcastServerUpdate();
         });
     }
 
@@ -31,11 +35,23 @@ class UpdateJob implements ShouldQueue
     {
         Notifier::send($this->server, new ServerUpdateFailed($this->server));
         $this->server->checkConnection();
+        $this->broadcastServerUpdate();
 
         ServerLog::log(
             $this->server,
             'update-server-failed',
             $e->getMessage()
         );
+    }
+
+    private function broadcastServerUpdate(): void
+    {
+        $this->server->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->server->project_id,
+            type: 'server.updated',
+            data: (new ServerResource($this->server))->toArray(request()),
+        ));
     }
 }

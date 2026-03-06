@@ -12,6 +12,7 @@ import { columns } from '@/pages/redirects/components/columns';
 import { Redirect } from '@/types/redirect';
 import CreateRedirect from '@/pages/redirects/components/create-redirect';
 import { Site } from '@/types/site';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Redirects() {
   const page = usePage<{
@@ -19,6 +20,8 @@ export default function Redirects() {
     site: Site;
     redirects: PaginatedData<Redirect>;
   }>();
+
+  const [redirects] = useRealtime<Redirect>(page.props.redirects, 'redirect');
 
   return (
     <ServerLayout>
@@ -43,7 +46,7 @@ export default function Redirects() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.redirects} />
+        <DataTable columns={columns} paginatedData={redirects} />
       </Container>
     </ServerLayout>
   );

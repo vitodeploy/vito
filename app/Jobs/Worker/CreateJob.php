@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Worker;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\WorkerStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\WorkerResource;
 use App\Models\ServerLog;
 use App\Models\Service;
 use App\Models\Worker;
@@ -40,12 +43,32 @@ class CreateJob implements ShouldQueue
             );
             $this->worker->status = WorkerStatus::RUNNING;
             $this->worker->save();
+            $this->broadcastWorkerUpdate();
         });
     }
 
     public function failed(Exception $e): void
     {
+        $projectId = $this->worker->server->project_id;
+        $workerId = $this->worker->id;
         $this->worker->delete();
         ServerLog::log($this->worker->server, 'create-worker-failed', $e->getMessage());
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $projectId,
+            type: 'worker.deleted',
+            data: ['id' => $workerId],
+        ));
+    }
+
+    private function broadcastWorkerUpdate(): void
+    {
+        $this->worker->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->worker->server->project_id,
+            type: 'worker.updated',
+            data: (new WorkerResource($this->worker))->toArray(request()),
+        ));
     }
 }

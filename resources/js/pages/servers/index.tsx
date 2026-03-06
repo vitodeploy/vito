@@ -11,6 +11,7 @@ import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/app/layout';
 import { BookOpenIcon, PlusIcon } from 'lucide-react';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 type Page = {
   servers: PaginatedData<Server>;
@@ -20,6 +21,7 @@ type Page = {
 
 export default function Servers() {
   const page = usePage<Page>();
+  const [servers] = useRealtime<Server>(page.props.servers, 'server');
   return (
     <Layout>
       <Head title="Servers" />
@@ -42,7 +44,7 @@ export default function Servers() {
             </CreateServer>
           </div>
         </div>
-        <DataTable columns={columns} paginatedData={page.props.servers} searchable />
+        <DataTable columns={columns} paginatedData={servers} searchable />
       </Container>
     </Layout>
   );

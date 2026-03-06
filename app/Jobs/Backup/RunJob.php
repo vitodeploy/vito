@@ -3,9 +3,13 @@
 namespace App\Jobs\Backup;
 
 use App\Actions\Backup\RunBackup;
+use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
 use App\Enums\BackupStatus;
 use App\Enums\BackupType;
+use App\Events\SocketEvent;
+use App\Http\Resources\BackupFileResource;
+use App\Http\Resources\BackupResource;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\ServerLog;
@@ -43,11 +47,13 @@ class RunJob implements ShouldQueue
 
             $this->file->status = BackupFileStatus::CREATED;
             $this->file->save();
+            $this->broadcastFileUpdate();
 
             if ($this->backup->status !== BackupStatus::RUNNING) {
                 $this->backup->status = BackupStatus::RUNNING;
                 $this->backup->save();
             }
+            $this->broadcastBackupUpdate();
         });
     }
 
@@ -57,6 +63,30 @@ class RunJob implements ShouldQueue
         $this->backup->save();
         $this->file->status = BackupFileStatus::FAILED;
         $this->file->save();
+        $this->broadcastBackupUpdate();
+        $this->broadcastFileUpdate();
         ServerLog::log($this->backup->server, 'run-backup-failed', $e->getMessage());
+    }
+
+    private function broadcastBackupUpdate(): void
+    {
+        $this->backup->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->backup->server->project_id,
+            type: 'backup.updated',
+            data: (new BackupResource($this->backup))->toArray(request()),
+        ));
+    }
+
+    private function broadcastFileUpdate(): void
+    {
+        $this->file->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->file->backup->server->project_id,
+            type: 'backup-file.updated',
+            data: (new BackupFileResource($this->file))->toArray(request()),
+        ));
     }
 }

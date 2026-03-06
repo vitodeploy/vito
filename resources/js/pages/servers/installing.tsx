@@ -6,6 +6,7 @@ import { columns } from '@/pages/server-logs/components/columns';
 import { usePage } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { PaginatedData } from '@/types';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function InstallingServer() {
   const page = usePage<{
@@ -13,10 +14,12 @@ export default function InstallingServer() {
     logs: PaginatedData<ServerLog>;
   }>();
 
+  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log');
+
   return (
     <Container className="max-w-5xl">
       <Heading title="Installing" description="Here you can see the installation logs" />
-      <DataTable columns={columns} paginatedData={page.props.logs} />{' '}
+      <DataTable columns={columns} paginatedData={logs} />
     </Container>
   );
 }

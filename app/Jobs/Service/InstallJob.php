@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Service;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\ServiceResource;
 use App\Models\ServerLog;
 use App\Models\Service;
 use App\Traits\UniqueQueue;
@@ -29,6 +32,7 @@ class InstallJob implements ShouldQueue
             $this->service->status = ServiceStatus::READY;
             $this->service->installed_version = $this->service->handler()->version();
             $this->service->save();
+            $this->broadcastServiceUpdate('service.updated');
             Log::info("Service ID {$this->service->id} installed successfully");
         });
     }
@@ -37,11 +41,23 @@ class InstallJob implements ShouldQueue
     {
         $this->service->status = ServiceStatus::INSTALLATION_FAILED;
         $this->service->save();
+        $this->broadcastServiceUpdate('service.updated');
 
         ServerLog::log(
             $this->service->server,
             'service-installation-failed',
             $e->getMessage()
         );
+    }
+
+    private function broadcastServiceUpdate(string $type): void
+    {
+        $this->service->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->service->server->project_id,
+            type: $type,
+            data: (new ServiceResource($this->service))->toArray(request()),
+        ));
     }
 }

@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Redirect;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\RedirectStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\RedirectResource;
 use App\Models\Redirect;
 use App\Models\ServerLog;
 use App\Models\Service;
@@ -30,7 +33,14 @@ class DeleteJob implements ShouldQueue
             $webserver->updateVHost($this->site, regenerate: [
                 'redirects',
             ]);
+            $redirectId = $this->redirect->id;
             $this->redirect->delete();
+
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $this->site->server->project_id,
+                type: 'redirect.deleted',
+                data: ['id' => $redirectId],
+            ));
         });
     }
 
@@ -38,6 +48,7 @@ class DeleteJob implements ShouldQueue
     {
         $this->redirect->status = RedirectStatus::FAILED;
         $this->redirect->save();
+        $this->broadcastRedirectUpdate();
 
         ServerLog::log(
             $this->site->server,
@@ -45,5 +56,16 @@ class DeleteJob implements ShouldQueue
             $e->getMessage(),
             $this->site
         );
+    }
+
+    private function broadcastRedirectUpdate(): void
+    {
+        $this->redirect->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->site->server->project_id,
+            type: 'redirect.updated',
+            data: (new RedirectResource($this->redirect))->toArray(request()),
+        ));
     }
 }

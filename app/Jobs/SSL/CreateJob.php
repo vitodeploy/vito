@@ -2,7 +2,10 @@
 
 namespace App\Jobs\SSL;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\SslResource;
 use App\Models\ServerLog;
 use App\Models\Service;
 use App\Models\Site;
@@ -30,6 +33,7 @@ class CreateJob implements ShouldQueue
             $webserver->setupSSL($this->ssl);
             $this->ssl->status = SslStatus::CREATED;
             $this->ssl->save();
+            $this->broadcastSslUpdate();
             $webserver->updateVHost($this->site->refresh(), regenerate: [
                 'port',
             ]);
@@ -40,6 +44,7 @@ class CreateJob implements ShouldQueue
     {
         $this->ssl->status = SslStatus::FAILED;
         $this->ssl->save();
+        $this->broadcastSslUpdate();
 
         ServerLog::log(
             $this->site->server,
@@ -47,5 +52,16 @@ class CreateJob implements ShouldQueue
             $e->getMessage(),
             $this->site
         );
+    }
+
+    private function broadcastSslUpdate(): void
+    {
+        $this->ssl->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->site->server->project_id,
+            type: 'ssl.updated',
+            data: (new SslResource($this->ssl))->toArray(request()),
+        ));
     }
 }

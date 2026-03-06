@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\WebSocket\EventsHandler;
 use App\WebSocket\TerminalHandler;
 use App\WebSocket\WebSocketServer;
 use Illuminate\Console\Command;
+use Psr\Http\Message\RequestInterface;
 use React\EventLoop\Loop;
 use React\Socket\SocketServer;
 
@@ -29,6 +31,11 @@ class WebSocketServeCommand extends Command
 
         $server->route('/ws/terminal', new TerminalHandler($loop));
 
+        $eventsHandler = new EventsHandler;
+        $server->route('/ws/events', $eventsHandler);
+
+        $this->registerBroadcastEndpoint($server, $eventsHandler);
+
         $socket = new SocketServer("{$host}:{$port}", [], $loop);
 
         $socket->on('connection', [$server, 'handleConnection']);
@@ -41,5 +48,29 @@ class WebSocketServeCommand extends Command
         $this->info("Max connections: {$maxConnections}");
 
         $loop->run();
+    }
+
+    protected function registerBroadcastEndpoint(WebSocketServer $server, EventsHandler $eventsHandler): void
+    {
+        $appKey = config('app.key');
+
+        $server->httpRoute('/ws/broadcast', function (RequestInterface $request) use ($eventsHandler, $appKey): void {
+            $auth = $request->getHeaderLine('Authorization');
+            if ($auth !== "Bearer {$appKey}") {
+                throw new \RuntimeException('Unauthorized');
+            }
+
+            $body = json_decode((string) $request->getBody(), true);
+            if (! is_array($body) || ! isset($body['project_id'])) {
+                throw new \RuntimeException('Invalid payload');
+            }
+
+            $projectId = (int) $body['project_id'];
+            if ($projectId <= 0) {
+                throw new \RuntimeException('Invalid project ID');
+            }
+
+            $eventsHandler->broadcastToProject($projectId, $body);
+        });
     }
 }

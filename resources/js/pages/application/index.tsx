@@ -12,6 +12,7 @@ import { columns } from '../server-logs/components/columns';
 import { Server } from '@/types/server';
 import { PaginatedData } from '@/types';
 import { ServerLog } from '@/types/server-log';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Application() {
   const page = usePage<{
@@ -19,6 +20,8 @@ export default function Application() {
     site: Site;
     logs: PaginatedData<ServerLog>;
   }>();
+
+  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log');
 
   siteHelper.storeSite(page.props.site);
 
@@ -32,7 +35,7 @@ export default function Application() {
             <Heading title="Installing site" description="Your site is being installed. Here you can see the logs" />
           </HeaderContainer>
 
-          <DataTable columns={columns} paginatedData={page.props.logs} />
+          <DataTable columns={columns} paginatedData={logs} />
         </Container>
       </ServerLayout>
     );

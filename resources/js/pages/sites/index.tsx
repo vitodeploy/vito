@@ -12,6 +12,7 @@ import { DataTable } from '@/components/data-table';
 import getColumns from '@/pages/sites/components/columns';
 import { PaginatedData } from '@/types';
 import CreateSite from '@/pages/sites/components/create-site';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 type Page = {
   server?: Server;
@@ -22,6 +23,8 @@ export default function Sites() {
   const page = usePage<Page>();
 
   const Comp = page.props.server ? ServerLayout : Layout;
+
+  const [sites] = useRealtime<Site>(page.props.sites, 'site');
 
   return (
     <Comp>
@@ -45,7 +48,7 @@ export default function Sites() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={getColumns(page.props.server)} paginatedData={page.props.sites} searchable />
+        <DataTable columns={getColumns(page.props.server)} paginatedData={sites} searchable />
       </Container>
     </Comp>
   );

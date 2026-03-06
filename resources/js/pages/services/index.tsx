@@ -11,12 +11,15 @@ import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/services/components/columns';
 import { Service } from '@/types/service';
 import InstallService from '@/pages/services/components/install';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function WorkerIndex() {
   const page = usePage<{
     server: Server;
     services: PaginatedData<Service>;
   }>();
+
+  const [services] = useRealtime<Service>(page.props.services, 'service');
 
   return (
     <ServerLayout>
@@ -41,7 +44,7 @@ export default function WorkerIndex() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.services} />
+        <DataTable columns={columns} paginatedData={services} />
       </Container>
     </ServerLayout>
   );

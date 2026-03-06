@@ -2,8 +2,11 @@
 
 namespace App\Jobs\Site;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\DeploymentStatus;
+use App\Events\SocketEvent;
 use App\Facades\Notifier;
+use App\Http\Resources\DeploymentResource;
 use App\Models\Deployment;
 use App\Notifications\DeploymentCompleted;
 use App\Traits\UniqueQueue;
@@ -39,6 +42,7 @@ class RollbackJob implements ShouldQueue
             $this->deployment->activate();
             $this->deployment->status = DeploymentStatus::FINISHED;
             $this->deployment->save();
+            $this->broadcastDeploymentUpdate();
         });
     }
 
@@ -49,6 +53,7 @@ class RollbackJob implements ShouldQueue
         $this->deployment->status = DeploymentStatus::FAILED;
         $this->deployment->save();
         $this->deployment->log?->write("Rollback failed: {$e->getMessage()}");
+        $this->broadcastDeploymentUpdate();
         Notifier::send($site, new DeploymentCompleted($this->deployment, $site));
 
         if ($this->current) {
@@ -62,5 +67,16 @@ class RollbackJob implements ShouldQueue
             );
             $this->current->activate();
         }
+    }
+
+    private function broadcastDeploymentUpdate(): void
+    {
+        $this->deployment->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->deployment->site->server->project_id,
+            type: 'deployment.updated',
+            data: (new DeploymentResource($this->deployment))->toArray(request()),
+        ));
     }
 }

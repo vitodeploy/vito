@@ -17,6 +17,8 @@ import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/application/components/deployment-columns';
 import AutoDeployment from '@/pages/application/components/auto-deployment';
 import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-script';
+import { useRealtime, useSocketListener } from '@/hooks/use-socket-events';
+import { useCallback } from 'react';
 
 export default function AppWithDeployment() {
   const page = usePage<{
@@ -27,6 +29,25 @@ export default function AppWithDeployment() {
     buildScript?: DeploymentScriptType;
     preFlightScript?: DeploymentScriptType;
   }>();
+
+  const [deployments, setDeployments] = useRealtime<Deployment>(page.props.deployments, 'deployment');
+
+  // When a deployment becomes active, deactivate all others
+  useSocketListener(
+    useCallback(
+      (event) => {
+        if (event.type !== 'deployment.updated') return;
+        const updated = event.data as unknown as Deployment;
+        if (!updated?.active) return;
+
+        setDeployments((prev) => ({
+          ...prev,
+          data: prev.data.map((item) => (item.id === updated.id ? item : { ...item, active: false })),
+        }));
+      },
+      [setDeployments],
+    ),
+  );
 
   return (
     <ServerLayout>
@@ -96,7 +117,7 @@ export default function AppWithDeployment() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.deployments} />
+        <DataTable columns={columns} paginatedData={deployments} />
       </Container>
     </ServerLayout>
   );

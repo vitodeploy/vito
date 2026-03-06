@@ -90,6 +90,20 @@ class WebSocketServer
         });
     }
 
+    /**
+     * @var array<string, callable>
+     */
+    protected array $httpHandlers = [];
+
+    /**
+     * Register an HTTP POST handler for a given path.
+     * Used for internal server-to-server communication (e.g. broadcasting events).
+     */
+    public function httpRoute(string $path, callable $handler): void
+    {
+        $this->httpHandlers[$path] = $handler;
+    }
+
     protected function handleHandshake(ConnectionInterface $conn, string $connId, string $httpBuffer): void
     {
         if (! str_contains($httpBuffer, "\r\n\r\n")) {
@@ -98,6 +112,14 @@ class WebSocketServer
 
         try {
             $psrRequest = \GuzzleHttp\Psr7\Message::parseRequest($httpBuffer);
+
+            // Handle plain HTTP requests (non-WebSocket)
+            if (! $psrRequest->hasHeader('Upgrade')) {
+                $this->handleHttpRequest($conn, $psrRequest);
+
+                return;
+            }
+
             $response = $this->negotiator->handshake($psrRequest);
 
             if ($response->getStatusCode() !== 101) {
@@ -195,6 +217,29 @@ class WebSocketServer
             $entry['handler']->onClose($connId);
             unset($this->connections[$connId]);
         }
+    }
+
+    protected function handleHttpRequest(ConnectionInterface $conn, \Psr\Http\Message\RequestInterface $request): void
+    {
+        $path = $request->getUri()->getPath();
+        $handler = $this->httpHandlers[$path] ?? null;
+
+        if ($handler === null || strtoupper($request->getMethod()) !== 'POST') {
+            $conn->write("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n");
+            $conn->close();
+
+            return;
+        }
+
+        try {
+            $handler($request);
+            $conn->write("HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n");
+        } catch (\Throwable $e) {
+            Log::error('HTTP handler error', ['error' => $e->getMessage()]);
+            $conn->write("HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\n\r\n");
+        }
+
+        $conn->close();
     }
 
     protected function sendErrorAndClose(ConnectionInterface $conn, string $message): void

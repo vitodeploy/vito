@@ -8,12 +8,15 @@ import { BreadcrumbItem, PaginatedData } from '@/types';
 import Layout from '@/layouts/app/layout';
 import { WorkflowRun } from '@/types/workflow-run';
 import { Workflow } from '@/types/workflow';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Workflows() {
   const page = usePage<{
     workflow: Workflow;
     workflowRuns: PaginatedData<WorkflowRun>;
   }>();
+
+  const [workflowRuns] = useRealtime<WorkflowRun>(page.props.workflowRuns, 'workflow-run');
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -38,7 +41,7 @@ export default function Workflows() {
 
         <DataTable
           columns={columns}
-          paginatedData={page.props.workflowRuns}
+          paginatedData={workflowRuns}
           onRowClick={(row: WorkflowRun) => router.visit(route('workflow-runs.show', { workflow: row.workflow_id, workflowRun: row.id }))}
         />
       </Container>

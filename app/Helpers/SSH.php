@@ -44,6 +44,9 @@ class SSH
 
     protected ?string $logPath = null;
 
+    /** @var ?\Closure(string): void */
+    protected ?\Closure $logOutputCallback = null;
+
     public function init(Server $server, ?string $asUser = null): self
     {
         $this->connection = null;
@@ -99,6 +102,9 @@ class SSH
     {
         if ($this->logDisk && $this->logPath) {
             Storage::disk($this->logDisk)->append($this->logPath, $chunk);
+            if ($this->logOutputCallback) {
+                ($this->logOutputCallback)($chunk);
+            }
         } else {
             $this->log?->write($chunk);
         }
@@ -111,10 +117,14 @@ class SSH
         return $this;
     }
 
-    public function useLog(string $disk, string $path): self
+    /**
+     * @param  ?\Closure(string): void  $outputCallback  Optional callback invoked with each output chunk
+     */
+    public function useLog(string $disk, string $path, ?\Closure $outputCallback = null): self
     {
         $this->logDisk = $disk;
         $this->logPath = $path;
+        $this->logOutputCallback = $outputCallback;
 
         return $this;
     }

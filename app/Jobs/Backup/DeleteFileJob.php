@@ -2,6 +2,8 @@
 
 namespace App\Jobs\Backup;
 
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
 use App\Models\BackupFile;
 use App\Models\ServerLog;
 use App\Traits\UniqueQueue;
@@ -19,7 +21,16 @@ class DeleteFileJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("backup-file-{$this->file->id}", function () {
+            $projectId = $this->file->backup->server->project_id;
+            $fileId = $this->file->id;
+
             $this->file->deleteFile();
+
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $projectId,
+                type: 'backup-file.deleted',
+                data: ['id' => $fileId],
+            ));
         });
     }
 

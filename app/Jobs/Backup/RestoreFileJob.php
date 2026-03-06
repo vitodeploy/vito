@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Backup;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\BackupFileStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\BackupFileResource;
 use App\Models\BackupFile;
 use App\Models\ServerLog;
 use App\Traits\UniqueQueue;
@@ -44,6 +47,7 @@ class RestoreFileJob implements ShouldQueue
             $this->backupFile->status = BackupFileStatus::RESTORED;
             $this->backupFile->restored_at = now();
             $this->backupFile->save();
+            $this->broadcastFileUpdate();
         });
     }
 
@@ -51,7 +55,19 @@ class RestoreFileJob implements ShouldQueue
     {
         $this->backupFile->status = BackupFileStatus::RESTORE_FAILED;
         $this->backupFile->save();
+        $this->broadcastFileUpdate();
         $this->backupFile->backup->server->os()->deleteFile($this->backupFile->tempPath());
         ServerLog::log($this->backupFile->backup->server, 'restore-file-failed', $e->getMessage());
+    }
+
+    private function broadcastFileUpdate(): void
+    {
+        $this->backupFile->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->backupFile->backup->server->project_id,
+            type: 'backup-file.updated',
+            data: (new BackupFileResource($this->backupFile))->toArray(request()),
+        ));
     }
 }

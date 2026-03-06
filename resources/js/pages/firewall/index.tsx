@@ -11,12 +11,15 @@ import Container from '@/components/container';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/firewall/components/columns';
 import RuleForm from '@/pages/firewall/components/form';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Firewall() {
   const page = usePage<{
     server: Server;
     rules: PaginatedData<FirewallRule>;
   }>();
+
+  const [rules] = useRealtime<FirewallRule>(page.props.rules, 'firewall-rule');
 
   return (
     <ServerLayout>
@@ -41,7 +44,7 @@ export default function Firewall() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.rules} />
+        <DataTable columns={columns} paginatedData={rules} />
       </Container>
     </ServerLayout>
   );

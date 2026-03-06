@@ -7,17 +7,46 @@ import { Server } from '@/types/server';
 import { ServerLog } from '@/types/server-log';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRightIcon, LogsIcon, RefreshCwIcon, XIcon } from 'lucide-react';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useSocketListener } from '@/hooks/use-socket-events';
 
-interface LogEntry {
-  id: number;
-  content: string;
+function InstantLogContent({ serverId, logId }: { serverId: number; logId: number }) {
+  const [content, setContent] = useState('Loading...');
+  const logIdRef = useRef(logId);
+  logIdRef.current = logId;
+
+  useEffect(() => {
+    fetch(route('logs.show', { server: serverId, log: logId }))
+      .then((response) => {
+        if (!response.ok) {
+          toast.error('Failed to fetch log');
+          return;
+        }
+        return response.text();
+      })
+      .then((text) => {
+        if (text) setContent(text);
+      });
+  }, [serverId, logId]);
+
+  useSocketListener(
+    useCallback((event) => {
+      if (event.type !== 'server-log.content') return;
+      if (!event.data || (event.data as { id?: number }).id !== logIdRef.current) return;
+      const buf = (event.data as { content?: string }).content;
+      if (buf) {
+        setContent((prev) => prev + buf);
+      }
+    }, []),
+  );
+
+  return <div className="bg-muted/50 max-h-64 overflow-auto border-b px-4 py-2 font-mono text-xs whitespace-pre-wrap">{content}</div>;
 }
 
 export function InstantLogs({ server, children }: { server: Server; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [logEntry, setLogEntry] = useState<LogEntry | null>(null);
+  const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [logs, setLogs] = useState<ServerLog[]>([]);
 
@@ -52,22 +81,8 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
     query.refetch();
   }, [page]);
 
-  const fetchLog = async (logId: number) => {
-    if (logEntry?.id === logId) {
-      setLogEntry(null);
-      return;
-    }
-    setLogEntry({
-      id: logId,
-      content: 'Loading...',
-    });
-    const response = await fetch(route('logs.show', { server: server.id, log: logId }));
-    if (!response.ok) {
-      toast.error('Failed to fetch log');
-      throw new Error('Network response was not ok');
-    }
-    const text = await response.text();
-    setLogEntry({ id: logId, content: text });
+  const toggleLog = (logId: number) => {
+    setSelectedLogId((prev) => (prev === logId ? null : logId));
   };
 
   const loadMore = () => {
@@ -76,7 +91,7 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
 
   const reset = () => {
     setLogs([]);
-    setLogEntry(null);
+    setSelectedLogId(null);
     setPage(1);
   };
 
@@ -127,7 +142,7 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
               <Button
                 variant="ghost"
                 className="flex w-full items-center justify-between rounded-none border-b px-4 py-2 font-mono text-xs"
-                onClick={() => fetchLog(log.id)}
+                onClick={() => toggleLog(log.id)}
                 tabIndex={index + 1}
                 autoFocus={index === 0}
               >
@@ -139,9 +154,7 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
                   <DateTime date={log.created_at} />
                 </div>
               </Button>
-              {logEntry?.id === log.id && (
-                <div className="bg-muted/50 max-h-64 overflow-auto border-b px-4 py-2 font-mono text-xs whitespace-pre-wrap">{logEntry.content}</div>
-              )}
+              {selectedLogId === log.id && <InstantLogContent serverId={server.id} logId={log.id} />}
             </div>
           ))}
           <Button variant="ghost" onClick={loadMore} tabIndex={logs.length + 1}>

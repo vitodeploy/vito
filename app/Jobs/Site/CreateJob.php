@@ -2,8 +2,11 @@
 
 namespace App\Jobs\Site;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\SiteStatus;
+use App\Events\SocketEvent;
 use App\Facades\Notifier;
+use App\Http\Resources\SiteResource;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Notifications\SiteInstallationFailed;
@@ -28,6 +31,7 @@ class CreateJob implements ShouldQueue
                 'status' => SiteStatus::READY,
                 'progress' => 100,
             ]);
+            $this->broadcastSiteUpdate();
             Notifier::send($this->site, new SiteInstallationSucceed($this->site));
         });
     }
@@ -36,6 +40,7 @@ class CreateJob implements ShouldQueue
     {
         $this->site->status = SiteStatus::INSTALLATION_FAILED;
         $this->site->save();
+        $this->broadcastSiteUpdate();
         ServerLog::log(
             $this->site->server,
             'site-installation-failed',
@@ -43,5 +48,16 @@ class CreateJob implements ShouldQueue
             $this->site
         );
         Notifier::send($this->site, new SiteInstallationFailed($this->site));
+    }
+
+    private function broadcastSiteUpdate(): void
+    {
+        $this->site->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->site->server->project_id,
+            type: 'site.updated',
+            data: (new SiteResource($this->site))->toArray(request()),
+        ));
     }
 }

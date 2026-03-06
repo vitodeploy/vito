@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\WorkflowRunStatus;
+use App\Events\SocketEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,6 +63,18 @@ class WorkflowRun extends Model
         $logEntry = '['.now()->toDateTimeString().'] '.PHP_EOL.$content.PHP_EOL;
 
         Storage::disk($this->log_disk)->append($this->log_path, $logEntry);
+
+        $projectId = $this->workflow?->project_id;
+        if ($projectId) {
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $projectId,
+                type: 'workflow-run.log-content',
+                data: [
+                    'id' => $this->id,
+                    'content' => $logEntry,
+                ],
+            ));
+        }
     }
 
     public function getLogContent(): string

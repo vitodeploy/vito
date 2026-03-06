@@ -9,6 +9,7 @@ import { PaginatedData } from '@/types';
 import { columns } from '@/pages/commands/components/execution-columns';
 import { Site } from '@/types/site';
 import { CommandExecution } from '@/types/command-execution';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 type Page = {
   server: Server;
@@ -18,6 +19,7 @@ type Page = {
 
 export default function Show() {
   const page = usePage<Page>();
+  const [executions] = useRealtime<CommandExecution>(page.props.executions, 'command-execution');
 
   return (
     <ServerLayout>
@@ -28,7 +30,7 @@ export default function Show() {
           <Heading title={`Command executions`} description="Here you can see the command executions" />
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.executions} />
+        <DataTable columns={columns} paginatedData={executions} />
       </Container>
     </ServerLayout>
   );

@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Script;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\ScriptExecutionStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\ScriptExecutionResource;
 use App\Models\ScriptExecution;
 use App\Models\ServerLog;
 use App\Traits\UniqueQueue;
@@ -30,6 +33,7 @@ class ExecuteJob implements ShouldQueue
             $server->os()->runScript('~/', $content, $this->log, $this->execution->user);
             $this->execution->status = ScriptExecutionStatus::COMPLETED;
             $this->execution->save();
+            $this->broadcastExecutionUpdate();
         });
     }
 
@@ -37,6 +41,18 @@ class ExecuteJob implements ShouldQueue
     {
         $this->execution->status = ScriptExecutionStatus::FAILED;
         $this->execution->save();
+        $this->broadcastExecutionUpdate();
         ServerLog::log($this->execution->server, 'execute-script-failed', $e->getMessage());
+    }
+
+    private function broadcastExecutionUpdate(): void
+    {
+        $this->execution->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->execution->server->project_id,
+            type: 'script-execution.updated',
+            data: (new ScriptExecutionResource($this->execution))->toArray(request()),
+        ));
     }
 }

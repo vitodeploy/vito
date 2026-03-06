@@ -11,6 +11,7 @@ import { PaginatedData } from '@/types';
 import { BackupFile } from '@/types/backup-file';
 import { columns } from '@/pages/backups/components/file-columns';
 import CopyableBadge from '@/components/copyable-badge';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 type Page = {
   server: Server;
@@ -20,6 +21,7 @@ type Page = {
 
 export default function Files() {
   const page = usePage<Page>();
+  const [files] = useRealtime<BackupFile>(page.props.files, 'backup-file');
 
   const runBackupForm = useForm();
   const runBackup = () => {
@@ -48,7 +50,7 @@ export default function Files() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.files} />
+        <DataTable columns={columns} paginatedData={files} />
       </Container>
     </ServerLayout>
   );

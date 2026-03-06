@@ -11,12 +11,15 @@ import { Service } from '@/types/service';
 import InstallService from '@/pages/services/components/install';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/php/components/columns';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function PHP() {
   const page = usePage<{
     server: Server;
     installedVersions: PaginatedData<Service>;
   }>();
+
+  const [installedVersions] = useRealtime<Service>(page.props.installedVersions, 'service');
 
   return (
     <ServerLayout>
@@ -41,7 +44,7 @@ export default function PHP() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.installedVersions} />
+        <DataTable columns={columns} paginatedData={installedVersions} />
       </Container>
     </ServerLayout>
   );

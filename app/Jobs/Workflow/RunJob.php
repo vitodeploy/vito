@@ -3,9 +3,12 @@
 namespace App\Jobs\Workflow;
 
 use App\Actions\Workflow\RunWorkflow;
+use App\DTOs\SocketEventDTO;
 use App\DTOs\WorkflowActionDTO;
 use App\Enums\WorkflowRunStatus;
+use App\Events\SocketEvent;
 use App\Facades\SSH;
+use App\Http\Resources\WorkflowRunResource;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
@@ -36,7 +39,9 @@ class RunJob implements ShouldQueue
             config()->set('queue.connections.default.driver', 'sync');
 
             if ($this->run->verbose && $this->run->log_disk && $this->run->log_path) {
-                SSH::useLog($this->run->log_disk, $this->run->log_path);
+                SSH::useLog($this->run->log_disk, $this->run->log_path, function (string $chunk): void {
+                    $this->broadcastLogContent($chunk);
+                });
             }
             if ($this->input['inputs']) {
                 $this->executionTree->inputs = $this->input['inputs'];
@@ -50,6 +55,7 @@ class RunJob implements ShouldQueue
             );
             $this->run->status = WorkflowRunStatus::COMPLETED;
             $this->run->save();
+            $this->broadcastRunUpdate();
         });
     }
 
@@ -57,6 +63,30 @@ class RunJob implements ShouldQueue
     {
         $this->run->status = WorkflowRunStatus::FAILED;
         $this->run->save();
+        $this->broadcastRunUpdate();
         Log::error('run-workflow-failed', ['error' => $e->getMessage()]);
+    }
+
+    private function broadcastRunUpdate(): void
+    {
+        $this->run->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->workflow->project_id,
+            type: 'workflow-run.updated',
+            data: (new WorkflowRunResource($this->run))->toArray(request()),
+        ));
+    }
+
+    private function broadcastLogContent(string $content): void
+    {
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->workflow->project_id,
+            type: 'workflow-run.log-content',
+            data: [
+                'id' => $this->run->id,
+                'content' => $content,
+            ],
+        ));
     }
 }

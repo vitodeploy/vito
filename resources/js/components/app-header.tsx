@@ -6,7 +6,6 @@ import AppCommand from '@/components/app-command';
 import { SiteSwitch } from '@/components/site-switch';
 import { usePage } from '@inertiajs/react';
 import { SharedData } from '@/types';
-import Refresh from '@/components/refresh';
 import { Button } from '@/components/ui/button';
 
 export function AppHeader() {
@@ -34,7 +33,6 @@ export function AppHeader() {
           <span className="hidden lg:block">Sponsor</span>
         </Button>
         <AppCommand />
-        <Refresh />
       </div>
     </header>
   );

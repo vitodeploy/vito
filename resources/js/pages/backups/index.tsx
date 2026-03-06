@@ -11,6 +11,7 @@ import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/backups/components/columns';
 import CreateBackup from '@/pages/backups/components/create-backup';
 import { PaginatedData } from '@/types';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 type Page = {
   server: Server;
@@ -19,6 +20,7 @@ type Page = {
 
 export default function Backups() {
   const page = usePage<Page>();
+  const [backups] = useRealtime<Backup>(page.props.backups, 'backup');
 
   return (
     <ServerLayout>
@@ -43,7 +45,7 @@ export default function Backups() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.backups} />
+        <DataTable columns={columns} paginatedData={backups} />
       </Container>
     </ServerLayout>
   );

@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Site;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\CommandExecutionStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\CommandExecutionResource;
 use App\Models\Command;
 use App\Models\CommandExecution;
 use App\Models\ServerLog;
@@ -38,6 +41,7 @@ class ExecuteCommandJob implements ShouldQueue
             );
             $this->execution->status = CommandExecutionStatus::COMPLETED;
             $this->execution->save();
+            $this->broadcastExecutionUpdate();
         });
     }
 
@@ -45,6 +49,18 @@ class ExecuteCommandJob implements ShouldQueue
     {
         $this->execution->status = CommandExecutionStatus::FAILED;
         $this->execution->save();
+        $this->broadcastExecutionUpdate();
         ServerLog::log($this->execution->server, 'execute-command-failed', $e->getMessage());
+    }
+
+    private function broadcastExecutionUpdate(): void
+    {
+        $this->execution->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->execution->server->project_id,
+            type: 'command-execution.updated',
+            data: (new CommandExecutionResource($this->execution))->toArray(request()),
+        ));
     }
 }

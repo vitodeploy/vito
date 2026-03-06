@@ -2,8 +2,11 @@
 
 namespace App\Jobs\Site;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\DeploymentStatus;
+use App\Events\SocketEvent;
 use App\Facades\Notifier;
+use App\Http\Resources\DeploymentResource;
 use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Notifications\DeploymentCompleted;
@@ -39,6 +42,7 @@ class DeployJob implements ShouldQueue
             $this->deployment->status = DeploymentStatus::FINISHED;
             $this->deployment->save();
             $this->deployment->activate();
+            $this->broadcastDeploymentUpdate();
             Notifier::send($site, new DeploymentCompleted($this->deployment, $site));
         });
     }
@@ -52,6 +56,7 @@ class DeployJob implements ShouldQueue
         $this->deployment->save();
         $this->deployment->activate();
         $this->deployment->log?->write("Deployment failed: {$e->getMessage()}");
+        $this->broadcastDeploymentUpdate();
         Notifier::send($site, new DeploymentCompleted($this->deployment, $site));
 
         if ($this->isModern && $current) {
@@ -65,6 +70,17 @@ class DeployJob implements ShouldQueue
             );
             $current->activate();
         }
+    }
+
+    private function broadcastDeploymentUpdate(): void
+    {
+        $this->deployment->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->deployment->site->server->project_id,
+            type: 'deployment.updated',
+            data: (new DeploymentResource($this->deployment))->toArray(request()),
+        ));
     }
 
     private function handleClassicDeployment($site, $log): void

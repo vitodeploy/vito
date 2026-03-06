@@ -7,12 +7,29 @@ import { WorkflowRun } from '@/types/workflow-run';
 import { Badge } from '@/components/ui/badge';
 import { Workflow } from '@/types/workflow';
 import { BreadcrumbItem } from '@/types';
+import { useSocketListener } from '@/hooks/use-socket-events';
+import { useCallback, useState } from 'react';
 
 export default function Show() {
   const page = usePage<{
     workflow: Workflow;
     workflowRun: WorkflowRun;
   }>();
+
+  const [workflowRun, setWorkflowRun] = useState<WorkflowRun>(page.props.workflowRun);
+
+  // Listen for realtime status updates
+  useSocketListener(
+    useCallback(
+      (event) => {
+        if (event.type !== 'workflow-run.updated') return;
+        const data = event.data as WorkflowRun | undefined;
+        if (!data || data.id !== page.props.workflowRun.id) return;
+        setWorkflowRun(data);
+      },
+      [page.props.workflowRun.id],
+    ),
+  );
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -35,10 +52,10 @@ export default function Show() {
       <Container className="max-w-5xl">
         <div className="flex items-start justify-between">
           <Heading title={`Workflow [${page.props.workflow.name}]`} description="Here you can see the result of your workflow's execution" />
-          <Badge variant={page.props.workflowRun.status_color}>{page.props.workflowRun.status}</Badge>
+          <Badge variant={workflowRun.status_color}>{workflowRun.status}</Badge>
         </div>
 
-        <Logs workflowRun={page.props.workflowRun} />
+        <Logs workflowRun={workflowRun} />
       </Container>
     </Layout>
   );

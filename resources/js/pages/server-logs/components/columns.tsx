@@ -13,36 +13,20 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ReactNode, useState } from 'react';
-import axios from 'axios';
 import DateTime from '@/components/date-time';
 import LogOutput from '@/components/log-output';
-import { useQuery } from '@tanstack/react-query';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useForm } from '@inertiajs/react';
 import FormSuccessful from '@/components/form-successful';
+import { useLogContent } from '@/hooks/use-log-content';
 
 export function View({ serverLog, children }: { serverLog: ServerLog; children?: ReactNode }) {
   const [open, setOpen] = useState(false);
 
-  const query = useQuery({
-    queryKey: ['server-log', serverLog.id],
-    queryFn: async () => {
-      try {
-        const response = await axios.get(route('logs.show', { server: serverLog.server_id, log: serverLog.id }));
-        return typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2);
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          throw new Error(error.response?.data?.error || 'An error occurred while fetching the log');
-        }
-        throw new Error('Unknown error occurred');
-      }
-    },
+  const { content, isLoading, error } = useLogContent({
+    serverId: serverLog.server_id,
+    logId: serverLog.id,
     enabled: open,
-    retry: false,
-    refetchInterval: (query) => {
-      if (query.state.status === 'error') return false;
-      return 2500;
-    },
   });
 
   return (
@@ -55,9 +39,9 @@ export function View({ serverLog, children }: { serverLog: ServerLog; children?:
         </DialogHeader>
         <LogOutput>
           <>
-            {query.isLoading && 'Loading...'}
-            {query.isError && <div className="text-red-500">Error: {query.error.message}</div>}
-            {query.data && !query.isError && query.data}
+            {isLoading && 'Loading...'}
+            {error && <div className="text-red-500">Error: {error}</div>}
+            {content && !error && content}
           </>
         </LogOutput>
         <DialogFooter>

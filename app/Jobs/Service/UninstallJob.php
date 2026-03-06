@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Service;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\ServiceResource;
 use App\Models\ServerLog;
 use App\Models\Service;
 use App\Traits\UniqueQueue;
@@ -20,8 +23,16 @@ class UninstallJob implements ShouldQueue
     public function handle(): void
     {
         $this->run("server-{$this->service->server_id}", function () {
+            $projectId = $this->service->server->project_id;
+            $serviceId = $this->service->id;
             $this->service->handler()->uninstall();
             $this->service->delete();
+
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $projectId,
+                type: 'service.deleted',
+                data: ['id' => $serviceId],
+            ));
         });
     }
 
@@ -36,6 +47,13 @@ class UninstallJob implements ShouldQueue
 
         $this->service->status = ServiceStatus::FAILED;
         $this->service->save();
+        $this->service->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->service->server->project_id,
+            type: 'service.updated',
+            data: (new ServiceResource($this->service))->toArray(request()),
+        ));
 
         ServerLog::log(
             $this->service->server,

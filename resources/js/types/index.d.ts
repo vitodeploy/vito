@@ -123,6 +123,7 @@ export interface SharedData {
   server?: Server;
   site?: Site;
   public_key_text: string;
+  csrf_token: string;
   flash?: {
     status: string;
     success: string;

@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Redirect;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\RedirectStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\RedirectResource;
 use App\Models\Redirect;
 use App\Models\ServerLog;
 use App\Models\Service;
@@ -32,6 +35,7 @@ class CreateJob implements ShouldQueue
             ]);
             $this->redirect->status = RedirectStatus::READY;
             $this->redirect->save();
+            $this->broadcastRedirectUpdate();
         });
     }
 
@@ -39,6 +43,7 @@ class CreateJob implements ShouldQueue
     {
         $this->redirect->status = RedirectStatus::FAILED;
         $this->redirect->save();
+        $this->broadcastRedirectUpdate();
 
         ServerLog::log(
             $this->site->server,
@@ -46,5 +51,16 @@ class CreateJob implements ShouldQueue
             $e->getMessage(),
             $this->site
         );
+    }
+
+    private function broadcastRedirectUpdate(): void
+    {
+        $this->redirect->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->site->server->project_id,
+            type: 'redirect.updated',
+            data: (new RedirectResource($this->redirect))->toArray(request()),
+        ));
     }
 }

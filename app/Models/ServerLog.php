@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
+use App\Http\Resources\ServerLogResource;
 use Database\Factories\ServerLogFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,6 +50,18 @@ class ServerLog extends AbstractModel
     public static function boot(): void
     {
         parent::boot();
+
+        self::created(function (ServerLog $log): void {
+            try {
+                SocketEvent::dispatch(new SocketEventDTO(
+                    projectId: $log->server->project_id,
+                    type: 'server-log.created',
+                    data: (new ServerLogResource($log))->toArray(request()),
+                ));
+            } catch (Exception $e) {
+                Log::error($e->getMessage(), ['exception' => $e]);
+            }
+        });
 
         self::deleting(function (ServerLog $log): void {
             if ($log->is_remote) {
@@ -135,6 +150,19 @@ class ServerLog extends AbstractModel
             Storage::disk($this->disk)->append($this->name, $buf);
         } else {
             Storage::disk($this->disk)->put($this->name, $buf);
+        }
+
+        try {
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $this->server->project_id,
+                type: 'server-log.content',
+                data: [
+                    'id' => $this->id,
+                    'content' => $buf,
+                ],
+            ));
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['exception' => $e]);
         }
     }
 

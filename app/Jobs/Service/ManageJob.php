@@ -2,7 +2,10 @@
 
 namespace App\Jobs\Service;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\ServiceStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\ServiceResource;
 use App\Models\ServerLog;
 use App\Models\Service;
 use App\Traits\UniqueQueue;
@@ -31,6 +34,7 @@ class ManageJob implements ShouldQueue
                 $this->service->status = ServiceStatus::FAILED;
             }
             $this->service->save();
+            $this->broadcastServiceUpdate();
         });
     }
 
@@ -38,7 +42,19 @@ class ManageJob implements ShouldQueue
     {
         $this->service->status = ServiceStatus::FAILED;
         $this->service->save();
+        $this->broadcastServiceUpdate();
         ServerLog::log($this->service->server, "{$this->action}-service-failed", $e->getMessage());
+    }
+
+    private function broadcastServiceUpdate(): void
+    {
+        $this->service->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->service->server->project_id,
+            type: 'service.updated',
+            data: (new ServiceResource($this->service))->toArray(request()),
+        ));
     }
 
     private function getExpectedActiveState(): string

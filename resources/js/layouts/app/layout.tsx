@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { useSocketEvents } from '@/hooks/use-socket-events';
 
 export default function Layout({
   children,
@@ -21,6 +22,7 @@ export default function Layout({
   secondNavTitle?: string;
 }>) {
   const page = usePage<SharedData>();
+  useSocketEvents();
 
   useEffect(() => {
     if (page.props.flash && page.props.flash.success) {

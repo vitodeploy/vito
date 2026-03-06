@@ -15,6 +15,7 @@ import { Site } from '@/types/site';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import React from 'react';
 import ToggleForceSSL from '@/pages/ssls/components/force-ssl';
+import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Ssls() {
   const page = usePage<{
@@ -22,6 +23,8 @@ export default function Ssls() {
     site: Site;
     ssls: PaginatedData<SSL>;
   }>();
+
+  const [ssls] = useRealtime<SSL>(page.props.ssls, 'ssl');
 
   return (
     <ServerLayout>
@@ -57,7 +60,7 @@ export default function Ssls() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.ssls} />
+        <DataTable columns={columns} paginatedData={ssls} />
       </Container>
     </ServerLayout>
   );

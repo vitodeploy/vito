@@ -2,12 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\SocketEvent;
 use App\Helpers\FTP;
 use App\Helpers\Notifier;
 use App\Helpers\SFTP;
 use App\Helpers\SSH;
+use App\Listeners\SocketEventListener;
 use App\Models\PersonalAccessToken;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
@@ -34,5 +37,7 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.force_https')) {
             URL::forceHttps();
         }
+
+        Event::listen(SocketEvent::class, SocketEventListener::class);
     }
 }

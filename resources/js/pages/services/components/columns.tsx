@@ -42,7 +42,11 @@ export const columns: ColumnDef<Service>[] = [
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+      return (
+        <div className="min-w-24">
+          <Badge variant={row.original.status_color}>{row.original.status}</Badge>
+        </div>
+      );
     },
   },
   {
