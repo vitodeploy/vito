@@ -2,7 +2,7 @@
 
 namespace App\WebSocket;
 
-use App\Actions\Console\GenerateTerminalToken;
+use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\Models\Server;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
@@ -46,7 +46,7 @@ class TerminalHandler implements WebSocketHandler
             return 'Missing authentication token';
         }
 
-        $tokenData = (new GenerateTerminalToken)->validate($token);
+        $tokenData = (new GenerateWebSocketToken)->validate('terminal_token', $token);
         if ($tokenData === null) {
             return 'Invalid or expired token';
         }

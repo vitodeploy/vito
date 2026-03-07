@@ -2,7 +2,7 @@
 
 namespace App\WebSocket;
 
-use App\Actions\Console\GenerateEventsToken;
+use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\RequestInterface;
@@ -42,7 +42,7 @@ class EventsHandler implements WebSocketHandler
             return 'Missing authentication token';
         }
 
-        $tokenData = (new GenerateEventsToken)->validate($token);
+        $tokenData = (new GenerateWebSocketToken)->validate('events_token', $token);
         if ($tokenData === null) {
             return 'Invalid or expired token';
         }

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Actions\Console\GenerateTerminalToken;
+use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\WebSocket\TerminalHandler;
@@ -125,34 +125,46 @@ class ConsoleTest extends TestCase
         $token = $response->json('token');
 
         // First validation should succeed
-        $action = new GenerateTerminalToken;
-        $data = $action->validate($token);
+        $action = new GenerateWebSocketToken;
+        $data = $action->validate('terminal_token', $token);
         $this->assertNotNull($data);
 
         // Second validation should fail (token consumed)
-        $data = $action->validate($token);
+        $data = $action->validate('terminal_token', $token);
         $this->assertNull($data);
     }
 
     public function test_token_expires_after_ttl(): void
     {
-        $action = new GenerateTerminalToken;
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $action = new GenerateWebSocketToken;
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
 
         // Token should exist
-        $this->assertNotNull($action->validate($result['token']));
+        $this->assertNotNull($action->validate('terminal_token', $result['token']));
 
         // Generate a new token and simulate expiry
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
         Cache::forget("terminal_token:{$result['token']}");
 
-        $this->assertNull($action->validate($result['token']));
+        $this->assertNull($action->validate('terminal_token', $result['token']));
     }
 
     public function test_terminal_handler_authenticate_with_valid_token(): void
     {
-        $action = new GenerateTerminalToken;
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $action = new GenerateWebSocketToken;
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
 
         $handler = new TerminalHandler(Loop::get());
 
@@ -184,8 +196,12 @@ class ConsoleTest extends TestCase
 
     public function test_terminal_handler_authenticate_with_expired_token(): void
     {
-        $action = new GenerateTerminalToken;
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $action = new GenerateWebSocketToken;
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
 
         // Expire the token
         Cache::forget("terminal_token:{$result['token']}");
@@ -204,8 +220,12 @@ class ConsoleTest extends TestCase
             'role' => UserRole::USER,
         ]);
 
-        $action = new GenerateTerminalToken;
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $action = new GenerateWebSocketToken;
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
 
         $handler = new TerminalHandler(Loop::get());
         $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token']);
@@ -216,8 +236,12 @@ class ConsoleTest extends TestCase
 
     public function test_terminal_handler_authenticate_deleted_server(): void
     {
-        $action = new GenerateTerminalToken;
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $action = new GenerateWebSocketToken;
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
 
         // Delete the server after token generation
         $this->server->forceDelete();
@@ -231,8 +255,12 @@ class ConsoleTest extends TestCase
 
     public function test_terminal_handler_authenticate_deleted_user(): void
     {
-        $action = new GenerateTerminalToken;
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $action = new GenerateWebSocketToken;
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
 
         // Delete the user after token generation
         $this->user->forceDelete();
@@ -247,11 +275,15 @@ class ConsoleTest extends TestCase
     public function test_terminal_handler_rate_limits_connections(): void
     {
         $handler = new TerminalHandler(Loop::get());
-        $action = new GenerateTerminalToken;
+        $action = new GenerateWebSocketToken;
 
         // Authenticate MAX_CONNECTIONS_PER_USER (5) times
         for ($i = 0; $i < 5; $i++) {
-            $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+            $result = $action->generate('terminal_token', [
+                'server_id' => $this->server->id,
+                'user_id' => $this->user->id,
+                'ssh_user' => $this->server->getSshUser(),
+            ], 30);
             $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token'].'&cols=80&rows=24');
             $error = $handler->authenticate($request);
             $this->assertNull($error, "Connection $i should succeed");
@@ -275,7 +307,11 @@ class ConsoleTest extends TestCase
         }
 
         // 6th connection should be rate limited
-        $result = $action->generate($this->server, $this->user, $this->server->getSshUser());
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $this->user->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
         $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token'].'&cols=80&rows=24');
         $error = $handler->authenticate($request);
         $this->assertEquals('Too many connections', $error);
@@ -284,7 +320,7 @@ class ConsoleTest extends TestCase
     public function test_terminal_handler_rate_limit_per_user(): void
     {
         $handler = new TerminalHandler(Loop::get());
-        $action = new GenerateTerminalToken;
+        $action = new GenerateWebSocketToken;
 
         // Fill up connections for user 1
         $reflection = new \ReflectionClass($handler);
@@ -310,7 +346,11 @@ class ConsoleTest extends TestCase
             'role' => UserRole::ADMIN,
         ]);
 
-        $result = $action->generate($this->server, $otherUser, $this->server->getSshUser());
+        $result = $action->generate('terminal_token', [
+            'server_id' => $this->server->id,
+            'user_id' => $otherUser->id,
+            'ssh_user' => $this->server->getSshUser(),
+        ], 30);
         $request = new PsrRequest('GET', '/ws/terminal?token='.$result['token'].'&cols=80&rows=24');
         $error = $handler->authenticate($request);
         $this->assertNull($error);

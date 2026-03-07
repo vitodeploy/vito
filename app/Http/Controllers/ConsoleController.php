@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Console\GenerateTerminalToken;
+use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\Http\Resources\ServerResource;
 use App\Models\Server;
 use Illuminate\Http\JsonResponse;
@@ -41,11 +41,11 @@ class ConsoleController extends Controller
             ],
         ]);
 
-        $result = app(GenerateTerminalToken::class)->generate(
-            $server,
-            $request->user(),
-            $request->input('user'),
-        );
+        $result = app(GenerateWebSocketToken::class)->generate('terminal_token', [
+            'server_id' => $server->id,
+            'user_id' => $request->user()->id,
+            'ssh_user' => $request->input('user'),
+        ], 30);
 
         $appUrl = parse_url(config('app.url'));
         $isSecure = ($appUrl['scheme'] ?? 'http') === 'https';
