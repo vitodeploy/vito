@@ -45,7 +45,7 @@ class ConsoleController extends Controller
             'server_id' => $server->id,
             'user_id' => $request->user()->id,
             'ssh_user' => $request->input('user'),
-        ], 30);
+        ]);
 
         $appUrl = parse_url(config('app.url'));
         $isSecure = ($appUrl['scheme'] ?? 'http') === 'https';
