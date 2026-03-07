@@ -61,7 +61,7 @@ class CreateJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->site->server->project_id,
             type: 'ssl.updated',
-            data: (new SslResource($this->ssl))->toArray(request()),
+            data: new SslResource($this->ssl),
         ));
     }
 }

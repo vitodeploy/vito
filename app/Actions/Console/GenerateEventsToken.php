@@ -18,7 +18,7 @@ class GenerateEventsToken
         Cache::put("events_token:{$token}", [
             'user_id' => $user->id,
             'project_id' => $user->current_project_id,
-        ], 30);
+        ], 60);
 
         return ['token' => $token];
     }

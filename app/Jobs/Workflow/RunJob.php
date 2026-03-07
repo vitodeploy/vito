@@ -74,7 +74,7 @@ class RunJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->workflow->project_id,
             type: 'workflow-run.updated',
-            data: (new WorkflowRunResource($this->run))->toArray(request()),
+            data: new WorkflowRunResource($this->run),
         ));
     }
 

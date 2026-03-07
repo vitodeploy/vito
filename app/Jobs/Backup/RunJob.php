@@ -75,7 +75,7 @@ class RunJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->backup->server->project_id,
             type: 'backup.updated',
-            data: (new BackupResource($this->backup))->toArray(request()),
+            data: new BackupResource($this->backup),
         ));
     }
 
@@ -86,7 +86,7 @@ class RunJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->file->backup->server->project_id,
             type: 'backup-file.updated',
-            data: (new BackupFileResource($this->file))->toArray(request()),
+            data: new BackupFileResource($this->file),
         ));
     }
 }

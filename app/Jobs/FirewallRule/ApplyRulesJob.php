@@ -53,11 +53,22 @@ class ApplyRulesJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
+        $failedRules = $this->rule->server->firewallRules()
+            ->where('status', '!=', FirewallRuleStatus::READY)
+            ->get();
+
         $this->rule->server->firewallRules()
             ->where('status', '!=', FirewallRuleStatus::READY)
             ->update(['status' => FirewallRuleStatus::FAILED]);
 
-        $this->broadcastRuleUpdate();
+        foreach ($failedRules as $rule) {
+            $rule->status = FirewallRuleStatus::FAILED;
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $rule->server->project_id,
+                type: 'firewall-rule.updated',
+                data: new FirewallRuleResource($rule),
+            ));
+        }
 
         ServerLog::log($this->rule->server, 'apply-firewall-rules-failed', $e->getMessage());
     }
@@ -69,7 +80,7 @@ class ApplyRulesJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->rule->server->project_id,
             type: 'firewall-rule.updated',
-            data: (new FirewallRuleResource($this->rule))->toArray(request()),
+            data: new FirewallRuleResource($this->rule),
         ));
     }
 }

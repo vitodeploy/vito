@@ -53,6 +53,9 @@ class SSH
         $this->log = null;
         $this->asUser = null;
         $this->variables = [];
+        $this->logDisk = null;
+        $this->logPath = null;
+        $this->logOutputCallback = null;
         $this->server = $server->refresh();
         $this->user = $server->getSshUser();
         if ($asUser && $asUser !== $server->getSshUser()) {

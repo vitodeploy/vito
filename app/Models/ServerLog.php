@@ -56,7 +56,7 @@ class ServerLog extends AbstractModel
                 SocketEvent::dispatch(new SocketEventDTO(
                     projectId: $log->server->project_id,
                     type: 'server-log.created',
-                    data: (new ServerLogResource($log))->toArray(request()),
+                    data: new ServerLogResource($log),
                 ));
             } catch (Exception $e) {
                 Log::error($e->getMessage(), ['exception' => $e]);

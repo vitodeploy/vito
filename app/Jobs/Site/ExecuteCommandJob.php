@@ -60,7 +60,7 @@ class ExecuteCommandJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->execution->server->project_id,
             type: 'command-execution.updated',
-            data: (new CommandExecutionResource($this->execution))->toArray(request()),
+            data: new CommandExecutionResource($this->execution),
         ));
     }
 }

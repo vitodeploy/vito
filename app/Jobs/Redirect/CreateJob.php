@@ -60,7 +60,7 @@ class CreateJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->site->server->project_id,
             type: 'redirect.updated',
-            data: (new RedirectResource($this->redirect))->toArray(request()),
+            data: new RedirectResource($this->redirect),
         ));
     }
 }

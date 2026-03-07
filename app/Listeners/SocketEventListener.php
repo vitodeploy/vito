@@ -15,7 +15,8 @@ class SocketEventListener
             $port = config('core.ws_port', '8085');
 
             Http::withToken(config('app.key'))
-                ->timeout(5)
+                ->connectTimeout(1)
+                ->timeout(1)
                 ->post("http://{$host}:{$port}/ws/broadcast", $event->data->toArray());
         } catch (\Throwable $e) {
             Log::error('Failed to broadcast socket event', [

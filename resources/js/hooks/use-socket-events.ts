@@ -190,6 +190,11 @@ export function useRealtime<T extends { id: number }>(
 
         switch (action) {
           case 'created':
+            setData((prev) => ({
+              ...prev,
+              data: [eventData as unknown as T, ...prev.data],
+            }));
+            break;
           case 'updated':
             setData((prev) => ({
               ...prev,

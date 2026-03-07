@@ -76,7 +76,7 @@ class RollbackJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->deployment->site->server->project_id,
             type: 'deployment.updated',
-            data: (new DeploymentResource($this->deployment))->toArray(request()),
+            data: new DeploymentResource($this->deployment),
         ));
     }
 }

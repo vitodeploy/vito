@@ -55,7 +55,7 @@ class RestoreDatabaseJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->backupFile->backup->server->project_id,
             type: 'backup-file.updated',
-            data: (new BackupFileResource($this->backupFile))->toArray(request()),
+            data: new BackupFileResource($this->backupFile),
         ));
     }
 }

@@ -57,7 +57,7 @@ class InstallJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->service->server->project_id,
             type: $type,
-            data: (new ServiceResource($this->service))->toArray(request()),
+            data: new ServiceResource($this->service),
         ));
     }
 }

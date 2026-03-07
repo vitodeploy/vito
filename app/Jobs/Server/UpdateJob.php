@@ -51,7 +51,7 @@ class UpdateJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->server->project_id,
             type: 'server.updated',
-            data: (new ServerResource($this->server))->toArray(request()),
+            data: new ServerResource($this->server),
         ));
     }
 }

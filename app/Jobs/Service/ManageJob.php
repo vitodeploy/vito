@@ -53,7 +53,7 @@ class ManageJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->service->server->project_id,
             type: 'service.updated',
-            data: (new ServiceResource($this->service))->toArray(request()),
+            data: new ServiceResource($this->service),
         ));
     }
 

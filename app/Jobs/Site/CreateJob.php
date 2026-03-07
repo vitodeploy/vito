@@ -57,7 +57,7 @@ class CreateJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->site->server->project_id,
             type: 'site.updated',
-            data: (new SiteResource($this->site))->toArray(request()),
+            data: new SiteResource($this->site),
         ));
     }
 }

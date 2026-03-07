@@ -52,7 +52,7 @@ class ExecuteJob implements ShouldQueue
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $this->execution->server->project_id,
             type: 'script-execution.updated',
-            data: (new ScriptExecutionResource($this->execution))->toArray(request()),
+            data: new ScriptExecutionResource($this->execution),
         ));
     }
 }
