@@ -17,6 +17,8 @@ import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { useState } from 'react';
 import { ApiKey } from '@/types/api-key';
+import { Badge } from '@/components/ui/badge';
+import { Project } from '@/types/project';
 
 function Delete({ apiKey }: { apiKey: ApiKey }) {
   const [open, setOpen] = useState(false);
@@ -59,51 +61,77 @@ function Delete({ apiKey }: { apiKey: ApiKey }) {
   );
 }
 
-export const columns: ColumnDef<ApiKey>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-    enableColumnFilter: true,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'permissions',
-    header: 'Permissions',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return row.original.permissions.includes('write') ? <span>read & write</span> : <span>read</span>;
+export function getColumns(projects: Project[]): ColumnDef<ApiKey>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      enableColumnFilter: true,
+      enableSorting: true,
     },
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Created at',
-    enableColumnFilter: true,
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <DateTime date={row.original.created_at} />;
+    {
+      accessorKey: 'permissions',
+      header: 'Permissions',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => {
+        return row.original.permissions.includes('write') ? <span>read & write</span> : <span>read</span>;
+      },
     },
-  },
-  {
-    id: 'actions',
-    enableColumnFilter: false,
-    enableSorting: false,
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center justify-end">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVerticalIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <Delete apiKey={row.original} />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
+    {
+      accessorKey: 'project_ids',
+      header: 'Projects',
+      enableColumnFilter: false,
+      enableSorting: false,
+      cell: ({ row }) => {
+        const projectIds = row.original.project_ids;
+        if (!projectIds || projectIds.length === 0) {
+          return <Badge variant="outline">All projects</Badge>;
+        }
+        return (
+          <div className="flex flex-wrap gap-1">
+            {projectIds.map((id) => {
+              const project = projects.find((p) => p.id === id);
+              return (
+                <Badge key={id} variant="default">
+                  {project?.name ?? `Project #${id}`}
+                </Badge>
+              );
+            })}
+          </div>
+        );
+      },
     },
-  },
-];
+    {
+      accessorKey: 'created_at',
+      header: 'Created at',
+      enableColumnFilter: true,
+      enableSorting: true,
+      cell: ({ row }) => {
+        return <DateTime date={row.original.created_at} />;
+      },
+    },
+    {
+      id: 'actions',
+      enableColumnFilter: false,
+      enableSorting: false,
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center justify-end">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreVerticalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <Delete apiKey={row.original} />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+    },
+  ];
+}

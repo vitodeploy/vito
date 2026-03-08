@@ -17,13 +17,16 @@ import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Project } from '@/types/project';
+import { MultiSelect } from '@/components/multi-select';
 
 type ApiKeyForm = {
   name: string;
   permission: string;
+  projects: string[];
 };
 
-export default function CreateApiKey({ children }: { children: ReactNode }) {
+export default function CreateApiKey({ children, projects }: { children: ReactNode; projects: Project[] }) {
   const [open, setOpen] = useState(false);
   const [token, setToken] = useState<string | undefined>();
   const tokenInputRef = useRef<HTMLInputElement>(null);
@@ -41,6 +44,7 @@ export default function CreateApiKey({ children }: { children: ReactNode }) {
   const form = useForm<Required<ApiKeyForm>>({
     name: '',
     permission: '',
+    projects: [],
   });
 
   const submit: FormEventHandler = (e) => {
@@ -60,6 +64,11 @@ export default function CreateApiKey({ children }: { children: ReactNode }) {
       form.reset();
     }
   };
+
+  const projectOptions = projects.map((project) => ({
+    label: project.name,
+    value: String(project.id),
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,7 +97,7 @@ export default function CreateApiKey({ children }: { children: ReactNode }) {
               </FormField>
               <FormField>
                 <Label htmlFor="permission">Permission</Label>
-                <Select id="permission" name="permission" value={form.data.permission} onValueChange={(value) => form.setData('permission', value)}>
+                <Select name="permission" value={form.data.permission} onValueChange={(value) => form.setData('permission', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a permission" />
                   </SelectTrigger>
@@ -104,6 +113,18 @@ export default function CreateApiKey({ children }: { children: ReactNode }) {
                   </SelectContent>
                 </Select>
                 <InputError message={form.errors.permission} />
+              </FormField>
+              <FormField>
+                <Label htmlFor="projects">Projects</Label>
+                <MultiSelect
+                  options={projectOptions}
+                  onValueChange={(value) => form.setData('projects', value)}
+                  defaultValue={form.data.projects}
+                  placeholder="All projects"
+                  maxCount={3}
+                />
+                <p className="text-muted-foreground text-xs">Leave empty for access to all projects.</p>
+                <InputError message={form.errors.projects} />
               </FormField>
             </FormFields>
           )}

@@ -17,7 +17,11 @@ class ApiKeyResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'permissions' => $this->abilities,
+            'permissions' => collect($this->abilities)
+                ->filter(fn (string $ability) => ! str_starts_with($ability, 'project:'))
+                ->values()
+                ->all(),
+            'project_ids' => $this->getProjectIds(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

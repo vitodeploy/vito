@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\PersonalAccessToken;
 use App\Models\Project;
 use App\Models\User;
 use Closure;
@@ -19,6 +20,11 @@ class CanSeeProjectMiddleware
 
         if (! $user->can('view', $project)) {
             abort(403, 'You do not have permission to view this project.');
+        }
+
+        $token = $user->currentAccessToken();
+        if ($token instanceof PersonalAccessToken && $token->exists && ! $token->hasProjectAccess($project)) {
+            abort(403, 'This token does not have access to this project.');
         }
 
         return $next($request);

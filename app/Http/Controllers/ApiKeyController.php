@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\ApiKey\CreateApiKey;
 use App\Http\Resources\ApiKeyResource;
+use App\Http\Resources\ProjectResource;
 use App\Models\PersonalAccessToken;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,6 +27,7 @@ class ApiKeyController extends Controller
 
         return Inertia::render('api-keys/index', [
             'apiKeys' => ApiKeyResource::collection(user()->tokens()->simplePaginate(config('web.pagination_size'))),
+            'projects' => ProjectResource::collection(user()->projects()->get()),
         ]);
     }
 
@@ -33,16 +36,7 @@ class ApiKeyController extends Controller
     {
         $this->authorize('create', PersonalAccessToken::class);
 
-        $this->validate($request, [
-            'name' => 'required|string|max:255',
-            'permission' => 'required|in:read,write',
-        ]);
-
-        $permissions = ['read'];
-        if ($request->input('permission') === 'write') {
-            $permissions[] = 'write';
-        }
-        $token = user()->createToken($request->input('name'), $permissions);
+        $token = app(CreateApiKey::class)->create(user(), $request->all());
 
         return back()
             ->with('success', 'Api key created.')
