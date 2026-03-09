@@ -187,6 +187,71 @@ class ApiKeyScopeTest extends TestCase
             ->assertSuccessful();
     }
 
+    public function test_scoped_token_cannot_update_unscoped_project(): void
+    {
+        /** @var Project $project2 */
+        $project2 = Project::factory()->create();
+        $project2->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $token = $this->user->createToken('scoped-token', ['read', 'write', 'project:'.$this->user->current_project_id]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+            ->json('PUT', "/api/projects/{$project2->id}", [
+                'name' => 'updated-name',
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_scoped_token_can_update_scoped_project(): void
+    {
+        $token = $this->user->createToken('scoped-token', ['read', 'write', 'project:'.$this->user->current_project_id]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+            ->json('PUT', "/api/projects/{$this->user->currentProject->id}", [
+                'name' => 'updated-name',
+            ])
+            ->assertSuccessful();
+    }
+
+    public function test_scoped_token_cannot_delete_unscoped_project(): void
+    {
+        /** @var Project $project2 */
+        $project2 = Project::factory()->create();
+        $project2->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::ADMIN,
+        ]);
+
+        $token = $this->user->createToken('scoped-token', ['read', 'write', 'project:'.$this->user->current_project_id]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+            ->json('DELETE', "/api/projects/{$project2->id}", [
+                'name' => $project2->name,
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_scoped_token_can_delete_scoped_project(): void
+    {
+        /** @var Project $project2 */
+        $project2 = Project::factory()->create();
+        $project2->users()->create([
+            'user_id' => $this->user->id,
+            'role' => UserRole::OWNER,
+        ]);
+
+        $token = $this->user->createToken('scoped-token', ['read', 'write', 'project:'.$project2->id]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+            ->json('DELETE', "/api/projects/{$project2->id}", [
+                'name' => $project2->name,
+            ])
+            ->assertSuccessful();
+    }
+
     public function test_multiple_project_scopes(): void
     {
         /** @var Project $project2 */

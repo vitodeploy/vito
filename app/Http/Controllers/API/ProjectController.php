@@ -28,8 +28,8 @@ class ProjectController extends Controller
 
         $projects = user()->projects();
 
-        $token = $this->getToken();
-        if ($token) {
+        $token = user()->currentAccessToken();
+        if ($token instanceof PersonalAccessToken && $token->exists) {
             $scopedProjectIds = $token->getProjectIds();
             if (! empty($scopedProjectIds)) {
                 $projects->whereIn('projects.id', $scopedProjectIds);
@@ -49,59 +49,33 @@ class ProjectController extends Controller
         return new ProjectResource($project);
     }
 
-    #[Get('api/projects/{project}', name: 'api.projects.show', middleware: 'ability:read')]
+    #[Get('api/projects/{project}', name: 'api.projects.show', middleware: ['ability:read', 'can-see-project'])]
     public function show(Project $project): ProjectResource
     {
         $this->authorize('view', $project);
 
-        $token = $this->getToken();
-        if ($token && ! $token->hasProjectAccess($project)) {
-            abort(403, 'This token does not have access to this project.');
-        }
-
         return new ProjectResource($project);
     }
 
-    #[Put('api/projects/{project}', name: 'api.projects.update', middleware: 'ability:write')]
+    #[Put('api/projects/{project}', name: 'api.projects.update', middleware: ['ability:write', 'can-see-project'])]
     public function update(Request $request, Project $project): ProjectResource
     {
         $this->authorize('update', $project);
-
-        $token = $this->getToken();
-        if ($token && ! $token->hasProjectAccess($project)) {
-            abort(403, 'This token does not have access to this project.');
-        }
 
         $project = app(UpdateProject::class)->update($project, $request->all());
 
         return new ProjectResource($project);
     }
 
-    #[Delete('api/projects/{project}', name: 'api.projects.delete', middleware: 'ability:write')]
+    #[Delete('api/projects/{project}', name: 'api.projects.delete', middleware: ['ability:write', 'can-see-project'])]
     public function delete(Project $project): Response
     {
         $this->authorize('delete', $project);
-
-        $token = $this->getToken();
-        if ($token && ! $token->hasProjectAccess($project)) {
-            abort(403, 'This token does not have access to this project.');
-        }
 
         app(DeleteProject::class)->delete(user(), $project, [
             'name' => $project->name,
         ]);
 
         return response()->noContent();
-    }
-
-    private function getToken(): ?PersonalAccessToken
-    {
-        $token = user()->currentAccessToken();
-
-        if ($token instanceof PersonalAccessToken && $token->exists) {
-            return $token;
-        }
-
-        return null;
     }
 }

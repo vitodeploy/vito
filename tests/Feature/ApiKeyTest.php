@@ -140,4 +140,47 @@ class ApiKeyTest extends TestCase
             ->get(route('api-keys'))
             ->assertSuccessful();
     }
+
+    public function test_index_returns_project_ids_and_filtered_permissions(): void
+    {
+        $this->user->createToken('scoped-key', ['read', 'write', 'project:'.$this->user->current_project_id]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('api-keys'))
+            ->assertSuccessful();
+
+        $apiKeys = $response->original->getData()['page']['props']['apiKeys']['data'];
+        $key = collect($apiKeys)->firstWhere('name', 'scoped-key');
+
+        $this->assertNotNull($key);
+        $this->assertEquals(['read', 'write'], $key['permissions']);
+        $this->assertEquals([$this->user->current_project_id], $key['project_ids']);
+    }
+
+    public function test_create_api_key_with_empty_projects_array(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('api-keys.store'), [
+                'name' => 'empty-projects-key',
+                'permission' => 'read',
+                'projects' => [],
+            ])
+            ->assertSessionHas('success');
+
+        $token = $this->user->tokens()->where('name', 'empty-projects-key')->first();
+        $this->assertContains('read', $token->abilities);
+        $this->assertEmpty(
+            collect($token->abilities)->filter(fn ($a) => str_starts_with($a, 'project:'))->all()
+        );
+    }
+
+    public function test_cannot_create_api_key_with_invalid_permission(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('api-keys.store'), [
+                'name' => 'bad-key',
+                'permission' => 'admin',
+            ])
+            ->assertSessionHasErrors('permission');
+    }
 }
