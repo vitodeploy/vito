@@ -11,6 +11,7 @@ use App\Models\Server;
 use App\Notifications\ServerInstallationSucceed;
 use App\ServerProviders\Custom;
 use App\Services\PHP\PHP;
+use Illuminate\Support\Sleep;
 
 class InstallServer
 {
@@ -34,7 +35,7 @@ class InstallServer
             } catch (SSHConnectionError) {
                 // ignore
             }
-            sleep(10);
+            Sleep::sleep(10);
             $maxWait -= 10;
         }
         $this->install();

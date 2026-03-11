@@ -7,6 +7,7 @@ use App\Facades\Notifier;
 use App\Models\Server;
 use App\Notifications\ServerConnected;
 use App\Notifications\ServerDisconnected;
+use Illuminate\Support\Sleep;
 use Throwable;
 
 class CheckConnection
@@ -26,7 +27,7 @@ class CheckConnection
             }
         } catch (Throwable) {
             if ($retry > 0) {
-                sleep(3);
+                Sleep::sleep(3);
 
                 return $this->check($server, $retry - 1);
             }

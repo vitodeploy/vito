@@ -19,6 +19,7 @@ use App\Services\Redis\Redis;
 use App\Services\Webserver\Nginx;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Sleep;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -42,6 +43,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        Sleep::fake();
         config()->set('queue.connections.ssh.driver', 'sync');
         config()->set('queue.connections.default.driver', 'sync');
         config()->set('filesystems.disks.key-pairs.root', storage_path('app/key-pairs-test'));
