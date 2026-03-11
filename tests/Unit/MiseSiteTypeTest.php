@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Models\Server;
 use App\Models\Site;
 use App\SiteTypes\MiseNodeJS;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,9 +19,8 @@ class MiseSiteTypeTest extends TestCase
     {
         parent::setUp();
 
-        $server = Server::factory()->create();
         $this->miseSite = Site::factory()->create([
-            'server_id' => $server->id,
+            'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
             'type' => MiseNodeJS::id(),
@@ -102,9 +100,8 @@ class MiseSiteTypeTest extends TestCase
 
     public function test_mise_shims_path_uses_different_user(): void
     {
-        $server = Server::factory()->create();
         $site = Site::factory()->create([
-            'server_id' => $server->id,
+            'server_id' => $this->server->id,
             'user' => 'anotheruser',
             'path' => '/home/anotheruser/example.com',
             'type' => MiseNodeJS::id(),

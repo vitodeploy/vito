@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Models\Server;
 use App\Models\Site;
 use App\SiteTypes\MiseBun;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,9 +19,8 @@ class MiseBunSiteTypeTest extends TestCase
     {
         parent::setUp();
 
-        $server = Server::factory()->create();
         $this->miseSite = Site::factory()->create([
-            'server_id' => $server->id,
+            'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
             'type' => MiseBun::id(),
@@ -59,9 +57,8 @@ class MiseBunSiteTypeTest extends TestCase
 
     public function test_runtime_version_defaults_to_1_2(): void
     {
-        $server = Server::factory()->create();
         $site = Site::factory()->create([
-            'server_id' => $server->id,
+            'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
             'type' => MiseBun::id(),
@@ -98,9 +95,8 @@ class MiseBunSiteTypeTest extends TestCase
 
     public function test_build_command_defaults(): void
     {
-        $server = Server::factory()->create();
         $site = Site::factory()->create([
-            'server_id' => $server->id,
+            'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
             'type' => MiseBun::id(),
@@ -121,9 +117,8 @@ class MiseBunSiteTypeTest extends TestCase
 
     public function test_start_command_defaults(): void
     {
-        $server = Server::factory()->create();
         $site = Site::factory()->create([
-            'server_id' => $server->id,
+            'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
             'type' => MiseBun::id(),
