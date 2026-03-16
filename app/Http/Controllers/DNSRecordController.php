@@ -86,7 +86,11 @@ class DNSRecordController extends Controller
     {
         $this->authorize('update', $domain);
 
-        $domain->syncDnsRecords();
+        try {
+            $domain->syncDnsRecords();
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Failed to sync DNS records: '.$e->getMessage());
+        }
 
         return back()->with('success', 'DNS records synced successfully.');
     }

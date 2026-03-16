@@ -317,12 +317,18 @@ class CloudflareTest extends TestCase
         $domainId = 'invalid-zone';
 
         Http::fake([
-            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([], 404),
+            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+                'success' => false,
+                'errors' => [
+                    ['message' => 'Zone not found'],
+                ],
+            ], 404),
         ]);
 
-        $records = $this->cloudflare->getRecords($domainId);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to fetch DNS records: Zone not found');
 
-        $this->assertSame([], $records);
+        $this->cloudflare->getRecords($domainId);
     }
 
     public function test_get_records_exception(): void
@@ -333,9 +339,10 @@ class CloudflareTest extends TestCase
             throw new \Exception('Network error');
         });
 
-        $records = $this->cloudflare->getRecords($domainId);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Network error');
 
-        $this->assertSame([], $records);
+        $this->cloudflare->getRecords($domainId);
     }
 
     public function test_create_record_success(): void

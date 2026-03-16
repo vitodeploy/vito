@@ -6,8 +6,6 @@ use Database\Factories\DomainFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 /**
  * @property int $dns_provider_id
@@ -74,29 +72,25 @@ class Domain extends AbstractModel
         return $this->hasMany(DNSRecord::class);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function syncDnsRecords(): void
     {
-        try {
-            $records = $this->dnsProvider->provider()->getRecords($this->provider_domain_id);
+        $records = $this->dnsProvider->provider()->getRecords($this->provider_domain_id);
 
-            DNSRecord::where('domain_id', $this->id)->delete();
+        DNSRecord::where('domain_id', $this->id)->delete();
 
-            foreach ($records as $recordData) {
-                DNSRecord::create([
-                    'domain_id' => $this->id,
-                    'type' => $recordData['type'],
-                    'name' => $recordData['name'],
-                    'content' => $recordData['content'],
-                    'ttl' => $recordData['ttl'] ?? 1,
-                    'proxied' => $recordData['proxied'] ?? false,
-                    'provider_record_id' => $recordData['id'],
-                    'metadata' => $recordData,
-                ]);
-            }
-        } catch (Throwable $e) {
-            Log::error('Failed to sync DNS records for domain: '.$this->domain, [
-                'error' => $e->getMessage(),
+        foreach ($records as $recordData) {
+            DNSRecord::create([
                 'domain_id' => $this->id,
+                'type' => $recordData['type'],
+                'name' => $recordData['name'],
+                'content' => $recordData['content'],
+                'ttl' => $recordData['ttl'] ?? 1,
+                'proxied' => $recordData['proxied'] ?? false,
+                'provider_record_id' => $recordData['id'],
+                'metadata' => $recordData,
             ]);
         }
     }

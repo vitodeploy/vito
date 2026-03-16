@@ -252,8 +252,12 @@ class DomainsTest extends TestCase
             'project_id' => $this->user->current_project_id,
         ]);
 
-        // Mock the DNS provider API call
+        // Mock the DNS provider API calls (getDomain + getRecords)
         Http::fake([
+            'api.cloudflare.com/client/v4/zones/test-domain-id/dns_records*' => Http::response([
+                'result' => [],
+                'success' => true,
+            ], 200),
             'api.cloudflare.com/*' => Http::response([
                 'result' => [
                     'id' => 'test-domain-id',
@@ -1083,6 +1087,86 @@ class DomainsTest extends TestCase
             'type' => 'CNAME',
             'name' => 'mail',
             'content' => 'example.com',
+        ]);
+    }
+
+    public function test_sync_dns_records_returns_error_when_provider_fails(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $domain = Domain::factory()->create([
+            'user_id' => $this->user->id,
+            'dns_provider_id' => $dnsProvider->id,
+            'project_id' => $this->user->current_project_id,
+            'provider_domain_id' => 'test-domain-id',
+        ]);
+
+        $existingRecord = DNSRecord::factory()->create([
+            'domain_id' => $domain->id,
+            'type' => 'A',
+            'name' => 'existing',
+            'content' => '192.168.1.1',
+        ]);
+
+        // Mock the DNS provider API call to throw an exception
+        Http::fake(function () {
+            throw new \RuntimeException('Domain is not opted in to API access.');
+        });
+
+        $response = $this->post("/domains/{$domain->id}/records/sync");
+
+        $response->assertRedirect()
+            ->assertSessionHas('error');
+    }
+
+    public function test_add_domain_fails_when_record_sync_fails(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $callCount = 0;
+
+        // First call (getDomain) succeeds, subsequent calls throw
+        Http::fake(function () use (&$callCount) {
+            $callCount++;
+            if ($callCount === 1) {
+                return Http::response([
+                    'result' => [
+                        'id' => 'test-domain-id',
+                        'name' => 'example.com',
+                        'status' => 'active',
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-01T00:00:00Z',
+                    ],
+                    'success' => true,
+                ], 200);
+            }
+
+            throw new \RuntimeException('Domain is not opted in to API access.');
+        });
+
+        $domainData = [
+            'dns_provider_id' => $dnsProvider->id,
+            'provider_domain_id' => 'test-domain-id',
+        ];
+
+        $response = $this->post('/domains', $domainData);
+
+        $response->assertRedirect()
+            ->assertSessionHasErrors('domain');
+
+        // Domain should not have been persisted due to transaction rollback
+        $this->assertDatabaseMissing('domains', [
+            'provider_domain_id' => 'test-domain-id',
         ]);
     }
 

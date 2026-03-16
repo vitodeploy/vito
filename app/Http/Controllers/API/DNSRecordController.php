@@ -92,7 +92,11 @@ class DNSRecordController extends Controller
         $this->authorize('update', $domain);
         $this->validateRoute($project, $domain);
 
-        $domain->syncDnsRecords();
+        try {
+            $domain->syncDnsRecords();
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to sync DNS records: '.$e->getMessage()], 422);
+        }
 
         return response()->json(['message' => 'DNS records synced successfully']);
     }
