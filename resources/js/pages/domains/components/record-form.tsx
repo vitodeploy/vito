@@ -84,7 +84,7 @@ export default function RecordForm({ domain, record, defaultOpen, onOpenChange, 
     if (Object.keys(updates).length > 0) {
       form.setData((prev) => ({ ...prev, ...updates }));
     }
-  }, [form.data.type]);
+  }, [form.data.type, proxyTypes]);
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();

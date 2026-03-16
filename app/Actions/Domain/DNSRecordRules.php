@@ -35,6 +35,7 @@ class DNSRecordRules
             ],
             'priority' => [
                 'nullable',
+                'prohibited_unless:type,MX',
                 'integer',
                 'min:0',
                 'max:65535',

@@ -146,7 +146,7 @@ class Cloudflare extends AbstractDNSProvider
                 'content' => $record['content'],
                 'ttl' => $record['ttl'],
                 'proxied' => $record['proxied'],
-                'priority' => $record['type'] === 'MX' && ! empty($record['priority']) ? $record['priority'] : null,
+                'priority' => $record['type'] === 'MX' && isset($record['priority']) ? $record['priority'] : null,
                 'created_on' => $record['created_on'],
                 'modified_on' => $record['modified_on'],
             ];

@@ -68,7 +68,7 @@ class DNSRecordTest extends TestCase
                     'formatted_name',
                     'content',
                     'ttl',
-                    'formatted_ttl',
+
                     'proxied',
                     'domain_id',
                     'created_at',
@@ -156,7 +156,7 @@ class DNSRecordTest extends TestCase
                 'formatted_name',
                 'content',
                 'ttl',
-                'formatted_ttl',
+
                 'proxied',
                 'domain_id',
                 'created_at',
@@ -260,7 +260,7 @@ class DNSRecordTest extends TestCase
                 'formatted_name',
                 'content',
                 'ttl',
-                'formatted_ttl',
+
                 'proxied',
                 'domain_id',
                 'created_at',

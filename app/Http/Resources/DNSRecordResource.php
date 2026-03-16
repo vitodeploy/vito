@@ -23,7 +23,6 @@ class DNSRecordResource extends JsonResource
             'formatted_name' => $this->formatted_name,
             'content' => $this->content,
             'ttl' => $this->ttl,
-            'formatted_ttl' => $this->formatted_ttl,
             'proxied' => $this->proxied,
             'priority' => $this->priority,
             'domain_id' => $this->domain_id,

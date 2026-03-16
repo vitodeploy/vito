@@ -22,9 +22,10 @@ export default function DomainShow() {
   const page = usePage<Page>();
   const { configs } = usePage<SharedData>().props;
 
-  const providerKey = page.props.domain.dns_provider?.provider;
+  const domain = page.props.domain;
+  const providerKey = domain.dns_provider?.provider;
   const providerConfig = providerKey ? configs.dns_provider?.providers?.[providerKey] : undefined;
-  const columns = useMemo(() => getColumns(providerConfig), [providerKey]);
+  const columns = useMemo(() => getColumns(providerConfig, domain), [providerKey, domain.id]);
 
   return (
     <Layout>

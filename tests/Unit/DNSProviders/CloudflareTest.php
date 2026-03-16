@@ -344,6 +344,36 @@ class CloudflareTest extends TestCase
         $this->assertSame(10, $records[0]['priority']);
     }
 
+    public function test_get_records_mx_priority_zero_is_preserved(): void
+    {
+        $domainId = 'zone-123';
+
+        Http::fake([
+            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+                'success' => true,
+                'result' => [
+                    [
+                        'id' => 'record-mx',
+                        'type' => 'MX',
+                        'name' => 'example.com',
+                        'content' => 'mail.example.com',
+                        'ttl' => 3600,
+                        'proxied' => false,
+                        'priority' => 0,
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-02T00:00:00Z',
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $records = $this->cloudflare->getRecords($domainId);
+
+        $this->assertCount(1, $records);
+        $this->assertSame('MX', $records[0]['type']);
+        $this->assertSame(0, $records[0]['priority']);
+    }
+
     public function test_get_records_non_mx_priority_is_always_null(): void
     {
         $domainId = 'zone-123';

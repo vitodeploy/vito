@@ -1,6 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import DateTime from '@/components/date-time';
 import { DNSRecord } from '@/types/dns-record';
+import { Domain } from '@/types/domain';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -27,12 +28,13 @@ function CopyableText({ text }: { text: string | null | undefined }) {
   const { copied, copy } = useClipboard();
 
   return (
-    <span
-      className={`cursor-pointer break-all font-mono text-xs ${copied ? 'text-success' : ''}`}
+    <button
+      type="button"
+      className={`cursor-pointer break-all text-left font-mono text-xs ${copied ? 'text-success' : ''}`}
       onClick={() => copy(text || '')}
     >
       {text}
-    </span>
+    </button>
   );
 }
 
@@ -96,7 +98,7 @@ interface ProviderConfig {
   supports_created_at?: boolean;
 }
 
-export function getColumns(providerConfig?: ProviderConfig): ColumnDef<DNSRecord>[] {
+export function getColumns(providerConfig?: ProviderConfig, domain?: Domain): ColumnDef<DNSRecord>[] {
   const cols: ColumnDef<DNSRecord>[] = [
     {
       accessorKey: 'type',
@@ -156,7 +158,7 @@ export function getColumns(providerConfig?: ProviderConfig): ColumnDef<DNSRecord
       enableColumnFilter: true,
       enableSorting: true,
       cell: ({ row }) => {
-        return <span className="text-sm">{row.original.formatted_ttl}</span>;
+        return <span className="text-sm">{row.original.ttl === 1 ? 'Auto' : row.original.ttl}</span>;
       },
     },
   ];
@@ -188,8 +190,8 @@ export function getColumns(providerConfig?: ProviderConfig): ColumnDef<DNSRecord
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {row.original.domain && (
-                <RecordForm domain={row.original.domain} record={row.original}>
+              {domain && (
+                <RecordForm domain={domain} record={row.original}>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
                 </RecordForm>
               )}

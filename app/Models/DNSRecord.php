@@ -60,16 +60,4 @@ class DNSRecord extends AbstractModel
     {
         return $this->name === $this->domain->domain ? '@' : $this->name;
     }
-
-    /**
-     * Get the TTL in human readable format
-     */
-    public function getFormattedTtlAttribute(): string
-    {
-        if ($this->ttl === 1) {
-            return 'Auto';
-        }
-
-        return (string) $this->ttl;
-    }
 }
