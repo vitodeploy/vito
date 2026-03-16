@@ -11,6 +11,7 @@ class RegisterDNSProvider
         private string $label = '',
         private string $handler = '',
         private ?DynamicForm $form = null,
+        private ?DynamicForm $editForm = null,
         private array $proxyTypes = [],
         private bool $supportsCreatedAt = true,
     ) {}
@@ -48,6 +49,13 @@ class RegisterDNSProvider
         return $this;
     }
 
+    public function editForm(DynamicForm $editForm): self
+    {
+        $this->editForm = $editForm;
+
+        return $this;
+    }
+
     public function proxyTypes(array $proxyTypes): self
     {
         $this->proxyTypes = $proxyTypes;
@@ -70,6 +78,7 @@ class RegisterDNSProvider
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
+            'edit_form' => $this->editForm ? $this->editForm->toArray() : [],
             'proxy_types' => $this->proxyTypes,
             'supports_created_at' => $this->supportsCreatedAt,
         ];

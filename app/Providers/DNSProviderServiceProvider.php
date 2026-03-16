@@ -30,6 +30,14 @@ class DNSProviderServiceProvider extends ServiceProvider
                         ->description('Create an API token with Zone:Read and DNS:Edit permissions'),
                 ])
             )
+            ->editForm(
+                DynamicForm::make([
+                    DynamicField::make('token')
+                        ->passwordWithToggle()
+                        ->label('API Token')
+                        ->description('Leave empty to keep the current token'),
+                ])
+            )
             ->proxyTypes(['A', 'AAAA', 'CNAME'])
             ->supportsCreatedAt(true)
             ->register();

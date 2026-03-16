@@ -542,7 +542,7 @@ class DNSProvidersTest extends TestCase
         $this->assertEquals(Cloudflare::id(), $dnsProvider->provider); // Should remain unchanged
     }
 
-    public function test_dns_provider_update_ignores_credentials_manipulation(): void
+    public function test_dns_provider_update_keeps_credentials_when_empty(): void
     {
         Sanctum::actingAs($this->user, ['read', 'write']);
 
@@ -553,7 +553,6 @@ class DNSProvidersTest extends TestCase
 
         $data = [
             'name' => 'Updated Name',
-            'token' => 'new-token', // Attempt to change credentials
         ];
 
         $this->json('PUT', route('api.dns-providers.update', $dnsProvider), $data)
@@ -564,7 +563,67 @@ class DNSProvidersTest extends TestCase
 
         $dnsProvider->refresh();
         $this->assertEquals('Updated Name', $dnsProvider->name);
-        $this->assertEquals(['token' => 'original-token'], $dnsProvider->credentials); // Should remain unchanged
+        $this->assertEquals(['token' => 'original-token'], $dnsProvider->credentials);
+    }
+
+    public function test_dns_provider_update_changes_credentials_when_provided(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'credentials' => ['token' => 'original-token'],
+        ]);
+
+        Http::fake([
+            'api.cloudflare.com/*' => Http::response([
+                'success' => true,
+                'result' => [],
+            ], 200),
+        ]);
+
+        $data = [
+            'name' => 'Updated Name',
+            'token' => 'new-token',
+        ];
+
+        $this->json('PUT', route('api.dns-providers.update', $dnsProvider), $data)
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'name' => 'Updated Name',
+            ]);
+
+        $dnsProvider->refresh();
+        $this->assertEquals('Updated Name', $dnsProvider->name);
+        $this->assertEquals(['token' => 'new-token'], $dnsProvider->credentials);
+    }
+
+    public function test_dns_provider_update_rejects_invalid_credentials(): void
+    {
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'credentials' => ['token' => 'original-token'],
+        ]);
+
+        Http::fake([
+            'api.cloudflare.com/*' => Http::response([
+                'success' => false,
+                'errors' => [['message' => 'Invalid token']],
+            ], 401),
+        ]);
+
+        $data = [
+            'name' => 'Updated Name',
+            'token' => 'bad-token',
+        ];
+
+        $this->json('PUT', route('api.dns-providers.update', $dnsProvider), $data)
+            ->assertUnprocessable();
+
+        $dnsProvider->refresh();
+        $this->assertEquals(['token' => 'original-token'], $dnsProvider->credentials);
     }
 
     public function test_dns_provider_update_ignores_connected_manipulation(): void

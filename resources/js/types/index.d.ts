@@ -75,6 +75,7 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+        edit_form?: DynamicFieldConfig[];
         proxy_types?: string[];
         supports_created_at?: boolean;
       };

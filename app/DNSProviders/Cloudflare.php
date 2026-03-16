@@ -45,6 +45,26 @@ class Cloudflare extends AbstractDNSProvider
         ];
     }
 
+    public function editValidationRules(array $input): array
+    {
+        return [
+            'token' => 'nullable|string',
+        ];
+    }
+
+    public function mergeEditData(array $input): array
+    {
+        $credentials = $this->dnsProvider->credentials;
+        $needsReconnect = false;
+
+        if (! empty($input['token'])) {
+            $credentials['token'] = $input['token'];
+            $needsReconnect = true;
+        }
+
+        return [$credentials, $needsReconnect];
+    }
+
     public function connect(array $credentials): bool
     {
         try {
