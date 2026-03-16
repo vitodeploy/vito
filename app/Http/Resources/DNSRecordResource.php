@@ -25,6 +25,7 @@ class DNSRecordResource extends JsonResource
             'ttl' => $this->ttl,
             'formatted_ttl' => $this->formatted_ttl,
             'proxied' => $this->proxied,
+            'priority' => $this->priority,
             'domain_id' => $this->domain_id,
             'domain' => new DomainResource($this->whenLoaded('domain')),
             'created_at' => $this->created_at,

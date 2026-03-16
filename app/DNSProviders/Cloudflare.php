@@ -146,6 +146,7 @@ class Cloudflare extends AbstractDNSProvider
                 'content' => $record['content'],
                 'ttl' => $record['ttl'],
                 'proxied' => $record['proxied'],
+                'priority' => $record['type'] === 'MX' && ! empty($record['priority']) ? $record['priority'] : null,
                 'created_on' => $record['created_on'],
                 'modified_on' => $record['modified_on'],
             ];
@@ -155,13 +156,7 @@ class Cloudflare extends AbstractDNSProvider
     public function createRecord(string $domainId, array $recordData): array
     {
         try {
-            $response = $this->getClient()->post("zones/{$domainId}/dns_records", [
-                'type' => $recordData['type'],
-                'name' => $recordData['name'],
-                'content' => $recordData['content'],
-                'ttl' => $recordData['ttl'] ?? 1,
-                'proxied' => $recordData['proxied'] ?? false,
-            ]);
+            $response = $this->getClient()->post("zones/{$domainId}/dns_records", $this->buildPayload($recordData));
 
             if (! $response->successful()) {
                 Log::error('Failed to create Cloudflare DNS record', ['domainId' => $domainId, 'input' => $recordData, 'response' => $response->json()]);
@@ -178,13 +173,7 @@ class Cloudflare extends AbstractDNSProvider
     public function updateRecord(string $domainId, string $recordId, array $recordData): array
     {
         try {
-            $response = $this->getClient()->put("zones/{$domainId}/dns_records/{$recordId}", [
-                'type' => $recordData['type'],
-                'name' => $recordData['name'],
-                'content' => $recordData['content'],
-                'ttl' => $recordData['ttl'] ?? 1,
-                'proxied' => $recordData['proxied'] ?? false,
-            ]);
+            $response = $this->getClient()->put("zones/{$domainId}/dns_records/{$recordId}", $this->buildPayload($recordData));
 
             if (! $response->successful()) {
                 Log::error('Failed to update Cloudflare DNS record', ['domainId' => $domainId, 'recordId' => $recordId, 'input' => $recordData, 'response' => $response->json()]);
@@ -196,6 +185,23 @@ class Cloudflare extends AbstractDNSProvider
             Log::error('Cloudflare updateRecord exception', ['error' => $e->getMessage()]);
             throw ValidationException::withMessages(['record' => 'Failed to update DNS record: '.$e->getMessage()]);
         }
+    }
+
+    private function buildPayload(array $input): array
+    {
+        $payload = [
+            'type' => $input['type'],
+            'name' => $input['name'],
+            'content' => $input['content'],
+            'ttl' => $input['ttl'] ?? 1,
+            'proxied' => $input['proxied'] ?? false,
+        ];
+
+        if (isset($input['priority'])) {
+            $payload['priority'] = $input['priority'];
+        }
+
+        return $payload;
     }
 
     public function deleteRecord(string $domainId, string $recordId): bool

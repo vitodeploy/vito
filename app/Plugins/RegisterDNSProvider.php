@@ -11,6 +11,8 @@ class RegisterDNSProvider
         private string $label = '',
         private string $handler = '',
         private ?DynamicForm $form = null,
+        private array $proxyTypes = [],
+        private bool $supportsCreatedAt = true,
     ) {}
 
     public static function make(string $name): self
@@ -46,6 +48,20 @@ class RegisterDNSProvider
         return $this;
     }
 
+    public function proxyTypes(array $proxyTypes): self
+    {
+        $this->proxyTypes = $proxyTypes;
+
+        return $this;
+    }
+
+    public function supportsCreatedAt(bool $supportsCreatedAt): self
+    {
+        $this->supportsCreatedAt = $supportsCreatedAt;
+
+        return $this;
+    }
+
     public function register(): void
     {
         $providers = config('dns-provider.providers');
@@ -54,6 +70,8 @@ class RegisterDNSProvider
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
+            'proxy_types' => $this->proxyTypes,
+            'supports_created_at' => $this->supportsCreatedAt,
         ];
 
         config(['dns-provider.providers' => $providers]);

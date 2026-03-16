@@ -294,6 +294,7 @@ class CloudflareTest extends TestCase
                 'content' => '192.168.1.1',
                 'ttl' => 300,
                 'proxied' => false,
+                'priority' => null,
                 'created_on' => '2023-01-01T00:00:00Z',
                 'modified_on' => '2023-01-02T00:00:00Z',
             ],
@@ -304,12 +305,126 @@ class CloudflareTest extends TestCase
                 'content' => 'example.com',
                 'ttl' => 1,
                 'proxied' => true,
+                'priority' => null,
                 'created_on' => '2023-01-03T00:00:00Z',
                 'modified_on' => '2023-01-04T00:00:00Z',
             ],
         ];
 
         $this->assertSame($expected, $records);
+    }
+
+    public function test_get_records_mx_priority_is_parsed(): void
+    {
+        $domainId = 'zone-123';
+
+        Http::fake([
+            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+                'success' => true,
+                'result' => [
+                    [
+                        'id' => 'record-mx',
+                        'type' => 'MX',
+                        'name' => 'example.com',
+                        'content' => 'mail.example.com',
+                        'ttl' => 3600,
+                        'proxied' => false,
+                        'priority' => 10,
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-02T00:00:00Z',
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $records = $this->cloudflare->getRecords($domainId);
+
+        $this->assertCount(1, $records);
+        $this->assertSame('MX', $records[0]['type']);
+        $this->assertSame(10, $records[0]['priority']);
+    }
+
+    public function test_get_records_non_mx_priority_is_always_null(): void
+    {
+        $domainId = 'zone-123';
+
+        Http::fake([
+            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+                'success' => true,
+                'result' => [
+                    [
+                        'id' => 'record-a',
+                        'type' => 'A',
+                        'name' => 'example.com',
+                        'content' => '192.168.1.1',
+                        'ttl' => 300,
+                        'proxied' => false,
+                        'priority' => 5,
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-02T00:00:00Z',
+                    ],
+                    [
+                        'id' => 'record-cname',
+                        'type' => 'CNAME',
+                        'name' => 'www.example.com',
+                        'content' => 'example.com',
+                        'ttl' => 1,
+                        'proxied' => true,
+                        'priority' => 10,
+                        'created_on' => '2023-01-03T00:00:00Z',
+                        'modified_on' => '2023-01-04T00:00:00Z',
+                    ],
+                    [
+                        'id' => 'record-txt',
+                        'type' => 'TXT',
+                        'name' => 'example.com',
+                        'content' => 'v=spf1 include:example.com ~all',
+                        'ttl' => 600,
+                        'proxied' => false,
+                        'priority' => 0,
+                        'created_on' => '2023-01-05T00:00:00Z',
+                        'modified_on' => '2023-01-06T00:00:00Z',
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $records = $this->cloudflare->getRecords($domainId);
+
+        $this->assertCount(3, $records);
+
+        foreach ($records as $record) {
+            $this->assertNull($record['priority'], "Expected null priority for {$record['type']} record, got {$record['priority']}");
+        }
+    }
+
+    public function test_get_records_mx_without_priority_returns_null(): void
+    {
+        $domainId = 'zone-123';
+
+        Http::fake([
+            "api.cloudflare.com/client/v4/zones/{$domainId}/dns_records*" => Http::response([
+                'success' => true,
+                'result' => [
+                    [
+                        'id' => 'record-mx',
+                        'type' => 'MX',
+                        'name' => 'example.com',
+                        'content' => 'mail.example.com',
+                        'ttl' => 3600,
+                        'proxied' => false,
+                        'created_on' => '2023-01-01T00:00:00Z',
+                        'modified_on' => '2023-01-02T00:00:00Z',
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $records = $this->cloudflare->getRecords($domainId);
+
+        $this->assertCount(1, $records);
+        $this->assertSame('MX', $records[0]['type']);
+        $this->assertNull($records[0]['priority']);
     }
 
     public function test_get_records_failure(): void

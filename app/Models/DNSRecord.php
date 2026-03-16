@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $content
  * @property int $ttl
  * @property bool $proxied
+ * @property ?int $priority
  * @property string $provider_record_id
  * @property array<string, mixed> $metadata
  * @property Domain $domain
@@ -31,6 +32,7 @@ class DNSRecord extends AbstractModel
         'content',
         'ttl',
         'proxied',
+        'priority',
         'provider_record_id',
         'metadata',
     ];
@@ -39,6 +41,7 @@ class DNSRecord extends AbstractModel
         'domain_id' => 'integer',
         'ttl' => 'integer',
         'proxied' => 'boolean',
+        'priority' => 'integer',
         'metadata' => 'array',
     ];
 
@@ -67,14 +70,6 @@ class DNSRecord extends AbstractModel
             return 'Auto';
         }
 
-        if ($this->ttl < 60) {
-            return $this->ttl.'s';
-        }
-
-        if ($this->ttl < 3600) {
-            return round($this->ttl / 60).'m';
-        }
-
-        return round($this->ttl / 3600).'h';
+        return (string) $this->ttl;
     }
 }

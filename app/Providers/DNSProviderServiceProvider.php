@@ -30,6 +30,8 @@ class DNSProviderServiceProvider extends ServiceProvider
                         ->description('Create an API token with Zone:Read and DNS:Edit permissions'),
                 ])
             )
+            ->proxyTypes(['A', 'AAAA', 'CNAME'])
+            ->supportsCreatedAt(true)
             ->register();
     }
 }

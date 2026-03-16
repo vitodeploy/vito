@@ -91,6 +91,7 @@ class Domain extends AbstractModel
                     'content' => $recordData['content'],
                     'ttl' => $recordData['ttl'] ?? 1,
                     'proxied' => $recordData['proxied'] ?? false,
+                    'priority' => $recordData['priority'] ?? null,
                     'provider_record_id' => $recordData['id'],
                     'metadata' => $recordData,
                 ]);
