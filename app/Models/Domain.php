@@ -6,6 +6,7 @@ use Database\Factories\DomainFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $dns_provider_id
@@ -73,25 +74,27 @@ class Domain extends AbstractModel
     }
 
     /**
-     * @throws \RuntimeException
+     * @throws \Throwable
      */
     public function syncDnsRecords(): void
     {
         $records = $this->dnsProvider->provider()->getRecords($this->provider_domain_id);
 
-        DNSRecord::where('domain_id', $this->id)->delete();
+        DB::transaction(function () use ($records) {
+            DNSRecord::where('domain_id', $this->id)->delete();
 
-        foreach ($records as $recordData) {
-            DNSRecord::create([
-                'domain_id' => $this->id,
-                'type' => $recordData['type'],
-                'name' => $recordData['name'],
-                'content' => $recordData['content'],
-                'ttl' => $recordData['ttl'] ?? 1,
-                'proxied' => $recordData['proxied'] ?? false,
-                'provider_record_id' => $recordData['id'],
-                'metadata' => $recordData,
-            ]);
-        }
+            foreach ($records as $recordData) {
+                DNSRecord::create([
+                    'domain_id' => $this->id,
+                    'type' => $recordData['type'],
+                    'name' => $recordData['name'],
+                    'content' => $recordData['content'],
+                    'ttl' => $recordData['ttl'] ?? 1,
+                    'proxied' => $recordData['proxied'] ?? false,
+                    'provider_record_id' => $recordData['id'],
+                    'metadata' => $recordData,
+                ]);
+            }
+        });
     }
 }

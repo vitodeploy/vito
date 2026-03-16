@@ -1122,6 +1122,13 @@ class DomainsTest extends TestCase
 
         $response->assertRedirect()
             ->assertSessionHas('error');
+
+        // Existing record should remain intact after a failed sync
+        $this->assertDatabaseHas('dns_records', [
+            'id' => $existingRecord->id,
+            'domain_id' => $domain->id,
+            'name' => 'existing',
+        ]);
     }
 
     public function test_add_domain_fails_when_record_sync_fails(): void
