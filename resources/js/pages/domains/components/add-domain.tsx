@@ -145,6 +145,7 @@ export default function AddDomain({ children }: { children: ReactNode }) {
               </Select>
               <InputError message={form.errors.provider_domain_id} />
             </FormField>
+            <InputError message={(form.errors as Record<string, string>).domain} />
           </FormFields>
         </Form>
         <DialogFooter>
