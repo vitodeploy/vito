@@ -2,10 +2,12 @@
 
 namespace App\Jobs\SSL;
 
+use App\Actions\Application\DeployApplication;
 use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
 use App\Events\SocketEvent;
 use App\Http\Resources\SslResource;
+use App\Models\Application;
 use App\Models\ServerLog;
 use App\Models\Service;
 use App\Models\Site;
@@ -21,22 +23,27 @@ class CreateJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public function __construct(protected Site $site, protected Ssl $ssl) {}
+    public function __construct(protected Site|Application $parent, protected Ssl $ssl) {}
 
     public function handle(): void
     {
-        $this->run("server-{$this->site->server_id}", function () {
+        $this->run("server-{$this->parent->server_id}", function () {
             /** @var Service $service */
-            $service = $this->site->server->webserver();
+            $service = $this->parent->server->webserver();
             /** @var Webserver $webserver */
             $webserver = $service->handler();
             $webserver->setupSSL($this->ssl);
             $this->ssl->status = SslStatus::CREATED;
             $this->ssl->save();
             $this->broadcastSslUpdate();
-            $webserver->updateVHost($this->site->refresh(), regenerate: [
-                'port',
-            ]);
+
+            if ($this->parent instanceof Application) {
+                app(DeployApplication::class)->deploy($this->parent->refresh());
+            } else {
+                $webserver->updateVHost($this->parent->refresh(), regenerate: [
+                    'port',
+                ]);
+            }
         });
     }
 
@@ -47,10 +54,9 @@ class CreateJob implements ShouldQueue
         $this->broadcastSslUpdate();
 
         ServerLog::log(
-            $this->site->server,
+            $this->parent->server,
             'create-ssl-failed',
             $e->getMessage(),
-            $this->site
         );
     }
 
@@ -59,7 +65,7 @@ class CreateJob implements ShouldQueue
         $this->ssl->refresh();
 
         SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $this->site->server->project_id,
+            projectId: $this->parent->server->project_id,
             type: 'ssl.updated',
             data: new SslResource($this->ssl),
         ));

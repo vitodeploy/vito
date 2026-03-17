@@ -14,10 +14,13 @@ class SslResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $parent = $this->parent();
+
         return [
             'id' => $this->id,
-            'server_id' => $this->site->server_id,
+            'server_id' => $parent->server_id,
             'site_id' => $this->site_id,
+            'application_id' => $this->application_id,
             'is_active' => $this->is_active,
             'type' => $this->type,
             'status' => $this->status->getText(),

@@ -4,6 +4,7 @@ namespace App\Services\Webserver;
 
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
+use App\Models\Application;
 use App\Models\Site;
 use App\Models\Ssl;
 use Throwable;
@@ -209,11 +210,9 @@ class Caddy extends AbstractWebserver
             $this->service->server->ssh()->exec(
                 'sudo rm -rf '.dirname($ssl->certificate_path),
                 'remove-ssl',
-                $ssl->site_id
+                $ssl->site_id ?? $ssl->application_id
             );
         }
-
-        $this->updateVHost($ssl->site);
     }
 
     public function version(): string

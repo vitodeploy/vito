@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property int $site_id
- * @property int $deployment_script_id
+ * @property ?int $site_id
+ * @property ?int $application_id
+ * @property ?int $deployment_script_id
  * @property int $log_id
  * @property string $commit_id
  * @property string $commit_id_short
@@ -17,8 +18,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property DeploymentStatus $status
  * @property ?string $release
  * @property bool $active
- * @property Site $site
- * @property DeploymentScript $deploymentScript
+ * @property ?Site $site
+ * @property ?Application $application
+ * @property ?DeploymentScript $deploymentScript
  * @property ?ServerLog $log
  */
 class Deployment extends AbstractModel
@@ -28,6 +30,7 @@ class Deployment extends AbstractModel
 
     protected $fillable = [
         'site_id',
+        'application_id',
         'deployment_script_id',
         'log_id',
         'commit_id',
@@ -39,6 +42,7 @@ class Deployment extends AbstractModel
 
     protected $casts = [
         'site_id' => 'integer',
+        'application_id' => 'integer',
         'deployment_script_id' => 'integer',
         'log_id' => 'integer',
         'commit_data' => 'json',
@@ -49,6 +53,9 @@ class Deployment extends AbstractModel
     protected static function booted(): void
     {
         static::created(function (Deployment $deployment): void {
+            if (! $deployment->site) {
+                return;
+            }
             $site = $deployment->site;
             $keep = $site->type_data['modern_deployment_history'] ?? 10;
             if ($site->deployments()->whereNotNull('release')->count() > $keep) {
@@ -76,6 +83,14 @@ class Deployment extends AbstractModel
     }
 
     /**
+     * @return BelongsTo<Application, covariant $this>
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
+
+    /**
      * @return BelongsTo<DeploymentScript, covariant $this>
      */
     public function deploymentScript(): BelongsTo
@@ -93,12 +108,16 @@ class Deployment extends AbstractModel
 
     public function path(): string
     {
+        if (! $this->site) {
+            return '';
+        }
+
         return $this->site->basePath().($this->release ? '/releases/'.$this->release : '');
     }
 
     public function remove(bool $onlyRelease = false): void
     {
-        if ($this->release) {
+        if ($this->release && $this->site) {
             $site = $this->site;
             $site->server->ssh($site->user)->exec('rm -rf '.$this->path());
             $this->release = null;
@@ -115,6 +134,10 @@ class Deployment extends AbstractModel
 
     public function activate(): void
     {
+        if (! $this->site) {
+            return;
+        }
+
         $this->site->deployments()->update(['active' => false]);
         $this->active = true;
         $this->save();

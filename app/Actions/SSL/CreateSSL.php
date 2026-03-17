@@ -5,6 +5,7 @@ namespace App\Actions\SSL;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Jobs\SSL\CreateJob;
+use App\Models\Application;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -19,33 +20,34 @@ class CreateSSL
      *
      * @throws ValidationException
      */
-    public function create(Site $site, array $input): Ssl
+    public function create(Site|Application $parent, array $input): Ssl
     {
         $this->validate($input);
 
-        $site->ssls()
+        $parent->ssls()
             ->where('type', $input['type'])
             ->where('status', SslStatus::FAILED)
             ->delete();
 
         $ssl = new Ssl([
-            'site_id' => $site->id,
+            'site_id' => $parent instanceof Site ? $parent->id : null,
+            'application_id' => $parent instanceof Application ? $parent->id : null,
             'type' => $input['type'],
             'certificate' => $input['certificate'] ?? null,
             'pk' => $input['private'] ?? null,
             'expires_at' => $input['type'] === SslType::LETSENCRYPT->value ? now()->addMonths(3) : $input['expires_at'],
             'status' => SslStatus::CREATING,
             'email' => $input['email'] ?? null,
-            'is_active' => ! $site->activeSsl,
+            'is_active' => ! $parent->activeSsl,
         ]);
-        $ssl->domains = [$site->domain];
+        $ssl->domains = [$parent->domain];
         if (isset($input['aliases']) && $input['aliases']) {
-            $ssl->domains = array_merge($ssl->domains, $site->aliases);
+            $ssl->domains = array_merge($ssl->domains, $parent->aliases ?? []);
         }
-        $ssl->log_id = ServerLog::log($site->server, 'create-ssl', '', $site)->id;
+        $ssl->log_id = ServerLog::log($parent->server, 'create-ssl', '')->id;
         $ssl->save();
 
-        dispatch(new CreateJob($site, $ssl))->onQueue('ssh');
+        dispatch(new CreateJob($parent, $ssl))->onQueue('ssh');
 
         return $ssl;
     }

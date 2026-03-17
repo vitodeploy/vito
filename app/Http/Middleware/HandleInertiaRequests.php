@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
@@ -80,6 +81,10 @@ class HandleInertiaRequests extends Middleware
             if ($request->route('site')) {
                 $data['site'] = SiteResource::make($request->route('site'));
             }
+
+            if ($request->route('application')) {
+                $data['application'] = ApplicationResource::make($request->route('application'));
+            }
         }
 
         return [
@@ -102,6 +107,9 @@ class HandleInertiaRequests extends Middleware
                 'metrics_periods' => config('core.metrics_periods'),
                 'site' => [
                     'types' => config('site.types'),
+                ],
+                'application' => [
+                    'types' => config('application.types'),
                 ],
                 'source_control' => [
                     'providers' => config('source-control.providers'),

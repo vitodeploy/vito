@@ -558,4 +558,9 @@ class Site extends AbstractModel
     {
         return $this->domain.'-key-'.$this->id;
     }
+
+    public function refreshVhost(): void
+    {
+        $this->webserver()->updateVHost($this, regenerate: ['port']);
+    }
 }

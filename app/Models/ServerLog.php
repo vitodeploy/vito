@@ -20,12 +20,14 @@ use Throwable;
 /**
  * @property int $server_id
  * @property ?int $site_id
+ * @property ?int $application_id
  * @property string $type
  * @property string $name
  * @property string $disk
  * @property bool $is_remote
  * @property Server $server
  * @property ?Site $site
+ * @property ?Application $application
  */
 class ServerLog extends AbstractModel
 {
@@ -35,6 +37,7 @@ class ServerLog extends AbstractModel
     protected $fillable = [
         'server_id',
         'site_id',
+        'application_id',
         'type',
         'name',
         'disk',
@@ -44,6 +47,7 @@ class ServerLog extends AbstractModel
     protected $casts = [
         'server_id' => 'integer',
         'site_id' => 'integer',
+        'application_id' => 'integer',
         'is_remote' => 'boolean',
     ];
 
@@ -95,6 +99,14 @@ class ServerLog extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * @return BelongsTo<Application, $this>
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
     }
 
     /**
@@ -185,11 +197,12 @@ class ServerLog extends AbstractModel
         return "Log file doesn't exist or is empty!";
     }
 
-    public static function log(Server $server, string $type, string $content, ?Site $site = null): ServerLog
+    public static function log(Server $server, string $type, string $content, Site|Application|null $parent = null): ServerLog
     {
         $log = new self([
             'server_id' => $server->id,
-            'site_id' => $site?->id,
+            'site_id' => $parent instanceof Site ? $parent->id : null,
+            'application_id' => $parent instanceof Application ? $parent->id : null,
             'name' => $server->id.'-'.strtotime('now').'-'.$type.'.log',
             'type' => $type,
             'disk' => config('core.logs_disk'),

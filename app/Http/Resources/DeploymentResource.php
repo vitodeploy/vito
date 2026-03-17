@@ -17,6 +17,7 @@ class DeploymentResource extends JsonResource
         return [
             'id' => $this->id,
             'site_id' => $this->site_id,
+            'application_id' => $this->application_id,
             'deployment_script_id' => $this->deployment_script_id,
             'log_id' => $this->log_id,
             'log' => $this->log ? new ServerLogResource($this->log) : null,

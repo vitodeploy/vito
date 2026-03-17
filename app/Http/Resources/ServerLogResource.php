@@ -18,6 +18,7 @@ class ServerLogResource extends JsonResource
             'id' => $this->id,
             'server_id' => $this->server_id,
             'site_id' => $this->site_id,
+            'application_id' => $this->application_id,
             'type' => $this->type,
             'name' => $this->name,
             'disk' => $this->disk,

@@ -10,14 +10,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 /**
- * @property int $site_id
+ * @property ?int $site_id
+ * @property ?int $application_id
  * @property string $type
  * @property string $certificate
  * @property string $pk
  * @property string $ca
  * @property Carbon $expires_at
  * @property SslStatus $status
- * @property Site $site
+ * @property ?Site $site
+ * @property ?Application $application
  * @property array<int, string>|string|null $domains
  * @property int $log_id
  * @property string $email
@@ -34,6 +36,7 @@ class Ssl extends AbstractModel
 
     protected $fillable = [
         'site_id',
+        'application_id',
         'type',
         'certificate',
         'pk',
@@ -51,6 +54,7 @@ class Ssl extends AbstractModel
 
     protected $casts = [
         'site_id' => 'integer',
+        'application_id' => 'integer',
         'certificate' => 'encrypted',
         'pk' => 'encrypted',
         'ca' => 'encrypted',
@@ -67,6 +71,19 @@ class Ssl extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * @return BelongsTo<Application, covariant $this>
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
+
+    public function parent(): Site|Application
+    {
+        return $this->application ?? $this->site;
     }
 
     public function validateSetup(string $result): bool
@@ -93,7 +110,7 @@ class Ssl extends AbstractModel
             return $this->domains;
         }
 
-        $this->domains = [$this->site->domain];
+        $this->domains = [$this->parent()->domain];
         $this->save();
 
         return $this->domains;

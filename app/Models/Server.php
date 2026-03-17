@@ -126,6 +126,11 @@ class Server extends AbstractModel
                     $site->deploymentScript()->delete();
                 });
                 $server->sites()->delete();
+                $server->applications()->each(function ($application): void {
+                    /** @var Application $application */
+                    $application->ssls()->delete();
+                });
+                $server->applications()->delete();
                 $server->logs()->each(function ($log): void {
                     /** @var ServerLog $log */
                     $log->delete();
@@ -206,6 +211,14 @@ class Server extends AbstractModel
     public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
+    }
+
+    /**
+     * @return HasMany<Application, covariant $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
     }
 
     /**

@@ -105,6 +105,7 @@ class CreateSite
                 'required',
                 new DomainRule,
                 Rule::unique('sites', 'domain')->where(fn ($query) => $query->where('server_id', $server->id)),
+                Rule::unique('applications', 'domain')->where(fn ($query) => $query->where('server_id', $server->id)),
             ],
             'aliases.*' => [
                 new DomainRule,

@@ -195,6 +195,7 @@ return [
         App\Providers\DemoServiceProvider::class,
         App\Providers\PluginsServiceProvider::class,
         App\Providers\SiteTypeServiceProvider::class,
+        App\Providers\ApplicationTypeServiceProvider::class,
         App\Providers\ServerProviderServiceProvider::class,
         App\Providers\StorageProviderServiceProvider::class,
         App\Providers\SourceControlServiceProvider::class,

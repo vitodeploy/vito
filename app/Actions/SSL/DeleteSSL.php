@@ -13,14 +13,16 @@ class DeleteSSL
     {
         $ssl->status = SslStatus::DELETING;
         $ssl->save();
+
+        $parent = $ssl->parent();
+
         /** @var Service $service */
-        $service = $ssl->site->server->webserver();
+        $service = $parent->server->webserver();
         /** @var Webserver $webserver */
         $webserver = $service->handler();
         $webserver->removeSSL($ssl);
         $ssl->delete();
-        $ssl->site->webserver()->updateVHost($ssl->site, regenerate: [
-            'port',
-        ]);
+
+        $parent->refreshVhost();
     }
 }

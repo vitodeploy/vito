@@ -17,6 +17,7 @@ import {
   ArrowLeftIcon,
   BellIcon,
   BookOpen,
+  BoxesIcon,
   ChevronRightIcon,
   ClockIcon,
   CloudIcon,
@@ -42,11 +43,13 @@ import { Icon } from '@/components/icon';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Server } from '@/types/server';
 import { Site } from '@/types/site';
+import { Application } from '@/types/application';
 
 export function AppSidebar() {
   const page = usePage<{
     server?: Server;
     site?: Site;
+    application?: Application;
   }>();
 
   const isServerMenuDisabled = !page.props.server || page.props.server.status !== 'ready';
@@ -62,6 +65,12 @@ export function AppSidebar() {
           href: route('servers.show', { server: page.props.server?.id || 0 }),
           onlyActivePath: route('servers.show', { server: page.props.server?.id || 0 }),
           icon: HomeIcon,
+          isDisabled: isServerMenuDisabled,
+        },
+        {
+          title: 'Applications',
+          href: route('applications', { server: page.props.server?.id || 0 }),
+          icon: BoxesIcon,
           isDisabled: isServerMenuDisabled,
         },
         {

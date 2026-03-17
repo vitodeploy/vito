@@ -1,6 +1,7 @@
 import { type NavItem } from '@/types';
 import {
   BoxIcon,
+  BoxesIcon,
   ChartLineIcon,
   ClockIcon,
   CloudIcon,
@@ -27,6 +28,8 @@ import ServerHeader from '@/pages/servers/components/header';
 import Layout from '@/layouts/app/layout';
 import { usePage } from '@inertiajs/react';
 import { Site } from '@/types/site';
+import { Application } from '@/types/application';
+import { SharedData } from '@/types';
 import PHPIcon from '@/icons/php';
 import siteHelper from '@/lib/site-helper';
 
@@ -34,9 +37,11 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
   const page = usePage<{
     server: Server;
     site?: Site;
-  }>();
+    application?: Application;
+  } & SharedData>();
 
   const isMenuDisabled = page.props.server.status !== 'ready';
+
   const storedSite = siteHelper.getStoredSite();
   const site = page.props.site || (storedSite?.server_id === page.props.server.id ? storedSite : null) || null;
 
@@ -56,6 +61,45 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       href: route('servers.show', { server: page.props.server.id }),
       onlyActivePath: route('servers.show', { server: page.props.server.id }),
       icon: HomeIcon,
+    },
+    {
+      title: 'Applications',
+      href: route('applications', { server: page.props.server.id }),
+      icon: BoxesIcon,
+      isDisabled: isMenuDisabled,
+      hidden: !page.props.server.services['webserver'],
+      children:
+        page.props.application && page.props.application.id
+          ? [
+              {
+                title: 'All applications',
+                href: route('applications', { server: page.props.server.id }),
+                onlyActivePath: route('applications', { server: page.props.server.id }),
+                icon: ListIcon,
+              },
+              {
+                title: 'Overview',
+                href: route('applications.show', { server: page.props.server.id, application: page.props.application.id }),
+                onlyActivePath: route('applications.show', { server: page.props.server.id, application: page.props.application.id }),
+                icon: RocketIcon,
+              },
+              {
+                title: 'SSL',
+                href: route('applications.ssl', { server: page.props.server.id, application: page.props.application.id }),
+                icon: LockIcon,
+              },
+              {
+                title: 'Logs',
+                href: route('applications.logs', { server: page.props.server.id, application: page.props.application.id }),
+                icon: LogsIcon,
+              },
+              {
+                title: 'Settings',
+                href: route('applications.settings', { server: page.props.server.id, application: page.props.application.id }),
+                icon: Settings2Icon,
+              },
+            ]
+          : [],
     },
     {
       title: 'Database',

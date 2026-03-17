@@ -4,6 +4,7 @@ import type { Server } from '@/types/server';
 import { Project } from '@/types/project';
 import { User } from '@/types/user';
 import { Site, SiteType } from '@/types/site';
+import { Application, ApplicationType } from '@/types/application';
 import { DynamicFieldConfig } from './dynamic-field-config';
 
 export interface Auth {
@@ -106,6 +107,11 @@ export interface Configs {
       [type: string]: SiteType;
     };
   };
+  application: {
+    types: {
+      [type: string]: ApplicationType;
+    };
+  };
 
   [key: string]: unknown;
 }
@@ -122,6 +128,7 @@ export interface SharedData {
   server_sites?: Site[];
   server?: Server;
   site?: Site;
+  application?: Application;
   public_key_text: string;
   csrf_token: string;
   flash?: {

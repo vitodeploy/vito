@@ -18,6 +18,7 @@ class SslFactory extends Factory
     {
         return [
             'site_id' => 1,
+            'application_id' => null,
             'type' => $this->faker->word(),
             'certificate' => $this->faker->word(),
             'pk' => $this->faker->word(),
