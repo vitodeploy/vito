@@ -99,6 +99,7 @@ BASH;
 
         $expected = <<<'BASH'
 sudo -u deploy bash <<'EOF'
+cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }
 pwd
 ls -la
 EOF
