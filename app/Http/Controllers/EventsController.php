@@ -19,7 +19,7 @@ class EventsController extends Controller
             'project_id' => $request->user()->current_project_id,
         ]);
 
-        $appUrl = parse_url(config('app.url'));
+        $appUrl = parse_url(config('app.ws_url', config('app.url')));
         $isSecure = ($appUrl['scheme'] ?? 'http') === 'https';
         $wsProtocol = $isSecure ? 'wss' : 'ws';
         $host = $appUrl['host'] ?? 'localhost';
