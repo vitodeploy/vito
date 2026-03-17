@@ -171,6 +171,7 @@ class SSH
         try {
             if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
                 $command = <<<BASH
+                cd /home/{$this->asUser}
                 sudo -u {$this->asUser} bash <<'EOF'
                 {$command}
                 EOF
