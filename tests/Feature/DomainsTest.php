@@ -8,6 +8,7 @@ use App\Models\Domain;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -1196,5 +1197,104 @@ class DomainsTest extends TestCase
         $response = $this->post("/domains/{$otherDomain->id}/records/sync");
 
         $response->assertForbidden();
+    }
+
+    public function test_available_domains_returns_cached_value_when_cache_exists(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $cachedDomains = [
+            ['id' => 'cached-zone-1', 'name' => 'cached.com', 'status' => 'active'],
+        ];
+
+        Cache::put("dns_provider_{$dnsProvider->id}_domains", $cachedDomains, 3600);
+
+        // Should NOT make an API call — Http::fake with no matching routes would throw if called
+        Http::fake([]);
+
+        $response = $this->get("/domains/{$dnsProvider->id}/available");
+
+        $response->assertOk();
+        $this->assertEquals($cachedDomains, $response->json());
+    }
+
+    public function test_refresh_domains_skips_cache_and_fetches_from_provider(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $staleDomains = [
+            ['id' => 'stale-zone-1', 'name' => 'stale.com', 'status' => 'active'],
+        ];
+
+        Cache::put("dns_provider_{$dnsProvider->id}_domains", $staleDomains, 3600);
+
+        $freshDomains = [
+            ['id' => 'zone-1', 'name' => 'fresh.com', 'status' => 'active', 'created_on' => '2023-01-01', 'modified_on' => '2023-01-02'],
+            ['id' => 'zone-2', 'name' => 'new.com', 'status' => 'active', 'created_on' => '2023-01-03', 'modified_on' => '2023-01-04'],
+        ];
+
+        Http::fake([
+            'api.cloudflare.com/client/v4/zones*' => Http::response([
+                'success' => true,
+                'result' => $freshDomains,
+            ], 200),
+        ]);
+
+        $response = $this->get("/domains/{$dnsProvider->id}/refresh");
+
+        $response->assertOk();
+
+        $data = $response->json();
+        $this->assertCount(2, $data);
+        $this->assertEquals('fresh.com', $data[0]['name']);
+        $this->assertEquals('new.com', $data[1]['name']);
+
+        // Cache should now be updated with fresh data
+        $cached = Cache::get("dns_provider_{$dnsProvider->id}_domains");
+        $this->assertCount(2, $cached);
+        $this->assertEquals('fresh.com', $cached[0]['name']);
+    }
+
+    public function test_refresh_domains_updates_cache_for_subsequent_available_calls(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+        ]);
+
+        $freshDomains = [
+            ['id' => 'zone-1', 'name' => 'example.com', 'status' => 'active', 'created_on' => '2023-01-01', 'modified_on' => '2023-01-02'],
+        ];
+
+        Http::fake([
+            'api.cloudflare.com/client/v4/zones*' => Http::response([
+                'success' => true,
+                'result' => $freshDomains,
+            ], 200),
+        ]);
+
+        // First call: refresh to populate cache
+        $this->get("/domains/{$dnsProvider->id}/refresh")->assertOk();
+
+        // Second call: available should use cache (no API call needed)
+        Http::fake([]);
+
+        $response = $this->get("/domains/{$dnsProvider->id}/available");
+
+        $response->assertOk();
+        $this->assertCount(1, $response->json());
+        $this->assertEquals('example.com', $response->json()[0]['name']);
     }
 }
