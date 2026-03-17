@@ -172,6 +172,7 @@ class SSH
             if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
                 $command = <<<BASH
                 sudo -u {$this->asUser} bash <<'EOF'
+                cd ~ || { echo 'VITO_SSH_ERROR: failed to cd to home directory' >&2; exit 1; }
                 {$command}
                 EOF
                 BASH;
