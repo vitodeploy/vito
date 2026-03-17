@@ -140,7 +140,7 @@ class Application extends AbstractModel
 
     public function getAliasesString(): string
     {
-        if ($this->aliases && count($this->aliases) > 0) {
+        if (! empty($this->aliases)) {
             return implode(' ', $this->aliases);
         }
 
