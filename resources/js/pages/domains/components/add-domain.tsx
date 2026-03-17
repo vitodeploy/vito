@@ -1,4 +1,4 @@
-import { LoaderCircle, GlobeIcon, WifiIcon } from 'lucide-react';
+import { LoaderCircle, GlobeIcon, RefreshCw, WifiIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -39,25 +39,34 @@ export default function AddDomain({ children }: { children: ReactNode }) {
 
   const connectedProviders = dnsProviders.filter((provider) => provider.connected);
 
+  const fetchDomains = async (providerId: string, routeName: string = 'domains.available') => {
+    if (!providerId) {
+      setAvailableDomains([]);
+      return;
+    }
+
+    setLoadingDomains(true);
+    try {
+      const response = await axios.get(route(routeName, providerId));
+      setAvailableDomains(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch domains:', error);
+      setAvailableDomains([]);
+    } finally {
+      setLoadingDomains(false);
+    }
+  };
+
   const selectProvider = async (providerId: string) => {
     form.setData('dns_provider_id', providerId);
     form.setData('provider_domain_id', '');
     form.clearErrors();
+    fetchDomains(providerId);
+  };
 
-    if (providerId) {
-      setLoadingDomains(true);
-      try {
-        const response = await axios.get(route('domains.available', providerId));
-        setAvailableDomains(response.data || []);
-      } catch (error) {
-        console.error('Failed to fetch domains:', error);
-        setAvailableDomains([]);
-      } finally {
-        setLoadingDomains(false);
-      }
-    } else {
-      setAvailableDomains([]);
-    }
+  const refreshDomains = () => {
+    form.setData('provider_domain_id', '');
+    fetchDomains(form.data.dns_provider_id, 'domains.refresh');
   };
 
   const fetchProviders = async () => {
@@ -78,9 +87,11 @@ export default function AddDomain({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (open) {
+      form.setData({ dns_provider_id: '', provider_domain_id: '' });
+      form.clearErrors();
+      setAvailableDomains([]);
+      setLoadingDomains(false);
       fetchProviders();
-    } else {
-      form.reset();
     }
   }, [open]);
 
@@ -121,28 +132,33 @@ export default function AddDomain({ children }: { children: ReactNode }) {
             </FormField>
             <FormField>
               <Label htmlFor="provider_domain_id">Domain</Label>
-              <Select
-                value={form.data.provider_domain_id}
-                onValueChange={(value) => form.setData('provider_domain_id', value)}
-                disabled={!form.data.dns_provider_id || loadingDomains}
-              >
-                <SelectTrigger id="provider_domain_id">
-                  <SelectValue placeholder={loadingDomains ? 'Loading domains...' : 'Select a domain'} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {availableDomains.map((domain) => (
-                      <SelectItem key={domain.id} value={domain.id}>
-                        <div className="flex items-center gap-2">
-                          <GlobeIcon className="h-4 w-4" />
-                          {domain.name}
-                          <span className="text-muted-foreground text-xs">({domain.status})</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={form.data.provider_domain_id}
+                  onValueChange={(value) => form.setData('provider_domain_id', value)}
+                  disabled={!form.data.dns_provider_id || loadingDomains}
+                >
+                  <SelectTrigger id="provider_domain_id">
+                    <SelectValue placeholder={loadingDomains ? 'Loading domains...' : 'Select a domain'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {availableDomains.map((domain) => (
+                        <SelectItem key={domain.id} value={domain.id}>
+                          <div className="flex items-center gap-2">
+                            <GlobeIcon className="h-4 w-4" />
+                            {domain.name}
+                            <span className="text-muted-foreground text-xs">({domain.status})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" type="button" disabled={loadingDomains || !form.data.dns_provider_id} onClick={refreshDomains}>
+                  <RefreshCw className={loadingDomains ? 'animate-spin' : ''} />
+                </Button>
+              </div>
               <InputError message={form.errors.provider_domain_id} />
             </FormField>
             <InputError message={(form.errors as Record<string, string>).domain} />
