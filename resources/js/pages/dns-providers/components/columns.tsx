@@ -33,7 +33,7 @@ function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
   const providerConfig = page.props.configs.dns_provider.providers[dnsProvider.provider];
   const editFields: DynamicFieldConfig[] = providerConfig?.edit_form || [];
 
-  const initialData: Record<string, string | boolean> = {
+  const initialData: Record<string, string | number | boolean | string[]> = {
     name: dnsProvider.name,
     global: dnsProvider.project_id === null,
   };
@@ -72,8 +72,8 @@ function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
             {editFields.map((field: DynamicFieldConfig) => (
               <DynamicFieldComponent
                 key={`edit-field-${field.name}`}
-                value={form.data[field.name] as string}
-                onChange={(value) => form.setData(field.name, value as string)}
+                value={form.data[field.name]}
+                onChange={(value) => form.setData(field.name, value)}
                 config={field}
                 error={form.errors[field.name]}
               />

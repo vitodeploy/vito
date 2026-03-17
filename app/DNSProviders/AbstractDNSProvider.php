@@ -49,7 +49,7 @@ abstract class AbstractDNSProvider implements DNSProvider
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array<string, string>
+     * @return array<string, string|array<int, mixed>>
      */
     public function editValidationRules(array $input): array
     {

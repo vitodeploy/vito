@@ -38,7 +38,7 @@ interface DNSProvider
      * Validation rules for edit form (fields are optional by default).
      *
      * @param  array<string, mixed>  $input
-     * @return array<string, string>
+     * @return array<string, string|array<int, mixed>>
      */
     public function editValidationRules(array $input): array;
 
