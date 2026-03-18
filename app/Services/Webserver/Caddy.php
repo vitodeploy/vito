@@ -4,7 +4,6 @@ namespace App\Services\Webserver;
 
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
-use App\Models\Application;
 use App\Models\Site;
 use App\Models\Ssl;
 use Throwable;

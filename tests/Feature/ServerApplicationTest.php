@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ApplicationStatus;
 use App\Facades\SSH;
 use App\Models\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;

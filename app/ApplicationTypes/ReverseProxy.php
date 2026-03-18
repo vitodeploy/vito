@@ -164,5 +164,4 @@ class ReverseProxy extends AbstractApplicationType
         $this->application->type_data = $this->data($input);
         $this->application->save();
     }
-
 }

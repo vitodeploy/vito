@@ -7,7 +7,6 @@ use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
 use Throwable;
-use App\Models\Application;
 
 class Nginx extends AbstractWebserver
 {
