@@ -4,11 +4,14 @@ namespace Tests\Unit\SSH\Services\Database;
 
 use App\Facades\SSH;
 use App\Services\Database\Database;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class GetCharsetsTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * @var array<string, array<string, string|array<string>>>
      */

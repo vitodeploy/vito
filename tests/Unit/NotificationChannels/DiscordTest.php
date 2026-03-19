@@ -4,12 +4,15 @@ namespace Tests\Unit\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Discord;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class DiscordTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_create_rules(): void
     {
         $provider = new Discord(NotificationChannel::factory()->create([

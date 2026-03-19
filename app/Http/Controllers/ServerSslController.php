@@ -7,7 +7,6 @@ use App\Actions\SSL\CreateServerSsl;
 use App\Actions\SSL\DeactivateServerSsl;
 use App\Actions\SSL\DeleteSsl;
 use App\Enums\SslStatus;
-use App\Enums\SslType;
 use App\Http\Resources\SslResource;
 use App\Models\Domain;
 use App\Models\Server;

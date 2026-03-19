@@ -8,7 +8,6 @@ use App\Actions\SSL\CreateServerSsl;
 use App\Actions\SSL\DeleteSsl;
 use App\Actions\SSL\InstallCustomServerSsl;
 use App\Enums\SslStatus;
-use App\Enums\SslType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SslResource;
 use App\Models\Project;

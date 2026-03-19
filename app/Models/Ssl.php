@@ -14,12 +14,12 @@ use Illuminate\Support\Str;
  * @property ?int $server_id
  * @property ?int $domain_id
  * @property string $type
- * @property string $certificate
- * @property string $pk
- * @property string $ca
+ * @property ?string $certificate
+ * @property ?string $pk
+ * @property ?string $ca
  * @property ?array $csr_data
  * @property ?string $csr_passphrase
- * @property Carbon $expires_at
+ * @property ?Carbon $expires_at
  * @property SslStatus $status
  * @property ?Site $site
  * @property ?Server $server
@@ -30,9 +30,9 @@ use Illuminate\Support\Str;
  * @property bool $is_active
  * @property bool $is_wildcard
  * @property bool $has_csr
- * @property string $certificate_path
- * @property string $pk_path
- * @property string $ca_path
+ * @property ?string $certificate_path
+ * @property ?string $pk_path
+ * @property ?string $ca_path
  * @property ?ServerLog $log
  */
 class Ssl extends AbstractModel

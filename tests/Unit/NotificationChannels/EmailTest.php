@@ -5,11 +5,14 @@ namespace Tests\Unit\NotificationChannels;
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Email;
 use App\NotificationChannels\Email\NotificationMail;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class EmailTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_create_rules(): void
     {
         $provider = new Email(NotificationChannel::factory()->create([

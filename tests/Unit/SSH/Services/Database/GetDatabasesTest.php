@@ -4,11 +4,14 @@ namespace Tests\Unit\SSH\Services\Database;
 
 use App\Facades\SSH;
 use App\Services\Database\Database;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class GetDatabasesTest extends TestCase
 {
+    use RefreshDatabase;
+
     #[DataProvider('data')]
     public function test_get_databases(string $name, string $version, string $output): void
     {

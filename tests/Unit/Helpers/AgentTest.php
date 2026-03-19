@@ -3,10 +3,13 @@
 namespace Tests\Unit\Helpers;
 
 use App\Helpers\Agent;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AgentTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * @var array<string, string>
      */

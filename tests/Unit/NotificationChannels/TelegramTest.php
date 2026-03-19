@@ -4,12 +4,15 @@ namespace Tests\Unit\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Telegram;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class TelegramTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_create_rules(): void
     {
         $provider = new Telegram(NotificationChannel::factory()->create([

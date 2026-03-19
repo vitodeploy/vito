@@ -18,12 +18,14 @@ use App\Models\Plugin;
 use App\Models\PluginError;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Mockery;
 use Tests\TestCase;
 
 class PluginTest extends TestCase
 {
+    use RefreshDatabase;
     private string $backupPath;
 
     private string $pluginPath;

@@ -4,6 +4,7 @@ namespace Tests\Unit\DNSProviders;
 
 use App\DNSProviders\Cloudflare;
 use App\Models\DNSProvider as DNSProviderModel;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
@@ -11,6 +12,8 @@ use Tests\TestCase;
 
 class CloudflareTest extends TestCase
 {
+    use RefreshDatabase;
+
     private DNSProviderModel $dnsProvider;
 
     private Cloudflare $cloudflare;

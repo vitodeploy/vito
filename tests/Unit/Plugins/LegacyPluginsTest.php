@@ -4,12 +4,15 @@ namespace Tests\Unit\Plugins;
 
 use App\Plugins\LegacyPlugins;
 use Exception;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Tests\TestCase;
 
 class LegacyPluginsTest extends TestCase
 {
+    use RefreshDatabase;
+
     private LegacyPlugins $plugins;
 
     private string $pluginsBackupPath;

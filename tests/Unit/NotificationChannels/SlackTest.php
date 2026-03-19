@@ -4,12 +4,15 @@ namespace Tests\Unit\NotificationChannels;
 
 use App\Models\NotificationChannel;
 use App\NotificationChannels\Slack;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class SlackTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_create_rules(): void
     {
         $provider = new Slack(NotificationChannel::factory()->create([
