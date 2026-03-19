@@ -20,12 +20,10 @@ class ActivateServerSsl
      */
     public function activate(Server $server, Ssl $ssl, array $input): void
     {
-        if ($ssl->server_id !== $server->id) {
-            abort(404);
-        }
-
         if ($ssl->type !== SslType::CSR->value || $ssl->status !== SslStatus::CREATED) {
-            abort(400, 'SSL certificate cannot be activated.');
+            throw ValidationException::withMessages([
+                'ssl' => 'SSL certificate cannot be activated.',
+            ]);
         }
 
         $this->validate($input);
