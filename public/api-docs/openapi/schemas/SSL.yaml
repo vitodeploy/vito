@@ -20,8 +20,8 @@ properties:
     example: 'letsencrypt'
   status:
     type: string
-    enum: ['ready', 'installing', 'installation_failed', 'deleting']
-    example: 'ready'
+    enum: ['created', 'creating', 'deleting', 'failed']
+    example: 'created'
   log:
     type: object
     nullable: true
@@ -90,14 +90,6 @@ properties:
       key_size:
         type: integer
         example: 2048
-      csr_path:
-        type: string
-        nullable: true
-        example: '/etc/ssl/vito/1/request.csr'
-      pk_path:
-        type: string
-        nullable: true
-        example: '/etc/ssl/vito/1/private.key'
   expires_at:
     type: string
     format: date-time

@@ -32,6 +32,11 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
     {
         $this->run("server-{$this->server->id}", function (): void {
             $domain = $this->ssl->domain;
+
+            if (! $domain) {
+                throw new Exception('Domain not found for SSL #'.$this->ssl->id.'. It may have been deleted.');
+            }
+
             $basePath = '/etc/ssl/vito/'.$this->ssl->id;
             $certName = (string) $this->ssl->id;
             $ssh = $this->server->ssh()->setLog($this->ssl->log);
@@ -62,7 +67,7 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
         ]);
 
         // Clean up any DNS records that were created
-        $dnsRecordIds = $this->ssl->csr_data['dns_record_ids'] ?? [];
+        $dnsRecordIds = ($this->ssl->csr_data ?? [])['dns_record_ids'] ?? [];
         foreach ($dnsRecordIds as $recordId) {
             $this->deleteDnsRecordSafely($recordId);
         }
@@ -111,7 +116,7 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
     {
         $authProcessed = 0;
         $cleanupProcessed = 0;
-        $dnsRecordIds = $this->ssl->csr_data['dns_record_ids'] ?? [];
+        $dnsRecordIds = ($this->ssl->csr_data ?? [])['dns_record_ids'] ?? [];
         $maxWait = 600;
         $elapsed = 0;
 
