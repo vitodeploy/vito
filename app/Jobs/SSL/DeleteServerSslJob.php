@@ -31,7 +31,7 @@ class DeleteServerSslJob implements ShouldQueue
                 'isWildcard' => $this->ssl->is_wildcard,
             ]));
 
-            if (! Str::contains($result, 'SSL_DELETED_SUCCESSFULLY')) {
+            if (! Str::contains($result, 'SSL DELETED SUCCESSFULLY')) {
                 throw new Exception('SSL deletion failed: '.$result);
             }
 

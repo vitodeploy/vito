@@ -49,7 +49,7 @@ class ActivateServerSslJob implements ShouldQueue
                 'decryptedPath' => $basePath.'/private.decrypted.key',
             ]));
 
-            if (! Str::contains($result, 'SSL_ACTIVATED_SUCCESSFULLY')) {
+            if (! Str::contains($result, 'SSL ACTIVATED SUCCESSFULLY')) {
                 throw new Exception('SSL activation failed: '.$result);
             }
 

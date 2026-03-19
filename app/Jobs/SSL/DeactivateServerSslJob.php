@@ -36,7 +36,7 @@ class DeactivateServerSslJob implements ShouldQueue
                 'encryptedPath' => $basePath.'/private.encrypted.key',
             ]));
 
-            if (! Str::contains($result, 'SSL_DEACTIVATED_SUCCESSFULLY')) {
+            if (! Str::contains($result, 'SSL DEACTIVATED SUCCESSFULLY')) {
                 throw new Exception('SSL deactivation failed: '.$result);
             }
 

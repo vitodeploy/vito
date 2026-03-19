@@ -22,6 +22,12 @@ class CreateServerCsr
     {
         $this->validate($input);
 
+        $server->ssls()
+            ->whereNull('site_id')
+            ->where('type', 'csr')
+            ->where('status', SslStatus::FAILED)
+            ->delete();
+
         $csrData = [
             'common_name' => $input['common_name'],
             'organization' => $input['organization'],

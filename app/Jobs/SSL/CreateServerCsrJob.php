@@ -51,7 +51,7 @@ class CreateServerCsrJob implements ShouldQueue
 
             $result = $ssh->exec($command);
 
-            if (! Str::contains($result, 'CSR_GENERATED_SUCCESSFULLY')) {
+            if (! Str::contains($result, 'CSR GENERATED SUCCESSFULLY')) {
                 throw new Exception('CSR generation failed: '.$result);
             }
 

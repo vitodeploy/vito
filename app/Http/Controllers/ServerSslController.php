@@ -52,9 +52,16 @@ class ServerSslController extends Controller
     {
         $this->authorize('createServer', [Ssl::class, $server]);
 
-        app(CreateServerSsl::class)->create($server, $request->all());
+        $ssl = app(CreateServerSsl::class)->create($server, $request->all());
 
-        return back()->with('info', 'SSL certificate is being created.');
+        $message = match ($ssl->type) {
+            'csr' => 'Certificate Signing Request is being generated.',
+            'letsencrypt' => 'Wildcard certificate is being created.',
+            'custom' => 'Custom certificate is being installed.',
+            default => 'SSL certificate is being created.',
+        };
+
+        return back()->with('info', $message);
     }
 
     #[Post('/{ssl}/activate', name: 'server-ssls.activate')]
