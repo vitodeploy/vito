@@ -5,16 +5,18 @@ properties:
     example: 1
   server_id:
     type: integer
+    nullable: true
     example: 1
   site_id:
     type: integer
+    nullable: true
     example: 1
   is_active:
     type: boolean
     example: true
   type:
     type: string
-    enum: ['letsencrypt', 'custom']
+    enum: ['letsencrypt', 'custom', 'csr']
     example: 'letsencrypt'
   status:
     type: string
@@ -57,6 +59,45 @@ properties:
     type: string
     enum: ['success', 'warning', 'danger', 'gray']
     example: 'success'
+  csr_data:
+    type: object
+    nullable: true
+    description: CSR-specific data (only present for CSR type)
+    properties:
+      common_name:
+        type: string
+        example: 'example.com'
+      organization:
+        type: string
+        example: 'Acme Inc'
+      organizational_unit:
+        type: string
+        nullable: true
+        example: 'IT'
+      city:
+        type: string
+        example: 'San Francisco'
+      state:
+        type: string
+        example: 'California'
+      country:
+        type: string
+        example: 'US'
+      email:
+        type: string
+        nullable: true
+        example: 'admin@example.com'
+      key_size:
+        type: integer
+        example: 2048
+      csr_path:
+        type: string
+        nullable: true
+        example: '/etc/ssl/vito/1/request.csr'
+      pk_path:
+        type: string
+        nullable: true
+        example: '/etc/ssl/vito/1/private.key'
   expires_at:
     type: string
     format: date-time

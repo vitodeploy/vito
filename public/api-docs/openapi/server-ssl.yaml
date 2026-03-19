@@ -1,0 +1,528 @@
+paths:
+  /api/projects/{project}/servers/{server}/ssls:
+    get:
+      summary: List server SSL certificates
+      description: Get all server-level SSL certificates
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of server SSL certificates
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '/api-docs/openapi/schemas/PaginatedResponse.yaml'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '/api-docs/openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Project or server not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/ssls/custom:
+    post:
+      summary: Install custom certificate
+      description: Install a custom SSL certificate with private key and optional CA bundle
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - certificate
+                - private_key
+              properties:
+                certificate:
+                  type: string
+                  description: Signed certificate in PEM format. Expiry date and domains are extracted automatically.
+                  example: '-----BEGIN CERTIFICATE-----\nMIID...\n-----END CERTIFICATE-----'
+                private_key:
+                  type: string
+                  description: Private key in PEM format
+                  example: '-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA PRIVATE KEY-----'
+                ca:
+                  type: string
+                  nullable: true
+                  description: CA bundle in PEM format (optional)
+                  example: '-----BEGIN CERTIFICATE-----\nMIID...\n-----END CERTIFICATE-----'
+      responses:
+        '200':
+          description: Custom certificate installation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/ssls/csr:
+    post:
+      summary: Create CSR certificate
+      description: Generate a Certificate Signing Request on the server
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - common_name
+                - organization
+                - city
+                - state
+                - country
+              properties:
+                type:
+                  type: string
+                  enum: ['csr']
+                  description: SSL type
+                  example: 'csr'
+                common_name:
+                  type: string
+                  description: Domain name (e.g., example.com)
+                  example: 'example.com'
+                organization:
+                  type: string
+                  description: Organization / company name
+                  example: 'Acme Inc'
+                organizational_unit:
+                  type: string
+                  nullable: true
+                  description: Department (optional)
+                  example: 'IT'
+                city:
+                  type: string
+                  description: City / locality
+                  example: 'San Francisco'
+                state:
+                  type: string
+                  description: State / province
+                  example: 'California'
+                country:
+                  type: string
+                  description: 2-letter ISO country code
+                  example: 'US'
+                email:
+                  type: string
+                  nullable: true
+                  description: Email address (optional)
+                  example: 'admin@example.com'
+                key_size:
+                  type: integer
+                  enum: [2048, 4096]
+                  description: RSA key size in bits (default 2048)
+                  example: 2048
+                passphrase:
+                  type: string
+                  nullable: true
+                  description: Optional passphrase to encrypt the private key
+            example:
+              type: 'csr'
+              common_name: 'example.com'
+              organization: 'Acme Inc'
+              city: 'San Francisco'
+              state: 'California'
+              country: 'US'
+              key_size: 2048
+      responses:
+        '200':
+          description: CSR certificate creation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/ssls/letsencrypt-wildcard:
+    post:
+      summary: Create wildcard SSL certificate
+      description: Create a wildcard SSL certificate using LetsEncrypt DNS-01 challenge. Requires a domain with a DNS provider configured.
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - domain_id
+                - email
+              properties:
+                domain_id:
+                  type: integer
+                  description: ID of a domain with a DNS provider configured
+                  example: 1
+                email:
+                  type: string
+                  format: email
+                  description: Email for LetsEncrypt registration
+                  example: 'admin@example.com'
+            example:
+              domain_id: 1
+              email: 'admin@example.com'
+      responses:
+        '200':
+          description: Wildcard SSL certificate creation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/ssls/{ssl}:
+    get:
+      summary: Get server SSL certificate
+      description: Get a specific server-level SSL certificate
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: ssl
+          in: path
+          required: true
+          description: SSL certificate ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: SSL certificate details
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/SSL.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: SSL certificate not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+    delete:
+      summary: Delete server SSL certificate
+      description: Delete a server-level SSL certificate
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: ssl
+          in: path
+          required: true
+          description: SSL certificate ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: SSL certificate deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: SSL certificate not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+
+  /api/projects/{project}/servers/{server}/ssls/{ssl}/activate:
+    post:
+      summary: Activate CSR certificate
+      description: Install a signed certificate and CA bundle for a CSR-generated SSL certificate
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: ssl
+          in: path
+          required: true
+          description: SSL certificate ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - certificate
+              properties:
+                certificate:
+                  type: string
+                  description: Signed certificate in PEM format. The expiry date is automatically extracted from the certificate.
+                  example: '-----BEGIN CERTIFICATE-----\nMIID...\n-----END CERTIFICATE-----'
+                ca:
+                  type: string
+                  nullable: true
+                  description: CA bundle in PEM format (optional)
+                  example: '-----BEGIN CERTIFICATE-----\nMIID...\n-----END CERTIFICATE-----'
+      responses:
+        '200':
+          description: SSL certificate activation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/SSL.yaml'
+        '400':
+          description: SSL certificate cannot be activated
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/ssls/{ssl}/download:
+    get:
+      summary: Download CSR file
+      description: Download the generated CSR file for a server SSL certificate
+      tags:
+        - Server SSL
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: ssl
+          in: path
+          required: true
+          description: SSL certificate ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: CSR file download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: CSR file not available
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'

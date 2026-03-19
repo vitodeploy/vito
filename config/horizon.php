@@ -210,6 +210,20 @@ return [
             'timeout' => env('HORIZON_SSH_TIMEOUT', 600),
             'nice' => env('HORIZON_SSH_NICE', 0),
         ],
+
+        'ssh-certbot' => [
+            'connection' => 'redis',
+            'queue' => ['ssh-certbot'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => env('HORIZON_SSH_CERTBOT_MAX_PROCESSES', 1),
+            'maxTime' => env('HORIZON_SSH_CERTBOT_MAX_TIME', 0),
+            'maxJobs' => env('HORIZON_SSH_CERTBOT_MAX_JOBS', 0),
+            'memory' => env('HORIZON_SSH_CERTBOT_MEMORY', 128),
+            'tries' => env('HORIZON_SSH_CERTBOT_TRIES', 1),
+            'timeout' => env('HORIZON_SSH_CERTBOT_TIMEOUT', 600),
+            'nice' => env('HORIZON_SSH_CERTBOT_NICE', 0),
+        ],
     ],
 
     'environments' => [
@@ -219,6 +233,9 @@ return [
             ],
             'ssh' => [
                 'maxProcesses' => env('HORIZON_SSH_MAX_PROCESSES', 3),
+            ],
+            'ssh-certbot' => [
+                'maxProcesses' => env('HORIZON_SSH_CERTBOT_MAX_PROCESSES', 1),
             ],
         ],
     ],

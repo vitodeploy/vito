@@ -184,6 +184,12 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       isDisabled: isMenuDisabled,
     },
     {
+      title: 'SSL',
+      href: route('server-ssls', { server: page.props.server.id }),
+      icon: LockIcon,
+      isDisabled: isMenuDisabled,
+    },
+    {
       title: 'Services',
       href: route('services', { server: page.props.server.id }),
       icon: CogIcon,

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\SslStatus;
+use App\Models\Server;
 use App\Models\Ssl;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -26,5 +27,29 @@ class SslFactory extends Factory
             'status' => SslStatus::CREATED,
             'domains' => ['example.com'],
         ];
+    }
+
+    public function serverLevel(): static
+    {
+        return $this->state(fn () => [
+            'site_id' => null,
+            'server_id' => Server::factory(),
+            'type' => 'csr',
+            'certificate' => null,
+            'pk' => null,
+            'ca' => null,
+            'expires_at' => null,
+            'domains' => null,
+            'csr_data' => [
+                'common_name' => 'example.com',
+                'organization' => 'Test Org',
+                'organizational_unit' => null,
+                'city' => 'San Francisco',
+                'state' => 'California',
+                'country' => 'US',
+                'email' => null,
+                'key_size' => 2048,
+            ],
+        ]);
     }
 }

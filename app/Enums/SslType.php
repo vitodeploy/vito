@@ -11,12 +11,14 @@ enum SslType: string implements VitoEnum
 
     case LETSENCRYPT = 'letsencrypt';
     case CUSTOM = 'custom';
+    case CSR = 'csr';
 
     public function getColor(): string
     {
         return match ($this) {
             self::LETSENCRYPT,
-            self::CUSTOM => 'default',
+            self::CUSTOM,
+            self::CSR => 'default',
         };
     }
 

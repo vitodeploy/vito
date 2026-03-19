@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Actions\SSL\ActivateSSL;
 use App\Actions\SSL\CreateSSL;
 use App\Actions\SSL\DeactivateSSL;
-use App\Actions\SSL\DeleteSSL;
+use App\Actions\SSL\DeleteSsl;
 use App\Enums\SslType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SslResource;
@@ -106,7 +106,7 @@ class SSLController extends Controller
 
         $this->validateRoute($project, $server, $site, $ssl);
 
-        app(DeleteSSL::class)->delete($ssl);
+        app(DeleteSsl::class)->delete($ssl);
 
         return response()->noContent();
     }

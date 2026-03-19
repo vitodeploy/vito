@@ -21,6 +21,12 @@ class SslPolicy
             $site->isReady();
     }
 
+    public function viewAnyServer(User $user, Server $server): bool
+    {
+        return $this->hasReadAccess($user, $server->project) &&
+            $server->isReady();
+    }
+
     public function view(User $user, Ssl $ssl, Site $site, Server $server): bool
     {
         return $this->hasReadAccess($user, $server->project) &&
@@ -35,6 +41,26 @@ class SslPolicy
         return $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&
             $site->isReady();
+    }
+
+    public function createServer(User $user, Server $server): bool
+    {
+        return $this->hasWriteAccess($user, $server->project) &&
+            $server->isReady();
+    }
+
+    public function deleteServer(User $user, Ssl $ssl, Server $server): bool
+    {
+        return $this->hasWriteAccess($user, $server->project) &&
+            $server->isReady() &&
+            $ssl->server_id === $server->id;
+    }
+
+    public function activateServer(User $user, Ssl $ssl, Server $server): bool
+    {
+        return $this->hasWriteAccess($user, $server->project) &&
+            $server->isReady() &&
+            $ssl->server_id === $server->id;
     }
 
     public function update(User $user, Ssl $ssl, Site $site, Server $server): bool

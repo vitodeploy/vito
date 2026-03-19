@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\SSL\ActivateSSL;
 use App\Actions\SSL\CreateSSL;
 use App\Actions\SSL\DeactivateSSL;
-use App\Actions\SSL\DeleteSSL;
+use App\Actions\SSL\DeleteSsl;
 use App\Http\Resources\SslResource;
 use App\Models\Server;
 use App\Models\Site;
@@ -50,7 +50,7 @@ class SSLController extends Controller
     {
         $this->authorize('delete', [$ssl, $site, $server]);
 
-        app(DeleteSSL::class)->delete($ssl);
+        app(DeleteSsl::class)->delete($ssl);
 
         return back()
             ->with('success', 'SSL deleted successfully.');

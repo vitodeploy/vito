@@ -233,6 +233,14 @@ class Server extends AbstractModel
     }
 
     /**
+     * @return HasMany<Ssl, covariant $this>
+     */
+    public function ssls(): HasMany
+    {
+        return $this->hasMany(Ssl::class);
+    }
+
+    /**
      * @return HasMany<FirewallRule, covariant $this>
      */
     public function firewallRules(): HasMany

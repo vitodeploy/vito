@@ -44,6 +44,12 @@ return [
         SslType::CUSTOM->value,
     ],
 
+    'server_ssl_types' => [
+        SslType::CSR->value,
+        SslType::CUSTOM->value,
+        SslType::LETSENCRYPT->value,
+    ],
+
     'metrics_data_retention' => [
         7,
         14,

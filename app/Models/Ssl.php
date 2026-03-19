@@ -10,18 +10,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 /**
- * @property int $site_id
+ * @property ?int $site_id
+ * @property ?int $server_id
+ * @property ?int $domain_id
  * @property string $type
  * @property string $certificate
  * @property string $pk
  * @property string $ca
+ * @property ?array $csr_data
+ * @property ?string $csr_passphrase
  * @property Carbon $expires_at
  * @property SslStatus $status
- * @property Site $site
+ * @property ?Site $site
+ * @property ?Server $server
+ * @property ?Domain $domain
  * @property array<int, string>|string|null $domains
  * @property int $log_id
  * @property string $email
  * @property bool $is_active
+ * @property bool $is_wildcard
+ * @property bool $has_csr
  * @property string $certificate_path
  * @property string $pk_path
  * @property string $ca_path
@@ -34,16 +42,22 @@ class Ssl extends AbstractModel
 
     protected $fillable = [
         'site_id',
+        'server_id',
+        'domain_id',
         'type',
         'certificate',
         'pk',
         'ca',
+        'csr_data',
+        'csr_passphrase',
         'expires_at',
         'status',
         'domains',
         'log_id',
         'email',
         'is_active',
+        'is_wildcard',
+        'has_csr',
         'certificate_path',
         'pk_path',
         'ca_path',
@@ -51,13 +65,19 @@ class Ssl extends AbstractModel
 
     protected $casts = [
         'site_id' => 'integer',
+        'server_id' => 'integer',
+        'domain_id' => 'integer',
         'certificate' => 'encrypted',
         'pk' => 'encrypted',
         'ca' => 'encrypted',
+        'csr_data' => 'array',
+        'csr_passphrase' => 'encrypted',
         'expires_at' => 'datetime',
         'domains' => 'array',
         'log_id' => 'integer',
         'is_active' => 'boolean',
+        'is_wildcard' => 'boolean',
+        'has_csr' => 'boolean',
         'status' => SslStatus::class,
     ];
 
@@ -67,6 +87,22 @@ class Ssl extends AbstractModel
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * @return BelongsTo<Server, covariant $this>
+     */
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<Domain, covariant $this>
+     */
+    public function domain(): BelongsTo
+    {
+        return $this->belongsTo(Domain::class);
     }
 
     public function validateSetup(string $result): bool
