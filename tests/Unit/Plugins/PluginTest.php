@@ -26,6 +26,7 @@ use Tests\TestCase;
 class PluginTest extends TestCase
 {
     use RefreshDatabase;
+
     private string $backupPath;
 
     private string $pluginPath;
