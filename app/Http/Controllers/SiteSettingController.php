@@ -22,6 +22,7 @@ use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Patch;
+use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 use Spatie\RouteAttributes\Attributes\Put;
 
@@ -142,7 +143,6 @@ class SiteSettingController extends Controller
 
         return response()->json([
             'template' => $site->vhost_template ?? $generator->defaultTemplate(),
-            'is_customized' => $site->vhost_template !== null,
         ]);
     }
 
@@ -158,18 +158,19 @@ class SiteSettingController extends Controller
         $site->vhost_template = $request->input('template');
         $site->save();
 
-        return back()->with('success', 'Webserver template updated successfully.');
+        return back()->with('success', 'VHost template updated successfully.');
     }
 
-    #[Delete('/vhost-template', name: 'site-settings.reset-vhost-template')]
+    #[Post('/vhost-template/reset', name: 'site-settings.reset-vhost-template')]
     public function resetVhostTemplate(Server $server, Site $site): RedirectResponse
     {
         $this->authorize('update', [$site, $server]);
 
         $site->vhost_template = null;
         $site->save();
+        $site->webserver()->updateVHost($site, restart: false);
 
-        return back()->with('success', 'Webserver template reset to default.');
+        return back()->with('success', 'VHost template reset to default.');
     }
 
     /**

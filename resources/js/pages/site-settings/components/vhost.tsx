@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Editor, useMonaco } from '@monaco-editor/react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,8 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   const { getActualAppearance } = useAppearance();
   const setFocused = useInputFocus((state) => state.setFocused);
   const [open, setOpen] = useState(false);
-  const [isCustomized, setIsCustomized] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const form = useForm<{
     template: string;
   }>({
@@ -41,12 +43,16 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   };
 
   const resetTemplate = () => {
-    if (!confirm('Reset to the default template? Your customizations will be lost.')) {
-      return;
-    }
-    axios.delete(route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id })).then(() => {
-      query.refetch();
-    });
+    setResetting(true);
+    axios
+      .post(route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id }))
+      .then(() => {
+        setShowResetDialog(false);
+        query.refetch();
+      })
+      .finally(() => {
+        setResetting(false);
+      });
   };
 
   const query = useQuery({
@@ -61,7 +67,6 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
       if (response.data?.template) {
         form.setData('template', response.data.template);
       }
-      setIsCustomized(response.data?.is_customized ?? false);
       return response.data;
     },
     retry: false,
@@ -106,23 +111,42 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
           </div>
         </Form>
         <SheetFooter>
-          <div className="flex items-center gap-2">
-            {isCustomized && (
-              <Button variant="outline" onClick={resetTemplate}>
-                <RotateCcwIcon />
-                Reset to default
-              </Button>
-            )}
-            <Button form="update-vhost-form" disabled={form.processing || query.isLoading} onClick={submit} className="ml-2">
-              {(form.processing || query.isLoading) && <LoaderCircleIcon className="animate-spin" />}
-              Save
+          <div className="flex w-full items-center justify-between">
+            <Button variant="outline" onClick={() => setShowResetDialog(true)}>
+              <RotateCcwIcon />
+              Reset
             </Button>
-            <SheetClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </SheetClose>
+            <div className="flex items-center gap-2">
+              <Button form="update-vhost-form" disabled={form.processing || query.isLoading} onClick={submit}>
+                {(form.processing || query.isLoading) && <LoaderCircleIcon className="animate-spin" />}
+                Save
+              </Button>
+              <SheetClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </SheetClose>
+            </div>
           </div>
         </SheetFooter>
       </SheetContent>
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset VHost template</DialogTitle>
+            <DialogDescription>
+              This will reset the template to the default and regenerate the VHost on the server. Any customizations will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={resetTemplate} disabled={resetting}>
+              {resetting && <LoaderCircleIcon className="animate-spin" />}
+              Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }
