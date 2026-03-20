@@ -6,7 +6,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { BookOpenIcon, MoreHorizontalIcon, RocketIcon, TriangleAlertIcon } from 'lucide-react';
+import { BookOpenIcon, LockIcon, MoreHorizontalIcon, RocketIcon, TriangleAlertIcon } from 'lucide-react';
 import { PaginatedData } from '@/types';
 import { Deployment } from '@/types/deployment';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -19,6 +19,7 @@ import AutoDeployment from '@/pages/application/components/auto-deployment';
 import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-script';
 import { useRealtime, useSocketListener } from '@/hooks/use-socket-events';
 import { useCallback } from 'react';
+import { router } from '@inertiajs/react';
 
 export default function AppWithDeployment() {
   const page = usePage<{
@@ -64,6 +65,15 @@ export default function AppWithDeployment() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
+            {!page.props.site.ssl_enabled && (
+              <Button
+                variant="outline"
+                onClick={() => router.post(route('sites.enable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+              >
+                <LockIcon />
+                <span className="hidden lg:block">Enable SSL</span>
+              </Button>
+            )}
             <Deploy site={page.props.site}>
               <Button>
                 <RocketIcon />

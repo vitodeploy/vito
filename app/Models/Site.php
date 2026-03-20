@@ -43,6 +43,7 @@ use RuntimeException;
  * @property int $progress
  * @property string $user
  * @property bool $force_ssl
+ * @property bool $ssl_enabled
  * @property Server $server
  * @property Collection<int, ServerLog> $logs
  * @property Collection<int, Deployment> $deployments
@@ -89,6 +90,7 @@ class Site extends AbstractModel
         'progress',
         'user',
         'force_ssl',
+        'ssl_enabled',
     ];
 
     protected $casts = [
@@ -100,6 +102,7 @@ class Site extends AbstractModel
         'aliases' => 'array',
         'source_control_id' => 'integer',
         'force_ssl' => 'boolean',
+        'ssl_enabled' => 'boolean',
         'status' => SiteStatus::class,
     ];
 

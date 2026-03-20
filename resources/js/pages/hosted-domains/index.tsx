@@ -6,7 +6,8 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { PlusIcon } from 'lucide-react';
+import { LockIcon, LockOpenIcon, PlusIcon } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/hosted-domains/components/columns';
 import { HostedDomain } from '@/types/hosted-domain';
@@ -31,6 +32,23 @@ export default function HostedDomains() {
         <HeaderContainer>
           <Heading title="Domains" description="Manage domains and SSL assignments for this site" />
           <div className="flex items-center gap-2">
+            {page.props.site.ssl_enabled ? (
+              <Button
+                variant="outline"
+                onClick={() => router.post(route('sites.disable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+              >
+                <LockOpenIcon />
+                <span className="hidden lg:block">Disable SSL</span>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => router.post(route('sites.enable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+              >
+                <LockIcon />
+                <span className="hidden lg:block">Enable SSL</span>
+              </Button>
+            )}
             <CreateHostedDomain site={page.props.site}>
               <Button>
                 <PlusIcon />

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Actions\Site\CreateSite;
 use App\Actions\Site\Deploy;
+use App\Actions\Site\DisableSsl;
+use App\Actions\Site\EnableSsl;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
@@ -182,6 +184,30 @@ class SiteController extends Controller
         $this->validateRoute($project, $server, $site);
 
         app(UpdateEnv::class)->update($site, $request->all());
+
+        return new SiteResource($site);
+    }
+
+    #[Post('{site}/enable-ssl', name: 'api.projects.servers.sites.enable-ssl', middleware: 'ability:write')]
+    public function enableSsl(Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        app(EnableSsl::class)->enable($site);
+
+        return new SiteResource($site);
+    }
+
+    #[Post('{site}/disable-ssl', name: 'api.projects.servers.sites.disable-ssl', middleware: 'ability:write')]
+    public function disableSsl(Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        app(DisableSsl::class)->disable($site);
 
         return new SiteResource($site);
     }

@@ -36,6 +36,7 @@ class SiteResource extends JsonResource
             'user' => $this->user,
             'url' => $this->getUrl(),
             'force_ssl' => $this->force_ssl,
+            'ssl_enabled' => $this->ssl_enabled,
             'progress' => $this->progress,
             'features' => $this->features(),
             'modern_deployment' => $this->modernDeploymentEnabled(),
