@@ -7,7 +7,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHe
 import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon, RotateCcwIcon } from 'lucide-react';
 import { registerCaddyLanguage, registerNginxLanguage } from '@/lib/editor';
 import { useAppearance } from '@/hooks/use-appearance';
 import { Site } from '@/types/site';
@@ -19,10 +19,11 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   const { getActualAppearance } = useAppearance();
   const setFocused = useInputFocus((state) => state.setFocused);
   const [open, setOpen] = useState(false);
+  const [isCustomized, setIsCustomized] = useState(false);
   const form = useForm<{
-    vhost: string;
+    template: string;
   }>({
-    vhost: '',
+    template: '',
   });
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -32,25 +33,37 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('site-settings.update-vhost', { server: site.server_id, site: site.id }), {
+    form.put(route('site-settings.update-vhost-template', { server: site.server_id, site: site.id }), {
       onSuccess: () => {
         handleOpenChange(false);
       },
     });
   };
 
+  const resetTemplate = () => {
+    if (!confirm('Reset to the default template? Your customizations will be lost.')) {
+      return;
+    }
+    axios
+      .delete(route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id }))
+      .then(() => {
+        query.refetch();
+      });
+  };
+
   const query = useQuery({
-    queryKey: ['site-settings.vhost', site.server_id, site.id],
+    queryKey: ['site-settings.vhost-template', site.server_id, site.id],
     queryFn: async () => {
       const response = await axios.get(
-        route('site-settings.vhost', {
+        route('site-settings.vhost-template', {
           server: site.server_id,
           site: site.id,
         }),
       );
-      if (response.data?.vhost) {
-        form.setData('vhost', response.data.vhost);
+      if (response.data?.template) {
+        form.setData('template', response.data.template);
       }
+      setIsCustomized(response.data?.is_customized ?? false);
       return response.data;
     },
     retry: false,
@@ -67,17 +80,17 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>
-          <SheetTitle>Edit virtual host file</SheetTitle>
-          <SheetDescription className="sr-only">Edit virtual host file.</SheetDescription>
+          <SheetTitle>Edit webserver template</SheetTitle>
+          <SheetDescription className="sr-only">Edit the Mustache template used to generate the nginx vhost config.</SheetDescription>
         </SheetHeader>
         <Form id="update-vhost-form" className="h-full" onSubmit={submit}>
           {query.isSuccess ? (
             <Editor
               defaultLanguage={site.webserver}
-              value={query.data.vhost}
+              value={query.data.template}
               theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
               className="h-full"
-              onChange={(value) => form.setData('vhost', value ?? '')}
+              onChange={(value) => form.setData('template', value ?? '')}
               options={{
                 fontSize: 15,
               }}
@@ -85,18 +98,23 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
           ) : (
             <Skeleton className="h-full w-full rounded-none" />
           )}
-          {/*make alert center with absolute position*/}
           <div className="absolute! right-0 bottom-[80px] left-0 z-10 mx-auto max-w-5xl px-6">
-            <Alert variant="destructive">
+            <Alert>
               <AlertDescription className="flex items-center gap-2">
-                <StatusRipple variant="destructive" />
-                <p>Some parts of the vhost file will get reset if you generate or modify SSLs, Aliases, or create/delete site redirects.</p>
+                <StatusRipple variant="info" />
+                <p>This is the Mustache template used to generate the vhost. Changes here persist across SSL, alias, and redirect updates.</p>
               </AlertDescription>
             </Alert>
           </div>
         </Form>
         <SheetFooter>
           <div className="flex items-center gap-2">
+            {isCustomized && (
+              <Button variant="outline" onClick={resetTemplate}>
+                <RotateCcwIcon />
+                Reset to default
+              </Button>
+            )}
             <Button form="update-vhost-form" disabled={form.processing || query.isLoading} onClick={submit} className="ml-2">
               {(form.processing || query.isLoading) && <LoaderCircleIcon className="animate-spin" />}
               Save

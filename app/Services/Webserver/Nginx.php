@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Site\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
@@ -79,6 +80,11 @@ class Nginx extends AbstractWebserver
         $this->service->server->os()->cleanup();
     }
 
+    protected function generateVhost(Site $site, ?string $block = null): string
+    {
+        return app(GenerateNginxConfig::class)->generate($site);
+    }
+
     /**
      * @throws SSHError
      */
@@ -118,16 +124,12 @@ class Nginx extends AbstractWebserver
     public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = [], bool $restart = true): void
     {
         if (! $vhost) {
-            $vhost = $this->getVHost($site);
-        }
-
-        if (! $vhost || ! preg_match('/#\[header]/', $vhost) || ! preg_match('/#\[main]/', $vhost) || ! preg_match('/#\[footer]/', $vhost)) {
             $vhost = $this->generateVhost($site);
         }
 
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            format_nginx_config($this->getUpdatedVHost($site, $vhost, $replace, $regenerate, $append)),
+            format_nginx_config($vhost),
             'root'
         );
 

@@ -44,6 +44,7 @@ use RuntimeException;
  * @property string $user
  * @property bool $force_ssl
  * @property bool $ssl_enabled
+ * @property ?string $vhost_template
  * @property Server $server
  * @property Collection<int, ServerLog> $logs
  * @property Collection<int, Deployment> $deployments
@@ -91,6 +92,7 @@ class Site extends AbstractModel
         'user',
         'force_ssl',
         'ssl_enabled',
+        'vhost_template',
     ];
 
     protected $casts = [

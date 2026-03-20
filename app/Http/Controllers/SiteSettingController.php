@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\DeleteSite;
+use App\Actions\Site\GenerateNginxConfig;
 use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
@@ -108,6 +109,16 @@ class SiteSettingController extends Controller
         ]);
     }
 
+    #[Get('/vhost-preview', name: 'site-settings.vhost-preview')]
+    public function vhostPreview(Server $server, Site $site): JsonResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        return response()->json([
+            'vhost' => app(GenerateNginxConfig::class)->generate($site),
+        ]);
+    }
+
     #[Put('/vhost', name: 'site-settings.update-vhost')]
     public function updateVhost(Request $request, Server $server, Site $site): RedirectResponse
     {
@@ -120,6 +131,45 @@ class SiteSettingController extends Controller
         $site->webserver()->updateVHost($site, $request->input('vhost'));
 
         return back()->with('success', 'VHost updated successfully.');
+    }
+
+    #[Get('/vhost-template', name: 'site-settings.vhost-template')]
+    public function vhostTemplate(Server $server, Site $site): JsonResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $generator = app(GenerateNginxConfig::class);
+
+        return response()->json([
+            'template' => $site->vhost_template ?? $generator->defaultTemplate(),
+            'is_customized' => $site->vhost_template !== null,
+        ]);
+    }
+
+    #[Put('/vhost-template', name: 'site-settings.update-vhost-template')]
+    public function updateVhostTemplate(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validate($request, [
+            'template' => 'required|string',
+        ]);
+
+        $site->vhost_template = $request->input('template');
+        $site->save();
+
+        return back()->with('success', 'Webserver template updated successfully.');
+    }
+
+    #[Delete('/vhost-template', name: 'site-settings.reset-vhost-template')]
+    public function resetVhostTemplate(Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $site->vhost_template = null;
+        $site->save();
+
+        return back()->with('success', 'Webserver template reset to default.');
     }
 
     /**

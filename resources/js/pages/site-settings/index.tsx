@@ -18,6 +18,7 @@ import CopyableBadge from '@/components/copyable-badge';
 import ChangePHPVersion from '@/pages/site-settings/components/php-version';
 import DeleteSite from '@/pages/site-settings/components/delete-site';
 import VHost from '@/pages/site-settings/components/vhost';
+import VHostPreview from '@/pages/site-settings/components/vhost-preview';
 import ChangeSourceControl from '@/pages/site-settings/components/source-control';
 import Aliases from './components/aliases';
 import WebDirectory from './components/web-directory';
@@ -113,9 +114,18 @@ export default function Databases() {
             <Separator />
             <div className="flex items-center justify-between p-4">
               <span>VHost</span>
+              <VHostPreview site={page.props.site}>
+                <Button variant="outline" className="h-6">
+                  View VHost
+                </Button>
+              </VHostPreview>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between p-4">
+              <span>VHost Template</span>
               <VHost site={page.props.site}>
                 <Button variant="outline" className="h-6">
-                  Edit VHost
+                  Edit Template
                 </Button>
               </VHost>
             </div>
