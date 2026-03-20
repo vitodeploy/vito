@@ -28,13 +28,7 @@ type EditForm = {
   ssl_id: string;
 };
 
-export default function EditHostedDomain({
-  hostedDomain,
-  children,
-}: {
-  hostedDomain: HostedDomain;
-  children: ReactNode;
-}) {
+export default function EditHostedDomain({ hostedDomain, children }: { hostedDomain: HostedDomain; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [matchingSsls, setMatchingSsls] = useState<AvailableSsl[]>([]);
   const [loadingSsls, setLoadingSsls] = useState(false);
@@ -209,8 +203,7 @@ export default function EditHostedDomain({
                   </SelectContent>
                 </Select>
                 <p className="text-muted-foreground text-sm">
-                  Only server-level SSL certificates that match the domain you entered will appear here. Add certificates via the server SSL
-                  settings.
+                  Only server-level SSL certificates that match the domain you entered will appear here. Add certificates via the server SSL settings.
                 </p>
                 <InputError message={form.errors.ssl_id} />
               </FormField>

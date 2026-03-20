@@ -188,8 +188,7 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
                   </SelectContent>
                 </Select>
                 <p className="text-muted-foreground text-sm">
-                  Only server-level SSL certificates that match the domain you entered will appear here. Add certificates via the server SSL
-                  settings.
+                  Only server-level SSL certificates that match the domain you entered will appear here. Add certificates via the server SSL settings.
                 </p>
                 <InputError message={form.errors.ssl_id} />
               </FormField>

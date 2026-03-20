@@ -119,7 +119,7 @@ export default function AppWithDeployment() {
         </HeaderContainer>
 
         {page.props.pendingDomains.length > 0 && (
-          <div className="mb-4 flex items-center gap-4 rounded-lg border border-warning/40 bg-warning/5 px-4 py-3">
+          <div className="border-warning/40 bg-warning/5 mb-4 flex items-center gap-4 rounded-lg border px-4 py-3">
             <TriangleAlertIcon className="text-warning h-5 w-5 shrink-0" />
             <div className="min-w-0 flex-1 text-sm">
               <p className="font-medium">
@@ -128,8 +128,8 @@ export default function AppWithDeployment() {
               <p className="text-muted-foreground mt-0.5">
                 We could not confirm that <strong>{page.props.pendingDomains.join(', ')}</strong>{' '}
                 {page.props.pendingDomains.length === 1 ? 'is' : 'are'} pointing to this server. Update your DNS records to ensure{' '}
-                {page.props.pendingDomains.length === 1 ? 'the domain is pointed' : 'the domains are pointing'} to the appropriate server,
-                or activate by force via the Manage Domains page.
+                {page.props.pendingDomains.length === 1 ? 'the domain is pointed' : 'the domains are pointing'} to the appropriate server, or activate
+                by force via the Manage Domains page.
               </p>
             </div>
             <Link href={route('hosted-domains', { server: page.props.server.id, site: page.props.site.id })}>

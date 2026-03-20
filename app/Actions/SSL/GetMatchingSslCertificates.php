@@ -11,7 +11,7 @@ class GetMatchingSslCertificates
     /**
      * Get all server-level SSL certificates that match any of the site's hosted domains.
      *
-     * @return Collection<int, array{id: int, label: string, domains: array<string>}>
+     * @return Collection<int, array{id: int, label: string, domains: array<int, string>}>
      */
     public function get(Site $site): Collection
     {
@@ -23,7 +23,7 @@ class GetMatchingSslCertificates
     /**
      * Get all server-level SSL certificates that match a specific domain.
      *
-     * @return Collection<int, array{id: int, label: string, domains: array<string>}>
+     * @return Collection<int, array{id: int, label: string, domains: array<int, string>}>
      */
     public function forDomain(Site $site, string $domain): Collection
     {
@@ -31,8 +31,8 @@ class GetMatchingSslCertificates
     }
 
     /**
-     * @param  array<string>  $domains
-     * @return Collection<int, array{id: int, label: string, domains: array<string>}>
+     * @param  array<int, string>  $domains
+     * @return Collection<int, array{id: int, label: string, domains: array<int, string>}>
      */
     private function filterSsls(Site $site, array $domains): Collection
     {
@@ -57,8 +57,8 @@ class GetMatchingSslCertificates
             })
             ->map(fn (Ssl $ssl) => [
                 'id' => $ssl->id,
-                'label' => $ssl->type.' #'.$ssl->id.' ('.implode(', ', $ssl->domains ?? []).')',
-                'domains' => $ssl->domains ?? [],
+                'label' => $ssl->type.' #'.$ssl->id.' ('.implode(', ', (array) ($ssl->domains ?? [])).')',
+                'domains' => (array) ($ssl->domains ?? []),
             ])
             ->values();
     }
