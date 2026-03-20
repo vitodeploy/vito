@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\HostedDomain\ActivateHostedDomain;
-use App\Enums\HostedDomainStatus;
 use App\Actions\HostedDomain\CreateHostedDomain;
 use App\Actions\HostedDomain\DeactivateHostedDomain;
 use App\Actions\HostedDomain\DeleteHostedDomain;
@@ -11,6 +10,7 @@ use App\Actions\HostedDomain\ReactivateHostedDomain;
 use App\Actions\HostedDomain\UpdateHostedDomain;
 use App\Actions\SSL\AssignSslToDomains;
 use App\Actions\SSL\GetMatchingSslCertificates;
+use App\Enums\HostedDomainStatus;
 use App\Http\Resources\HostedDomainResource;
 use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;

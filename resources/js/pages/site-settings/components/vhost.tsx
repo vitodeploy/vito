@@ -44,11 +44,9 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
     if (!confirm('Reset to the default template? Your customizations will be lost.')) {
       return;
     }
-    axios
-      .delete(route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id }))
-      .then(() => {
-        query.refetch();
-      });
+    axios.delete(route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id })).then(() => {
+      query.refetch();
+    });
   };
 
   const query = useQuery({

@@ -286,7 +286,7 @@ class GenerateNginxConfig
     {
         $redirects = [];
         foreach ($site->activeRedirects as $redirect) {
-            $isProxy = $redirect->mode === 1000;
+            $isProxy = (int) $redirect->mode === 1000;
             $redirects[] = [
                 'from' => $redirect->from,
                 'to' => $redirect->to,

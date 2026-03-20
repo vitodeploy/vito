@@ -22,7 +22,7 @@ class UpdateHostedDomain
     {
         if ($hostedDomain->status->isProcessing()) {
             throw ValidationException::withMessages([
-                'domain' => ['Cannot update a domain while it is ' . $hostedDomain->status->value . '.'],
+                'domain' => ['Cannot update a domain while it is '.$hostedDomain->status->value.'.'],
             ]);
         }
 
