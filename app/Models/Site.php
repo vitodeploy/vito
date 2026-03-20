@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\HostedDomainType;
 use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
@@ -261,6 +262,22 @@ class Site extends AbstractModel
     public function ssls(): HasMany
     {
         return $this->hasMany(Ssl::class);
+    }
+
+    /**
+     * @return HasMany<HostedDomain, covariant $this>
+     */
+    public function hostedDomains(): HasMany
+    {
+        return $this->hasMany(HostedDomain::class);
+    }
+
+    /**
+     * @return HasOne<HostedDomain, covariant $this>
+     */
+    public function primaryHostedDomain(): HasOne
+    {
+        return $this->hasOne(HostedDomain::class)->where('type', HostedDomainType::PRIMARY);
     }
 
     /**

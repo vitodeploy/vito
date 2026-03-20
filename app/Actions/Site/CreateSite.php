@@ -2,10 +2,14 @@
 
 namespace App\Actions\Site;
 
+use App\Enums\HostedDomainStatus;
+use App\Enums\HostedDomainType;
 use App\Enums\SiteStatus;
+use App\Enums\SslMethod;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
+use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Jobs\Site\CreateJob;
 use App\Models\Server;
 use App\Models\Site;
@@ -77,11 +81,35 @@ class CreateSite
             // save
             $site->save();
 
+            // create hosted domains
+            $primaryDomain = $site->hostedDomains()->create([
+                'domain' => $site->domain,
+                'type' => HostedDomainType::PRIMARY,
+                'status' => HostedDomainStatus::CREATING,
+                'ssl_method' => SslMethod::NONE,
+            ]);
+
+            $aliasDomains = [];
+            foreach ($site->aliases ?? [] as $alias) {
+                $aliasDomains[] = $site->hostedDomains()->create([
+                    'domain' => $alias,
+                    'type' => HostedDomainType::ALIAS,
+                    'status' => HostedDomainStatus::CREATING,
+                    'ssl_method' => SslMethod::NONE,
+                ]);
+            }
+
             // create base commands if any
             $site->commands()->createMany($site->type()->baseCommands());
 
             // install site
             dispatch(new CreateJob($site))->onQueue('ssh');
+
+            // check DNS resolution for hosted domains
+            dispatch(new CheckDomainJob($primaryDomain))->onQueue('ssh');
+            foreach ($aliasDomains as $aliasDomain) {
+                dispatch(new CheckDomainJob($aliasDomain))->onQueue('ssh');
+            }
 
             DB::commit();
 

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Database\Factories\SslFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
@@ -103,6 +104,14 @@ class Ssl extends AbstractModel
     public function domain(): BelongsTo
     {
         return $this->belongsTo(Domain::class);
+    }
+
+    /**
+     * @return HasMany<HostedDomain, covariant $this>
+     */
+    public function hostedDomains(): HasMany
+    {
+        return $this->hasMany(HostedDomain::class);
     }
 
     public function validateSetup(string $result): bool
