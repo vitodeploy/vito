@@ -239,33 +239,6 @@ class ServerSslTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_failed_csr_cleaned_up_on_retry(): void
-    {
-        SSH::fake('CSR GENERATED SUCCESSFULLY');
-
-        $this->actingAs($this->user);
-
-        $failedSsl = Ssl::factory()->serverLevel()->create([
-            'server_id' => $this->server->id,
-            'type' => 'csr',
-            'status' => SslStatus::FAILED,
-        ]);
-
-        $this->post(route('server-ssls.store', ['server' => $this->server->id]), [
-            'type' => 'csr',
-            'common_name' => 'example.com',
-            'organization' => 'Test Org',
-            'city' => 'San Francisco',
-            'state' => 'California',
-            'country' => 'US',
-        ])
-            ->assertRedirect()
-            ->assertSessionDoesntHaveErrors();
-
-        $this->assertDatabaseMissing('ssls', [
-            'id' => $failedSsl->id,
-        ]);
-    }
 
     /**
      * Generate a self-signed certificate for testing.

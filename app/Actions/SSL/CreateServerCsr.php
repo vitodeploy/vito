@@ -3,7 +3,6 @@
 namespace App\Actions\SSL;
 
 use App\Enums\SslStatus;
-use App\Enums\SslType;
 use App\Jobs\SSL\CreateServerCsrJob;
 use App\Models\Server;
 use App\Models\ServerLog;
@@ -22,12 +21,6 @@ class CreateServerCsr
     public function create(Server $server, array $input): Ssl
     {
         $this->validate($input);
-
-        $server->ssls()
-            ->whereNull('site_id')
-            ->where('type', SslType::CSR)
-            ->where('status', SslStatus::FAILED)
-            ->delete();
 
         $csrData = [
             'common_name' => $input['common_name'],
