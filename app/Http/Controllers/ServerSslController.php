@@ -77,7 +77,7 @@ class ServerSslController extends Controller
     #[Post('/{ssl}/deactivate', name: 'server-ssls.deactivate')]
     public function deactivate(Server $server, Ssl $ssl): RedirectResponse
     {
-        $this->authorize('activateServer', [$ssl, $server]);
+        $this->authorize('deactivateCertificate', [$ssl, $server]);
 
         app(DeactivateServerSsl::class)->deactivate($server, $ssl);
 
@@ -87,7 +87,7 @@ class ServerSslController extends Controller
     #[Delete('/{ssl}', name: 'server-ssls.destroy')]
     public function destroy(Server $server, Ssl $ssl): RedirectResponse
     {
-        $this->authorize('deleteServer', [$ssl, $server]);
+        $this->authorize('deleteCertificate', [$ssl, $server]);
 
         app(DeleteSsl::class)->delete($ssl);
 
@@ -97,11 +97,7 @@ class ServerSslController extends Controller
     #[Get('/{ssl}/download', name: 'server-ssls.download')]
     public function download(Server $server, Ssl $ssl): StreamedResponse
     {
-        $this->authorize('viewAnyServer', [Ssl::class, $server]);
-
-        if ($ssl->server_id !== $server->id) {
-            abort(404);
-        }
+        $this->authorize('downloadCsr', [$ssl, $server]);
 
         if (! $ssl->has_csr || $ssl->status !== SslStatus::CREATED) {
             abort(404, 'CSR file is not available for download.');

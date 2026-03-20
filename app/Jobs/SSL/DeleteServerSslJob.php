@@ -2,11 +2,13 @@
 
 namespace App\Jobs\SSL;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\SslResource;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Ssl;
-use App\Traits\BroadcastsSslEvents;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +17,6 @@ use Illuminate\Support\Str;
 
 class DeleteServerSslJob implements ShouldQueue
 {
-    use BroadcastsSslEvents;
     use Queueable;
     use UniqueQueue;
 
@@ -35,9 +36,7 @@ class DeleteServerSslJob implements ShouldQueue
                 throw new Exception('SSL deletion failed: '.$result);
             }
 
-            // TODO: Regenerate Site SSL
-
-            $this->broadcastSslEvent($this->ssl, $this->server->project_id, 'ssl.deleted');
+            $this->broadcastSslUpdate('ssl.deleted');
 
             $this->ssl->delete();
         });
@@ -47,13 +46,23 @@ class DeleteServerSslJob implements ShouldQueue
     {
         $this->ssl->status = SslStatus::FAILED;
         $this->ssl->save();
-
-        $this->broadcastSslEvent($this->ssl, $this->server->project_id);
+        $this->broadcastSslUpdate();
 
         ServerLog::log(
             $this->server,
             'delete-server-ssl-failed',
             $e->getMessage(),
         );
+    }
+
+    private function broadcastSslUpdate(string $type = 'ssl.updated'): void
+    {
+        $this->ssl->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->server->project_id,
+            type: $type,
+            data: new SslResource($this->ssl),
+        ));
     }
 }

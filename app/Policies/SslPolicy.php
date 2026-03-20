@@ -49,7 +49,14 @@ class SslPolicy
             $server->isReady();
     }
 
-    public function deleteServer(User $user, Ssl $ssl, Server $server): bool
+    public function downloadCsr(User $user, Ssl $ssl, Server $server): bool
+    {
+        return $this->hasReadAccess($user, $server->project) &&
+            $server->isReady() &&
+            $ssl->server_id === $server->id;
+    }
+
+    public function deleteCertificate(User $user, Ssl $ssl, Server $server): bool
     {
         return $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&
@@ -57,6 +64,13 @@ class SslPolicy
     }
 
     public function activateServer(User $user, Ssl $ssl, Server $server): bool
+    {
+        return $this->hasWriteAccess($user, $server->project) &&
+            $server->isReady() &&
+            $ssl->server_id === $server->id;
+    }
+
+    public function deactivateCertificate(User $user, Ssl $ssl, Server $server): bool
     {
         return $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&

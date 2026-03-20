@@ -3,6 +3,7 @@
 namespace App\Actions\SSL;
 
 use App\Enums\SslStatus;
+use App\Enums\SslType;
 use App\Jobs\SSL\CreateServerCsrJob;
 use App\Models\Server;
 use App\Models\ServerLog;
@@ -24,7 +25,7 @@ class CreateServerCsr
 
         $server->ssls()
             ->whereNull('site_id')
-            ->where('type', 'csr')
+            ->where('type', SslType::CSR)
             ->where('status', SslStatus::FAILED)
             ->delete();
 

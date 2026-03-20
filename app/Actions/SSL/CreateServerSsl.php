@@ -26,7 +26,7 @@ class CreateServerSsl
         ])->validate();
 
         return match ($input['type']) {
-            'custom' => app(InstallCustomServerSsl::class)->install($server, $input),
+            SslType::CUSTOM->value => app(InstallCustomServerSsl::class)->install($server, $input),
             SslType::LETSENCRYPT->value => app(CreateLetsEncryptWildcardSsl::class)->create($server, $input),
             default => app(CreateServerCsr::class)->create($server, $input),
         };

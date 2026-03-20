@@ -2,10 +2,13 @@
 
 namespace App\Jobs\SSL;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
+use App\Events\SocketEvent;
+use App\Http\Resources\SslResource;
 use App\Models\Server;
+use App\Models\ServerLog;
 use App\Models\Ssl;
-use App\Traits\BroadcastsSslEvents;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,7 +17,6 @@ use Illuminate\Support\Str;
 
 class CreateServerCsrJob implements ShouldQueue
 {
-    use BroadcastsSslEvents;
     use Queueable;
     use UniqueQueue;
 
@@ -62,12 +64,31 @@ class CreateServerCsrJob implements ShouldQueue
             $this->ssl->status = SslStatus::CREATED;
             $this->ssl->save();
 
-            $this->broadcastSslEvent($this->ssl, $this->server->project_id);
+            $this->broadcastSslUpdate();
         });
     }
 
     public function failed(Exception $e): void
     {
-        $this->handleSslFailure($this->ssl, $e, $this->server->project_id, 'create-server-csr-failed');
+        $this->ssl->status = SslStatus::FAILED;
+        $this->ssl->save();
+        $this->broadcastSslUpdate();
+
+        ServerLog::log(
+            $this->server,
+            'create-server-csr-failed',
+            $e->getMessage(),
+        );
+    }
+
+    private function broadcastSslUpdate(): void
+    {
+        $this->ssl->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->server->project_id,
+            type: 'ssl.updated',
+            data: new SslResource($this->ssl),
+        ));
     }
 }

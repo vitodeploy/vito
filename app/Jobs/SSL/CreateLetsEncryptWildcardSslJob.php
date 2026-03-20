@@ -5,13 +5,16 @@ namespace App\Jobs\SSL;
 use App\Actions\Domain\CreateDNSRecord;
 use App\Actions\Domain\DeleteDNSRecord;
 use App\Actions\SSL\CertificateParser;
+use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
+use App\Events\SocketEvent;
 use App\Helpers\SSH;
+use App\Http\Resources\SslResource;
 use App\Models\DNSRecord;
 use App\Models\Domain;
 use App\Models\Server;
+use App\Models\ServerLog;
 use App\Models\Ssl;
-use App\Traits\BroadcastsSslEvents;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +23,6 @@ use Illuminate\Support\Facades\Log;
 
 class CreateLetsEncryptWildcardSslJob implements ShouldQueue
 {
-    use BroadcastsSslEvents;
     use Queueable;
     use UniqueQueue;
 
@@ -55,7 +57,7 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             $ssh->exec(view('ssh.ssl.wildcard-cleanup-artifacts', ['basePath' => $basePath]));
 
             Log::info('[Wildcard SSL] Job completed successfully', ['ssl_id' => $this->ssl->id]);
-            $this->broadcastSslEvent($this->ssl, $this->server->project_id);
+            $this->broadcastSslUpdate();
         });
     }
 
@@ -72,7 +74,15 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             $this->deleteDnsRecordSafely($recordId);
         }
 
-        $this->handleSslFailure($this->ssl, $e, $this->server->project_id, 'create-wildcard-ssl-failed');
+        $this->ssl->status = SslStatus::FAILED;
+        $this->ssl->save();
+        $this->broadcastSslUpdate();
+
+        ServerLog::log(
+            $this->server,
+            'create-wildcard-ssl-failed',
+            $e->getMessage(),
+        );
     }
 
     private function prepareWorkspace(SSH $ssh, string $basePath, Domain $domain): void
@@ -266,6 +276,17 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
                 // Best effort
             }
         }
+    }
+
+    private function broadcastSslUpdate(): void
+    {
+        $this->ssl->refresh();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->server->project_id,
+            type: 'ssl.updated',
+            data: new SslResource($this->ssl),
+        ));
     }
 
     private function waitForDnsPropagation(string $domain, string $validation): void
