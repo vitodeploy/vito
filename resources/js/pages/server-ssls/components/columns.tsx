@@ -46,7 +46,9 @@ function Deactivate({ ssl }: { ssl: SSL }) {
           <DialogDescription className="sr-only">Deactivate SSL</DialogDescription>
         </DialogHeader>
         <div className="space-y-2 p-4">
-          <p>This will revert the certificate back to CSR state and remove the installed certificate files. The CSR and private key will be preserved.</p>
+          <p>
+            This will revert the certificate back to CSR state and remove the installed certificate files. The CSR and private key will be preserved.
+          </p>
         </div>
         <DialogFooter>
           <DialogClose asChild>
@@ -136,12 +138,16 @@ export const columns: ColumnDef<SSL>[] = [
                 return truncated ? (
                   <Tooltip key={domain}>
                     <TooltipTrigger asChild>
-                      <Badge variant="outline" className="cursor-default">{label}</Badge>
+                      <Badge variant="outline" className="cursor-default">
+                        {label}
+                      </Badge>
                     </TooltipTrigger>
                     <TooltipContent>{domain}</TooltipContent>
                   </Tooltip>
                 ) : (
-                  <Badge key={domain} variant="outline">{label}</Badge>
+                  <Badge key={domain} variant="outline">
+                    {label}
+                  </Badge>
                 );
               })}
             </TooltipProvider>
@@ -178,7 +184,9 @@ export const columns: ColumnDef<SSL>[] = [
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="outline" className="cursor-default">{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}</Badge>
+              <Badge variant="outline" className="cursor-default">
+                {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}
+              </Badge>
             </TooltipTrigger>
             <TooltipContent>{targetDate.format('MMMM D, YYYY')}</TooltipContent>
           </Tooltip>
@@ -212,7 +220,9 @@ export const columns: ColumnDef<SSL>[] = [
             <DropdownMenuContent align="end">
               {row.original.has_csr && row.original.status === 'created' && (
                 <>
-                  <DropdownMenuItem onSelect={() => window.open(route('server-ssls.download', { server: row.original.server_id, ssl: row.original.id }), '_blank')}>
+                  <DropdownMenuItem
+                    onSelect={() => window.open(route('server-ssls.download', { server: row.original.server_id, ssl: row.original.id }), '_blank')}
+                  >
                     Download CSR
                   </DropdownMenuItem>
                   {row.original.type === 'csr' && (

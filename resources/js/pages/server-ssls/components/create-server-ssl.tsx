@@ -60,7 +60,16 @@ export default function CreateServerSsl({ server, domains, children }: { server:
   };
 
   return (
-    <Sheet open={open} onOpenChange={(value) => { if (value) { form.reset(); form.clearErrors(); } setOpen(value); }}>
+    <Sheet
+      open={open}
+      onOpenChange={(value) => {
+        if (value) {
+          form.reset();
+          form.clearErrors();
+        }
+        setOpen(value);
+      }}
+    >
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="w-full lg:max-w-lg">
         <SheetHeader>
@@ -130,7 +139,9 @@ export default function CreateServerSsl({ server, domains, children }: { server:
               <>
                 <FormField>
                   <Label htmlFor="domain_id">Domain</Label>
-                  <p className="text-muted-foreground text-xs">Only domains managed by Vito with a DNS provider are available, as wildcard SSL requires DNS verification.</p>
+                  <p className="text-muted-foreground text-xs">
+                    Only domains managed by Vito with a DNS provider are available, as wildcard SSL requires DNS verification.
+                  </p>
                   <Select onValueChange={(value) => form.setData('domain_id', value)} value={form.data.domain_id}>
                     <SelectTrigger id="domain_id">
                       <SelectValue placeholder="Select domain" />
