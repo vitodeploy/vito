@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\HostedDomain\ActivateHostedDomain;
 use App\Actions\HostedDomain\CreateHostedDomain;
 use App\Actions\HostedDomain\DeactivateHostedDomain;
 use App\Actions\HostedDomain\DeleteHostedDomain;
-use App\Actions\HostedDomain\ActivateHostedDomain;
 use App\Actions\HostedDomain\ReactivateHostedDomain;
 use App\Actions\HostedDomain\UpdateHostedDomain;
 use App\Actions\SSL\AssignSslToDomains;
 use App\Actions\SSL\GetMatchingSslCertificates;
-use App\Enums\SslStatus;
-use App\Jobs\HostedDomain\CheckDomainJob;
-use App\Models\Ssl;
 use App\Http\Resources\HostedDomainResource;
+use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\Ssl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -133,17 +132,14 @@ class HostedDomainController extends Controller
 
         $domain = $request->query('domain', '');
 
-        if (empty($domain)) {
+        if (empty($domain) || ! preg_match('/^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/', $domain)) {
             return response()->json(['certificates' => [], 'best_match_id' => null]);
         }
 
         $certificates = app(GetMatchingSslCertificates::class)->forDomain($site, $domain);
 
         $serverSsls = Ssl::query()
-            ->whereNull('site_id')
-            ->where('server_id', $site->server_id)
-            ->where('status', SslStatus::CREATED)
-            ->where('is_active', true)
+            ->activeServerLevel($site->server_id)
             ->get();
 
         $bestMatch = app(AssignSslToDomains::class)->findBestMatch($domain, $serverSsls);

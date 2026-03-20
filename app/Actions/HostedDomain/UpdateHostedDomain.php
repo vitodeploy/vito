@@ -4,7 +4,6 @@ namespace App\Actions\HostedDomain;
 
 use App\Enums\HostedDomainType;
 use App\Enums\SslMethod;
-use App\Enums\SslStatus;
 use App\Models\HostedDomain;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -29,7 +28,7 @@ class UpdateHostedDomain
         }
 
         $hostedDomain->ssl_method = SslMethod::from($input['ssl_mode']);
-        $hostedDomain->ssl_id = $input['ssl_mode'] === 'custom' ? (int) $input['ssl_id'] : null;
+        $hostedDomain->ssl_id = $input['ssl_mode'] === SslMethod::CUSTOM->value ? (int) $input['ssl_id'] : null;
 
         $hostedDomain->save();
 
@@ -52,6 +51,7 @@ class UpdateHostedDomain
                 'required',
                 'string',
                 'max:255',
+                'regex:/^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/',
                 function (string $attribute, mixed $value, \Closure $fail) use ($site, $hostedDomain): void {
                     $exists = HostedDomain::query()
                         ->where('domain', $value)
@@ -75,17 +75,14 @@ class UpdateHostedDomain
             Rule::in([SslMethod::NONE->value, SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value]),
         ];
         $rules['ssl_id'] = [
-            Rule::requiredIf(($input['ssl_mode'] ?? '') === 'custom'),
+            Rule::requiredIf(($input['ssl_mode'] ?? '') === SslMethod::CUSTOM->value),
             function (string $attribute, mixed $value, \Closure $fail) use ($site, $input): void {
-                if (($input['ssl_mode'] ?? '') !== 'custom' || empty($value)) {
+                if (($input['ssl_mode'] ?? '') !== SslMethod::CUSTOM->value || empty($value)) {
                     return;
                 }
 
                 $ssl = Ssl::query()
-                    ->whereNull('site_id')
-                    ->where('server_id', $site->server_id)
-                    ->where('status', SslStatus::CREATED)
-                    ->where('is_active', true)
+                    ->activeServerLevel($site->server_id)
                     ->where('id', $value)
                     ->first();
 

@@ -44,7 +44,7 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
   const sslStale = form.data.domain !== lastFetchedDomain.current;
 
   const fetchMatchingSsls = useCallback(
-    (domain: string) => {
+    (domain: string, signal?: AbortSignal) => {
       if (!domain) {
         setMatchingSsls([]);
         lastFetchedDomain.current = domain;
@@ -53,17 +53,21 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
 
       setLoadingSsls(true);
       axios
-        .get(route('hosted-domains.matching-ssls', { server: site.server_id, site: site.id, domain }))
+        .get(route('hosted-domains.matching-ssls', { server: site.server_id, site: site.id, domain }), { signal })
         .then((response) => {
           const { certificates, best_match_id } = response.data;
           setMatchingSsls(certificates);
           lastFetchedDomain.current = domain;
           if (best_match_id) {
-            form.setData('ssl_mode', 'custom');
-            form.setData('ssl_id', String(best_match_id));
+            form.setData((prev) => ({ ...prev, ssl_mode: 'custom', ssl_id: String(best_match_id) }));
           } else {
-            form.setData('ssl_mode', 'letsencrypt');
-            form.setData('ssl_id', '');
+            form.setData((prev) => ({ ...prev, ssl_mode: 'letsencrypt', ssl_id: '' }));
+          }
+        })
+        .catch((error) => {
+          if (!axios.isCancel(error)) {
+            setMatchingSsls([]);
+            lastFetchedDomain.current = domain;
           }
         })
         .finally(() => {
@@ -79,22 +83,22 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
     }
 
     if (sslStale && form.data.ssl_mode === 'custom') {
-      form.setData('ssl_mode', 'letsencrypt');
-      form.setData('ssl_id', '');
+      form.setData((prev) => ({ ...prev, ssl_mode: 'letsencrypt', ssl_id: '' }));
     }
 
+    const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-      fetchMatchingSsls(form.data.domain);
+      fetchMatchingSsls(form.data.domain, controller.signal);
     }, 500);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [form.data.domain, open, fetchMatchingSsls]);
 
   const handleSslModeChange = (value: string) => {
-    form.setData('ssl_mode', value);
-    if (value !== 'custom') {
-      form.setData('ssl_id', '');
-    }
+    form.setData((prev) => ({ ...prev, ssl_mode: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
   };
 
   const submit = (e: FormEvent) => {

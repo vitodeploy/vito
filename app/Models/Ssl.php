@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\SslStatus;
 use Carbon\Carbon;
 use Database\Factories\SslFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -114,6 +115,19 @@ class Ssl extends AbstractModel
         return $this->hasMany(HostedDomain::class);
     }
 
+    /**
+     * @param  Builder<Ssl>  $query
+     * @return Builder<Ssl>
+     */
+    public function scopeActiveServerLevel(Builder $query, int $serverId): Builder
+    {
+        return $query
+            ->whereNull('site_id')
+            ->where('server_id', $serverId)
+            ->where('status', SslStatus::CREATED)
+            ->where('is_active', true);
+    }
+
     public function validateSetup(string $result): bool
     {
         if (! Str::contains($result, 'Successfully received certificate')) {
@@ -142,6 +156,31 @@ class Ssl extends AbstractModel
         $this->save();
 
         return $this->domains;
+    }
+
+    /**
+     * Check if a wildcard domain pattern matches the given domain.
+     *
+     * *.example.com matches sub.example.com
+     * *.example.com does NOT match example.com (bare domain)
+     * *.example.com does NOT match a.b.example.com (nested subdomain)
+     */
+    public static function wildcardMatches(string $pattern, string $domain): bool
+    {
+        if (! str_starts_with($pattern, '*.')) {
+            return false;
+        }
+
+        $parent = substr($pattern, 2);
+        $suffix = '.'.$parent;
+
+        if (! str_ends_with(strtolower($domain), strtolower($suffix))) {
+            return false;
+        }
+
+        $prefix = substr($domain, 0, -strlen($suffix));
+
+        return $prefix !== '' && ! str_contains($prefix, '.');
     }
 
     /**

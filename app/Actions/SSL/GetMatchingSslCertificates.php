@@ -2,7 +2,6 @@
 
 namespace App\Actions\SSL;
 
-use App\Enums\SslStatus;
 use App\Models\Site;
 use App\Models\Ssl;
 use Illuminate\Support\Collection;
@@ -14,7 +13,7 @@ class GetMatchingSslCertificates
      *
      * @return Collection<int, array{id: int, label: string, domains: array<string>}>
      */
-    public function handle(Site $site): Collection
+    public function get(Site $site): Collection
     {
         $siteDomains = $site->hostedDomains()->pluck('domain')->all();
 
@@ -38,10 +37,7 @@ class GetMatchingSslCertificates
     private function filterSsls(Site $site, array $domains): Collection
     {
         $serverSsls = Ssl::query()
-            ->whereNull('site_id')
-            ->where('server_id', $site->server_id)
-            ->where('status', SslStatus::CREATED)
-            ->where('is_active', true)
+            ->activeServerLevel($site->server_id)
             ->get();
 
         return $serverSsls
@@ -51,7 +47,7 @@ class GetMatchingSslCertificates
                         if (strcasecmp($sslDomain, $domain) === 0) {
                             return true;
                         }
-                        if ($this->wildcardMatches($sslDomain, $domain)) {
+                        if (Ssl::wildcardMatches($sslDomain, $domain)) {
                             return true;
                         }
                     }
@@ -65,23 +61,5 @@ class GetMatchingSslCertificates
                 'domains' => $ssl->domains ?? [],
             ])
             ->values();
-    }
-
-    private function wildcardMatches(string $pattern, string $domain): bool
-    {
-        if (! str_starts_with($pattern, '*.')) {
-            return false;
-        }
-
-        $parent = substr($pattern, 2);
-        $suffix = '.'.$parent;
-
-        if (! str_ends_with(strtolower($domain), strtolower($suffix))) {
-            return false;
-        }
-
-        $prefix = substr($domain, 0, -strlen($suffix));
-
-        return $prefix !== '' && ! str_contains($prefix, '.');
     }
 }
