@@ -239,7 +239,6 @@ class ServerSslTest extends TestCase
             ->assertForbidden();
     }
 
-
     /**
      * Generate a self-signed certificate for testing.
      *
