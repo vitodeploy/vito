@@ -17,6 +17,12 @@ class DeactivateHostedDomain
             ]);
         }
 
+        if ($hostedDomain->status->isProcessing()) {
+            throw ValidationException::withMessages([
+                'domain' => ['Cannot deactivate a domain while it is ' . $hostedDomain->status->value . '.'],
+            ]);
+        }
+
         $hostedDomain->status = HostedDomainStatus::INACTIVE;
         $hostedDomain->save();
     }

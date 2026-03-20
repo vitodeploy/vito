@@ -265,6 +265,17 @@ export const columns: ColumnDef<HostedDomain>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const isPrimary = row.original.type === 'primary';
+      const isProcessing = row.original.status === 'creating' || row.original.status === 'updating' || row.original.status === 'deleting';
+
+      if (isProcessing) {
+        return (
+          <div className="flex items-center justify-end">
+            <div className="flex h-8 w-8 items-center justify-center">
+              <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
+            </div>
+          </div>
+        );
+      }
 
       return (
         <div className="flex items-center justify-end">

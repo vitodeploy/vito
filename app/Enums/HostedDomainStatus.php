@@ -10,6 +10,7 @@ enum HostedDomainStatus: string implements VitoEnum
     use HasEnumHelpers;
 
     case CREATING = 'creating';
+    case UPDATING = 'updating';
     case PENDING = 'pending';
     case ACTIVE = 'active';
     case INACTIVE = 'inactive';
@@ -19,6 +20,7 @@ enum HostedDomainStatus: string implements VitoEnum
     {
         return match ($this) {
             self::CREATING => 'warning',
+            self::UPDATING => 'warning',
             self::PENDING => 'default',
             self::ACTIVE => 'success',
             self::INACTIVE => 'gray',
@@ -29,5 +31,10 @@ enum HostedDomainStatus: string implements VitoEnum
     public function getText(): string
     {
         return $this->value;
+    }
+
+    public function isProcessing(): bool
+    {
+        return in_array($this, [self::CREATING, self::UPDATING, self::DELETING]);
     }
 }

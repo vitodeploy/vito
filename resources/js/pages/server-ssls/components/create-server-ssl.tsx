@@ -1,7 +1,7 @@
 import { FormEvent, ReactNode, useState } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { LoaderCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Server } from '@/types/server';
 import { Domain } from '@/types/domain';
+import { SharedData } from '@/types';
 
 type CreateForm = {
   type: string;
@@ -31,6 +32,7 @@ type CreateForm = {
 
 export default function CreateServerSsl({ server, domains, children }: { server: Server; domains: Domain[]; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const page = usePage<SharedData>();
 
   const form = useForm<CreateForm>({
     type: '',
@@ -80,7 +82,16 @@ export default function CreateServerSsl({ server, domains, children }: { server:
           <FormFields>
             <FormField>
               <Label htmlFor="type">Type</Label>
-              <Select onValueChange={(value) => form.setData('type', value)} value={form.data.type}>
+              <Select
+                onValueChange={(value) => {
+                  if (value === 'letsencrypt' && !form.data.email) {
+                    form.setData((prev) => ({ ...prev, type: value, email: page.props.auth.user.email }));
+                  } else {
+                    form.setData('type', value);
+                  }
+                }}
+                value={form.data.type}
+              >
                 <SelectTrigger id="type">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>

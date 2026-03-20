@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\HostedDomain\ActivateHostedDomain;
+use App\Enums\HostedDomainStatus;
 use App\Actions\HostedDomain\CreateHostedDomain;
 use App\Actions\HostedDomain\DeactivateHostedDomain;
 use App\Actions\HostedDomain\DeleteHostedDomain;
@@ -42,7 +43,7 @@ class HostedDomainController extends Controller
                 $site->hostedDomains()
                     ->with('ssl')
                     ->orderByRaw("CASE WHEN type = 'primary' THEN 0 ELSE 1 END")
-                    ->latest()
+                    ->oldest()
                     ->simplePaginate(config('web.pagination_size'))
             ),
         ]);
@@ -118,6 +119,9 @@ class HostedDomainController extends Controller
     public function checkDns(Server $server, Site $site, HostedDomain $hostedDomain): RedirectResponse
     {
         $this->authorize('update', [$hostedDomain, $site, $server]);
+
+        $hostedDomain->status = HostedDomainStatus::UPDATING;
+        $hostedDomain->save();
 
         dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
 

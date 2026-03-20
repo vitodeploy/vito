@@ -2,8 +2,10 @@
 
 namespace App\Actions\HostedDomain;
 
+use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\SslMethod;
+use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -18,9 +20,16 @@ class UpdateHostedDomain
      */
     public function update(HostedDomain $hostedDomain, Site $site, array $input): HostedDomain
     {
+        if ($hostedDomain->status->isProcessing()) {
+            throw ValidationException::withMessages([
+                'domain' => ['Cannot update a domain while it is ' . $hostedDomain->status->value . '.'],
+            ]);
+        }
+
         $this->validate($hostedDomain, $site, $input);
 
         $isPrimary = $hostedDomain->type === HostedDomainType::PRIMARY;
+        $domainChanged = ! $isPrimary && $hostedDomain->domain !== $input['domain'];
 
         if (! $isPrimary) {
             $hostedDomain->domain = $input['domain'];
@@ -30,7 +39,15 @@ class UpdateHostedDomain
         $hostedDomain->ssl_method = SslMethod::from($input['ssl_mode']);
         $hostedDomain->ssl_id = $input['ssl_mode'] === SslMethod::CUSTOM->value ? (int) $input['ssl_id'] : null;
 
+        if ($domainChanged && in_array($hostedDomain->status, [HostedDomainStatus::ACTIVE, HostedDomainStatus::PENDING])) {
+            $hostedDomain->status = HostedDomainStatus::UPDATING;
+        }
+
         $hostedDomain->save();
+
+        if ($domainChanged && $hostedDomain->status === HostedDomainStatus::UPDATING) {
+            dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
+        }
 
         return $hostedDomain->refresh();
     }
