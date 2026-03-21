@@ -1,6 +1,6 @@
 echo "Starting Certbot Process"
 sudo nohup certbot certonly --manual --preferred-challenges dns \
-  --agree-tos --non-interactive \
+  --agree-tos --non-interactive --force-renewal \
   -m {!! escapeshellarg($email) !!} \
   --cert-name {!! escapeshellarg($certName) !!} \
   -d {!! escapeshellarg('*.' . $domain) !!} -d {!! escapeshellarg($domain) !!} \

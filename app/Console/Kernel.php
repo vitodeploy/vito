@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('metrics:get')->everyMinute();
         $schedule->command('servers:check')->everyFiveMinutes();
         $schedule->command('domains:check-pending')->everyFiveMinutes();
+        $schedule->command('ssl:renew-wildcards')->daily();
     }
 
     /**
