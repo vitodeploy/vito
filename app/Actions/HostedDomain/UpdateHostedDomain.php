@@ -20,26 +20,22 @@ class UpdateHostedDomain
      */
     public function update(HostedDomain $hostedDomain, Site $site, array $input): HostedDomain
     {
-        if ($hostedDomain->status->isProcessing()) {
-            throw ValidationException::withMessages([
-                'domain' => ['Cannot update a domain while it is '.$hostedDomain->status->value.'.'],
-            ]);
-        }
+        $hostedDomain->ensureModifiable('update');
 
-        $this->validate($hostedDomain, $site, $input);
+        $validated = $this->validate($hostedDomain, $site, $input);
 
         $isPrimary = $hostedDomain->type === HostedDomainType::PRIMARY;
-        $domainChanged = ! $isPrimary && $hostedDomain->domain !== $input['domain'];
-        $sslMethodChangedToLE = SslMethod::from($input['ssl_mode']) === SslMethod::LETSENCRYPT
+        $domainChanged = ! $isPrimary && $hostedDomain->domain !== $validated['domain'];
+        $sslMethodChangedToLE = SslMethod::from($validated['ssl_method']) === SslMethod::LETSENCRYPT
             && $hostedDomain->ssl_method !== SslMethod::LETSENCRYPT;
 
         if (! $isPrimary) {
-            $hostedDomain->domain = $input['domain'];
-            $hostedDomain->type = $input['type'];
+            $hostedDomain->domain = $validated['domain'];
+            $hostedDomain->type = $validated['type'];
         }
 
-        $hostedDomain->ssl_method = SslMethod::from($input['ssl_mode']);
-        $hostedDomain->ssl_id = $input['ssl_mode'] === SslMethod::CUSTOM->value ? (int) $input['ssl_id'] : null;
+        $hostedDomain->ssl_method = SslMethod::from($validated['ssl_method']);
+        $hostedDomain->ssl_id = $validated['ssl_method'] === SslMethod::CUSTOM->value ? (int) $validated['ssl_id'] : null;
         $hostedDomain->error = null;
 
         $needsRecheck = ($domainChanged || $sslMethodChangedToLE)
@@ -62,10 +58,11 @@ class UpdateHostedDomain
 
     /**
      * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
      *
      * @throws ValidationException
      */
-    private function validate(HostedDomain $hostedDomain, Site $site, array $input): void
+    private function validate(HostedDomain $hostedDomain, Site $site, array $input): array
     {
         $isPrimary = $hostedDomain->type === HostedDomainType::PRIMARY;
 
@@ -95,14 +92,14 @@ class UpdateHostedDomain
             ];
         }
 
-        $rules['ssl_mode'] = [
+        $rules['ssl_method'] = [
             'required',
             Rule::in([SslMethod::NONE->value, SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value]),
         ];
         $rules['ssl_id'] = [
-            Rule::requiredIf(($input['ssl_mode'] ?? '') === SslMethod::CUSTOM->value),
+            Rule::requiredIf(($input['ssl_method'] ?? '') === SslMethod::CUSTOM->value),
             function (string $attribute, mixed $value, \Closure $fail) use ($site, $input): void {
-                if (($input['ssl_mode'] ?? '') !== SslMethod::CUSTOM->value || empty($value)) {
+                if (($input['ssl_method'] ?? '') !== SslMethod::CUSTOM->value || empty($value)) {
                     return;
                 }
 
@@ -117,7 +114,7 @@ class UpdateHostedDomain
             },
         ];
 
-        Validator::make($input, $rules, [
+        return Validator::make($input, $rules, [
             'ssl_id.required' => 'Please select an SSL certificate when using a custom certificate.',
         ])->validate();
     }

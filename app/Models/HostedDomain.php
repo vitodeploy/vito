@@ -8,6 +8,7 @@ use App\Enums\SslMethod;
 use Database\Factories\HostedDomainFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @property int $site_id
@@ -42,6 +43,24 @@ class HostedDomain extends AbstractModel
         'status' => HostedDomainStatus::class,
         'ssl_method' => SslMethod::class,
     ];
+
+    /**
+     * @throws ValidationException
+     */
+    public function ensureModifiable(string $action): void
+    {
+        if ($this->type === HostedDomainType::PRIMARY) {
+            throw ValidationException::withMessages([
+                'domain' => ["Cannot {$action} the primary domain."],
+            ]);
+        }
+
+        if ($this->status->isProcessing()) {
+            throw ValidationException::withMessages([
+                'domain' => ["Cannot {$action} a domain while it is {$this->status->value}."],
+            ]);
+        }
+    }
 
     /**
      * @return BelongsTo<Site, covariant $this>

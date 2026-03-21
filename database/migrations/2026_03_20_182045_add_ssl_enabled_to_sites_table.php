@@ -18,6 +18,18 @@ return new class extends Migration
             $table->boolean('vhost_generation_enabled')->default(true)->after('vhost_template');
         });
 
+        // Backfill ssl_enabled for sites that already have an active SSL certificate
+        DB::table('sites')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('ssls')
+                    ->whereColumn('ssls.site_id', 'sites.id')
+                    ->where('ssls.expires_at', '>=', now())
+                    ->where('ssls.status', 'created')
+                    ->where('ssls.is_active', true);
+            })
+            ->update(['ssl_enabled' => true]);
+
         // Disable vhost generation for existing sites to support legacy sites
         // that may have manually edited vhosts and need updating before enabling
         DB::table('sites')->update(['vhost_generation_enabled' => false]);

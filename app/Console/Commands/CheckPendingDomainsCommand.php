@@ -17,14 +17,10 @@ class CheckPendingDomainsCommand extends Command
     {
         HostedDomain::query()
             ->where('status', HostedDomainStatus::PENDING)
-            ->with('site')
-            ->get()
-            ->groupBy(fn (HostedDomain $hd) => $hd->site->server_id)
-            ->each(function ($domains) {
-                /** @var HostedDomain $domain */
-                foreach ($domains as $domain) {
-                    dispatch(new CheckDomainJob($domain))->onQueue('ssh');
-                }
+            ->where('updated_at', '>=', now()->subHours(24))
+            ->cursor()
+            ->each(function (HostedDomain $domain) {
+                dispatch(new CheckDomainJob($domain))->onQueue('ssh');
             });
     }
 }

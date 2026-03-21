@@ -36,12 +36,21 @@ class ActivateHostedDomain
     {
         if (! $hostedDomain->ssl_id) {
             $hostedDomain->error = 'No certificate provided';
-        } elseif (! $hostedDomain->ssl->coversDomain($hostedDomain->domain)) {
-            $hostedDomain->error = 'Certificate does not support this domain';
-        } else {
-            $hostedDomain->error = null;
+            $hostedDomain->status = HostedDomainStatus::PENDING;
+            $hostedDomain->save();
+
+            return;
         }
 
+        if (! $hostedDomain->ssl->coversDomain($hostedDomain->domain)) {
+            $hostedDomain->error = 'Certificate does not support this domain';
+            $hostedDomain->status = HostedDomainStatus::PENDING;
+            $hostedDomain->save();
+
+            return;
+        }
+
+        $hostedDomain->error = null;
         $hostedDomain->status = HostedDomainStatus::ACTIVE;
         $hostedDomain->save();
 
@@ -65,6 +74,7 @@ class ActivateHostedDomain
         $ssl = $site->ssls()
             ->where('type', SslType::LETSENCRYPT)
             ->where('status', SslStatus::CREATED)
+            ->latest('expires_at')
             ->first();
 
         if ($ssl && $ssl->coversDomain($hostedDomain->domain)) {

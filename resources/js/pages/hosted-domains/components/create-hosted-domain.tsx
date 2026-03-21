@@ -24,7 +24,7 @@ import axios from 'axios';
 type CreateForm = {
   domain: string;
   type: string;
-  ssl_mode: string;
+  ssl_method: string;
   ssl_id: string;
 };
 
@@ -37,7 +37,7 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
   const form = useForm<CreateForm>({
     domain: '',
     type: 'alias',
-    ssl_mode: 'letsencrypt',
+    ssl_method: 'letsencrypt',
     ssl_id: '',
   });
 
@@ -59,9 +59,9 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
           setMatchingSsls(certificates);
           lastFetchedDomain.current = domain;
           if (best_match_id) {
-            form.setData((prev) => ({ ...prev, ssl_mode: 'custom', ssl_id: String(best_match_id) }));
+            form.setData((prev) => ({ ...prev, ssl_method: 'custom', ssl_id: String(best_match_id) }));
           } else {
-            form.setData((prev) => ({ ...prev, ssl_mode: 'letsencrypt', ssl_id: '' }));
+            form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
           }
         })
         .catch((error) => {
@@ -82,8 +82,8 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
       return;
     }
 
-    if (sslStale && form.data.ssl_mode === 'custom') {
-      form.setData((prev) => ({ ...prev, ssl_mode: 'letsencrypt', ssl_id: '' }));
+    if (sslStale && form.data.ssl_method === 'custom') {
+      form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
     }
 
     const controller = new AbortController();
@@ -97,8 +97,8 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
     };
   }, [form.data.domain, open, fetchMatchingSsls]);
 
-  const handleSslModeChange = (value: string) => {
-    form.setData((prev) => ({ ...prev, ssl_mode: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
+  const handleSslMethodChange = (value: string) => {
+    form.setData((prev) => ({ ...prev, ssl_method: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
   };
 
   const submit = (e: FormEvent) => {
@@ -159,9 +159,9 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
               <InputError message={form.errors.type} />
             </FormField>
             <FormField>
-              <Label htmlFor="create-ssl-mode">SSL</Label>
-              <Select onValueChange={handleSslModeChange} value={form.data.ssl_mode}>
-                <SelectTrigger id="create-ssl-mode">
+              <Label htmlFor="create-ssl-method">SSL</Label>
+              <Select onValueChange={handleSslMethodChange} value={form.data.ssl_method}>
+                <SelectTrigger id="create-ssl-method">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -170,9 +170,9 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
                   <SelectItem value="custom">Custom Certificate</SelectItem>
                 </SelectContent>
               </Select>
-              <InputError message={form.errors.ssl_mode} />
+              <InputError message={form.errors.ssl_method} />
             </FormField>
-            {form.data.ssl_mode === 'custom' && (
+            {form.data.ssl_method === 'custom' && (
               <FormField>
                 <Label htmlFor="create-ssl_id">SSL Certificate</Label>
                 <Select onValueChange={(value) => form.setData('ssl_id', value)} value={form.data.ssl_id}>

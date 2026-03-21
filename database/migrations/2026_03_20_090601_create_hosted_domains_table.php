@@ -27,6 +27,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['site_id', 'domain']);
+            $table->index('status');
+            $table->index('domain');
         });
 
         // Seed existing sites' domains into hosted_domains

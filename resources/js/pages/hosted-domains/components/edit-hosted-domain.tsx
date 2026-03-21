@@ -24,7 +24,7 @@ import axios from 'axios';
 type EditForm = {
   domain: string;
   type: string;
-  ssl_mode: string;
+  ssl_method: string;
   ssl_id: string;
 };
 
@@ -38,7 +38,7 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
   const form = useForm<EditForm>({
     domain: hostedDomain.domain,
     type: hostedDomain.type,
-    ssl_mode: hostedDomain.ssl_method,
+    ssl_method: hostedDomain.ssl_method,
     ssl_id: hostedDomain.ssl_id ? String(hostedDomain.ssl_id) : '',
   });
 
@@ -61,9 +61,9 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
           lastFetchedDomain.current = domain;
           if (domain !== hostedDomain.domain) {
             if (best_match_id) {
-              form.setData((prev) => ({ ...prev, ssl_mode: 'custom', ssl_id: String(best_match_id) }));
+              form.setData((prev) => ({ ...prev, ssl_method: 'custom', ssl_id: String(best_match_id) }));
             } else {
-              form.setData((prev) => ({ ...prev, ssl_mode: 'letsencrypt', ssl_id: '' }));
+              form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
             }
           }
         })
@@ -85,8 +85,8 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
       return;
     }
 
-    if (sslStale && form.data.ssl_mode === 'custom') {
-      form.setData((prev) => ({ ...prev, ssl_mode: 'letsencrypt', ssl_id: '' }));
+    if (sslStale && form.data.ssl_method === 'custom') {
+      form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
     }
 
     const controller = new AbortController();
@@ -100,8 +100,8 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
     };
   }, [open, form.data.domain, fetchMatchingSsls]);
 
-  const handleSslModeChange = (value: string) => {
-    form.setData((prev) => ({ ...prev, ssl_mode: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
+  const handleSslMethodChange = (value: string) => {
+    form.setData((prev) => ({ ...prev, ssl_method: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
   };
 
   const submit = (e: FormEvent) => {
@@ -129,7 +129,7 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
           form.setData({
             domain: hostedDomain.domain,
             type: hostedDomain.type,
-            ssl_mode: hostedDomain.ssl_method,
+            ssl_method: hostedDomain.ssl_method,
             ssl_id: hostedDomain.ssl_id ? String(hostedDomain.ssl_id) : '',
           });
           form.clearErrors();
@@ -174,9 +174,9 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
               <InputError message={form.errors.type} />
             </FormField>
             <FormField>
-              <Label htmlFor="edit-ssl-mode">SSL</Label>
-              <Select onValueChange={handleSslModeChange} value={form.data.ssl_mode}>
-                <SelectTrigger id="edit-ssl-mode">
+              <Label htmlFor="edit-ssl-method">SSL</Label>
+              <Select onValueChange={handleSslMethodChange} value={form.data.ssl_method}>
+                <SelectTrigger id="edit-ssl-method">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,9 +185,9 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
                   <SelectItem value="custom">Custom Certificate</SelectItem>
                 </SelectContent>
               </Select>
-              <InputError message={form.errors.ssl_mode} />
+              <InputError message={form.errors.ssl_method} />
             </FormField>
-            {form.data.ssl_mode === 'custom' && (
+            {form.data.ssl_method === 'custom' && (
               <FormField>
                 <Label htmlFor="edit-ssl_id">SSL Certificate</Label>
                 <Select onValueChange={(value) => form.setData('ssl_id', value)} value={form.data.ssl_id}>

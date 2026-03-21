@@ -126,7 +126,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
             <Alert>
               <AlertDescription className="flex items-center gap-2">
                 <StatusRipple variant="info" />
-                <p>This is the Mustache template used to generate the vhost. Changes here persist across SSL, alias, and redirect updates.</p>
+                <p>This is the Mustache template used to generate the vhost. Changes here persist across SSL, domain, and redirect updates.</p>
               </AlertDescription>
             </Alert>
           </div>

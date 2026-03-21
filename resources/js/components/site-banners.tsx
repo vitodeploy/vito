@@ -60,7 +60,7 @@ export default function SiteBanners({ site }: { site: Site }) {
       title: 'VHost generation is disabled',
       description: (
         <>
-          Automatic VHost generation has been disabled. Changes to SSL, aliases, or redirects will not update the VHost config. Review your template
+          Automatic VHost generation has been disabled. Changes to SSL, domains, or redirects will not update the VHost config. Review your template
           on the{' '}
           <Link href={route('site-settings', { server: site.server_id, site: site.id })} className="underline">
             Settings page

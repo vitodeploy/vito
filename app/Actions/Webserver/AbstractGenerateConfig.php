@@ -22,7 +22,9 @@ abstract class AbstractGenerateConfig
         $template = $template ?? $this->getTemplate($site);
         $data = $this->buildData($site);
 
-        $engine = new Mustache_Engine;
+        $engine = new Mustache_Engine([
+            'escape' => fn ($value) => $value,
+        ]);
 
         return format_webserver_config($engine->render($template, $data));
     }
