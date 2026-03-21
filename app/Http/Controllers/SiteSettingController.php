@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Actions\Site\DeleteSite;
 use App\Actions\Site\UpdateAliases;
-use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
+use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateWebDirectory;
 use App\Actions\Webserver\GenerateCaddyConfig;
 use App\Actions\Webserver\GenerateNginxConfig;
@@ -112,13 +112,17 @@ class SiteSettingController extends Controller
         ]);
     }
 
-    #[Get('/vhost-preview', name: 'site-settings.vhost-preview')]
-    public function vhostPreview(Server $server, Site $site): JsonResponse
+    #[Post('/vhost-preview', name: 'site-settings.vhost-preview')]
+    public function vhostPreview(Request $request, Server $server, Site $site): JsonResponse
     {
         $this->authorize('update', [$site, $server]);
 
+        $this->validate($request, [
+            'template' => 'required|string|max:65535',
+        ]);
+
         return response()->json([
-            'vhost' => $this->getVhostGenerator($site)->generate($site),
+            'vhost' => $this->getVhostGenerator($site)->generate($site, $request->input('template')),
         ]);
     }
 
@@ -128,7 +132,7 @@ class SiteSettingController extends Controller
         $this->authorize('update', [$site, $server]);
 
         $this->validate($request, [
-            'vhost' => 'required|string',
+            'vhost' => 'required|string|max:65535',
         ]);
 
         $site->webserver()->updateVHost($site, $request->input('vhost'));
@@ -154,7 +158,7 @@ class SiteSettingController extends Controller
         $this->authorize('update', [$site, $server]);
 
         $this->validate($request, [
-            'template' => 'required|string',
+            'template' => 'required|string|max:65535',
         ]);
 
         $site->vhost_template = $request->input('template');
@@ -170,7 +174,7 @@ class SiteSettingController extends Controller
 
         $site->vhost_template = null;
         $site->save();
-        $site->webserver()->updateVHost($site, restart: false);
+        $site->webserver()->updateVHost($site);
 
         return back()->with('success', 'VHost template reset to default.');
     }

@@ -5,6 +5,7 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import { BookOpenIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -46,6 +47,8 @@ export default function Databases() {
             </a>
           </div>
         </HeaderContainer>
+
+        <SiteBanners site={page.props.site} />
 
         <Card>
           <CardHeader className="flex-row items-center justify-between gap-2">

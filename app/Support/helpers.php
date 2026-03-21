@@ -193,7 +193,7 @@ function home_path(string $user): string
     return '/home/'.$user;
 }
 
-function format_nginx_config(string $config): string
+function format_webserver_config(string $config): string
 {
     $lines = explode("\n", trim($config));
     $indent = 0;

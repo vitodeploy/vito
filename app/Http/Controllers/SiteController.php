@@ -6,6 +6,7 @@ use App\Actions\Site\CreateSite;
 use App\Actions\Site\DisableSsl;
 use App\Actions\Site\EnableSsl;
 use App\Actions\Site\GetSites;
+use App\Actions\Site\GetSiteWarnings;
 use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
 use App\Http\Resources\SiteResource;
@@ -14,6 +15,7 @@ use App\Models\Site;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -37,6 +39,8 @@ class SiteController extends Controller
             ->query()
             ->simplePaginate(config('web.pagination_size'), pageName: 'sitesPage');
 
+        $this->attachWarnings($sites);
+
         return Inertia::render('sites/index', [
             'sites' => SiteResource::collection($sites),
         ]);
@@ -52,6 +56,8 @@ class SiteController extends Controller
             ->searchableFields(['domain'])
             ->query()
             ->simplePaginate(config('web.pagination_size'), pageName: 'sitesPage');
+
+        $this->attachWarnings($sites);
 
         return Inertia::render('sites/index', [
             'sites' => SiteResource::collection($sites),
@@ -138,5 +144,13 @@ class SiteController extends Controller
         return Inertia::render('sites/logs', [
             'logs' => ServerLogResource::collection($logs),
         ]);
+    }
+
+    private function attachWarnings(AbstractPaginator $sites): void
+    {
+        $warnings = app(GetSiteWarnings::class)->forSites($sites->getCollection());
+        $sites->getCollection()->each(function (Site $site) use ($warnings) {
+            $site->warnings = $warnings[$site->id] ?? [];
+        });
     }
 }

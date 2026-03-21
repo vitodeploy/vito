@@ -7,7 +7,6 @@ use App\Actions\Site\Rollback;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
-use App\Enums\HostedDomainStatus;
 use App\Exceptions\DeploymentScriptIsEmptyException;
 use App\Exceptions\FailedToDestroyGitHook;
 use App\Exceptions\SourceControlIsNotConnected;
@@ -48,13 +47,7 @@ class ApplicationController extends Controller
         $buildScript = $site->buildScript;
         $preFlightScript = $site->preFlightScript;
 
-        $pendingDomains = $site->hostedDomains()
-            ->where('status', HostedDomainStatus::PENDING)
-            ->pluck('domain')
-            ->all();
-
         return Inertia::render('application/index', [
-            'pendingDomains' => $pendingDomains,
             'logs' => ServerLogResource::collection($site->logs()->latest()->simplePaginate(config('web.pagination_size'))),
             'deployments' => DeploymentResource::collection($site->deployments()->latest()->simplePaginate(config('web.pagination_size'))),
             'deploymentScript' => new DeploymentScriptResource($deploymentScript),

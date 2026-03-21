@@ -37,10 +37,7 @@ class UpdateLoadBalancer
             $loadBalancerServer->save();
         }
 
-        $site->webserver()->updateVHost($site, regenerate: [
-            'load-balancer-upstream',
-            'load-balancer',
-        ]);
+        $site->webserver()->updateVHost($site);
     }
 
     private function validate(Site $site, array $input): void

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Actions\Site\GetSiteWarnings;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
@@ -78,7 +79,10 @@ class HandleInertiaRequests extends Middleware
             $data['server_sites'] = $sites;
 
             if ($request->route('site')) {
-                $data['site'] = SiteResource::make($request->route('site'));
+                /** @var Site $site */
+                $site = $request->route('site');
+                $site->warnings = app(GetSiteWarnings::class)->forSite($site);
+                $data['site'] = SiteResource::make($site);
             }
         }
 

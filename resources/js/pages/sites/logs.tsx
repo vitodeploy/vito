@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { Site } from '@/types/site';
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import { Server } from '@/types/server';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
@@ -27,6 +28,8 @@ export default function ShowSite() {
         <HeaderContainer>
           <Heading title="Logs" description="Here you can see your site's logs" />
         </HeaderContainer>
+
+        <SiteBanners site={page.props.site} />
 
         <DataTable columns={columns} paginatedData={page.props.logs} searchable />
       </Container>

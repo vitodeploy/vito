@@ -29,8 +29,10 @@ export interface Site {
   force_ssl: boolean;
   ssl_enabled: boolean;
   progress: number;
+  vhost_generation_enabled: boolean;
   features: SiteFeature[];
   modern_deployment: boolean;
+  warnings: SiteWarning[];
   created_at: string;
   updated_at: string;
 
@@ -51,6 +53,11 @@ export interface SiteFeature {
     [key: string]: SiteFeatureAction;
   };
 }
+
+export type SiteWarning =
+  | { key: 'pending_domains'; count: number; domains: string[] }
+  | { key: 'vhost_generation_disabled' }
+  | { key: string; [k: string]: unknown };
 
 export interface SiteFeatureAction {
   label: string;

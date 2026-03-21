@@ -4,6 +4,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import { DataTable } from '@/components/data-table';
 import { PaginatedData } from '@/types';
 import { columns } from '@/pages/commands/components/execution-columns';
@@ -29,6 +30,8 @@ export default function Show() {
         <HeaderContainer>
           <Heading title={`Command executions`} description="Here you can see the command executions" />
         </HeaderContainer>
+
+        <SiteBanners site={page.props.site} />
 
         <DataTable columns={columns} paginatedData={executions} />
       </Container>

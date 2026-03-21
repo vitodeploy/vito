@@ -39,7 +39,9 @@ class SiteResource extends JsonResource
             'ssl_enabled' => $this->ssl_enabled,
             'progress' => $this->progress,
             'features' => $this->features(),
+            'vhost_generation_enabled' => $this->vhost_generation_enabled,
             'modern_deployment' => $this->modernDeploymentEnabled(),
+            'warnings' => $this->warnings,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

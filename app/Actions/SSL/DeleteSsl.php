@@ -28,9 +28,7 @@ class DeleteSsl
         $webserver = $service->handler();
         $webserver->removeSSL($ssl);
         $ssl->delete();
-        $ssl->site->webserver()->updateVHost($ssl->site, regenerate: [
-            'port',
-        ]);
+        $ssl->site->webserver()->updateVHost($ssl->site);
     }
 
     private function deleteServerSsl(Ssl $ssl): void

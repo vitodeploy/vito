@@ -3,7 +3,6 @@
 namespace App\Actions\Site;
 
 use App\Models\Site;
-use Illuminate\Validation\Rule;
 
 class UpdateVhostGeneration
 {

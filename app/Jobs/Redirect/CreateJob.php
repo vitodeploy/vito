@@ -30,9 +30,7 @@ class CreateJob implements ShouldQueue
             $service = $this->site->server->webserver();
             /** @var Webserver $webserver */
             $webserver = $service->handler();
-            $webserver->updateVHost($this->site, regenerate: [
-                'redirects',
-            ]);
+            $webserver->updateVHost($this->site);
             $this->redirect->status = RedirectStatus::READY;
             $this->redirect->save();
             $this->broadcastRedirectUpdate();

@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { Site } from '@/types/site';
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import { Server } from '@/types/server';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
@@ -38,6 +39,8 @@ export default function ShowSite() {
             </a>
           </div>
         </HeaderContainer>
+
+        <SiteBanners site={page.props.site} />
 
         <DataTable columns={columns} paginatedData={page.props.logs} />
       </Container>

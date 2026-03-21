@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { LoaderCircleIcon, RotateCcwIcon } from 'lucide-react';
+import { EyeIcon, LoaderCircleIcon, RotateCcwIcon } from 'lucide-react';
 import { registerCaddyLanguage, registerNginxLanguage } from '@/lib/editor';
 import { useAppearance } from '@/hooks/use-appearance';
 import { Site } from '@/types/site';
@@ -22,6 +22,9 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   const [open, setOpen] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [previewContent, setPreviewContent] = useState('');
+  const [previewing, setPreviewing] = useState(false);
   const form = useForm<{
     template: string;
   }>({
@@ -55,6 +58,24 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
       });
   };
 
+  const previewTemplate = () => {
+    setPreviewing(true);
+    axios
+      .post(route('site-settings.vhost-preview', { server: site.server_id, site: site.id }), {
+        template: form.data.template,
+      })
+      .then((response) => {
+        setPreviewContent(response.data.vhost);
+        setShowPreviewDialog(true);
+      })
+      .catch(() => {
+        // errors are handled by axios interceptor
+      })
+      .finally(() => {
+        setPreviewing(false);
+      });
+  };
+
   const query = useQuery({
     queryKey: ['site-settings.vhost-template', site.server_id, site.id],
     queryFn: async () => {
@@ -84,7 +105,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
       <SheetContent className="sm:max-w-5xl">
         <SheetHeader>
           <SheetTitle>Edit webserver template</SheetTitle>
-          <SheetDescription className="sr-only">Edit the Mustache template used to generate the nginx vhost config.</SheetDescription>
+          <SheetDescription className="sr-only">Edit the Mustache template used to generate the vhost config.</SheetDescription>
         </SheetHeader>
         <Form id="update-vhost-form" className="h-full" onSubmit={submit}>
           {query.isSuccess ? (
@@ -117,6 +138,10 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
               Reset
             </Button>
             <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={previewTemplate} disabled={previewing || query.isLoading}>
+                {previewing ? <LoaderCircleIcon className="animate-spin" /> : <EyeIcon />}
+                Preview
+              </Button>
               <Button form="update-vhost-form" disabled={form.processing || query.isLoading} onClick={submit}>
                 {(form.processing || query.isLoading) && <LoaderCircleIcon className="animate-spin" />}
                 Save
@@ -143,6 +168,32 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
             <Button variant="destructive" onClick={resetTemplate} disabled={resetting}>
               {resetting && <LoaderCircleIcon className="animate-spin" />}
               Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="h-[80vh] sm:max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Template preview</DialogTitle>
+            <DialogDescription className="sr-only">Preview of the generated vhost config from the current template.</DialogDescription>
+          </DialogHeader>
+          <div className="min-h-0 flex-1">
+            <Editor
+              defaultLanguage={site.webserver}
+              value={previewContent}
+              theme={getActualAppearance() === 'dark' ? 'vs-dark' : 'vs'}
+              className="h-full"
+              options={{
+                fontSize: 15,
+                readOnly: true,
+                domReadOnly: true,
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPreviewDialog(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -30,9 +30,7 @@ class DeleteJob implements ShouldQueue
             $service = $this->site->server->webserver();
             /** @var Webserver $webserver */
             $webserver = $service->handler();
-            $webserver->updateVHost($this->site, regenerate: [
-                'redirects',
-            ]);
+            $webserver->updateVHost($this->site);
             $redirectId = $this->redirect->id;
             $this->redirect->delete();
 

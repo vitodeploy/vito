@@ -7,6 +7,7 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { BookOpenIcon, LoaderCircleIcon, XIcon } from 'lucide-react';
+import SiteBanners from '@/components/site-banners';
 import React, { FormEvent } from 'react';
 import { LoadBalancerServer } from '@/types/load-balancer-server';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,6 +82,8 @@ export default function LoadBalancer() {
             </a>
           </div>
         </HeaderContainer>
+
+        <SiteBanners site={page.props.site} />
 
         <Card>
           <CardHeader>

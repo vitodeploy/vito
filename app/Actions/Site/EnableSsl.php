@@ -10,6 +10,6 @@ class EnableSsl
     {
         $site->ssl_enabled = true;
         $site->save();
-        $site->webserver()->updateVHost($site, restart: false);
+        $site->webserver()->updateVHost($site);
     }
 }

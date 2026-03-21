@@ -5,6 +5,7 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import { MoreVerticalIcon, TriangleAlertIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardRow, CardTitle } from '@/components/ui/card';
 import { Site, SiteFeature } from '@/types/site';
@@ -30,6 +31,8 @@ export default function SiteFeatures() {
         <HeaderContainer>
           <Heading title="Features" description="Your site has some features enabled by Vito or other plugins" />
         </HeaderContainer>
+
+        <SiteBanners site={page.props.site} />
 
         <Alert>
           <TriangleAlertIcon className="text-warning!" />

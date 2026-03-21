@@ -1,4 +1,5 @@
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import { Head, usePage } from '@inertiajs/react';
 import { Server } from '@/types/server';
 import { PaginatedData } from '@/types';
@@ -59,6 +60,8 @@ export default function Ssls() {
             </DropdownMenu>
           </div>
         </HeaderContainer>
+
+        <SiteBanners site={page.props.site} />
 
         <DataTable columns={columns} paginatedData={ssls} />
       </Container>

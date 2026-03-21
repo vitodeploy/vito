@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Site } from '@/types/site';
 import ServerLayout from '@/layouts/server/layout';
 import { Server } from '@/types/server';
@@ -6,7 +6,7 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { BookOpenIcon, LockIcon, MoreHorizontalIcon, RocketIcon, TriangleAlertIcon } from 'lucide-react';
+import { BookOpenIcon, LockIcon, MoreHorizontalIcon, RocketIcon } from 'lucide-react';
 import { PaginatedData } from '@/types';
 import { Deployment } from '@/types/deployment';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -20,12 +20,12 @@ import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-scr
 import { useRealtime, useSocketListener } from '@/hooks/use-socket-events';
 import { useCallback } from 'react';
 import { router } from '@inertiajs/react';
+import SiteBanners from '@/components/site-banners';
 
 export default function AppWithDeployment() {
   const page = usePage<{
     server: Server;
     site: Site;
-    pendingDomains: string[];
     deployments: PaginatedData<Deployment>;
     deploymentScript: DeploymentScriptType;
     buildScript?: DeploymentScriptType;
@@ -128,27 +128,7 @@ export default function AppWithDeployment() {
           </div>
         </HeaderContainer>
 
-        {page.props.pendingDomains.length > 0 && (
-          <div className="border-warning/40 bg-warning/5 mb-4 flex items-center gap-4 rounded-lg border px-4 py-3">
-            <TriangleAlertIcon className="text-warning h-5 w-5 shrink-0" />
-            <div className="min-w-0 flex-1 text-sm">
-              <p className="font-medium">
-                {page.props.pendingDomains.length} pending {page.props.pendingDomains.length === 1 ? 'domain' : 'domains'}
-              </p>
-              <p className="text-muted-foreground mt-0.5">
-                We could not confirm that <strong>{page.props.pendingDomains.join(', ')}</strong>{' '}
-                {page.props.pendingDomains.length === 1 ? 'is' : 'are'} pointing to this server. Update your DNS records to ensure{' '}
-                {page.props.pendingDomains.length === 1 ? 'the domain is pointed' : 'the domains are pointing'} to the appropriate server, or activate
-                by force via the Manage Domains page.
-              </p>
-            </div>
-            <Link href={route('hosted-domains', { server: page.props.server.id, site: page.props.site.id })}>
-              <Button variant="outline" size="sm" className="shrink-0">
-                Manage Domains
-              </Button>
-            </Link>
-          </div>
-        )}
+        <SiteBanners site={page.props.site} />
 
         <DataTable columns={columns} paginatedData={deployments} />
       </Container>

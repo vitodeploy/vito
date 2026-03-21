@@ -34,9 +34,7 @@ class CreateJob implements ShouldQueue
             $this->ssl->status = SslStatus::CREATED;
             $this->ssl->save();
             $this->broadcastSslUpdate();
-            $webserver->updateVHost($this->site->refresh(), regenerate: [
-                'port',
-            ]);
+            $webserver->updateVHost($this->site->refresh());
         });
     }
 

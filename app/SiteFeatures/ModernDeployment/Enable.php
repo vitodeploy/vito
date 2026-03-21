@@ -80,7 +80,7 @@ class Enable extends Action
 
         $this->site->ensureDeploymentScriptsExist();
 
-        $this->site->webserver()->updateVHost($this->site, regenerate: ['core']);
+        $this->site->webserver()->updateVHost($this->site);
 
         $request->session()->flash('success', 'Modern deployment enabled!');
     }

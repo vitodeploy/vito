@@ -17,7 +17,7 @@ class UpdateAliases
 
         $site->aliases = $input['aliases'] ?? [];
 
-        $site->webserver()->updateVHost($site, restart: false);
+        $site->webserver()->updateVHost($site);
 
         $site->save();
     }

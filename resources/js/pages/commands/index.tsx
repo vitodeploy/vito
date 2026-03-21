@@ -4,6 +4,7 @@ import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import { BookOpenIcon, PlusIcon } from 'lucide-react';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/commands/components/columns';
@@ -41,6 +42,8 @@ export default function Commands() {
             </CreateCommand>
           </div>
         </div>
+
+        <SiteBanners site={page.props.site} />
 
         <DataTable columns={columns} paginatedData={page.props.commands} />
       </Container>

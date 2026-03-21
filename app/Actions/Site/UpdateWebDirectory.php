@@ -25,9 +25,7 @@ class UpdateWebDirectory
 
         /** @var Webserver $webserver */
         $webserver = $service->handler();
-        $webserver->updateVHost($site, regenerate: [
-            'core',
-        ], restart: false);
+        $webserver->updateVHost($site);
 
         $site->save();
     }

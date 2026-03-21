@@ -80,7 +80,7 @@ class Nginx extends AbstractWebserver
         $this->service->server->os()->cleanup();
     }
 
-    protected function generateVhost(Site $site, ?string $block = null): string
+    protected function generateVhost(Site $site): string
     {
         return app(GenerateNginxConfig::class)->generate($site);
     }
@@ -121,7 +121,7 @@ class Nginx extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = [], bool $restart = true): void
+    public function updateVHost(Site $site, ?string $vhost = null, bool $restart = false): void
     {
         // Skip vhost generation if not enabled and no explicit vhost provided
         if (! $vhost && ! $site->vhost_generation_enabled) {
@@ -134,7 +134,7 @@ class Nginx extends AbstractWebserver
 
         $this->service->server->ssh()->write(
             '/etc/nginx/sites-available/'.$site->domain,
-            format_nginx_config($vhost),
+            $vhost,
             'root'
         );
 

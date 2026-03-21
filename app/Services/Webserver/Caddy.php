@@ -102,7 +102,7 @@ class Caddy extends AbstractWebserver
         );
     }
 
-    protected function generateVhost(Site $site, ?string $block = null): string
+    protected function generateVhost(Site $site): string
     {
         return app(GenerateCaddyConfig::class)->generate($site);
     }
@@ -110,7 +110,7 @@ class Caddy extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = [], bool $restart = true): void
+    public function updateVHost(Site $site, ?string $vhost = null, bool $restart = false): void
     {
         if (! $vhost && ! $site->vhost_generation_enabled) {
             return;
@@ -122,7 +122,7 @@ class Caddy extends AbstractWebserver
 
         $this->service->server->ssh()->write(
             '/etc/caddy/sites-available/'.$site->domain,
-            format_nginx_config($vhost),
+            $vhost,
             'root'
         );
 

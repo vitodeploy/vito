@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { Server } from '@/types/server';
 import { PaginatedData } from '@/types';
 import ServerLayout from '@/layouts/server/layout';
+import SiteBanners from '@/components/site-banners';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,8 @@ export default function CronJobIndex() {
             </CronJobForm>
           </div>
         </HeaderContainer>
+
+        {page.props.site && <SiteBanners site={page.props.site} />}
 
         <DataTable columns={columns(page.props.site, page.props.sites)} paginatedData={page.props.cronjobs} />
       </Container>
