@@ -16,6 +16,7 @@ export interface Site {
   aliases?: string[];
   web_directory: string;
   webserver: string;
+  webserver_creates_site_ssls: boolean;
   path: string;
   php_version: string;
   repository: string;

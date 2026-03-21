@@ -17,5 +17,9 @@ class UpdateVhostGeneration
 
         $site->vhost_generation_enabled = $validated['vhost_generation_enabled'];
         $site->save();
+
+        if ($site->vhost_generation_enabled) {
+            $site->webserver()->updateVHost($site);
+        }
     }
 }

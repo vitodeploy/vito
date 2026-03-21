@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('status')->default(HostedDomainStatus::CREATING->value);
             $table->string('ssl_method')->default(SslMethod::LETSENCRYPT->value);
             $table->foreignId('ssl_id')->nullable()->constrained('ssls')->nullOnDelete();
+            $table->text('error')->nullable();
             $table->timestamps();
 
             $table->unique(['site_id', 'domain']);

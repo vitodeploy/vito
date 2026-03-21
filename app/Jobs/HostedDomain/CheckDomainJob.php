@@ -23,11 +23,17 @@ class CheckDomainJob implements ShouldQueue
         $site = $this->hostedDomain->site;
         $server = $site->server;
 
-        $resolves = app(CheckDomainResolution::class)->check($this->hostedDomain, $server);
+        $result = app(CheckDomainResolution::class)->check($this->hostedDomain, $server);
 
-        if ($resolves) {
+        if ($result['resolves']) {
+            $this->hostedDomain->error = null;
+            $this->hostedDomain->save();
             app(ActivateHostedDomain::class)->activate($this->hostedDomain);
         } else {
+            $resolvedIps = $result['resolved_ips'];
+            $this->hostedDomain->error = empty($resolvedIps)
+                ? 'Unable to resolve this domain to the server'
+                : 'Domain incorrectly resolves to '.implode(', ', $resolvedIps);
             $this->hostedDomain->status = HostedDomainStatus::PENDING;
             $this->hostedDomain->save();
         }

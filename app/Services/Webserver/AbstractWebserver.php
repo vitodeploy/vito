@@ -38,5 +38,12 @@ abstract class AbstractWebserver extends AbstractService implements Webserver
         ];
     }
 
+    public function createsSiteSSLs(): bool
+    {
+        $name = static::id();
+
+        return (bool) data_get(config("service.services.{$name}.data"), 'creates_site_ssls', true);
+    }
+
     abstract protected function generateVhost(Site $site): string;
 }

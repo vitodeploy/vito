@@ -184,6 +184,23 @@ class Ssl extends AbstractModel
     }
 
     /**
+     * Check if this SSL certificate covers the given domain.
+     */
+    public function coversDomain(string $domain): bool
+    {
+        foreach ($this->getDomains() as $sslDomain) {
+            if (strtolower($sslDomain) === strtolower($domain)) {
+                return true;
+            }
+            if (static::wildcardMatches($sslDomain, $domain)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return BelongsTo<ServerLog, covariant $this>
      */
     public function log(): BelongsTo

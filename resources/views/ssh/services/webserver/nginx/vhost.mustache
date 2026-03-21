@@ -157,6 +157,7 @@ server {
     {{/is_proxy}}
     {{/redirects}}
 }
+
 {{/server_blocks}}
 
 {{#redirect_blocks}}
@@ -177,4 +178,5 @@ server {
     server_name{{#domains}} {{name}}{{/domains}};
     return 301 {{redirect_scheme}}://{{redirect_target}}$request_uri;
 }
+
 {{/redirect_blocks}}

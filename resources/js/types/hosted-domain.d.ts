@@ -9,6 +9,7 @@ export interface HostedDomain {
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
   ssl_method: 'none' | 'letsencrypt' | 'custom';
   ssl_id: number | null;
+  error: string | null;
   ssl_type: string | null;
   ssl_domains: string[] | null;
   ssl_expires_at: string | null;

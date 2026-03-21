@@ -3,13 +3,84 @@
 namespace App\Actions\HostedDomain;
 
 use App\Enums\HostedDomainStatus;
+use App\Enums\SslMethod;
+use App\Enums\SslStatus;
+use App\Enums\SslType;
+use App\Jobs\HostedDomain\SetupHostedDomainSslJob;
 use App\Models\HostedDomain;
+use App\Models\Site;
 
 class ActivateHostedDomain
 {
     public function activate(HostedDomain $hostedDomain): void
     {
+        $site = $hostedDomain->site;
+
+        match ($hostedDomain->ssl_method) {
+            SslMethod::NONE => $this->activateWithoutSsl($hostedDomain, $site),
+            SslMethod::CUSTOM => $this->activateWithCustomSsl($hostedDomain, $site),
+            SslMethod::LETSENCRYPT => $this->activateWithLetsEncrypt($hostedDomain, $site),
+        };
+    }
+
+    private function activateWithoutSsl(HostedDomain $hostedDomain, Site $site): void
+    {
+        $hostedDomain->error = null;
         $hostedDomain->status = HostedDomainStatus::ACTIVE;
         $hostedDomain->save();
+
+        $site->webserver()->updateVHost($site);
     }
+
+    private function activateWithCustomSsl(HostedDomain $hostedDomain, Site $site): void
+    {
+        if (! $hostedDomain->ssl_id) {
+            $hostedDomain->error = 'No certificate provided';
+        } elseif (! $hostedDomain->ssl->coversDomain($hostedDomain->domain)) {
+            $hostedDomain->error = 'Certificate does not support this domain';
+        } else {
+            $hostedDomain->error = null;
+        }
+
+        $hostedDomain->status = HostedDomainStatus::ACTIVE;
+        $hostedDomain->save();
+
+        $site->webserver()->updateVHost($site);
+    }
+
+    private function activateWithLetsEncrypt(HostedDomain $hostedDomain, Site $site): void
+    {
+        // Webservers that handle TLS internally (e.g. Caddy's ACME client)
+        if (! $site->webserver()->createsSiteSSLs()) {
+            $hostedDomain->error = null;
+            $hostedDomain->status = HostedDomainStatus::ACTIVE;
+            $hostedDomain->save();
+
+            $site->webserver()->updateVHost($site);
+
+            return;
+        }
+
+        // Find existing site-level LE cert
+        $ssl = $site->ssls()
+            ->where('type', SslType::LETSENCRYPT)
+            ->where('status', SslStatus::CREATED)
+            ->first();
+
+        if ($ssl && $ssl->coversDomain($hostedDomain->domain)) {
+            // Cert already covers this domain — link and activate
+            $hostedDomain->ssl_id = $ssl->id;
+            $hostedDomain->error = null;
+            $hostedDomain->status = HostedDomainStatus::ACTIVE;
+            $hostedDomain->save();
+
+            $site->webserver()->updateVHost($site);
+
+            return;
+        }
+
+        // Need to generate/regenerate SSL — dispatch async job
+        dispatch(new SetupHostedDomainSslJob($hostedDomain))->onQueue('ssh');
+    }
+
 }

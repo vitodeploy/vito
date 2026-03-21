@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property HostedDomainStatus $status
  * @property SslMethod $ssl_method
  * @property ?int $ssl_id
+ * @property ?string $error
  * @property ?Site $site
  * @property ?Ssl $ssl
  */
@@ -31,6 +32,7 @@ class HostedDomain extends AbstractModel
         'status',
         'ssl_method',
         'ssl_id',
+        'error',
     ];
 
     protected $casts = [

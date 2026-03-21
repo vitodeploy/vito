@@ -22,6 +22,10 @@ class DeleteHostedDomain
             ]);
         }
 
+        $site = $hostedDomain->site;
+
         $hostedDomain->delete();
+
+        $site->webserver()->updateVHost($site);
     }
 }

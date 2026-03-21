@@ -23,7 +23,10 @@ class DeactivateHostedDomain
             ]);
         }
 
+        $hostedDomain->error = null;
         $hostedDomain->status = HostedDomainStatus::INACTIVE;
         $hostedDomain->save();
+
+        $hostedDomain->site->webserver()->updateVHost($hostedDomain->site);
     }
 }

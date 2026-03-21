@@ -164,6 +164,8 @@ class SiteSettingController extends Controller
         $site->vhost_template = $request->input('template');
         $site->save();
 
+        $site->webserver()->updateVHost($site);
+
         return back()->with('success', 'VHost template updated successfully.');
     }
 

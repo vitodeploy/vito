@@ -40,6 +40,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Nginx::type())
             ->label('Nginx')
             ->handler(Nginx::class)
+            ->data(['creates_site_ssls' => true])
             ->configPaths([
                 [
                     'name' => 'nginx.conf',
@@ -53,6 +54,7 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Caddy::type())
             ->label('Caddy (beta)')
             ->handler(Caddy::class)
+            ->data(['creates_site_ssls' => false])
             ->register();
     }
 

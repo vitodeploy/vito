@@ -1,15 +1,15 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { CrownIcon, LoaderCircleIcon, MoreVerticalIcon, SignpostIcon, CopyIcon } from 'lucide-react';
+import { CrownIcon, LoaderCircleIcon, MoreVerticalIcon, SignpostIcon, CopyIcon, TriangleAlertIcon } from 'lucide-react';
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage, useForm } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HostedDomain } from '@/types/hosted-domain';
+import { Site } from '@/types/site';
 import EditHostedDomain from '@/pages/hosted-domains/components/edit-hosted-domain';
 import moment from 'moment';
-import { useForm } from '@inertiajs/react';
 import {
   Dialog,
   DialogClose,
@@ -128,6 +128,82 @@ function ForceActivateHostedDomain({ hostedDomain }: { hostedDomain: HostedDomai
   );
 }
 
+function ErrorIndicator({ error }: { error: string | null }) {
+  if (!error) return null;
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="bg-destructive/15 text-destructive border-destructive/40 flex cursor-default items-center rounded-md border px-1.5 py-1">
+            <TriangleAlertIcon className="h-4 w-4" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>{error}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function CertificateCell({ hostedDomain }: { hostedDomain: HostedDomain }) {
+  const { ssl_method, ssl_id } = hostedDomain;
+  const { site } = usePage<{ site: Site }>().props;
+  const createsSiteSSLs = site.webserver_creates_site_ssls;
+  const webserverName = site.webserver.charAt(0).toUpperCase() + site.webserver.slice(1);
+
+  // Webserver-managed SSL (e.g. Caddy auto-TLS)
+  if (ssl_method === 'letsencrypt' && !createsSiteSSLs) {
+    return <Badge variant="outline">{webserverName} Managed SSL</Badge>;
+  }
+
+  // Site-managed LE certificate with linked SSL
+  if (ssl_method === 'letsencrypt' && createsSiteSSLs && ssl_id) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="cursor-default">Site Certificate</Badge>
+          </TooltipTrigger>
+          <TooltipContent>ID: {ssl_id}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  if (!ssl_id) {
+    return <span>-</span>;
+  }
+
+  const sslDomains = hostedDomain.ssl_domains ?? [];
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      <Badge variant="info">{(hostedDomain.ssl_type ?? '').toUpperCase()}</Badge>
+      <Badge variant="info">#{ssl_id}</Badge>
+      <TooltipProvider>
+        {sslDomains.map((domain) => {
+          const truncated = domain.length > 20;
+          const label = truncated ? domain.slice(0, 20) + '...' : domain;
+          return truncated ? (
+            <Tooltip key={domain}>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="cursor-default">
+                  {label}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>{domain}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Badge key={domain} variant="outline">
+              {label}
+            </Badge>
+          );
+        })}
+      </TooltipProvider>
+    </div>
+  );
+}
+
 export const columns: ColumnDef<HostedDomain>[] = [
   {
     accessorKey: 'domain',
@@ -187,40 +263,7 @@ export const columns: ColumnDef<HostedDomain>[] = [
     header: 'Certificate',
     enableColumnFilter: false,
     enableSorting: false,
-    cell: ({ row }) => {
-      if (!row.original.ssl_id) {
-        return <span>-</span>;
-      }
-
-      const sslDomains = row.original.ssl_domains ?? [];
-
-      return (
-        <div className="flex flex-wrap gap-1">
-          <Badge variant="info">{(row.original.ssl_type ?? '').toUpperCase()}</Badge>
-          <Badge variant="info">#{row.original.ssl_id}</Badge>
-          <TooltipProvider>
-            {sslDomains.map((domain) => {
-              const truncated = domain.length > 20;
-              const label = truncated ? domain.slice(0, 20) + '...' : domain;
-              return truncated ? (
-                <Tooltip key={domain}>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="cursor-default">
-                      {label}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>{domain}</TooltipContent>
-                </Tooltip>
-              ) : (
-                <Badge key={domain} variant="outline">
-                  {label}
-                </Badge>
-              );
-            })}
-          </TooltipProvider>
-        </div>
-      );
-    },
+    cell: ({ row }) => <CertificateCell hostedDomain={row.original} />,
   },
   {
     id: 'expires_at',
@@ -269,7 +312,8 @@ export const columns: ColumnDef<HostedDomain>[] = [
 
       if (isProcessing) {
         return (
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-2">
+            <ErrorIndicator error={row.original.error} />
             <div className="flex h-8 w-8 items-center justify-center">
               <LoaderCircleIcon className="text-muted-foreground h-4 w-4 animate-spin" />
             </div>
@@ -278,7 +322,8 @@ export const columns: ColumnDef<HostedDomain>[] = [
       }
 
       return (
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-2">
+          <ErrorIndicator error={row.original.error} />
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">

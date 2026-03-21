@@ -25,6 +25,7 @@ class HostedDomainResource extends JsonResource
             'status_color' => $this->status->getColor(),
             'ssl_method' => $this->ssl_method->getText(),
             'ssl_id' => $this->ssl_id,
+            'error' => $this->error,
             'ssl_type' => $this->ssl?->type,
             'ssl_domains' => $this->ssl?->domains,
             'ssl_expires_at' => $this->ssl?->expires_at,

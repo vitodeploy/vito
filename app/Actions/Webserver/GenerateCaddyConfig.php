@@ -16,7 +16,7 @@ class GenerateCaddyConfig extends AbstractGenerateConfig
     protected function buildServerBlockKeys(bool $hasSsl, string $sslCertPath, string $sslKeyPath, Site $site): array
     {
         return [
-            'http_only' => ! $hasSsl,
+            'http_only' => ! $hasSsl && ! $site->ssl_enabled,
             'has_tls' => $hasSsl,
             'ssl_certificate_path' => $sslCertPath,
             'ssl_certificate_key_path' => $sslKeyPath,
@@ -88,7 +88,7 @@ class GenerateCaddyConfig extends AbstractGenerateConfig
     {
         $hasSsl = $hd->ssl_id && $hd->ssl;
         $redirectScheme = $site->ssl_enabled ? 'https' : 'http';
-        $httpOnly = ! $hasSsl;
+        $httpOnly = ! $hasSsl && ! $site->ssl_enabled;
 
         return [
             'http_only' => $httpOnly,

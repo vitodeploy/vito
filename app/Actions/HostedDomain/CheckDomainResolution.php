@@ -12,8 +12,10 @@ class CheckDomainResolution
      *
      * Queries authoritative nameservers directly to avoid cached/stale results.
      * Falls back to a public resolver (1.1.1.1) if authoritative NS lookup fails.
+     *
+     * @return array{resolves: bool, resolved_ips: array<int, string>}
      */
-    public function check(HostedDomain $hostedDomain, Server $server): bool
+    public function check(HostedDomain $hostedDomain, Server $server): array
     {
         $serverIp = $server->ip;
 
@@ -26,9 +28,13 @@ class CheckDomainResolution
         );
 
         $resolvedIps = array_filter(
-            array_map('trim', explode("\n", trim($output)))
+            array_map('trim', explode("\n", trim($output))),
+            fn (string $ip) => filter_var($ip, FILTER_VALIDATE_IP) !== false
         );
 
-        return in_array($serverIp, $resolvedIps, true);
+        return [
+            'resolves' => in_array($serverIp, $resolvedIps, true),
+            'resolved_ips' => array_values($resolvedIps),
+        ];
     }
 }

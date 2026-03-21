@@ -30,6 +30,8 @@ class UpdateHostedDomain
 
         $isPrimary = $hostedDomain->type === HostedDomainType::PRIMARY;
         $domainChanged = ! $isPrimary && $hostedDomain->domain !== $input['domain'];
+        $sslMethodChangedToLE = SslMethod::from($input['ssl_mode']) === SslMethod::LETSENCRYPT
+            && $hostedDomain->ssl_method !== SslMethod::LETSENCRYPT;
 
         if (! $isPrimary) {
             $hostedDomain->domain = $input['domain'];
@@ -38,15 +40,21 @@ class UpdateHostedDomain
 
         $hostedDomain->ssl_method = SslMethod::from($input['ssl_mode']);
         $hostedDomain->ssl_id = $input['ssl_mode'] === SslMethod::CUSTOM->value ? (int) $input['ssl_id'] : null;
+        $hostedDomain->error = null;
 
-        if ($domainChanged && in_array($hostedDomain->status, [HostedDomainStatus::ACTIVE, HostedDomainStatus::PENDING])) {
+        $needsRecheck = ($domainChanged || $sslMethodChangedToLE)
+            && in_array($hostedDomain->status, [HostedDomainStatus::ACTIVE, HostedDomainStatus::PENDING]);
+
+        if ($needsRecheck) {
             $hostedDomain->status = HostedDomainStatus::UPDATING;
         }
 
         $hostedDomain->save();
 
-        if ($domainChanged && $hostedDomain->status === HostedDomainStatus::UPDATING) {
+        if ($needsRecheck) {
             dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
+        } else {
+            $hostedDomain->site->webserver()->updateVHost($hostedDomain->site);
         }
 
         return $hostedDomain->refresh();
