@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Site;
+namespace App\Actions\Webserver;
 
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;

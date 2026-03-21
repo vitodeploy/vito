@@ -1,0 +1,74 @@
+{{#server_blocks}}
+{{#domains}}{{address}} {{/domains}}{
+    {{#has_tls}}
+    tls {{ssl_certificate_path}} {{ssl_certificate_key_path}}
+    {{/has_tls}}
+
+    import access_log {{primary_domain}}
+    import compression
+    import security_headers
+
+    {{#is_php}}
+    root * {{root}}
+    try_files {path} {path}/ /index.php?{query}
+    php_fastcgi {{php_socket}}
+    file_server
+    {{/is_php}}
+
+    {{#is_octane}}
+    root * {{root}}
+    @notStatic {
+        not file {path}
+    }
+    reverse_proxy @notStatic 127.0.0.1:{{octane_port}}
+    file_server
+    {{/is_octane}}
+
+    {{#is_reverse_proxy}}
+    reverse_proxy localhost:{{port}}
+    {{/is_reverse_proxy}}
+
+    {{#is_load_balancer}}
+    reverse_proxy {
+        {{#lb_servers}}
+        to {{address}}
+        {{/lb_servers}}
+        {{^lb_servers}}
+        to 127.0.0.1
+        {{/lb_servers}}
+        lb_policy {{lb_policy}}
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    {{/is_load_balancer}}
+
+    {{#redirects}}
+    {{#is_proxy}}
+    handle_path {{from}}/* {
+        reverse_proxy {{to}} {
+            header_up Host {http.reverse_proxy.upstream.hostport}
+            header_up X-Real-IP {http.request.remote}
+            header_up X-Forwarded-For {http.request.remote}
+            header_up X-Forwarded-Proto {http.request.scheme}
+        }
+    }
+    {{/is_proxy}}
+    {{^is_proxy}}
+    @exactPath{{id}} path {{from}}
+    redir @exactPath{{id}} {{to}} {{mode}}
+    {{/is_proxy}}
+    {{/redirects}}
+}
+{{/server_blocks}}
+
+{{#redirect_blocks}}
+{{#domains}}{{address}} {{/domains}}{
+    {{#has_tls}}
+    tls {{ssl_certificate_path}} {{ssl_certificate_key_path}}
+    {{/has_tls}}
+
+    redir {{redirect_scheme}}://{{redirect_target}}{uri} permanent
+}
+{{/redirect_blocks}}

@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Webserver\GenerateCaddyConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
@@ -101,22 +102,27 @@ class Caddy extends AbstractWebserver
         );
     }
 
+    protected function generateVhost(Site $site, ?string $block = null): string
+    {
+        return app(GenerateCaddyConfig::class)->generate($site);
+    }
+
     /**
      * @throws SSHError
      */
     public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = [], bool $restart = true): void
     {
-        if (! $vhost) {
-            $vhost = $this->getVHost($site);
+        if (! $vhost && ! $site->vhost_generation_enabled) {
+            return;
         }
 
-        if (! $vhost || ! preg_match('/#\[main]/', $vhost)) {
+        if (! $vhost) {
             $vhost = $this->generateVhost($site);
         }
 
         $this->service->server->ssh()->write(
             '/etc/caddy/sites-available/'.$site->domain,
-            format_nginx_config($this->getUpdatedVHost($site, $vhost, $replace, $regenerate, $append)),
+            format_nginx_config($vhost),
             'root'
         );
 

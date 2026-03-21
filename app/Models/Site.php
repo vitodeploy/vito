@@ -45,6 +45,7 @@ use RuntimeException;
  * @property bool $force_ssl
  * @property bool $ssl_enabled
  * @property ?string $vhost_template
+ * @property bool $vhost_generation_enabled
  * @property Server $server
  * @property Collection<int, ServerLog> $logs
  * @property Collection<int, Deployment> $deployments
@@ -93,6 +94,7 @@ class Site extends AbstractModel
         'force_ssl',
         'ssl_enabled',
         'vhost_template',
+        'vhost_generation_enabled',
     ];
 
     protected $casts = [
@@ -105,6 +107,7 @@ class Site extends AbstractModel
         'source_control_id' => 'integer',
         'force_ssl' => 'boolean',
         'ssl_enabled' => 'boolean',
+        'vhost_generation_enabled' => 'boolean',
         'status' => SiteStatus::class,
     ];
 

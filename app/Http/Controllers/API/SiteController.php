@@ -7,6 +7,7 @@ use App\Actions\Site\Deploy;
 use App\Actions\Site\DisableSsl;
 use App\Actions\Site\EnableSsl;
 use App\Actions\Site\UpdateAliases;
+use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
@@ -208,6 +209,18 @@ class SiteController extends Controller
         $this->validateRoute($project, $server, $site);
 
         app(DisableSsl::class)->disable($site);
+
+        return new SiteResource($site);
+    }
+
+    #[Put('{site}/vhost-generation', name: 'api.projects.servers.sites.vhost-generation', middleware: 'ability:write')]
+    public function updateVhostGeneration(Request $request, Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        app(UpdateVhostGeneration::class)->update($site, $request->all());
 
         return new SiteResource($site);
     }

@@ -2,7 +2,7 @@
 
 namespace App\Services\Webserver;
 
-use App\Actions\Site\GenerateNginxConfig;
+use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
@@ -123,6 +123,11 @@ class Nginx extends AbstractWebserver
      */
     public function updateVHost(Site $site, ?string $vhost = null, array $replace = [], array $regenerate = [], array $append = [], bool $restart = true): void
     {
+        // Skip vhost generation if not enabled and no explicit vhost provided
+        if (! $vhost && ! $site->vhost_generation_enabled) {
+            return;
+        }
+
         if (! $vhost) {
             $vhost = $this->generateVhost($site);
         }

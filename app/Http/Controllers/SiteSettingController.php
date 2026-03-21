@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\DeleteSite;
-use App\Actions\Site\GenerateNginxConfig;
 use App\Actions\Site\UpdateAliases;
+use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
 use App\Actions\Site\UpdateWebDirectory;
+use App\Actions\Webserver\GenerateCaddyConfig;
+use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Server;
@@ -116,7 +118,7 @@ class SiteSettingController extends Controller
         $this->authorize('update', [$site, $server]);
 
         return response()->json([
-            'vhost' => app(GenerateNginxConfig::class)->generate($site),
+            'vhost' => $this->getVhostGenerator($site)->generate($site),
         ]);
     }
 
@@ -139,7 +141,7 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        $generator = app(GenerateNginxConfig::class);
+        $generator = $this->getVhostGenerator($site);
 
         return response()->json([
             'template' => $site->vhost_template ?? $generator->defaultTemplate(),
@@ -171,6 +173,23 @@ class SiteSettingController extends Controller
         $site->webserver()->updateVHost($site, restart: false);
 
         return back()->with('success', 'VHost template reset to default.');
+    }
+
+    #[Patch('/vhost-generation', name: 'site-settings.update-vhost-generation')]
+    public function updateVhostGeneration(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(UpdateVhostGeneration::class)->update($site, $request->input());
+
+        return back()->with('success', 'VHost generation setting updated successfully.');
+    }
+
+    private function getVhostGenerator(Site $site): GenerateNginxConfig|GenerateCaddyConfig
+    {
+        return $site->webserver()::id() === 'caddy'
+            ? app(GenerateCaddyConfig::class)
+            : app(GenerateNginxConfig::class);
     }
 
     /**
