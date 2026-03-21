@@ -39,9 +39,6 @@ class CreateSSL
             'is_active' => ! $site->activeSsl,
         ]);
         $ssl->domains = [$site->domain];
-        if (isset($input['aliases']) && $input['aliases']) {
-            $ssl->domains = array_merge($ssl->domains, $site->aliases);
-        }
         $ssl->log_id = ServerLog::log($site->server, 'create-ssl', '', $site)->id;
         $ssl->save();
 

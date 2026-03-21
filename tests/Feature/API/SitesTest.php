@@ -72,7 +72,6 @@ class SitesTest extends TestCase
             ->assertSuccessful()
             ->assertJsonFragment([
                 'domain' => $inputs['domain'],
-                'aliases' => $inputs['aliases'] ?? [],
                 'user' => $inputs['user'],
                 'path' => '/home/'.$inputs['user'].'/'.$inputs['domain'],
             ]);
@@ -135,30 +134,6 @@ class SitesTest extends TestCase
         ]))
             ->assertSuccessful()
             ->assertNoContent();
-    }
-
-    public function test_update_aliases(): void
-    {
-        SSH::fake();
-
-        Sanctum::actingAs($this->user, ['read', 'write']);
-
-        /** @var Site $site */
-        $site = Site::factory()->create([
-            'server_id' => $this->server->id,
-        ]);
-
-        $this->json('PUT', route('api.projects.servers.sites.aliases', [
-            'project' => $this->server->project,
-            'server' => $this->server,
-            'site' => $site,
-        ]), [
-            'aliases' => ['example.com', 'example.net'],
-        ])
-            ->assertSuccessful()
-            ->assertJsonFragment([
-                'aliases' => ['example.com', 'example.net'],
-            ]);
     }
 
     public function test_update_web_directory(): void

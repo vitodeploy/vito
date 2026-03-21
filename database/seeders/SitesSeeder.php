@@ -33,7 +33,6 @@ class SitesSeeder extends Seeder
                 'source_control_id' => $sourceControls->random()->id,
                 'type' => Laravel::id(),
                 'path' => '/home/vito/'.$server->project->name.'.com',
-                'aliases' => ['www.'.$server->project->name.'.com'],
             ]);
             Worker::factory()->create([
                 'server_id' => $server->id,

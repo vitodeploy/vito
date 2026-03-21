@@ -22,7 +22,6 @@ class SiteResource extends JsonResource
             'type' => $this->type,
             'type_data' => $this->type_data,
             'domain' => $this->domain,
-            'aliases' => $this->aliases,
             'web_directory' => $this->web_directory,
             'webserver' => $this->webserver()->id(),
             'webserver_creates_site_ssls' => $this->webserver()->createsSiteSSLs(),

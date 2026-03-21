@@ -61,31 +61,6 @@ class SslTest extends TestCase
         ]);
     }
 
-    public function test_letsencrypt_ssl_with_aliases(): void
-    {
-        SSH::fake('Successfully received certificate');
-
-        $this->actingAs($this->user);
-
-        $this->post(route('ssls.store', [
-            'server' => $this->server->id,
-            'site' => $this->site->id,
-        ]), [
-            'type' => SslType::LETSENCRYPT->value,
-            'email' => 'ssl@example.com',
-            'aliases' => true,
-        ])
-            ->assertSessionDoesntHaveErrors();
-
-        $this->assertDatabaseHas('ssls', [
-            'site_id' => $this->site->id,
-            'type' => SslType::LETSENCRYPT,
-            'status' => SslStatus::CREATED,
-            'domains' => $this->castAsJson(array_merge([$this->site->domain], $this->site->aliases)),
-            'email' => 'ssl@example.com',
-        ]);
-    }
-
     public function test_custom_ssl(): void
     {
         SSH::fake('Successfully received certificate');

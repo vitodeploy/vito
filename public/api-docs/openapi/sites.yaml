@@ -48,7 +48,6 @@ paths:
                     type: 'laravel'
                     type_data: {}
                     domain: 'example.com'
-                    aliases: ['www.example.com']
                     web_directory: 'public'
                     webserver: 'nginx'
                     path: '/home/www-data/example.com'
@@ -139,13 +138,6 @@ paths:
                   format: hostname
                   description: Site domain
                   example: 'example.com'
-                aliases:
-                  type: array
-                  items:
-                    type: string
-                    format: hostname
-                  description: Domain aliases
-                  example: ['www.example.com', 'app.example.com']
                 user:
                   type: string
                   pattern: '^[a-z_][a-z0-9_-]*[a-z0-9]$'
@@ -169,7 +161,6 @@ paths:
             example:
               type: 'laravel'
               domain: 'example.com'
-              aliases: ['www.example.com']
               user: 'www-data'
               repository: 'https://github.com/user/repo.git'
               branch: 'main'
@@ -411,86 +402,6 @@ paths:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
               example:
                 message: 'Deployment script is empty'
-
-  /api/projects/{project}/servers/{server}/sites/{site}/aliases:
-    put:
-      summary: Update site aliases
-      description: Update site domain aliases
-      tags:
-        - Sites
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: project
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: integer
-            example: 1
-        - name: server
-          in: path
-          required: true
-          description: Server ID
-          schema:
-            type: integer
-            example: 1
-        - name: site
-          in: path
-          required: true
-          description: Site ID
-          schema:
-            type: integer
-            example: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - aliases
-              properties:
-                aliases:
-                  type: array
-                  items:
-                    type: string
-                    format: hostname
-                  description: Domain aliases
-                  example: ['www.example.com', 'app.example.com']
-            example:
-              aliases: ['www.example.com', 'app.example.com']
-      responses:
-        '200':
-          description: Aliases updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/Site.yaml'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
-        '404':
-          description: Site not found
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
-        '422':
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
   /api/projects/{project}/servers/{server}/sites/{site}/web-directory:
     put:

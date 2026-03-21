@@ -23,11 +23,6 @@ properties:
   domain:
     type: string
     example: 'example.com'
-  aliases:
-    type: array
-    items:
-      type: string
-    example: ['www.example.com', 'app.example.com']
   web_directory:
     type: string
     example: 'public'

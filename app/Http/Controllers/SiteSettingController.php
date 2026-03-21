@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\DeleteSite;
-use App\Actions\Site\UpdateAliases;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
@@ -61,19 +60,6 @@ class SiteSettingController extends Controller
         app(UpdateSourceControl::class)->update($site, $request->input());
 
         return back()->with('success', 'Source control updated successfully.');
-    }
-
-    /**
-     * @throws SSHError
-     */
-    #[Patch('/aliases', name: 'site-settings.update-aliases')]
-    public function updateAliases(Request $request, Server $server, Site $site): RedirectResponse
-    {
-        $this->authorize('update', [$site, $server]);
-
-        app(UpdateAliases::class)->update($site, $request->input());
-
-        return back()->with('success', 'Aliases updated successfully.');
     }
 
     /**

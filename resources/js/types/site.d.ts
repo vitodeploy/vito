@@ -13,7 +13,6 @@ export interface Site {
     [key: string]: unknown;
   };
   domain: string;
-  aliases?: string[];
   web_directory: string;
   webserver: string;
   webserver_creates_site_ssls: boolean;

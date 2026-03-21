@@ -17,7 +17,6 @@ import ServerSelect from '@/pages/servers/components/server-select';
 import ServiceVersionSelect from '@/pages/services/components/service-version-select';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
-import { TagsInput } from '@/components/ui/tags-input';
 import DatabaseSelect from '@/pages/databases/components/database-select';
 import DatabaseUserSelect from '@/pages/database-users/components/database-user-select';
 import SelectRepo from '@/pages/source-controls/components/select-repo';
@@ -27,7 +26,6 @@ type CreateSiteForm = {
   server: string;
   type: string;
   domain: string;
-  aliases: string[];
   php_version: string;
   source_control: string;
   repository: string;
@@ -78,7 +76,6 @@ export default function CreateSite({
     server: server?.id.toString() || '',
     type: 'laravel',
     domain: '',
-    aliases: [],
     php_version: '',
     source_control: '',
     repository: '',
@@ -283,24 +280,6 @@ export default function CreateSite({
                     placeholder="vitodeploy.com"
                   />
                   <InputError message={form.errors.domain} />
-                </FormField>
-
-                <FormField>
-                  <Label htmlFor="aliases">Aliases</Label>
-                  <TagsInput
-                    id="aliases"
-                    type="text"
-                    value={form.data.aliases}
-                    placeholder="Add aliases"
-                    onValueChange={(value) => form.setData('aliases', value)}
-                  />
-                  <p className="text-muted-foreground text-xs">Press enter or comma to add an alias and press backspace to remove the last alias.</p>
-                  <InputError message={form.errors.aliases} />
-                  {Object.keys(form.errors)
-                    .filter((key) => key.startsWith('aliases.'))
-                    .map((key) => (
-                      <InputError key={key} message={form.errors[key as keyof typeof form.errors] as string} />
-                    ))}
                 </FormField>
 
                 <FormField>

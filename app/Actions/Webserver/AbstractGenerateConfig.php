@@ -183,11 +183,7 @@ abstract class AbstractGenerateConfig
         $primaryDomain = $site->domain;
         $data = $this->buildCommonData($site, $primaryDomain);
 
-        $allDomains = collect([['name' => $site->domain]]);
-        foreach ($site->aliases ?? [] as $alias) {
-            $allDomains->push(['name' => $alias]);
-        }
-        $domainNames = $allDomains->all();
+        $domainNames = [['name' => $site->domain]];
 
         $activeSsl = $site->activeSsl;
         $serverBlocks = [];

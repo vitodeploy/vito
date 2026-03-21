@@ -47,7 +47,6 @@ class CreateSiteActionTest extends TestCase
             'server_id' => $otherServer->id,
             'type' => 'php-blank',
             'domain' => 'cross-project.example.com',
-            'aliases' => [],
             'php_version' => '8.2',
             'web_directory' => 'public',
         ]);
@@ -68,7 +67,6 @@ class CreateSiteActionTest extends TestCase
             'server_id' => $this->server->id,
             'type' => 'php-blank',
             'domain' => 'my-site.example.com',
-            'aliases' => [],
             'user' => 'mysiteuser',
             'php_version' => '8.2',
             'web_directory' => 'public',

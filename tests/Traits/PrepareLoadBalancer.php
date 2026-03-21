@@ -29,7 +29,6 @@ trait PrepareLoadBalancer
             ]);
             Site::factory()->create([
                 'domain' => 'vito.test',
-                'aliases' => ['www.vito.test'],
                 'server_id' => $server->id,
                 'type' => PHPBlank::id(),
                 'path' => '/home/vito/vito.test',

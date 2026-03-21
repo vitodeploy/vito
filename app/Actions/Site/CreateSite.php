@@ -39,7 +39,6 @@ class CreateSite
                 'server_id' => $server->id,
                 'type' => $input['type'],
                 'domain' => $input['domain'],
-                'aliases' => $input['aliases'] ?? [],
                 'user' => $user,
                 'path' => '/home/'.$user.'/'.$input['domain'],
                 'status' => SiteStatus::INSTALLING,
@@ -90,7 +89,7 @@ class CreateSite
             ]);
 
             $aliasDomains = [];
-            foreach ($site->aliases ?? [] as $alias) {
+            foreach ($input['aliases'] ?? [] as $alias) {
                 $aliasDomains[] = $site->hostedDomains()->create([
                     'domain' => $alias,
                     'type' => HostedDomainType::ALIAS,
