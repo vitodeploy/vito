@@ -11,6 +11,7 @@ import { SSL } from '@/types/ssl';
 import { Domain } from '@/types/domain';
 import { useRealtime } from '@/hooks/use-socket-events';
 import { Button } from '@/components/ui/button';
+import { BookOpenIcon } from 'lucide-react';
 import CreateServerSsl from '@/pages/server-ssls/components/create-server-ssl';
 
 export default function ServerSsls() {
@@ -28,11 +29,14 @@ export default function ServerSsls() {
 
       <Container className="max-w-5xl">
         <HeaderContainer>
-          <Heading
-            title="SSL"
-            description="Manage manually created and wildcard certificates. For advanced users only. If you just need standard SSL, enable SSL/HTTPS on your site instead."
-          />
+          <Heading title="SSL" description="Global Server level SSL management for Custom or Wildcard certificates" />
           <div className="flex items-center gap-2">
+            <a href="https://vitodeploy.com/docs/servers/ssl" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
+              </Button>
+            </a>
             <CreateServerSsl server={page.props.server} domains={page.props.domains}>
               <Button>Add</Button>
             </CreateServerSsl>

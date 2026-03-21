@@ -101,6 +101,11 @@ abstract class AbstractGenerateConfig
             return $site->vhost_template;
         }
 
+        $siteTypeTemplate = $site->type()->vhostTemplate($site->server->webserver()->name);
+        if ($siteTypeTemplate !== null) {
+            return $siteTypeTemplate;
+        }
+
         return $this->defaultTemplate();
     }
 
@@ -213,29 +218,25 @@ abstract class AbstractGenerateConfig
      */
     protected function buildCommonData(Site $site, string $primaryDomain): array
     {
-        $siteType = $site->type;
-        $isPhp = in_array($siteType, ['php', 'php-blank', 'laravel', 'wordpress', 'phpmyadmin']);
-        $isReverseProxy = in_array($siteType, ['nodejs', 'mise_nodejs', 'mise_bun']);
-        $isLoadBalancer = $siteType === 'load-balancer';
+        $siteTypeData = $site->type()->vhostData();
         $isOctane = (bool) data_get($site->type_data, 'octane', false);
+        $isPhp = ($siteTypeData['is_php'] ?? false) && ! $isOctane;
 
-        $phpSocket = $isPhp ? $this->buildPhpSocket($site) : '';
-
-        $data = [
+        return [
+            ...$siteTypeData,
+            ...$this->buildLoadBalancerData($site),
             'primary_domain' => $primaryDomain,
             'root' => $site->getWebDirectoryPath(),
-            'is_php' => $isPhp && ! $isOctane,
-            'is_reverse_proxy' => $isReverseProxy,
-            'is_load_balancer' => $isLoadBalancer,
+            'is_php' => $isPhp,
+            'is_reverse_proxy' => $siteTypeData['is_reverse_proxy'] ?? false,
+            'is_load_balancer' => $siteTypeData['is_load_balancer'] ?? false,
             'is_octane' => $isOctane,
             'octane_port' => data_get($site->type_data, 'octane_port', 8000),
-            'php_socket' => $phpSocket,
+            'php_socket' => $isPhp ? $this->buildPhpSocket($site) : '',
             'port' => $site->port,
             'redirects' => $this->buildRedirects($site),
-            ...$this->buildLoadBalancerData($site),
+            'type_data' => $site->type_data ?? [],
         ];
-
-        return $data;
     }
 
     /**

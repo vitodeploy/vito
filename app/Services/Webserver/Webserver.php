@@ -16,8 +16,6 @@ interface Webserver extends ServiceInterface
 
     public function deleteSite(Site $site): void;
 
-    public function changePHPVersion(Site $site, string $version): void;
-
     public function setupSSL(Ssl $ssl): void;
 
     public function removeSSL(Ssl $ssl): void;

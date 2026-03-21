@@ -166,22 +166,6 @@ class Caddy extends AbstractWebserver
     /**
      * @throws SSHError
      */
-    public function changePHPVersion(Site $site, string $version): void
-    {
-        $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.caddy.change-php-version', [
-                'domain' => $site->domain,
-                'oldVersion' => $site->php_version,
-                'newVersion' => $version,
-            ]),
-            'change-php-version',
-            $site->id
-        );
-    }
-
-    /**
-     * @throws SSHError
-     */
     public function setupSSL(Ssl $ssl): void
     {
         if ($ssl->type == 'custom') {

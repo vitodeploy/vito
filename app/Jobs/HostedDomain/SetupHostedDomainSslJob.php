@@ -36,7 +36,6 @@ class SetupHostedDomainSslJob implements ShouldQueue
         $site = $this->hostedDomain->site;
 
         $this->run("site-ssl-{$site->id}", function () use ($site): void {
-            // Race condition guard: another job may have already set up SSL for this domain
             $this->hostedDomain->refresh();
             if ($this->hostedDomain->ssl_id) {
                 $ssl = $this->hostedDomain->ssl;
@@ -53,7 +52,6 @@ class SetupHostedDomainSslJob implements ShouldQueue
             /** @var Webserver $webserver */
             $webserver = $service->handler();
 
-            // Collect all LE domains for this site
             $leDomains = $site->hostedDomains()
                 ->where('ssl_method', SslMethod::LETSENCRYPT)
                 ->where('status', HostedDomainStatus::ACTIVE)
@@ -63,7 +61,6 @@ class SetupHostedDomainSslJob implements ShouldQueue
                 ->values()
                 ->toArray();
 
-            // Find or create the site-level LE cert
             $ssl = $site->ssls()->where('type', SslType::LETSENCRYPT)->first();
 
             if ($ssl) {
@@ -84,10 +81,8 @@ class SetupHostedDomainSslJob implements ShouldQueue
                 $ssl->save();
             }
 
-            // Run certbot (setupSSL calls validateSetup internally, throws SSLCreationException on failure)
             $webserver->setupSSL($ssl);
 
-            // Read the generated certificate from the server and verify
             $this->readAndVerifyCertificate($site, $ssl, $leDomains);
         });
     }
@@ -121,13 +116,11 @@ class SetupHostedDomainSslJob implements ShouldQueue
         $parsed = CertificateParser::parse($certificate);
         $certDomains = array_map('strtolower', $parsed['domains']);
 
-        // Update SSL record with actual cert data
         $ssl->domains = $parsed['domains'];
         $ssl->expires_at = $parsed['expires_at'];
         $ssl->status = SslStatus::CREATED;
         $ssl->save();
 
-        // Link SSL to HostedDomains and verify coverage
         $leHostedDomains = $site->hostedDomains()
             ->where('ssl_method', SslMethod::LETSENCRYPT)
             ->whereIn('domain', $leDomains)
@@ -147,7 +140,6 @@ class SetupHostedDomainSslJob implements ShouldQueue
             $this->broadcastUpdateFor($hd);
         }
 
-        // Activate the triggering domain only if the cert covers it
         $this->hostedDomain->refresh();
         if ($this->domainInList($this->hostedDomain->domain, $certDomains)) {
             app(ActivateHostedDomain::class)->activate($this->hostedDomain);
@@ -173,7 +165,6 @@ class SetupHostedDomainSslJob implements ShouldQueue
 
     private function resolveEmail(Site $site): string
     {
-        // Try existing LE cert on site
         $existingSsl = $site->ssls()
             ->where('type', SslType::LETSENCRYPT)
             ->whereNotNull('email')
@@ -183,7 +174,6 @@ class SetupHostedDomainSslJob implements ShouldQueue
             return $existingSsl->email;
         }
 
-        // Fallback to project owner email
         /** @var \App\Models\UserProject|null $userProject */
         $userProject = $site->server->project->users()->with('user')->first();
         if ($userProject?->user?->email) {

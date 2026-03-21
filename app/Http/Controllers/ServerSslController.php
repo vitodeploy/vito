@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Actions\SSL\ActivateServerSsl;
 use App\Actions\SSL\CreateServerSsl;
-use App\Actions\SSL\DeactivateServerSsl;
 use App\Actions\SSL\DeleteSsl;
 use App\Enums\SslStatus;
 use App\Http\Resources\SslResource;
@@ -31,7 +30,7 @@ class ServerSslController extends Controller
     #[Get('/', name: 'server-ssls')]
     public function index(Server $server): Response
     {
-        $this->authorize('viewAnyServer', [Ssl::class, $server]);
+        $this->authorize('viewAny', [Ssl::class, $server]);
 
         $domains = Domain::query()
             ->where('project_id', $server->project_id)
@@ -49,7 +48,7 @@ class ServerSslController extends Controller
     #[Post('/', name: 'server-ssls.store')]
     public function store(Request $request, Server $server): RedirectResponse
     {
-        $this->authorize('createServer', [Ssl::class, $server]);
+        $this->authorize('create', [Ssl::class, $server]);
 
         $ssl = app(CreateServerSsl::class)->create($server, $request->all());
 
@@ -66,28 +65,17 @@ class ServerSslController extends Controller
     #[Post('/{ssl}/activate', name: 'server-ssls.activate')]
     public function activate(Request $request, Server $server, Ssl $ssl): RedirectResponse
     {
-        $this->authorize('activateServer', [$ssl, $server]);
+        $this->authorize('activate', [$ssl, $server]);
 
         app(ActivateServerSsl::class)->activate($server, $ssl, $request->all());
 
         return back()->with('info', 'SSL certificate is being activated.');
     }
 
-    // TODO: Remove for prod, used for test only
-    #[Post('/{ssl}/deactivate', name: 'server-ssls.deactivate')]
-    public function deactivate(Server $server, Ssl $ssl): RedirectResponse
-    {
-        $this->authorize('deactivateCertificate', [$ssl, $server]);
-
-        app(DeactivateServerSsl::class)->deactivate($server, $ssl);
-
-        return back()->with('info', 'SSL certificate is being deactivated.');
-    }
-
     #[Delete('/{ssl}', name: 'server-ssls.destroy')]
     public function destroy(Server $server, Ssl $ssl): RedirectResponse
     {
-        $this->authorize('deleteCertificate', [$ssl, $server]);
+        $this->authorize('delete', [$ssl, $server]);
 
         app(DeleteSsl::class)->delete($ssl);
 

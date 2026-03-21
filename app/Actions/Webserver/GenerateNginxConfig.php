@@ -113,7 +113,6 @@ class GenerateNginxConfig extends AbstractGenerateConfig
 
     protected function finalizeData(array $data, Site $site): array
     {
-        // Collect force_ssl domains from server blocks
         if ($site->force_ssl && $site->ssl_enabled) {
             foreach ($data['server_blocks'] as $block) {
                 if ($block['listen_443'] ?? false) {

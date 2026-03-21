@@ -2,8 +2,6 @@
 
 namespace App\SiteTypes;
 
-use Illuminate\Contracts\View\View;
-
 interface SiteType
 {
     public static function id(): string;
@@ -41,5 +39,15 @@ interface SiteType
      */
     public function baseCommands(): array;
 
-    public function vhost(string $webserver): string|View;
+    /**
+     * @return array<string, mixed>
+     */
+    public function vhostData(): array;
+
+    /**
+     * @return string[]|null
+     */
+    public function supportedWebservers(): ?array;
+
+    public function vhostTemplate(string $webserver): ?string;
 }

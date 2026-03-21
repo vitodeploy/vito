@@ -40,11 +40,6 @@ return [
     ),
 
     'ssl_types' => [
-        SslType::LETSENCRYPT->value,
-        SslType::CUSTOM->value,
-    ],
-
-    'server_ssl_types' => [
         SslType::CSR->value,
         SslType::CUSTOM->value,
         SslType::LETSENCRYPT->value,

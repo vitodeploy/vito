@@ -68,9 +68,7 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
         setPreviewContent(response.data.vhost);
         setShowPreviewDialog(true);
       })
-      .catch(() => {
-        // errors are handled by axios interceptor
-      })
+      .catch(() => {})
       .finally(() => {
         setPreviewing(false);
       });

@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -18,8 +18,7 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Site } from '@/types/site';
-import { AvailableSsl } from '@/types/hosted-domain';
-import axios from 'axios';
+import { useSslMatching } from '@/pages/hosted-domains/hooks/use-ssl-matching';
 
 type CreateForm = {
   domain: string;
@@ -30,9 +29,6 @@ type CreateForm = {
 
 export default function CreateHostedDomain({ site, children }: { site: Site; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [matchingSsls, setMatchingSsls] = useState<AvailableSsl[]>([]);
-  const [loadingSsls, setLoadingSsls] = useState(false);
-  const lastFetchedDomain = useRef('');
 
   const form = useForm<CreateForm>({
     domain: '',
@@ -41,73 +37,21 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
     ssl_id: '',
   });
 
-  const sslStale = form.data.domain !== lastFetchedDomain.current;
-
-  const fetchMatchingSsls = useCallback(
-    (domain: string, signal?: AbortSignal) => {
-      if (!domain) {
-        setMatchingSsls([]);
-        lastFetchedDomain.current = domain;
-        return;
-      }
-
-      setLoadingSsls(true);
-      axios
-        .get(route('hosted-domains.matching-ssls', { server: site.server_id, site: site.id, domain }), { signal })
-        .then((response) => {
-          const { certificates, best_match_id } = response.data;
-          setMatchingSsls(certificates);
-          lastFetchedDomain.current = domain;
-          if (best_match_id) {
-            form.setData((prev) => ({ ...prev, ssl_method: 'custom', ssl_id: String(best_match_id) }));
-          } else {
-            form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
-          }
-        })
-        .catch((error) => {
-          if (!axios.isCancel(error)) {
-            setMatchingSsls([]);
-            lastFetchedDomain.current = domain;
-          }
-        })
-        .finally(() => {
-          setLoadingSsls(false);
-        });
-    },
-    [site.server_id, site.id],
-  );
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    if (sslStale && form.data.ssl_method === 'custom') {
-      form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      fetchMatchingSsls(form.data.domain, controller.signal);
-    }, 500);
-
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [form.data.domain, open, fetchMatchingSsls]);
-
-  const handleSslMethodChange = (value: string) => {
-    form.setData((prev) => ({ ...prev, ssl_method: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
-  };
+  const { matchingSsls, loadingSsls, sslStale, handleSslMethodChange, reset } = useSslMatching({
+    serverId: site.server_id,
+    siteId: site.id,
+    domain: form.data.domain,
+    sslMethod: form.data.ssl_method,
+    setData: form.setData,
+    open,
+  });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     form.post(route('hosted-domains.store', { server: site.server_id, site: site.id }), {
       onSuccess: () => {
         form.reset();
-        setMatchingSsls([]);
-        lastFetchedDomain.current = '';
+        reset();
         setOpen(false);
       },
     });
@@ -120,8 +64,7 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
         setOpen(value);
         if (!value) {
           form.reset();
-          setMatchingSsls([]);
-          lastFetchedDomain.current = '';
+          reset();
         }
       }}
     >

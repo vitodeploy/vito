@@ -36,6 +36,30 @@ abstract class AbstractSiteType implements SiteType
         return [];
     }
 
+    public function vhostData(): array
+    {
+        return [];
+    }
+
+    /**
+     * Return null to support all webservers.
+     *
+     * @return string[]|null
+     */
+    public function supportedWebservers(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Return a Mustache template string to completely replace the default webserver vhost template.
+     * Return null to use the built-in template.
+     */
+    public function vhostTemplate(string $webserver): ?string
+    {
+        return null;
+    }
+
     protected function progress(int $percentage): void
     {
         $this->site->progress = $percentage;

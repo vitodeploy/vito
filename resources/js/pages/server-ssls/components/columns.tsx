@@ -21,49 +21,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import FormSuccessful from '@/components/form-successful';
+import InputError from '@/components/ui/input-error';
 import ActivateServerSsl from '@/pages/server-ssls/components/activate-server-ssl';
-
-// TODO: Remove for prod, used for test only
-function Deactivate({ ssl }: { ssl: SSL }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
-
-  const submit = () => {
-    form.post(route('server-ssls.deactivate', { server: ssl.server_id, ssl: ssl.id }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Deactivate</DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Deactivate SSL</DialogTitle>
-          <DialogDescription className="sr-only">Deactivate SSL</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2 p-4">
-          <p>
-            This will revert the certificate back to CSR state and remove the installed certificate files. The CSR and private key will be preserved.
-          </p>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant="destructive" disabled={form.processing} onClick={submit}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            Deactivate
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function Delete({ ssl }: { ssl: SSL }) {
   const [open, setOpen] = useState(false);
@@ -90,6 +49,7 @@ function Delete({ ssl }: { ssl: SSL }) {
         </DialogHeader>
         <div className="space-y-2 p-4">
           <p>Are you sure you want to delete this certificate?</p>
+          <InputError message={form.errors.ssl} />
         </div>
         <DialogFooter>
           <DialogClose asChild>
@@ -230,12 +190,6 @@ export const columns: ColumnDef<SSL>[] = [
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Activate</DropdownMenuItem>
                     </ActivateServerSsl>
                   )}
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              {row.original.type === 'custom' && row.original.status === 'created' && row.original.csr_data && (
-                <>
-                  <Deactivate ssl={row.original} />
                   <DropdownMenuSeparator />
                 </>
               )}

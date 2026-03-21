@@ -271,10 +271,11 @@ export default function CreateSite({
                     value={form.data.domain}
                     onChange={(e) => {
                       const newDomain = e.target.value;
-                      form.setData('domain', newDomain);
                       if (!userManuallyEdited) {
                         const extractedName = extractNameFromDomain(newDomain);
-                        form.setData('user', extractedName);
+                        form.setData((prev) => ({ ...prev, domain: newDomain, user: extractedName }));
+                      } else {
+                        form.setData('domain', newDomain);
                       }
                     }}
                     placeholder="vitodeploy.com"

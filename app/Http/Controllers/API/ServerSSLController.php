@@ -31,7 +31,7 @@ class ServerSSLController extends Controller
     #[Get('/', name: 'api.projects.servers.ssls', middleware: 'ability:read')]
     public function index(Project $project, Server $server): ResourceCollection
     {
-        $this->authorize('viewAnyServer', [Ssl::class, $server]);
+        $this->authorize('viewAny', [Ssl::class, $server]);
 
         $this->validateRoute($project, $server);
 
@@ -45,7 +45,7 @@ class ServerSSLController extends Controller
     {
         $this->validateRoute($project, $server, $ssl);
 
-        $this->authorize('viewAnyServer', [Ssl::class, $server]);
+        $this->authorize('viewAny', [Ssl::class, $server]);
 
         return new SslResource($ssl);
     }
@@ -53,7 +53,7 @@ class ServerSSLController extends Controller
     #[Post('/csr', name: 'api.projects.servers.ssls.create-csr', middleware: 'ability:write')]
     public function createCsr(Request $request, Project $project, Server $server): SslResource
     {
-        $this->authorize('createServer', [Ssl::class, $server]);
+        $this->authorize('create', [Ssl::class, $server]);
 
         $this->validateRoute($project, $server);
 
@@ -65,7 +65,7 @@ class ServerSSLController extends Controller
     #[Post('/custom', name: 'api.projects.servers.ssls.create-custom', middleware: 'ability:write')]
     public function createCustom(Request $request, Project $project, Server $server): SslResource
     {
-        $this->authorize('createServer', [Ssl::class, $server]);
+        $this->authorize('create', [Ssl::class, $server]);
 
         $this->validateRoute($project, $server);
 
@@ -77,7 +77,7 @@ class ServerSSLController extends Controller
     #[Post('/letsencrypt-wildcard', name: 'api.projects.servers.ssls.create-letsencrypt-wildcard', middleware: 'ability:write')]
     public function createLetsEncryptWildcard(Request $request, Project $project, Server $server): SslResource
     {
-        $this->authorize('createServer', [Ssl::class, $server]);
+        $this->authorize('create', [Ssl::class, $server]);
 
         $this->validateRoute($project, $server);
 
@@ -89,7 +89,7 @@ class ServerSSLController extends Controller
     #[Post('{ssl}/activate', name: 'api.projects.servers.ssls.activate', middleware: 'ability:write')]
     public function activate(Request $request, Project $project, Server $server, Ssl $ssl): SslResource
     {
-        $this->authorize('activateServer', [$ssl, $server]);
+        $this->authorize('activate', [$ssl, $server]);
 
         $this->validateRoute($project, $server, $ssl);
 
@@ -101,7 +101,7 @@ class ServerSSLController extends Controller
     #[Delete('{ssl}', name: 'api.projects.servers.ssls.delete', middleware: 'ability:write')]
     public function delete(Project $project, Server $server, Ssl $ssl): \Illuminate\Http\Response
     {
-        $this->authorize('deleteServer', [$ssl, $server]);
+        $this->authorize('delete', [$ssl, $server]);
 
         $this->validateRoute($project, $server, $ssl);
 
@@ -113,7 +113,7 @@ class ServerSSLController extends Controller
     #[Get('{ssl}/download', name: 'api.projects.servers.ssls.download', middleware: 'ability:read')]
     public function download(Project $project, Server $server, Ssl $ssl): StreamedResponse
     {
-        $this->authorize('viewAnyServer', [Ssl::class, $server]);
+        $this->authorize('viewAny', [Ssl::class, $server]);
 
         $this->validateRoute($project, $server, $ssl);
 

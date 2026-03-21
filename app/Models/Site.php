@@ -8,6 +8,7 @@ use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
+use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\PHP\PHP;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
@@ -123,7 +124,9 @@ class Site extends AbstractModel
                 /** @var Worker $worker */
                 $worker->delete();
             });
-            $site->ssls()->delete();
+            $site->ssls()->each(function (Ssl $ssl) use ($site): void {
+                dispatch(new DeleteSiteSslJob($site->server, $ssl))->onQueue('ssh');
+            });
             $site->deployments()->delete();
             $site->deploymentScript()->delete();
             $site->gitHook?->destroyHook();
@@ -340,9 +343,6 @@ class Site extends AbstractModel
      */
     public function changePHPVersion(string $version): void
     {
-        $webserver = $this->webserver();
-        $webserver->changePHPVersion($this, $version);
-
         if ($this->isIsolated()) {
             /** @var Service $php */
             $php = $this->server->php();
@@ -354,6 +354,8 @@ class Site extends AbstractModel
 
         $this->php_version = $version;
         $this->save();
+
+        $this->webserver()->updateVHost($this);
     }
 
     /**

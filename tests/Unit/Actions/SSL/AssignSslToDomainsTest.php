@@ -91,7 +91,6 @@ class AssignSslToDomainsTest extends TestCase
 
     public function test_only_server_level_ssls_considered(): void
     {
-        // Site-level SSL should be ignored
         Ssl::factory()->create([
             'site_id' => $this->site->id,
             'domains' => ['app.example.com'],
@@ -108,7 +107,6 @@ class AssignSslToDomainsTest extends TestCase
 
     public function test_only_active_and_created_ssls_considered(): void
     {
-        // Inactive SSL
         $this->createServerSsl([
             'domains' => ['app.example.com'],
             'is_active' => false,
@@ -139,11 +137,9 @@ class AssignSslToDomainsTest extends TestCase
     {
         $ssl = $this->createServerSsl(['domains' => ['app.example.com']]);
 
-        // Pre-assign one domain
         $alreadyAssigned = $this->createHostedDomain('app.example.com');
         $alreadyAssigned->update(['ssl_id' => $ssl->id]);
 
-        // New unassigned domain with no match
         $this->createHostedDomain('other.com');
 
         $changed = $this->action->assign($this->site);

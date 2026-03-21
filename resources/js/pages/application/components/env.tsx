@@ -82,7 +82,9 @@ export default function Env({ site, children }: { site: Site; children: ReactNod
       path: form.data.path,
     }));
 
-    form.put(route('application.update-env', { server: site.server_id, site: site.id }));
+    form.put(route('application.update-env', { server: site.server_id, site: site.id }), {
+      onSuccess: () => handleOpenChange(false),
+    });
   };
 
   const query = useQuery({

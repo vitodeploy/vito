@@ -31,6 +31,12 @@ class GetSiteWarnings
             ];
         }
 
+        if (! $site->ssl_enabled) {
+            $warnings[] = [
+                'key' => 'ssl_disabled',
+            ];
+        }
+
         if (! $site->vhost_generation_enabled) {
             $warnings[] = [
                 'key' => 'vhost_generation_disabled',
@@ -68,6 +74,12 @@ class GetSiteWarnings
                     'key' => 'pending_domains',
                     'count' => count($domains),
                     'domains' => $domains,
+                ];
+            }
+
+            if (! $site->ssl_enabled) {
+                $siteWarnings[] = [
+                    'key' => 'ssl_disabled',
                 ];
             }
 

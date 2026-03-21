@@ -20,7 +20,11 @@ class UpdateHostedDomain
      */
     public function update(HostedDomain $hostedDomain, Site $site, array $input): HostedDomain
     {
-        $hostedDomain->ensureModifiable('update');
+        if ($hostedDomain->status->isProcessing()) {
+            throw ValidationException::withMessages([
+                'domain' => ['Cannot update a domain while it is '.$hostedDomain->status->value.'.'],
+            ]);
+        }
 
         $validated = $this->validate($hostedDomain, $site, $input);
 

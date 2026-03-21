@@ -122,11 +122,6 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
                 icon: CommandIcon,
               },
               {
-                title: 'SSL',
-                href: route('ssls', { server: page.props.server.id, site: site.id }),
-                icon: LockIcon,
-              },
-              {
                 title: 'Workers',
                 href: route('workers.site', { server: page.props.server.id, site: site.id }),
                 icon: ListEndIcon,

@@ -151,12 +151,10 @@ function CertificateCell({ hostedDomain }: { hostedDomain: HostedDomain }) {
   const createsSiteSSLs = site.webserver_creates_site_ssls;
   const webserverName = site.webserver.charAt(0).toUpperCase() + site.webserver.slice(1);
 
-  // Webserver-managed SSL (e.g. Caddy auto-TLS)
   if (ssl_method === 'letsencrypt' && !createsSiteSSLs) {
     return <Badge variant="outline">{webserverName} Managed SSL</Badge>;
   }
 
-  // Site-managed LE certificate with linked SSL
   if (ssl_method === 'letsencrypt' && createsSiteSSLs && ssl_id) {
     return (
       <TooltipProvider>

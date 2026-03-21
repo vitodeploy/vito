@@ -216,7 +216,6 @@ function format_webserver_config(string $config): string
 
         if ($trimmed === '}') {
             $indent--;
-            // Remove trailing blank line before closing brace
             if (end($formattedLines) === '') {
                 array_pop($formattedLines);
             }
@@ -229,7 +228,6 @@ function format_webserver_config(string $config): string
         }
     }
 
-    // Remove leading/trailing blank lines
     while (! empty($formattedLines) && $formattedLines[0] === '') {
         array_shift($formattedLines);
     }

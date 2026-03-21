@@ -7,7 +7,8 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { LockIcon, LockOpenIcon, PlusIcon } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { BookOpenIcon, EllipsisVerticalIcon, LockIcon, LockOpenIcon, PlusIcon, ShieldCheckIcon, ShieldOffIcon } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/hosted-domains/components/columns';
@@ -33,29 +34,58 @@ export default function HostedDomains() {
         <HeaderContainer>
           <Heading title="Domains" description="Manage domains and SSL assignments for this site" />
           <div className="flex items-center gap-2">
-            {page.props.site.ssl_enabled ? (
-              <Button
-                variant="outline"
-                onClick={() => router.post(route('sites.disable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
-              >
-                <LockOpenIcon />
-                <span className="hidden lg:block">Disable SSL</span>
+            <a href="https://vitodeploy.com/docs/sites/domains" target="_blank">
+              <Button variant="outline">
+                <BookOpenIcon />
+                <span className="hidden lg:block">Docs</span>
               </Button>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => router.post(route('sites.enable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
-              >
-                <LockIcon />
-                <span className="hidden lg:block">Enable SSL</span>
-              </Button>
-            )}
+            </a>
             <CreateHostedDomain site={page.props.site}>
               <Button>
                 <PlusIcon />
                 <span className="hidden lg:block">Add Domain</span>
               </Button>
             </CreateHostedDomain>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  {page.props.site.ssl_enabled ? <LockIcon /> : <LockOpenIcon />}
+                  <EllipsisVerticalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {page.props.site.ssl_enabled ? (
+                  <DropdownMenuItem
+                    onClick={() => router.post(route('sites.disable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                  >
+                    <LockOpenIcon />
+                    Disable SSL
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={() => router.post(route('sites.enable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                  >
+                    <LockIcon />
+                    Enable SSL
+                  </DropdownMenuItem>
+                )}
+                {page.props.site.force_ssl ? (
+                  <DropdownMenuItem
+                    onClick={() => router.post(route('site-settings.disable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                  >
+                    <ShieldOffIcon />
+                    Disable Force SSL
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={() => router.post(route('site-settings.enable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                  >
+                    <ShieldCheckIcon />
+                    Force SSL
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </HeaderContainer>
 

@@ -67,6 +67,14 @@ class Domain extends AbstractModel
     }
 
     /**
+     * @return HasMany<Ssl, covariant $this>
+     */
+    public function ssls(): HasMany
+    {
+        return $this->hasMany(Ssl::class);
+    }
+
+    /**
      * @return HasMany<DNSRecord, covariant $this>
      */
     public function records(): HasMany

@@ -2,6 +2,6 @@ if ! sudo ln -s /etc/caddy/sites-available/{{ $domain }} /etc/caddy/sites-enable
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo service caddy restart; then
+if ! sudo service caddy reload; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi

@@ -59,7 +59,7 @@ class ActivateHostedDomain
 
     private function activateWithLetsEncrypt(HostedDomain $hostedDomain, Site $site): void
     {
-        // Webservers that handle TLS internally (e.g. Caddy's ACME client)
+
         if (! $site->webserver()->createsSiteSSLs()) {
             $hostedDomain->error = null;
             $hostedDomain->status = HostedDomainStatus::ACTIVE;
@@ -70,7 +70,6 @@ class ActivateHostedDomain
             return;
         }
 
-        // Find existing site-level LE cert
         $ssl = $site->ssls()
             ->where('type', SslType::LETSENCRYPT)
             ->where('status', SslStatus::CREATED)
@@ -78,7 +77,6 @@ class ActivateHostedDomain
             ->first();
 
         if ($ssl && $ssl->coversDomain($hostedDomain->domain)) {
-            // Cert already covers this domain — link and activate
             $hostedDomain->ssl_id = $ssl->id;
             $hostedDomain->error = null;
             $hostedDomain->status = HostedDomainStatus::ACTIVE;
@@ -89,7 +87,6 @@ class ActivateHostedDomain
             return;
         }
 
-        // Need to generate/regenerate SSL — dispatch async job
         dispatch(new SetupHostedDomainSslJob($hostedDomain))->onQueue('ssh');
     }
 }

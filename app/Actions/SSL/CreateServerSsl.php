@@ -21,7 +21,7 @@ class CreateServerSsl
         Validator::make($input, [
             'type' => [
                 'required',
-                Rule::in(config('core.server_ssl_types')),
+                Rule::in(config('core.ssl_types')),
             ],
         ])->validate();
 

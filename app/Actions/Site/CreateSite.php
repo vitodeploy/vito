@@ -80,7 +80,6 @@ class CreateSite
             // save
             $site->save();
 
-            // create hosted domains
             $primaryDomain = $site->hostedDomains()->create([
                 'domain' => $site->domain,
                 'type' => HostedDomainType::PRIMARY,
@@ -104,7 +103,6 @@ class CreateSite
             // install site
             dispatch(new CreateJob($site))->onQueue('ssh');
 
-            // check DNS resolution for hosted domains
             dispatch(new CheckDomainJob($primaryDomain))->onQueue('ssh');
             foreach ($aliasDomains as $aliasDomain) {
                 dispatch(new CheckDomainJob($aliasDomain))->onQueue('ssh');

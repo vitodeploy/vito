@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -17,9 +17,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AvailableSsl, HostedDomain } from '@/types/hosted-domain';
+import { HostedDomain } from '@/types/hosted-domain';
 import FormSuccessful from '@/components/form-successful';
-import axios from 'axios';
+import { useSslMatching } from '@/pages/hosted-domains/hooks/use-ssl-matching';
 
 type EditForm = {
   domain: string;
@@ -30,9 +30,6 @@ type EditForm = {
 
 export default function EditHostedDomain({ hostedDomain, children }: { hostedDomain: HostedDomain; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [matchingSsls, setMatchingSsls] = useState<AvailableSsl[]>([]);
-  const [loadingSsls, setLoadingSsls] = useState(false);
-  const lastFetchedDomain = useRef(hostedDomain.domain);
   const isPrimary = hostedDomain.type === 'primary';
 
   const form = useForm<EditForm>({
@@ -42,67 +39,15 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
     ssl_id: hostedDomain.ssl_id ? String(hostedDomain.ssl_id) : '',
   });
 
-  const sslStale = form.data.domain !== lastFetchedDomain.current;
-
-  const fetchMatchingSsls = useCallback(
-    (domain: string, signal?: AbortSignal) => {
-      if (!domain) {
-        setMatchingSsls([]);
-        lastFetchedDomain.current = domain;
-        return;
-      }
-
-      setLoadingSsls(true);
-      axios
-        .get(route('hosted-domains.matching-ssls', { server: hostedDomain.server_id, site: hostedDomain.site_id, domain }), { signal })
-        .then((response) => {
-          const { certificates, best_match_id } = response.data;
-          setMatchingSsls(certificates);
-          lastFetchedDomain.current = domain;
-          if (domain !== hostedDomain.domain) {
-            if (best_match_id) {
-              form.setData((prev) => ({ ...prev, ssl_method: 'custom', ssl_id: String(best_match_id) }));
-            } else {
-              form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
-            }
-          }
-        })
-        .catch((error) => {
-          if (!axios.isCancel(error)) {
-            setMatchingSsls([]);
-            lastFetchedDomain.current = domain;
-          }
-        })
-        .finally(() => {
-          setLoadingSsls(false);
-        });
-    },
-    [hostedDomain.server_id, hostedDomain.site_id, hostedDomain.domain],
-  );
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    if (sslStale && form.data.ssl_method === 'custom') {
-      form.setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      fetchMatchingSsls(form.data.domain, controller.signal);
-    }, 500);
-
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [open, form.data.domain, fetchMatchingSsls]);
-
-  const handleSslMethodChange = (value: string) => {
-    form.setData((prev) => ({ ...prev, ssl_method: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
-  };
+  const { matchingSsls, loadingSsls, sslStale, handleSslMethodChange, reset } = useSslMatching({
+    serverId: hostedDomain.server_id,
+    siteId: hostedDomain.site_id,
+    domain: form.data.domain,
+    sslMethod: form.data.ssl_method,
+    setData: form.setData,
+    open,
+    originalDomain: hostedDomain.domain,
+  });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -133,8 +78,7 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
             ssl_id: hostedDomain.ssl_id ? String(hostedDomain.ssl_id) : '',
           });
           form.clearErrors();
-          setMatchingSsls([]);
-          lastFetchedDomain.current = hostedDomain.domain;
+          reset(hostedDomain.domain);
         }
       }}
     >

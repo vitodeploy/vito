@@ -184,6 +184,30 @@ class SiteSettingController extends Controller
             : app(GenerateNginxConfig::class);
     }
 
+    #[Post('/force-ssl/enable', name: 'site-settings.enable-force-ssl')]
+    public function enableForceSsl(Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $site->force_ssl = true;
+        $site->save();
+        $site->webserver()->updateVHost($site);
+
+        return back()->with('success', 'Force SSL enabled successfully.');
+    }
+
+    #[Post('/force-ssl/disable', name: 'site-settings.disable-force-ssl')]
+    public function disableForceSsl(Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $site->force_ssl = false;
+        $site->save();
+        $site->webserver()->updateVHost($site);
+
+        return back()->with('success', 'Force SSL disabled successfully.');
+    }
+
     /**
      * @throws SSHError
      */

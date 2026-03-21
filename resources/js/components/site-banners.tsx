@@ -30,9 +30,29 @@ export default function SiteBanners({ site }: { site: Site }) {
   const [open, setOpen] = useState(false);
 
   const pendingDomainsWarning = warnings.find((w) => w.key === 'pending_domains');
+  const sslDisabledWarning = warnings.find((w) => w.key === 'ssl_disabled');
   const vhostWarning = warnings.find((w) => w.key === 'vhost_generation_disabled');
 
   const items: BannerItem[] = [];
+
+  if (sslDisabledWarning) {
+    items.push({
+      key: 'ssl-disabled',
+      title: 'SSL is disabled',
+      description: 'This site will not be served over HTTPS even if valid certificates exist. Enable SSL to serve the site securely.',
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            router.post(route('sites.enable-ssl', { server: site.server_id, site: site.id }), {}, { preserveScroll: true });
+          }}
+        >
+          Enable SSL
+        </Button>
+      ),
+    });
+  }
 
   if (pendingDomainsWarning && pendingDomainsWarning.key === 'pending_domains') {
     items.push({

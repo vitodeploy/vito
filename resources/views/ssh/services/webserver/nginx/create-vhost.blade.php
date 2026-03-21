@@ -2,6 +2,6 @@ if ! sudo ln -s /etc/nginx/sites-available/{{ $domain }} /etc/nginx/sites-enable
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo service nginx restart; then
+if ! sudo service nginx reload; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi

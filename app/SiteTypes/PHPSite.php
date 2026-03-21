@@ -8,7 +8,6 @@ use App\Models\Site;
 use App\SSH\OS\Composer;
 use App\SSH\OS\Git;
 use App\Traits\NormalizesWebDirectory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 
 class PHPSite extends AbstractSiteType
@@ -116,35 +115,10 @@ class PHPSite extends AbstractSiteType
         ];
     }
 
-    public function vhost(string $webserver): string|View
+    public function vhostData(): array
     {
-        if ($webserver === 'nginx') {
-            return view('ssh.services.webserver.nginx.vhost', [
-                'header' => [
-                    view('ssh.services.webserver.nginx.vhost-blocks.force-ssl', ['site' => $this->site]),
-                ],
-                'main' => [
-                    view('ssh.services.webserver.nginx.vhost-blocks.port', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.core', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.php', ['site' => $this->site]),
-                    view('ssh.services.webserver.nginx.vhost-blocks.redirects', ['site' => $this->site]),
-                ],
-            ]);
-        }
-
-        if ($webserver === 'caddy') {
-            return view('ssh.services.webserver.caddy.vhost', [
-                'site' => $this->site,
-                'main' => [
-                    view('ssh.services.webserver.caddy.vhost-blocks.force-ssl', ['site' => $this->site]),
-                    view('ssh.services.webserver.caddy.vhost-blocks.port', ['site' => $this->site]),
-                    view('ssh.services.webserver.caddy.vhost-blocks.core', ['site' => $this->site]),
-                    view('ssh.services.webserver.caddy.vhost-blocks.php', ['site' => $this->site]),
-                    view('ssh.services.webserver.caddy.vhost-blocks.redirects', ['site' => $this->site]),
-                ],
-            ]);
-        }
-
-        return '';
+        return [
+            'is_php' => true,
+        ];
     }
 }
