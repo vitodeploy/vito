@@ -82,5 +82,4 @@ class ActivateHostedDomain
         // Need to generate/regenerate SSL — dispatch async job
         dispatch(new SetupHostedDomainSslJob($hostedDomain))->onQueue('ssh');
     }
-
 }

@@ -184,6 +184,7 @@ class SetupHostedDomainSslJob implements ShouldQueue
         }
 
         // Fallback to project owner email
+        /** @var \App\Models\UserProject|null $userProject */
         $userProject = $site->server->project->users()->with('user')->first();
         if ($userProject?->user?->email) {
             return $userProject->user->email;

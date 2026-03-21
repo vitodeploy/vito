@@ -162,7 +162,9 @@ function CertificateCell({ hostedDomain }: { hostedDomain: HostedDomain }) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge variant="outline" className="cursor-default">Site Certificate</Badge>
+            <Badge variant="outline" className="cursor-default">
+              Site Certificate
+            </Badge>
           </TooltipTrigger>
           <TooltipContent>ID: {ssl_id}</TooltipContent>
         </Tooltip>
