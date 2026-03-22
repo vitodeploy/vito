@@ -30,7 +30,6 @@ laradumps.yaml
 /app/Vito/Plugins
 AGENTS.md
 .cursor
-.github/copilot-instructions.md
 boost.json
 opencode.json
 .claude/
