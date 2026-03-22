@@ -32,7 +32,6 @@ class CreateLetsEncryptWildcardSsl
             'domain_id' => $domain->id,
             'type' => SslType::LETSENCRYPT->value,
             'status' => SslStatus::CREATING,
-            'is_active' => false,
             'is_wildcard' => true,
             'domains' => [$domain->domain, '*.'.$domain->domain],
             'email' => $input['email'],

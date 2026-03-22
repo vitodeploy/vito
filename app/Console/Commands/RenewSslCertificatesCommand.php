@@ -22,7 +22,6 @@ class RenewSslCertificatesCommand extends Command
             ->whereNotNull('server_id')
             ->whereNull('site_id')
             ->where('status', SslStatus::CREATED)
-            ->where('is_active', true)
             ->where('expires_at', '<=', now()->addDays(30))
             ->cursor()
             ->each(function (Ssl $ssl) {

@@ -95,21 +95,6 @@ class AssignSslToDomainsTest extends TestCase
             'site_id' => $this->site->id,
             'domains' => ['app.example.com'],
             'status' => SslStatus::CREATED,
-            'is_active' => true,
-        ]);
-        $domain = $this->createHostedDomain('app.example.com');
-
-        $changed = $this->action->assign($this->site);
-
-        $this->assertCount(0, $changed);
-        $this->assertNull($domain->fresh()->ssl_id);
-    }
-
-    public function test_only_active_and_created_ssls_considered(): void
-    {
-        $this->createServerSsl([
-            'domains' => ['app.example.com'],
-            'is_active' => false,
         ]);
         $domain = $this->createHostedDomain('app.example.com');
 
@@ -153,7 +138,6 @@ class AssignSslToDomainsTest extends TestCase
             'site_id' => null,
             'server_id' => $this->server->id,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['example.com'],
         ], $attributes));
     }

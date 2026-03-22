@@ -27,7 +27,6 @@ class GetMatchingSslCertificatesTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['app.example.com'],
         ]);
 
@@ -47,7 +46,6 @@ class GetMatchingSslCertificatesTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['*.example.com'],
         ]);
 
@@ -67,7 +65,6 @@ class GetMatchingSslCertificatesTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['other.com'],
         ]);
 
@@ -81,13 +78,12 @@ class GetMatchingSslCertificatesTest extends TestCase
         $this->assertCount(0, $result);
     }
 
-    public function test_excludes_inactive_ssls(): void
+    public function test_excludes_non_created_ssls(): void
     {
         Ssl::factory()->create([
             'server_id' => $this->server->id,
             'site_id' => null,
-            'status' => SslStatus::CREATED,
-            'is_active' => false,
+            'status' => SslStatus::CREATING,
             'domains' => ['app.example.com'],
         ]);
 
@@ -107,7 +103,6 @@ class GetMatchingSslCertificatesTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => $this->site->id,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['app.example.com'],
         ]);
 
@@ -127,7 +122,6 @@ class GetMatchingSslCertificatesTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['*.example.com'],
         ]);
 
@@ -142,7 +136,6 @@ class GetMatchingSslCertificatesTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['*.other.com'],
         ]);
 
@@ -157,7 +150,6 @@ class GetMatchingSslCertificatesTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'type' => 'letsencrypt',
             'domains' => ['*.example.com', 'example.com'],
         ]);

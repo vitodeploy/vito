@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\HostedDomainType;
 use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
-use App\Enums\SslStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Jobs\SSL\DeleteSiteSslJob;
@@ -58,7 +57,6 @@ use RuntimeException;
  * @property ?DeploymentScript $preFlightScript
  * @property Collection<int, Worker> $workers
  * @property Collection<int, Ssl> $ssls
- * @property ?Ssl $activeSsl
  * @property string $ssh_key_name
  * @property ?SourceControl $sourceControl
  * @property Collection<int, LoadBalancerServer> $loadBalancerServers
@@ -358,21 +356,9 @@ class Site extends AbstractModel
         $this->webserver()->updateVHost($this);
     }
 
-    /**
-     * @return HasOne<Ssl, covariant $this>
-     */
-    public function activeSsl(): HasOne
-    {
-        return $this->hasOne(Ssl::class)
-            ->where('expires_at', '>=', now())
-            ->where('status', SslStatus::CREATED)
-            ->where('is_active', true)
-            ->orderByDesc('id');
-    }
-
     public function getUrl(): string
     {
-        if ($this->activeSsl) {
+        if ($this->ssl_enabled) {
             return 'https://'.$this->domain;
         }
 

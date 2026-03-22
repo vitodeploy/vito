@@ -33,7 +33,6 @@ class InstallCustomServerSsl
             'server_id' => $server->id,
             'type' => 'custom',
             'status' => SslStatus::CREATING,
-            'is_active' => false,
             'certificate' => $input['certificate'],
             'pk' => $input['private_key'],
             'ca' => $input['ca'] ?? null,

@@ -37,7 +37,6 @@ class CreateServerCsr
             'server_id' => $server->id,
             'type' => $input['type'],
             'status' => SslStatus::CREATING,
-            'is_active' => false,
             'has_csr' => true,
             'domains' => self::parseDomains($input['common_name']),
             'csr_data' => $csrData,

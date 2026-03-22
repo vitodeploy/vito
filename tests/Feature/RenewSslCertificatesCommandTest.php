@@ -23,7 +23,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => true,
-            'is_active' => true,
             'status' => SslStatus::CREATED,
             'expires_at' => now()->addDays(15),
             'domains' => ['*.example.com', 'example.com'],
@@ -43,7 +42,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => true,
-            'is_active' => true,
             'status' => SslStatus::CREATED,
             'expires_at' => now()->addDays(60),
             'domains' => ['*.example.com'],
@@ -63,7 +61,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => false,
-            'is_active' => true,
             'status' => SslStatus::CREATED,
             'expires_at' => now()->addDays(15),
             'domains' => ['example.com'],
@@ -74,7 +71,7 @@ class RenewSslCertificatesCommandTest extends TestCase
         Bus::assertNotDispatched(CreateLetsEncryptWildcardSslJob::class);
     }
 
-    public function test_does_not_dispatch_for_inactive_ssl(): void
+    public function test_does_not_dispatch_for_creating_ssl(): void
     {
         Bus::fake();
 
@@ -83,8 +80,7 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => true,
-            'is_active' => false,
-            'status' => SslStatus::CREATED,
+            'status' => SslStatus::CREATING,
             'expires_at' => now()->addDays(15),
             'domains' => ['*.example.com'],
         ]);
@@ -103,7 +99,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => true,
-            'is_active' => true,
             'status' => SslStatus::FAILED,
             'expires_at' => now()->addDays(15),
             'domains' => ['*.example.com'],
@@ -123,7 +118,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => $this->site->id,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => true,
-            'is_active' => true,
             'status' => SslStatus::CREATED,
             'expires_at' => now()->addDays(15),
             'domains' => ['*.example.com'],
@@ -143,7 +137,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::CUSTOM,
             'is_wildcard' => true,
-            'is_active' => true,
             'status' => SslStatus::CREATED,
             'expires_at' => now()->addDays(15),
             'domains' => ['*.example.com'],
@@ -163,7 +156,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => true,
-            'is_active' => true,
             'status' => SslStatus::CREATED,
             'expires_at' => now()->addDays(30),
             'domains' => ['*.example.com'],
@@ -183,7 +175,6 @@ class RenewSslCertificatesCommandTest extends TestCase
             'site_id' => null,
             'type' => SslType::LETSENCRYPT,
             'is_wildcard' => true,
-            'is_active' => true,
             'status' => SslStatus::CREATED,
             'expires_at' => now()->addDays(10),
             'domains' => ['*.example.com'],

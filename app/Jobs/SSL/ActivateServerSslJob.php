@@ -42,7 +42,6 @@ class ActivateServerSslJob implements ShouldQueue
             $this->ssl->ca_path = $this->ssl->ca ? $basePath.'/ca.pem' : null;
             $this->ssl->type = 'custom';
             $this->ssl->status = SslStatus::CREATED;
-            $this->ssl->is_active = true;
             $this->ssl->save();
 
             $result = $ssh->exec(view('ssh.ssl.activate-ssl', [

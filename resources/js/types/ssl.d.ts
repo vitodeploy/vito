@@ -5,7 +5,6 @@ export interface SSL {
   server_id: number;
   site_id: number | null;
   domain_id?: number;
-  is_active: boolean;
   is_wildcard: boolean;
   has_csr: boolean;
   type: 'letsencrypt' | 'custom' | 'csr';

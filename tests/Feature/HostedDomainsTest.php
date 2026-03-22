@@ -161,7 +161,6 @@ class HostedDomainsTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['*.example.com'],
         ]);
 
@@ -500,7 +499,6 @@ class HostedDomainsTest extends TestCase
             'server_id' => $this->server->id,
             'site_id' => null,
             'status' => SslStatus::CREATED,
-            'is_active' => true,
             'domains' => ['*.example.com'],
         ]);
 

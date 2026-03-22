@@ -101,7 +101,6 @@ class ServerSslTest extends TestCase
             'site_id' => null,
             'type' => 'custom',
             'status' => SslStatus::CREATED,
-            'is_active' => true,
         ]);
     }
 
@@ -148,7 +147,6 @@ class ServerSslTest extends TestCase
             'id' => $ssl->id,
             'type' => 'custom',
             'status' => SslStatus::CREATED,
-            'is_active' => true,
         ]);
     }
 

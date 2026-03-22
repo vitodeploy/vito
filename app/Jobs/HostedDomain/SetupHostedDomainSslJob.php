@@ -61,7 +61,10 @@ class SetupHostedDomainSslJob implements ShouldQueue
                 ->values()
                 ->toArray();
 
-            $ssl = $site->ssls()->where('type', SslType::LETSENCRYPT)->first();
+            $ssl = $site->ssls()
+                ->where('type', SslType::LETSENCRYPT)
+                ->whereNotIn('status', [SslStatus::FAILED, SslStatus::DELETING])
+                ->first();
 
             if ($ssl) {
                 $ssl->domains = $leDomains;
@@ -74,7 +77,6 @@ class SetupHostedDomainSslJob implements ShouldQueue
                     'type' => SslType::LETSENCRYPT->value,
                     'status' => SslStatus::CREATING,
                     'email' => $email,
-                    'is_active' => ! $site->activeSsl,
                 ]);
                 $ssl->domains = $leDomains;
                 $ssl->log_id = ServerLog::log($site->server, 'setup-hosted-domain-ssl', '', $site)->id;

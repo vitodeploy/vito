@@ -42,7 +42,6 @@ class InstallCustomServerSslJob implements ShouldQueue
             $this->ssl->pk_path = $basePath.'/private.key';
             $this->ssl->ca_path = $this->ssl->ca ? $basePath.'/ca.pem' : null;
             $this->ssl->status = SslStatus::CREATED;
-            $this->ssl->is_active = true;
             $this->ssl->save();
 
             $this->broadcastSslUpdate();

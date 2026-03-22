@@ -222,7 +222,6 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
         $this->ssl->expires_at = $parsed['expires_at'];
         $this->ssl->domains = $parsed['domains'];
         $this->ssl->status = SslStatus::CREATED;
-        $this->ssl->is_active = true;
         $this->ssl->save();
     }
 
