@@ -28,8 +28,7 @@ interface Webserver extends ServiceInterface
     /** @return array<string, mixed> */
     public function siteDefaults(): array;
 
-    /** @return array<string> */
-    public function siteLockedFields(): array;
+    public function canConfigureSSL(): bool;
 
     /** @return array<string>|null */
     public function allowedSslMethods(): ?array;

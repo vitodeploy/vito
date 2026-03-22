@@ -5,7 +5,6 @@ namespace App\Actions\Site;
 use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\SiteStatus;
-use App\Enums\SslMethod;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
@@ -55,12 +54,11 @@ class CreateSite
             // fields based on the type
             $site->fill($site->type()->createFields($input));
 
+            /** @var \App\Models\Service $webserver */
             $webserver = $server->webserver();
-            if ($webserver) {
-                /** @var \App\Services\Webserver\Webserver $webserverHandler */
-                $webserverHandler = $webserver->handler();
-                $site->fill($webserverHandler->siteDefaults());
-            }
+            /** @var \App\Services\Webserver\Webserver $webserverHandler */
+            $webserverHandler = $webserver->handler();
+            $site->fill($webserverHandler->siteDefaults());
 
             // check has access to repository
             try {
@@ -87,9 +85,7 @@ class CreateSite
             // save
             $site->save();
 
-            /** @var \App\Services\Webserver\Webserver|null $wsHandler */
-            $wsHandler = $webserver?->handler();
-            $defaultSslMethod = $wsHandler?->defaultSslMethod() ?? SslMethod::NONE;
+            $defaultSslMethod = $webserverHandler->defaultSslMethod();
 
             $primaryDomain = $site->hostedDomains()->create([
                 'domain' => $site->domain,
@@ -111,6 +107,8 @@ class CreateSite
             // create base commands if any
             $site->commands()->createMany($site->type()->baseCommands());
 
+            DB::commit();
+
             // install site
             dispatch(new CreateJob($site))->onQueue('ssh');
 
@@ -118,8 +116,6 @@ class CreateSite
             foreach ($aliasDomains as $aliasDomain) {
                 dispatch(new CheckDomainJob($aliasDomain))->onQueue('ssh');
             }
-
-            DB::commit();
 
             return $site;
         } catch (Exception $e) {

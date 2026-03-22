@@ -25,9 +25,9 @@ class Caddy extends AbstractWebserver
         ];
     }
 
-    public function siteLockedFields(): array
+    public function canConfigureSSL(): bool
     {
-        return ['ssl_enabled', 'force_ssl'];
+        return false;
     }
 
     public function allowedSslMethods(): ?array

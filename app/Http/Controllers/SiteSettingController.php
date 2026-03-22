@@ -178,7 +178,7 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        if (in_array('force_ssl', $site->webserver()->siteLockedFields())) {
+        if (! $site->webserver()->canConfigureSSL()) {
             throw ValidationException::withMessages([
                 'force_ssl' => 'Force SSL cannot be changed for this webserver.',
             ]);
@@ -196,7 +196,7 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        if (in_array('force_ssl', $site->webserver()->siteLockedFields())) {
+        if (! $site->webserver()->canConfigureSSL()) {
             throw ValidationException::withMessages([
                 'force_ssl' => 'Force SSL cannot be changed for this webserver.',
             ]);
