@@ -22,7 +22,7 @@ export default function Layout({
   secondNavTitle?: string;
 }>) {
   const page = usePage<SharedData>();
-  useSocketEvents();
+  const { status: socketStatus, reconnect: socketReconnect } = useSocketEvents();
 
   useEffect(() => {
     if (page.props.flash && page.props.flash.success) {
@@ -47,7 +47,7 @@ export default function Layout({
         <SidebarProvider defaultOpen={!!(secondNavItems && secondNavItems.length > 0)}>
           <AppSidebar secondNavItems={secondNavItems} secondNavTitle={secondNavTitle} />
           <SidebarInset>
-            <AppHeader />
+            <AppHeader socketStatus={socketStatus} socketReconnect={socketReconnect} />
             {breadcrumbs && breadcrumbs.length > 1 && (
               <div className="border-sidebar-border/70 flex w-full border-b">
                 <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500">

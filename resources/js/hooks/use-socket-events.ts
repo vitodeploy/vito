@@ -22,8 +22,12 @@ type WebSocketMessage =
   | { type: 'event'; data: SocketEventData }
   | { type: 'error'; message: string };
 
+export type SocketStatus = 'connecting' | 'connected' | 'disconnected';
+
 const RECONNECT_BASE_DELAY = 1000;
 const RECONNECT_MAX_DELAY = 30000;
+const MAX_FAST_RECONNECT_ATTEMPTS = 3;
+const SLOW_RECONNECT_INTERVAL = 30000;
 
 async function requestEventsToken(csrfToken: string): Promise<{ token: string; url: string } | null> {
   try {
@@ -41,13 +45,14 @@ async function requestEventsToken(csrfToken: string): Promise<{ token: string; u
   }
 }
 
-export function useSocketEvents(): void {
+export function useSocketEvents(): { status: SocketStatus; reconnect: () => void } {
   const { auth, csrf_token } = usePage<SharedData>().props;
   const authRef = useRef(auth);
   const csrfRef = useRef(csrf_token);
   authRef.current = auth;
   csrfRef.current = csrf_token;
 
+  const [status, setStatus] = useState<SocketStatus>('connecting');
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,8 +73,13 @@ export function useSocketEvents(): void {
   }, []);
 
   const scheduleReconnect = useCallback((connectFn: () => void) => {
-    const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttemptRef.current), RECONNECT_MAX_DELAY);
     reconnectAttemptRef.current++;
+    if (reconnectAttemptRef.current > MAX_FAST_RECONNECT_ATTEMPTS) {
+      setStatus('disconnected');
+      reconnectTimerRef.current = setTimeout(connectFn, SLOW_RECONNECT_INTERVAL);
+      return;
+    }
+    const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttemptRef.current - 1), RECONNECT_MAX_DELAY);
     reconnectTimerRef.current = setTimeout(connectFn, delay);
   }, []);
 
@@ -79,6 +89,7 @@ export function useSocketEvents(): void {
     }
 
     cleanup();
+    setStatus('connecting');
 
     const tokenData = await requestEventsToken(csrfRef.current);
     if (!tokenData) {
@@ -97,6 +108,7 @@ export function useSocketEvents(): void {
           case 'connected':
             reconnectAttemptRef.current = 0;
             currentProjectIdRef.current = msg.project_id;
+            setStatus('connected');
             break;
 
           case 'subscribed':
@@ -126,6 +138,11 @@ export function useSocketEvents(): void {
     };
   }, [cleanup, scheduleReconnect]);
 
+  const reconnect = useCallback(() => {
+    reconnectAttemptRef.current = 0;
+    connect();
+  }, [connect]);
+
   // Switch project subscription when the current project changes
   const projectId = auth?.currentProject?.id;
 
@@ -141,6 +158,8 @@ export function useSocketEvents(): void {
 
     return cleanup;
   }, [connect, cleanup]);
+
+  return { status, reconnect };
 }
 
 /**
