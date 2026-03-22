@@ -6,7 +6,6 @@ use App\Enums\HostedDomainStatus;
 use App\Enums\SslStatus;
 use App\Models\HostedDomain;
 use App\Models\Site;
-use App\Models\Ssl;
 use Illuminate\Support\Collection;
 
 class GetSiteWarnings
