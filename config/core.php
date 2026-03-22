@@ -22,7 +22,7 @@ return [
     'ws_host' => env('WS_HOST', '127.0.0.1'),
     'ws_port' => env('WS_PORT', '8085'),
     'ws_broadcast_secret' => env('WS_BROADCAST_SECRET', env('APP_KEY')),
-    'ws_broadcast_secret_set' => env('WS_BROADCAST_SECRET') !== null,
+    'ws_broadcast_secret_set' => ! empty(env('WS_BROADCAST_SECRET')),
     'ws_allowed_origins' => array_filter(array_map('trim', explode(',', env('WS_ALLOWED_ORIGINS', '')))),
 
     /*

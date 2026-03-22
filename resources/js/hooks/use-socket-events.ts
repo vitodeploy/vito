@@ -67,7 +67,7 @@ export function useSocketListener(callback: (data: SocketEventData) => void): vo
 /**
  * Manages paginated Inertia data with realtime socket updates.
  *
- * Listens for socket events matching `{eventExpression}.updated` (replace row),
+ * Listens for socket events matching `{eventPrefix}.updated` (replace row),
  * and `{eventPrefix}.deleted` (remove row) automatically.
  *
  * Returns the live data and setter for custom handling.
@@ -108,7 +108,7 @@ export function useRealtime<T extends { id: number }>(
           case 'deleted':
             setData((prev) => ({
               ...prev,
-              data: prev.data.filter((item) => (item.id !== eventData.id)),
+              data: prev.data.filter((item) => item.id !== eventData.id),
             }));
             break;
         }

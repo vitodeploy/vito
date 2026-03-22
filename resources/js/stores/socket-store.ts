@@ -34,7 +34,7 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 type SocketStore = {
   status: SocketStatus;
   currentProjectId: number | null;
-  connect: (csrfToken: string) => void;
+  connect: (csrfToken: string) => Promise<void>;
   disconnect: () => void;
   reconnect: (csrfToken: string) => void;
   switchProject: (projectId: number) => void;
@@ -57,6 +57,10 @@ async function requestEventsToken(csrfToken: string): Promise<{ token: string; u
 }
 
 function scheduleReconnect(csrfToken: string): void {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
   reconnectAttempt++;
   if (reconnectAttempt > MAX_FAST_RECONNECT_ATTEMPTS) {
     useSocketStore.setState({ status: 'disconnected' });

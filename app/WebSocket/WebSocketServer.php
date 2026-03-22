@@ -253,7 +253,7 @@ class WebSocketServer
         }
 
         $originParts = parse_url($origin);
-        if (! isset($originParts['host'])) {
+        if (! is_array($originParts) || ! isset($originParts['host'])) {
             return false;
         }
 
@@ -265,7 +265,7 @@ class WebSocketServer
 
         foreach ($this->allowedOrigins as $allowed) {
             $allowedParts = parse_url($allowed);
-            if (! isset($allowedParts['host'])) {
+            if (! is_array($allowedParts) || ! isset($allowedParts['host'])) {
                 continue;
             }
 

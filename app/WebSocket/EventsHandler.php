@@ -11,7 +11,7 @@ class EventsHandler implements WebSocketHandler
 {
     protected const MAX_CONNECTIONS_PER_USER = 10;
 
-    protected const SUBSCRIBE_RATE_LIMIT = 10;
+    protected const SUBSCRIBE_RATE_LIMIT = 20;
 
     protected const SUBSCRIBE_RATE_WINDOW = 60;
 
