@@ -36,8 +36,7 @@ class GetMatchingSslCertificates
      */
     private function filterSsls(Site $site, array $domains): Collection
     {
-        $serverSsls = Ssl::query()
-            ->activeServerLevel($site->server_id)
+        $serverSsls = Ssl::activeServerLevel($site->server_id)
             ->get();
 
         return $serverSsls

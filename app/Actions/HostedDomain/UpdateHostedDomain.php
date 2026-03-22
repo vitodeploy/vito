@@ -126,8 +126,7 @@ class UpdateHostedDomain
                     return;
                 }
 
-                $ssl = Ssl::query()
-                    ->activeServerLevel($site->server_id)
+                $ssl = Ssl::activeServerLevel($site->server_id)
                     ->where('id', $value)
                     ->first();
 

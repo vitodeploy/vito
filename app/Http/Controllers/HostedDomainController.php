@@ -165,8 +165,7 @@ class HostedDomainController extends Controller
 
         $certificates = app(GetMatchingSslCertificates::class)->forDomain($site, $domain);
 
-        $serverSsls = Ssl::query()
-            ->activeServerLevel($site->server_id)
+        $serverSsls = Ssl::activeServerLevel($site->server_id)
             ->get();
 
         $bestMatch = app(AssignSslToDomains::class)->findBestMatch($domain, $serverSsls);
