@@ -32,6 +32,7 @@ export default function SiteBanners({ site }: { site: Site }) {
   const pendingDomainsWarning = warnings.find((w) => w.key === 'pending_domains');
   const sslDisabledWarning = warnings.find((w) => w.key === 'ssl_disabled');
   const vhostWarning = warnings.find((w) => w.key === 'vhost_generation_disabled');
+  const sslExpiringWarning = warnings.find((w) => w.key === 'ssl_expiring');
 
   const items: BannerItem[] = [];
 
@@ -62,6 +63,26 @@ export default function SiteBanners({ site }: { site: Site }) {
         <>
           We could not confirm that <strong>{pendingDomainsWarning.domains.join(', ')}</strong> {pendingDomainsWarning.count === 1 ? 'is' : 'are'}{' '}
           pointing to this server. Update your DNS records or activate by force via the Manage Domains page.
+        </>
+      ),
+      action: (
+        <Link href={route('hosted-domains', { server: site.server_id, site: site.id })}>
+          <Button variant="outline" size="sm">
+            Manage Domains
+          </Button>
+        </Link>
+      ),
+    });
+  }
+
+  if (sslExpiringWarning && sslExpiringWarning.key === 'ssl_expiring') {
+    const daysLeft = Math.max(0, Math.ceil((new Date(sslExpiringWarning.earliest_expiry).getTime() - Date.now()) / 86400000));
+    items.push({
+      key: 'ssl-expiring',
+      title: `${sslExpiringWarning.count} SSL ${sslExpiringWarning.count === 1 ? 'certificate' : 'certificates'} expiring in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`,
+      description: (
+        <>
+          SSL certificates for <strong>{sslExpiringWarning.domains.join(', ')}</strong> {daysLeft === 0 ? 'expire today.' : `will expire in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}.`}
         </>
       ),
       action: (

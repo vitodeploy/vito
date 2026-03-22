@@ -3,8 +3,10 @@
 namespace App\Actions\Site;
 
 use App\Enums\HostedDomainStatus;
+use App\Enums\SslStatus;
 use App\Models\HostedDomain;
 use App\Models\Site;
+use App\Models\Ssl;
 use Illuminate\Support\Collection;
 
 class GetSiteWarnings
@@ -43,6 +45,21 @@ class GetSiteWarnings
             ];
         }
 
+        $expiringSsls = $site->hostedDomains()
+            ->whereNotNull('ssl_id')
+            ->whereHas('ssl', fn ($q) => $q->where('status', SslStatus::CREATED)->where('expires_at', '<=', now()->addDays(14)))
+            ->with('ssl')
+            ->get();
+
+        if ($expiringSsls->isNotEmpty()) {
+            $warnings[] = [
+                'key' => 'ssl_expiring',
+                'count' => $expiringSsls->count(),
+                'domains' => $expiringSsls->pluck('domain')->all(),
+                'earliest_expiry' => $expiringSsls->min(fn (HostedDomain $hd) => $hd->ssl->expires_at)->toIso8601String(),
+            ];
+        }
+
         return $warnings;
     }
 
@@ -60,6 +77,14 @@ class GetSiteWarnings
             ->whereIn('site_id', $siteIds)
             ->where('status', HostedDomainStatus::PENDING)
             ->get(['site_id', 'domain'])
+            ->groupBy('site_id');
+
+        $expiringBySite = HostedDomain::query()
+            ->whereIn('site_id', $siteIds)
+            ->whereNotNull('ssl_id')
+            ->whereHas('ssl', fn ($q) => $q->where('status', SslStatus::CREATED)->where('expires_at', '<=', now()->addDays(14)))
+            ->with('ssl')
+            ->get()
             ->groupBy('site_id');
 
         $warnings = [];
@@ -86,6 +111,16 @@ class GetSiteWarnings
             if (! $site->vhost_generation_enabled) {
                 $siteWarnings[] = [
                     'key' => 'vhost_generation_disabled',
+                ];
+            }
+
+            $expiring = $expiringBySite->get($site->id);
+            if ($expiring && $expiring->isNotEmpty()) {
+                $siteWarnings[] = [
+                    'key' => 'ssl_expiring',
+                    'count' => $expiring->count(),
+                    'domains' => $expiring->pluck('domain')->all(),
+                    'earliest_expiry' => $expiring->min(fn (HostedDomain $hd) => $hd->ssl->expires_at)->toIso8601String(),
                 ];
             }
 
