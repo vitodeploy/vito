@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Site\DeleteSite;
+use App\Actions\Site\PreviewVhost;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
+use App\Actions\Site\UpdateVhost;
 use App\Actions\Site\UpdateVhostGeneration;
+use App\Actions\Site\UpdateVhostTemplate;
 use App\Actions\Site\UpdateWebDirectory;
 use App\Actions\Webserver\GenerateCaddyConfig;
 use App\Actions\Webserver\GenerateNginxConfig;
@@ -103,12 +106,8 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        $this->validate($request, [
-            'template' => 'required|string|max:65535',
-        ]);
-
         return response()->json([
-            'vhost' => $this->getVhostGenerator($site)->generate($site, $request->input('template')),
+            'vhost' => app(PreviewVhost::class)->preview($site, $request->input()),
         ]);
     }
 
@@ -117,11 +116,7 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        $this->validate($request, [
-            'vhost' => 'required|string|max:65535',
-        ]);
-
-        $site->webserver()->updateVHost($site, $request->input('vhost'));
+        app(UpdateVhost::class)->update($site, $request->input());
 
         return back()->with('success', 'VHost updated successfully.');
     }
@@ -143,14 +138,7 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
-        $this->validate($request, [
-            'template' => 'required|string|max:65535',
-        ]);
-
-        $site->vhost_template = $request->input('template');
-        $site->save();
-
-        $site->webserver()->updateVHost($site);
+        app(UpdateVhostTemplate::class)->update($site, $request->input());
 
         return back()->with('success', 'VHost template updated successfully.');
     }

@@ -8,6 +8,8 @@ use App\Services\ServiceInterface;
 
 interface Webserver extends ServiceInterface
 {
+    public function generateVhost(Site $site, ?string $template = null): string;
+
     public function createVHost(Site $site): void;
 
     public function updateVHost(Site $site, ?string $vhost = null, bool $restart = false): void;

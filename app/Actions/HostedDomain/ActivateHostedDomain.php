@@ -34,7 +34,7 @@ class ActivateHostedDomain
 
     private function activateWithCustomSsl(HostedDomain $hostedDomain, Site $site): void
     {
-        if (! $hostedDomain->ssl_id) {
+        if (! $hostedDomain->ssl_id || ! $hostedDomain->ssl) {
             $hostedDomain->error = 'No certificate provided';
             $hostedDomain->status = HostedDomainStatus::PENDING;
             $hostedDomain->save();

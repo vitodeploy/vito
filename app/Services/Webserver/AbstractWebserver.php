@@ -45,5 +45,5 @@ abstract class AbstractWebserver extends AbstractService implements Webserver
         return (bool) data_get(config("service.services.{$name}.data"), 'creates_site_ssls', true);
     }
 
-    abstract protected function generateVhost(Site $site): string;
+    abstract public function generateVhost(Site $site, ?string $template = null): string;
 }

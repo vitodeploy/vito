@@ -80,9 +80,9 @@ class Nginx extends AbstractWebserver
         $this->service->server->os()->cleanup();
     }
 
-    protected function generateVhost(Site $site): string
+    public function generateVhost(Site $site, ?string $template = null): string
     {
-        return app(GenerateNginxConfig::class)->generate($site);
+        return app(GenerateNginxConfig::class)->generate($site, $template);
     }
 
     /**

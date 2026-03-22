@@ -102,9 +102,9 @@ class Caddy extends AbstractWebserver
         );
     }
 
-    protected function generateVhost(Site $site): string
+    public function generateVhost(Site $site, ?string $template = null): string
     {
-        return app(GenerateCaddyConfig::class)->generate($site);
+        return app(GenerateCaddyConfig::class)->generate($site, $template);
     }
 
     /**
