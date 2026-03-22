@@ -55,6 +55,13 @@ class CreateSite
             // fields based on the type
             $site->fill($site->type()->createFields($input));
 
+            $webserver = $server->webserver();
+            if ($webserver) {
+                /** @var \App\Services\Webserver\Webserver $webserverHandler */
+                $webserverHandler = $webserver->handler();
+                $site->fill($webserverHandler->siteDefaults());
+            }
+
             // check has access to repository
             try {
                 if ($site->sourceControl) {
@@ -80,11 +87,15 @@ class CreateSite
             // save
             $site->save();
 
+            /** @var \App\Services\Webserver\Webserver|null $wsHandler */
+            $wsHandler = $webserver?->handler();
+            $defaultSslMethod = $wsHandler?->defaultSslMethod() ?? SslMethod::NONE;
+
             $primaryDomain = $site->hostedDomains()->create([
                 'domain' => $site->domain,
                 'type' => HostedDomainType::PRIMARY,
                 'status' => HostedDomainStatus::CREATING,
-                'ssl_method' => SslMethod::NONE,
+                'ssl_method' => $defaultSslMethod,
             ]);
 
             $aliasDomains = [];
@@ -93,7 +104,7 @@ class CreateSite
                     'domain' => $alias,
                     'type' => HostedDomainType::ALIAS,
                     'status' => HostedDomainStatus::CREATING,
-                    'ssl_method' => SslMethod::NONE,
+                    'ssl_method' => $defaultSslMethod,
                 ]);
             }
 

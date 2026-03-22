@@ -1,12 +1,12 @@
 {{#server_blocks}}
 {{#domains}}{{address}} {{/domains}}{
-    {{#has_tls}}
-    tls {{ssl_certificate_path}} {{ssl_certificate_key_path}}
-    {{/has_tls}}
-
     import access_log {{primary_domain}}
     import compression
     import security_headers
+
+    {{#has_tls}}
+    tls {{ssl_certificate_path}} {{ssl_certificate_key_path}}
+    {{/has_tls}}
 
     {{#is_php}}
     root * {{root}}
@@ -61,6 +61,7 @@
     {{/is_proxy}}
     {{/redirects}}
 }
+
 {{/server_blocks}}
 
 {{#redirect_blocks}}
@@ -71,4 +72,5 @@
 
     redir {{redirect_scheme}}://{{redirect_target}}{uri} permanent
 }
+
 {{/redirect_blocks}}

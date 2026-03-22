@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HostedDomain } from '@/types/hosted-domain';
+import { Site } from '@/types/site';
 import FormSuccessful from '@/components/form-successful';
 import { useSslMatching } from '@/pages/hosted-domains/hooks/use-ssl-matching';
 
@@ -28,9 +29,19 @@ type EditForm = {
   ssl_id: string;
 };
 
+const SSL_METHOD_OPTIONS: { value: string; label: string }[] = [
+  { value: 'none', label: 'Disabled' },
+  { value: 'letsencrypt', label: "Generate Let's Encrypt Certificate" },
+  { value: 'custom', label: 'Custom Certificate' },
+];
+
 export default function EditHostedDomain({ hostedDomain, children }: { hostedDomain: HostedDomain; children: ReactNode }) {
+  const { site } = usePage<{ site: Site }>().props;
   const [open, setOpen] = useState(false);
   const isPrimary = hostedDomain.type === 'primary';
+
+  const allowedMethods = site.webserver_allowed_ssl_methods;
+  const filteredSslOptions = allowedMethods ? SSL_METHOD_OPTIONS.filter((o) => allowedMethods.includes(o.value)) : SSL_METHOD_OPTIONS;
 
   const form = useForm<EditForm>({
     domain: hostedDomain.domain,
@@ -124,9 +135,11 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Disabled</SelectItem>
-                  <SelectItem value="letsencrypt">Generate Let&apos;s Encrypt Certificate</SelectItem>
-                  <SelectItem value="custom">Custom Certificate</SelectItem>
+                  {filteredSslOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <InputError message={form.errors.ssl_method} />

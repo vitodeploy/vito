@@ -42,17 +42,22 @@ class UpdateHostedDomain
         $hostedDomain->ssl_id = $validated['ssl_method'] === SslMethod::CUSTOM->value ? (int) $validated['ssl_id'] : null;
         $hostedDomain->error = null;
 
-        $needsRecheck = ($domainChanged || $sslMethodChangedToLE)
+        $needsDnsRecheck = $domainChanged
             && in_array($hostedDomain->status, [HostedDomainStatus::ACTIVE, HostedDomainStatus::PENDING]);
 
-        if ($needsRecheck) {
+        $needsSslActivation = ! $domainChanged && $sslMethodChangedToLE
+            && $hostedDomain->status === HostedDomainStatus::ACTIVE;
+
+        if ($needsDnsRecheck || $needsSslActivation) {
             $hostedDomain->status = HostedDomainStatus::UPDATING;
         }
 
         $hostedDomain->save();
 
-        if ($needsRecheck) {
+        if ($needsDnsRecheck) {
             dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
+        } elseif ($needsSslActivation) {
+            app(ActivateHostedDomain::class)->activate($hostedDomain);
         } else {
             $hostedDomain->site->webserver()->updateVHost($hostedDomain->site);
         }
@@ -98,7 +103,10 @@ class UpdateHostedDomain
 
         $rules['ssl_method'] = [
             'required',
-            Rule::in([SslMethod::NONE->value, SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value]),
+            Rule::in(
+                $site->webserver()->allowedSslMethods()
+                    ?? [SslMethod::NONE->value, SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value]
+            ),
         ];
         $rules['ssl_id'] = [
             Rule::requiredIf(($input['ssl_method'] ?? '') === SslMethod::CUSTOM->value),

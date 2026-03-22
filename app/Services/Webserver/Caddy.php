@@ -3,6 +3,7 @@
 namespace App\Services\Webserver;
 
 use App\Actions\Webserver\GenerateCaddyConfig;
+use App\Enums\SslMethod;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
@@ -14,6 +15,29 @@ class Caddy extends AbstractWebserver
     public static function id(): string
     {
         return 'caddy';
+    }
+
+    public function siteDefaults(): array
+    {
+        return [
+            'ssl_enabled' => true,
+            'force_ssl' => true,
+        ];
+    }
+
+    public function siteLockedFields(): array
+    {
+        return ['ssl_enabled', 'force_ssl'];
+    }
+
+    public function allowedSslMethods(): ?array
+    {
+        return [SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value];
+    }
+
+    public function defaultSslMethod(): SslMethod
+    {
+        return SslMethod::LETSENCRYPT;
     }
 
     public static function type(): string

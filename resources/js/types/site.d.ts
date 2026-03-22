@@ -16,6 +16,9 @@ export interface Site {
   web_directory: string;
   webserver: string;
   webserver_creates_site_ssls: boolean;
+  webserver_locked_fields: string[];
+  webserver_allowed_ssl_methods: string[] | null;
+  webserver_default_ssl_method: string;
   path: string;
   php_version: string;
   repository: string;

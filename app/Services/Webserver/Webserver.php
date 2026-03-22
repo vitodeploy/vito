@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Enums\SslMethod;
 use App\Models\Site;
 use App\Models\Ssl;
 use App\Services\ServiceInterface;
@@ -23,4 +24,15 @@ interface Webserver extends ServiceInterface
     public function removeSSL(Ssl $ssl): void;
 
     public function createsSiteSSLs(): bool;
+
+    /** @return array<string, mixed> */
+    public function siteDefaults(): array;
+
+    /** @return array<string> */
+    public function siteLockedFields(): array;
+
+    /** @return array<string>|null */
+    public function allowedSslMethods(): ?array;
+
+    public function defaultSslMethod(): SslMethod;
 }

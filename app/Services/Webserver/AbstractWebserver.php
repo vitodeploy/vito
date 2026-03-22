@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Enums\SslMethod;
 use App\Models\Site;
 use App\Services\AbstractService;
 use Closure;
@@ -43,6 +44,26 @@ abstract class AbstractWebserver extends AbstractService implements Webserver
         $name = static::id();
 
         return (bool) data_get(config("service.services.{$name}.data"), 'creates_site_ssls', true);
+    }
+
+    public function siteDefaults(): array
+    {
+        return [];
+    }
+
+    public function siteLockedFields(): array
+    {
+        return [];
+    }
+
+    public function allowedSslMethods(): ?array
+    {
+        return null;
+    }
+
+    public function defaultSslMethod(): SslMethod
+    {
+        return SslMethod::NONE;
     }
 
     abstract public function generateVhost(Site $site, ?string $template = null): string;

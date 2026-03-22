@@ -65,7 +65,10 @@ class CreateHostedDomain
             ],
             'ssl_method' => [
                 'required',
-                Rule::in([SslMethod::NONE->value, SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value]),
+                Rule::in(
+                    $site->webserver()->allowedSslMethods()
+                        ?? [SslMethod::NONE->value, SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value]
+                ),
             ],
             'ssl_id' => [
                 Rule::requiredIf(($input['ssl_method'] ?? '') === SslMethod::CUSTOM->value),

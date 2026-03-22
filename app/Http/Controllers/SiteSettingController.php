@@ -20,6 +20,7 @@ use App\Models\Site;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -177,6 +178,12 @@ class SiteSettingController extends Controller
     {
         $this->authorize('update', [$site, $server]);
 
+        if (in_array('force_ssl', $site->webserver()->siteLockedFields())) {
+            throw ValidationException::withMessages([
+                'force_ssl' => 'Force SSL cannot be changed for this webserver.',
+            ]);
+        }
+
         $site->force_ssl = true;
         $site->save();
         $site->webserver()->updateVHost($site);
@@ -188,6 +195,12 @@ class SiteSettingController extends Controller
     public function disableForceSsl(Server $server, Site $site): RedirectResponse
     {
         $this->authorize('update', [$site, $server]);
+
+        if (in_array('force_ssl', $site->webserver()->siteLockedFields())) {
+            throw ValidationException::withMessages([
+                'force_ssl' => 'Force SSL cannot be changed for this webserver.',
+            ]);
+        }
 
         $site->force_ssl = false;
         $site->save();

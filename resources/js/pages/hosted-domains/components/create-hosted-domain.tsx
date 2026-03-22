@@ -27,13 +27,23 @@ type CreateForm = {
   ssl_id: string;
 };
 
+const SSL_METHOD_OPTIONS: { value: string; label: string }[] = [
+  { value: 'none', label: 'Disabled' },
+  { value: 'letsencrypt', label: "Generate Let's Encrypt Certificate" },
+  { value: 'custom', label: 'Custom Certificate' },
+];
+
 export default function CreateHostedDomain({ site, children }: { site: Site; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+
+  const allowedMethods = site.webserver_allowed_ssl_methods;
+  const filteredSslOptions = allowedMethods ? SSL_METHOD_OPTIONS.filter((o) => allowedMethods.includes(o.value)) : SSL_METHOD_OPTIONS;
+  const defaultSslMethod = site.webserver_default_ssl_method ?? 'letsencrypt';
 
   const form = useForm<CreateForm>({
     domain: '',
     type: 'alias',
-    ssl_method: 'letsencrypt',
+    ssl_method: defaultSslMethod,
     ssl_id: '',
   });
 
@@ -108,9 +118,11 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Disabled</SelectItem>
-                  <SelectItem value="letsencrypt">Generate Let&apos;s Encrypt Certificate</SelectItem>
-                  <SelectItem value="custom">Custom Certificate</SelectItem>
+                  {filteredSslOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <InputError message={form.errors.ssl_method} />

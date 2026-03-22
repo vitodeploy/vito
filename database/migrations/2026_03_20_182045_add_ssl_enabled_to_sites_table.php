@@ -30,6 +30,17 @@ return new class extends Migration
             })
             ->update(['ssl_enabled' => true]);
 
+        // Caddy manages TLS automatically, so enable ssl_enabled and force_ssl
+        DB::table('sites')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('services')
+                    ->whereColumn('services.server_id', 'sites.server_id')
+                    ->where('services.type', 'webserver')
+                    ->where('services.name', 'caddy');
+            })
+            ->update(['ssl_enabled' => true, 'force_ssl' => true]);
+
         // Disable vhost generation for existing sites to support legacy sites
         // that may have manually edited vhosts and need updating before enabling
         DB::table('sites')->update(['vhost_generation_enabled' => false]);

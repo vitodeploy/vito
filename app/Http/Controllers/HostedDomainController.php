@@ -10,7 +10,10 @@ use App\Actions\HostedDomain\ReactivateHostedDomain;
 use App\Actions\HostedDomain\UpdateHostedDomain;
 use App\Actions\SSL\AssignSslToDomains;
 use App\Actions\SSL\GetMatchingSslCertificates;
+use App\Actions\SSL\RenewSiteSsl;
 use App\Enums\HostedDomainStatus;
+use App\Enums\SslStatus;
+use App\Enums\SslType;
 use App\Http\Resources\HostedDomainResource;
 use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
@@ -46,6 +49,10 @@ class HostedDomainController extends Controller
                     ->oldest()
                     ->simplePaginate(config('web.pagination_size'))
             ),
+            'hasSiteSsl' => $site->ssls()
+                ->where('type', SslType::LETSENCRYPT)
+                ->where('status', SslStatus::CREATED)
+                ->exists(),
         ]);
     }
 
@@ -127,6 +134,22 @@ class HostedDomainController extends Controller
 
         return back()
             ->with('info', 'Validating domain DNS resolution.');
+    }
+
+    #[Post('/renew-ssl', name: 'hosted-domains.renew-ssl')]
+    public function renewSsl(Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('create', [HostedDomain::class, $site, $server]);
+
+        try {
+            app(RenewSiteSsl::class)->renew($site);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->with('error', $e->getMessage());
+        }
+
+        return back()
+            ->with('info', 'Renewing site SSL certificate.');
     }
 
     #[Get('/matching-ssls', name: 'hosted-domains.matching-ssls')]

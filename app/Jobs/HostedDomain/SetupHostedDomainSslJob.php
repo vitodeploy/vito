@@ -54,7 +54,7 @@ class SetupHostedDomainSslJob implements ShouldQueue
 
             $leDomains = $site->hostedDomains()
                 ->where('ssl_method', SslMethod::LETSENCRYPT)
-                ->where('status', HostedDomainStatus::ACTIVE)
+                ->where('status', HostedDomainStatus::UPDATING)
                 ->pluck('domain')
                 ->push($this->hostedDomain->domain)
                 ->unique()
@@ -91,18 +91,49 @@ class SetupHostedDomainSslJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
-        $this->hostedDomain->refresh();
-        $this->hostedDomain->error = 'Unable to generate SSL certificate. Check server logs for details.';
-        $this->hostedDomain->status = HostedDomainStatus::PENDING;
-        $this->hostedDomain->save();
+        $site = $this->hostedDomain->site;
+        $errorMessage = 'Unable to generate SSL certificate. Check server logs for details.';
 
-        $this->broadcastUpdate();
+        $ssl = $site->ssls()
+            ->where('type', SslType::LETSENCRYPT)
+            ->where('status', SslStatus::CREATING)
+            ->first();
+
+        if ($ssl) {
+            $ssl->status = SslStatus::CREATED;
+            $ssl->save();
+        }
+
+        $updatingDomains = $site->hostedDomains()
+            ->where('ssl_method', SslMethod::LETSENCRYPT)
+            ->where('status', HostedDomainStatus::UPDATING)
+            ->get();
+
+        foreach ($updatingDomains as $domain) {
+            if ($ssl && $ssl->coversDomain($domain->domain)) {
+                $domain->error = $errorMessage;
+                $domain->status = HostedDomainStatus::ACTIVE;
+            } else {
+                $domain->error = $errorMessage;
+                $domain->status = HostedDomainStatus::PENDING;
+            }
+            $domain->save();
+            $this->broadcastUpdateFor($domain);
+        }
+
+        $this->hostedDomain->refresh();
+        if ($this->hostedDomain->status === HostedDomainStatus::UPDATING) {
+            $this->hostedDomain->error = $errorMessage;
+            $this->hostedDomain->status = HostedDomainStatus::PENDING;
+            $this->hostedDomain->save();
+            $this->broadcastUpdate();
+        }
 
         ServerLog::log(
-            $this->hostedDomain->site->server,
+            $site->server,
             'setup-hosted-domain-ssl-failed',
             $e->getMessage(),
-            $this->hostedDomain->site
+            $site
         );
     }
 
@@ -132,6 +163,7 @@ class SetupHostedDomainSslJob implements ShouldQueue
             if ($this->domainInList($hd->domain, $certDomains)) {
                 $hd->ssl_id = $ssl->id;
                 $hd->error = null;
+                $hd->status = HostedDomainStatus::ACTIVE;
                 $hd->save();
             } else {
                 $hd->error = 'Unable to validate generated SSL covers this domain';

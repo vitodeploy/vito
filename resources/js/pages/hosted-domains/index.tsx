@@ -8,7 +8,7 @@ import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { BookOpenIcon, EllipsisVerticalIcon, LockIcon, LockOpenIcon, PlusIcon, ShieldCheckIcon, ShieldOffIcon } from 'lucide-react';
+import { BookOpenIcon, EllipsisVerticalIcon, LockIcon, LockOpenIcon, PlusIcon, RefreshCwIcon, ShieldCheckIcon, ShieldOffIcon } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/hosted-domains/components/columns';
@@ -22,9 +22,14 @@ export default function HostedDomains() {
     server: Server;
     site: Site;
     hostedDomains: PaginatedData<HostedDomain>;
+    hasSiteSsl: boolean;
   }>();
 
   const [hostedDomains] = useRealtime<HostedDomain>(page.props.hostedDomains, 'hosted-domain');
+
+  const lockedFields = page.props.site.webserver_locked_fields ?? [];
+  const sslLocked = lockedFields.includes('ssl_enabled');
+  const forceSslLocked = lockedFields.includes('force_ssl');
 
   return (
     <ServerLayout>
@@ -56,14 +61,16 @@ export default function HostedDomains() {
               <DropdownMenuContent align="end">
                 {page.props.site.ssl_enabled ? (
                   <DropdownMenuItem
-                    onClick={() => router.post(route('sites.disable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                    disabled={sslLocked}
+                    onClick={() => !sslLocked && router.post(route('sites.disable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
                   >
                     <LockOpenIcon />
                     Disable SSL
                   </DropdownMenuItem>
                 ) : (
                   <DropdownMenuItem
-                    onClick={() => router.post(route('sites.enable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                    disabled={sslLocked}
+                    onClick={() => !sslLocked && router.post(route('sites.enable-ssl', { server: page.props.server.id, site: page.props.site.id }))}
                   >
                     <LockIcon />
                     Enable SSL
@@ -71,17 +78,37 @@ export default function HostedDomains() {
                 )}
                 {page.props.site.force_ssl ? (
                   <DropdownMenuItem
-                    onClick={() => router.post(route('site-settings.disable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                    disabled={forceSslLocked}
+                    onClick={() =>
+                      !forceSslLocked &&
+                      router.post(route('site-settings.disable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))
+                    }
                   >
                     <ShieldOffIcon />
                     Disable Force SSL
                   </DropdownMenuItem>
                 ) : (
                   <DropdownMenuItem
-                    onClick={() => router.post(route('site-settings.enable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))}
+                    disabled={forceSslLocked}
+                    onClick={() =>
+                      !forceSslLocked &&
+                      router.post(route('site-settings.enable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))
+                    }
                   >
                     <ShieldCheckIcon />
                     Force SSL
+                  </DropdownMenuItem>
+                )}
+                {page.props.site.webserver_creates_site_ssls && (
+                  <DropdownMenuItem
+                    disabled={!page.props.hasSiteSsl}
+                    onClick={() =>
+                      page.props.hasSiteSsl &&
+                      router.post(route('hosted-domains.renew-ssl', { server: page.props.server.id, site: page.props.site.id }))
+                    }
+                  >
+                    <RefreshCwIcon />
+                    Force Renew SSL
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
