@@ -114,14 +114,18 @@ abstract class AbstractGenerateConfig
      */
     protected function buildData(Site $site): array
     {
-        $activeHostedDomains = $site->hostedDomains
-            ->filter(fn (HostedDomain $hd) => $hd->status === HostedDomainStatus::ACTIVE);
+        $primary = $site->hostedDomains
+            ->first(fn (HostedDomain $hd) => $hd->type === HostedDomainType::PRIMARY);
 
-        if ($activeHostedDomains->isNotEmpty()) {
-            return $this->buildFromHostedDomains($site, $activeHostedDomains);
+        $activeOthers = $site->hostedDomains
+            ->filter(fn (HostedDomain $hd) => $hd->type !== HostedDomainType::PRIMARY && $hd->status === HostedDomainStatus::ACTIVE);
+
+        $domains = $activeOthers;
+        if ($primary) {
+            $domains = $domains->prepend($primary);
         }
 
-        return $this->buildFromLegacy($site);
+        return $this->buildFromHostedDomains($site, $domains);
     }
 
     /**
@@ -178,37 +182,6 @@ abstract class AbstractGenerateConfig
         foreach ($redirectDomains as $hd) {
             $data['redirect_blocks'][] = $this->buildRedirectBlock($hd, $primaryDomain, $site);
         }
-
-        return $this->finalizeData($data, $site);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function buildFromLegacy(Site $site): array
-    {
-        $primaryDomain = $site->domain;
-        $data = $this->buildCommonData($site, $primaryDomain);
-
-        $domainNames = [['name' => $site->domain]];
-
-        $activeSsl = $site->activeSsl;
-        $serverBlocks = [];
-
-        if ($activeSsl && $site->ssl_enabled) {
-            $serverBlocks[] = [
-                ...$this->buildServerBlockKeys(true, $activeSsl->certificate_path, $activeSsl->pk_path, $site),
-                'domains' => $domainNames,
-            ];
-        } else {
-            $serverBlocks[] = [
-                ...$this->buildServerBlockKeys(false, '', '', $site),
-                'domains' => $domainNames,
-            ];
-        }
-
-        $data['server_blocks'] = $this->enrichServerBlocks($serverBlocks, $data);
-        $data['redirect_blocks'] = [];
 
         return $this->finalizeData($data, $site);
     }

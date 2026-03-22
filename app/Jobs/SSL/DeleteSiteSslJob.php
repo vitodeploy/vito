@@ -4,9 +4,9 @@ namespace App\Jobs\SSL;
 
 use App\Models\Server;
 use App\Models\Ssl;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Str;
 
 class DeleteSiteSslJob implements ShouldQueue
 {
@@ -16,7 +16,7 @@ class DeleteSiteSslJob implements ShouldQueue
 
     public function handle(): void
     {
-        $result = $this->server->ssh()->exec(
+        $this->server->ssh()->exec(
             view('ssh.ssl.delete-ssl', [
                 'sslId' => $this->ssl->id,
                 'isWildcard' => $this->ssl->is_wildcard,
@@ -24,8 +24,11 @@ class DeleteSiteSslJob implements ShouldQueue
             'delete-site-ssl',
         );
 
-        if (Str::contains($result, 'SSL DELETED SUCCESSFULLY')) {
-            $this->ssl->delete();
-        }
+        $this->ssl->delete();
+    }
+
+    public function failed(Exception $e): void
+    {
+        $this->ssl->delete();
     }
 }

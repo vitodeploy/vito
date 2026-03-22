@@ -41,7 +41,7 @@ class HostedDomainController extends Controller
         return Inertia::render('hosted-domains/index', [
             'hostedDomains' => HostedDomainResource::collection(
                 $site->hostedDomains()
-                    ->with('ssl')
+                    ->with('site', 'ssl')
                     ->orderByRaw("CASE WHEN type = 'primary' THEN 0 ELSE 1 END")
                     ->oldest()
                     ->simplePaginate(config('web.pagination_size'))
