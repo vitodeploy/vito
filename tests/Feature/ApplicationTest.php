@@ -349,13 +349,67 @@ class ApplicationTest extends TestCase
             'site' => $this->site,
         ]), [
             'env' => 'APP_ENV="production"',
-            'path' => '/home/vito/some-path/.env',
+            'path' => $this->site->path.'/some-path/.env',
         ])
             ->assertSessionDoesntHaveErrors();
 
         $this->site->refresh();
 
-        $this->assertEquals('/home/vito/some-path/.env', data_get($this->site->type_data, 'env_path'));
+        $this->assertEquals($this->site->path.'/some-path/.env', data_get($this->site->type_data, 'env_path'));
+    }
+
+    public function test_update_env_blocks_path_outside_site_directory(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_ENV="production"',
+            'path' => '/home/vito/other-site/.env',
+        ])
+            ->assertSessionHasErrors('path');
+    }
+
+    public function test_update_env_allows_stored_env_path_outside_site_directory(): void
+    {
+        SSH::fake();
+
+        $this->site->update([
+            'type_data' => array_merge($this->site->type_data ?? [], [
+                'env_path' => '/home/vito/other-site/.env',
+            ]),
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_ENV="production"',
+            'path' => '/home/vito/other-site/.env',
+        ])
+            ->assertSessionDoesntHaveErrors();
+    }
+
+    public function test_update_env_blocks_path_traversal(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $this->put(route('application.update-env', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]), [
+            'env' => 'APP_ENV="production"',
+            'path' => $this->site->path.'/../../etc/passwd',
+        ])
+            ->assertSessionHasErrors('path');
     }
 
     /**
