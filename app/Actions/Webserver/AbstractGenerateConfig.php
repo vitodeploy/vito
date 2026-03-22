@@ -8,7 +8,7 @@ use App\Models\HostedDomain;
 use App\Models\Site;
 use App\Models\Ssl;
 use Illuminate\Support\Collection;
-use Mustache_Engine;
+use Mustache\Engine;
 
 abstract class AbstractGenerateConfig
 {
@@ -22,7 +22,7 @@ abstract class AbstractGenerateConfig
         $template = $template ?? $this->getTemplate($site);
         $data = $this->buildData($site);
 
-        $engine = new Mustache_Engine([
+        $engine = new Engine([
             'escape' => fn ($value) => $value,
         ]);
 
