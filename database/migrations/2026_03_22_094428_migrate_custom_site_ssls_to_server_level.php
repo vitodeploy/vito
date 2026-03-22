@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Models\Ssl;
 use Illuminate\Database\Migrations\Migration;
@@ -21,7 +20,6 @@ return new class extends Migration
             ->each(function (Ssl $ssl): void {
                 $ssl->server_id = $ssl->site->server_id;
                 $ssl->site_id = null;
-                $ssl->status = SslStatus::CREATED;
                 $ssl->save();
             });
     }
