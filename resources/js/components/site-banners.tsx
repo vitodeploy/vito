@@ -82,7 +82,8 @@ export default function SiteBanners({ site }: { site: Site }) {
       title: `${sslExpiringWarning.count} SSL ${sslExpiringWarning.count === 1 ? 'certificate' : 'certificates'} expiring in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`,
       description: (
         <>
-          SSL certificates for <strong>{sslExpiringWarning.domains.join(', ')}</strong> {daysLeft === 0 ? 'expire today.' : `will expire in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}.`}
+          SSL certificates for <strong>{sslExpiringWarning.domains.join(', ')}</strong>{' '}
+          {daysLeft === 0 ? 'expire today.' : `will expire in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}.`}
         </>
       ),
       action: (
