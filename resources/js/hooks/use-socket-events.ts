@@ -1,164 +1,48 @@
 import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { PaginatedData, SharedData } from '@/types';
+import { useSocketStore, SOCKET_EVENT } from '@/stores/socket-store';
+import type { SocketEventData, SocketStatus } from '@/stores/socket-store';
 
-export type SocketEventData = {
-  project_id: number;
-  type: string;
-  data: Record<string, unknown>;
-};
-
-export const SOCKET_EVENT = 'vito:socket-event' as const;
-
-declare global {
-  interface WindowEventMap {
-    [SOCKET_EVENT]: CustomEvent<SocketEventData>;
-  }
-}
-
-type WebSocketMessage =
-  | { type: 'connected'; project_id: number }
-  | { type: 'subscribed'; project_id: number }
-  | { type: 'event'; data: SocketEventData }
-  | { type: 'error'; message: string };
-
-export type SocketStatus = 'connecting' | 'connected' | 'disconnected';
-
-const RECONNECT_BASE_DELAY = 1000;
-const RECONNECT_MAX_DELAY = 30000;
-const MAX_FAST_RECONNECT_ATTEMPTS = 3;
-const SLOW_RECONNECT_INTERVAL = 30000;
-
-async function requestEventsToken(csrfToken: string): Promise<{ token: string; url: string } | null> {
-  try {
-    const response = await fetch(route('events.token'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken,
-      },
-    });
-    if (!response.ok) return null;
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
+export type { SocketEventData, SocketStatus, WebSocketMessage } from '@/stores/socket-store';
+export { SOCKET_EVENT } from '@/stores/socket-store';
 
 export function useSocketEvents(): { status: SocketStatus; reconnect: () => void } {
   const { auth, csrf_token } = usePage<SharedData>().props;
-  const authRef = useRef(auth);
   const csrfRef = useRef(csrf_token);
-  authRef.current = auth;
   csrfRef.current = csrf_token;
 
-  const [status, setStatus] = useState<SocketStatus>('connecting');
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectAttemptRef = useRef(0);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const currentProjectIdRef = useRef<number | null>(null);
+  const status = useSocketStore((s) => s.status);
+  const connect = useSocketStore((s) => s.connect);
+  const disconnect = useSocketStore((s) => s.disconnect);
+  const storeReconnect = useSocketStore((s) => s.reconnect);
+  const switchProject = useSocketStore((s) => s.switchProject);
 
-  const cleanup = useCallback(() => {
-    if (reconnectTimerRef.current) {
-      clearTimeout(reconnectTimerRef.current);
-      reconnectTimerRef.current = null;
-    }
-    if (wsRef.current) {
-      wsRef.current.onclose = null;
-      wsRef.current.onerror = null;
-      wsRef.current.onmessage = null;
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-  }, []);
-
-  const scheduleReconnect = useCallback((connectFn: () => void) => {
-    reconnectAttemptRef.current++;
-    if (reconnectAttemptRef.current > MAX_FAST_RECONNECT_ATTEMPTS) {
-      setStatus('disconnected');
-      reconnectTimerRef.current = setTimeout(connectFn, SLOW_RECONNECT_INTERVAL);
-      return;
-    }
-    setStatus('connecting');
-    const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttemptRef.current - 1), RECONNECT_MAX_DELAY);
-    reconnectTimerRef.current = setTimeout(connectFn, delay);
-  }, []);
-
-  const connect = useCallback(async () => {
-    if (!authRef.current || !csrfRef.current) {
-      return;
-    }
-
-    cleanup();
-    setStatus('connecting');
-
-    const tokenData = await requestEventsToken(csrfRef.current);
-    if (!tokenData) {
-      scheduleReconnect(() => connect());
-      return;
-    }
-
-    const ws = new WebSocket(`${tokenData.url}?token=${tokenData.token}`);
-    wsRef.current = ws;
-
-    ws.onmessage = (event) => {
-      try {
-        const msg: WebSocketMessage = JSON.parse(event.data);
-
-        switch (msg.type) {
-          case 'connected':
-            reconnectAttemptRef.current = 0;
-            currentProjectIdRef.current = msg.project_id;
-            setStatus('connected');
-            break;
-
-          case 'subscribed':
-            currentProjectIdRef.current = msg.project_id;
-            break;
-
-          case 'event':
-            window.dispatchEvent(new CustomEvent(SOCKET_EVENT, { detail: msg.data }));
-            break;
-
-          case 'error':
-            console.warn('[WS Events]', msg.message);
-            break;
-        }
-      } catch {
-        // ignore non-JSON messages
-      }
-    };
-
-    ws.onclose = () => {
-      wsRef.current = null;
-      scheduleReconnect(() => connect());
-    };
-
-    ws.onerror = () => {
-      // onclose will fire after onerror, reconnection handled there
-    };
-  }, [cleanup, scheduleReconnect]);
-
-  const reconnect = useCallback(() => {
-    reconnectAttemptRef.current = 0;
-    connect();
-  }, [connect]);
-
-  // Switch project subscription when the current project changes
   const projectId = auth?.currentProject?.id;
 
   useEffect(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN && projectId && projectId !== currentProjectIdRef.current) {
-      wsRef.current.send(JSON.stringify({ type: 'subscribe', project_id: projectId }));
+    if (auth && csrfRef.current) {
+      connect(csrfRef.current);
     }
-  }, [projectId]);
+  }, [auth, connect]);
 
-  // Connect on mount, cleanup on unmount
   useEffect(() => {
-    connect();
+    if (projectId) {
+      switchProject(projectId);
+    }
+  }, [projectId, switchProject]);
 
-    return cleanup;
-  }, [connect, cleanup]);
+  useEffect(() => {
+    if (!auth) {
+      disconnect();
+    }
+  }, [auth, disconnect]);
+
+  const reconnect = useCallback(() => {
+    if (csrfRef.current) {
+      storeReconnect(csrfRef.current);
+    }
+  }, [storeReconnect]);
 
   return { status, reconnect };
 }
@@ -183,7 +67,7 @@ export function useSocketListener(callback: (data: SocketEventData) => void): vo
 /**
  * Manages paginated Inertia data with realtime socket updates.
  *
- * Listens for socket events matching `{eventPrefix}.updated` (replace row),
+ * Listens for socket events matching `{eventExpression}.updated` (replace row),
  * and `{eventPrefix}.deleted` (remove row) automatically.
  *
  * Returns the live data and setter for custom handling.
@@ -224,7 +108,7 @@ export function useRealtime<T extends { id: number }>(
           case 'deleted':
             setData((prev) => ({
               ...prev,
-              data: prev.data.filter((item) => item.id !== eventData.id),
+              data: prev.data.filter((item) => (item.id !== eventData.id)),
             }));
             break;
         }

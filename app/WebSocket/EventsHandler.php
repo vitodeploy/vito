@@ -11,6 +11,10 @@ class EventsHandler implements WebSocketHandler
 {
     protected const MAX_CONNECTIONS_PER_USER = 10;
 
+    protected const SUBSCRIBE_RATE_LIMIT = 10;
+
+    protected const SUBSCRIBE_RATE_WINDOW = 60;
+
     /**
      * @var array<string, array{
      *     connection: WebSocketConnection,
@@ -19,6 +23,11 @@ class EventsHandler implements WebSocketHandler
      * }>
      */
     protected array $connections = [];
+
+    /**
+     * @var array<int, array<int, float>>
+     */
+    protected array $userSubscribeTimestamps = [];
 
     /**
      * @var array<string, array{user_id: int, project_id: int}>
@@ -128,11 +137,16 @@ class EventsHandler implements WebSocketHandler
         $entry = $this->connections[$connId] ?? null;
         if ($entry) {
             $projectId = $entry['project_id'];
+            $userId = $entry['user_id'];
             unset($this->projectSubscriptions[$projectId][$connId]);
             if (empty($this->projectSubscriptions[$projectId])) {
                 unset($this->projectSubscriptions[$projectId]);
             }
             unset($this->connections[$connId]);
+
+            if ($this->userConnectionCount($userId) === 0) {
+                unset($this->userSubscribeTimestamps[$userId]);
+            }
         }
     }
 
@@ -178,10 +192,36 @@ class EventsHandler implements WebSocketHandler
         return array_keys($this->projectSubscriptions);
     }
 
+    protected function isSubscribeRateLimited(int $userId): bool
+    {
+        $now = microtime(true);
+        $timestamps = $this->userSubscribeTimestamps[$userId] ?? [];
+
+        $timestamps = array_filter($timestamps, fn (float $ts) => ($now - $ts) < self::SUBSCRIBE_RATE_WINDOW);
+        $this->userSubscribeTimestamps[$userId] = array_values($timestamps);
+
+        if (count($timestamps) >= self::SUBSCRIBE_RATE_LIMIT) {
+            return true;
+        }
+
+        $this->userSubscribeTimestamps[$userId][] = $now;
+
+        return false;
+    }
+
     protected function handleSubscribe(string $connId, array $data): void
     {
         $entry = $this->connections[$connId] ?? null;
         if (! $entry) {
+            return;
+        }
+
+        if ($this->isSubscribeRateLimited($entry['user_id'])) {
+            $entry['connection']->send([
+                'type' => 'error',
+                'message' => 'Subscribe rate limit exceeded',
+            ]);
+
             return;
         }
 

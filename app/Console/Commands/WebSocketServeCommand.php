@@ -25,9 +25,21 @@ class WebSocketServeCommand extends Command
         $port = $this->option('port') ?? config('core.ws_port', '8085');
         $maxConnections = (int) $this->option('max-connections');
 
+        if (! config('core.ws_broadcast_secret_set')) {
+            $this->warn('WS_BROADCAST_SECRET not set, falling back to APP_KEY. Set a dedicated secret for production.');
+        }
+
+        $allowedOrigins = config('core.ws_allowed_origins', []);
+        if ($allowedOrigins === []) {
+            $appUrl = config('app.url');
+            if ($appUrl) {
+                $allowedOrigins = [$appUrl];
+            }
+        }
+
         $loop = Loop::get();
 
-        $server = new WebSocketServer($loop, $maxConnections);
+        $server = new WebSocketServer($loop, $maxConnections, $allowedOrigins);
 
         $server->route('/ws/terminal', new TerminalHandler($loop));
 
@@ -52,11 +64,12 @@ class WebSocketServeCommand extends Command
 
     protected function registerBroadcastEndpoint(WebSocketServer $server, EventsHandler $eventsHandler): void
     {
-        $appKey = config('app.key');
+        $broadcastSecret = config('core.ws_broadcast_secret');
 
-        $server->httpRoute('/ws/broadcast', function (RequestInterface $request) use ($eventsHandler, $appKey): void {
+        $server->httpRoute('/ws/broadcast', function (RequestInterface $request) use ($eventsHandler, $broadcastSecret): void {
             $auth = $request->getHeaderLine('Authorization');
-            if ($auth !== "Bearer {$appKey}") {
+            $expectedToken = "Bearer {$broadcastSecret}";
+            if (! hash_equals($expectedToken, $auth)) {
                 throw new \RuntimeException('Unauthorized');
             }
 

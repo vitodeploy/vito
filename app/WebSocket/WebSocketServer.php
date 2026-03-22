@@ -35,6 +35,7 @@ class WebSocketServer
     public function __construct(
         protected LoopInterface $loop,
         int $maxConnections = 50,
+        protected array $allowedOrigins = [],
     ) {
         $this->negotiator = new ServerNegotiator(
             new RequestVerifier,
@@ -124,6 +125,13 @@ class WebSocketServer
 
             if ($response->getStatusCode() !== 101) {
                 $conn->end(\GuzzleHttp\Psr7\Message::toString($response));
+
+                return;
+            }
+
+            $origin = $psrRequest->getHeaderLine('Origin');
+            if ($origin !== '' && ! $this->isOriginAllowed($origin)) {
+                $this->sendErrorAndClose($conn, 'Origin not allowed');
 
                 return;
             }
@@ -236,6 +244,51 @@ class WebSocketServer
             Log::error('HTTP handler error', ['error' => $e->getMessage()]);
             $conn->end("HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\n\r\n");
         }
+    }
+
+    protected function isOriginAllowed(string $origin): bool
+    {
+        if ($this->allowedOrigins === []) {
+            return true;
+        }
+
+        $originParts = parse_url($origin);
+        if (! isset($originParts['host'])) {
+            return false;
+        }
+
+        $defaultPorts = ['http' => 80, 'https' => 443];
+        $originScheme = strtolower($originParts['scheme'] ?? 'http');
+        $originHost = strtolower($originParts['host']);
+        $originPort = $originParts['port'] ?? null;
+        $originDefaultPort = $defaultPorts[$originScheme] ?? null;
+
+        foreach ($this->allowedOrigins as $allowed) {
+            $allowedParts = parse_url($allowed);
+            if (! isset($allowedParts['host'])) {
+                continue;
+            }
+
+            $allowedScheme = strtolower($allowedParts['scheme'] ?? 'http');
+            $allowedHost = strtolower($allowedParts['host']);
+            $allowedPort = $allowedParts['port'] ?? null;
+            $allowedDefaultPort = $defaultPorts[$allowedScheme] ?? null;
+
+            if ($originScheme !== $allowedScheme || $originHost !== $allowedHost) {
+                continue;
+            }
+
+            $originHasExplicitPort = $originPort !== null && $originPort !== $originDefaultPort;
+            $allowedHasExplicitPort = $allowedPort !== null && $allowedPort !== $allowedDefaultPort;
+
+            if ($originHasExplicitPort && $allowedHasExplicitPort && $originPort !== $allowedPort) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function sendErrorAndClose(ConnectionInterface $conn, string $message): void
