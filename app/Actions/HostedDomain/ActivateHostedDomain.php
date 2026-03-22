@@ -87,6 +87,10 @@ class ActivateHostedDomain
             return;
         }
 
+        $hostedDomain->error = null;
+        $hostedDomain->status = HostedDomainStatus::UPDATING;
+        $hostedDomain->save();
+
         dispatch(new SetupHostedDomainSslJob($hostedDomain))->onQueue('ssh');
     }
 }

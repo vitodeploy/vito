@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Editor, useMonaco } from '@monaco-editor/react';
@@ -30,8 +30,13 @@ export default function VHostPreview({ site, children }: { site: Site; children:
   });
 
   const monaco = useMonaco();
-  registerNginxLanguage(monaco);
-  registerCaddyLanguage(monaco);
+
+  useEffect(() => {
+    if (monaco) {
+      registerNginxLanguage(monaco);
+      registerCaddyLanguage(monaco);
+    }
+  }, [monaco]);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

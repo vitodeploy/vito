@@ -151,18 +151,12 @@ paths:
             schema:
               type: object
               required:
-                - type
                 - common_name
                 - organization
                 - city
                 - state
                 - country
               properties:
-                type:
-                  type: string
-                  enum: ['csr']
-                  description: SSL type
-                  example: 'csr'
                 common_name:
                   type: string
                   description: Domain name (e.g., example.com)
@@ -203,7 +197,6 @@ paths:
                   nullable: true
                   description: Optional passphrase to encrypt the private key
             example:
-              type: 'csr'
               common_name: 'example.com'
               organization: 'Acme Inc'
               city: 'San Francisco'
@@ -239,7 +232,7 @@ paths:
   /api/projects/{project}/servers/{server}/ssls/letsencrypt-wildcard:
     post:
       summary: Create wildcard SSL certificate
-      description: Create a wildcard SSL certificate using LetsEncrypt DNS-01 challenge. Requires a domain with a DNS provider configured.
+      description: Create a wildcard SSL certificate using Let's Encrypt DNS-01 challenge. The specified domain must have a DNS provider configured for automated DNS record management.
       tags:
         - Server SSL
       security:
@@ -405,7 +398,7 @@ paths:
   /api/projects/{project}/servers/{server}/ssls/{ssl}/activate:
     post:
       summary: Activate CSR certificate
-      description: Install a signed certificate and CA bundle for a CSR-generated SSL certificate
+      description: Install a signed certificate and CA bundle for a CSR-generated SSL certificate. The SSL must be of type CSR with status 'created'.
       tags:
         - Server SSL
       security:
@@ -479,7 +472,7 @@ paths:
   /api/projects/{project}/servers/{server}/ssls/{ssl}/download:
     get:
       summary: Download CSR file
-      description: Download the generated CSR file for a server SSL certificate
+      description: Download the generated CSR file for a server SSL certificate. Only available for CSR-type certificates with status 'created'.
       tags:
         - Server SSL
       security:

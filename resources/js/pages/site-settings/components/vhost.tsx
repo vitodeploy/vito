@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useState } from 'react';
+import React, { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -94,8 +94,13 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
   });
 
   const monaco = useMonaco();
-  registerNginxLanguage(monaco);
-  registerCaddyLanguage(monaco);
+
+  useEffect(() => {
+    if (monaco) {
+      registerNginxLanguage(monaco);
+      registerCaddyLanguage(monaco);
+    }
+  }, [monaco]);
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>

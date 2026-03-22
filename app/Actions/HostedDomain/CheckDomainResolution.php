@@ -10,8 +10,7 @@ class CheckDomainResolution
     /**
      * Check if the domain resolves to the server's IP address.
      *
-     * Queries authoritative nameservers directly to avoid cached/stale results.
-     * Falls back to a public resolver (1.1.1.1) if authoritative NS lookup fails.
+     * Queries multiple public resolvers (1.1.1.1, 8.8.8.8, 9.9.9.9) for both A and AAAA records.
      *
      * @return array{resolves: bool, resolved_ips: array<int, string>}
      */
