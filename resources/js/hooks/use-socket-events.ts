@@ -79,6 +79,7 @@ export function useSocketEvents(): { status: SocketStatus; reconnect: () => void
       reconnectTimerRef.current = setTimeout(connectFn, SLOW_RECONNECT_INTERVAL);
       return;
     }
+    setStatus('connecting');
     const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttemptRef.current - 1), RECONNECT_MAX_DELAY);
     reconnectTimerRef.current = setTimeout(connectFn, delay);
   }, []);

@@ -33,7 +33,14 @@ export function AppHeader({ socketStatus, socketReconnect }: { socketStatus: Soc
         {socketStatus !== 'connected' && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" className="size-8" onClick={socketReconnect} disabled={socketStatus === 'connecting'}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8"
+                onClick={socketReconnect}
+                disabled={socketStatus === 'connecting'}
+                aria-label={socketStatus === 'connecting' ? 'Connecting to WebSocket' : 'WebSocket disconnected, click to reconnect'}
+              >
                 {socketStatus === 'connecting' ? <WifiIcon className="size-4 animate-pulse" /> : <WifiOffIcon className="size-4" />}
               </Button>
             </TooltipTrigger>
