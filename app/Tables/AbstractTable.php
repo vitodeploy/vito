@@ -22,7 +22,7 @@ abstract class AbstractTable
     public function __construct(Builder|Relation $query)
     {
         $this->query = $query;
-        $this->perPage = config('web.pagination_size', 10);
+        $this->perPage ??= config('web.pagination_size', 10);
     }
 
     public static function make(Builder|Relation $query): static

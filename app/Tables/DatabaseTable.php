@@ -27,6 +27,7 @@ class DatabaseTable extends AbstractTable
                 ->sortable()
                 ->enum(),
             Column::data('server_id'),
+            Column::data('id'),
         ];
     }
 }
