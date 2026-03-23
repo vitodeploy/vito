@@ -60,22 +60,20 @@ abstract class AbstractTable
 
         return [
             'columns' => array_map(fn (Column $col) => $col->toArray(), $columns),
-            'data' => [
-                'data' => $arr['data'],
-                'links' => [
-                    'first' => $arr['first_page_url'] ?? null,
-                    'last' => $arr['last_page_url'] ?? null,
-                    'prev' => $arr['prev_page_url'] ?? null,
-                    'next' => $arr['next_page_url'] ?? null,
-                ],
-                'meta' => [
-                    'current_page' => $arr['current_page'],
-                    'from' => $arr['from'],
-                    'path' => $arr['path'],
-                    'per_page' => $arr['per_page'],
-                    'to' => $arr['to'],
-                    'current_page_url' => $arr['path'].'?'.$this->pageName.'='.$arr['current_page'],
-                ],
+            'data' => $arr['data'],
+            'links' => [
+                'first' => $arr['first_page_url'] ?? null,
+                'last' => $arr['last_page_url'] ?? null,
+                'prev' => $arr['prev_page_url'] ?? null,
+                'next' => $arr['next_page_url'] ?? null,
+            ],
+            'meta' => [
+                'current_page' => $arr['current_page'],
+                'from' => $arr['from'],
+                'path' => $arr['path'],
+                'per_page' => $arr['per_page'],
+                'to' => $arr['to'],
+                'current_page_url' => $arr['path'].'?'.$this->pageName.'='.$arr['current_page'],
             ],
             'searchable' => count($this->searchable()) > 0,
         ];

@@ -8,6 +8,7 @@ use App\Http\Resources\DNSRecordResource;
 use App\Http\Resources\DomainResource;
 use App\Models\DNSProvider;
 use App\Models\Domain;
+use App\Tables\DomainTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,10 +32,8 @@ class DomainController extends Controller
 
         $this->authorize('viewAny', [Domain::class, $user->currentProject]);
 
-        $domains = $user->currentProject->domains()->latest()->with('dnsProvider')->simplePaginate(config('web.pagination_size'));
-
         return Inertia::render('domains/index', [
-            'domains' => DomainResource::collection($domains),
+            'domains' => DomainTable::make($user->currentProject->domains()->with('dnsProvider'))->toInertia(),
             'dnsProviders' => DNSProvider::getByProjectId($user->current_project_id, $user)->where('connected', true)->get(),
         ]);
     }

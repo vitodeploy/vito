@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Actions\Redirect\CreateRedirect;
 use App\Actions\Redirect\DeleteRedirect;
-use App\Http\Resources\RedirectResource;
 use App\Models\Redirect;
 use App\Models\Server;
 use App\Models\Site;
+use App\Tables\RedirectTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,7 +28,7 @@ class RedirectController extends Controller
         $this->authorize('viewAny', [Redirect::class, $site, $server]);
 
         return Inertia::render('redirects/index', [
-            'redirects' => RedirectResource::collection($site->redirects()->latest()->simplePaginate(config('web.pagination_size'))),
+            'redirects' => RedirectTable::make($site->redirects()->with('site'))->toInertia(),
         ]);
     }
 

@@ -10,6 +10,7 @@ use App\Http\Resources\CommandResource;
 use App\Models\Command;
 use App\Models\Server;
 use App\Models\Site;
+use App\Tables\CommandTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,7 +32,7 @@ class CommandController extends Controller
         $this->authorize('viewAny', [Command::class, $site, $server]);
 
         return Inertia::render('commands/index', [
-            'commands' => CommandResource::collection($site->commands()->latest()->simplePaginate(config('web.pagination_size'))),
+            'commands' => CommandTable::make($site->commands()->with('site'))->toInertia(),
         ]);
     }
 

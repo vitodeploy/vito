@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\ServerLog\CreateLog;
 use App\Actions\ServerLog\UpdateLog;
-use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Site;
+use App\Tables\ServerLogTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -32,15 +32,9 @@ class ServerLogController extends Controller
     {
         $this->authorize('viewAny', [ServerLog::class, $server]);
 
-        $logs = QueryBuilder::for($server->logs()->where('is_remote', 0))
-            ->searchableFields(['name'])
-            ->sortable('created_at', 'desc')
-            ->query()
-            ->simplePaginate(config('web.pagination_size'));
-
         return Inertia::render('server-logs/index', [
             'title' => 'Server logs',
-            'logs' => ServerLogResource::collection($logs),
+            'logs' => ServerLogTable::make($server->logs()->where('is_remote', 0))->toInertia(),
         ]);
     }
 
@@ -51,7 +45,7 @@ class ServerLogController extends Controller
 
         return Inertia::render('server-logs/index', [
             'title' => 'Remote logs',
-            'logs' => ServerLogResource::collection($server->logs()->where('is_remote', 1)->latest()->simplePaginate(config('web.pagination_size'))),
+            'logs' => ServerLogTable::make($server->logs()->where('is_remote', 1))->toInertia(),
             'remote' => true,
         ]);
     }

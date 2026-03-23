@@ -6,10 +6,10 @@ use App\Actions\SSL\ActivateServerSsl;
 use App\Actions\SSL\CreateServerSsl;
 use App\Actions\SSL\DeleteSsl;
 use App\Enums\SslStatus;
-use App\Http\Resources\SslResource;
 use App\Models\Domain;
 use App\Models\Server;
 use App\Models\Ssl;
+use App\Tables\ServerSslTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -38,9 +38,7 @@ class ServerSslController extends Controller
             ->get(['id', 'domain', 'dns_provider_id']);
 
         return Inertia::render('server-ssls/index', [
-            'ssls' => SslResource::collection(
-                $server->ssls()->whereNull('site_id')->latest()->simplePaginate(config('web.pagination_size'))
-            ),
+            'ssls' => ServerSslTable::make($server->ssls()->whereNull('site_id')->with(['log', 'site']))->toInertia(),
             'domains' => $domains,
         ]);
     }

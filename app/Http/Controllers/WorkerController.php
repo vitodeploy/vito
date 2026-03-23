@@ -7,10 +7,10 @@ use App\Actions\Worker\DeleteWorker;
 use App\Actions\Worker\EditWorker;
 use App\Actions\Worker\GetWorkerLogs;
 use App\Actions\Worker\ManageWorker;
-use App\Http\Resources\WorkerResource;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;
+use App\Tables\WorkerTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,10 +33,7 @@ class WorkerController extends Controller
         $this->authorize('viewAny', [Worker::class, $server]);
 
         return Inertia::render('workers/index', [
-            'workers' => WorkerResource::collection(
-                $server->workers()->latest()->simplePaginate(config('web.pagination_size'))
-            ),
-            'sites' => $server->sites()->select('id', 'domain')->get(),
+            'workers' => WorkerTable::make($server->workers()->with('site'))->toInertia(),
         ]);
     }
 
@@ -46,10 +43,7 @@ class WorkerController extends Controller
         $this->authorize('viewAny', [Worker::class, $server, $site]);
 
         return Inertia::render('workers/index', [
-            'workers' => WorkerResource::collection(
-                $site->workers()->latest()->simplePaginate(config('web.pagination_size'))
-            ),
-            'sites' => $server->sites()->select('id', 'domain')->get(),
+            'workers' => WorkerTable::make($site->workers()->with('site'))->toInertia(),
         ]);
     }
 

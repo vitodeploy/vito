@@ -8,6 +8,7 @@ use App\Actions\Script\ExecuteScript;
 use App\Http\Resources\ScriptExecutionResource;
 use App\Http\Resources\ScriptResource;
 use App\Models\Script;
+use App\Tables\ScriptTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -30,7 +31,7 @@ class ScriptController extends Controller
         $this->authorize('viewAny', Script::class);
 
         return Inertia::render('scripts/index', [
-            'scripts' => ScriptResource::collection(user()->scripts()->simplePaginate(config('web.pagination_size'))),
+            'scripts' => ScriptTable::make(user()->scripts())->toInertia(),
         ]);
     }
 

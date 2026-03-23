@@ -1,6 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Server } from '@/types/server';
-import { Site } from '@/types/site';
 import ServerLayout from '@/layouts/server/layout';
 import Layout from '@/layouts/app/layout';
 import Container from '@/components/container';
@@ -11,20 +10,17 @@ import { BookOpenIcon, EyeIcon, PlusIcon, TriangleAlertIcon } from 'lucide-react
 import { DynamicTable } from '@/components/dynamic-table';
 import { DynamicTableData } from '@/types/dynamic-table';
 import CreateSite from '@/pages/sites/components/create-site';
-import { useRealtime } from '@/hooks/use-socket-events';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Page = {
   server?: Server;
-  sites: DynamicTableData<Site>;
+  sites: DynamicTableData;
 };
 
 export default function Sites() {
   const page = usePage<Page>();
 
   const Comp = page.props.server ? ServerLayout : Layout;
-
-  const [sites] = useRealtime<Site>(page.props.sites.data, 'site');
 
   return (
     <Comp>
@@ -49,9 +45,10 @@ export default function Sites() {
         </HeaderContainer>
 
         <DynamicTable
-          tableData={{ ...page.props.sites, data: sites }}
+          tableData={page.props.sites}
+          realtimeEvent="site"
           actions={(site) => {
-            const warnings = (site.warnings as Site['warnings']) ?? [];
+            const warnings = (site.warnings as Array<string>) ?? [];
             const count = warnings.length;
             return (
               <div className="flex items-center justify-end gap-2">

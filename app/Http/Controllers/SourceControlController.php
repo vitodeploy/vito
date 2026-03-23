@@ -7,6 +7,7 @@ use App\Actions\SourceControl\DeleteSourceControl;
 use App\Actions\SourceControl\EditSourceControl;
 use App\Http\Resources\SourceControlResource;
 use App\Models\SourceControl;
+use App\Tables\SourceControlTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,11 +32,9 @@ class SourceControlController extends Controller
         $this->authorize('viewAny', SourceControl::class);
 
         $user = user();
-        $sourceControls = SourceControl::getByProjectId($user->current_project_id, $user)
-            ->simplePaginate(config('web.pagination_size'), pageName: 'sourceControlsPage');
 
         return Inertia::render('source-controls/index', [
-            'sourceControls' => SourceControlResource::collection($sourceControls),
+            'sourceControls' => SourceControlTable::make(SourceControl::getByProjectId($user->current_project_id, $user))->toInertia(),
         ]);
     }
 

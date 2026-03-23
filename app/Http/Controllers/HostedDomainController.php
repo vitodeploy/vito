@@ -14,12 +14,12 @@ use App\Actions\SSL\RenewSiteSsl;
 use App\Enums\HostedDomainStatus;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
-use App\Http\Resources\HostedDomainResource;
 use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Tables\HostedDomainTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,14 +41,13 @@ class HostedDomainController extends Controller
     {
         $this->authorize('viewAny', [HostedDomain::class, $site, $server]);
 
+        $query = $site->hostedDomains()
+            ->with('site', 'ssl')
+            ->orderByRaw("CASE WHEN type = 'primary' THEN 0 ELSE 1 END")
+            ->oldest();
+
         return Inertia::render('hosted-domains/index', [
-            'hostedDomains' => HostedDomainResource::collection(
-                $site->hostedDomains()
-                    ->with('site', 'ssl')
-                    ->orderByRaw("CASE WHEN type = 'primary' THEN 0 ELSE 1 END")
-                    ->oldest()
-                    ->simplePaginate(config('web.pagination_size'))
-            ),
+            'hostedDomains' => HostedDomainTable::make($query)->toInertia(),
             'hasSiteSsl' => $site->ssls()
                 ->where('type', SslType::LETSENCRYPT)
                 ->where('status', SslStatus::CREATED)

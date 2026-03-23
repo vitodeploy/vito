@@ -2,21 +2,17 @@ import { Head, router, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/workflow-runs/components/columns';
-import { BreadcrumbItem, PaginatedData } from '@/types';
+import { DynamicTable } from '@/components/dynamic-table';
+import { DynamicTableData } from '@/types/dynamic-table';
+import { BreadcrumbItem } from '@/types';
 import Layout from '@/layouts/app/layout';
-import { WorkflowRun } from '@/types/workflow-run';
 import { Workflow } from '@/types/workflow';
-import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Workflows() {
   const page = usePage<{
     workflow: Workflow;
-    workflowRuns: PaginatedData<WorkflowRun>;
+    workflowRuns: DynamicTableData;
   }>();
-
-  const [workflowRuns] = useRealtime<WorkflowRun>(page.props.workflowRuns, 'workflow-run');
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,10 +35,10 @@ export default function Workflows() {
           <div className="flex items-center gap-2"></div>
         </HeaderContainer>
 
-        <DataTable
-          columns={columns}
-          paginatedData={workflowRuns}
-          onRowClick={(row: WorkflowRun) => router.visit(route('workflow-runs.show', { workflow: row.workflow_id, workflowRun: row.id }))}
+        <DynamicTable
+          tableData={page.props.workflowRuns}
+          realtimeEvent="workflow-run"
+          onRowClick={(row) => router.visit(route('workflow-runs.show', { workflow: row.workflow_id as number, workflowRun: row.id as number }))}
         />
       </Container>
     </Layout>

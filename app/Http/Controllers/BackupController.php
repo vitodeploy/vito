@@ -9,6 +9,7 @@ use App\Http\Resources\BackupResource;
 use App\Models\Backup;
 use App\Models\BackupFile;
 use App\Models\Server;
+use App\Tables\BackupTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,9 +32,7 @@ class BackupController extends Controller
         $this->authorize('viewAny', [Backup::class, $server]);
 
         return Inertia::render('backups/index', [
-            'backups' => BackupResource::collection(
-                $server->backups()->with('lastFile')->simplePaginate(config('web.pagination_size'))
-            ),
+            'backups' => BackupTable::make($server->backups()->with(['lastFile', 'storage', 'database']))->toInertia(),
         ]);
     }
 

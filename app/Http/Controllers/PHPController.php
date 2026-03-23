@@ -7,9 +7,9 @@ use App\Actions\PHP\GetPHPIni;
 use App\Actions\PHP\InstallPHPExtension;
 use App\Actions\PHP\UpdatePHPIni;
 use App\Exceptions\SSHError;
-use App\Http\Resources\ServiceResource;
 use App\Models\Server;
 use App\Models\Service;
+use App\Tables\PhpTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,13 +34,12 @@ class PHPController extends Controller
             abort(404);
         }
 
-        $installedVersions = Service::query()
+        $query = Service::query()
             ->where('type', 'php')
-            ->where('server_id', $server->id)
-            ->simplePaginate(config('web.pagination_size'));
+            ->where('server_id', $server->id);
 
         return Inertia::render('php/index', [
-            'installedVersions' => ServiceResource::collection($installedVersions),
+            'installedVersions' => PhpTable::make($query)->toInertia(),
         ]);
     }
 

@@ -11,6 +11,7 @@ use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ProjectUserResource;
 use App\Models\Project;
 use App\Models\UserProject;
+use App\Tables\ProjectTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -33,12 +34,7 @@ class ProjectController extends Controller
         $this->authorize('viewAny', Project::class);
 
         return Inertia::render('projects/index', [
-            'projects' => ProjectResource::collection(
-                user()
-                    ->allProjects()
-                    ->with(['users'])
-                    ->simplePaginate(20)
-            ),
+            'projects' => ProjectTable::make(user()->allProjects()->with(['users']))->toInertia(),
             'invitations' => ProjectUserResource::collection(
                 UserProject::query()
                     ->where('email', user()->email)

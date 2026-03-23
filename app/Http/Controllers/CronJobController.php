@@ -9,10 +9,10 @@ use App\Actions\CronJob\EditCronJob;
 use App\Actions\CronJob\EnableCronJob;
 use App\Actions\CronJob\SyncCronJobs;
 use App\Exceptions\SSHError;
-use App\Http\Resources\CronJobResource;
 use App\Models\CronJob;
 use App\Models\Server;
 use App\Models\Site;
+use App\Tables\CronJobTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,8 +34,7 @@ class CronJobController extends Controller
         $this->authorize('viewAny', [CronJob::class, $server]);
 
         return Inertia::render('cronjobs/index', [
-            'cronjobs' => CronJobResource::collection($server->cronJobs()->latest()->simplePaginate(config('web.pagination_size'))),
-            'sites' => $server->sites()->select('id', 'domain')->get(),
+            'cronjobs' => CronJobTable::make($server->cronJobs()->with('site'))->toInertia(),
         ]);
     }
 
@@ -115,11 +114,8 @@ class CronJobController extends Controller
         $this->authorize('viewAny', [CronJob::class, $server, $site]);
 
         return Inertia::render('cronjobs/index', [
-            'cronjobs' => CronJobResource::collection(
-                $site->cronJobs()->latest()->simplePaginate(config('web.pagination_size'))
-            ),
+            'cronjobs' => CronJobTable::make($site->cronJobs()->with('site'))->toInertia(),
             'site' => $site,
-            'sites' => $server->sites()->select('id', 'domain')->get(),
         ]);
     }
 

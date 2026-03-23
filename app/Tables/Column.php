@@ -36,6 +36,20 @@ class Column
         return new self($name, $header);
     }
 
+    /**
+     * Shortcut to create a hidden data column. Optionally accepts a value closure.
+     */
+    public static function data(string $name, ?Closure $value = null): self
+    {
+        $col = (new self($name, ''))->hidden();
+
+        if ($value) {
+            $col->value($value);
+        }
+
+        return $col;
+    }
+
     public function accessor(string $accessor): static
     {
         $this->accessor = $accessor;

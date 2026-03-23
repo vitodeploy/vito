@@ -153,8 +153,8 @@ class ApiKeyTest extends TestCase
         $key = collect($apiKeys)->firstWhere('name', 'scoped-key');
 
         $this->assertNotNull($key);
-        $this->assertEquals(['read', 'write'], $key['permissions']);
-        $this->assertEquals([$this->user->current_project_id], $key['project_ids']);
+        $this->assertEquals('read & write', $key['permissions']);
+        $this->assertEquals([$this->user->currentProject->name], $key['project_ids']);
     }
 
     public function test_create_api_key_with_empty_projects_array(): void

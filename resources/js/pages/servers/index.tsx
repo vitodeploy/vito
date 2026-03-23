@@ -4,24 +4,21 @@ import { type Configs } from '@/types';
 
 import { DynamicTable } from '@/components/dynamic-table';
 import { DynamicTableData } from '@/types/dynamic-table';
-import { Server } from '@/types/server';
 import Heading from '@/components/heading';
 import CreateServer from '@/pages/servers/components/create-server';
 import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/app/layout';
 import { BookOpenIcon, EyeIcon, PlusIcon } from 'lucide-react';
-import { useRealtime } from '@/hooks/use-socket-events';
 
 type Page = {
-  servers: DynamicTableData<Server>;
+  servers: DynamicTableData;
   public_key: string;
   configs: Configs;
 };
 
 export default function Servers() {
   const page = usePage<Page>();
-  const [servers] = useRealtime<Server>(page.props.servers.data, 'server');
   return (
     <Layout>
       <Head title="Servers" />
@@ -45,7 +42,8 @@ export default function Servers() {
           </div>
         </div>
         <DynamicTable
-          tableData={{ ...page.props.servers, data: servers }}
+          tableData={page.props.servers}
+          realtimeEvent="server"
           actions={(server) => (
             <div className="flex items-center justify-end">
               <Link href={route('servers.show', { server: server.id })} prefetch>

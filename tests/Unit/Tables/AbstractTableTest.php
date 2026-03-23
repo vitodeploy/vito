@@ -27,18 +27,17 @@ class AbstractTableTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayHasKey('searchable', $result);
 
-        $this->assertArrayHasKey('data', $result['data']);
-        $this->assertArrayHasKey('links', $result['data']);
-        $this->assertArrayHasKey('meta', $result['data']);
+        $this->assertArrayHasKey('links', $result);
+        $this->assertArrayHasKey('meta', $result);
 
-        $this->assertArrayHasKey('first', $result['data']['links']);
-        $this->assertArrayHasKey('last', $result['data']['links']);
-        $this->assertArrayHasKey('prev', $result['data']['links']);
-        $this->assertArrayHasKey('next', $result['data']['links']);
+        $this->assertArrayHasKey('first', $result['links']);
+        $this->assertArrayHasKey('last', $result['links']);
+        $this->assertArrayHasKey('prev', $result['links']);
+        $this->assertArrayHasKey('next', $result['links']);
 
-        $this->assertArrayHasKey('current_page', $result['data']['meta']);
-        $this->assertArrayHasKey('per_page', $result['data']['meta']);
-        $this->assertArrayHasKey('path', $result['data']['meta']);
+        $this->assertArrayHasKey('current_page', $result['meta']);
+        $this->assertArrayHasKey('per_page', $result['meta']);
+        $this->assertArrayHasKey('path', $result['meta']);
     }
 
     public function test_columns_are_serialized(): void
@@ -72,7 +71,7 @@ class AbstractTableTest extends TestCase
         ]);
 
         $result = ServerTable::make($this->user->currentProject->servers())->toInertia();
-        $rows = $result['data']['data'];
+        $rows = $result['data'];
 
         $row = collect($rows)->firstWhere('name', 'test-server');
         $this->assertNotNull($row);
@@ -93,7 +92,7 @@ class AbstractTableTest extends TestCase
         ]);
 
         $result = ServerTable::make($this->user->currentProject->servers())->toInertia();
-        $rows = $result['data']['data'];
+        $rows = $result['data'];
 
         $row = collect($rows)->first(fn ($r) => ($r['_status_enum_color'] ?? null) !== null);
         $this->assertNotNull($row);
@@ -120,7 +119,7 @@ class AbstractTableTest extends TestCase
         request()->merge(['search' => 'alpha']);
 
         $result = ServerTable::make($this->user->currentProject->servers())->toInertia();
-        $rows = $result['data']['data'];
+        $rows = $result['data'];
 
         $this->assertCount(1, $rows);
         $this->assertEquals('alpha-server', $rows[0]['name']);
@@ -145,7 +144,7 @@ class AbstractTableTest extends TestCase
         request()->merge(['sort_by' => 'name', 'sort_dir' => 'asc']);
 
         $result = ServerTable::make($this->user->currentProject->servers())->toInertia();
-        $rows = $result['data']['data'];
+        $rows = $result['data'];
         $names = array_column($rows, 'name');
         $sorted = $names;
         sort($sorted);
@@ -173,7 +172,7 @@ class AbstractTableTest extends TestCase
 
         $query = $this->user->currentProject->servers()->latest();
         $result = ServerTable::make($query)->toInertia();
-        $rows = $result['data']['data'];
+        $rows = $result['data'];
         $names = array_column($rows, 'name');
         $sorted = $names;
         sort($sorted);

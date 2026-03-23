@@ -11,6 +11,7 @@ use App\Http\Resources\DatabaseResource;
 use App\Http\Resources\DatabaseUserResource;
 use App\Models\DatabaseUser;
 use App\Models\Server;
+use App\Tables\DatabaseUserTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -35,7 +36,7 @@ class DatabaseUserController extends Controller
 
         return Inertia::render('database-users/index', [
             'databases' => DatabaseResource::collection($server->databases()->get()),
-            'databaseUsers' => DatabaseUserResource::collection($server->databaseUsers()->simplePaginate(config('web.pagination_size'))),
+            'databaseUsers' => DatabaseUserTable::make($server->databaseUsers())->toInertia(),
         ]);
     }
 

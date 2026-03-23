@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ApiKey\CreateApiKey;
-use App\Http\Resources\ApiKeyResource;
 use App\Http\Resources\ProjectResource;
 use App\Models\PersonalAccessToken;
+use App\Tables\ApiKeyTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,9 +25,12 @@ class ApiKeyController extends Controller
     {
         $this->authorize('viewAny', PersonalAccessToken::class);
 
+        /** @var array<int, \App\Models\Project> $projects */
+        $projects = user()->projects()->get()->all();
+
         return Inertia::render('api-keys/index', [
-            'apiKeys' => ApiKeyResource::collection(user()->tokens()->simplePaginate(config('web.pagination_size'))),
-            'projects' => ProjectResource::collection(user()->projects()->get()),
+            'apiKeys' => ApiKeyTable::make(user()->tokens())->withProjects($projects)->toInertia(),
+            'projects' => ProjectResource::collection($projects),
         ]);
     }
 

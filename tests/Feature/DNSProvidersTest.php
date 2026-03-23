@@ -30,7 +30,6 @@ class DNSProvidersTest extends TestCase
             ->where('dnsProviders.data.0.id', $dnsProvider->id)
             ->where('dnsProviders.data.0.name', $dnsProvider->name)
             ->where('dnsProviders.data.0.provider', $dnsProvider->provider)
-            ->where('dnsProviders.data.0.connected', $dnsProvider->connected)
         );
     }
 

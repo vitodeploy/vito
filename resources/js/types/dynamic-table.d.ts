@@ -1,4 +1,4 @@
-import { PaginatedData } from '@/types';
+import { PaginationLinks, PaginationMeta } from '@/types';
 
 export type CellDisplay =
   | { type: 'text'; key?: string }
@@ -18,8 +18,12 @@ export interface DynamicColumnDef {
   displays: CellDisplay[];
 }
 
-export interface DynamicTableData<TData = Record<string, unknown>> {
+export type Row = Record<string, unknown> & { id: number };
+
+export interface DynamicTableData {
   columns: DynamicColumnDef[];
-  data: PaginatedData<TData>;
+  data: Row[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
   searchable: boolean;
 }

@@ -7,9 +7,9 @@ use App\Actions\Service\Install;
 use App\Actions\Service\Manage;
 use App\Actions\Service\Uninstall;
 use App\Actions\Service\UpdateConfigFile;
-use App\Http\Resources\ServiceResource;
 use App\Models\Server;
 use App\Models\Service;
+use App\Tables\ServiceTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,10 +31,8 @@ class ServiceController extends Controller
     {
         $this->authorize('viewAny', [Service::class, $server]);
 
-        $services = $server->services()->with('log')->simplePaginate(config('web.pagination_size'));
-
         return Inertia::render('services/index', [
-            'services' => ServiceResource::collection($services),
+            'services' => ServiceTable::make($server->services()->with('log'))->toInertia(),
         ]);
     }
 

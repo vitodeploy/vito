@@ -1,38 +1,50 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { DataTable } from '@/components/data-table';
-import { DynamicTableData } from '@/types/dynamic-table';
+import { DynamicTableData, Row } from '@/types/dynamic-table';
 import { PaginatedData } from '@/types';
+import { useRealtime } from '@/hooks/use-socket-events';
 import { buildDynamicColumns } from './build-columns';
 
-type Row = Record<string, unknown>;
-
-interface DynamicTableProps<TData extends Row> {
-  tableData: DynamicTableData<TData>;
-  actions?: (row: TData) => React.ReactNode;
+interface DynamicTableProps {
+  tableData: DynamicTableData;
+  actions?: (row: Row) => React.ReactNode;
+  realtimeEvent?: string;
   className?: string;
   modal?: boolean;
-  onRowClick?: (row: TData) => void;
+  onRowClick?: (row: Row) => void;
   onPageChange?: (page: number) => void;
   isFetching?: boolean;
   isLoading?: boolean;
 }
 
-export function DynamicTable<TData extends Row>({
-  tableData,
-  actions,
-  className,
-  modal,
-  onRowClick,
-  onPageChange,
-  isFetching,
-  isLoading,
-}: DynamicTableProps<TData>) {
-  const columns = useMemo(() => buildDynamicColumns<TData>(tableData.columns, actions), [tableData.columns, actions]);
+export function DynamicTable({ tableData, actions, realtimeEvent, className, modal, onRowClick, onPageChange, isFetching, isLoading }: DynamicTableProps) {
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
+
+  const stableActions = useMemo(() => {
+    if (!actions) return undefined;
+    return (row: Row) => actionsRef.current?.(row);
+  }, [!!actions]);
+
+  const columns = useMemo(() => buildDynamicColumns(tableData.columns, stableActions), [tableData.columns, stableActions]);
+
+  const initialPaginatedData = useMemo<PaginatedData<Row>>(
+    () => ({
+      data: tableData.data,
+      links: tableData.links,
+      meta: tableData.meta,
+    }),
+    [tableData.data, tableData.links, tableData.meta],
+  );
+
+  const [livePaginatedData] = useRealtime<Row>(initialPaginatedData, realtimeEvent ?? '');
+
+  const paginatedData = realtimeEvent ? livePaginatedData : initialPaginatedData;
 
   return (
     <DataTable
       columns={columns}
-      paginatedData={tableData.data as PaginatedData<TData>}
+      paginatedData={paginatedData}
       searchable={tableData.searchable}
       sortable={true}
       className={className}
