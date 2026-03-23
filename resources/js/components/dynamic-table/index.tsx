@@ -27,10 +27,7 @@ export function DynamicTable<TData extends Row>({
   isFetching,
   isLoading,
 }: DynamicTableProps<TData>) {
-  const columns = useMemo(
-    () => buildDynamicColumns<TData>(tableData.columns, actions),
-    [tableData.columns, actions],
-  );
+  const columns = useMemo(() => buildDynamicColumns<TData>(tableData.columns, actions), [tableData.columns, actions]);
 
   return (
     <DataTable

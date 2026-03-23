@@ -23,7 +23,6 @@ abstract class AbstractTable
         $this->perPage = config('web.pagination_size', 10);
     }
 
-    /** @return static */
     public static function make(Builder|Relation $query): static
     {
         /** @phpstan-ignore new.static */
