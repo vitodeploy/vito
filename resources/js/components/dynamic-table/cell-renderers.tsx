@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ComponentProps } from 'react';
 import { Link } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import DateTime from '@/components/date-time';
@@ -41,10 +41,11 @@ function renderBadgeElement(row: Row, columnName: string, display: Extract<CellD
     return '-';
   }
 
-  const variant = display.color_field ? (row[display.color_field] as string) : display.variant;
+  type BadgeVariant = ComponentProps<typeof Badge>['variant'];
+  const variant = (display.color_field ? row[display.color_field] : display.variant) as BadgeVariant;
   const tooltipText = display.tooltip_key ? (row[display.tooltip_key] as string) : null;
 
-  const badge = <Badge variant={variant as 'default'}>{String(value)}</Badge>;
+  const badge = <Badge variant={variant}>{String(value)}</Badge>;
 
   if (tooltipText) {
     return (

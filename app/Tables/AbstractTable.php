@@ -148,6 +148,6 @@ abstract class AbstractTable
         $accessor = $sortableMap[$sortBy] ?? $sortableMap[$this->defaultSort] ?? $this->defaultSort;
         $dir = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
 
-        $this->query->orderBy($accessor, $dir);
+        $this->query->reorder()->orderBy($accessor, $dir);
     }
 }

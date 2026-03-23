@@ -269,9 +269,10 @@ class Column
     }
 
     /**
-     * Handle a display modifier value — if it's a Closure, register a resolver and
-     * store the auto-generated key in the display definition. If it's a static string,
-     * store it directly. If null, the frontend uses the column's own value.
+     * Handle a display modifier value:
+     * - Closure: registers a server-side resolver, stores an auto-generated row key
+     * - String: treated as a row data field name (the frontend reads row[key])
+     * - Null: the frontend falls back to the column's own value (row[column.name])
      *
      * @param  array<string, mixed>  $display
      */
