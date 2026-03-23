@@ -54,7 +54,7 @@ class SetupHostedDomainSslJob implements ShouldQueue
 
             $leDomains = $site->hostedDomains()
                 ->where('ssl_method', SslMethod::LETSENCRYPT)
-                ->where('status', HostedDomainStatus::UPDATING)
+                ->whereIn('status', [HostedDomainStatus::UPDATING, HostedDomainStatus::ACTIVE])
                 ->pluck('domain')
                 ->push($this->hostedDomain->domain)
                 ->unique()
