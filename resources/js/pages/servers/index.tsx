@@ -43,7 +43,6 @@ export default function Servers() {
         </div>
         <DynamicTable
           tableData={page.props.servers}
-          realtimeEvent="server"
           actions={(server) => (
             <div className="flex items-center justify-end">
               <Link href={route('servers.show', { server: server.id })} prefetch>

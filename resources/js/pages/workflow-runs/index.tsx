@@ -37,7 +37,6 @@ export default function Workflows() {
 
         <DynamicTable
           tableData={page.props.workflowRuns}
-          realtimeEvent="workflow-run"
           onRowClick={(row) => router.visit(route('workflow-runs.show', { workflow: row.workflow_id as number, workflowRun: row.id as number }))}
         />
       </Container>

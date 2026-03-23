@@ -26,8 +26,7 @@ class DatabaseTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('server_id', '')
-                ->hidden(),
+            Column::data('server_id'),
         ];
     }
 }

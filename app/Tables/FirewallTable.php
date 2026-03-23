@@ -8,6 +8,8 @@ class FirewallTable extends AbstractTable
 {
     protected string $pageName = 'firewallPage';
 
+    protected ?string $realtimeEvent = 'firewall-rule';
+
     /**
      * @return array<int, Column>
      */
@@ -33,14 +35,10 @@ class FirewallTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('server_id', '')
-                ->hidden(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('note', '')
-                ->hidden(),
-            Column::make('mask', '')
-                ->hidden(),
+            Column::data('server_id'),
+            Column::data('id'),
+            Column::data('note'),
+            Column::data('mask'),
         ];
     }
 }

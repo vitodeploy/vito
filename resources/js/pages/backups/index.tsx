@@ -102,7 +102,6 @@ export default function Backups() {
 
         <DynamicTable
           tableData={page.props.backups}
-          realtimeEvent="backup"
           actions={(backup) => (
             <div className="flex items-center justify-end">
               <DropdownMenu modal={false}>

@@ -100,7 +100,6 @@ export default function ServerSsls() {
 
         <DynamicTable
           tableData={page.props.ssls}
-          realtimeEvent="ssl"
           actions={(row) => {
             const ssl = row as unknown as SSL;
             return (

@@ -97,7 +97,6 @@ export default function Firewall() {
 
         <DynamicTable
           tableData={page.props.rules}
-          realtimeEvent="firewall-rule"
           actions={(firewallRule) => (
             <div className="flex items-center justify-end">
               <DropdownMenu modal={false}>

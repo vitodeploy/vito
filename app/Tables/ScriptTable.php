@@ -16,15 +16,10 @@ class ScriptTable extends AbstractTable
         return [
             Column::make('name', 'Name')
                 ->sortable(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('user_id', '')
-                ->hidden(),
-            Column::make('content', '')
-                ->hidden(),
-            Column::make('variables', '')
-                ->hidden()
-                ->value(fn (Script $script) => $script->getVariables()),
+            Column::data('id'),
+            Column::data('user_id'),
+            Column::data('content'),
+            Column::data('variables', fn (Script $script) => $script->getVariables()),
         ];
     }
 }

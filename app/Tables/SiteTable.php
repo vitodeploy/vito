@@ -9,6 +9,8 @@ class SiteTable extends AbstractTable
 {
     protected string $pageName = 'sitesPage';
 
+    protected ?string $realtimeEvent = 'site';
+
     protected ?Server $server = null;
 
     public function forServer(?Server $server): static
@@ -46,11 +48,8 @@ class SiteTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('server_id', '')
-                ->hidden(),
-            Column::make('warnings', '')
-                ->hidden()
-                ->value(fn (Site $site) => $site->getWarnings()),
+            Column::data('server_id'),
+            Column::data('warnings', fn (Site $site) => $site->getWarnings()),
         ];
     }
 

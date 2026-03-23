@@ -6,6 +6,8 @@ class ServerTable extends AbstractTable
 {
     protected string $pageName = 'serversPage';
 
+    protected ?string $realtimeEvent = 'server';
+
     /**
      * @return array<int, Column>
      */

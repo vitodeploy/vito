@@ -48,7 +48,6 @@ export default function PHP() {
 
         <DynamicTable
           tableData={page.props.installedVersions}
-          realtimeEvent="service"
           actions={(row) => {
             const service = row as unknown as Service;
             return (

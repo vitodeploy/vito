@@ -46,7 +46,6 @@ export default function Sites() {
 
         <DynamicTable
           tableData={page.props.sites}
-          realtimeEvent="site"
           actions={(site) => {
             const warnings = (site.warnings as Array<string>) ?? [];
             const count = warnings.length;

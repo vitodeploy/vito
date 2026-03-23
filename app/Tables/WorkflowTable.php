@@ -2,6 +2,8 @@
 
 namespace App\Tables;
 
+use App\Models\Workflow;
+
 class WorkflowTable extends AbstractTable
 {
     protected string $pageName = 'workflowsPage';
@@ -20,10 +22,10 @@ class WorkflowTable extends AbstractTable
             Column::make('updated_at', 'Updated at')
                 ->sortable()
                 ->date(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('project_id', '')
-                ->hidden(),
+            Column::data('id'),
+            Column::data('project_id'),
+            /** @phpstan-ignore nullsafe.neverNull */
+            Column::data('run_inputs', fn (Workflow $workflow) => $workflow->getStartingNode()?->inputs ?? []),
         ];
     }
 }

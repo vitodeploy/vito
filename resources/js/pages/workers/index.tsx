@@ -181,7 +181,6 @@ export default function WorkerIndex() {
 
         <DynamicTable
           tableData={page.props.workers}
-          realtimeEvent="worker"
           actions={(worker) => (
             <div className="flex items-center justify-end">
               <DropdownMenu modal={false}>

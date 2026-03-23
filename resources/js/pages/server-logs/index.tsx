@@ -148,7 +148,6 @@ export default function ServerLogs() {
 
         <DynamicTable
           tableData={page.props.logs}
-          realtimeEvent="server-log"
           actions={(row) => {
             const serverLog = row as unknown as ServerLog;
             return (

@@ -8,6 +8,8 @@ class PhpTable extends AbstractTable
 {
     protected string $pageName = 'phpPage';
 
+    protected ?string $realtimeEvent = 'service';
+
     /**
      * @return array<int, Column>
      */
@@ -25,24 +27,16 @@ class PhpTable extends AbstractTable
                 ->badge(
                     colorField: '_is_default_color',
                 ),
-            Column::make('_is_default_color', '')
-                ->hidden()
-                ->value(fn (Service $service) => $service->is_default ? 'default' : 'outline'),
+            Column::data('_is_default_color', fn (Service $service) => $service->is_default ? 'default' : 'outline'),
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('server_id', '')
-                ->hidden(),
-            Column::make('type', '')
-                ->hidden(),
-            Column::make('type_data', '')
-                ->hidden(),
-            Column::make('unit', '')
-                ->hidden(),
-            Column::make('installed_version', '')
-                ->hidden(),
+            Column::data('id'),
+            Column::data('server_id'),
+            Column::data('type'),
+            Column::data('type_data'),
+            Column::data('unit'),
+            Column::data('installed_version'),
         ];
     }
 }

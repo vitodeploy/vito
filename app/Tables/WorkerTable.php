@@ -8,6 +8,8 @@ class WorkerTable extends AbstractTable
 {
     protected string $pageName = 'workersPage';
 
+    protected ?string $realtimeEvent = 'worker';
+
     /**
      * @return array<int, Column>
      */
@@ -33,14 +35,10 @@ class WorkerTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('server_id', '')
-                ->hidden(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('auto_start', '')
-                ->hidden(),
-            Column::make('auto_restart', '')
-                ->hidden(),
+            Column::data('server_id'),
+            Column::data('id'),
+            Column::data('auto_start'),
+            Column::data('auto_restart'),
         ];
     }
 }

@@ -8,6 +8,8 @@ class BackupTable extends AbstractTable
 {
     protected string $pageName = 'backupsPage';
 
+    protected ?string $realtimeEvent = 'backup';
+
     /**
      * @return array<int, Column>
      */
@@ -35,27 +37,15 @@ class BackupTable extends AbstractTable
                 ->badge(
                     colorField: '_last_file_color',
                 ),
-            Column::make('_last_file_color', '')
-                ->hidden()
-                ->value(fn (Backup $backup) => $backup->lastFile?->status?->getColor()),
-            Column::make('server_id', '')
-                ->hidden(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('keep_backups', '')
-                ->hidden(),
-            Column::make('interval', '')
-                ->hidden(),
-            Column::make('database_id', '')
-                ->hidden(),
-            Column::make('path', '')
-                ->hidden(),
-            Column::make('storage_name', '')
-                ->hidden()
-                ->value(fn (Backup $backup) => $backup->storage->profile),
-            Column::make('database_name', '')
-                ->hidden()
-                ->value(fn (Backup $backup) => $backup->database?->name),
+            Column::data('_last_file_color', fn (Backup $backup) => $backup->lastFile?->status?->getColor()),
+            Column::data('server_id'),
+            Column::data('id'),
+            Column::data('keep_backups'),
+            Column::data('interval'),
+            Column::data('database_id'),
+            Column::data('path'),
+            Column::data('storage_name', fn (Backup $backup) => $backup->storage->profile),
+            Column::data('database_name', fn (Backup $backup) => $backup->database?->name),
         ];
     }
 }

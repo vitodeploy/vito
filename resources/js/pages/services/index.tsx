@@ -47,7 +47,6 @@ export default function WorkerIndex() {
 
         <DynamicTable
           tableData={page.props.services}
-          realtimeEvent="service"
           actions={(row) => {
             const service = row as unknown as Service;
             return (

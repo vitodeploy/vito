@@ -8,6 +8,8 @@ class RedirectTable extends AbstractTable
 {
     protected string $pageName = 'redirectsPage';
 
+    protected ?string $realtimeEvent = 'redirect';
+
     /**
      * @return array<int, Column>
      */
@@ -27,13 +29,9 @@ class RedirectTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('server_id', '')
-                ->hidden()
-                ->value(fn (Redirect $redirect) => $redirect->site->server_id),
-            Column::make('site_id', '')
-                ->hidden(),
-            Column::make('id', '')
-                ->hidden(),
+            Column::data('server_id', fn (Redirect $redirect) => $redirect->site->server_id),
+            Column::data('site_id'),
+            Column::data('id'),
         ];
     }
 }

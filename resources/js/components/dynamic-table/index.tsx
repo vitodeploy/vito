@@ -8,7 +8,6 @@ import { buildDynamicColumns } from './build-columns';
 interface DynamicTableProps {
   tableData: DynamicTableData;
   actions?: (row: Row) => React.ReactNode;
-  realtimeEvent?: string;
   className?: string;
   modal?: boolean;
   onRowClick?: (row: Row) => void;
@@ -17,7 +16,7 @@ interface DynamicTableProps {
   isLoading?: boolean;
 }
 
-export function DynamicTable({ tableData, actions, realtimeEvent, className, modal, onRowClick, onPageChange, isFetching, isLoading }: DynamicTableProps) {
+export function DynamicTable({ tableData, actions, className, modal, onRowClick, onPageChange, isFetching, isLoading }: DynamicTableProps) {
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
 
@@ -37,6 +36,7 @@ export function DynamicTable({ tableData, actions, realtimeEvent, className, mod
     [tableData.data, tableData.links, tableData.meta],
   );
 
+  const realtimeEvent = tableData.realtimeEvent;
   const [livePaginatedData] = useRealtime<Row>(initialPaginatedData, realtimeEvent ?? '');
 
   const paginatedData = realtimeEvent ? livePaginatedData : initialPaginatedData;

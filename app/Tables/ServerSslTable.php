@@ -8,6 +8,8 @@ class ServerSslTable extends AbstractTable
 {
     protected string $pageName = 'sslsPage';
 
+    protected ?string $realtimeEvent = 'ssl';
+
     /**
      * @return array<int, Column>
      */
@@ -33,34 +35,25 @@ class ServerSslTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('server_id', '')
-                ->hidden()
-                ->value(fn (Ssl $ssl) => $ssl->server_id ?? $ssl->site?->server_id),
-            Column::make('site_id', '')
-                ->hidden(),
-            Column::make('is_wildcard', '')
-                ->hidden(),
-            Column::make('has_csr', '')
-                ->hidden(),
-            Column::make('csr_data', '')
-                ->hidden()
-                ->value(fn (Ssl $ssl) => $ssl->csr_data ? collect($ssl->csr_data)->only([
-                    'common_name', 'organization', 'organizational_unit',
-                    'city', 'state', 'country', 'email', 'key_size',
-                ])->toArray() : null),
-            Column::make('log', '')
-                ->hidden()
-                ->value(fn (Ssl $ssl) => $ssl->log_id && $ssl->log ? [
-                    'id' => $ssl->log->id,
-                    'server_id' => $ssl->log->server_id,
-                    'site_id' => $ssl->log->site_id,
-                    'type' => $ssl->log->type,
-                    'name' => $ssl->log->name,
-                    'disk' => $ssl->log->disk,
-                    'is_remote' => $ssl->log->is_remote,
-                    'created_at' => $ssl->log->created_at,
-                    'updated_at' => $ssl->log->updated_at,
-                ] : null),
+            Column::data('server_id', fn (Ssl $ssl) => $ssl->server_id ?? $ssl->site?->server_id),
+            Column::data('site_id'),
+            Column::data('is_wildcard'),
+            Column::data('has_csr'),
+            Column::data('csr_data', fn (Ssl $ssl) => $ssl->csr_data ? collect($ssl->csr_data)->only([
+                'common_name', 'organization', 'organizational_unit',
+                'city', 'state', 'country', 'email', 'key_size',
+            ])->toArray() : null),
+            Column::data('log', fn (Ssl $ssl) => $ssl->log_id && $ssl->log ? [
+                'id' => $ssl->log->id,
+                'server_id' => $ssl->log->server_id,
+                'site_id' => $ssl->log->site_id,
+                'type' => $ssl->log->type,
+                'name' => $ssl->log->name,
+                'disk' => $ssl->log->disk,
+                'is_remote' => $ssl->log->is_remote,
+                'created_at' => $ssl->log->created_at,
+                'updated_at' => $ssl->log->updated_at,
+            ] : null),
         ];
     }
 }

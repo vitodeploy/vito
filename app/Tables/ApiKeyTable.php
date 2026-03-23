@@ -44,7 +44,8 @@ class ApiKeyTable extends AbstractTable
                     }
 
                     return collect($ids)
-                        ->map(fn (int $id) => $projectsById->get($id)->name ?? "Project #{$id}")
+                        /** @phpstan-ignore nullsafe.neverNull */
+                        ->map(fn (int $id) => $projectsById->get($id)?->name ?? "Project #{$id}")
                         ->values()
                         ->all();
                 })
@@ -52,8 +53,7 @@ class ApiKeyTable extends AbstractTable
             Column::make('created_at', 'Created at')
                 ->sortable()
                 ->date(),
-            Column::make('id', '')
-                ->hidden(),
+            Column::data('id'),
         ];
     }
 }

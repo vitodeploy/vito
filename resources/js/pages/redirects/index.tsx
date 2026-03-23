@@ -109,7 +109,6 @@ export default function Redirects() {
 
         <DynamicTable
           tableData={page.props.redirects}
-          realtimeEvent="redirect"
           actions={(redirect) => (
             <div className="flex items-center justify-end">
               <DropdownMenu modal={false}>

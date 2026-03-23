@@ -20,12 +20,9 @@ class DomainTable extends AbstractTable
             Column::make('created_at', 'Added at')
                 ->sortable()
                 ->date(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('dns_provider_id', '')
-                ->hidden(),
-            Column::make('metadata', '')
-                ->hidden(),
+            Column::data('id'),
+            Column::data('dns_provider_id'),
+            Column::data('metadata'),
         ];
     }
 

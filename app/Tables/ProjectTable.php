@@ -24,8 +24,7 @@ class ProjectTable extends AbstractTable
             Column::make('created_at', 'Created at')
                 ->sortable()
                 ->date(),
-            Column::make('id', '')
-                ->hidden(),
+            Column::data('id'),
         ];
     }
 

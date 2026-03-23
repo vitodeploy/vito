@@ -19,16 +19,10 @@ class CommandTable extends AbstractTable
             Column::make('command', 'Command')
                 ->sortable()
                 ->copyable(),
-            Column::make('server_id', '')
-                ->hidden()
-                ->value(fn (Command $command) => $command->site->server_id),
-            Column::make('site_id', '')
-                ->hidden(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('variables', '')
-                ->hidden()
-                ->value(fn (Command $command) => $command->getVariables()),
+            Column::data('server_id', fn (Command $command) => $command->site->server_id),
+            Column::data('site_id'),
+            Column::data('id'),
+            Column::data('variables', fn (Command $command) => $command->getVariables()),
         ];
     }
 }

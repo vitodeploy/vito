@@ -26,4 +26,5 @@ export interface DynamicTableData {
   links: PaginationLinks;
   meta: PaginationMeta;
   searchable: boolean;
+  realtimeEvent: string | null;
 }

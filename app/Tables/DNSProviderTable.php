@@ -22,10 +22,8 @@ class DNSProviderTable extends AbstractTable
             Column::make('created_at', 'Created at')
                 ->sortable()
                 ->date(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('project_id', '')
-                ->hidden(),
+            Column::data('id'),
+            Column::data('project_id'),
         ];
     }
 

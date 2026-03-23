@@ -6,6 +6,8 @@ class WorkflowRunTable extends AbstractTable
 {
     protected string $pageName = 'workflowRunsPage';
 
+    protected ?string $realtimeEvent = 'workflow-run';
+
     /**
      * @return array<int, Column>
      */
@@ -20,8 +22,7 @@ class WorkflowRunTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('workflow_id', '')
-                ->hidden(),
+            Column::data('workflow_id'),
         ];
     }
 }

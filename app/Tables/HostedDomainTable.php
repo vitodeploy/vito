@@ -8,6 +8,8 @@ class HostedDomainTable extends AbstractTable
 {
     protected string $pageName = 'hostedDomainsPage';
 
+    protected ?string $realtimeEvent = 'hosted-domain';
+
     protected string $defaultSort = 'created_at';
 
     protected string $defaultSortDir = 'asc';
@@ -35,32 +37,16 @@ class HostedDomainTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('server_id', '')
-                ->hidden()
-                ->value(fn (HostedDomain $hd) => $hd->site->server_id),
-            Column::make('site_id', '')
-                ->hidden(),
-            Column::make('type', '')
-                ->hidden()
-                ->value(fn (HostedDomain $hd) => $hd->type->getText()),
-            Column::make('ssl_method', '')
-                ->hidden()
-                ->value(fn (HostedDomain $hd) => $hd->ssl_method->getText()),
-            Column::make('ssl_id', '')
-                ->hidden(),
-            Column::make('ssl_type', '')
-                ->hidden()
-                ->value(fn (HostedDomain $hd) => $hd->ssl?->type),
-            Column::make('ssl_domains', '')
-                ->hidden()
-                ->value(fn (HostedDomain $hd) => $hd->ssl?->domains),
-            Column::make('ssl_expires_at', '')
-                ->hidden()
-                ->value(fn (HostedDomain $hd) => $hd->ssl?->expires_at),
-            Column::make('error', '')
-                ->hidden(),
+            Column::data('id'),
+            Column::data('server_id', fn (HostedDomain $hd) => $hd->site->server_id),
+            Column::data('site_id'),
+            Column::data('type', fn (HostedDomain $hd) => $hd->type->getText()),
+            Column::data('ssl_method', fn (HostedDomain $hd) => $hd->ssl_method->getText()),
+            Column::data('ssl_id'),
+            Column::data('ssl_type', fn (HostedDomain $hd) => $hd->ssl?->type),
+            Column::data('ssl_domains', fn (HostedDomain $hd) => $hd->ssl?->domains),
+            Column::data('ssl_expires_at', fn (HostedDomain $hd) => $hd->ssl?->expires_at),
+            Column::data('error'),
         ];
     }
 }

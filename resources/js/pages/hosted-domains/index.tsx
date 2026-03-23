@@ -243,7 +243,6 @@ export default function HostedDomains() {
 
         <DynamicTable
           tableData={page.props.hostedDomains}
-          realtimeEvent="hosted-domain"
           actions={(row) => {
             const hostedDomain = row as unknown as HostedDomain;
             const isPrimary = hostedDomain.type === 'primary';

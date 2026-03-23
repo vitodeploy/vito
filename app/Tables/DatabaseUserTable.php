@@ -23,14 +23,10 @@ class DatabaseUserTable extends AbstractTable
             Column::make('status', 'Status')
                 ->sortable()
                 ->enum(),
-            Column::make('server_id', '')
-                ->hidden(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('databases', '')
-                ->hidden(),
-            Column::make('host', '')
-                ->hidden(),
+            Column::data('server_id'),
+            Column::data('id'),
+            Column::data('databases'),
+            Column::data('host'),
         ];
     }
 }

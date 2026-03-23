@@ -51,7 +51,7 @@ function Delete({ command }: { command: Command }) {
           <DialogTitle>Delete command</DialogTitle>
           <DialogDescription className="sr-only">Delete command</DialogDescription>
         </DialogHeader>
-        <p className="p-4">Are you sure you want to this command?</p>
+        <p className="p-4">Are you sure you want to delete this command?</p>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>

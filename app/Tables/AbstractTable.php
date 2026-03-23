@@ -17,6 +17,8 @@ abstract class AbstractTable
 
     protected string $pageName = 'page';
 
+    protected ?string $realtimeEvent = null;
+
     public function __construct(Builder|Relation $query)
     {
         $this->query = $query;
@@ -76,6 +78,7 @@ abstract class AbstractTable
                 'current_page_url' => $arr['path'].'?'.$this->pageName.'='.$arr['current_page'],
             ],
             'searchable' => count($this->searchable()) > 0,
+            'realtimeEvent' => $this->realtimeEvent,
         ];
     }
 
@@ -133,8 +136,8 @@ abstract class AbstractTable
      */
     protected function applySorting(array $columns): void
     {
-        $sortBy = request()->input('sort_by', $this->defaultSort);
-        $sortDir = request()->input('sort_dir', $this->defaultSortDir);
+        $userSortBy = request()->input('sort_by');
+        $userSortDir = request()->input('sort_dir');
 
         $sortableMap = [];
         foreach ($columns as $col) {
@@ -143,9 +146,11 @@ abstract class AbstractTable
             }
         }
 
-        $accessor = $sortableMap[$sortBy] ?? $sortableMap[$this->defaultSort] ?? $this->defaultSort;
-        $dir = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
-
-        $this->query->reorder()->orderBy($accessor, $dir);
+        if ($userSortBy && isset($sortableMap[$userSortBy])) {
+            $dir = strtolower($userSortDir ?? 'desc') === 'asc' ? 'asc' : 'desc';
+            $this->query->reorder()->orderBy($sortableMap[$userSortBy], $dir);
+        } elseif (empty($this->query->getQuery()->orders)) {
+            $this->query->orderBy($this->defaultSort, $this->defaultSortDir);
+        }
     }
 }

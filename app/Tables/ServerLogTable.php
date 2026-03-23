@@ -6,6 +6,8 @@ class ServerLogTable extends AbstractTable
 {
     protected string $pageName = 'logsPage';
 
+    protected ?string $realtimeEvent = 'server-log';
+
     /**
      * @return array<int, Column>
      */
@@ -17,18 +19,12 @@ class ServerLogTable extends AbstractTable
             Column::make('created_at', 'Created At')
                 ->sortable()
                 ->date(),
-            Column::make('id', '')
-                ->hidden(),
-            Column::make('server_id', '')
-                ->hidden(),
-            Column::make('site_id', '')
-                ->hidden(),
-            Column::make('type', '')
-                ->hidden(),
-            Column::make('disk', '')
-                ->hidden(),
-            Column::make('is_remote', '')
-                ->hidden(),
+            Column::data('id'),
+            Column::data('server_id'),
+            Column::data('site_id'),
+            Column::data('type'),
+            Column::data('disk'),
+            Column::data('is_remote'),
         ];
     }
 

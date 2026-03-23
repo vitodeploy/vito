@@ -48,7 +48,7 @@ function Delete({ script }: { script: Script }) {
           <DialogTitle>Delete script</DialogTitle>
           <DialogDescription className="sr-only">Delete script</DialogDescription>
         </DialogHeader>
-        <p className="p-4">Are you sure you want to this script?</p>
+        <p className="p-4">Are you sure you want to delete this script?</p>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
