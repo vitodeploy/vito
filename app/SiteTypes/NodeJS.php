@@ -80,11 +80,13 @@ class NodeJS extends AbstractSiteType
     public function install(): void
     {
         $this->isolate();
+        $this->progress(10);
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(15);
+        $this->progress(20);
         $this->deployKey();
         $this->progress(30);
         app(Git::class)->clone($this->site);
+        $this->progress(45);
         $this->site->server->ssh($this->site->user)->exec(
             __('npm install --prefix=:path', [
                 'path' => $this->site->path,
@@ -92,6 +94,7 @@ class NodeJS extends AbstractSiteType
             'install-npm-dependencies',
             $this->site->id
         );
+        $this->progress(60);
         $this->site->server->ssh($this->site->user)->exec(
             __('npm run build --prefix=:path', [
                 'path' => $this->site->path,
@@ -99,11 +102,10 @@ class NodeJS extends AbstractSiteType
             'npm-build',
             $this->site->id
         );
-        $this->progress(65);
+        $this->progress(75);
         $command = __('npm start --prefix=:path', [
             'path' => $this->site->path,
         ]);
-        $this->progress(80);
         /** @var ?Worker $worker */
         $worker = $this->site->workers()->where('name', 'app')->first();
         if ($worker) {
@@ -122,6 +124,7 @@ class NodeJS extends AbstractSiteType
                 $this->site,
             );
         }
+        $this->progress(90);
     }
 
     public function baseCommands(): array

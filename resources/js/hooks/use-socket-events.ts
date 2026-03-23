@@ -166,10 +166,7 @@ export function useSocketListener(callback: (data: SocketEventData) => void): vo
  * Returns the live resource (initially from Inertia props, updated via socket).
  * Pass `null` to skip listening (safe to call unconditionally).
  */
-export function useRealtimeRecord<T extends { id: number }>(
-  initial: T | null | undefined,
-  eventPrefix: string,
-): T | null {
+export function useRealtimeRecord<T extends { id: number }>(initial: T | null | undefined, eventPrefix: string): T | null {
   const [record, setRecord] = useState<T | null>(initial ?? null);
 
   useEffect(() => {

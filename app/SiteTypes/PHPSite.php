@@ -93,16 +93,19 @@ class PHPSite extends AbstractSiteType
     public function install(): void
     {
         $this->isolate();
+        $this->progress(10);
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(15);
+        $this->progress(25);
         $this->deployKey();
-        $this->progress(30);
+        $this->progress(40);
         app(Git::class)->clone($this->site);
-        $this->progress(65);
+        $this->progress(60);
         $this->site->php()?->restart();
+        $this->progress(75);
         if ($this->site->type_data['composer']) {
             app(Composer::class)->installDependencies($this->site);
         }
+        $this->progress(90);
     }
 
     public function baseCommands(): array

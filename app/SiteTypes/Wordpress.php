@@ -94,12 +94,13 @@ class Wordpress extends PHPSite
     public function install(): void
     {
         $this->isolate();
+        $this->progress(10);
 
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(30);
+        $this->progress(25);
 
         $this->site->php()?->restart();
-        $this->progress(60);
+        $this->progress(40);
 
         $this->site->server->ssh($this->site->user)->exec(
             view('ssh.wordpress.install', [
@@ -120,5 +121,6 @@ class Wordpress extends PHPSite
             'install-wordpress',
             $this->site->id
         );
+        $this->progress(90);
     }
 }
