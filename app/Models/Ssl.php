@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\SslStatus;
+use App\Enums\SslType;
 use Carbon\Carbon;
 use Database\Factories\SslFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -120,7 +121,10 @@ class Ssl extends AbstractModel
         return self::query()
             ->whereNull('site_id')
             ->where('server_id', $serverId)
-            ->where('status', SslStatus::CREATED);
+            ->where('status', SslStatus::CREATED)
+            ->whereNot('type', SslType::CSR)
+            ->whereNotNull('certificate_path')
+            ->whereNotNull('pk_path');
     }
 
     public function validateSetup(string $result): bool

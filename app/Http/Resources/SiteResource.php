@@ -83,14 +83,17 @@ class SiteResource extends JsonResource
                 && $hd->relationLoaded('ssl')
                 && $hd->ssl
                 && $hd->ssl->status === SslStatus::CREATED
+                && $hd->ssl->expires_at
                 && $hd->ssl->expires_at <= now()->addDays(14)
         );
+
         if ($expiring->isNotEmpty()) {
+            $earliestExpiry = $expiring->min(fn ($hd) => $hd->ssl->expires_at);
             $warnings[] = [
                 'key' => 'ssl_expiring',
                 'count' => $expiring->count(),
                 'domains' => $expiring->pluck('domain')->all(),
-                'earliest_expiry' => $expiring->min(fn ($hd) => $hd->ssl->expires_at)->toIso8601String(),
+                'earliest_expiry' => $earliestExpiry?->toIso8601String(),
             ];
         }
 

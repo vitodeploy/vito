@@ -11,9 +11,6 @@ properties:
     type: integer
     nullable: true
     example: 1
-  is_active:
-    type: boolean
-    example: true
   is_wildcard:
     type: boolean
     example: false
