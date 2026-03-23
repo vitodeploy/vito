@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Actions\Site\GetSiteWarnings;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
@@ -73,6 +72,7 @@ class HandleInertiaRequests extends Middleware
             $sites = [];
             if ($user && $user->can('viewAny', [Site::class, $server])) {
                 // TODO: limit sites
+                $server->load('sites.hostedDomains.ssl');
                 $sites = SiteResource::collection($server->sites);
             }
 
@@ -81,7 +81,7 @@ class HandleInertiaRequests extends Middleware
             if ($request->route('site')) {
                 /** @var Site $site */
                 $site = $request->route('site');
-                $site->warnings = app(GetSiteWarnings::class)->forSite($site);
+                $site->load('hostedDomains.ssl');
                 $data['site'] = SiteResource::make($site);
             }
         }

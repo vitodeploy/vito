@@ -51,9 +51,9 @@ abstract class AbstractWebserver extends AbstractService implements Webserver
         return [];
     }
 
-    public function siteLockedFields(): array
+    public function canConfigureSSL(): bool
     {
-        return [];
+        return true;
     }
 
     public function allowedSslMethods(): ?array

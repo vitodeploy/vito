@@ -27,9 +27,7 @@ export default function HostedDomains() {
 
   const [hostedDomains] = useRealtime<HostedDomain>(page.props.hostedDomains, 'hosted-domain');
 
-  const lockedFields = page.props.site.webserver_locked_fields ?? [];
-  const sslLocked = lockedFields.includes('ssl_enabled');
-  const forceSslLocked = lockedFields.includes('force_ssl');
+  const sslLocked = !page.props.site.can_configure_ssl;
 
   return (
     <ServerLayout>
@@ -78,10 +76,9 @@ export default function HostedDomains() {
                 )}
                 {page.props.site.force_ssl ? (
                   <DropdownMenuItem
-                    disabled={forceSslLocked}
+                    disabled={sslLocked}
                     onClick={() =>
-                      !forceSslLocked &&
-                      router.post(route('site-settings.disable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))
+                      !sslLocked && router.post(route('site-settings.disable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))
                     }
                   >
                     <ShieldOffIcon />
@@ -89,10 +86,9 @@ export default function HostedDomains() {
                   </DropdownMenuItem>
                 ) : (
                   <DropdownMenuItem
-                    disabled={forceSslLocked}
+                    disabled={sslLocked}
                     onClick={() =>
-                      !forceSslLocked &&
-                      router.post(route('site-settings.enable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))
+                      !sslLocked && router.post(route('site-settings.enable-force-ssl', { server: page.props.server.id, site: page.props.site.id }))
                     }
                   >
                     <ShieldCheckIcon />

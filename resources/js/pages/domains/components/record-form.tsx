@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, ReactNode, useState, useEffect } from 'react';
+import { FormEventHandler, ReactNode, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -25,26 +25,11 @@ import FormSuccessful from '@/components/form-successful';
 interface RecordFormProps {
   domain: Domain;
   record?: DNSRecord;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
   children: ReactNode;
 }
 
-export default function RecordForm({ domain, record, defaultOpen, onOpenChange, children }: RecordFormProps) {
-  const [open, setOpen] = useState(defaultOpen || false);
-
-  useEffect(() => {
-    if (defaultOpen) {
-      setOpen(defaultOpen);
-    }
-  }, [setOpen, defaultOpen]);
-
-  const handleOpenChange = (open: boolean) => {
-    setOpen(open);
-    if (onOpenChange) {
-      onOpenChange(open);
-    }
-  };
+export default function RecordForm({ domain, record, children }: RecordFormProps) {
+  const [open, setOpen] = useState(false);
 
   const form = useForm({
     type: record?.type || 'A',
@@ -117,7 +102,7 @@ export default function RecordForm({ domain, record, defaultOpen, onOpenChange, 
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl">
         <DialogHeader>

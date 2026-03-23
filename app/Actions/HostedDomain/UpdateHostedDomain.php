@@ -54,15 +54,26 @@ class UpdateHostedDomain
 
         $hostedDomain->save();
 
-        if ($needsDnsRecheck) {
-            dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
-        } elseif ($needsSslActivation) {
-            app(ActivateHostedDomain::class)->activate($hostedDomain);
-        } else {
-            $hostedDomain->site->webserver()->updateVHost($hostedDomain->site);
-        }
+        $this->dispatchAction($hostedDomain, $needsDnsRecheck, $needsSslActivation);
 
         return $hostedDomain->refresh();
+    }
+
+    private function dispatchAction(HostedDomain $hostedDomain, bool $needsDnsRecheck, bool $needsSslActivation): void
+    {
+        if ($needsDnsRecheck) {
+            dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
+
+            return;
+        }
+
+        if ($needsSslActivation) {
+            app(ActivateHostedDomain::class)->activate($hostedDomain);
+
+            return;
+        }
+
+        $hostedDomain->site->webserver()->updateVHost($hostedDomain->site);
     }
 
     /**
@@ -115,8 +126,7 @@ class UpdateHostedDomain
                     return;
                 }
 
-                $ssl = Ssl::query()
-                    ->activeServerLevel($site->server_id)
+                $ssl = Ssl::activeServerLevel($site->server_id)
                     ->where('id', $value)
                     ->first();
 

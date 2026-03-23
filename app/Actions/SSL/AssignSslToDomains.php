@@ -18,8 +18,7 @@ class AssignSslToDomains
     {
         $hostedDomains = $hostedDomains ?? $site->hostedDomains()->get();
 
-        $serverSsls = Ssl::query()
-            ->activeServerLevel($site->server_id)
+        $serverSsls = Ssl::activeServerLevel($site->server_id)
             ->get();
 
         $changed = collect();

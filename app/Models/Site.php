@@ -66,9 +66,6 @@ use RuntimeException;
  */
 class Site extends AbstractModel
 {
-    /** @var array<int, array{key: string, ...}> Non-persisted warnings attached by controllers */
-    public array $warnings = [];
-
     /** @use HasFactory<SiteFactory> */
     use HasFactory;
 

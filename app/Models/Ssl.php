@@ -113,12 +113,11 @@ class Ssl extends AbstractModel
     }
 
     /**
-     * @param  Builder<Ssl>  $query
      * @return Builder<Ssl>
      */
-    public function scopeActiveServerLevel(Builder $query, int $serverId): Builder
+    public static function activeServerLevel(int $serverId): Builder
     {
-        return $query
+        return self::query()
             ->whereNull('site_id')
             ->where('server_id', $serverId)
             ->where('status', SslStatus::CREATED);

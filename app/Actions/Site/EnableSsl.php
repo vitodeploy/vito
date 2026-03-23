@@ -9,7 +9,7 @@ class EnableSsl
 {
     public function enable(Site $site): void
     {
-        if (in_array('ssl_enabled', $site->webserver()->siteLockedFields())) {
+        if (! $site->webserver()->canConfigureSSL()) {
             throw ValidationException::withMessages([
                 'ssl_enabled' => 'SSL cannot be changed for this webserver.',
             ]);

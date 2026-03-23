@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\HostedDomainStatus;
+use App\Enums\SslStatus;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -39,14 +41,59 @@ class SiteResource extends JsonResource
             'ssl_enabled' => $this->ssl_enabled,
             'progress' => $this->progress,
             'features' => $this->features(),
-            'webserver_locked_fields' => $this->webserver()->siteLockedFields(),
+            'can_configure_ssl' => $this->webserver()->canConfigureSSL(),
             'webserver_allowed_ssl_methods' => $this->webserver()->allowedSslMethods(),
             'webserver_default_ssl_method' => $this->webserver()->defaultSslMethod()->value,
             'vhost_generation_enabled' => $this->vhost_generation_enabled,
             'modern_deployment' => $this->modernDeploymentEnabled(),
-            'warnings' => $this->warnings,
+            'warnings' => $this->getWarnings(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    /**
+     * @return array<int, array{key: string, ...}>
+     */
+    private function getWarnings(): array
+    {
+        $warnings = [];
+
+        $hostedDomains = $this->relationLoaded('hostedDomains') ? $this->hostedDomains : collect();
+
+        $pendingDomains = $hostedDomains->where('status', HostedDomainStatus::PENDING);
+        if ($pendingDomains->isNotEmpty()) {
+            $warnings[] = [
+                'key' => 'pending_domains',
+                'count' => $pendingDomains->count(),
+                'domains' => $pendingDomains->pluck('domain')->all(),
+            ];
+        }
+
+        if (! $this->ssl_enabled) {
+            $warnings[] = ['key' => 'ssl_disabled'];
+        }
+
+        if (! $this->vhost_generation_enabled) {
+            $warnings[] = ['key' => 'vhost_generation_disabled'];
+        }
+
+        $expiring = $hostedDomains->filter(
+            fn ($hd) => $hd->ssl_id
+                && $hd->relationLoaded('ssl')
+                && $hd->ssl
+                && $hd->ssl->status === SslStatus::CREATED
+                && $hd->ssl->expires_at <= now()->addDays(14)
+        );
+        if ($expiring->isNotEmpty()) {
+            $warnings[] = [
+                'key' => 'ssl_expiring',
+                'count' => $expiring->count(),
+                'domains' => $expiring->pluck('domain')->all(),
+                'earliest_expiry' => $expiring->min(fn ($hd) => $hd->ssl->expires_at)->toIso8601String(),
+            ];
+        }
+
+        return $warnings;
     }
 }
