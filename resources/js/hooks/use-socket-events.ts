@@ -161,6 +161,37 @@ export function useSocketListener(callback: (data: SocketEventData) => void): vo
 }
 
 /**
+ * Keeps a single resource in sync with socket events.
+ *
+ * Returns the live resource (initially from Inertia props, updated via socket).
+ * Pass `null` to skip listening (safe to call unconditionally).
+ */
+export function useRealtimeRecord<T extends { id: number }>(
+  initial: T | null | undefined,
+  eventPrefix: string,
+): T | null {
+  const [record, setRecord] = useState<T | null>(initial ?? null);
+
+  useEffect(() => {
+    setRecord(initial ?? null);
+  }, [initial]);
+
+  useSocketListener(
+    useCallback(
+      (event) => {
+        if (!initial) return;
+        if (event.type === `${eventPrefix}.updated` && event.data && 'id' in event.data && event.data.id === initial.id) {
+          setRecord(event.data as unknown as T);
+        }
+      },
+      [eventPrefix, initial?.id],
+    ),
+  );
+
+  return record;
+}
+
+/**
  * Manages paginated Inertia data with realtime socket updates.
  *
  * Listens for socket events matching `{eventPrefix}.updated` (replace row),

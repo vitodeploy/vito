@@ -2,8 +2,11 @@
 
 namespace App\SiteTypes;
 
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
+use App\Http\Resources\SiteResource;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
@@ -64,6 +67,12 @@ abstract class AbstractSiteType implements SiteType
     {
         $this->site->progress = $percentage;
         $this->site->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->site->server->project_id,
+            type: 'site.updated',
+            data: new SiteResource($this->site),
+        ));
     }
 
     /**

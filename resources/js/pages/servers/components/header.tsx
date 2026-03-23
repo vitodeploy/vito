@@ -6,13 +6,30 @@ import { cn } from '@/lib/utils';
 import { Site } from '@/types/site';
 import { StatusRipple } from '@/components/status-ripple';
 import { Badge } from '@/components/ui/badge';
-import { useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useRealtimeRecord } from '@/hooks/use-socket-events';
 
 import { InstantLogs } from '@/pages/server-logs/components/instant-logs';
 
-export default function ServerHeader({ server, site }: { server: Server; site?: Site }) {
+export default function ServerHeader({ server: initialServer, site: initialSite }: { server: Server; site?: Site }) {
+  const server = useRealtimeRecord<Server>(initialServer, 'server')!;
+  const site = useRealtimeRecord<Site>(initialSite, 'site');
+
+  // Reload page when installation completes
+  useEffect(() => {
+    if (initialServer.status === 'installing' && (server.status === 'ready' || server.status === 'installation_failed')) {
+      router.reload();
+    }
+  }, [server.status, initialServer.status]);
+
+  useEffect(() => {
+    if (initialSite?.status === 'installing' && site && (site.status === 'ready' || site.status === 'installation_failed')) {
+      router.reload();
+    }
+  }, [site?.status, initialSite?.status]);
+
   const statusForm = useForm();
 
   const checkStatus = () => {
@@ -119,7 +136,7 @@ export default function ServerHeader({ server, site }: { server: Server; site?: 
                 <TooltipTrigger asChild>
                   <div className="flex items-center space-x-1">
                     <LoaderCircleIcon className={cn('size-4', site.status === 'installing' ? 'text-brand animate-spin' : '')} />
-                    <div>%{parseInt(site.progress.toString() || '0')}</div>
+                    <div>{parseInt((site.progress ?? 0).toString())}%</div>
                     {site.status === 'installation_failed' && (
                       <Badge className="ml-1" variant={site.status_color}>
                         {site.status}

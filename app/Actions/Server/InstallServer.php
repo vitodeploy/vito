@@ -2,11 +2,14 @@
 
 namespace App\Actions\Server;
 
+use App\DTOs\SocketEventDTO;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
+use App\Events\SocketEvent;
 use App\Exceptions\SSHConnectionError;
 use App\Exceptions\SSHError;
 use App\Facades\Notifier;
+use App\Http\Resources\ServerResource;
 use App\Models\Server;
 use App\Notifications\ServerInstallationSucceed;
 use App\ServerProviders\Custom;
@@ -103,5 +106,11 @@ class InstallServer
         $this->server->progress = $percentage;
         $this->server->progress_step = $step;
         $this->server->save();
+
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $this->server->project_id,
+            type: 'server.updated',
+            data: new ServerResource($this->server),
+        ));
     }
 }
