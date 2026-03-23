@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
+use App\Enums\SslStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Jobs\SSL\DeleteSiteSslJob;
@@ -570,5 +572,50 @@ class Site extends AbstractModel
     public function getDeployKeyName(): string
     {
         return $this->domain.'-key-'.$this->id;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getWarnings(): array
+    {
+        $warnings = [];
+
+        $hostedDomains = $this->relationLoaded('hostedDomains') ? $this->hostedDomains : collect();
+
+        $pendingDomains = $hostedDomains->where('status', HostedDomainStatus::PENDING);
+        if ($pendingDomains->isNotEmpty()) {
+            $warnings[] = [
+                'key' => 'pending_domains',
+                'count' => $pendingDomains->count(),
+                'domains' => $pendingDomains->pluck('domain')->all(),
+            ];
+        }
+
+        if (! $this->ssl_enabled) {
+            $warnings[] = ['key' => 'ssl_disabled'];
+        }
+
+        if (! $this->vhost_generation_enabled) {
+            $warnings[] = ['key' => 'vhost_generation_disabled'];
+        }
+
+        $expiring = $hostedDomains->filter(
+            fn ($hd) => $hd->ssl_id
+                && $hd->relationLoaded('ssl')
+                && $hd->ssl
+                && $hd->ssl->status === SslStatus::CREATED
+                && $hd->ssl->expires_at <= now()->addDays(14)
+        );
+        if ($expiring->isNotEmpty()) {
+            $warnings[] = [
+                'key' => 'ssl_expiring',
+                'count' => $expiring->count(),
+                'domains' => $expiring->pluck('domain')->all(),
+                'earliest_expiry' => $expiring->min(fn ($hd) => $hd->ssl->expires_at)->toIso8601String(),
+            ];
+        }
+
+        return $warnings;
     }
 }

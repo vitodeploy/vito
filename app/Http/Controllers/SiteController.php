@@ -11,6 +11,7 @@ use App\Http\Resources\ServerLogResource;
 use App\Http\Resources\SiteResource;
 use App\Models\Server;
 use App\Models\Site;
+use App\Tables\SiteTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -32,13 +33,8 @@ class SiteController extends Controller
 
         $sites = user()->currentProject->sites()->with(['server', 'hostedDomains.ssl'])->latest();
 
-        $sites = QueryBuilder::for($sites)
-            ->searchableFields(['domain'])
-            ->query()
-            ->simplePaginate(config('web.pagination_size'), pageName: 'sitesPage');
-
         return Inertia::render('sites/index', [
-            'sites' => SiteResource::collection($sites),
+            'sites' => SiteTable::make($sites)->forServer(null)->toInertia(),
         ]);
     }
 
@@ -48,13 +44,9 @@ class SiteController extends Controller
         $this->authorize('viewAny', [Site::class, $server]);
 
         $sites = $server->sites()->with('hostedDomains.ssl')->latest();
-        $sites = QueryBuilder::for($sites)
-            ->searchableFields(['domain'])
-            ->query()
-            ->simplePaginate(config('web.pagination_size'), pageName: 'sitesPage');
 
         return Inertia::render('sites/index', [
-            'sites' => SiteResource::collection($sites),
+            'sites' => SiteTable::make($sites)->forServer($server)->toInertia(),
         ]);
     }
 

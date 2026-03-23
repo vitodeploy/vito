@@ -1,27 +1,27 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
-import { PaginatedData, type Configs } from '@/types';
+import { type Configs } from '@/types';
 
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/servers/components/columns';
+import { DynamicTable } from '@/components/dynamic-table';
+import { DynamicTableData } from '@/types/dynamic-table';
 import { Server } from '@/types/server';
 import Heading from '@/components/heading';
 import CreateServer from '@/pages/servers/components/create-server';
 import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/app/layout';
-import { BookOpenIcon, PlusIcon } from 'lucide-react';
+import { BookOpenIcon, EyeIcon, PlusIcon } from 'lucide-react';
 import { useRealtime } from '@/hooks/use-socket-events';
 
 type Page = {
-  servers: PaginatedData<Server>;
+  servers: DynamicTableData<Server>;
   public_key: string;
   configs: Configs;
 };
 
 export default function Servers() {
   const page = usePage<Page>();
-  const [servers] = useRealtime<Server>(page.props.servers, 'server');
+  const [servers] = useRealtime<Server>(page.props.servers.data, 'server');
   return (
     <Layout>
       <Head title="Servers" />
@@ -44,7 +44,18 @@ export default function Servers() {
             </CreateServer>
           </div>
         </div>
-        <DataTable columns={columns} paginatedData={servers} searchable />
+        <DynamicTable
+          tableData={{ ...page.props.servers, data: servers }}
+          actions={(server) => (
+            <div className="flex items-center justify-end">
+              <Link href={route('servers.show', { server: server.id })} prefetch>
+                <Button variant="outline" size="sm">
+                  <EyeIcon />
+                </Button>
+              </Link>
+            </div>
+          )}
+        />
       </Container>
     </Layout>
   );
