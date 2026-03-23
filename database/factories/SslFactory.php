@@ -23,6 +23,8 @@ class SslFactory extends Factory
             'certificate' => $this->faker->word(),
             'pk' => $this->faker->word(),
             'ca' => $this->faker->word(),
+            'certificate_path' => '/etc/ssl/certs/'.$this->faker->word().'.pem',
+            'pk_path' => '/etc/ssl/private/'.$this->faker->word().'.pem',
             'expires_at' => Carbon::now()->addDay(),
             'status' => SslStatus::CREATED,
             'domains' => ['example.com'],
