@@ -511,6 +511,7 @@ export default function CreateServer({
                     onClick={copyToClipboard}
                     id="public_key"
                     value={page.props.public_key_text}
+                    readOnly
                     className="justify-between overflow-auto font-normal"
                     spellCheck={false}
                   ></Textarea>
