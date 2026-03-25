@@ -38,7 +38,7 @@ class HostedDomainTable extends Table
                 }),
             EnumColumn::make('ssl_method', 'SSL')->uppercase(),
             Column::make('certificate', 'Certificate'),
-            BadgeColumn::make('expires_in', 'Expires In')
+            BadgeColumn::make('ssl.expires_at', 'Expires In')
                 ->variant('outline')
                 ->adjust(fn ($data) => $this->daysUntil($data)),
             EnumColumn::make('status', 'Status')->sortable(),
@@ -47,6 +47,7 @@ class HostedDomainTable extends Table
             Column::data('server_id', fn (HostedDomain $hd) => $hd->site->server_id),
             Column::data('type', fn (HostedDomain $hd) => $hd->type->getText()),
             Column::data('type_color', fn (HostedDomain $hd) => $hd->type->getColor()),
+            Column::data('ssl_id'),
             Column::data('error'),
             Column::data('ssl', fn (HostedDomain $hd) => $hd->ssl ? SslResource::make($hd->ssl) : null),
             ActionsColumn::make(),
@@ -59,7 +60,11 @@ class HostedDomainTable extends Table
             return null;
         }
 
-        $days = (int) now()->diffInDays($date);
+        $days = (int) now()->diffInDays($date, false);
+
+        if ($days < 0) {
+            return 'Expired';
+        }
 
         return $days.' '.($days === 1 ? 'day' : 'days');
     }
