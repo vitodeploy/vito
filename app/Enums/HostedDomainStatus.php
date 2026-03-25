@@ -6,7 +6,7 @@ use App\Contracts\VitoEnum;
 use App\Traits\HasEnumHelpers;
 use Forjed\InertiaTable\Contracts\HasTableDisplay;
 
-enum HostedDomainStatus: string implements VitoEnum, HasTableDisplay
+enum HostedDomainStatus: string implements HasTableDisplay, VitoEnum
 {
     use HasEnumHelpers;
 

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { useTable, type InertiaTableData, type InertiaTableProps, type Row, type CellRenderProps } from '@forjedio/inertia-table-react';
+import { useTable, type InertiaTableData, type InertiaTableProps, type CellRenderProps } from '@forjedio/inertia-table-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ interface VitoTableProps extends Omit<InertiaTableProps, 'tableData'> {
   children?: ReactNode;
 }
 
-function vitoCellRenderer({ row, value, column, displays, defaultRender }: CellRenderProps & { defaultRender: () => ReactNode }): ReactNode {
+function vitoCellRenderer({ row, value, displays, defaultRender }: CellRenderProps & { defaultRender: () => ReactNode }): ReactNode {
   if (displays.length === 1 && displays[0].type === 'badge') {
     const display = displays[0];
     const color = display.color_field ? (row[display.color_field] as string) : display.variant;
@@ -31,7 +31,7 @@ function vitoCellRenderer({ row, value, column, displays, defaultRender }: CellR
 }
 
 export function VitoTable({ tableData, children, modal, isFetching, ...props }: VitoTableProps) {
-  const { columns, classNames, searchTerm, onSearch, sortBy, sortDir, onSort, getSortState, onPageChange, isProcessing } = useTable({
+  const { columns, searchTerm, onSearch, onSort, getSortState, onPageChange, isProcessing } = useTable({
     tableData,
     modal,
     isFetching,
@@ -54,30 +54,32 @@ export function VitoTable({ tableData, children, modal, isFetching, ...props }: 
         <Table>
           <TableHeader>
             <TableRow>
-              {tableData.columns.filter((c) => !c.hidden).map((colDef) => {
-                const sortState = getSortState(colDef.sort_key);
+              {tableData.columns
+                .filter((c) => !c.hidden)
+                .map((colDef) => {
+                  const sortState = getSortState(colDef.sort_key);
 
-                return (
-                  <TableHead key={colDef.name} className={colDef.fit ? 'w-0' : undefined}>
-                    {colDef.sortable ? (
-                      <button type="button" className="flex cursor-pointer items-center gap-2" onClick={() => onSort(colDef.sort_key)}>
-                        {colDef.header}
-                        {sortState.active ? (
-                          sortState.direction === 'asc' ? (
-                            <ChevronUpIcon className="text-muted-foreground inline-block h-4 w-4" />
+                  return (
+                    <TableHead key={colDef.name} className={colDef.fit ? 'w-0' : undefined}>
+                      {colDef.sortable ? (
+                        <button type="button" className="flex cursor-pointer items-center gap-2" onClick={() => onSort(colDef.sort_key)}>
+                          {colDef.header}
+                          {sortState.active ? (
+                            sortState.direction === 'asc' ? (
+                              <ChevronUpIcon className="text-muted-foreground inline-block h-4 w-4" />
+                            ) : (
+                              <ChevronDownIcon className="text-muted-foreground inline-block h-4 w-4" />
+                            )
                           ) : (
-                            <ChevronDownIcon className="text-muted-foreground inline-block h-4 w-4" />
-                          )
-                        ) : (
-                          <ChevronsUpDownIcon className="text-muted-foreground inline-block h-4 w-4" />
-                        )}
-                      </button>
-                    ) : (
-                      colDef.header
-                    )}
-                  </TableHead>
-                );
-              })}
+                            <ChevronsUpDownIcon className="text-muted-foreground inline-block h-4 w-4" />
+                          )}
+                        </button>
+                      ) : (
+                        colDef.header
+                      )}
+                    </TableHead>
+                  );
+                })}
             </TableRow>
           </TableHeader>
           <TableBody>

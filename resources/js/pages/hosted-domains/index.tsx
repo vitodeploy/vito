@@ -128,8 +128,8 @@ function ForceActivateHostedDomain({ hostedDomain }: { hostedDomain: HostedDomai
             configuration changes have been made yet.
           </p>
           <p>
-            If you force activate this domain, the server configuration will be updated regardless. However, this may impact your ability to generate an
-            SSL certificate if the domain does not actually point to this server.
+            If you force activate this domain, the server configuration will be updated regardless. However, this may impact your ability to generate
+            an SSL certificate if the domain does not actually point to this server.
           </p>
           <p>Are you sure you want to continue?</p>
         </div>
