@@ -4,8 +4,9 @@ namespace App\Enums;
 
 use App\Contracts\VitoEnum;
 use App\Traits\HasEnumHelpers;
+use Forjed\InertiaTable\Contracts\HasTableDisplay;
 
-enum SslMethod: string implements VitoEnum
+enum SslMethod: string implements VitoEnum, HasTableDisplay
 {
     use HasEnumHelpers;
 
@@ -15,15 +16,15 @@ enum SslMethod: string implements VitoEnum
 
     public function getColor(): string
     {
-        return match ($this) {
-            self::NONE => 'gray',
-            self::LETSENCRYPT => 'info',
-            self::CUSTOM => 'success',
-        };
+        return 'outline';
     }
 
     public function getText(): string
     {
-        return $this->value;
+        return match ($this) {
+            self::NONE => 'disabled',
+            self::LETSENCRYPT => 'letsencrypt',
+            self::CUSTOM => 'custom',
+        };
     }
 }

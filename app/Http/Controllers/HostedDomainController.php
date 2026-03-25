@@ -16,6 +16,7 @@ use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Http\Resources\HostedDomainResource;
 use App\Jobs\HostedDomain\CheckDomainJob;
+use App\Tables\HostedDomainTable;
 use App\Models\HostedDomain;
 use App\Models\Server;
 use App\Models\Site;
@@ -42,13 +43,7 @@ class HostedDomainController extends Controller
         $this->authorize('viewAny', [HostedDomain::class, $site, $server]);
 
         return Inertia::render('hosted-domains/index', [
-            'hostedDomains' => HostedDomainResource::collection(
-                $site->hostedDomains()
-                    ->with('site', 'ssl')
-                    ->orderByRaw("CASE WHEN type = 'primary' THEN 0 ELSE 1 END")
-                    ->oldest()
-                    ->simplePaginate(config('web.pagination_size'))
-            ),
+            'hostedDomains' => HostedDomainTable::make($site->hostedDomains())->simplePaginate(),
             'hasSiteSsl' => $site->ssls()
                 ->where('type', SslType::LETSENCRYPT)
                 ->where('status', SslStatus::CREATED)

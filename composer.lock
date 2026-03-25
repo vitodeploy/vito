@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "abb60d66675ae44644ad9409edfb9eea",
+    "content-hash": "c453490e3d2b3817d974ec4ff8f14afa",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -810,6 +810,73 @@
                 "source": "https://github.com/igorw/evenement/tree/v3.0.2"
             },
             "time": "2023-08-08T05:53:35+00:00"
+        },
+        {
+            "name": "forjedio/inertia-table",
+            "version": "v1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/forjedio/inertia-table.git",
+                "reference": "d8954b7e35ea3a4502ade7cadfd388e9e9fa480b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/forjedio/inertia-table/zipball/d8954b7e35ea3a4502ade7cadfd388e9e9fa480b",
+                "reference": "d8954b7e35ea3a4502ade7cadfd388e9e9fa480b",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": "^12.0|^13.0",
+                "illuminate/database": "^12.0|^13.0",
+                "illuminate/http": "^12.0|^13.0",
+                "illuminate/support": "^12.0|^13.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.9",
+                "laravel/pint": "^1.29",
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^3.0",
+                "pestphp/pest-plugin-laravel": "^3.0",
+                "phpstan/phpstan": "^2.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Forjed\\InertiaTable\\TableServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Forjed\\InertiaTable\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Forjed",
+                    "email": "packages@forjed.io",
+                    "homepage": "https://forjed.io"
+                }
+            ],
+            "description": "Backend-driven dynamic tables for Laravel + Inertia.js",
+            "keywords": [
+                "datatable",
+                "dynamic-tables",
+                "inertia",
+                "laravel",
+                "tables"
+            ],
+            "support": {
+                "issues": "https://github.com/forjedio/inertia-table/issues",
+                "source": "https://github.com/forjedio/inertia-table/tree/v1.0.3"
+            },
+            "time": "2026-03-25T17:10:40+00:00"
         },
         {
             "name": "fruitcake/php-cors",
