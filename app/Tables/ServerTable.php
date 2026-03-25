@@ -23,7 +23,7 @@ class ServerTable extends Table
     {
         return [
             Column::make('id', 'ID')->sortable(),
-            LinkColumn::make('name', 'Name')->sortable()->route('servers.show', ['server' => 'id']),
+            LinkColumn::make('name', 'Name')->sortable()->route('servers.show', ['server' => ':id']),
             TextColumn::make('ip', 'IP')->sortable(),
             DateTimeColumn::make('created_at', 'Created at')->sortable(),
             EnumColumn::make('status', 'Status')->sortable(),
