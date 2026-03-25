@@ -11,12 +11,19 @@ registerIcons({
 
 registerTableHook('realtime', ({ value, refresh }) => {
   const prefix = value as string;
+  let timeout: ReturnType<typeof setTimeout>;
+
   const handler = (e: CustomEvent<SocketEventData>) => {
     const { type } = e.detail;
     if (type?.startsWith(`${prefix}.`)) {
-      refresh();
+      clearTimeout(timeout);
+      timeout = setTimeout(refresh, 900);
     }
   };
+
   window.addEventListener(SOCKET_EVENT, handler);
-  return () => window.removeEventListener(SOCKET_EVENT, handler);
+  return () => {
+    clearTimeout(timeout);
+    window.removeEventListener(SOCKET_EVENT, handler);
+  };
 });
