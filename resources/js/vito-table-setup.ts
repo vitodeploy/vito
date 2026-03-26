@@ -1,4 +1,4 @@
-import { registerTableHook, registerIcons } from '@forjedio/inertia-table-react';
+import { registerTableHook, registerIcons } from 'inertia-table-react';
 import { SOCKET_EVENT } from '@/stores/socket-store';
 import type { SocketEventData } from '@/stores/socket-store';
 import { CrownIcon, CopyIcon, SignpostIcon } from 'lucide-react';

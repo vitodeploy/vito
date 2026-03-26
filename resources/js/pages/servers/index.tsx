@@ -9,7 +9,7 @@ import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/app/layout';
 import { BookOpenIcon, EyeIcon, PlusIcon } from 'lucide-react';
-import type { InertiaTableData, Row } from '@forjedio/inertia-table-react';
+import type { InertiaTableData, Row } from 'inertia-table-react';
 
 type Page = {
   servers: InertiaTableData;

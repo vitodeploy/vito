@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { useTable, type InertiaTableData, type InertiaTableProps, type CellRenderProps } from '@forjedio/inertia-table-react';
+import { useTable, type InertiaTableData, type InertiaTableProps, type CellRenderProps } from 'inertia-table-react';
+import { Link } from '@inertiajs/react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,12 +22,37 @@ interface VitoTableProps extends Omit<InertiaTableProps, 'tableData'> {
   children?: ReactNode;
 }
 
+function resolveHref(display: CellRenderProps['displays'][number], row: CellRenderProps['row']): string | null {
+  if (display.type !== 'link') return null;
+  if (display.href_key) return row[display.href_key] as string;
+  if (!display.route || !display.params) return null;
+
+  const params: Record<string, string | number> = {};
+  for (const [key, val] of Object.entries(display.params)) {
+    params[key] = val.startsWith(':') ? (row[val.slice(1)] as string | number) : val;
+  }
+  return route(display.route, params);
+}
+
 function vitoCellRenderer({ row, value, displays, defaultRender }: CellRenderProps & { defaultRender: () => ReactNode }): ReactNode {
   if (displays.length === 1 && displays[0].type === 'badge') {
     const display = displays[0];
     const color = display.color_field ? (row[display.color_field] as string) : display.variant;
     return <Badge variant={(color ?? 'default') as 'default'}>{String(value ?? '')}</Badge>;
   }
+
+  if (displays.some((d) => d.type === 'link')) {
+    const linkDisplay = displays.find((d) => d.type === 'link')!;
+    const href = resolveHref(linkDisplay, row);
+    if (href && value != null) {
+      return (
+        <Link href={href} prefetch={'prefetch' in linkDisplay && linkDisplay.prefetch ? 'hover' : undefined}>
+          {String(value)}
+        </Link>
+      );
+    }
+  }
+
   return defaultRender();
 }
 
