@@ -19,6 +19,7 @@ use App\Models\Site;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -63,7 +64,7 @@ class SiteController extends Controller
     }
 
     #[Delete('{site}', name: 'api.projects.servers.sites.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Server $server, Site $site): \Illuminate\Http\Response
+    public function delete(Project $project, Server $server, Site $site): Response
     {
         $this->authorize('delete', [$site, $server]);
 
@@ -127,7 +128,7 @@ class SiteController extends Controller
     }
 
     #[Put('{site}/deployment-script', name: 'api.projects.servers.sites.deployment-script', middleware: 'ability:write')]
-    public function updateDeploymentScript(Request $request, Project $project, Server $server, Site $site): \Illuminate\Http\Response
+    public function updateDeploymentScript(Request $request, Project $project, Server $server, Site $site): Response
     {
         $this->authorize('update', [$site, $server]);
 

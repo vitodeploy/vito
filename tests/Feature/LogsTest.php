@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Facades\SSH;
 use App\Models\ServerLog;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -77,8 +78,8 @@ class LogsTest extends TestCase
 
     public function test_unauthorized_user_cannot_clear_log(): void
     {
-        /** @var \App\Models\User $unauthorizedUser */
-        $unauthorizedUser = \App\Models\User::factory()->create();
+        /** @var User $unauthorizedUser */
+        $unauthorizedUser = User::factory()->create();
         $this->actingAs($unauthorizedUser);
 
         $log = ServerLog::factory()->create([

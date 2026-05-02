@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Server;
+use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -313,13 +314,14 @@ class ServicesTest extends TestCase
         ]);
     }
 
-    public function test_fetch_php_installed_version(): void
+    #[DataProvider('phpVersionOutputData')]
+    public function test_fetch_php_installed_version(string $sshOutput, string $expectedVersion): void
     {
-        SSH::fake('8.4.10');
+        SSH::fake($sshOutput);
 
         $this->actingAs($this->user);
 
-        /** @var \App\Models\Service $service */
+        /** @var Service $service */
         $service = $this->server->services()->where('name', 'php')->firstOrFail();
 
         $this->get(route('services.version', [
@@ -328,7 +330,19 @@ class ServicesTest extends TestCase
         ]))
             ->assertSessionDoesntHaveErrors();
 
-        $this->assertEquals($service->refresh()->installed_version, '8.4.10');
+        $this->assertEquals($expectedVersion, $service->refresh()->installed_version);
+    }
+
+    /**
+     * @return array<array<string>>
+     */
+    public static function phpVersionOutputData(): array
+    {
+        return [
+            'clean version' => ['8.4.10', '8.4.10'],
+            'version with noise' => ["Deprecated: some deprecation notice in php\n8.5.2", '8.5.2'],
+            'version with whitespace' => ["  8.5.1\n", '8.5.1'],
+        ];
     }
 
     /**

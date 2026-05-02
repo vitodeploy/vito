@@ -6,6 +6,7 @@ use App\Enums\DatabaseStatus;
 use App\Enums\DatabaseUserStatus;
 use App\Facades\SSH;
 use App\Models\Database;
+use App\Models\DatabaseUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -38,7 +39,7 @@ class DatabaseTest extends TestCase
 
         SSH::fake();
 
-        $databaseUser = \App\Models\DatabaseUser::factory()->create([
+        $databaseUser = DatabaseUser::factory()->create([
             'server_id' => $this->server,
             'username' => 'user',
             'databases' => [],
@@ -74,7 +75,7 @@ class DatabaseTest extends TestCase
             'status' => DatabaseStatus::READY,
         ]);
 
-        $databaseUser = \App\Models\DatabaseUser::factory()->create([
+        $databaseUser = DatabaseUser::factory()->create([
             'server_id' => $this->server,
             'username' => 'existing_user',
             'databases' => ['existing_db'],

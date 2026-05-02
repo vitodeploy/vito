@@ -45,6 +45,26 @@ class Cloudflare extends AbstractDNSProvider
         ];
     }
 
+    public function editValidationRules(array $input): array
+    {
+        return [
+            'token' => 'nullable|string',
+        ];
+    }
+
+    public function mergeEditData(array $input): array
+    {
+        $credentials = $this->dnsProvider->credentials;
+        $needsReconnect = false;
+
+        if (! empty($input['token'])) {
+            $credentials['token'] = $input['token'];
+            $needsReconnect = true;
+        }
+
+        return [$credentials, $needsReconnect];
+    }
+
     public function connect(array $credentials): bool
     {
         try {
@@ -129,49 +149,37 @@ class Cloudflare extends AbstractDNSProvider
 
     public function getRecords(string $domainId): array
     {
-        try {
-            $response = $this->getClient()->get("zones/{$domainId}/dns_records", [
-                'per_page' => 100,
-            ]);
+        $response = $this->getClient()->get("zones/{$domainId}/dns_records", [
+            'per_page' => 100,
+        ]);
 
-            if (! $response->successful()) {
-                Log::error('Failed to fetch Cloudflare DNS records', ['domainId' => $domainId, 'response' => $response->json()]);
-
-                return [];
-            }
-
-            return collect($response->json('result'))->map(function (array $record) {
-                return [
-                    'id' => $record['id'],
-                    'type' => $record['type'],
-                    'name' => $record['name'],
-                    'content' => $record['content'],
-                    'ttl' => $record['ttl'],
-                    'proxied' => $record['proxied'],
-                    'created_on' => $record['created_on'],
-                    'modified_on' => $record['modified_on'],
-                ];
-            })->toArray();
-        } catch (Throwable $e) {
-            Log::error('Cloudflare getRecords exception', ['error' => $e->getMessage()]);
-
-            return [];
+        if (! $response->successful()) {
+            Log::error('Failed to fetch Cloudflare DNS records', ['domainId' => $domainId, 'response' => $response->json()]);
+            throw new \RuntimeException('Failed to fetch DNS records: '.($response->json('errors')[0]['message'] ?? 'Unknown error'));
         }
+
+        return collect($response->json('result'))->map(function (array $record) {
+            return [
+                'id' => $record['id'],
+                'type' => $record['type'],
+                'name' => $record['name'],
+                'content' => $record['content'],
+                'ttl' => $record['ttl'],
+                'proxied' => $record['proxied'],
+                'priority' => $record['type'] === 'MX' && isset($record['priority']) ? $record['priority'] : null,
+                'created_on' => $record['created_on'],
+                'modified_on' => $record['modified_on'],
+            ];
+        })->toArray();
     }
 
-    public function createRecord(string $domainId, array $input): array
+    public function createRecord(string $domainId, array $recordData): array
     {
         try {
-            $response = $this->getClient()->post("zones/{$domainId}/dns_records", [
-                'type' => $input['type'],
-                'name' => $input['name'],
-                'content' => $input['content'],
-                'ttl' => $input['ttl'] ?? 1,
-                'proxied' => $input['proxied'] ?? false,
-            ]);
+            $response = $this->getClient()->post("zones/{$domainId}/dns_records", $this->buildPayload($recordData));
 
             if (! $response->successful()) {
-                Log::error('Failed to create Cloudflare DNS record', ['domainId' => $domainId, 'input' => $input, 'response' => $response->json()]);
+                Log::error('Failed to create Cloudflare DNS record', ['domainId' => $domainId, 'input' => $recordData, 'response' => $response->json()]);
                 throw ValidationException::withMessages(['record' => 'Failed to create DNS record: '.($response->json('errors')[0]['message'] ?? 'Unknown error')]);
             }
 
@@ -182,19 +190,13 @@ class Cloudflare extends AbstractDNSProvider
         }
     }
 
-    public function updateRecord(string $domainId, string $recordId, array $input): array
+    public function updateRecord(string $domainId, string $recordId, array $recordData): array
     {
         try {
-            $response = $this->getClient()->put("zones/{$domainId}/dns_records/{$recordId}", [
-                'type' => $input['type'],
-                'name' => $input['name'],
-                'content' => $input['content'],
-                'ttl' => $input['ttl'] ?? 1,
-                'proxied' => $input['proxied'] ?? false,
-            ]);
+            $response = $this->getClient()->put("zones/{$domainId}/dns_records/{$recordId}", $this->buildPayload($recordData));
 
             if (! $response->successful()) {
-                Log::error('Failed to update Cloudflare DNS record', ['domainId' => $domainId, 'recordId' => $recordId, 'input' => $input, 'response' => $response->json()]);
+                Log::error('Failed to update Cloudflare DNS record', ['domainId' => $domainId, 'recordId' => $recordId, 'input' => $recordData, 'response' => $response->json()]);
                 throw ValidationException::withMessages(['record' => 'Failed to update DNS record: '.($response->json('errors')[0]['message'] ?? 'Unknown error')]);
             }
 
@@ -203,6 +205,23 @@ class Cloudflare extends AbstractDNSProvider
             Log::error('Cloudflare updateRecord exception', ['error' => $e->getMessage()]);
             throw ValidationException::withMessages(['record' => 'Failed to update DNS record: '.$e->getMessage()]);
         }
+    }
+
+    private function buildPayload(array $input): array
+    {
+        $payload = [
+            'type' => $input['type'],
+            'name' => $input['name'],
+            'content' => $input['content'],
+            'ttl' => $input['ttl'] ?? 1,
+            'proxied' => $input['proxied'] ?? false,
+        ];
+
+        if (isset($input['priority'])) {
+            $payload['priority'] = $input['priority'];
+        }
+
+        return $payload;
     }
 
     public function deleteRecord(string $domainId, string $recordId): bool

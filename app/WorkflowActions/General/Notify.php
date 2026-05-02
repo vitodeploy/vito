@@ -5,6 +5,7 @@ namespace App\WorkflowActions\General;
 use App\Facades\Notifier;
 use App\Models\NotificationChannel;
 use App\Models\User;
+use App\Notifications\GenericNotification;
 use App\WorkflowActions\AbstractWorkflowAction;
 use Illuminate\Support\Facades\Validator;
 
@@ -38,7 +39,7 @@ class Notify extends AbstractWorkflowAction
 
         $this->authorize('view', $notificationChannel);
 
-        Notifier::send($user, new \App\Notifications\GenericNotification($input['message']));
+        Notifier::send($user, new GenericNotification($input['message']));
 
         return [];
     }

@@ -21,7 +21,7 @@
     "laravel/tinker": "^2.8",
     "mobiledetect/mobiledetectlib": "^4.8",
     "opcodesio/log-viewer": "^3.17",
-    "phpseclib/phpseclib": "3.0.43",
+    "phpseclib/phpseclib": "^3.0.43",
     "spatie/laravel-route-attributes": "^1.24",
     "symfony/yaml": "^7.3",
     "tightenco/ziggy": "^2.5"

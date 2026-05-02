@@ -2,6 +2,7 @@
 
 namespace App\WorkflowActions\Service;
 
+use App\Actions\Service\Install;
 use App\Models\Server;
 use App\WorkflowActions\AbstractWorkflowAction;
 
@@ -32,7 +33,7 @@ class InstallService extends AbstractWorkflowAction
 
         $this->authorize('update', $server);
 
-        $service = app(\App\Actions\Service\Install::class)->install(
+        $service = app(Install::class)->install(
             $server,
             $input,
         );

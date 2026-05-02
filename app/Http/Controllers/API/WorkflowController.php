@@ -7,6 +7,7 @@ use App\Http\Resources\WorkflowResource;
 use App\Models\Project;
 use App\Models\Workflow;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -39,7 +40,7 @@ class WorkflowController extends Controller
     }
 
     #[Delete('{workflow}', name: 'api.projects.workflows.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Workflow $workflow): \Illuminate\Http\Response
+    public function delete(Project $project, Workflow $workflow): Response
     {
         $this->authorize('delete', $workflow);
 

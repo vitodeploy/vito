@@ -7,8 +7,8 @@ export interface DNSRecord {
   formatted_name: string;
   content: string;
   ttl: number;
-  formatted_ttl: string;
   proxied: boolean;
+  priority: number | null;
   domain_id: number;
   domain?: Domain;
   created_at: string;

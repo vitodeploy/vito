@@ -11,6 +11,7 @@ use App\Models\Project;
 use App\Models\Server;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -54,7 +55,7 @@ class DatabaseController extends Controller
     }
 
     #[Delete('{database}', name: 'api.projects.servers.databases.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Server $server, Database $database): \Illuminate\Http\Response
+    public function delete(Project $project, Server $server, Database $database): Response
     {
         $this->authorize('delete', [$database, $server]);
 

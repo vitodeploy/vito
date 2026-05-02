@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\DNSProvider;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DNSProvider>
+ * @extends Factory<DNSProvider>
  */
 class DNSProviderFactory extends Factory
 {
@@ -17,7 +19,7 @@ class DNSProviderFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'project_id' => null,
             'provider' => 'cloudflare',
             'name' => $this->faker->word(),

@@ -207,6 +207,85 @@ class DNSProvidersTest extends TestCase
         ]);
     }
 
+    public function test_dns_provider_update_keeps_credentials_when_empty(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'credentials' => ['token' => 'original-token'],
+        ]);
+
+        $response = $this->patch(route('dns-providers.update', $dnsProvider), [
+            'name' => 'Updated Name',
+        ]);
+
+        $response->assertRedirect();
+
+        $dnsProvider->refresh();
+        $this->assertEquals('Updated Name', $dnsProvider->name);
+        $this->assertEquals(['token' => 'original-token'], $dnsProvider->credentials);
+    }
+
+    public function test_dns_provider_update_changes_credentials_when_provided(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'credentials' => ['token' => 'original-token'],
+        ]);
+
+        Http::fake([
+            'api.cloudflare.com/*' => Http::response([
+                'success' => true,
+                'result' => [],
+            ], 200),
+        ]);
+
+        $response = $this->patch(route('dns-providers.update', $dnsProvider), [
+            'name' => 'Updated Name',
+            'token' => 'new-token',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'DNS provider updated.');
+
+        $dnsProvider->refresh();
+        $this->assertEquals(['token' => 'new-token'], $dnsProvider->credentials);
+    }
+
+    public function test_dns_provider_update_rejects_invalid_credentials(): void
+    {
+        $this->actingAs($this->user);
+
+        $dnsProvider = DNSProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->user->current_project_id,
+            'credentials' => ['token' => 'original-token'],
+        ]);
+
+        Http::fake([
+            'api.cloudflare.com/*' => Http::response([
+                'success' => false,
+                'errors' => [['message' => 'Invalid token']],
+            ], 401),
+        ]);
+
+        $response = $this->patch(route('dns-providers.update', $dnsProvider), [
+            'name' => 'Updated Name',
+            'token' => 'bad-token',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('provider');
+
+        $dnsProvider->refresh();
+        $this->assertEquals(['token' => 'original-token'], $dnsProvider->credentials);
+    }
+
     public function test_dns_provider_update_requires_name(): void
     {
         $this->actingAs($this->user);

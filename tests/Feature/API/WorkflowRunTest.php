@@ -118,9 +118,9 @@ class WorkflowRunTest extends TestCase
         $mockRunWorkflow->shouldReceive('run')
             ->once()
             ->with(Mockery::on(function ($user) {
-                return $user instanceof \App\Models\User && $user->id === $this->user->id;
+                return $user instanceof User && $user->id === $this->user->id;
             }), Mockery::on(function ($wf) use ($workflow) {
-                return $wf instanceof \App\Models\Workflow && $wf->id === $workflow->id;
+                return $wf instanceof Workflow && $wf->id === $workflow->id;
             }), ['branch' => 'main'])
             ->andReturn($this->workflowRun);
 

@@ -62,7 +62,7 @@ class DNSProviderController extends Controller
     }
 
     #[Delete('{dnsProvider}', name: 'api.dns-providers.destroy', middleware: 'ability:write')]
-    public function destroy(DNSProvider $dnsProvider): \Illuminate\Http\JsonResponse
+    public function destroy(DNSProvider $dnsProvider): JsonResponse
     {
         $this->authorize('delete', $dnsProvider);
 

@@ -5,6 +5,7 @@ namespace Tests\Feature\API;
 use App\Enums\CronjobStatus;
 use App\Facades\SSH;
 use App\Models\CronJob;
+use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -235,7 +236,7 @@ class SiteCronjobTest extends TestCase
         ]);
 
         // Create another server and try to access the cronjob through it
-        $otherServer = \App\Models\Server::factory()->create([
+        $otherServer = Server::factory()->create([
             'project_id' => $this->server->project->id,
         ]);
 

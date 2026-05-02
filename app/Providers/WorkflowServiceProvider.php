@@ -3,6 +3,23 @@
 namespace App\Providers;
 
 use App\Plugins\RegisterWorkflowAction;
+use App\WorkflowActions\Database\CreateDatabase;
+use App\WorkflowActions\Database\CreateDatabaseUser;
+use App\WorkflowActions\Domain\CreateDNSRecord;
+use App\WorkflowActions\Domain\DeleteDNSRecord;
+use App\WorkflowActions\General\HttpCall;
+use App\WorkflowActions\General\Notify;
+use App\WorkflowActions\General\RunCommand;
+use App\WorkflowActions\Server\CreateServer;
+use App\WorkflowActions\Service\InstallService;
+use App\WorkflowActions\Site\CreateLaravelSite;
+use App\WorkflowActions\Site\CreateLoadBalancerSite;
+use App\WorkflowActions\Site\CreateNodeJsSite;
+use App\WorkflowActions\Site\CreatePHPBlankSite;
+use App\WorkflowActions\Site\CreatePHPMyAdminSite;
+use App\WorkflowActions\Site\CreatePHPSite;
+use App\WorkflowActions\Site\CreateWordpressSite;
+use App\WorkflowActions\Site\DeploySite;
 use Illuminate\Support\ServiceProvider;
 
 class WorkflowServiceProvider extends ServiceProvider
@@ -24,7 +41,7 @@ class WorkflowServiceProvider extends ServiceProvider
         RegisterWorkflowAction::make('create-server')
             ->label('Create Server')
             ->category('server')
-            ->handler(\App\WorkflowActions\Server\CreateServer::class)
+            ->handler(CreateServer::class)
             ->register();
     }
 
@@ -33,7 +50,7 @@ class WorkflowServiceProvider extends ServiceProvider
         RegisterWorkflowAction::make('install-service')
             ->label('Install Service')
             ->category('service')
-            ->handler(\App\WorkflowActions\Service\InstallService::class)
+            ->handler(InstallService::class)
             ->register();
     }
 
@@ -42,47 +59,47 @@ class WorkflowServiceProvider extends ServiceProvider
         RegisterWorkflowAction::make('create-php-site')
             ->label('Create PHP Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreatePHPSite::class)
+            ->handler(CreatePHPSite::class)
             ->register();
         RegisterWorkflowAction::make('create-php-blank-site')
             ->label('Create PHP Blank Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreatePHPBlankSite::class)
+            ->handler(CreatePHPBlankSite::class)
             ->register();
         RegisterWorkflowAction::make('create-wordpress-site')
             ->label('Create WordPress Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreateWordpressSite::class)
+            ->handler(CreateWordpressSite::class)
             ->register();
         RegisterWorkflowAction::make('create-phpmyadmin-site')
             ->label('Create PHPMyAdmin Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreatePHPMyAdminSite::class)
+            ->handler(CreatePHPMyAdminSite::class)
             ->register();
         RegisterWorkflowAction::make('create-laravel-site')
             ->label('Create Laravel Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreateLaravelSite::class)
+            ->handler(CreateLaravelSite::class)
             ->register();
         RegisterWorkflowAction::make('create-nodejs-site')
             ->label('Create NodeJS Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreateNodeJsSite::class)
+            ->handler(CreateNodeJsSite::class)
             ->register();
         RegisterWorkflowAction::make('create-load-balancer-site')
             ->label('Create Load Balancer Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreateLoadBalancerSite::class)
+            ->handler(CreateLoadBalancerSite::class)
             ->register();
         RegisterWorkflowAction::make('create-nodejs-site')
             ->label('Create NodeJS Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\CreateNodeJsSite::class)
+            ->handler(CreateNodeJsSite::class)
             ->register();
         RegisterWorkflowAction::make('deploy-site')
             ->label('Deploy Site')
             ->category('site')
-            ->handler(\App\WorkflowActions\Site\DeploySite::class)
+            ->handler(DeploySite::class)
             ->register();
     }
 
@@ -91,17 +108,17 @@ class WorkflowServiceProvider extends ServiceProvider
         RegisterWorkflowAction::make('notify')
             ->label('Notify')
             ->category('general')
-            ->handler(\App\WorkflowActions\General\Notify::class)
+            ->handler(Notify::class)
             ->register();
         RegisterWorkflowAction::make('run-command')
             ->label('Run Command')
             ->category('general')
-            ->handler(\App\WorkflowActions\General\RunCommand::class)
+            ->handler(RunCommand::class)
             ->register();
         RegisterWorkflowAction::make('http-call')
             ->label('HTTP Call')
             ->category('general')
-            ->handler(\App\WorkflowActions\General\HttpCall::class)
+            ->handler(HttpCall::class)
             ->register();
     }
 
@@ -110,12 +127,12 @@ class WorkflowServiceProvider extends ServiceProvider
         RegisterWorkflowAction::make('create-database')
             ->label('Create Database')
             ->category('database')
-            ->handler(\App\WorkflowActions\Database\CreateDatabase::class)
+            ->handler(CreateDatabase::class)
             ->register();
         RegisterWorkflowAction::make('create-database-user')
             ->label('Create Database User')
             ->category('database')
-            ->handler(\App\WorkflowActions\Database\CreateDatabaseUser::class)
+            ->handler(CreateDatabaseUser::class)
             ->register();
     }
 
@@ -124,12 +141,12 @@ class WorkflowServiceProvider extends ServiceProvider
         RegisterWorkflowAction::make('create-dns-record')
             ->label('Create DNS Record')
             ->category('domain')
-            ->handler(\App\WorkflowActions\Domain\CreateDNSRecord::class)
+            ->handler(CreateDNSRecord::class)
             ->register();
         RegisterWorkflowAction::make('delete-dns-record')
             ->label('Delete DNS Record')
             ->category('domain')
-            ->handler(\App\WorkflowActions\Domain\DeleteDNSRecord::class)
+            ->handler(DeleteDNSRecord::class)
             ->register();
     }
 }

@@ -8,8 +8,10 @@ use App\Actions\ServerProvider\EditServerProvider;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -71,7 +73,7 @@ class UserServerProviderController extends Controller
     }
 
     #[Get('{serverProvider}/regions', name: 'api.user.server-providers.regions', middleware: 'ability:read')]
-    public function regions(ServerProvider $serverProvider): \Illuminate\Http\JsonResponse
+    public function regions(ServerProvider $serverProvider): JsonResponse
     {
         $this->authorize('view', $serverProvider);
 
@@ -84,7 +86,7 @@ class UserServerProviderController extends Controller
     }
 
     #[Get('{serverProvider}/regions/{region}/plans', name: 'api.user.server-providers.plans', middleware: 'ability:read')]
-    public function plans(ServerProvider $serverProvider, string $region): \Illuminate\Http\JsonResponse
+    public function plans(ServerProvider $serverProvider, string $region): JsonResponse
     {
         $this->authorize('view', $serverProvider);
 
@@ -97,7 +99,7 @@ class UserServerProviderController extends Controller
     }
 
     #[Delete('{serverProvider}', name: 'api.user.server-providers.delete', middleware: 'ability:write')]
-    public function delete(ServerProvider $serverProvider): \Illuminate\Http\Response
+    public function delete(ServerProvider $serverProvider): Response
     {
         $this->authorize('delete', $serverProvider);
 

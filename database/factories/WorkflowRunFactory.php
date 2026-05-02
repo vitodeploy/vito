@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\WorkflowRun;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\WorkflowRun>
+ * @extends Factory<WorkflowRun>
  */
 class WorkflowRunFactory extends Factory
 {

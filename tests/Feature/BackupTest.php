@@ -18,6 +18,7 @@ use App\StorageProviders\Dropbox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -265,7 +266,7 @@ class BackupTest extends TestCase
 
     public function test_file_restore_validation_requires_path(): void
     {
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('The path field is required.');
 
         app(RestoreBackup::class)->restore($this->backupFile, []);
@@ -273,7 +274,7 @@ class BackupTest extends TestCase
 
     public function test_file_restore_validation_path_must_be_string(): void
     {
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('The path field must be a string.');
 
         app(RestoreBackup::class)->restore($this->backupFile, [
@@ -283,7 +284,7 @@ class BackupTest extends TestCase
 
     public function test_file_restore_validation_path_must_not_be_empty(): void
     {
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('The path field is required.');
 
         app(RestoreBackup::class)->restore($this->backupFile, [
@@ -339,7 +340,7 @@ class BackupTest extends TestCase
             'status' => BackupFileStatus::CREATED,
         ]);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('The database field is required.');
 
         app(RestoreBackup::class)->restore($databaseBackupFile, []);
@@ -360,7 +361,7 @@ class BackupTest extends TestCase
             'status' => BackupFileStatus::CREATED,
         ]);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('The selected database is invalid.');
 
         app(RestoreBackup::class)->restore($databaseBackupFile, [

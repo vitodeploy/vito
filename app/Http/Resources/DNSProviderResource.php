@@ -23,6 +23,7 @@ class DNSProviderResource extends JsonResource
             'connected' => $this->connected,
             'project_id' => $this->project_id,
             'global' => is_null($this->project_id),
+            'editable_data' => $this->provider()->editableData(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

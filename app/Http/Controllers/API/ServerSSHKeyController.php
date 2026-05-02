@@ -13,6 +13,7 @@ use App\Models\Server;
 use App\Models\SshKey;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
@@ -72,7 +73,7 @@ class ServerSSHKeyController extends Controller
      * @throws SSHError
      */
     #[Delete('{sshKey}', name: 'api.projects.servers.ssh-keys.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Server $server, SshKey $sshKey): \Illuminate\Http\Response
+    public function delete(Project $project, Server $server, SshKey $sshKey): Response
     {
         $this->authorize('update', $server);
 

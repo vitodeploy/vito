@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { FormEvent, useState } from 'react';
@@ -23,24 +23,41 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { SharedData } from '@/types';
+import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import DynamicFieldComponent from '@/components/ui/dynamic-field';
 
 function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
   const [open, setOpen] = useState(false);
-  const form = useForm({
+  const page = usePage<SharedData>();
+  const providerConfig = page.props.configs.dns_provider.providers[dnsProvider.provider];
+  const editFields: DynamicFieldConfig[] = providerConfig?.edit_form || [];
+
+  const initialData: Record<string, string | number | boolean | string[]> = {
     name: dnsProvider.name,
     global: dnsProvider.project_id === null,
+  };
+
+  // Pre-fill editable (non-sensitive) data, leave credential fields empty
+  editFields.forEach((field) => {
+    initialData[field.name] = dnsProvider.editable_data?.[field.name] ?? '';
   });
+
+  const form = useForm(initialData);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('dns-providers.update', dnsProvider.id));
+    form.patch(route('dns-providers.update', dnsProvider.id), {
+      onSuccess: () => setOpen(false),
+    });
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Edit {dnsProvider.name}</DialogTitle>
           <DialogDescription className="sr-only">Edit DNS provider</DialogDescription>
@@ -49,16 +66,26 @@ function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
-              <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+              <Input type="text" id="name" name="name" value={form.data.name as string} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
+            {editFields.map((field: DynamicFieldConfig) => (
+              <DynamicFieldComponent
+                key={`edit-field-${field.name}`}
+                value={form.data[field.name]}
+                onChange={(value) => form.setData(field.name, value)}
+                config={field}
+                error={form.errors[field.name]}
+              />
+            ))}
             <FormField>
               <div className="flex items-center space-x-3">
-                <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />
+                <Checkbox id="global" name="global" checked={form.data.global as boolean} onClick={() => form.setData('global', !form.data.global)} />
                 <Label htmlFor="global">Is global (accessible in all projects)</Label>
               </div>
               <InputError message={form.errors.global} />
             </FormField>
+            <InputError message={form.errors.provider} />
           </FormFields>
         </Form>
         <DialogFooter>

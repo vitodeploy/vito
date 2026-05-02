@@ -15,6 +15,7 @@ use App\Models\Site;
 use App\Models\Ssl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -100,7 +101,7 @@ class SSLController extends Controller
     }
 
     #[Delete('/{ssl}', name: 'api.projects.servers.sites.ssls.delete', middleware: 'ability:write')]
-    public function delete(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): \Illuminate\Http\Response
+    public function delete(Request $request, Project $project, Server $server, Site $site, Ssl $ssl): Response
     {
         $this->authorize('delete', [$project, $server, $site, $ssl]);
 

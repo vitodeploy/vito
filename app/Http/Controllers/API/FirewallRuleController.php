@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Models\Server;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -66,7 +67,7 @@ class FirewallRuleController extends Controller
     }
 
     #[Delete('{firewallRule}', name: 'api.projects.servers.firewall-rules.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Server $server, FirewallRule $firewallRule): \Illuminate\Http\Response
+    public function delete(Project $project, Server $server, FirewallRule $firewallRule): Response
     {
         $this->authorize('delete', [$firewallRule, $server]);
 

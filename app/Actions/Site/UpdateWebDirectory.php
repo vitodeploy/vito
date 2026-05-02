@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Models\Service;
 use App\Models\Site;
 use App\Services\Webserver\Webserver;
 use App\Traits\NormalizesWebDirectory;
@@ -20,7 +21,7 @@ class UpdateWebDirectory
 
         $site->web_directory = $this->normalizeWebDirectory($input['web_directory'] ?? null);
 
-        /** @var \App\Models\Service $service */
+        /** @var Service $service */
         $service = $site->server->webserver();
 
         /** @var Webserver $webserver */

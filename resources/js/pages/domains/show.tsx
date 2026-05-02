@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -8,8 +9,9 @@ import { Domain } from '@/types/domain';
 import { PlusIcon } from 'lucide-react';
 import Layout from '@/layouts/app/layout';
 import RecordForm from './components/record-form';
-import { columns } from './components/record-columns';
+import { getColumns } from './components/record-columns';
 import SyncRecords from './components/sync-records';
+import { SharedData } from '@/types';
 
 type Page = {
   domain: Domain;
@@ -18,6 +20,12 @@ type Page = {
 
 export default function DomainShow() {
   const page = usePage<Page>();
+  const { configs } = usePage<SharedData>().props;
+
+  const domain = page.props.domain;
+  const providerKey = domain.dns_provider?.provider;
+  const providerConfig = providerKey ? configs.dns_provider?.providers?.[providerKey] : undefined;
+  const columns = useMemo(() => getColumns(providerConfig, domain), [providerKey, domain.id]);
 
   return (
     <Layout>
