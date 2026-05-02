@@ -16,6 +16,7 @@ use App\Models\ServerLog;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Models\UserProject;
 use App\Services\Webserver\Webserver;
 use App\Traits\UniqueQueue;
 use Exception;
@@ -208,7 +209,7 @@ class SetupHostedDomainSslJob implements ShouldQueue
             return $existingSsl->email;
         }
 
-        /** @var \App\Models\UserProject|null $userProject */
+        /** @var UserProject|null $userProject */
         $userProject = $site->server->project->users()->with('user')->first();
         if ($userProject?->user?->email) {
             return $userProject->user->email;

@@ -11,7 +11,9 @@ use App\Exceptions\SourceControlIsNotConnected;
 use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Jobs\Site\CreateJob;
 use App\Models\Server;
+use App\Models\Service;
 use App\Models\Site;
+use App\Services\Webserver\Webserver;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -54,9 +56,9 @@ class CreateSite
             // fields based on the type
             $site->fill($site->type()->createFields($input));
 
-            /** @var \App\Models\Service $webserver */
+            /** @var Service $webserver */
             $webserver = $server->webserver();
-            /** @var \App\Services\Webserver\Webserver $webserverHandler */
+            /** @var Webserver $webserverHandler */
             $webserverHandler = $webserver->handler();
             $site->fill($webserverHandler->siteDefaults());
 

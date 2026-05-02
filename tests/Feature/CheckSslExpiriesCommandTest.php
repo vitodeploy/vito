@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\SSL\CertificateParser;
 use App\Enums\SslStatus;
 use App\Enums\SslType;
 use App\Facades\SSH;
@@ -160,7 +161,7 @@ INI);
     public function test_job_does_not_update_when_cert_matches(): void
     {
         $certPem = $this->generateTestCertificate(60);
-        $parsed = \App\Actions\SSL\CertificateParser::parse($certPem);
+        $parsed = CertificateParser::parse($certPem);
 
         SSH::fake($certPem);
 

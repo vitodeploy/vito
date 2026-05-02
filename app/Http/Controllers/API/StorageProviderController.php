@@ -11,6 +11,7 @@ use App\Models\Project;
 use App\Models\StorageProvider;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -84,7 +85,7 @@ class StorageProviderController extends Controller
      * @deprecated Use DELETE /api/storage-providers/{storageProvider} instead
      */
     #[Delete('{storageProvider}', name: 'api.projects.storage-providers.delete', middleware: 'ability:write')]
-    public function delete(Project $project, StorageProvider $storageProvider): \Illuminate\Http\Response
+    public function delete(Project $project, StorageProvider $storageProvider): Response
     {
         $this->authorize('delete', $storageProvider);
 

@@ -904,7 +904,7 @@ class DomainsTest extends TestCase
         $this->actingAs($this->user);
 
         // Create a second project for a different user (not the current user)
-        $otherUser = \App\Models\User::factory()->create();
+        $otherUser = User::factory()->create();
         $otherUser->ensureHasDefaultProject();
         $otherProject = $otherUser->currentProject;
 
@@ -954,7 +954,7 @@ class DomainsTest extends TestCase
         $this->actingAs($this->user);
 
         // Create a second project for a different user
-        $otherUser = \App\Models\User::factory()->create();
+        $otherUser = User::factory()->create();
         $otherUser->ensureHasDefaultProject();
         $otherProject = $otherUser->currentProject;
 
@@ -980,7 +980,7 @@ class DomainsTest extends TestCase
         $this->actingAs($this->user);
 
         // Create a second project for a different user
-        $otherUser = \App\Models\User::factory()->create();
+        $otherUser = User::factory()->create();
         $otherUser->ensureHasDefaultProject();
         $otherProject = $otherUser->currentProject;
 

@@ -147,7 +147,7 @@ class ApplicationTest extends TestCase
             'status' => DeploymentStatus::FINISHED,
         ]);
 
-        /** @var \App\Models\Deployment $lastDeployment */
+        /** @var Deployment $lastDeployment */
         $lastDeployment = $this->site->deployments()->latest()->first();
 
         $this->assertNotNull($lastDeployment->release);

@@ -6,6 +6,7 @@ use App\Actions\Domain\CreateDNSRecord;
 use App\Actions\Domain\DeleteDNSRecord;
 use App\Actions\Domain\UpdateDNSRecord;
 use App\Http\Resources\DNSRecordResource;
+use App\Http\Resources\DomainResource;
 use App\Models\DNSRecord;
 use App\Models\Domain;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +31,7 @@ class DNSRecordController extends Controller
         $this->authorize('view', $domain);
 
         return Inertia::render('domains/show', [
-            'domain' => new \App\Http\Resources\DomainResource($domain->load('dnsProvider')),
+            'domain' => new DomainResource($domain->load('dnsProvider')),
             'records' => DNSRecordResource::collection($domain->records()->orderByDesc('id')->get()),
         ]);
     }

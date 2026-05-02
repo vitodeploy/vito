@@ -10,6 +10,7 @@ use App\Facades\SSH;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\ServerProvider;
+use App\Models\User;
 use App\NotificationChannels\Email\NotificationMail;
 use App\ServerProviders\Custom;
 use App\ServerProviders\Hetzner;
@@ -594,7 +595,7 @@ class ServerTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         // Reset server status for next test
-        $this->server->update(['status' => \App\Enums\ServerStatus::READY]);
+        $this->server->update(['status' => ServerStatus::READY]);
 
         // Test check updates
         $this->post(route('servers.check-for-updates', $this->server))
@@ -621,7 +622,7 @@ class ServerTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         // Reset server status for next test
-        $this->server->update(['status' => \App\Enums\ServerStatus::READY]);
+        $this->server->update(['status' => ServerStatus::READY]);
 
         // Test check updates
         $this->post(route('servers.check-for-updates', $this->server))
@@ -638,7 +639,7 @@ class ServerTest extends TestCase
         $this->actingAs($this->user);
 
         // Create a server provider that belongs to a different user
-        $otherUser = \App\Models\User::factory()->create();
+        $otherUser = User::factory()->create();
         $unauthorizedProvider = ServerProvider::factory()->create([
             'user_id' => $otherUser->id,
             'provider' => Hetzner::id(),

@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\DTOs\WorkflowActionDTO;
 use App\WorkflowActions\WorkflowActionInterface;
+use Database\Factories\WorkflowFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -16,16 +19,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $project_id
  * @property string $name
  * @property array|null $payload
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read User|null $user
  * @property-read Project|null $project
- * @property-read \Illuminate\Database\Eloquent\Collection<int, WorkflowRun> $runs
+ * @property-read Collection<int, WorkflowRun> $runs
  */
 class Workflow extends Model
 {
-    /** @use HasFactory<\Database\Factories\WorkflowFactory> */
+    /** @use HasFactory<WorkflowFactory> */
     use HasFactory;
 
     use SoftDeletes;

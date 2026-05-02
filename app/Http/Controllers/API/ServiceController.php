@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Models\Server;
 use App\Models\Service;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -43,7 +44,7 @@ class ServiceController extends Controller
     }
 
     #[Post('{service}/start', name: 'api.projects.servers.services.start', middleware: 'ability:write')]
-    public function start(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    public function start(Project $project, Server $server, Service $service): Response
     {
         $this->authorize('update', [$service, $server]);
 
@@ -55,7 +56,7 @@ class ServiceController extends Controller
     }
 
     #[Post('{service}/stop', name: 'api.projects.servers.services.stop', middleware: 'ability:write')]
-    public function stop(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    public function stop(Project $project, Server $server, Service $service): Response
     {
         $this->authorize('update', [$service, $server]);
 
@@ -67,7 +68,7 @@ class ServiceController extends Controller
     }
 
     #[Post('{service}/restart', name: 'api.projects.servers.services.restart', middleware: 'ability:write')]
-    public function restart(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    public function restart(Project $project, Server $server, Service $service): Response
     {
         $this->authorize('update', [$service, $server]);
 
@@ -79,7 +80,7 @@ class ServiceController extends Controller
     }
 
     #[Post('{service}/reload', name: 'api.projects.servers.services.reload', middleware: 'ability:write')]
-    public function reload(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    public function reload(Project $project, Server $server, Service $service): Response
     {
         $this->authorize('update', [$service, $server]);
 
@@ -91,7 +92,7 @@ class ServiceController extends Controller
     }
 
     #[Post('{service}/enable', name: 'api.projects.servers.services.enable', middleware: 'ability:write')]
-    public function enable(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    public function enable(Project $project, Server $server, Service $service): Response
     {
         $this->authorize('update', [$service, $server]);
 
@@ -103,7 +104,7 @@ class ServiceController extends Controller
     }
 
     #[Post('{service}/disable', name: 'api.projects.servers.services.disable', middleware: 'ability:write')]
-    public function disable(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    public function disable(Project $project, Server $server, Service $service): Response
     {
         $this->authorize('update', [$service, $server]);
 
@@ -115,7 +116,7 @@ class ServiceController extends Controller
     }
 
     #[Delete('{service}', name: 'api.projects.servers.services.uninstall', middleware: 'ability:write')]
-    public function uninstall(Project $project, Server $server, Service $service): \Illuminate\Http\Response
+    public function uninstall(Project $project, Server $server, Service $service): Response
     {
         $this->authorize('delete', [$service, $server]);
 

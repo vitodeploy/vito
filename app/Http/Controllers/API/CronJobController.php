@@ -13,6 +13,7 @@ use App\Models\Server;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -62,7 +63,7 @@ class CronJobController extends Controller
      * @throws SSHError
      */
     #[Delete('{cronJob}', name: 'api.projects.servers.cron-jobs.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Server $server, CronJob $cronJob): \Illuminate\Http\Response
+    public function delete(Project $project, Server $server, CronJob $cronJob): Response
     {
         $this->authorize('delete', [$cronJob, $server]);
 
@@ -112,7 +113,7 @@ class CronJobController extends Controller
      * @throws SSHError
      */
     #[Delete('/sites/{site}/cron-jobs/{cronJob}', name: 'api.projects.servers.sites.cron-jobs.delete', middleware: 'ability:write')]
-    public function siteDelete(Project $project, Server $server, Site $site, CronJob $cronJob): \Illuminate\Http\Response
+    public function siteDelete(Project $project, Server $server, Site $site, CronJob $cronJob): Response
     {
         $this->authorize('delete', [$cronJob, $server, $site]);
 

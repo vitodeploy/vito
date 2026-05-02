@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\WebSockets\GenerateWebSocketToken;
 use App\WebSocket\EventsHandler;
+use App\WebSocket\WebSocketConnection;
 use GuzzleHttp\Psr7\Request as PsrRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -155,10 +156,10 @@ class EventsHandlerTest extends TestCase
         $connProp = $reflection->getProperty('connections');
         $subProp = $reflection->getProperty('projectSubscriptions');
 
-        $mockConnection = $this->createMock(\App\WebSocket\WebSocketConnection::class);
+        $mockConnection = $this->createMock(WebSocketConnection::class);
         $mockConnection->expects($this->once())->method('send');
 
-        $mockOtherConnection = $this->createMock(\App\WebSocket\WebSocketConnection::class);
+        $mockOtherConnection = $this->createMock(WebSocketConnection::class);
         $mockOtherConnection->expects($this->never())->method('send');
 
         $projectId = $this->user->current_project_id;

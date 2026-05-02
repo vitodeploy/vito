@@ -3,10 +3,11 @@
 namespace App\Http\Resources;
 
 use App\DTOs\WorkflowActionDTO;
+use App\Models\Workflow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\Workflow */
+/** @mixin Workflow */
 class WorkflowResource extends JsonResource
 {
     /**

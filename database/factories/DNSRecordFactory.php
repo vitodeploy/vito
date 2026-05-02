@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\DNSRecord;
+use App\Models\Domain;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DNSRecord>
+ * @extends Factory<DNSRecord>
  */
 class DNSRecordFactory extends Factory
 {
@@ -20,7 +22,7 @@ class DNSRecordFactory extends Factory
         $type = $this->faker->randomElement($types);
 
         return [
-            'domain_id' => \App\Models\Domain::factory(),
+            'domain_id' => Domain::factory(),
             'type' => $type,
             'name' => $this->faker->domainName(),
             'content' => $this->getContentForType($type),

@@ -2,10 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Models\DNSProvider;
+use App\Models\Domain;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Domain>
+ * @extends Factory<Domain>
  */
 class DomainFactory extends Factory
 {
@@ -17,9 +21,9 @@ class DomainFactory extends Factory
     public function definition(): array
     {
         return [
-            'dns_provider_id' => \App\Models\DNSProvider::factory(),
-            'user_id' => \App\Models\User::factory(),
-            'project_id' => \App\Models\Project::factory(),
+            'dns_provider_id' => DNSProvider::factory(),
+            'user_id' => User::factory(),
+            'project_id' => Project::factory(),
             'domain' => $this->faker->domainName(),
             'provider_domain_id' => $this->faker->uuid(),
             'metadata' => [

@@ -9,6 +9,9 @@ use App\Enums\NodePackageManager;
 use App\Plugins\RegisterSiteFeature;
 use App\Plugins\RegisterSiteFeatureAction;
 use App\Plugins\RegisterSiteType;
+use App\SiteFeatures\ModernDeployment\Configuration;
+use App\SiteFeatures\ModernDeployment\Disable;
+use App\SiteFeatures\ModernDeployment\Enable;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
 use App\SiteTypes\MiseBun;
@@ -125,15 +128,15 @@ class SiteTypeServiceProvider extends ServiceProvider
             ->register();
         RegisterSiteFeatureAction::make(Laravel::id(), 'modern-deployment', 'enable')
             ->label('Enable')
-            ->handler(\App\SiteFeatures\ModernDeployment\Enable::class)
+            ->handler(Enable::class)
             ->register();
         RegisterSiteFeatureAction::make(Laravel::id(), 'modern-deployment', 'disable')
             ->label('Disable')
-            ->handler(\App\SiteFeatures\ModernDeployment\Disable::class)
+            ->handler(Disable::class)
             ->register();
         RegisterSiteFeatureAction::make(Laravel::id(), 'modern-deployment', 'configuration')
             ->label('Configure')
-            ->handler(\App\SiteFeatures\ModernDeployment\Configuration::class)
+            ->handler(Configuration::class)
             ->register();
     }
 

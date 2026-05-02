@@ -5,9 +5,11 @@ namespace App\Models;
 use App\DTOs\SocketEventDTO;
 use App\Enums\WorkflowRunStatus;
 use App\Events\SocketEvent;
+use Database\Factories\WorkflowRunFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -19,13 +21,13 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $current_node_id
  * @property string|null $current_node_label
  * @property WorkflowRunStatus $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Workflow|null $workflow
  */
 class WorkflowRun extends Model
 {
-    /** @use HasFactory<\Database\Factories\WorkflowRunFactory> */
+    /** @use HasFactory<WorkflowRunFactory> */
     use HasFactory;
 
     protected $fillable = [

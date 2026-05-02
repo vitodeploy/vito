@@ -3,7 +3,9 @@
 namespace App\WebSocket;
 
 use GuzzleHttp\Psr7\HttpFactory;
+use GuzzleHttp\Psr7\Message;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\RequestInterface;
 use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
@@ -112,7 +114,7 @@ class WebSocketServer
         }
 
         try {
-            $psrRequest = \GuzzleHttp\Psr7\Message::parseRequest($httpBuffer);
+            $psrRequest = Message::parseRequest($httpBuffer);
 
             // Handle plain HTTP requests (non-WebSocket)
             if (! $psrRequest->hasHeader('Upgrade')) {
@@ -124,7 +126,7 @@ class WebSocketServer
             $response = $this->negotiator->handshake($psrRequest);
 
             if ($response->getStatusCode() !== 101) {
-                $conn->end(\GuzzleHttp\Psr7\Message::toString($response));
+                $conn->end(Message::toString($response));
 
                 return;
             }
@@ -155,7 +157,7 @@ class WebSocketServer
             }
 
             // Complete the WebSocket handshake
-            $conn->write(\GuzzleHttp\Psr7\Message::toString($response));
+            $conn->write(Message::toString($response));
 
             $wsConnection = new WebSocketConnection($conn);
 
@@ -226,7 +228,7 @@ class WebSocketServer
         }
     }
 
-    protected function handleHttpRequest(ConnectionInterface $conn, \Psr\Http\Message\RequestInterface $request): void
+    protected function handleHttpRequest(ConnectionInterface $conn, RequestInterface $request): void
     {
         $path = $request->getUri()->getPath();
         $handler = $this->httpHandlers[$path] ?? null;

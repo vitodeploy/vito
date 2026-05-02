@@ -10,6 +10,7 @@ use App\Http\Resources\SourceControlResource;
 use App\Models\SourceControl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -71,7 +72,7 @@ class UserSourceControlController extends Controller
     }
 
     #[Delete('{sourceControl}', name: 'api.user.source-controls.delete', middleware: 'ability:write')]
-    public function delete(SourceControl $sourceControl): \Illuminate\Http\Response
+    public function delete(SourceControl $sourceControl): Response
     {
         $this->authorize('delete', $sourceControl);
 

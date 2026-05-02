@@ -6,9 +6,11 @@ use App\Actions\SSL\DeleteSsl;
 use App\Enums\HostedDomainStatus;
 use App\Enums\SslStatus;
 use App\Facades\SSH;
+use App\Jobs\SSL\DeleteServerSslJob;
 use App\Models\HostedDomain;
 use App\Models\Ssl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -100,7 +102,7 @@ class DeleteSslTest extends TestCase
 
     public function test_deletion_dispatches_job_for_server_level(): void
     {
-        \Illuminate\Support\Facades\Bus::fake();
+        Bus::fake();
 
         $ssl = Ssl::factory()->create([
             'server_id' => $this->server->id,
@@ -115,6 +117,6 @@ class DeleteSslTest extends TestCase
             'status' => SslStatus::DELETING,
         ]);
 
-        \Illuminate\Support\Facades\Bus::assertDispatched(\App\Jobs\SSL\DeleteServerSslJob::class);
+        Bus::assertDispatched(DeleteServerSslJob::class);
     }
 }

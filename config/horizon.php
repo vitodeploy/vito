@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\MustBeAdminMiddleware;
 use Illuminate\Support\Str;
 
 return [
@@ -72,7 +73,7 @@ return [
 
     'middleware' => [
         'web',
-        \App\Http\Middleware\MustBeAdminMiddleware::class,
+        MustBeAdminMiddleware::class,
     ],
 
     /*

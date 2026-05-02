@@ -9,8 +9,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\Project;
 use App\Models\ServerProvider;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -84,7 +86,7 @@ class ServerProviderController extends Controller
      * @deprecated Use GET /api/server-providers/{serverProvider}/regions instead
      */
     #[Get('{serverProvider}/regions', name: 'api.projects.server-providers.regions', middleware: 'ability:read')]
-    public function regions(Project $project, ServerProvider $serverProvider): \Illuminate\Http\JsonResponse
+    public function regions(Project $project, ServerProvider $serverProvider): JsonResponse
     {
         $this->authorize('view', $serverProvider);
 
@@ -97,7 +99,7 @@ class ServerProviderController extends Controller
      * @deprecated Use GET /api/server-providers/{serverProvider}/regions/{region}/plans instead
      */
     #[Get('{serverProvider}/regions/{region}/plans', name: 'api.projects.server-providers.plans', middleware: 'ability:read')]
-    public function plans(Project $project, ServerProvider $serverProvider, string $region): \Illuminate\Http\JsonResponse
+    public function plans(Project $project, ServerProvider $serverProvider, string $region): JsonResponse
     {
         $this->authorize('view', $serverProvider);
 
@@ -110,7 +112,7 @@ class ServerProviderController extends Controller
      * @deprecated Use DELETE /api/server-providers/{serverProvider} instead
      */
     #[Delete('{serverProvider}', name: 'api.projects.server-providers.delete', middleware: 'ability:write')]
-    public function delete(Project $project, ServerProvider $serverProvider): \Illuminate\Http\Response
+    public function delete(Project $project, ServerProvider $serverProvider): Response
     {
         $this->authorize('delete', $serverProvider);
 

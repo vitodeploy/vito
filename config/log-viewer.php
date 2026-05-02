@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Middleware\MustBeAdminMiddleware;
 use Opcodes\LogViewer\Enums\FolderSortingMethod;
 use Opcodes\LogViewer\Enums\SortingOrder;
 use Opcodes\LogViewer\Enums\Theme;
+use Opcodes\LogViewer\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 return [
 
@@ -88,7 +90,7 @@ return [
     'middleware' => [
         'web',
         'auth',
-        \App\Http\Middleware\MustBeAdminMiddleware::class,
+        MustBeAdminMiddleware::class,
     ],
 
     /*
@@ -101,9 +103,9 @@ return [
     */
 
     'api_middleware' => [
-        \Opcodes\LogViewer\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        EnsureFrontendRequestsAreStateful::class,
         'auth',
-        \App\Http\Middleware\MustBeAdminMiddleware::class,
+        MustBeAdminMiddleware::class,
     ],
 
     /*

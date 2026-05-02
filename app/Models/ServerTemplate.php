@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\ServerTemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ServerTemplate extends AbstractModel
 {
-    /** @use HasFactory<\Database\Factories\ServerTemplateFactory> */
+    /** @use HasFactory<ServerTemplateFactory> */
     use HasFactory;
 
     protected $fillable = [

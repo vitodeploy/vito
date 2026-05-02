@@ -16,6 +16,7 @@ use App\Models\Worker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -138,7 +139,7 @@ class WorkerController extends Controller
     }
 
     #[Delete('/workers/{worker}/{site?}', name: 'api.projects.servers.workers.delete', middleware: 'ability:write')]
-    public function delete(Request $request, Project $project, Server $server, Worker $worker, ?Site $site = null): \Illuminate\Http\Response
+    public function delete(Request $request, Project $project, Server $server, Worker $worker, ?Site $site = null): Response
     {
         $this->authorize('delete', [$project, $server, $site, $worker]);
 

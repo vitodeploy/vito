@@ -10,6 +10,7 @@ use App\Models\Workflow;
 use App\Models\WorkflowRun;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Response;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
@@ -60,7 +61,7 @@ class WorkflowRunController extends Controller
     }
 
     #[Get('{workflowRun}/log', name: 'api.projects.workflows.runs.log', middleware: 'ability:read')]
-    public function log(Project $project, Workflow $workflow, WorkflowRun $workflowRun): \Illuminate\Http\Response
+    public function log(Project $project, Workflow $workflow, WorkflowRun $workflowRun): Response
     {
         $this->authorize('view', $workflow);
 

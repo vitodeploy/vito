@@ -23,6 +23,7 @@ use App\Tables\HostedDomainTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -137,7 +138,7 @@ class HostedDomainController extends Controller
 
         try {
             app(RenewSiteSsl::class)->renew($site);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()
                 ->with('error', $e->getMessage());
         }

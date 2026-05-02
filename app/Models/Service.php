@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Actions\Service\Manage;
 use App\Enums\ServiceStatus;
 use App\Exceptions\ServiceInstallationFailed;
+use App\Services\Database\Database;
 use App\Services\Firewall\Firewall;
 use App\Services\PHP\PHP;
 use App\Services\ProcessManager\ProcessManager;
@@ -74,7 +75,7 @@ class Service extends AbstractModel
         return $this->belongsTo(ServerLog::class, 'log_id');
     }
 
-    public function handler(): ServiceInterface|Webserver|PHP|Firewall|\App\Services\Database\Database|ProcessManager
+    public function handler(): ServiceInterface|Webserver|PHP|Firewall|Database|ProcessManager
     {
         $name = $this->name;
         $handler = config("service.services.$name.handler");
