@@ -91,7 +91,9 @@ class VitoSettingController extends Controller
         }
 
         // set session driver to file
-        config(['session.driver' => 'file']);
+        if (config('session.driver') === 'database') {
+            config(['session.driver' => 'file']);
+        }
 
         $request->validate([
             'backup_file' => 'required|file|mimes:zip',
