@@ -29,6 +29,8 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
   const form = useForm({
     name: sourceControl.name,
     global: sourceControl.global,
+    url: sourceControl.url || '',
+    port: sourceControl.port?.toString() || '',
   });
 
   const submit = (e: FormEvent) => {
@@ -56,6 +58,20 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
               <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
+            {(sourceControl.provider === 'gitlab' || sourceControl.provider === 'gitea') && (
+              <FormField>
+                <Label htmlFor="url">Self Hosted URL</Label>
+                <Input type="text" id="url" name="url" value={form.data.url} onChange={(e) => form.setData('url', e.target.value)} placeholder="https://gitlab.example.com/" />
+                <InputError message={form.errors.url} />
+              </FormField>
+            )}
+            {sourceControl.provider === 'gitlab' && (
+              <FormField>
+                <Label htmlFor="port">SSH Port</Label>
+                <Input type="text" id="port" name="port" value={form.data.port} onChange={(e) => form.setData('port', e.target.value)} placeholder="22" />
+                <InputError message={form.errors.port} />
+              </FormField>
+            )}
             <FormField>
               <div className="flex items-center space-x-3">
                 <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />

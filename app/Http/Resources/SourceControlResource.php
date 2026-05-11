@@ -21,6 +21,8 @@ class SourceControlResource extends JsonResource
             'global' => is_null($this->project_id),
             'name' => $this->profile,
             'provider' => $this->provider,
+            'url' => $this->url,
+            'port' => $this->port,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

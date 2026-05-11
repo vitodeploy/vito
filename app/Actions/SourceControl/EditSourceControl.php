@@ -19,9 +19,17 @@ class EditSourceControl
             'name' => [
                 'required',
             ],
+            'url' => [
+                'nullable',
+                'url:http,https',
+                'ends_with:/',
+            ],
+            'port' => 'nullable|integer',
         ])->validate();
 
         $sourceControl->profile = $input['name'];
+        $sourceControl->url = isset($input['url']) && $input['url'] ? $input['url'] : null;
+        $sourceControl->port = isset($input['port']) && $input['port'] ? (int) $input['port'] : null;
         $sourceControl->project_id = isset($input['global']) && $input['global'] ? null : $sourceControl->user->currentProject?->id;
 
         $sourceControl->save();
