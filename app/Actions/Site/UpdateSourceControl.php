@@ -6,9 +6,11 @@ use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Site;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class UpdateSourceControl
 {
@@ -25,6 +27,13 @@ class UpdateSourceControl
                 Rule::exists('source_controls', 'id'),
             ],
         ])->validate();
+
+        if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
+            $site->sourceControl->provider()->deleteDeployKey(
+                $site->type_data['deploy_key_id'],
+                $site->repository,
+            );
+        }
 
         $site->source_control_id = $input['source_control'];
         try {
@@ -45,5 +54,21 @@ class UpdateSourceControl
             ]);
         }
         $site->save();
+
+        if ($site->ssh_key && $site->repository) {
+            try {
+                $keyId = $site->sourceControl->provider()->deployKey(
+                    $site->getDeployKeyName(),
+                    $site->repository,
+                    $site->ssh_key
+                );
+                $site->jsonUpdate('type_data', 'deploy_key_id', $keyId);
+            } catch (Throwable $e) {
+                Log::warning('Failed to re-deploy SSH key after source control update', [
+                    'site' => $site->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 }
