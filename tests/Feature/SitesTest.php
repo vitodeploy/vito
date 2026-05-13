@@ -34,8 +34,7 @@ class SitesTest extends TestCase
         SSH::fake();
 
         Http::fake([
-            'https://api.github.com/repos/*' => Http::response([
-            ], 201),
+            'https://api.github.com/repos/*' => Http::response([], 201),
         ]);
 
         if (isset($inputs['database']) && isset($inputs['database_user'])) {
@@ -67,7 +66,7 @@ class SitesTest extends TestCase
             'aliases' => $this->castAsJson($inputs['aliases'] ?? []),
             'status' => SiteStatus::READY->value,
             'user' => $inputs['user'],
-            'path' => '/home/'.$inputs['user'].'/'.$inputs['domain'],
+            'path' => '/home/' . $inputs['user'] . '/' . $inputs['domain'],
         ]);
     }
 
@@ -102,8 +101,7 @@ class SitesTest extends TestCase
         SSH::fake();
 
         Http::fake([
-            'https://api.github.com/repos/*' => Http::response([
-            ], $status),
+            'https://api.github.com/repos/*' => Http::response([], $status),
         ]);
 
         $this->actingAs($this->user);
@@ -136,7 +134,7 @@ class SitesTest extends TestCase
             'server' => $this->server,
         ]))
             ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/index'));
+            ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/index'));
     }
 
     public function test_delete_site(): void
@@ -192,8 +190,7 @@ class SitesTest extends TestCase
         $this->actingAs($this->user);
 
         Http::fake([
-            'https://api.github.com/repos/*' => Http::response([
-            ], 201),
+            'https://api.github.com/repos/*' => Http::response([], 201),
         ]);
 
         /** @var SourceControl $sourceControl */
@@ -214,6 +211,109 @@ class SitesTest extends TestCase
         $this->assertEquals($sourceControl->id, $this->site->source_control_id);
     }
 
+    public function test_update_source_control_deletes_old_deploy_key(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://api.github.com/repos/*/keys/*' => Http::response([], 204),
+            'https://api.github.com/repos/*' => Http::response(['id' => 99], 201),
+        ]);
+
+        /** @var SourceControl $newSourceControl */
+        $newSourceControl = SourceControl::factory()->create([
+            'provider' => Github::id(),
+        ]);
+
+        $this->site->type_data = array_merge($this->site->type_data ?? [], [
+            'deploy_key_id' => '123456',
+        ]);
+        $this->site->save();
+
+        $this->patch(route('site-settings.update-source-control', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'source_control' => $newSourceControl->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/keys/123456')
+                && $request->method() === 'DELETE';
+        });
+    }
+
+    public function test_update_source_control_registers_new_deploy_key(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://api.github.com/repos/*/keys' => Http::response(['id' => 99999], 201),
+            'https://api.github.com/repos/*' => Http::response([], 200),
+        ]);
+
+        /** @var SourceControl $newSourceControl */
+        $newSourceControl = SourceControl::factory()->create([
+            'provider' => Github::id(),
+        ]);
+
+        $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC test@test';
+        $this->site->save();
+
+        $this->patch(route('site-settings.update-source-control', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'source_control' => $newSourceControl->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+
+        $this->assertEquals(99999, $this->site->type_data['deploy_key_id']);
+    }
+
+    public function test_update_source_control_succeeds_even_if_old_deploy_key_deletion_fails(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://api.github.com/repos/*/keys/*' => Http::response([
+                'message' => 'Bad credentials',
+            ], 401),
+            'https://api.github.com/repos/*' => Http::response(['id' => 77777], 201),
+        ]);
+
+        /** @var SourceControl $newSourceControl */
+        $newSourceControl = SourceControl::factory()->create([
+            'provider' => Github::id(),
+        ]);
+
+        $this->site->type_data = array_merge($this->site->type_data ?? [], [
+            'deploy_key_id' => '123456',
+        ]);
+        $this->site->ssh_key = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC test@test';
+        $this->site->save();
+
+        $this->patch(route('site-settings.update-source-control', [
+            'server' => $this->server->id,
+            'site' => $this->site,
+        ]), [
+            'source_control' => $newSourceControl->id,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->site->refresh();
+        $this->assertEquals($newSourceControl->id, $this->site->source_control_id);
+    }
+
     public function test_failed_to_update_source_control(): void
     {
         SSH::fake();
@@ -221,8 +321,7 @@ class SitesTest extends TestCase
         $this->actingAs($this->user);
 
         Http::fake([
-            'https://api.github.com/repos/*' => Http::response([
-            ], 404),
+            'https://api.github.com/repos/*' => Http::response([], 404),
         ]);
 
         /** @var SourceControl $sourceControl */
@@ -267,7 +366,7 @@ class SitesTest extends TestCase
             'site' => $this->site,
         ]))
             ->assertSuccessful()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/logs'));
+            ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/logs'));
     }
 
     public function test_change_branch(): void
