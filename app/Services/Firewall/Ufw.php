@@ -30,7 +30,9 @@ class Ufw extends AbstractFirewall
         $this->createBasicFirewallRules();
 
         $this->service->server->ssh()->exec(
-            view('ssh.services.firewall.ufw.install-ufw'),
+            view('ssh.services.firewall.ufw.install-ufw', [
+                'sshPort' => $this->service->server->port ?? 22,
+            ]),
             'install-ufw'
         );
         event('service.installed', $this->service);

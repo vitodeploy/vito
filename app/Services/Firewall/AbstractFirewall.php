@@ -14,7 +14,7 @@ abstract class AbstractFirewall extends AbstractService implements Firewall
                 'type' => 'allow',
                 'name' => 'SSH',
                 'protocol' => 'tcp',
-                'port' => 22,
+                'port' => $this->service->server->port ?? 22,
                 'source' => null,
                 'mask' => null,
                 'status' => FirewallRuleStatus::READY,
