@@ -99,9 +99,8 @@ class ManageRule
      */
     private function normalizePort(array $input): array
     {
-        $input['port'] = isset($input['port']) && is_scalar($input['port'])
-            ? (string) $input['port']
-            : null;
+        $port = $input['port'] ?? null;
+        $input['port'] = is_string($port) || is_int($port) ? (string) $port : null;
 
         return $input;
     }
