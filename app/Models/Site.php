@@ -8,7 +8,6 @@ use App\Enums\SiteStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Jobs\SSL\DeleteSiteSslJob;
-use App\Services\PHP\PHP;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\SiteType;
@@ -333,25 +332,6 @@ class Site extends AbstractModel
         return null;
     }
 
-    /**
-     * @throws SSHError
-     */
-    public function changePHPVersion(string $version): void
-    {
-        if ($this->isIsolated()) {
-            /** @var Service $php */
-            $php = $this->server->php();
-            /** @var PHP $phpHandler */
-            $phpHandler = $php->handler();
-            $phpHandler->removeFpmPool($this->user, $this->php_version, $this->id);
-            $phpHandler->createFpmPool($this->user, $version);
-        }
-
-        $this->php_version = $version;
-        $this->save();
-
-        $this->webserver()->updateVHost($this);
-    }
 
     public function getUrl(): string
     {
@@ -457,6 +437,23 @@ class Site extends AbstractModel
     public function isIsolated(): bool
     {
         return $this->user != $this->server->getSshUser();
+    }
+
+    public function userSharedWithSiblings(): bool
+    {
+        return $this->server->sites()
+            ->where('user', $this->user)
+            ->where('id', '!=', $this->id)
+            ->exists();
+    }
+
+    public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool
+    {
+        return $this->server->sites()
+            ->where('user', $this->user)
+            ->where('php_version', $phpVersion ?? $this->php_version)
+            ->where('id', '!=', $this->id)
+            ->exists();
     }
 
     public function webserver(): Webserver

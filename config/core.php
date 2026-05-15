@@ -11,6 +11,21 @@ return [
      * SSH
      */
     'ssh_user' => env('SSH_USER', 'vito'),
+
+    /*
+     * Linux user names that must never be used as a site's isolated user.
+     * Combined with the per-server SSH user to block reuse of privileged or
+     * service accounts when validating site creation.
+     */
+    'reserved_user_names' => [
+        'root', 'daemon', 'bin', 'sys', 'sync', 'games', 'man', 'lp', 'mail',
+        'news', 'uucp', 'proxy', 'www-data', 'backup', 'list', 'irc', 'gnats',
+        'nobody', 'systemd-network', 'systemd-resolve', 'systemd-timesync',
+        'syslog', 'messagebus', '_apt', 'sshd', 'tcpdump', 'tss', 'landscape',
+        'pollinate', 'fwupd-refresh', 'mysql', 'postgres', 'redis', 'mongodb',
+        'memcached', 'rabbitmq', 'nginx', 'apache', 'caddy', 'ubuntu', 'debian',
+        'admin', 'administrator', 'vito',
+    ],
     'ssh_public_key_name' => env('SSH_PUBLIC_KEY_NAME', 'ssh-public.key'),
     'ssh_private_key_name' => env('SSH_PRIVATE_KEY_NAME', 'ssh-private.pem'),
     'logs_disk' => env('SERVER_LOGS_DISK', 'server-logs'), // should be FilesystemAdapter storage

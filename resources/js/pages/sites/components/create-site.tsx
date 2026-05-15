@@ -8,6 +8,7 @@ import { LoaderCircle, HelpCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useForm, usePage } from '@inertiajs/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
 import type { SharedData } from '@/types';
@@ -19,6 +20,7 @@ import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
 import DatabaseSelect from '@/pages/databases/components/database-select';
 import DatabaseUserSelect from '@/pages/database-users/components/database-user-select';
+import IsolatedUserSelect from '@/pages/sites/components/isolated-user-select';
 import SelectRepo from '@/pages/source-controls/components/select-repo';
 import SelectBranch from '@/pages/source-controls/components/select-branch';
 
@@ -56,6 +58,7 @@ export default function CreateSite({
   children: ReactNode;
 }) {
   const page = usePage<SharedData>();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(defaultOpen || false);
   const [userManuallyEdited, setUserManuallyEdited] = useState(false);
 
@@ -85,7 +88,11 @@ export default function CreateSite({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    form.post(route('sites.store', { server: form.data.server }));
+    form.post(route('sites.store', { server: form.data.server }), {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['isolated-users', parseInt(form.data.server, 10)] });
+      },
+    });
   };
 
   useEffect(() => {
@@ -311,17 +318,18 @@ export default function CreateSite({
                       </DialogContent>
                     </Dialog>
                   </Label>
-                  <Input
-                    id="user"
-                    type="text"
+                  <IsolatedUserSelect
+                    serverId={parseInt(form.data.server, 10)}
                     value={form.data.user}
-                    onChange={(e) => {
+                    onValueChange={(value) => {
                       setUserManuallyEdited(true);
-                      form.setData('user', e.target.value);
+                      form.setData('user', value);
                     }}
-                    placeholder="e.g. mysite"
+                    onSearchChange={() => setUserManuallyEdited(true)}
                   />
-                  <p className="text-muted-foreground text-xs">The isolated user for the site. Must be unique on the server.</p>
+                  <p className="text-muted-foreground text-xs">
+                    Pick an existing isolated user to host this site alongside others, or create a new one.
+                  </p>
                   <InputError message={form.errors.user} />
                 </FormField>
 
