@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { Check, ChevronsUpDown, LoaderCircle, Plus, RefreshCw } from 'lucide-react';
 
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import type { SharedData } from '@/types';
 
 type IsolatedUserSelectProps = {
   serverId: number;
@@ -24,6 +26,8 @@ type IsolatedUserOption = {
 };
 
 export default function IsolatedUserSelect({ serverId, value, onValueChange, onSearchChange }: IsolatedUserSelectProps) {
+  const page = usePage<SharedData>();
+  const reservedNames = page.props.configs.site.reserved_user_names ?? [];
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -40,7 +44,8 @@ export default function IsolatedUserSelect({ serverId, value, onValueChange, onS
   const filtered = trimmed === '' ? existingUsers : existingUsers.filter((u) => u.user.toLowerCase().includes(trimmed.toLowerCase()));
   const exactMatch = existingUsers.some((u) => u.user === trimmed);
   const validUsername = USERNAME_REGEX.test(trimmed) && trimmed.length >= 3 && trimmed.length <= 32;
-  const showCreate = trimmed.length > 0 && !exactMatch && validUsername;
+  const isReserved = trimmed.length > 0 && reservedNames.includes(trimmed);
+  const showCreate = trimmed.length > 0 && !exactMatch && validUsername && !isReserved;
 
   const triggerLabel = value
     ? value
@@ -112,9 +117,11 @@ export default function IsolatedUserSelect({ serverId, value, onValueChange, onS
               <CommandEmpty>
                 {query.isFetching
                   ? 'Loading users...'
-                  : existingUsers.length === 0
-                    ? 'No isolated users yet — type a valid name to create one.'
-                    : 'No matches. Type a valid username to create one.'}
+                  : isReserved
+                    ? `'${trimmed}' is a reserved system name and can't be used.`
+                    : existingUsers.length === 0
+                      ? 'No isolated users yet — type a valid name to create one.'
+                      : 'No matches. Type a valid username to create one.'}
               </CommandEmpty>
             )}
 

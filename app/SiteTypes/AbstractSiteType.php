@@ -12,7 +12,6 @@ use App\Models\Site;
 use App\Services\PHP\PHP;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 abstract class AbstractSiteType implements SiteType
@@ -109,9 +108,7 @@ abstract class AbstractSiteType implements SiteType
         try {
             $lock->block(30);
         } catch (LockTimeoutException) {
-            throw ValidationException::withMessages([
-                'user' => "Another operation on isolated user '{$this->site->user}' is in progress, please retry.",
-            ]);
+            throw new RuntimeException("Could not acquire isolated-user lock for '{$this->site->user}' on server {$this->site->server_id} within 30s.");
         }
 
         try {

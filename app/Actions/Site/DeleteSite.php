@@ -24,8 +24,6 @@ class DeleteSite
     {
         $this->validate($site, $input);
 
-        $site->webserver()->deleteSite($site);
-
         if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
             $site->sourceControl->provider()->deleteDeployKey(
                 $site->type_data['deploy_key_id'],
@@ -33,39 +31,42 @@ class DeleteSite
             );
         }
 
-        if ($site->isIsolated()) {
-            $lock = $site->server->isolatedUserLock($site->user);
-
-            try {
-                $lock->block(30);
-            } catch (LockTimeoutException) {
-                throw ValidationException::withMessages([
-                    'domain' => "Another operation on isolated user '{$site->user}' is in progress, please retry.",
-                ]);
-            }
-
-            try {
-                if ($site->type()->language() === 'php' && ! $site->fpmPoolSharedWithSiblings()) {
-                    /** @var Service $phpService */
-                    $phpService = $site->server->php();
-                    /** @var PHP $php */
-                    $php = $phpService->handler();
-                    $php->removeFpmPool($site->user, $site->php_version, $site->id);
-                }
-
-                if (! $site->userSharedWithSiblings()) {
-                    $site->server->os()->deleteIsolatedUser($site->user);
-                }
-
-                $this->deleteRow($site);
-            } finally {
-                $lock->release();
-            }
+        if (! $site->isIsolated()) {
+            $site->webserver()->deleteSite($site);
+            $this->deleteRow($site);
 
             return;
         }
 
-        $this->deleteRow($site);
+        $lock = $site->server->isolatedUserLock($site->user);
+
+        try {
+            $lock->block(30);
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages([
+                'domain' => "Another operation on isolated user '{$site->user}' is in progress, please retry.",
+            ]);
+        }
+
+        try {
+            $site->webserver()->deleteSite($site);
+
+            if ($site->type()->language() === 'php' && ! $site->fpmPoolSharedWithSiblings()) {
+                /** @var Service $phpService */
+                $phpService = $site->server->php();
+                /** @var PHP $php */
+                $php = $phpService->handler();
+                $php->removeFpmPool($site->user, $site->php_version, $site->id);
+            }
+
+            if (! $site->userSharedWithSiblings()) {
+                $site->server->os()->deleteIsolatedUser($site->user);
+            }
+
+            $this->deleteRow($site);
+        } finally {
+            $lock->release();
+        }
     }
 
     /**

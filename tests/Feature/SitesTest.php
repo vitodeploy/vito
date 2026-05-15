@@ -218,7 +218,7 @@ class SitesTest extends TestCase
         SSH::assertExecutedContains('userdel');
     }
 
-    public function test_php_version_switch_keeps_pool_in_use_by_sister_site(): void
+    public function test_php_version_switch_removes_old_pool_when_not_shared(): void
     {
         SSH::fake();
 
