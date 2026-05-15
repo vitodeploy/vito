@@ -136,11 +136,7 @@ export default function IsolatedUserSelect({ serverId, value, onValueChange, onS
 
             {showCreate && (
               <CommandGroup heading="Create new">
-                <CommandItem
-                  value={`__create__:${trimmed}`}
-                  onSelect={() => pick(trimmed)}
-                  aria-label={`Create new isolated user ${trimmed}`}
-                >
+                <CommandItem value={`__create__:${trimmed}`} onSelect={() => pick(trimmed)} aria-label={`Create new isolated user ${trimmed}`}>
                   <Plus aria-hidden="true" />
                   <span>
                     Create new <span className="font-medium">{trimmed}</span>

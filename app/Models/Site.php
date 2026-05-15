@@ -332,7 +332,6 @@ class Site extends AbstractModel
         return null;
     }
 
-
     public function getUrl(): string
     {
         if ($this->ssl_enabled) {

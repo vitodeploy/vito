@@ -105,6 +105,7 @@ export interface Configs {
     types: {
       [type: string]: SiteType;
     };
+    reserved_user_names: string[];
   };
 
   [key: string]: unknown;

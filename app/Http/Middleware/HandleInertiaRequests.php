@@ -106,6 +106,7 @@ class HandleInertiaRequests extends Middleware
                 'metrics_periods' => config('core.metrics_periods'),
                 'site' => [
                     'types' => config('site.types'),
+                    'reserved_user_names' => config('core.reserved_user_names'),
                 ],
                 'source_control' => [
                     'providers' => config('source-control.providers'),

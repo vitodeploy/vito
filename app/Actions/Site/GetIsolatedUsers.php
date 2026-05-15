@@ -17,7 +17,7 @@ class GetIsolatedUsers
             ->get(['user'])
             ->groupBy('user')
             ->map(fn ($group, $user) => [
-                'user' => $user,
+                'user' => (string) $user,
                 'sites_count' => $group->count(),
             ])
             ->values();

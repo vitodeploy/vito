@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\LoadBalancerMethod;
+use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
 use App\Facades\SSH;
-use App\Enums\ServiceStatus;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Service;
