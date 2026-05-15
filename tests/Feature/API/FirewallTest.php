@@ -32,8 +32,54 @@ class FirewallTest extends TestCase
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
-                'port' => 1234,
+                'port' => '1234',
                 'status' => FirewallRuleStatus::CREATING,
+            ]);
+    }
+
+    public function test_create_firewall_rule_with_integer_port_input(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $this->json('POST', route('api.projects.servers.firewall-rules.create', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+        ]), [
+            'name' => 'IntPort',
+            'type' => 'allow',
+            'protocol' => 'tcp',
+            'port' => 1234,
+            'source' => null,
+            'mask' => null,
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'port' => '1234',
+            ]);
+    }
+
+    public function test_create_firewall_rule_with_port_range(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $this->json('POST', route('api.projects.servers.firewall-rules.create', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+        ]), [
+            'name' => 'RangeAPI',
+            'type' => 'allow',
+            'protocol' => 'tcp',
+            'port' => '3000:3010',
+            'source' => null,
+            'mask' => null,
+        ])
+            ->assertSuccessful()
+            ->assertJsonFragment([
+                'port' => '3000:3010',
             ]);
     }
 
@@ -45,7 +91,7 @@ class FirewallTest extends TestCase
 
         $rule = FirewallRule::factory()->create([
             'server_id' => $this->server->id,
-            'port' => 1234,
+            'port' => '1234',
         ]);
 
         $this->json('PUT', route('api.projects.servers.firewall-rules.edit', [
@@ -62,7 +108,7 @@ class FirewallTest extends TestCase
         ])
             ->assertSuccessful()
             ->assertJsonFragment([
-                'port' => 55,
+                'port' => '55',
                 'status' => FirewallRuleStatus::UPDATING,
             ]);
     }

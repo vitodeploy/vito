@@ -17,6 +17,8 @@ properties:
     example: 'tcp'
   port:
     type: string
+    description: A single port (e.g. "22") or an inclusive port range (e.g. "3000:3010"). Each side must be between 1 and 65535, and the start must be lower than the end.
+    pattern: '^[1-9]\d{0,4}(:[1-9]\d{0,4})?$'
     example: '22'
   source:
     type: string

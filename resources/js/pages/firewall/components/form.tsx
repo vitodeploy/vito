@@ -109,7 +109,16 @@ export default function RuleForm({ serverId, firewallRule, children }: { serverI
 
             <FormField>
               <Label htmlFor="port">Port</Label>
-              <Input type="text" id="port" value={form.data.port} onChange={(e) => form.setData('port', e.target.value)} />
+              <Input
+                type="text"
+                id="port"
+                placeholder="e.g. 8080 or 3000:3010"
+                value={form.data.port}
+                onChange={(e) => form.setData('port', e.target.value)}
+              />
+              <p className="text-muted-foreground text-xs">
+                Enter a single port (e.g. <code>8080</code>) or a range (e.g. <code>3000:3010</code>). Ranges are inclusive.
+              </p>
               <InputError message={form.errors.port} />
             </FormField>
 
