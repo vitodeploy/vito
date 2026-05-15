@@ -28,20 +28,6 @@ class UpdateSourceControl
             ],
         ])->validate();
 
-        try {
-            if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
-                $site->sourceControl->provider()->deleteDeployKey(
-                    $site->type_data['deploy_key_id'],
-                    $site->repository,
-                );
-            }
-        } catch (Throwable $e) {
-            Log::warning('Failed to delete previous deploy key during source control update', [
-                'site' => $site->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
         $site->source_control_id = $input['source_control'];
         $site->unsetRelation('sourceControl');
 
@@ -63,6 +49,25 @@ class UpdateSourceControl
             ]);
         }
 
+        try {
+            if ($site->sourceControl && isset($site->type_data['deploy_key_id'])) {
+                $site->unsetRelation('sourceControl');
+                $site->source_control_id = $site->getOriginal('source_control_id');
+                $site->unsetRelation('sourceControl');
+                $site->sourceControl->provider()->deleteDeployKey(
+                    $site->type_data['deploy_key_id'],
+                    $site->repository,
+                );
+            }
+        } catch (Throwable $e) {
+            Log::warning('Failed to delete previous deploy key during source control update', [
+                'site' => $site->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $site->source_control_id = $input['source_control'];
+        $site->unsetRelation('sourceControl');
         $site->save();
 
         if ($site->ssh_key && $site->repository) {
