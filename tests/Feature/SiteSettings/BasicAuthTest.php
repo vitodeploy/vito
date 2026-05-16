@@ -6,6 +6,8 @@ use App\Actions\Site\UpdateBasicAuth;
 use App\Facades\SSH;
 use App\Http\Resources\SiteResource;
 use App\Models\HostedDomain;
+use App\Models\Site;
+use App\Models\User;
 use App\Services\Webserver\Caddy;
 use App\Services\Webserver\Nginx;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,7 +59,7 @@ class BasicAuthTest extends TestCase
         ];
         $this->site->save();
 
-        /** @var \App\Models\Site $site */
+        /** @var Site $site */
         $site = \Mockery::mock($this->site)->makePartial();
         $site->shouldReceive('webserver->updateVHost')->andReturn();
         $site->shouldReceive('webserver->id')->andReturn(Nginx::id());
@@ -91,7 +93,7 @@ class BasicAuthTest extends TestCase
         ];
         $this->site->save();
 
-        /** @var \App\Models\Site $site */
+        /** @var Site $site */
         $site = \Mockery::mock($this->site)->makePartial();
         $site->shouldReceive('webserver->updateVHost')->andReturn();
         $site->shouldReceive('webserver->id')->andReturn(Nginx::id());
@@ -279,7 +281,7 @@ class BasicAuthTest extends TestCase
 
     public function test_authorization_requires_project_access(): void
     {
-        $otherUser = \App\Models\User::factory()->create();
+        $otherUser = User::factory()->create();
         $otherUser->ensureHasDefaultProject();
 
         $this->actingAs($otherUser);
