@@ -21,6 +21,7 @@ import DeleteSite from '@/pages/site-settings/components/delete-site';
 import VHost from '@/pages/site-settings/components/vhost';
 import VHostPreview from '@/pages/site-settings/components/vhost-preview';
 import ChangeSourceControl from '@/pages/site-settings/components/source-control';
+import BasicAuth from '@/pages/site-settings/components/basic-auth';
 import WebDirectory from './components/web-directory';
 
 export default function Databases() {
@@ -122,6 +123,19 @@ export default function Databases() {
                 </Button>
               </VHost>
             </div>
+            {(page.props.site.webserver === 'nginx' || page.props.site.webserver === 'caddy') && (
+              <>
+                <Separator />
+                <div className="flex items-center justify-between p-4">
+                  <span>Basic Auth</span>
+                  <BasicAuth site={page.props.site}>
+                    <Button variant="outline" className="h-6">
+                      {page.props.site.basic_auth?.enabled ? `Enabled (${page.props.site.basic_auth.users.length})` : 'Disabled'}
+                    </Button>
+                  </BasicAuth>
+                </div>
+              </>
+            )}
             <Separator />
             <div className="flex items-center justify-between p-4">
               <span>Web directory</span>

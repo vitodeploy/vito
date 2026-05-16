@@ -35,6 +35,10 @@ export interface Site {
   vhost_generation_enabled: boolean;
   features: SiteFeature[];
   modern_deployment: boolean;
+  basic_auth: {
+    enabled: boolean;
+    users: { username: string }[];
+  };
   warnings: SiteWarning[];
   created_at: string;
   updated_at: string;

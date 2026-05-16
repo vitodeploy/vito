@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Site\DeleteSite;
 use App\Actions\Site\PreviewVhost;
+use App\Actions\Site\UpdateBasicAuth;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
 use App\Actions\Site\UpdateSourceControl;
@@ -154,6 +155,19 @@ class SiteSettingController extends Controller
         $site->webserver()->updateVHost($site);
 
         return back()->with('success', 'VHost template reset to default.');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Patch('/basic-auth', name: 'site-settings.update-basic-auth')]
+    public function updateBasicAuth(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(UpdateBasicAuth::class)->update($site, $request->input());
+
+        return back()->with('success', 'Basic auth settings updated successfully.');
     }
 
     #[Patch('/vhost-generation', name: 'site-settings.update-vhost-generation')]
