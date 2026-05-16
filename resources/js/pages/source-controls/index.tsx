@@ -1,5 +1,5 @@
 import SettingsLayout from '@/layouts/settings/layout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -31,17 +31,17 @@ export default function SourceControls() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
+            {githubAppInstalled && (
+              <a href={route('github-app.install')} title="Install GitHub App on an organization">
+                <Button variant="outline" size="icon">
+                  <GithubIcon />
+                  <span className="sr-only">Install GitHub App on an organization</span>
+                </Button>
+              </a>
+            )}
             <ConnectSourceControl>
               <Button>Connect</Button>
             </ConnectSourceControl>
-            {githubAppInstalled && (
-              <Link href={route('github-app.install')}>
-                <Button variant="outline">
-                  <GithubIcon />
-                  <span className="hidden lg:block">+ Github Org</span>
-                </Button>
-              </Link>
-            )}
           </div>
         </div>
         <DataTable columns={columns} paginatedData={page.props.sourceControls} />

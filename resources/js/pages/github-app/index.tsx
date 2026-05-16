@@ -54,7 +54,7 @@ type PageProps = {
   manifest: Manifest;
   manualSetup: ManualSetup;
   installPath: string | null;
-  installations: { data: SourceControl[] };
+  installations: SourceControl[];
   localUrlWarning: boolean;
 };
 
@@ -91,10 +91,10 @@ export default function GithubAppIndex() {
                 <h3 className="text-sm font-medium">Connected installations</h3>
                 <p className="text-muted-foreground text-sm">Organizations that have installed this GitHub App.</p>
               </div>
-              {installations.data.length === 0 ? (
+              {installations.length === 0 ? (
                 <div className="text-muted-foreground p-4 text-sm">No installations yet. Install the app on a GitHub organization to begin.</div>
               ) : (
-                installations.data.map((sc) => (
+                installations.map((sc) => (
                   <CardRow key={sc.id}>
                     <div className="flex items-center gap-3">
                       <GithubIcon className="h-4 w-4" />
@@ -207,7 +207,7 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
               <li><strong>Permissions → Repository → Contents:</strong> Read-only</li>
               <li><strong>Permissions → Repository → Metadata:</strong> Read-only (auto-selected)</li>
               <li><strong>Subscribe to events:</strong> Push</li>
-              <li><strong>Where can this GitHub App be installed?:</strong> "Only on this account"</li>
+              <li><strong>Where can this GitHub App be installed?:</strong> "Any account" — required to install on orgs you&apos;re a member of</li>
             </ul>
             <p>After creating, on the app page generate a <strong>Client secret</strong>, then a <strong>Private key</strong> (downloads as a .pem file). Note the <strong>App ID</strong> from the top of the page.</p>
           </div>

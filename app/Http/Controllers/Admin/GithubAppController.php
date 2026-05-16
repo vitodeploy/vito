@@ -152,7 +152,7 @@ class GithubAppController extends Controller
             ],
             'redirect_url' => route('github-app.manifest-callback'),
             'callback_urls' => [route('github-app.install-callback')],
-            'public' => false,
+            'public' => true,
             'default_permissions' => [
                 'contents' => 'read',
                 'metadata' => 'read',
