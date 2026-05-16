@@ -159,7 +159,7 @@ class MiseNodeJS extends MiseSiteType
         $this->progress(85, 'creating-worker');
 
         $this->createWorker();
-        $this->progress(100, 'finishing');
+        $this->progress(90, 'finishing');
     }
 
     /**

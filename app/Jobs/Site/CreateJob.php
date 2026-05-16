@@ -36,12 +36,11 @@ class CreateJob implements ShouldQueue
     {
         $this->run("server-{$this->site->server_id}", function () {
             $this->site->type()->install();
-            $this->site->update([
-                'status' => SiteStatus::READY,
-                'progress' => 100,
-                'progress_step' => null,
-                'last_error' => null,
-            ]);
+            $this->site->status = SiteStatus::READY;
+            $this->site->progress = 100;
+            $this->site->progress_step = null;
+            $this->site->last_error = null;
+            $this->site->save();
             $this->broadcastSiteUpdate();
             Notifier::send($this->site, new SiteInstallationSucceed($this->site));
         });

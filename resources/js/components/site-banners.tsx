@@ -70,10 +70,14 @@ function InstallationFailedBanner({ site }: { site: Site }) {
                           setOpen(false);
                         },
                         onError: (errors) => {
+                          const first = errors && typeof errors === 'object' ? Object.values(errors)[0] : null;
                           const message =
-                            (typeof errors === 'object' && errors !== null && Object.values(errors)[0]) ||
-                            'Could not retry installation. Check the site logs.';
-                          setSubmitError(String(message));
+                            typeof first === 'string'
+                              ? first
+                              : Array.isArray(first) && typeof first[0] === 'string'
+                                ? first[0]
+                                : 'Could not retry installation. Check the site logs.';
+                          setSubmitError(message);
                         },
                         onFinish: () => {
                           setSubmitting(false);

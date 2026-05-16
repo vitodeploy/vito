@@ -91,8 +91,6 @@ class Site extends AbstractModel
         'status',
         'port',
         'progress',
-        'progress_step',
-        'last_error',
         'user',
         'force_ssl',
         'ssl_enabled',

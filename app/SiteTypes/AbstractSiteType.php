@@ -66,10 +66,10 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * Update install progress. Pass $step to set the current named phase,
-     * or omit/null to clear it (e.g. on completion).
+     * Update install progress. Always pass $step explicitly: a non-null value
+     * sets the current named phase; null clears it (e.g. on completion).
      */
-    protected function progress(int $percentage, ?string $step = null): void
+    protected function progress(int $percentage, ?string $step): void
     {
         $this->site->progress = $percentage;
         $this->site->progress_step = $step;
@@ -128,15 +128,14 @@ abstract class AbstractSiteType implements SiteType
             if (! $service instanceof Service) {
                 throw new RuntimeException('PHP service not found');
             }
-            if ($this->fpmPoolExists($this->site->user, $this->site->php_version)) {
-                return;
+            if (! $this->fpmPoolExists($this->site->user, $this->site->php_version)) {
+                /** @var PHP $php */
+                $php = $service->handler();
+                $php->createFpmPool(
+                    $this->site->user,
+                    $this->site->php_version
+                );
             }
-            /** @var PHP $php */
-            $php = $service->handler();
-            $php->createFpmPool(
-                $this->site->user,
-                $this->site->php_version
-            );
         }
     }
 
