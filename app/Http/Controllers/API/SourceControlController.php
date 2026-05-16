@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\GithubApp\EditGithubAppSourceControl;
 use App\Actions\SourceControl\ConnectSourceControl;
 use App\Actions\SourceControl\DeleteSourceControl;
-use App\Actions\GithubApp\EditGithubAppSourceControl;
 use App\Actions\SourceControl\EditSourceControl;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SourceControlResource;

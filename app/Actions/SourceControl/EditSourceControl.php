@@ -24,7 +24,7 @@ class EditSourceControl
         $sourceControl->profile = $input['name'];
         $sourceControl->project_id = isset($input['global']) && $input['global']
             ? null
-            : $sourceControl->user?->currentProject?->id;
+            : $sourceControl->user->currentProject?->id;
 
         $sourceControl->save();
 

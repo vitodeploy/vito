@@ -63,9 +63,7 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
                 disabled={isGithubApp}
                 readOnly={isGithubApp}
               />
-              {isGithubApp && (
-                <p className="text-muted-foreground text-xs">The name is the GitHub organization and cannot be changed.</p>
-              )}
+              {isGithubApp && <p className="text-muted-foreground text-xs">The name is the GitHub organization and cannot be changed.</p>}
               <InputError message={form.errors.name} />
             </FormField>
             <FormField>

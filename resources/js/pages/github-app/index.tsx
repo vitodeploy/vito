@@ -78,8 +78,8 @@ export default function GithubAppIndex() {
             <AlertTriangleIcon />
             <AlertTitle>Vito is not publicly reachable</AlertTitle>
             <AlertDescription>
-              Webhook events from GitHub cannot reach this instance. Installs and uninstalls will be detected on the 4-hour sync (or by clicking
-              the Sync button below).
+              Webhook events from GitHub cannot reach this instance. Installs and uninstalls will be detected on the 4-hour sync (or by clicking the
+              Sync button below).
             </AlertDescription>
           </Alert>
         )}
@@ -144,8 +144,8 @@ function CreateAppCard({ manifest, manualSetup }: { manifest: Manifest; manualSe
 
             <TabsContent value="automatic" className="space-y-4 pt-4">
               <p className="text-muted-foreground text-sm">
-                We&apos;ll send a pre-filled manifest to GitHub. GitHub creates the app, generates credentials, and redirects you back here.
-                Requires a publicly reachable hostname (not <code>.test</code> / <code>.localhost</code>).
+                We&apos;ll send a pre-filled manifest to GitHub. GitHub creates the app, generates credentials, and redirects you back here. Requires
+                a publicly reachable hostname (not <code>.test</code> / <code>.localhost</code>).
               </p>
               <form method="post" action={manifest.submit_url}>
                 <input type="hidden" name="manifest" value={manifest.manifest} />
@@ -169,7 +169,7 @@ function CreateAppCard({ manifest, manualSetup }: { manifest: Manifest; manualSe
 function StepHeader({ number, title, description }: { number: number; title: string; description: string }) {
   return (
     <div className="space-y-0.5">
-      <div className="text-muted-foreground text-xs font-medium uppercase tracking-wider">Step {number}</div>
+      <div className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Step {number}</div>
       <h4 className="font-semibold">{title}</h4>
       <p className="text-muted-foreground text-sm">{description}</p>
     </div>
@@ -226,8 +226,8 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
           <div className="grid gap-3 sm:grid-cols-2">
             <ManualField label="Homepage URL" value={manualSetup.homepage_url} />
             <ManualField label="Callback URL" value={manualSetup.callback_url} />
-            <ManualField label="Setup URL (post installation)" value={manualSetup.setup_url} hint="Tick &quot;Redirect on update&quot;" />
-            <ManualField label="Webhook URL" value={manualSetup.webhook_url} hint="Leave &quot;Active&quot; checked" />
+            <ManualField label="Setup URL (post installation)" value={manualSetup.setup_url} hint='Tick "Redirect on update"' />
+            <ManualField label="Webhook URL" value={manualSetup.webhook_url} hint='Leave "Active" checked' />
             <div className="sm:col-span-2">
               <ManualField
                 label="Webhook secret"
@@ -238,18 +238,26 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
           </div>
 
           <div className="bg-muted/40 space-y-2 rounded-md border p-3 text-sm">
-            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Permissions &amp; events</div>
+            <div className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Permissions &amp; events</div>
             <ul className="ml-5 list-disc space-y-1">
-              <li>Repository → Contents: <strong>Read-only</strong></li>
-              <li>Repository → Metadata: <strong>Read-only</strong> (auto-selected)</li>
-              <li>Subscribe to events: <strong>Push</strong></li>
-              <li>Where can this GitHub App be installed?: <strong>Any account</strong> (required for installing on orgs)</li>
+              <li>
+                Repository → Contents: <strong>Read-only</strong>
+              </li>
+              <li>
+                Repository → Metadata: <strong>Read-only</strong> (auto-selected)
+              </li>
+              <li>
+                Subscribe to events: <strong>Push</strong>
+              </li>
+              <li>
+                Where can this GitHub App be installed?: <strong>Any account</strong> (required for installing on orgs)
+              </li>
             </ul>
           </div>
 
           <p className="text-muted-foreground text-sm">
-            After saving, on the new app&apos;s settings page generate a <strong>Client secret</strong>, then scroll to <strong>Private keys</strong> and{' '}
-            <strong>Generate a private key</strong> (downloads as a .pem file). Note the <strong>App ID</strong> from the top of the page.
+            After saving, on the new app&apos;s settings page generate a <strong>Client secret</strong>, then scroll to <strong>Private keys</strong>{' '}
+            and <strong>Generate a private key</strong> (downloads as a .pem file). Note the <strong>App ID</strong> from the top of the page.
           </p>
         </div>
       </section>
@@ -258,18 +266,20 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
 
       {/* Step 2 */}
       <section className="space-y-4">
-        <StepHeader
-          number={2}
-          title="Paste the credentials below"
-          description="Fill in the values GitHub gave you in Step 1, then save."
-        />
+        <StepHeader number={2} title="Paste the credentials below" description="Fill in the values GitHub gave you in Step 1, then save." />
 
         <Form id="github-app-manual" onSubmit={submit}>
           <FormFields>
             <div className="grid grid-cols-2 items-start gap-4">
               <FormField>
                 <Label htmlFor="app_id">App ID</Label>
-                <Input id="app_id" type="text" inputMode="numeric" value={form.data.app_id} onChange={(e) => form.setData('app_id', e.target.value)} />
+                <Input
+                  id="app_id"
+                  type="text"
+                  inputMode="numeric"
+                  value={form.data.app_id}
+                  onChange={(e) => form.setData('app_id', e.target.value)}
+                />
                 <InputError message={form.errors.app_id} />
               </FormField>
               <FormField>
@@ -287,7 +297,9 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
                 value={form.data.html_url}
                 onChange={(e) => form.setData('html_url', e.target.value)}
               />
-              <p className="text-muted-foreground text-xs">From the address bar on the app&apos;s settings page — e.g. https://github.com/apps/vito-yourhost.</p>
+              <p className="text-muted-foreground text-xs">
+                From the address bar on the app&apos;s settings page — e.g. https://github.com/apps/vito-yourhost.
+              </p>
               <InputError message={form.errors.html_url} />
             </FormField>
             <div className="grid grid-cols-2 items-start gap-4">
@@ -315,7 +327,9 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
                 value={form.data.webhook_secret}
                 onChange={(e) => form.setData('webhook_secret', e.target.value)}
               />
-              <p className="text-muted-foreground text-xs">Pre-filled with the value from Step 1. Leave as-is unless you used something different on GitHub.</p>
+              <p className="text-muted-foreground text-xs">
+                Pre-filled with the value from Step 1. Leave as-is unless you used something different on GitHub.
+              </p>
               <InputError message={form.errors.webhook_secret} />
             </FormField>
             <FormField>
@@ -425,8 +439,8 @@ function RemoveButton() {
         <DialogHeader>
           <DialogTitle>Remove GitHub App</DialogTitle>
           <DialogDescription>
-            This clears the local app config. You should also delete the app on GitHub if you don&apos;t plan to reuse it. Installations with
-            attached sites cannot be removed.
+            This clears the local app config. You should also delete the app on GitHub if you don&apos;t plan to reuse it. Installations with attached
+            sites cannot be removed.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
