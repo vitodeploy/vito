@@ -3,7 +3,7 @@ import { AppHeader } from '@/components/app-header';
 import { type BreadcrumbItem, NavItem, SharedData } from '@/types';
 import { type PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { router, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

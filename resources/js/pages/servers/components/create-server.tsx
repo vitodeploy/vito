@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import React, { FormEventHandler, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,7 +22,6 @@ import { ServerProvider } from '@/types/server-provider';
 import ConnectServerProvider from '@/pages/server-providers/components/connect-server-provider';
 import axios from 'axios';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import type { SharedData } from '@/types';
 import { DataTable } from '@/components/data-table';
 import { useConfigs, usePublicKeyText } from '@/stores/bootstrap-store';
 import { ColumnDef } from '@tanstack/react-table';
