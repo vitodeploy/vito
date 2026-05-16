@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GithubApp\EditGithubAppSourceControl;
 use App\Actions\SourceControl\ConnectSourceControl;
 use App\Actions\SourceControl\DeleteSourceControl;
 use App\Actions\SourceControl\EditSourceControl;
@@ -102,7 +103,11 @@ class SourceControlController extends Controller
     {
         $this->authorize('update', $sourceControl);
 
-        app(EditSourceControl::class)->edit($sourceControl, $request->all());
+        if ($sourceControl->isGithubApp()) {
+            app(EditGithubAppSourceControl::class)->edit($sourceControl, $request->all());
+        } else {
+            app(EditSourceControl::class)->edit($sourceControl, $request->all());
+        }
 
         return back()->with('success', 'Source control updated.');
     }

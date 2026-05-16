@@ -11,6 +11,8 @@ class RegisterSourceControl
         private string $label = '',
         private string $handler = '',
         private ?DynamicForm $form = null,
+        private bool $connectable = true,
+        private bool $usableForSites = true,
     ) {}
 
     public static function make(string $name): self
@@ -46,6 +48,20 @@ class RegisterSourceControl
         return $this;
     }
 
+    public function connectable(bool $connectable): self
+    {
+        $this->connectable = $connectable;
+
+        return $this;
+    }
+
+    public function usableForSites(bool $usableForSites): self
+    {
+        $this->usableForSites = $usableForSites;
+
+        return $this;
+    }
+
     public function register(): void
     {
         $providers = config('source-control.providers');
@@ -54,6 +70,8 @@ class RegisterSourceControl
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
+            'connectable' => $this->connectable,
+            'usable_for_sites' => $this->usableForSites,
         ];
 
         config(['source-control.providers' => $providers]);

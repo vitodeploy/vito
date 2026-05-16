@@ -26,6 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 function Edit({ sourceControl }: { sourceControl: SourceControl }) {
   const [open, setOpen] = useState(false);
+  const isGithubApp = sourceControl.provider === 'github-app';
   const form = useForm({
     name: sourceControl.name,
     global: sourceControl.global,
@@ -53,7 +54,18 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
-              <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+              <Input
+                type="text"
+                id="name"
+                name="name"
+                value={form.data.name}
+                onChange={(e) => form.setData('name', e.target.value)}
+                disabled={isGithubApp}
+                readOnly={isGithubApp}
+              />
+              {isGithubApp && (
+                <p className="text-muted-foreground text-xs">The name is the GitHub organization and cannot be changed.</p>
+              )}
               <InputError message={form.errors.name} />
             </FormField>
             <FormField>
@@ -167,6 +179,7 @@ export const columns: ColumnDef<SourceControl>[] = [
     enableColumnFilter: false,
     enableSorting: false,
     cell: ({ row }) => {
+      const isGithubApp = row.original.provider === 'github-app';
       return (
         <div className="flex items-center justify-end">
           <DropdownMenu modal={false}>
@@ -178,8 +191,22 @@ export const columns: ColumnDef<SourceControl>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <Edit sourceControl={row.original} />
-              <DropdownMenuSeparator />
-              <Delete sourceControl={row.original} />
+              {isGithubApp && row.original.github_app?.html_url && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <a href={row.original.github_app.html_url} target="_blank" rel="noopener noreferrer">
+                      Manage permissions
+                    </a>
+                  </DropdownMenuItem>
+                </>
+              )}
+              {!isGithubApp && (
+                <>
+                  <DropdownMenuSeparator />
+                  <Delete sourceControl={row.original} />
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -18,11 +18,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $access_token
  * @property ?int $project_id
  * @property int $user_id
+ * @property ?string $external_identifier
  * @property ?Project $project
  * @property User $user
  */
 class SourceControl extends AbstractModel
 {
+    public const string PROVIDER_GITHUB_APP = 'github-app';
+
     /** @use HasFactory<SourceControlFactory> */
     use HasFactory;
 
@@ -36,6 +39,7 @@ class SourceControl extends AbstractModel
         'access_token',
         'project_id',
         'user_id',
+        'external_identifier',
     ];
 
     protected $casts = [
@@ -44,6 +48,11 @@ class SourceControl extends AbstractModel
         'project_id' => 'integer',
         'user_id' => 'integer',
     ];
+
+    public function isGithubApp(): bool
+    {
+        return $this->provider === self::PROVIDER_GITHUB_APP;
+    }
 
     public function provider(): SourceControlProvider
     {

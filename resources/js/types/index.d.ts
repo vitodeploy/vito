@@ -66,6 +66,8 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+        connectable?: boolean;
+        usable_for_sites?: boolean;
       };
     };
   };
@@ -105,6 +107,9 @@ export interface Configs {
     types: {
       [type: string]: SiteType;
     };
+  };
+  github_app: {
+    installed: boolean;
   };
 
   [key: string]: unknown;

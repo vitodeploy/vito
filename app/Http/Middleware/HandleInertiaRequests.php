@@ -6,6 +6,7 @@ use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\SiteResource;
 use App\Http\Resources\UserResource;
+use App\Models\GithubApp;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\User;
@@ -124,6 +125,9 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'dns_provider' => [
                     'providers' => config('dns-provider.providers'),
+                ],
+                'github_app' => [
+                    'installed' => GithubApp::query()->exists(),
                 ],
             ],
             'ziggy' => fn (): array => [

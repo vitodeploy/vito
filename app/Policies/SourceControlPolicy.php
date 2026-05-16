@@ -32,6 +32,10 @@ class SourceControlPolicy
 
     public function delete(User $user, SourceControl $sourceControl): bool
     {
+        if ($sourceControl->isGithubApp()) {
+            return false;
+        }
+
         return $user->id === $sourceControl->user_id;
     }
 }
