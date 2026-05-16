@@ -32,4 +32,6 @@ AGENTS.md
 .cursor
 boost.json
 opencode.json
-.claude/
+.claude/*
+!.claude/agents/
+!.claude/commands/
