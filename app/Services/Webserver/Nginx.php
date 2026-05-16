@@ -164,7 +164,9 @@ class Nginx extends AbstractWebserver
     public function deleteSite(Site $site): void
     {
         $this->service->server->ssh()->exec(
-            'sudo rm -f '.$site->htpasswdPath(),
+            view('ssh.services.webserver.nginx.remove-basic-auth-file', [
+                'path' => $site->htpasswdPath(),
+            ]),
             'remove-basic-auth-file',
             $site->id
         );

@@ -190,6 +190,29 @@ class BasicAuthTest extends TestCase
         $this->assertStringContainsString('auth_basic_user_file /etc/nginx/auth/site-'.$this->site->id.'.htpasswd', $vhost);
     }
 
+    public function test_vhost_exempts_acme_challenge_path_when_basic_auth_enabled(): void
+    {
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+        ]);
+
+        $this->site->type_data = [
+            'basic_auth' => [
+                'enabled' => true,
+                'users' => [
+                    ['username' => 'alice', 'apr1' => '$apr1$saltxxxx$hashhashhashhashhashhh', 'bcrypt' => '$2y$10$bcrypthashhere'],
+                ],
+            ],
+        ];
+        $this->site->save();
+
+        $vhost = $this->site->webserver()->generateVhost($this->site);
+
+        $this->assertStringContainsString('location ^~ /.well-known/acme-challenge/', $vhost);
+        $this->assertStringContainsString('auth_basic off', $vhost);
+    }
+
     public function test_vhost_generation_omits_auth_basic_when_disabled(): void
     {
         HostedDomain::factory()->primary()->create([

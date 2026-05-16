@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -20,12 +20,15 @@ import { Switch } from '@/components/ui/switch';
 import { LoaderCircleIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import { Site } from '@/types/site';
 
-type FormUser = { username: string; password: string; existing: boolean };
+type FormUser = { id: string; username: string; password: string; existing: boolean };
+
+const rowId = (): string => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
 export default function BasicAuth({ site, children }: { site: Site; children: ReactNode }) {
   const [open, setOpen] = useState(false);
 
-  const initialUsers = (): FormUser[] => (site.basic_auth?.users ?? []).map((u) => ({ username: u.username, password: '', existing: true }));
+  const initialUsers = (): FormUser[] =>
+    (site.basic_auth?.users ?? []).map((u) => ({ id: rowId(), username: u.username, password: '', existing: true }));
 
   const form = useForm<{
     enabled: boolean;
@@ -35,16 +38,16 @@ export default function BasicAuth({ site, children }: { site: Site; children: Re
     users: initialUsers(),
   });
 
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (next: boolean) => {
+    if (next) {
       form.setData({
         enabled: !!site.basic_auth?.enabled,
         users: initialUsers(),
       });
       form.clearErrors();
     }
-     
-  }, [open]);
+    setOpen(next);
+  };
 
   const setUser = (index: number, patch: Partial<FormUser>) => {
     const next = form.data.users.map((u, i) => (i === index ? { ...u, ...patch } : u));
@@ -52,7 +55,7 @@ export default function BasicAuth({ site, children }: { site: Site; children: Re
   };
 
   const addUser = () => {
-    form.setData('users', [...form.data.users, { username: '', password: '', existing: false }]);
+    form.setData('users', [...form.data.users, { id: rowId(), username: '', password: '', existing: false }]);
   };
 
   const removeUser = (index: number) => {
@@ -78,7 +81,7 @@ export default function BasicAuth({ site, children }: { site: Site; children: Re
   const hasUsers = form.data.users.length > 0;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -111,7 +114,7 @@ export default function BasicAuth({ site, children }: { site: Site; children: Re
               <div className="space-y-2">
                 {form.data.users.length === 0 && <p className="text-muted-foreground text-sm">No users yet. Add a user to start using basic auth.</p>}
                 {form.data.users.map((u, i) => (
-                  <div key={i} className="flex items-start gap-2">
+                  <div key={u.id} className="flex items-start gap-2">
                     <div className="flex-1">
                       <Input placeholder="username" value={u.username} onChange={(e) => setUser(i, { username: e.target.value })} />
                       <InputError message={(form.errors as Record<string, string>)[`users.${i}.username`]} />

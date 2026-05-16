@@ -12,8 +12,8 @@ sudo tee {{ $path }} > /dev/null <<'BASIC_AUTH_EOF'
 @endforeach
 BASIC_AUTH_EOF
 
-sudo chown root:root {{ $path }}
-sudo chmod 644 {{ $path }}
+sudo chown root:{{ $nginxUser }} {{ $path }}
+sudo chmod 640 {{ $path }}
 
 echo "Wrote basic auth file {{ $path }} with {{ $userCount }} user(s): {{ $usernames }}"
 sudo ls -l {{ $path }}

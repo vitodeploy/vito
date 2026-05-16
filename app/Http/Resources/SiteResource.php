@@ -24,10 +24,10 @@ class SiteResource extends JsonResource
             'type' => $this->type,
             'type_data' => $this->sanitisedTypeData(),
             'basic_auth' => [
-                'enabled' => (bool) ($this->type_data['basic_auth']['enabled'] ?? false),
+                'enabled' => (bool) data_get($this->type_data, 'basic_auth.enabled', false),
                 'users' => array_map(
                     fn (array $u) => ['username' => $u['username'] ?? ''],
-                    array_values($this->type_data['basic_auth']['users'] ?? [])
+                    array_values(data_get($this->type_data, 'basic_auth.users', []))
                 ),
             ],
             'domain' => $this->domain,

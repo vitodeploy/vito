@@ -4,6 +4,7 @@ namespace App\Actions\Site;
 
 use App\Helpers\Apr1Hasher;
 use App\Models\Site;
+use App\Services\Webserver\Nginx;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -72,7 +73,7 @@ class UpdateBasicAuth
     private function normaliseInput(array $input): array
     {
         $input['enabled'] = filter_var($input['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $input['users'] = array_values($input['users'] ?? []);
+        $input['users'] = is_array($input['users'] ?? null) ? array_values($input['users']) : [];
 
         return $input;
     }
@@ -86,7 +87,7 @@ class UpdateBasicAuth
             'enabled' => ['nullable', 'boolean'],
             'users' => ['array'],
             'users.*.username' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9._-]+$/', 'distinct'],
-            'users.*.password' => ['nullable', 'string', 'min:1', 'max:255'],
+            'users.*.password' => ['nullable', 'string', 'max:255'],
         ])->validate();
 
         $existing = collect($site->type_data['basic_auth']['users'] ?? [])->keyBy('username');
@@ -110,7 +111,7 @@ class UpdateBasicAuth
      */
     private function writeAuthFile(Site $site, array $users): void
     {
-        if ($site->webserver()::id() !== 'nginx') {
+        if ($site->webserver()::id() !== Nginx::id()) {
             return;
         }
 
@@ -136,6 +137,7 @@ class UpdateBasicAuth
                 'lines' => $lines,
                 'userCount' => count($users),
                 'usernames' => $usernames,
+                'nginxUser' => $site->server->getSshUser(),
             ]),
             'write-basic-auth-file',
             $site->id,

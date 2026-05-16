@@ -195,7 +195,7 @@ abstract class AbstractGenerateConfig
         $isOctane = (bool) data_get($site->type_data, 'octane', false);
         $isPhp = ($siteTypeData['is_php'] ?? false) && ! $isOctane;
 
-        $basicAuth = $site->type_data['basic_auth'] ?? [];
+        $basicAuth = data_get($site->type_data, 'basic_auth', []);
         $basicAuthEnabled = ! empty($basicAuth['enabled']) && ! empty($basicAuth['users']);
 
         return [
