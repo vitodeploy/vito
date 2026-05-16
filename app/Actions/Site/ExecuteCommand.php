@@ -40,7 +40,7 @@ class ExecuteCommand
         $execution->server_log_id = $log->id;
         $execution->save();
 
-        dispatch(new ExecuteCommandJob($execution, $command, $log))->onQueue('ssh');
+        dispatch(new ExecuteCommandJob($execution, $command, $log));
 
         return $execution;
     }

@@ -111,8 +111,7 @@ class CreateSite
 
             DB::commit();
 
-            // install site
-            dispatch(new CreateJob($site))->onQueue('ssh');
+            dispatch(new CreateJob($site));
 
             dispatch(new CheckDomainJob($primaryDomain))->onQueue('ssh');
             foreach ($aliasDomains as $aliasDomain) {

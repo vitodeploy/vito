@@ -52,7 +52,7 @@ class Deploy
 
     private function deployClassic(Site $site, Deployment $deployment, ServerLog $log): Deployment
     {
-        dispatch(new DeployJob($deployment, false))->onQueue('ssh');
+        dispatch(new DeployJob($deployment, false));
 
         return $deployment;
     }
@@ -62,7 +62,7 @@ class Deploy
         $deployment->release = now()->format('YmdHis');
         $deployment->save();
 
-        dispatch(new DeployJob($deployment, true))->onQueue('ssh');
+        dispatch(new DeployJob($deployment, true));
 
         return $deployment;
     }

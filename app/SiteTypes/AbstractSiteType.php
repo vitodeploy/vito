@@ -5,6 +5,7 @@ namespace App\SiteTypes;
 use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
+use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Http\Resources\SiteResource;
 use App\Models\Service;
@@ -64,12 +65,14 @@ abstract class AbstractSiteType implements SiteType
         return null;
     }
 
+    /**
+     * Update install progress. Pass $step to set the current named phase,
+     * or omit/null to clear it (e.g. on completion).
+     */
     protected function progress(int $percentage, ?string $step = null): void
     {
         $this->site->progress = $percentage;
-        if ($step !== null) {
-            $this->site->progress_step = $step;
-        }
+        $this->site->progress_step = $step;
         $this->site->save();
 
         SocketEvent::dispatch(new SocketEventDTO(
@@ -85,20 +88,22 @@ abstract class AbstractSiteType implements SiteType
      */
     protected function deployKey(): void
     {
-        if ($this->site->ssh_key && ! empty($this->site->type_data['deploy_key_id'])) {
-            return;
+        $os = $this->site->server->os();
+
+        if (! $this->site->ssh_key) {
+            $os->generateSSHKey($this->site->getSshKeyName(), $this->site);
+            $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName(), $this->site);
+            $this->site->save();
         }
 
-        $os = $this->site->server->os();
-        $os->generateSSHKey($this->site->getSshKeyName(), $this->site);
-        $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName(), $this->site);
-        $this->site->save();
-        $keyId = $this->site->sourceControl?->provider()?->deployKey(
-            $this->site->getDeployKeyName(),
-            $this->site->repository,
-            $this->site->ssh_key
-        );
-        $this->site->jsonUpdate('type_data', 'deploy_key_id', $keyId);
+        if (empty($this->site->type_data['deploy_key_id'])) {
+            $keyId = $this->site->sourceControl?->provider()?->deployKey(
+                $this->site->getDeployKeyName(),
+                $this->site->repository,
+                $this->site->ssh_key
+            );
+            $this->site->jsonUpdate('type_data', 'deploy_key_id', $keyId);
+        }
     }
 
     /**
@@ -123,6 +128,9 @@ abstract class AbstractSiteType implements SiteType
             if (! $service instanceof Service) {
                 throw new RuntimeException('PHP service not found');
             }
+            if ($this->fpmPoolExists($this->site->user, $this->site->php_version)) {
+                return;
+            }
             /** @var PHP $php */
             $php = $service->handler();
             $php->createFpmPool(
@@ -143,26 +151,52 @@ abstract class AbstractSiteType implements SiteType
         app(Git::class)->clone($this->site);
     }
 
+    /**
+     * @throws SSHError when the connection itself fails — only an SSHCommandError
+     *                  (non-zero exit) is treated as "user does not exist".
+     */
     protected function userExists(string $user): bool
     {
         try {
-            $this->site->server->ssh()->exec('id -u '.escapeshellarg($user).' >/dev/null 2>&1');
+            $this->site->server->ssh()->exec(view('ssh.site.check-user-exists', [
+                'user' => $user,
+            ]));
 
             return true;
-        } catch (SSHError) {
+        } catch (SSHCommandError) {
             return false;
         }
     }
 
+    /**
+     * @throws SSHError when the connection itself fails.
+     */
     protected function repositoryAlreadyCloned(): bool
     {
         try {
-            $this->site->server->ssh($this->site->user)->exec(
-                'test -d '.escapeshellarg($this->site->path.'/.git')
-            );
+            $this->site->server->ssh($this->site->user)->exec(view('ssh.site.check-repository-cloned', [
+                'path' => $this->site->path,
+            ]));
 
             return true;
-        } catch (SSHError) {
+        } catch (SSHCommandError) {
+            return false;
+        }
+    }
+
+    /**
+     * @throws SSHError when the connection itself fails.
+     */
+    protected function fpmPoolExists(string $user, string $version): bool
+    {
+        try {
+            $this->site->server->ssh()->exec(view('ssh.site.check-fpm-pool-exists', [
+                'user' => $user,
+                'version' => $version,
+            ]));
+
+            return true;
+        } catch (SSHCommandError) {
             return false;
         }
     }

@@ -5,6 +5,7 @@ namespace App\Actions\Site;
 use App\Enums\SiteStatus;
 use App\Jobs\Site\CreateJob;
 use App\Models\Site;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RetrySite
@@ -17,13 +18,15 @@ class RetrySite
             ]);
         }
 
-        $site->status = SiteStatus::INSTALLING;
-        $site->last_error = null;
-        $site->progress_step = null;
-        $site->progress = 0;
-        $site->save();
+        DB::transaction(function () use ($site): void {
+            $site->status = SiteStatus::INSTALLING;
+            $site->last_error = null;
+            $site->progress_step = null;
+            $site->progress = 0;
+            $site->save();
+        });
 
-        dispatch(new CreateJob($site))->onQueue('ssh');
+        dispatch(new CreateJob($site));
 
         return $site;
     }

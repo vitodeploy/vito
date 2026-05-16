@@ -3,17 +3,14 @@ import { ChevronDownIcon, OctagonAlertIcon, TriangleAlertIcon } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { humanizeStep } from '@/lib/utils';
 import { Site, SiteWarning } from '@/types/site';
 import { ReactNode, useState } from 'react';
-
-function humanizeStep(step: string | null): string {
-  if (!step) return '';
-  return step.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
-}
 
 function InstallationFailedBanner({ site }: { site: Site }) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const step = humanizeStep(site.progress_step);
 
@@ -21,19 +18,25 @@ function InstallationFailedBanner({ site }: { site: Site }) {
     <div className="border-destructive/40 bg-destructive/5 rounded-lg border">
       <div className="flex items-start gap-4 px-4 py-3">
         <OctagonAlertIcon className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
-        <div className="min-w-0 flex-1 text-sm">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 text-sm">
           <p className="font-medium">Site installation failed{step ? ` while ${step.toLowerCase()}` : ''}</p>
           {site.last_error && (
-            <pre className="text-muted-foreground bg-muted/40 mt-2 max-h-40 overflow-auto rounded p-2 font-mono text-xs whitespace-pre-wrap">
+            <pre className="text-muted-foreground bg-muted/40 max-h-40 overflow-auto rounded p-2 font-mono text-xs whitespace-pre-wrap">
               {site.last_error}
             </pre>
           )}
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground">
             You can retry the installation; steps that have already completed will be skipped. Check the logs for full details.
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog
+            open={open}
+            onOpenChange={(next) => {
+              setOpen(next);
+              if (!next) setSubmitError(null);
+            }}
+          >
             <DialogTrigger asChild>
               <Button variant="destructive" size="sm">
                 Retry installation
@@ -43,10 +46,11 @@ function InstallationFailedBanner({ site }: { site: Site }) {
               <DialogHeader>
                 <DialogTitle>Retry site installation?</DialogTitle>
                 <DialogDescription>
-                  This will re-run the installation for <strong>{site.domain}</strong>. Steps that already completed (isolated user, vhost,
-                  cloned repository, deployed key) will be detected and skipped.
+                  This will re-run the installation for <strong>{site.domain}</strong>. Steps that already completed (isolated user, vhost, cloned
+                  repository, deployed key) will be detected and skipped.
                 </DialogDescription>
               </DialogHeader>
+              {submitError && <p className="text-destructive text-sm">{submitError}</p>}
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
                   Cancel
@@ -56,14 +60,23 @@ function InstallationFailedBanner({ site }: { site: Site }) {
                   disabled={submitting}
                   onClick={() => {
                     setSubmitting(true);
+                    setSubmitError(null);
                     router.post(
                       route('sites.retry', { server: site.server_id, site: site.id }),
                       {},
                       {
                         preserveScroll: true,
+                        onSuccess: () => {
+                          setOpen(false);
+                        },
+                        onError: (errors) => {
+                          const message =
+                            (typeof errors === 'object' && errors !== null && Object.values(errors)[0]) ||
+                            'Could not retry installation. Check the site logs.';
+                          setSubmitError(String(message));
+                        },
                         onFinish: () => {
                           setSubmitting(false);
-                          setOpen(false);
                         },
                       },
                     );

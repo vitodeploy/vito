@@ -23,7 +23,9 @@ class ExecuteCommandJob implements ShouldQueue
         protected CommandExecution $execution,
         protected Command $command,
         protected ServerLog $log,
-    ) {}
+    ) {
+        $this->onQueue('ssh');
+    }
 
     public function handle(): void
     {

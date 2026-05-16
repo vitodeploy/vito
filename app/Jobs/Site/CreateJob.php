@@ -5,6 +5,12 @@ namespace App\Jobs\Site;
 use App\DTOs\SocketEventDTO;
 use App\Enums\SiteStatus;
 use App\Events\SocketEvent;
+use App\Exceptions\FailedToDeployGitKey;
+use App\Exceptions\RepositoryNotFound;
+use App\Exceptions\RepositoryPermissionDenied;
+use App\Exceptions\SourceControlIsNotConnected;
+use App\Exceptions\SSHCommandError;
+use App\Exceptions\SSHConnectionError;
 use App\Facades\Notifier;
 use App\Http\Resources\SiteResource;
 use App\Models\ServerLog;
@@ -21,7 +27,10 @@ class CreateJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public function __construct(protected Site $site) {}
+    public function __construct(protected Site $site)
+    {
+        $this->onQueue('ssh');
+    }
 
     public function handle(): void
     {
@@ -30,6 +39,8 @@ class CreateJob implements ShouldQueue
             $this->site->update([
                 'status' => SiteStatus::READY,
                 'progress' => 100,
+                'progress_step' => null,
+                'last_error' => null,
             ]);
             $this->broadcastSiteUpdate();
             Notifier::send($this->site, new SiteInstallationSucceed($this->site));
@@ -39,7 +50,7 @@ class CreateJob implements ShouldQueue
     public function failed(Exception $e): void
     {
         $this->site->status = SiteStatus::INSTALLATION_FAILED;
-        $this->site->last_error = sprintf('[%s] %s', class_basename($e), $e->getMessage());
+        $this->site->last_error = $this->safeErrorSummary($e);
         $this->site->save();
         $this->broadcastSiteUpdate();
         ServerLog::log(
@@ -49,6 +60,32 @@ class CreateJob implements ShouldQueue
             $this->site
         );
         Notifier::send($this->site, new SiteInstallationFailed($this->site));
+    }
+
+    /**
+     * Build a UI-safe error summary. Exception messages can contain provider
+     * payloads (e.g. FailedToDeployGitKey carries the raw HTTP response body
+     * which echoes back submitted public keys), so we never include $e->getMessage()
+     * verbatim — full details live in ServerLog.
+     */
+    private function safeErrorSummary(Exception $e): string
+    {
+        $messages = [
+            SSHCommandError::class => 'An SSH command failed during installation. Check the site logs for the failing command.',
+            SSHConnectionError::class => 'Could not connect to the server over SSH. Verify the server is reachable and try again.',
+            FailedToDeployGitKey::class => 'Failed to deploy the SSH deploy key to the source control provider. The provider rejected the request — check that the repository is accessible and that the key is not already in use.',
+            RepositoryNotFound::class => 'Repository not found on the source control provider.',
+            RepositoryPermissionDenied::class => 'Permission denied accessing the repository on the source control provider.',
+            SourceControlIsNotConnected::class => 'Source control provider is not connected.',
+        ];
+
+        foreach ($messages as $class => $message) {
+            if ($e instanceof $class) {
+                return $message;
+            }
+        }
+
+        return sprintf('Installation failed (%s). See the site logs for full details.', class_basename($e));
     }
 
     private function broadcastSiteUpdate(): void

@@ -30,6 +30,6 @@ class Rollback
         $deployment->status = DeploymentStatus::DEPLOYING;
         $deployment->save();
 
-        dispatch(new RollbackJob($deployment))->onQueue('ssh');
+        dispatch(new RollbackJob($deployment));
     }
 }

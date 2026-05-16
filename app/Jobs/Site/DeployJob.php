@@ -25,7 +25,9 @@ class DeployJob implements ShouldQueue
     public function __construct(
         protected Deployment $deployment,
         protected bool $isModern = true
-    ) {}
+    ) {
+        $this->onQueue('ssh');
+    }
 
     public function handle(): void
     {

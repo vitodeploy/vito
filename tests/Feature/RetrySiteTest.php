@@ -58,7 +58,36 @@ class RetrySiteTest extends TestCase
         $this->assertEquals(SiteStatus::READY, $site->status);
     }
 
-    public function test_create_job_failed_populates_last_error(): void
+    public function test_create_job_failed_populates_safe_last_error_and_preserves_progress_step(): void
+    {
+        Notification::fake();
+        SSH::fake();
+
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'status' => SiteStatus::INSTALLING,
+            'progress' => 60,
+            'progress_step' => 'cloning-repository',
+        ]);
+
+        $job = new CreateJob($site);
+        $job->failed(new Exception('raw provider response with possibly-sensitive payload'));
+
+        $site->refresh();
+        $this->assertEquals(SiteStatus::INSTALLATION_FAILED, $site->status);
+        $this->assertNotNull($site->last_error);
+        $this->assertStringNotContainsString('raw provider response', $site->last_error);
+        $this->assertStringContainsString('Installation failed', $site->last_error);
+        $this->assertEquals('cloning-repository', $site->progress_step);
+
+        $this->assertDatabaseHas('server_logs', [
+            'server_id' => $this->server->id,
+            'site_id' => $site->id,
+            'type' => 'site-installation-failed',
+        ]);
+    }
+
+    public function test_create_job_failed_uses_friendly_message_for_known_exceptions(): void
     {
         Notification::fake();
         SSH::fake();
@@ -69,18 +98,12 @@ class RetrySiteTest extends TestCase
         ]);
 
         $job = new CreateJob($site);
-        $job->failed(new Exception('something went wrong'));
+        $job->failed(new \App\Exceptions\FailedToDeployGitKey('GitHub returned full key payload {"key": "ssh-rsa AAAA..."}'));
 
         $site->refresh();
-        $this->assertEquals(SiteStatus::INSTALLATION_FAILED, $site->status);
         $this->assertNotNull($site->last_error);
-        $this->assertStringContainsString('Exception', $site->last_error);
-        $this->assertStringContainsString('something went wrong', $site->last_error);
-
-        $this->assertDatabaseHas('server_logs', [
-            'server_id' => $this->server->id,
-            'site_id' => $site->id,
-            'type' => 'site-installation-failed',
-        ]);
+        $this->assertStringNotContainsString('ssh-rsa', $site->last_error);
+        $this->assertStringNotContainsString('AAAA', $site->last_error);
+        $this->assertStringContainsString('deploy key', $site->last_error);
     }
 }

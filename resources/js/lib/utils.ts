@@ -31,3 +31,9 @@ export function formatDateString(dateString: string | Date): string {
   // Generate yyyy-mm-dd date string
   return year + '-' + month + '-' + day;
 }
+
+export function humanizeStep(step: string | null | undefined): string {
+  if (!step) return '';
+  const spaced = step.replace(/[-_]+/g, ' ').trim();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}

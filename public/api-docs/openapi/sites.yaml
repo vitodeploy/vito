@@ -818,6 +818,68 @@ paths:
               schema:
                 $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
 
+  /api/projects/{project}/servers/{server}/sites/{site}/retry:
+    post:
+      summary: Retry site installation
+      description: Retry installation for a site whose status is `installation_failed`. The job re-runs the install steps; phases that already completed (isolated user, vhost, deploy key, repository clone) are detected on the server and skipped.
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Retry started successfully. Site status returns to `installing`.
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Site.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Site is not in the `installation_failed` state and cannot be retried.
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
   /api/projects/{project}/servers/{server}/sites/{site}/enable-ssl:
     post:
       summary: Enable SSL
