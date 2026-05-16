@@ -32,6 +32,8 @@ export interface Site {
   force_ssl: boolean;
   ssl_enabled: boolean;
   progress: number;
+  progress_step: string | null;
+  last_error: string | null;
   vhost_generation_enabled: boolean;
   features: SiteFeature[];
   modern_deployment: boolean;

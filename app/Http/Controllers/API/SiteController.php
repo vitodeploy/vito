@@ -6,6 +6,7 @@ use App\Actions\Site\CreateSite;
 use App\Actions\Site\Deploy;
 use App\Actions\Site\DisableSsl;
 use App\Actions\Site\EnableSsl;
+use App\Actions\Site\RetrySite;
 use App\Actions\Site\UpdateDeploymentScript;
 use App\Actions\Site\UpdateEnv;
 use App\Actions\Site\UpdateLoadBalancer;
@@ -173,6 +174,18 @@ class SiteController extends Controller
         $this->validateRoute($project, $server, $site);
 
         app(UpdateEnv::class)->update($site, $request->all());
+
+        return new SiteResource($site);
+    }
+
+    #[Post('{site}/retry', name: 'api.projects.servers.sites.retry', middleware: 'ability:write')]
+    public function retry(Project $project, Server $server, Site $site): SiteResource
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $this->validateRoute($project, $server, $site);
+
+        app(RetrySite::class)->retry($site);
 
         return new SiteResource($site);
     }

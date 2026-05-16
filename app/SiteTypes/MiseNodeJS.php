@@ -9,7 +9,6 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\Worker;
-use App\SSH\OS\Git;
 use Illuminate\Validation\Rule;
 
 class MiseNodeJS extends MiseSiteType
@@ -136,30 +135,31 @@ class MiseNodeJS extends MiseSiteType
      */
     public function install(): void
     {
+        $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(10);
+        $this->progress(10, 'setting-up-runtime');
 
         $this->setupRuntime();
         $this->setupPackageManager();
-        $this->progress(25);
+        $this->progress(25, 'creating-vhost');
 
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(35);
+        $this->progress(35, 'deploying-ssh-key');
 
         $this->deployKey();
-        $this->progress(45);
+        $this->progress(45, 'cloning-repository');
 
-        app(Git::class)->clone($this->site);
-        $this->progress(55);
+        $this->cloneRepository();
+        $this->progress(55, 'installing-dependencies');
 
         $this->runPackageManagerInstall();
-        $this->progress(70);
+        $this->progress(70, 'building');
 
         $this->runPackageManagerBuild();
-        $this->progress(85);
+        $this->progress(85, 'creating-worker');
 
         $this->createWorker();
-        $this->progress(100);
+        $this->progress(100, 'finishing');
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Http\Resources\SiteResource;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
+use App\SSH\OS\Git;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -63,9 +64,12 @@ abstract class AbstractSiteType implements SiteType
         return null;
     }
 
-    protected function progress(int $percentage): void
+    protected function progress(int $percentage, ?string $step = null): void
     {
         $this->site->progress = $percentage;
+        if ($step !== null) {
+            $this->site->progress_step = $step;
+        }
         $this->site->save();
 
         SocketEvent::dispatch(new SocketEventDTO(
@@ -81,6 +85,10 @@ abstract class AbstractSiteType implements SiteType
      */
     protected function deployKey(): void
     {
+        if ($this->site->ssh_key && ! empty($this->site->type_data['deploy_key_id'])) {
+            return;
+        }
+
         $os = $this->site->server->os();
         $os->generateSSHKey($this->site->getSshKeyName(), $this->site);
         $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName(), $this->site);
@@ -102,13 +110,14 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        $this->site->server->os()->createIsolatedUser(
-            $this->site->user,
-            Str::random(15),
-            $this->site->id
-        );
+        if (! $this->userExists($this->site->user)) {
+            $this->site->server->os()->createIsolatedUser(
+                $this->site->user,
+                Str::random(15),
+                $this->site->id
+            );
+        }
 
-        // Generate the FPM pool
         if ($this->site->php_version) {
             $service = $this->site->php();
             if (! $service instanceof Service) {
@@ -120,6 +129,41 @@ abstract class AbstractSiteType implements SiteType
                 $this->site->user,
                 $this->site->php_version
             );
+        }
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function cloneRepository(): void
+    {
+        if ($this->repositoryAlreadyCloned()) {
+            return;
+        }
+        app(Git::class)->clone($this->site);
+    }
+
+    protected function userExists(string $user): bool
+    {
+        try {
+            $this->site->server->ssh()->exec('id -u '.escapeshellarg($user).' >/dev/null 2>&1');
+
+            return true;
+        } catch (SSHError) {
+            return false;
+        }
+    }
+
+    protected function repositoryAlreadyCloned(): bool
+    {
+        try {
+            $this->site->server->ssh($this->site->user)->exec(
+                'test -d '.escapeshellarg($this->site->path.'/.git')
+            );
+
+            return true;
+        } catch (SSHError) {
+            return false;
         }
     }
 }

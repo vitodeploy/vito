@@ -6,7 +6,6 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\SSH\OS\Composer;
-use App\SSH\OS\Git;
 use App\Traits\NormalizesWebDirectory;
 use Illuminate\Validation\Rule;
 
@@ -92,20 +91,21 @@ class PHPSite extends AbstractSiteType
      */
     public function install(): void
     {
+        $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(10);
+        $this->progress(10, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(25);
+        $this->progress(25, 'deploying-ssh-key');
         $this->deployKey();
-        $this->progress(40);
-        app(Git::class)->clone($this->site);
-        $this->progress(60);
+        $this->progress(40, 'cloning-repository');
+        $this->cloneRepository();
+        $this->progress(60, 'restarting-php');
         $this->site->php()?->restart();
-        $this->progress(75);
+        $this->progress(75, 'installing-composer-dependencies');
         if ($this->site->type_data['composer']) {
             app(Composer::class)->installDependencies($this->site);
         }
-        $this->progress(90);
+        $this->progress(90, 'finishing');
     }
 
     public function baseCommands(): array

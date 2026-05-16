@@ -8,7 +8,6 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\Worker;
-use App\SSH\OS\Git;
 use Illuminate\Validation\Rule;
 
 class NodeJS extends AbstractSiteType
@@ -79,14 +78,15 @@ class NodeJS extends AbstractSiteType
      */
     public function install(): void
     {
+        $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(10);
+        $this->progress(10, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(20);
+        $this->progress(20, 'deploying-ssh-key');
         $this->deployKey();
-        $this->progress(30);
-        app(Git::class)->clone($this->site);
-        $this->progress(45);
+        $this->progress(30, 'cloning-repository');
+        $this->cloneRepository();
+        $this->progress(45, 'installing-npm-dependencies');
         $this->site->server->ssh($this->site->user)->exec(
             __('npm install --prefix=:path', [
                 'path' => $this->site->path,
@@ -94,7 +94,7 @@ class NodeJS extends AbstractSiteType
             'install-npm-dependencies',
             $this->site->id
         );
-        $this->progress(60);
+        $this->progress(60, 'building');
         $this->site->server->ssh($this->site->user)->exec(
             __('npm run build --prefix=:path', [
                 'path' => $this->site->path,
@@ -102,7 +102,7 @@ class NodeJS extends AbstractSiteType
             'npm-build',
             $this->site->id
         );
-        $this->progress(75);
+        $this->progress(75, 'creating-worker');
         $command = __('npm start --prefix=:path', [
             'path' => $this->site->path,
         ]);
@@ -124,7 +124,7 @@ class NodeJS extends AbstractSiteType
                 $this->site,
             );
         }
-        $this->progress(90);
+        $this->progress(90, 'finishing');
     }
 
     public function baseCommands(): array

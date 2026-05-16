@@ -39,6 +39,7 @@ class CreateJob implements ShouldQueue
     public function failed(Exception $e): void
     {
         $this->site->status = SiteStatus::INSTALLATION_FAILED;
+        $this->site->last_error = sprintf('[%s] %s', class_basename($e), $e->getMessage());
         $this->site->save();
         $this->broadcastSiteUpdate();
         ServerLog::log(

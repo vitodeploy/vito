@@ -41,6 +41,8 @@ use RuntimeException;
  * @property SiteStatus $status
  * @property int $port
  * @property int $progress
+ * @property ?string $progress_step
+ * @property ?string $last_error
  * @property string $user
  * @property bool $force_ssl
  * @property bool $ssl_enabled
@@ -89,6 +91,8 @@ class Site extends AbstractModel
         'status',
         'port',
         'progress',
+        'progress_step',
+        'last_error',
         'user',
         'force_ssl',
         'ssl_enabled',

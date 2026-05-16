@@ -1,7 +1,5 @@
 export DEBIAN_FRONTEND=noninteractive
 
-rm -rf {{ $path }}
-
-mkdir {{ $path }}
+mkdir -p {{ $path }}
 
 chmod -R 755 {{ $path }}

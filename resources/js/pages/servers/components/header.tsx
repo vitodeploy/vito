@@ -137,6 +137,9 @@ export default function ServerHeader({ server: initialServer, site: initialSite 
                   <div className="flex items-center space-x-1">
                     <LoaderCircleIcon className={cn('size-4', site.status === 'installing' ? 'text-brand animate-spin' : '')} />
                     <div>{parseInt((site.progress ?? 0).toString())}%</div>
+                    {site.progress_step && site.status === 'installing' && (
+                      <div className="text-muted-foreground hidden text-xs lg:block">{site.progress_step.replace(/-/g, ' ')}</div>
+                    )}
                     {site.status === 'installation_failed' && (
                       <Badge className="ml-1" variant={site.status_color}>
                         {site.status}
@@ -144,7 +147,7 @@ export default function ServerHeader({ server: initialServer, site: initialSite 
                     )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Status</TooltipContent>
+                <TooltipContent side="bottom">{site.progress_step ? site.progress_step.replace(/-/g, ' ') : 'Status'}</TooltipContent>
               </Tooltip>
             </>
           )}

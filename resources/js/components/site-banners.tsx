@@ -1,9 +1,87 @@
 import { Link, router } from '@inertiajs/react';
-import { ChevronDownIcon, TriangleAlertIcon } from 'lucide-react';
+import { ChevronDownIcon, OctagonAlertIcon, TriangleAlertIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Site, SiteWarning } from '@/types/site';
 import { ReactNode, useState } from 'react';
+
+function humanizeStep(step: string | null): string {
+  if (!step) return '';
+  return step.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+}
+
+function InstallationFailedBanner({ site }: { site: Site }) {
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const step = humanizeStep(site.progress_step);
+
+  return (
+    <div className="border-destructive/40 bg-destructive/5 rounded-lg border">
+      <div className="flex items-start gap-4 px-4 py-3">
+        <OctagonAlertIcon className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
+        <div className="min-w-0 flex-1 text-sm">
+          <p className="font-medium">Site installation failed{step ? ` while ${step.toLowerCase()}` : ''}</p>
+          {site.last_error && (
+            <pre className="text-muted-foreground bg-muted/40 mt-2 max-h-40 overflow-auto rounded p-2 font-mono text-xs whitespace-pre-wrap">
+              {site.last_error}
+            </pre>
+          )}
+          <p className="text-muted-foreground mt-2">
+            You can retry the installation; steps that have already completed will be skipped. Check the logs for full details.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                Retry installation
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Retry site installation?</DialogTitle>
+                <DialogDescription>
+                  This will re-run the installation for <strong>{site.domain}</strong>. Steps that already completed (isolated user, vhost,
+                  cloned repository, deployed key) will be detected and skipped.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  disabled={submitting}
+                  onClick={() => {
+                    setSubmitting(true);
+                    router.post(
+                      route('sites.retry', { server: site.server_id, site: site.id }),
+                      {},
+                      {
+                        preserveScroll: true,
+                        onFinish: () => {
+                          setSubmitting(false);
+                          setOpen(false);
+                        },
+                      },
+                    );
+                  }}
+                >
+                  {submitting ? 'Retrying...' : 'Retry installation'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Link href={route('sites.logs', { server: site.server_id, site: site.id })} className="text-muted-foreground text-xs underline">
+            View logs
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface BannerItem {
   key: string;
@@ -28,6 +106,7 @@ function BannerRow({ item }: { item: BannerItem }) {
 export default function SiteBanners({ site }: { site: Site }) {
   const warnings: SiteWarning[] = site.warnings ?? [];
   const [open, setOpen] = useState(false);
+  const installationFailed = site.status === 'installation_failed';
 
   const pendingDomainsWarning = warnings.find((w) => w.key === 'pending_domains');
   const sslDisabledWarning = warnings.find((w) => w.key === 'ssl_disabled');
@@ -128,37 +207,48 @@ export default function SiteBanners({ site }: { site: Site }) {
     });
   }
 
-  if (items.length === 0) {
+  if (!installationFailed && items.length === 0) {
     return null;
   }
 
-  if (items.length === 1) {
+  const warningsBlock = (() => {
+    if (items.length === 0) {
+      return null;
+    }
+    if (items.length === 1) {
+      return (
+        <div className="border-warning/40 bg-warning/5 rounded-lg border">
+          <BannerRow item={items[0]} />
+        </div>
+      );
+    }
     return (
-      <div className="border-warning/40 bg-warning/5 rounded-lg border">
-        <BannerRow item={items[0]} />
-      </div>
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <div className="border-warning/40 bg-warning/5 rounded-lg border">
+          <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left">
+            <TriangleAlertIcon className="text-warning h-4 w-4 shrink-0" />
+            <span className="flex-1 text-sm font-medium">{items.length} warnings require your attention</span>
+            <ChevronDownIcon className={`text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <div className="border-warning/25 space-y-0 border-t">
+              {items.map((item, i) => (
+                <div key={item.key} className={i > 0 ? 'border-warning/25 border-t' : ''}>
+                  <BannerRow item={item} />
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
     );
-  }
+  })();
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="border-warning/40 bg-warning/5 rounded-lg border">
-        <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left">
-          <TriangleAlertIcon className="text-warning h-4 w-4 shrink-0" />
-          <span className="flex-1 text-sm font-medium">{items.length} warnings require your attention</span>
-          <ChevronDownIcon className={`text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-        </CollapsibleTrigger>
-
-        <CollapsibleContent>
-          <div className="border-warning/25 space-y-0 border-t">
-            {items.map((item, i) => (
-              <div key={item.key} className={i > 0 ? 'border-warning/25 border-t' : ''}>
-                <BannerRow item={item} />
-              </div>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </div>
-    </Collapsible>
+    <div className="flex flex-col gap-3">
+      {installationFailed && <InstallationFailedBanner site={site} />}
+      {warningsBlock}
+    </div>
   );
 }
