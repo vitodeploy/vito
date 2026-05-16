@@ -3,30 +3,46 @@
 namespace App\Actions\Ziggy;
 
 use Illuminate\Support\Facades\Cache;
+use RuntimeException;
 use Tighten\Ziggy\Ziggy;
 
-final readonly class GetZiggyRoutes
+final class GetZiggyRoutes
 {
     public const string SCRIPT_CACHE_KEY = 'ziggy.routes.script';
 
     public const string VERSION_CACHE_KEY = 'ziggy.routes.version';
 
+    private ?string $cachedScript = null;
+
+    private ?string $cachedVersion = null;
+
     public function script(): string
     {
-        if (! app()->isProduction()) {
-            return $this->buildScript();
+        if ($this->cachedScript !== null) {
+            return $this->cachedScript;
         }
 
-        return Cache::rememberForever(self::SCRIPT_CACHE_KEY, fn (): string => $this->buildScript());
+        if (! app()->isProduction()) {
+            return $this->cachedScript = $this->buildScript();
+        }
+
+        return $this->cachedScript = Cache::rememberForever(
+            self::SCRIPT_CACHE_KEY,
+            fn (): string => $this->buildScript(),
+        );
     }
 
     public function version(): string
     {
-        if (! app()->isProduction()) {
-            return substr(md5($this->script()), 0, 16);
+        if ($this->cachedVersion !== null) {
+            return $this->cachedVersion;
         }
 
-        return Cache::rememberForever(
+        if (! app()->isProduction()) {
+            return $this->cachedVersion = substr(md5($this->script()), 0, 16);
+        }
+
+        return $this->cachedVersion = Cache::rememberForever(
             self::VERSION_CACHE_KEY,
             fn (): string => substr(md5($this->script()), 0, 16),
         );
@@ -46,7 +62,12 @@ final readonly class GetZiggyRoutes
     private function buildScript(): string
     {
         $payload = (new Ziggy)->toJson();
-        $routeFunction = file_get_contents(base_path('vendor/tightenco/ziggy/dist/route.umd.js'));
+        $routeFunctionPath = base_path('vendor/tightenco/ziggy/dist/route.umd.js');
+        $routeFunction = file_get_contents($routeFunctionPath);
+
+        if ($routeFunction === false) {
+            throw new RuntimeException("Failed to read Ziggy route function from {$routeFunctionPath}");
+        }
 
         return "window.Ziggy={$payload};{$routeFunction}";
     }

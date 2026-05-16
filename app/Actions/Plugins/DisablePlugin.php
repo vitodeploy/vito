@@ -44,6 +44,7 @@ final readonly class DisablePlugin
         $this->cache->clear();
 
         GetBootstrap::forgetVersion();
-        SocketEvent::dispatch(new SocketEventDTO(0, 'bootstrap.invalidated', ['version' => app(GetBootstrap::class)->version()]));
+        $newVersion = app(GetBootstrap::class)->computeVersion();
+        SocketEvent::dispatch(new SocketEventDTO(0, 'bootstrap.invalidated', ['version' => $newVersion]));
     }
 }

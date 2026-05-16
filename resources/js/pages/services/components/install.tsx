@@ -1,7 +1,6 @@
 import React, { FormEvent, ReactNode, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { Server } from '@/types/server';
-import { SharedData } from '@/types';
 import {
   Dialog,
   DialogClose,
@@ -23,11 +22,7 @@ import { cn } from '@/lib/utils';
 import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function InstallService({ name, children }: { name?: string; children: ReactNode }) {
-  const page = usePage<
-    {
-      server: Server;
-    } & SharedData
-  >();
+  const page = usePage<{ server: Server }>();
   const configs = useConfigs()!;
 
   const [open, setOpen] = useState(false);

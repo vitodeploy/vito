@@ -70,7 +70,7 @@ export default function ConnectStorageProvider({
         }
       });
     }
-  }, [form.data.provider]);
+  }, [form.data.provider, configs]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

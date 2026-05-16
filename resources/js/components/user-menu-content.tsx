@@ -5,6 +5,7 @@ import { type User } from '@/types/user';
 import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import AppearanceToggleTab from '@/components/appearance-tabs';
+import { useBootstrapStore } from '@/stores/bootstrap-store';
 
 interface UserMenuContentProps {
   user: User;
@@ -16,6 +17,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
   const handleLogout = () => {
     cleanup();
     router.flushAll();
+    useBootstrapStore.getState().clear();
   };
 
   return (

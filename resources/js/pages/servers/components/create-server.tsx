@@ -42,6 +42,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type CreateServerForm = {
   provider: string;
@@ -287,12 +288,17 @@ export default function CreateServer({
 
   const [copySuccess, setCopySuccess] = useState(false);
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(publicKeyText).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 2000);
-    });
+    navigator.clipboard.writeText(publicKeyText).then(
+      () => {
+        setCopySuccess(true);
+        setTimeout(() => {
+          setCopySuccess(false);
+        }, 2000);
+      },
+      () => {
+        toast.error('Failed to copy to clipboard');
+      },
+    );
   };
 
   const [serverProviders, setServerProviders] = useState<ServerProvider[]>([]);

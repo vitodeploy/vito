@@ -102,7 +102,7 @@ export default function CreateSite({
         }
       });
     }
-  }, [form.data.type]);
+  }, [form.data.type, configs]);
 
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {

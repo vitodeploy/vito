@@ -11,6 +11,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { type SocketEventData, useSocketEvents, useSocketListener } from '@/hooks/use-socket-events';
 import { useBootstrapStore } from '@/stores/bootstrap-store';
+import { Button } from '@/components/ui/button';
+import { AlertCircleIcon } from 'lucide-react';
 
 export default function Layout({
   children,
@@ -25,12 +27,20 @@ export default function Layout({
   const page = usePage<SharedData>();
   const { status: socketStatus, reconnect: socketReconnect } = useSocketEvents();
   const syncBootstrap = useBootstrapStore((s) => s.syncWithServerVersion);
-  const bootstrapReady = useBootstrapStore((s) => s.configs !== null);
+  const fetchBootstrap = useBootstrapStore((s) => s.fetch);
+  const bootstrapConfigsLoaded = useBootstrapStore((s) => s.configs !== null);
+  const bootstrapStatus = useBootstrapStore((s) => s.status);
   const serverBootstrapVersion = page.props.bootstrap_version;
 
   useEffect(() => {
     syncBootstrap(serverBootstrapVersion);
   }, [serverBootstrapVersion, syncBootstrap]);
+
+  useEffect(() => {
+    if (socketStatus === 'connected' && useBootstrapStore.getState().status === 'error') {
+      syncBootstrap(serverBootstrapVersion);
+    }
+  }, [socketStatus, serverBootstrapVersion, syncBootstrap]);
 
   useSocketListener(
     useCallback(
@@ -60,6 +70,8 @@ export default function Layout({
 
   const [queryClient] = useState(() => new QueryClient());
 
+  const showBootstrapError = bootstrapStatus === 'error' && !bootstrapConfigsLoaded;
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -74,7 +86,24 @@ export default function Layout({
                 </div>
               </div>
             )}
-            <div className="flex flex-1 flex-col">{bootstrapReady ? children : null}</div>
+            <div className="flex flex-1 flex-col">
+              {showBootstrapError ? (
+                <div className="flex flex-1 items-center justify-center p-6">
+                  <div className="flex max-w-md flex-col items-center gap-4 text-center">
+                    <AlertCircleIcon className="text-destructive size-8" />
+                    <div>
+                      <h2 className="text-lg font-semibold">Failed to load application data</h2>
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        We couldn't reach the server to load configuration. Check your connection and try again.
+                      </p>
+                    </div>
+                    <Button onClick={() => fetchBootstrap()}>Retry</Button>
+                  </div>
+                </div>
+              ) : bootstrapConfigsLoaded ? (
+                children
+              ) : null}
+            </div>
             <Toaster richColors position="bottom-center" />
           </SidebarInset>
         </SidebarProvider>

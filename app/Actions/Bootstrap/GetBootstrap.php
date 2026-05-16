@@ -4,9 +4,14 @@ namespace App\Actions\Bootstrap;
 
 use Illuminate\Support\Facades\Cache;
 
-final readonly class GetBootstrap
+final class GetBootstrap
 {
     public const string VERSION_CACHE_KEY = 'bootstrap.version';
+
+    /** @var array<string, mixed>|null */
+    private ?array $cachedConfigs = null;
+
+    private ?string $cachedPublicKeyText = null;
 
     /**
      * @return array{
@@ -17,22 +22,34 @@ final readonly class GetBootstrap
      */
     public function handle(): array
     {
-        $configs = $this->configs();
-        $publicKeyText = $this->publicKeyText();
-
         return [
             'version' => $this->version(),
-            'configs' => $configs,
-            'public_key_text' => $publicKeyText,
+            'configs' => $this->configs(),
+            'public_key_text' => $this->publicKeyText(),
         ];
     }
 
     public function version(): string
     {
+        if (! app()->isProduction()) {
+            return $this->computeVersion();
+        }
+
         return Cache::rememberForever(
             self::VERSION_CACHE_KEY,
-            fn (): string => substr(md5(serialize($this->configs()).'|'.$this->publicKeyText()), 0, 16),
+            fn (): string => $this->computeVersion(),
         );
+    }
+
+    /**
+     * Compute the version directly from current in-memory config without
+     * touching the cache. Used by plugin lifecycle Actions immediately after
+     * mutating the catalogue, so the broadcast payload reflects this request's
+     * fresh state instead of a value a concurrent request may have re-cached.
+     */
+    public function computeVersion(): string
+    {
+        return substr(md5(serialize($this->configs()).'|'.$this->publicKeyText()), 0, 16);
     }
 
     public static function forgetVersion(): void
@@ -45,7 +62,7 @@ final readonly class GetBootstrap
      */
     private function configs(): array
     {
-        return [
+        return $this->cachedConfigs ??= [
             'operating_systems' => config('core.operating_systems'),
             'colors' => config('core.colors'),
             'cronjob_intervals' => config('core.cronjob_intervals'),
@@ -76,6 +93,6 @@ final readonly class GetBootstrap
 
     private function publicKeyText(): string
     {
-        return __('servers.create.public_key_text', ['public_key' => get_public_key_content()]);
+        return $this->cachedPublicKeyText ??= __('servers.create.public_key_text', ['public_key' => get_public_key_content()]);
     }
 }
