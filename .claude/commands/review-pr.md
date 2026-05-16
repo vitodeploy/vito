@@ -33,18 +33,25 @@ Compute the merge base and write a per-domain diff file under `/tmp/vito-review-
 mkdir -p /tmp/vito-review-$$
 BASE=$(git merge-base HEAD "origin/$TARGET" 2>/dev/null || git merge-base HEAD "$TARGET")
 
-# Changed file lists
-git diff --name-only "$BASE"...HEAD -- '*.php'                          > /tmp/vito-review-$$/php.files
+# Changed file lists — note: php-laravel scope includes Blade SSH templates and
+# OpenAPI YAML because both are part of the PHP/Laravel surface even though
+# they aren't .php files.
+git diff --name-only "$BASE"...HEAD -- '*.php' 'resources/views/ssh/**/*.blade.php' 'public/api-docs/openapi/**/*.yaml' > /tmp/vito-review-$$/php.files
 git diff --name-only "$BASE"...HEAD -- '*.ts' '*.tsx' '*.css'           > /tmp/vito-review-$$/fe.files
-git diff --name-only "$BASE"...HEAD -- '*.php' '*.ts' '*.tsx' '*.blade.php' > /tmp/vito-review-$$/sec.files
+git diff --name-only "$BASE"...HEAD -- '*.php' '*.ts' '*.tsx' '*.blade.php' 'public/api-docs/openapi/**/*.yaml' > /tmp/vito-review-$$/sec.files
 
 # Diffs (capped to keep agents focused — large PRs trim oldest hunks)
-git diff --no-color "$BASE"...HEAD -- '*.php'                           > /tmp/vito-review-$$/php.diff
+git diff --no-color "$BASE"...HEAD -- '*.php' 'resources/views/ssh/**/*.blade.php' 'public/api-docs/openapi/**/*.yaml' > /tmp/vito-review-$$/php.diff
 git diff --no-color "$BASE"...HEAD -- '*.ts' '*.tsx' '*.css'            > /tmp/vito-review-$$/fe.diff
-git diff --no-color "$BASE"...HEAD -- '*.php' '*.ts' '*.tsx' '*.blade.php' > /tmp/vito-review-$$/sec.diff
+git diff --no-color "$BASE"...HEAD -- '*.php' '*.ts' '*.tsx' '*.blade.php' 'public/api-docs/openapi/**/*.yaml' > /tmp/vito-review-$$/sec.diff
+
+# Sibling context: list every directory touched by the diff so the agents
+# can grep siblings within those dirs without having to discover them.
+# This is the input that powers cross-sibling consistency checks.
+git diff --name-only "$BASE"...HEAD | xargs -n1 dirname 2>/dev/null | sort -u > /tmp/vito-review-$$/touched.dirs
 ```
 
-Print a short summary to the user: target branch, merge base SHA (first 8 chars), and counts per domain (e.g. `12 PHP files, 5 frontend files, 14 files in scope for security`).
+Print a short summary to the user: target branch, merge base SHA (first 8 chars), counts per domain, and the number of touched directories (e.g. `12 PHP files, 5 frontend files, 14 files in scope for security; 8 touched dirs`).
 
 If **all three** file lists are empty, stop and tell the user there's nothing to review.
 
@@ -60,8 +67,10 @@ Each agent prompt must include:
 
 - The target branch and merge base SHA.
 - The path to its `.files` and `.diff` files (e.g. `/tmp/vito-review-$$/php.diff`).
+- The path to `/tmp/vito-review-$$/touched.dirs` — the agent is required to read **at least one untouched sibling** from each touched directory before reporting, so cross-sibling consistency checks have real reference points.
 - An instruction: "Read the relevant `.github/instructions/*.md` file before reviewing. Review only the changed hunks. Output in the exact markdown format defined in your agent spec."
-- An instruction to keep findings tightly scoped to changed lines.
+- An instruction to keep findings tightly scoped to changed lines, **except** for Cross-sibling / Cross-component consistency findings, which must cite the sibling file(s) they're comparing against.
+- An explicit reminder: "Surface design-fragility and defense-in-depth issues at Low / Nit severity. Today-it-works isn't the bar — `Object.values(errors)[0]`, `class_basename($e)` in user-visible strings, default-arg side-effects, and internal-only fields in `$fillable` are all worth flagging even when no current caller is affected."
 
 ## Step 4 — Consolidate the findings
 
