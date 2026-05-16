@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SiteStatus;
+use App\Exceptions\FailedToDeployGitKey;
 use App\Facades\SSH;
 use App\Jobs\Site\CreateJob;
 use App\Models\Site;
@@ -98,7 +99,7 @@ class RetrySiteTest extends TestCase
         ]);
 
         $job = new CreateJob($site);
-        $job->failed(new \App\Exceptions\FailedToDeployGitKey('GitHub returned full key payload {"key": "ssh-rsa AAAA..."}'));
+        $job->failed(new FailedToDeployGitKey('GitHub returned full key payload {"key": "ssh-rsa AAAA..."}'));
 
         $site->refresh();
         $this->assertNotNull($site->last_error);
