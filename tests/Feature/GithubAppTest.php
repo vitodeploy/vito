@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\GithubApp;
 use App\Models\SourceControl;
 use App\Models\User;
+use App\SiteTypes\Laravel;
 use App\SourceControlProviders\GithubApp as GithubAppProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -276,6 +277,80 @@ class GithubAppTest extends TestCase
         $sc->refresh();
         $this->assertSame('acme', $sc->profile);
         $this->assertNull($sc->project_id);
+    }
+
+    public function test_cannot_create_site_with_github_app_source_control(): void
+    {
+        GithubApp::factory()->create();
+        $sc = SourceControl::factory()->githubApp()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->post(route('sites.store', ['server' => $this->server]), [
+                'type' => Laravel::id(),
+                'domain' => 'example.com',
+                'php_version' => '8.2',
+                'web_directory' => 'public',
+                'repository' => 'test/test',
+                'branch' => 'main',
+                'composer' => true,
+                'user' => 'example',
+                'source_control' => $sc->id,
+            ])
+            ->assertSessionHasErrors('source_control');
+    }
+
+    public function test_cannot_update_site_to_use_github_app_source_control(): void
+    {
+        GithubApp::factory()->create();
+        $sc = SourceControl::factory()->githubApp()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->patch(route('site-settings.update-source-control', ['server' => $this->server, 'site' => $this->site]), [
+                'source_control' => $sc->id,
+            ])
+            ->assertSessionHasErrors('source_control');
+    }
+
+    public function test_cannot_remove_github_app_when_trashed_source_control_still_has_sites(): void
+    {
+        GithubApp::factory()->create();
+
+        $sc = SourceControl::factory()->githubApp()->create([
+            'user_id' => $this->admin->id,
+            'external_identifier' => '999',
+        ]);
+        $this->site->update(['source_control_id' => $sc->id]);
+        $sc->delete();
+
+        $this->actingAs($this->admin)
+            ->from(route('github-app'))
+            ->delete(route('github-app.destroy'))
+            ->assertSessionHasErrors('github_app');
+
+        $this->assertDatabaseCount('github_app', 1);
+        $this->assertDatabaseHas('source_controls', ['id' => $sc->id]);
+    }
+
+    public function test_remove_github_app_force_deletes_trashed_source_controls(): void
+    {
+        GithubApp::factory()->create();
+
+        $sc = SourceControl::factory()->githubApp()->create([
+            'user_id' => $this->admin->id,
+            'external_identifier' => '888',
+        ]);
+        $sc->delete();
+
+        $this->actingAs($this->admin)
+            ->delete(route('github-app.destroy'))
+            ->assertRedirect(route('github-app'));
+
+        $this->assertDatabaseMissing('source_controls', ['id' => $sc->id]);
+        $this->assertDatabaseCount('github_app', 0);
     }
 
     public function test_webhook_rejects_bad_signature(): void

@@ -168,6 +168,8 @@ class GithubAppController extends Controller
             ],
             'redirect_url' => route('github-app.manifest-callback'),
             'callback_urls' => [route('github-app.install-callback')],
+            'setup_url' => route('github-app.install-callback'),
+            'setup_on_update' => true,
             'public' => true,
             'default_permissions' => [
                 'contents' => 'read',
@@ -191,6 +193,7 @@ class GithubAppController extends Controller
             || str_ends_with($host, '.local')
             || str_starts_with($host, '127.')
             || str_starts_with($host, '192.168.')
-            || str_starts_with($host, '10.');
+            || str_starts_with($host, '10.')
+            || preg_match('/^172\.(1[6-9]|2[0-9]|3[01])\./', $host) === 1;
     }
 }

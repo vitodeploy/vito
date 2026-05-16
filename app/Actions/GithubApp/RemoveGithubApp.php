@@ -12,6 +12,7 @@ class RemoveGithubApp
     public function remove(): void
     {
         $hasSites = SourceControl::query()
+            ->withTrashed()
             ->where('provider', SourceControl::PROVIDER_GITHUB_APP)
             ->whereHas('sites')
             ->exists();
@@ -24,6 +25,7 @@ class RemoveGithubApp
 
         DB::transaction(function (): void {
             SourceControl::query()
+                ->withTrashed()
                 ->where('provider', SourceControl::PROVIDER_GITHUB_APP)
                 ->get()
                 ->each(fn (SourceControl $sc) => $sc->forceDelete());

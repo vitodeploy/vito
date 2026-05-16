@@ -253,6 +253,11 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
                 Where can this GitHub App be installed?: <strong>Any account</strong> (required for installing on orgs)
               </li>
             </ul>
+            <p className="text-muted-foreground pt-1 text-xs">
+              <strong>Installation</strong> and <strong>installation repositories</strong> events are delivered automatically to every GitHub App with
+              a webhook URL — they aren&apos;t in the &ldquo;Subscribe to events&rdquo; list and don&apos;t need to be selected. Vito uses these to
+              keep installed accounts and repositories in sync.
+            </p>
           </div>
 
           <p className="text-muted-foreground text-sm">

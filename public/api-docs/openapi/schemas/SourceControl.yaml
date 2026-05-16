@@ -20,6 +20,30 @@ properties:
   provider:
     type: string
     example: 'github'
+  external_identifier:
+    type: string
+    nullable: true
+    description: 'Provider-specific external identifier (e.g. GitHub App installation ID).'
+    example: '12345678'
+  github_app:
+    type: object
+    nullable: true
+    description: 'Present only when provider is "github-app". Contains metadata about the GitHub App installation.'
+    properties:
+      account_login:
+        type: string
+        nullable: true
+        example: 'acme-org'
+      account_type:
+        type: string
+        nullable: true
+        description: 'GitHub account type, e.g. "User" or "Organization".'
+        example: 'Organization'
+      html_url:
+        type: string
+        nullable: true
+        format: uri
+        example: 'https://github.com/organizations/acme-org/settings/installations/12345678'
   created_at:
     type: string
     format: date-time

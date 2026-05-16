@@ -5,6 +5,7 @@ namespace App\Actions\GithubApp;
 use App\Models\GithubApp;
 use App\Models\SourceControl;
 use App\SourceControlProviders\GithubApp as GithubAppProvider;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
@@ -60,7 +61,10 @@ class SyncGithubAppInstallations
 
         $removed = 0;
         foreach ($stale as $sourceControl) {
+            $installationId = (int) $sourceControl->external_identifier;
             $sourceControl->delete();
+            Cache::forget("github_app_token_{$installationId}");
+            Cache::forget("github_app_repos_{$installationId}");
             $removed++;
         }
 

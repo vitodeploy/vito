@@ -5,6 +5,7 @@ namespace App\SiteTypes;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use App\Models\SourceControl;
 use App\SSH\OS\Composer;
 use App\SSH\OS\Git;
 use App\Traits\NormalizesWebDirectory;
@@ -44,10 +45,7 @@ class PHPSite extends AbstractSiteType
                 'required',
                 Rule::in($this->site->server->installedPHPVersions()),
             ],
-            'source_control' => [
-                'required',
-                Rule::exists('source_controls', 'id'),
-            ],
+            'source_control' => SourceControl::siteValidationRules(),
             'web_directory' => [
                 'nullable',
                 'string',

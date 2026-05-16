@@ -69,7 +69,7 @@ class CreateGithubAppManually
 
     private function extractSlug(string $htmlUrl): ?string
     {
-        if (! preg_match('#^https?://github\.com/apps/([A-Za-z0-9._-]+)/?$#', $htmlUrl, $m)) {
+        if (! preg_match('#^https://github\.com/apps/([A-Za-z0-9._-]+)/?$#', $htmlUrl, $m)) {
             return null;
         }
 
