@@ -117,13 +117,11 @@ export interface SharedData {
   demo: boolean;
   quote: { message: string; author: string };
   auth: Auth;
-  ziggy: Config & { location: string };
-  configs: Configs;
-  server_sites?: Site[];
+  ziggy?: Config & { location: string };
   server?: Server;
   site?: Site;
-  public_key_text: string;
   csrf_token: string;
+  bootstrap_version: string;
   flash?: {
     status: string;
     success: string;

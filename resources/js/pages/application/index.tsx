@@ -7,21 +7,14 @@ import ServerLayout from '@/layouts/server/layout';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
-import { DataTable } from '@/components/data-table';
-import { columns } from '../server-logs/components/columns';
+import Logs from '@/pages/server-logs/components/logs';
 import { Server } from '@/types/server';
-import { PaginatedData } from '@/types';
-import { ServerLog } from '@/types/server-log';
-import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Application() {
   const page = usePage<{
     server: Server;
     site: Site;
-    logs: PaginatedData<ServerLog>;
   }>();
-
-  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log');
 
   siteHelper.storeSite(page.props.site);
 
@@ -35,7 +28,7 @@ export default function Application() {
             <Heading title="Installing site" description="Your site is being installed. Here you can see the logs" />
           </HeaderContainer>
 
-          <DataTable columns={columns} paginatedData={logs} />
+          <Logs server={page.props.server} site={page.props.site} />
         </Container>
       </ServerLayout>
     );

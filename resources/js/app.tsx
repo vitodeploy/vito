@@ -4,9 +4,12 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import { useBootstrapStore } from './stores/bootstrap-store';
 import './vito-table-setup';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Vito';
+
+useBootstrapStore.getState().hydrateFromCache();
 
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,

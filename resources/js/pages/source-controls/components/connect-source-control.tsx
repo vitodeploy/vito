@@ -10,17 +10,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { FormEventHandler, ReactNode, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { SharedData } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 type SourceControlForm = {
   provider: string;
@@ -39,7 +39,7 @@ export default function ConnectSourceControl({
 }) {
   const [open, setOpen] = useState(false);
 
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
 
   const form = useForm<Required<SourceControlForm>>({
     provider: defaultProvider || 'github',
@@ -60,7 +60,7 @@ export default function ConnectSourceControl({
   };
 
   useEffect(() => {
-    const providerConfig = page.props.configs.source_control.providers[form.data.provider];
+    const providerConfig = configs.source_control.providers[form.data.provider];
     if (providerConfig?.form) {
       providerConfig.form.forEach((field: DynamicFieldConfig) => {
         /* @ts-expect-error dynamic types */
@@ -96,7 +96,7 @@ export default function ConnectSourceControl({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(page.props.configs.source_control.providers).map(([key, provider]) => (
+                    {Object.entries(configs.source_control.providers).map(([key, provider]) => (
                       <SelectItem key={key} value={key}>
                         {provider.label}
                       </SelectItem>
@@ -111,7 +111,7 @@ export default function ConnectSourceControl({
               <Input type="text" name="name" id="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
               <InputError message={form.errors.name} />
             </FormField>
-            {page.props.configs.source_control.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
+            {configs.source_control.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
               <DynamicField
                 key={`field-${field.name}`}
                 /*@ts-expect-error dynamic types*/

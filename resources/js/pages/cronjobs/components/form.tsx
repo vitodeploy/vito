@@ -21,6 +21,7 @@ import { CronJob } from '@/types/cronjob';
 import { SharedData } from '@/types';
 import { Server } from '@/types/server';
 import { Site } from '@/types/site';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function CronJobForm({
   serverId,
@@ -34,6 +35,7 @@ export default function CronJobForm({
   children: ReactNode;
 }) {
   const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }> }>();
+  const configs = useConfigs()!;
   const [open, setOpen] = useState(false);
   const form = useForm<{
     name: string;
@@ -46,7 +48,7 @@ export default function CronJobForm({
     name: cronJob?.name || '',
     command: cronJob?.command || '',
     user: cronJob?.user || '',
-    frequency: cronJob ? (page.props.configs.cronjob_intervals[cronJob.frequency] ? cronJob.frequency : 'custom') : '',
+    frequency: cronJob ? (configs.cronjob_intervals[cronJob.frequency] ? cronJob.frequency : 'custom') : '',
     custom: cronJob?.frequency || '',
     site_id: cronJob?.site_id?.toString() || '0',
   });
@@ -138,7 +140,7 @@ export default function CronJobForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(page.props.configs.cronjob_intervals).map(([key, value]) => (
+                    {Object.entries(configs.cronjob_intervals).map(([key, value]) => (
                       <SelectItem key={`frequency-${key}`} value={key}>
                         {value}
                       </SelectItem>

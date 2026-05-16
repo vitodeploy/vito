@@ -1,15 +1,16 @@
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppHeader } from '@/components/app-header';
 import { type BreadcrumbItem, NavItem, SharedData } from '@/types';
-import { type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { useSocketEvents } from '@/hooks/use-socket-events';
+import { type SocketEventData, useSocketEvents, useSocketListener } from '@/hooks/use-socket-events';
+import { useBootstrapStore } from '@/stores/bootstrap-store';
 
 export default function Layout({
   children,
@@ -23,6 +24,24 @@ export default function Layout({
 }>) {
   const page = usePage<SharedData>();
   const { status: socketStatus, reconnect: socketReconnect } = useSocketEvents();
+  const syncBootstrap = useBootstrapStore((s) => s.syncWithServerVersion);
+  const bootstrapReady = useBootstrapStore((s) => s.configs !== null);
+  const serverBootstrapVersion = page.props.bootstrap_version;
+
+  useEffect(() => {
+    syncBootstrap(serverBootstrapVersion);
+  }, [serverBootstrapVersion, syncBootstrap]);
+
+  useSocketListener(
+    useCallback(
+      (event: SocketEventData) => {
+        if (event.type === 'bootstrap.invalidated' && typeof event.data?.version === 'string') {
+          syncBootstrap(event.data.version);
+        }
+      },
+      [syncBootstrap],
+    ),
+  );
 
   useEffect(() => {
     if (page.props.flash && page.props.flash.success) {
@@ -55,7 +74,7 @@ export default function Layout({
                 </div>
               </div>
             )}
-            <div className="flex flex-1 flex-col">{children}</div>
+            <div className="flex flex-1 flex-col">{bootstrapReady ? children : null}</div>
             <Toaster richColors position="bottom-center" />
           </SidebarInset>
         </SidebarProvider>

@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { LoaderCircle, HelpCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
-import type { SharedData } from '@/types';
+import { useConfigs } from '@/stores/bootstrap-store';
 import SourceControlSelect from '@/pages/source-controls/components/source-control-select';
 import { Server } from '@/types/server';
 import ServerSelect from '@/pages/servers/components/server-select';
@@ -55,7 +55,7 @@ export default function CreateSite({
   onOpenChange?: (open: boolean) => void;
   children: ReactNode;
 }) {
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
   const [open, setOpen] = useState(defaultOpen || false);
   const [userManuallyEdited, setUserManuallyEdited] = useState(false);
 
@@ -89,7 +89,7 @@ export default function CreateSite({
   };
 
   useEffect(() => {
-    const typeConfig = page.props.configs.site.types[form.data.type];
+    const typeConfig = configs.site.types[form.data.type];
 
     if (typeConfig?.form) {
       typeConfig.form.forEach((field: DynamicFieldConfig) => {
@@ -252,7 +252,7 @@ export default function CreateSite({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {Object.entries(page.props.configs.site.types).map(([key, type]) => (
+                        {Object.entries(configs.site.types).map(([key, type]) => (
                           <SelectItem key={`type-${key}`} value={key}>
                             {type.label}
                           </SelectItem>
@@ -325,7 +325,7 @@ export default function CreateSite({
                   <InputError message={form.errors.user} />
                 </FormField>
 
-                {page.props.configs.site.types[form.data.type].form?.map((config) => getFormField(config))}
+                {configs.site.types[form.data.type].form?.map((config) => getFormField(config))}
               </>
             )}
           </FormFields>

@@ -75,11 +75,7 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
     if (open) {
       query.refetch();
     }
-  }, [open]);
-
-  useEffect(() => {
-    query.refetch();
-  }, [page]);
+  }, [open, page]);
 
   const toggleLog = (logId: number) => {
     setSelectedLogId((prev) => (prev === logId ? null : logId));
