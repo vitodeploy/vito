@@ -91,7 +91,6 @@ class GithubAppTest extends TestCase
         $this->actingAs($this->admin)
             ->post(route('github-app.manual'), [
                 'app_id' => 5555,
-                'app_slug' => 'manual-vito',
                 'name' => 'Manual Vito',
                 'client_id' => 'Iv1.manualclient',
                 'client_secret' => 'manualsecret',
@@ -107,16 +106,32 @@ class GithubAppTest extends TestCase
         ]);
     }
 
+    public function test_manual_creation_rejects_invalid_html_url(): void
+    {
+        $pem = $this->generatePrivateKey();
+
+        $this->actingAs($this->admin)
+            ->post(route('github-app.manual'), [
+                'app_id' => 5555,
+                'client_id' => 'x',
+                'client_secret' => 'x',
+                'webhook_secret' => 'x',
+                'private_key' => $pem,
+                'html_url' => 'https://example.com/not-an-app-url',
+            ])
+            ->assertSessionHasErrors('html_url');
+    }
+
     public function test_manual_creation_rejects_bad_private_key(): void
     {
         $this->actingAs($this->admin)
             ->post(route('github-app.manual'), [
                 'app_id' => 5555,
-                'app_slug' => 'manual-vito',
                 'client_id' => 'x',
                 'client_secret' => 'x',
                 'webhook_secret' => 'x',
                 'private_key' => 'not-a-key',
+                'html_url' => 'https://github.com/apps/manual-vito',
             ])
             ->assertSessionHasErrors('private_key');
     }

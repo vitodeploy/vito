@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import InputError from '@/components/ui/input-error';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CopyableField from '@/components/copyable-field';
 import { AlertTriangleIcon, ExternalLinkIcon, GithubIcon, LoaderCircleIcon, RefreshCcwIcon, Trash2Icon } from 'lucide-react';
 import { FormEvent } from 'react';
 import { SourceControl } from '@/types/source-control';
@@ -47,6 +48,7 @@ type ManualSetup = {
   homepage_url: string;
   callback_url: string;
   setup_url: string;
+  webhook_secret: string | null;
 };
 
 type PageProps = {
@@ -164,14 +166,33 @@ function CreateAppCard({ manifest, manualSetup }: { manifest: Manifest; manualSe
   );
 }
 
+function StepHeader({ number, title, description }: { number: number; title: string; description: string }) {
+  return (
+    <div className="space-y-0.5">
+      <div className="text-muted-foreground text-xs font-medium uppercase tracking-wider">Step {number}</div>
+      <h4 className="font-semibold">{title}</h4>
+      <p className="text-muted-foreground text-sm">{description}</p>
+    </div>
+  );
+}
+
+function ManualField({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs font-medium">{label}</Label>
+      <CopyableField value={value} />
+      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+    </div>
+  );
+}
+
 function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
   const form = useForm({
     app_id: '',
-    app_slug: '',
     name: '',
     client_id: '',
     client_secret: '',
-    webhook_secret: '',
+    webhook_secret: manualSetup.webhook_secret ?? '',
     private_key: '',
     html_url: '',
   });
@@ -185,118 +206,138 @@ function ManualSetupForm({ manualSetup }: { manualSetup: ManualSetup }) {
   };
 
   return (
-    <div className="space-y-4">
-      <Alert>
-        <AlertTitle>Step 1 — create the app on GitHub</AlertTitle>
-        <AlertDescription>
-          <div className="space-y-2">
-            <p>
-              Open{' '}
-              <a href={manualSetup.create_url} target="_blank" rel="noopener noreferrer" className="underline">
-                github.com/settings/apps/new
-              </a>{' '}
-              and fill in these fields:
-            </p>
-            <ul className="ml-5 list-disc space-y-1 text-sm">
-              <li><strong>GitHub App name:</strong> anything (e.g. Vito on your-host)</li>
-              <li><strong>Homepage URL:</strong> <code>{manualSetup.homepage_url}</code></li>
-              <li><strong>Callback URL:</strong> <code>{manualSetup.callback_url}</code></li>
-              <li><strong>Setup URL (post installation):</strong> <code>{manualSetup.setup_url}</code> — tick "Redirect on update"</li>
-              <li><strong>Webhook URL:</strong> <code>{manualSetup.webhook_url}</code> (leave Active checked)</li>
-              <li><strong>Webhook secret:</strong> generate a random string and copy it for Step 2</li>
-              <li><strong>Permissions → Repository → Contents:</strong> Read-only</li>
-              <li><strong>Permissions → Repository → Metadata:</strong> Read-only (auto-selected)</li>
-              <li><strong>Subscribe to events:</strong> Push</li>
-              <li><strong>Where can this GitHub App be installed?:</strong> "Any account" — required to install on orgs you&apos;re a member of</li>
-            </ul>
-            <p>After creating, on the app page generate a <strong>Client secret</strong>, then a <strong>Private key</strong> (downloads as a .pem file). Note the <strong>App ID</strong> from the top of the page.</p>
-          </div>
-        </AlertDescription>
-      </Alert>
+    <div className="space-y-8">
+      {/* Step 1 */}
+      <section className="space-y-4">
+        <StepHeader
+          number={1}
+          title="Create the app on GitHub"
+          description="Open the link below and copy these values into the matching fields on GitHub."
+        />
 
-      <Form id="github-app-manual" onSubmit={submit}>
-        <FormFields>
-          <div className="grid grid-cols-2 items-start gap-4">
+        <div className="space-y-6">
+          <a href={manualSetup.create_url} target="_blank" rel="noopener noreferrer" className="inline-block">
+            <Button variant="outline" size="sm">
+              <ExternalLinkIcon />
+              Open GitHub App creation page
+            </Button>
+          </a>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ManualField label="Homepage URL" value={manualSetup.homepage_url} />
+            <ManualField label="Callback URL" value={manualSetup.callback_url} />
+            <ManualField label="Setup URL (post installation)" value={manualSetup.setup_url} hint="Tick &quot;Redirect on update&quot;" />
+            <ManualField label="Webhook URL" value={manualSetup.webhook_url} hint="Leave &quot;Active&quot; checked" />
+            <div className="sm:col-span-2">
+              <ManualField
+                label="Webhook secret"
+                value={manualSetup.webhook_secret ?? ''}
+                hint="Generated for you — paste this into GitHub. The same value is pre-filled in Step 2 below."
+              />
+            </div>
+          </div>
+
+          <div className="bg-muted/40 space-y-2 rounded-md border p-3 text-sm">
+            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Permissions &amp; events</div>
+            <ul className="ml-5 list-disc space-y-1">
+              <li>Repository → Contents: <strong>Read-only</strong></li>
+              <li>Repository → Metadata: <strong>Read-only</strong> (auto-selected)</li>
+              <li>Subscribe to events: <strong>Push</strong></li>
+              <li>Where can this GitHub App be installed?: <strong>Any account</strong> (required for installing on orgs)</li>
+            </ul>
+          </div>
+
+          <p className="text-muted-foreground text-sm">
+            After saving, on the new app&apos;s settings page generate a <strong>Client secret</strong>, then scroll to <strong>Private keys</strong> and{' '}
+            <strong>Generate a private key</strong> (downloads as a .pem file). Note the <strong>App ID</strong> from the top of the page.
+          </p>
+        </div>
+      </section>
+
+      <Separator />
+
+      {/* Step 2 */}
+      <section className="space-y-4">
+        <StepHeader
+          number={2}
+          title="Paste the credentials below"
+          description="Fill in the values GitHub gave you in Step 1, then save."
+        />
+
+        <Form id="github-app-manual" onSubmit={submit}>
+          <FormFields>
+            <div className="grid grid-cols-2 items-start gap-4">
+              <FormField>
+                <Label htmlFor="app_id">App ID</Label>
+                <Input id="app_id" type="text" inputMode="numeric" value={form.data.app_id} onChange={(e) => form.setData('app_id', e.target.value)} />
+                <InputError message={form.errors.app_id} />
+              </FormField>
+              <FormField>
+                <Label htmlFor="name">Display name (optional)</Label>
+                <Input id="name" type="text" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                <InputError message={form.errors.name} />
+              </FormField>
+            </div>
             <FormField>
-              <Label htmlFor="app_id">App ID</Label>
-              <Input id="app_id" type="text" inputMode="numeric" value={form.data.app_id} onChange={(e) => form.setData('app_id', e.target.value)} />
-              <InputError message={form.errors.app_id} />
-            </FormField>
-            <FormField>
-              <Label htmlFor="app_slug">App slug</Label>
+              <Label htmlFor="html_url">App page URL</Label>
               <Input
-                id="app_slug"
+                id="html_url"
                 type="text"
-                placeholder="vito-on-your-host"
-                value={form.data.app_slug}
-                onChange={(e) => form.setData('app_slug', e.target.value)}
+                placeholder="https://github.com/apps/your-slug"
+                value={form.data.html_url}
+                onChange={(e) => form.setData('html_url', e.target.value)}
               />
-              <p className="text-muted-foreground text-xs">Lowercase, in the app's public URL (github.com/apps/&lt;slug&gt;).</p>
-              <InputError message={form.errors.app_slug} />
+              <p className="text-muted-foreground text-xs">From the address bar on the app&apos;s settings page — e.g. https://github.com/apps/vito-yourhost.</p>
+              <InputError message={form.errors.html_url} />
             </FormField>
-          </div>
-          <FormField>
-            <Label htmlFor="name">Display name (optional)</Label>
-            <Input id="name" type="text" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-            <InputError message={form.errors.name} />
-          </FormField>
-          <div className="grid grid-cols-2 items-start gap-4">
+            <div className="grid grid-cols-2 items-start gap-4">
+              <FormField>
+                <Label htmlFor="client_id">Client ID</Label>
+                <Input id="client_id" type="text" value={form.data.client_id} onChange={(e) => form.setData('client_id', e.target.value)} />
+                <InputError message={form.errors.client_id} />
+              </FormField>
+              <FormField>
+                <Label htmlFor="client_secret">Client secret</Label>
+                <Input
+                  id="client_secret"
+                  type="password"
+                  value={form.data.client_secret}
+                  onChange={(e) => form.setData('client_secret', e.target.value)}
+                />
+                <InputError message={form.errors.client_secret} />
+              </FormField>
+            </div>
             <FormField>
-              <Label htmlFor="client_id">Client ID</Label>
-              <Input id="client_id" type="text" value={form.data.client_id} onChange={(e) => form.setData('client_id', e.target.value)} />
-              <InputError message={form.errors.client_id} />
-            </FormField>
-            <FormField>
-              <Label htmlFor="client_secret">Client secret</Label>
+              <Label htmlFor="webhook_secret">Webhook secret</Label>
               <Input
-                id="client_secret"
+                id="webhook_secret"
                 type="password"
-                value={form.data.client_secret}
-                onChange={(e) => form.setData('client_secret', e.target.value)}
+                value={form.data.webhook_secret}
+                onChange={(e) => form.setData('webhook_secret', e.target.value)}
               />
-              <InputError message={form.errors.client_secret} />
+              <p className="text-muted-foreground text-xs">Pre-filled with the value from Step 1. Leave as-is unless you used something different on GitHub.</p>
+              <InputError message={form.errors.webhook_secret} />
             </FormField>
-          </div>
-          <FormField>
-            <Label htmlFor="webhook_secret">Webhook secret</Label>
-            <Input
-              id="webhook_secret"
-              type="password"
-              value={form.data.webhook_secret}
-              onChange={(e) => form.setData('webhook_secret', e.target.value)}
-            />
-            <InputError message={form.errors.webhook_secret} />
-          </FormField>
-          <FormField>
-            <Label htmlFor="private_key">Private key (PEM)</Label>
-            <Textarea
-              id="private_key"
-              rows={10}
-              className="font-mono text-xs"
-              placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;..."
-              value={form.data.private_key}
-              onChange={(e) => form.setData('private_key', e.target.value)}
-            />
-            <p className="text-muted-foreground text-xs">Paste the entire contents of the .pem file downloaded from GitHub.</p>
-            <InputError message={form.errors.private_key} />
-          </FormField>
-          <FormField>
-            <Label htmlFor="html_url">App page URL (optional)</Label>
-            <Input
-              id="html_url"
-              type="text"
-              placeholder="https://github.com/apps/your-slug"
-              value={form.data.html_url}
-              onChange={(e) => form.setData('html_url', e.target.value)}
-            />
-            <InputError message={form.errors.html_url} />
-          </FormField>
-          <Button type="submit" disabled={form.processing}>
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            Save GitHub App
-          </Button>
-        </FormFields>
-      </Form>
+            <FormField>
+              <Label htmlFor="private_key">Private key (PEM)</Label>
+              <Textarea
+                id="private_key"
+                rows={10}
+                className="font-mono text-xs"
+                placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;..."
+                value={form.data.private_key}
+                onChange={(e) => form.setData('private_key', e.target.value)}
+              />
+              <p className="text-muted-foreground text-xs">Paste the entire contents of the .pem file downloaded from GitHub.</p>
+              <InputError message={form.errors.private_key} />
+            </FormField>
+            <Button type="submit" disabled={form.processing}>
+              {form.processing && <LoaderCircleIcon className="animate-spin" />}
+              Save GitHub App
+            </Button>
+          </FormFields>
+        </Form>
+      </section>
     </div>
   );
 }

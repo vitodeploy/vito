@@ -40,6 +40,8 @@ class GithubAppController extends Controller
         $manifestJson = json_encode($this->buildManifest());
         $appUrl = rtrim((string) config('app.url'), '/');
 
+        $pendingWebhookSecret = $app ? null : $this->pendingWebhookSecret($request);
+
         return Inertia::render('github-app/index', [
             'githubApp' => $app ? [
                 'app_id' => $app->app_id,
@@ -58,6 +60,7 @@ class GithubAppController extends Controller
                 'homepage_url' => $appUrl,
                 'callback_url' => route('github-app.install-callback'),
                 'setup_url' => route('github-app.install-callback'),
+                'webhook_secret' => $pendingWebhookSecret,
             ],
             'installPath' => $app ? "https://github.com/apps/{$app->app_slug}/installations/new" : null,
             'installations' => SourceControlResource::collection($installations),
@@ -90,7 +93,20 @@ class GithubAppController extends Controller
     {
         $action->create($request->all());
 
+        $request->session()->forget('github_app_pending_webhook_secret');
+
         return to_route('github-app')->with('success', __('GitHub App configured.'));
+    }
+
+    private function pendingWebhookSecret(Request $request): string
+    {
+        $secret = $request->session()->get('github_app_pending_webhook_secret');
+        if (! is_string($secret) || $secret === '') {
+            $secret = Str::random(40);
+            $request->session()->put('github_app_pending_webhook_secret', $secret);
+        }
+
+        return $secret;
     }
 
     #[Get('/install', name: 'github-app.install')]

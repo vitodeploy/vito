@@ -21,14 +21,21 @@ class CreateGithubAppManually
 
         Validator::make($input, [
             'app_id' => ['required', 'integer'],
-            'app_slug' => ['required', 'string', 'max:255'],
             'name' => ['nullable', 'string', 'max:255'],
             'client_id' => ['required', 'string', 'max:255'],
             'client_secret' => ['required', 'string'],
             'webhook_secret' => ['required', 'string'],
             'private_key' => ['required', 'string'],
-            'html_url' => ['nullable', 'string', 'max:500'],
+            'html_url' => ['required', 'url', 'max:500'],
         ])->validate();
+
+        $htmlUrl = rtrim((string) $input['html_url'], '/');
+        $slug = $this->extractSlug($htmlUrl);
+        if ($slug === null) {
+            throw ValidationException::withMessages([
+                'html_url' => __('The app page URL must look like https://github.com/apps/<slug>.'),
+            ]);
+        }
 
         $privateKey = trim((string) $input['private_key']);
         if (! str_contains($privateKey, 'BEGIN') || ! str_contains($privateKey, 'PRIVATE KEY')) {
@@ -46,17 +53,26 @@ class CreateGithubAppManually
 
         $app = new GithubApp([
             'app_id' => (int) $input['app_id'],
-            'app_slug' => (string) $input['app_slug'],
-            'name' => (string) ($input['name'] ?? $input['app_slug']),
+            'app_slug' => $slug,
+            'name' => (string) ($input['name'] ?? $slug),
             'client_id' => (string) $input['client_id'],
             'client_secret' => (string) $input['client_secret'],
             'webhook_secret' => (string) $input['webhook_secret'],
             'private_key' => $privateKey,
-            'html_url' => $input['html_url'] ?? null,
+            'html_url' => $htmlUrl,
         ]);
 
         $app->save();
 
         return $app;
+    }
+
+    private function extractSlug(string $htmlUrl): ?string
+    {
+        if (! preg_match('#^https?://github\.com/apps/([A-Za-z0-9._-]+)/?$#', $htmlUrl, $m)) {
+            return null;
+        }
+
+        return $m[1];
     }
 }
