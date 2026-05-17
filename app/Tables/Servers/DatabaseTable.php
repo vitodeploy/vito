@@ -25,6 +25,7 @@ class DatabaseTable extends Table
             TextColumn::make('collation', 'Collation')->sortable(),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             EnumColumn::make('status', 'Status')->sortable(),
+            Column::data('id'),
             Column::data('server_id'),
             ActionsColumn::make(),
         ];

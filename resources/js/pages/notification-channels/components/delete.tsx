@@ -44,7 +44,7 @@ export default function Delete({ notificationChannel }: { notificationChannel: N
           <p>
             Are you sure you want to delete <strong>{notificationChannel.name}</strong>?
           </p>
-          <InputError message={form.errors.provider} />
+          <InputError message={Object.values(form.errors)[0]} />
         </div>
         <DialogFooter>
           <DialogClose asChild>

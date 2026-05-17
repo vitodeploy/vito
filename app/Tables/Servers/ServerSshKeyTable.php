@@ -3,6 +3,7 @@
 namespace App\Tables\Servers;
 
 use App\Models\SshKey;
+use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\DateTimeColumn;
 use Forjed\InertiaTable\Columns\TextColumn;
@@ -20,11 +21,15 @@ class ServerSshKeyTable extends Table
     {
         return [
             TextColumn::make('name', 'Name')->sortable(),
-            TextColumn::make('user', 'Owner')
-                ->value(fn (SshKey $k) => $k->user ? "{$k->user->name} ({$k->user->email})" : null)
+            TextColumn::make('owner', 'Owner')
+                ->value(fn (SshKey $k) => $k->user?->name)
                 ->fallback('-'),
-            TextColumn::make('deployment_user', 'Deployed to User')->fallback('-')->sortable(),
+            TextColumn::make('deployment_user', 'Deployed to User')
+                ->value(fn (SshKey $k) => $k->pivot->user ?? null)
+                ->fallback('-'),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
+            Column::data('id'),
+            Column::data('owner_email', fn (SshKey $k) => $k->user?->email),
             ActionsColumn::make(),
         ];
     }

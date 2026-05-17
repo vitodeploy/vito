@@ -23,12 +23,12 @@ class DnsProviderTable extends Table
             Column::make('id', 'ID')->sortable(),
             TextColumn::make('provider', 'Provider')->sortable(),
             TextColumn::make('name', 'Name')->sortable(),
-            BadgeColumn::make('scope', 'Scope')
+            BadgeColumn::make('scope_label', 'Scope')
                 ->variant('outline')
                 ->value(fn ($m) => $m->project_id === null ? 'global' : 'project')
                 ->accessor('project_id')
                 ->sortable(),
-            Column::data('project_id'),
+            Column::data('global', fn ($m) => $m->project_id === null),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             ActionsColumn::make(),
         ];

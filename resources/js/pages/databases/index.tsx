@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import SyncDatabases from '@/pages/databases/components/sync-databases';
 import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
   server: Server;
@@ -62,7 +63,7 @@ export default function Databases() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <Delete database={row as unknown as Database} />
+                  <Delete database={asRow<Database>(row, ['id', 'name', 'server_id'])} />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

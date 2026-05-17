@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuT
 import Edit from '@/pages/notification-channels/components/edit';
 import Delete from '@/pages/notification-channels/components/delete';
 import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
   notificationChannels: InertiaTableData;
@@ -43,7 +44,7 @@ export default function NotificationChannels() {
         <VitoTable
           tableData={page.props.notificationChannels}
           actions={(row: Row) => {
-            const notificationChannel = row as unknown as NotificationChannel;
+            const notificationChannel = asRow<NotificationChannel>(row, ['id', 'name', 'global']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>

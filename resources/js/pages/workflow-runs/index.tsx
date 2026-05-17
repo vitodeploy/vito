@@ -7,6 +7,7 @@ import { BreadcrumbItem } from '@/types';
 import Layout from '@/layouts/app/layout';
 import { Workflow } from '@/types/workflow';
 import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 export default function Workflows() {
   const page = usePage<{
@@ -37,14 +38,10 @@ export default function Workflows() {
 
         <VitoTable
           tableData={page.props.workflowRuns}
-          onRowClick={(row: Row) =>
-            router.visit(
-              route('workflow-runs.show', {
-                workflow: row.workflow_id as number,
-                workflowRun: row.id as number,
-              }),
-            )
-          }
+          onRowClick={(row: Row) => {
+            const r = asRow<{ id: number; workflow_id: number }>(row, ['id', 'workflow_id']);
+            router.visit(route('workflow-runs.show', { workflow: r.workflow_id, workflowRun: r.id }));
+          }}
         />
       </Container>
     </Layout>

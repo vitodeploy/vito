@@ -2,6 +2,8 @@
 
 namespace App\Tables;
 
+use App\Models\Workflow;
+use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\DateTimeColumn;
 use Forjed\InertiaTable\Columns\TextColumn;
@@ -21,6 +23,9 @@ class WorkflowTable extends Table
             TextColumn::make('name', 'Name')->sortable(),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             DateTimeColumn::make('updated_at', 'Updated at')->sortable()->toLocal(),
+            Column::data('id'),
+            // Needed by the Run modal to pre-fill the JSON inputs editor.
+            Column::data('run_inputs', fn (Workflow $w) => optional($w->getStartingNode())->inputs ?? []),
             ActionsColumn::make(),
         ];
     }

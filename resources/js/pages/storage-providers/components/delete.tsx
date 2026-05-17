@@ -44,7 +44,7 @@ export default function Delete({ storageProvider }: { storageProvider: StoragePr
           <p>
             Are you sure you want to delete <strong>{storageProvider.name}</strong>?
           </p>
-          <InputError message={form.errors.provider} />
+          <InputError message={Object.values(form.errors)[0]} />
         </div>
         <DialogFooter>
           <DialogClose asChild>

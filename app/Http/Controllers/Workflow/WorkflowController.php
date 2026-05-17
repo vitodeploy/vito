@@ -32,7 +32,7 @@ class WorkflowController extends Controller
         $this->authorize('viewAny', [Workflow::class, $user->currentProject]);
 
         return Inertia::render('workflows/index', [
-            'workflows' => WorkflowTable::make($user->currentProject->workflows())->paginate(),
+            'workflows' => WorkflowTable::make($user->currentProject->workflows())->simplePaginate(),
         ]);
     }
 

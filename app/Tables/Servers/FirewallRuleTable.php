@@ -27,6 +27,7 @@ class FirewallRuleTable extends Table
             TextColumn::make('protocol', 'Protocol')->uppercase()->sortable(),
             TextColumn::make('port', 'Port')->sortable(),
             EnumColumn::make('status', 'Status')->sortable(),
+            Column::data('id'),
             Column::data('server_id'),
             ActionsColumn::make(),
         ];

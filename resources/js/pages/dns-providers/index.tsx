@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuT
 import Edit from '@/pages/dns-providers/components/edit';
 import Delete from '@/pages/dns-providers/components/delete';
 import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
   dnsProviders: InertiaTableData;
@@ -42,7 +43,7 @@ export default function DNSProviders() {
         <VitoTable
           tableData={page.props.dnsProviders}
           actions={(row: Row) => {
-            const dnsProvider = row as unknown as DNSProvider;
+            const dnsProvider = asRow<DNSProvider>(row, ['id', 'name', 'global']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>

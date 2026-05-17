@@ -44,7 +44,7 @@ export default function Delete({ dnsProvider }: { dnsProvider: DNSProvider }) {
           <p>
             Are you sure you want to delete <strong>{dnsProvider.name}</strong>?
           </p>
-          <InputError message={form.errors.provider} />
+          <InputError message={Object.values(form.errors)[0]} />
         </div>
         <DialogFooter>
           <DialogClose asChild>

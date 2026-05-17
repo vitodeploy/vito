@@ -23,6 +23,9 @@ class WorkflowRunTable extends Table
             Column::make('id', 'ID')->sortable(),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             EnumColumn::make('status', 'Status')->sortable(),
+            // Used only by the frontend row-click to build the show route.
+            // WorkflowRunController::show re-authorizes via Policy — do not
+            // trust this value as an authorization boundary elsewhere.
             Column::data('workflow_id'),
         ];
     }

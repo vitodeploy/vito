@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuT
 import Edit from '@/pages/server-providers/components/edit';
 import Delete from '@/pages/server-providers/components/delete';
 import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
   serverProviders: InertiaTableData;
@@ -44,7 +45,7 @@ export default function ServerProviders() {
         <VitoTable
           tableData={page.props.serverProviders}
           actions={(row: Row) => {
-            const serverProvider = row as unknown as ServerProvider;
+            const serverProvider = asRow<ServerProvider>(row, ['id', 'name', 'global']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>

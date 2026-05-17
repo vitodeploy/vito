@@ -12,6 +12,7 @@ import RuleForm from '@/pages/firewall/components/form';
 import Delete from '@/pages/firewall/components/delete';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 export default function Firewall() {
   const page = usePage<{
@@ -45,7 +46,7 @@ export default function Firewall() {
         <VitoTable
           tableData={page.props.rules}
           actions={(row: Row) => {
-            const firewallRule = row as unknown as FirewallRule;
+            const firewallRule = asRow<FirewallRule>(row, ['id', 'name', 'server_id']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal={false}>

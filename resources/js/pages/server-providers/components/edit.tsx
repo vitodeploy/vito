@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,10 @@ export default function Edit({ serverProvider }: { serverProvider: ServerProvide
     name: serverProvider.name,
     global: serverProvider.global,
   });
+
+  useEffect(() => {
+    form.setData({ name: serverProvider.name, global: serverProvider.global });
+  }, [serverProvider.id, serverProvider.name, serverProvider.global, form]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -51,7 +55,12 @@ export default function Edit({ serverProvider }: { serverProvider: ServerProvide
             </FormField>
             <FormField>
               <div className="flex items-center space-x-3">
-                <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />
+                <Checkbox
+                  id="global"
+                  name="global"
+                  checked={form.data.global}
+                  onCheckedChange={(checked) => form.setData('global', Boolean(checked))}
+                />
                 <Label htmlFor="global">Is global (accessible in all projects)</Label>
               </div>
               <InputError message={form.errors.global} />

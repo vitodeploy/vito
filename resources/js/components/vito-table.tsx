@@ -1,6 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useTable, type InertiaTableData, type InertiaTableProps, type CellRenderProps } from 'inertia-table-react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { SOCKET_EVENT, type SocketEventData } from '@/stores/socket-store';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,24 @@ export function VitoTable({ tableData, children, modal, isFetching, ...props }: 
     renderCell: vitoCellRenderer,
     ...props,
   });
+
+  const realtimePrefix = (tableData.tableSettings as { realtime?: string } | undefined)?.realtime;
+  useEffect(() => {
+    if (!realtimePrefix) return;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const handler = (e: Event) => {
+      const type = (e as CustomEvent<SocketEventData>).detail?.type;
+      if (type?.startsWith(`${realtimePrefix}.`)) {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => router.reload(), 900);
+      }
+    };
+    window.addEventListener(SOCKET_EVENT, handler);
+    return () => {
+      if (timeout) clearTimeout(timeout);
+      window.removeEventListener(SOCKET_EVENT, handler);
+    };
+  }, [realtimePrefix]);
 
   const processing = isProcessing || isFetching;
 

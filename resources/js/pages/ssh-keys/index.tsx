@@ -10,6 +10,7 @@ import Delete from '@/pages/ssh-keys/components/delete';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
   sshKeys: InertiaTableData;
@@ -52,7 +53,7 @@ export default function SshKeys() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <Delete sshKey={row as unknown as SshKey} />
+                  <Delete sshKey={asRow<SshKey>(row, ['id', 'name'])} />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
