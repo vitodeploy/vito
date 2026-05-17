@@ -93,6 +93,13 @@ paths:
                   type: string
                   description: Custom URL for self-hosted instances (optional)
                   example: 'https://git.example.com'
+                ssh_port:
+                  type: integer
+                  nullable: true
+                  minimum: 1
+                  maximum: 65535
+                  description: 'SSH port used when cloning repositories. Only honoured by providers that support a custom port (Gitea, GitLab). Defaults to 22 when omitted.'
+                  example: 22
       responses:
         '201':
           description: Source control created successfully
@@ -209,6 +216,13 @@ paths:
                   type: string
                   description: Source control name
                   example: 'GitHub'
+                ssh_port:
+                  type: integer
+                  nullable: true
+                  minimum: 1
+                  maximum: 65535
+                  description: 'SSH port used when cloning repositories. Only honoured by providers that support a custom port (Gitea, GitLab).'
+                  example: 22
       responses:
         '200':
           description: Source control updated successfully

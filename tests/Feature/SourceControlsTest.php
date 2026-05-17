@@ -445,6 +445,7 @@ class SourceControlsTest extends TestCase
 
         $this->assertStringContainsString('Port 2222', $rendered);
         $this->assertStringContainsString('ssh-keyscan -T 5 -p 2222 -H gitea.example.com', $rendered);
+        $this->assertStringContainsString("alias_name='gitea.example.com-site_1'", $rendered);
     }
 
     public function test_clone_script_renders_default_port_22(): void
