@@ -55,10 +55,25 @@ class CreateJob implements ShouldQueue
         ServerLog::log(
             $this->site->server,
             'site-installation-failed',
-            $e->getMessage(),
+            $this->safeLogMessage($e),
             $this->site
         );
         Notifier::send($this->site, new SiteInstallationFailed($this->site));
+    }
+
+    /**
+     * Build a log-safe error message. Provider exceptions like FailedToDeployGitKey
+     * can carry HTTP response bodies that echo back submitted public keys, so we
+     * strip them out before persisting to ServerLog (which is readable by any
+     * project member with log access).
+     */
+    private function safeLogMessage(Exception $e): string
+    {
+        if ($e instanceof FailedToDeployGitKey) {
+            return 'Source control provider rejected the deploy key request. Provider response withheld from log to avoid leaking key material — check the provider audit log for details.';
+        }
+
+        return $e->getMessage();
     }
 
     /**

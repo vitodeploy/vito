@@ -21,10 +21,8 @@ function InstallationFailedBanner({ site }: { site: Site }) {
           <OctagonAlertIcon className="text-destructive h-4 w-4" />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p className="text-sm font-medium leading-tight">Site installation failed{step ? ` while ${step.toLowerCase()}` : ''}</p>
-          <p className="text-muted-foreground text-sm">
-            You can retry the installation; steps that have already completed will be skipped.
-          </p>
+          <p className="text-sm leading-tight font-medium">Site installation failed{step ? ` while ${step.toLowerCase()}` : ''}</p>
+          <p className="text-muted-foreground text-sm">You can retry the installation; steps that have already completed will be skipped.</p>
         </div>
       </div>
 

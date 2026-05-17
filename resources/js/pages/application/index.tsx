@@ -33,7 +33,7 @@ export default function Application() {
       <ServerLayout>
         <Head title={`${page.props.site.domain} - ${page.props.server.name}`} />
 
-        <Container className="max-w-5xl gap-6 space-y-0 flex flex-col">
+        <Container className="flex max-w-5xl flex-col gap-6 space-y-0">
           <HeaderContainer>
             <Heading
               title={failed ? 'Site installation failed' : 'Installing site'}

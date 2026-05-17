@@ -9,6 +9,7 @@ use App\Jobs\Site\CreateJob;
 use App\Models\Site;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -19,6 +20,7 @@ class RetrySiteTest extends TestCase
 
     public function test_retry_failed_site_resets_state_and_dispatches_create_job(): void
     {
+        Event::fake();
         Queue::fake();
         $this->actingAs($this->user);
 

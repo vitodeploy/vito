@@ -8,6 +8,7 @@ use App\Events\SocketEvent;
 use App\Http\Resources\SiteResource;
 use App\Jobs\Site\CreateJob;
 use App\Models\Site;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RetrySite
@@ -20,19 +21,21 @@ class RetrySite
             ]);
         }
 
-        $site->status = SiteStatus::INSTALLING;
-        $site->last_error = null;
-        $site->progress_step = null;
-        $site->progress = 0;
-        $site->save();
+        DB::transaction(function () use ($site): void {
+            $site->status = SiteStatus::INSTALLING;
+            $site->last_error = null;
+            $site->progress_step = null;
+            $site->progress = 0;
+            $site->save();
 
-        SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $site->server->project_id,
-            type: 'site.updated',
-            data: new SiteResource($site),
-        ));
+            SocketEvent::dispatch(new SocketEventDTO(
+                projectId: $site->server->project_id,
+                type: 'site.updated',
+                data: new SiteResource($site),
+            ));
 
-        dispatch(new CreateJob($site));
+            dispatch(new CreateJob($site));
+        });
 
         return $site;
     }
