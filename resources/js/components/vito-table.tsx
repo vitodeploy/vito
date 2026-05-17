@@ -36,9 +36,12 @@ function resolveHref(display: CellRenderProps['displays'][number], row: CellRend
 
 function vitoCellRenderer({ row, value, displays, defaultRender }: CellRenderProps & { defaultRender: () => ReactNode }): ReactNode {
   if (displays.length === 1 && displays[0].type === 'badge') {
+    if (value == null || value === '') {
+      return <span className="text-muted-foreground">-</span>;
+    }
     const display = displays[0];
     const color = display.color_field ? (row[display.color_field] as string) : display.variant;
-    return <Badge variant={(color ?? 'default') as 'default'}>{String(value ?? '')}</Badge>;
+    return <Badge variant={(color ?? 'default') as 'default'}>{String(value)}</Badge>;
   }
 
   if (displays.some((d) => d.type === 'link')) {

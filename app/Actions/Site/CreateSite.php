@@ -8,7 +8,6 @@ use App\Enums\SiteStatus;
 use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
-use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Jobs\Site\CreateJob;
 use App\Models\Server;
 use App\Models\Service;
@@ -89,16 +88,15 @@ class CreateSite
 
             $defaultSslMethod = $webserverHandler->defaultSslMethod();
 
-            $primaryDomain = $site->hostedDomains()->create([
+            $site->hostedDomains()->create([
                 'domain' => $site->domain,
                 'type' => HostedDomainType::PRIMARY,
                 'status' => HostedDomainStatus::CREATING,
                 'ssl_method' => $defaultSslMethod,
             ]);
 
-            $aliasDomains = [];
             foreach ($input['aliases'] ?? [] as $alias) {
-                $aliasDomains[] = $site->hostedDomains()->create([
+                $site->hostedDomains()->create([
                     'domain' => $alias,
                     'type' => HostedDomainType::ALIAS,
                     'status' => HostedDomainStatus::CREATING,
@@ -111,13 +109,8 @@ class CreateSite
 
             DB::commit();
 
-            // install site
+            // install site; CheckDomainJob is dispatched from CreateJob after install succeeds
             dispatch(new CreateJob($site))->onQueue('ssh');
-
-            dispatch(new CheckDomainJob($primaryDomain))->onQueue('ssh');
-            foreach ($aliasDomains as $aliasDomain) {
-                dispatch(new CheckDomainJob($aliasDomain))->onQueue('ssh');
-            }
 
             return $site;
         } catch (Exception $e) {

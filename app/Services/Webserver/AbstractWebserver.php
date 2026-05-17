@@ -48,7 +48,9 @@ abstract class AbstractWebserver extends AbstractService implements Webserver
 
     public function siteDefaults(): array
     {
-        return [];
+        return [
+            'ssl_enabled' => true,
+        ];
     }
 
     public function canConfigureSSL(): bool
