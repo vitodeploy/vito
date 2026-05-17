@@ -30,7 +30,6 @@ export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
 
   useEffect(() => {
     form.setData({ name: dnsProvider.name, global: dnsProvider.global });
-     
   }, [dnsProvider.id, dnsProvider.name, dnsProvider.global]);
 
   const submit = (e: FormEvent) => {
