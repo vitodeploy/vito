@@ -7,6 +7,4 @@ export interface DNSProvider {
   global: boolean;
   created_at: string;
   updated_at: string;
-
-  [key: string]: unknown;
 }

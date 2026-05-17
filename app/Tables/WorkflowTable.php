@@ -9,6 +9,10 @@ use Forjed\InertiaTable\Columns\DateTimeColumn;
 use Forjed\InertiaTable\Columns\TextColumn;
 use Forjed\InertiaTable\Table;
 
+/**
+ * `run_inputs` is shipped as hidden row data so the Run modal can pre-fill the
+ * JSON inputs editor without a second roundtrip.
+ */
 class WorkflowTable extends Table
 {
     protected function query(): void
@@ -24,8 +28,7 @@ class WorkflowTable extends Table
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             DateTimeColumn::make('updated_at', 'Updated at')->sortable()->toLocal(),
             Column::data('id'),
-            // Needed by the Run modal to pre-fill the JSON inputs editor.
-            Column::data('run_inputs', fn (Workflow $w) => optional($w->getStartingNode())->inputs ?? []),
+            Column::data('run_inputs', fn (Workflow $w) => $w->getStartingNode()?->inputs ?? []),
             ActionsColumn::make(),
         ];
     }

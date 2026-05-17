@@ -30,11 +30,14 @@ export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
 
   useEffect(() => {
     form.setData({ name: dnsProvider.name, global: dnsProvider.global });
-  }, [dnsProvider.id, dnsProvider.name, dnsProvider.global, form]);
+     
+  }, [dnsProvider.id, dnsProvider.name, dnsProvider.global]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('dns-providers.update', dnsProvider.id));
+    form.patch(route('dns-providers.update', dnsProvider.id), {
+      onSuccess: () => setOpen(false),
+    });
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -71,7 +74,7 @@ export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-dns-provider-form" disabled={form.processing} onClick={submit}>
+          <Button form="edit-dns-provider-form" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

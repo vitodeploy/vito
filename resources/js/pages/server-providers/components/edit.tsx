@@ -30,11 +30,13 @@ export default function Edit({ serverProvider }: { serverProvider: ServerProvide
 
   useEffect(() => {
     form.setData({ name: serverProvider.name, global: serverProvider.global });
-  }, [serverProvider.id, serverProvider.name, serverProvider.global, form]);
+  }, [serverProvider.id, serverProvider.name, serverProvider.global]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('server-providers.update', serverProvider.id));
+    form.patch(route('server-providers.update', serverProvider.id), {
+      onSuccess: () => setOpen(false),
+    });
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -71,7 +73,7 @@ export default function Edit({ serverProvider }: { serverProvider: ServerProvide
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-server-provider-form" disabled={form.processing} onClick={submit}>
+          <Button form="edit-server-provider-form" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

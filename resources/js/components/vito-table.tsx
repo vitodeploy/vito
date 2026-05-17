@@ -23,6 +23,11 @@ interface VitoTableProps extends Omit<InertiaTableProps, 'tableData'> {
   children?: ReactNode;
 }
 
+function getRealtimePrefix(tableData: InertiaTableData): string | undefined {
+  const value = tableData.tableSettings?.realtime;
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
 function resolveHref(display: CellRenderProps['displays'][number], row: CellRenderProps['row']): string | null {
   if (display.type !== 'link') return null;
   if (display.href_key) return row[display.href_key] as string;
@@ -66,7 +71,7 @@ export function VitoTable({ tableData, children, modal, isFetching, ...props }: 
     ...props,
   });
 
-  const realtimePrefix = (tableData.tableSettings as { realtime?: string } | undefined)?.realtime;
+  const realtimePrefix = getRealtimePrefix(tableData);
   useEffect(() => {
     if (!realtimePrefix) return;
     let timeout: ReturnType<typeof setTimeout> | undefined;

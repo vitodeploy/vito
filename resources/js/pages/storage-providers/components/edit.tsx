@@ -30,11 +30,13 @@ export default function Edit({ storageProvider }: { storageProvider: StorageProv
 
   useEffect(() => {
     form.setData({ name: storageProvider.name, global: storageProvider.global });
-  }, [storageProvider.id, storageProvider.name, storageProvider.global, form]);
+  }, [storageProvider.id, storageProvider.name, storageProvider.global]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('storage-providers.update', storageProvider.id));
+    form.patch(route('storage-providers.update', storageProvider.id), {
+      onSuccess: () => setOpen(false),
+    });
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -71,7 +73,7 @@ export default function Edit({ storageProvider }: { storageProvider: StorageProv
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-storage-provider-form" disabled={form.processing} onClick={submit}>
+          <Button form="edit-storage-provider-form" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

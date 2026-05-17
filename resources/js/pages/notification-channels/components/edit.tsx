@@ -30,11 +30,13 @@ export default function Edit({ notificationChannel }: { notificationChannel: Not
 
   useEffect(() => {
     form.setData({ name: notificationChannel.name, global: notificationChannel.global });
-  }, [notificationChannel.id, notificationChannel.name, notificationChannel.global, form]);
+  }, [notificationChannel.id, notificationChannel.name, notificationChannel.global]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.patch(route('notification-channels.update', notificationChannel.id));
+    form.patch(route('notification-channels.update', notificationChannel.id), {
+      onSuccess: () => setOpen(false),
+    });
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -71,7 +73,7 @@ export default function Edit({ notificationChannel }: { notificationChannel: Not
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-notification-channel-form" disabled={form.processing} onClick={submit}>
+          <Button form="edit-notification-channel-form" type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

@@ -15,6 +15,7 @@ import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { useState } from 'react';
 import { FirewallRule } from '@/types/firewall';
+import InputError from '@/components/ui/input-error';
 
 export default function Delete({ firewallRule }: { firewallRule: FirewallRule }) {
   const [open, setOpen] = useState(false);
@@ -36,12 +37,15 @@ export default function Delete({ firewallRule }: { firewallRule: FirewallRule })
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete firewallRule [{firewallRule.name}]</DialogTitle>
-          <DialogDescription className="sr-only">Delete firewallRule</DialogDescription>
+          <DialogTitle>Delete rule [{firewallRule.name}]</DialogTitle>
+          <DialogDescription className="sr-only">Delete firewall rule</DialogDescription>
         </DialogHeader>
-        <p className="p-4">
-          Are you sure you want to delete rule <strong>{firewallRule.name}</strong>? This action cannot be undone.
-        </p>
+        <div className="space-y-2 p-4">
+          <p>
+            Are you sure you want to delete rule <strong>{firewallRule.name}</strong>? This action cannot be undone.
+          </p>
+          <InputError message={Object.values(form.errors)[0]} />
+        </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>

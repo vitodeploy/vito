@@ -22,14 +22,14 @@ class ServerSshKeyTable extends Table
         return [
             TextColumn::make('name', 'Name')->sortable(),
             TextColumn::make('owner', 'Owner')
-                ->value(fn (SshKey $k) => $k->user?->name)
+                ->value(fn (SshKey $k) => $k->user->name)
                 ->fallback('-'),
             TextColumn::make('deployment_user', 'Deployed to User')
                 ->value(fn (SshKey $k) => $k->pivot->user ?? null)
                 ->fallback('-'),
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             Column::data('id'),
-            Column::data('owner_email', fn (SshKey $k) => $k->user?->email),
+            Column::data('owner_email', fn (SshKey $k) => $k->user->email),
             ActionsColumn::make(),
         ];
     }

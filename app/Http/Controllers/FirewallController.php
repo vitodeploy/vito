@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\FirewallRule\ManageRule;
-use App\Http\Resources\FirewallRuleResource;
 use App\Models\FirewallRule;
 use App\Models\Server;
 use App\Tables\Servers\FirewallRuleTable;

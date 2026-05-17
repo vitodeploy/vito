@@ -45,7 +45,7 @@ export default function Workflows() {
         <VitoTable
           tableData={page.props.workflows}
           actions={(row: Row) => {
-            const workflow = asRow<Workflow>(row, ['id', 'name', 'run_inputs']);
+            const workflow = asRow<Workflow>(row, ['id', 'name']);
             return (
               <div className="flex items-center justify-end">
                 <DropdownMenu modal>

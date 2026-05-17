@@ -15,6 +15,7 @@ import { LoaderCircleIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { useState } from 'react';
 import { Database } from '@/types/database';
+import InputError from '@/components/ui/input-error';
 
 export default function Delete({ database }: { database: Database }) {
   const [open, setOpen] = useState(false);
@@ -39,9 +40,12 @@ export default function Delete({ database }: { database: Database }) {
           <DialogTitle>Delete database [{database.name}]</DialogTitle>
           <DialogDescription className="sr-only">Delete database</DialogDescription>
         </DialogHeader>
-        <p className="p-4">
-          Are you sure you want to delete database <strong>{database.name}</strong>? This action cannot be undone.
-        </p>
+        <div className="space-y-2 p-4">
+          <p>
+            Are you sure you want to delete database <strong>{database.name}</strong>? This action cannot be undone.
+          </p>
+          <InputError message={Object.values(form.errors)[0]} />
+        </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
