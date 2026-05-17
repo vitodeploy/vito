@@ -56,7 +56,7 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
       form.clearErrors();
     }
     // form is a stable Inertia helper; tracking initialValues + open is sufficient
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [initialValues, open]);
 
   const submit = (e: FormEvent) => {
