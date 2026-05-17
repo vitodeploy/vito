@@ -48,7 +48,7 @@ export default function Edit({ notificationChannel }: { notificationChannel: Not
           <DialogTitle>Edit {notificationChannel.name}</DialogTitle>
           <DialogDescription className="sr-only">Edit notification channel</DialogDescription>
         </DialogHeader>
-        <Form id="edit-notification-channel-form" className="p-4" onSubmit={submit}>
+        <Form id={`edit-notification-channel-form-${notificationChannel.id}`} className="p-4" onSubmit={submit}>
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
@@ -73,7 +73,7 @@ export default function Edit({ notificationChannel }: { notificationChannel: Not
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-notification-channel-form" type="submit" disabled={form.processing}>
+          <Button form={`edit-notification-channel-form-${notificationChannel.id}`} type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

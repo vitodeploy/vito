@@ -48,7 +48,7 @@ export default function Edit({ serverProvider }: { serverProvider: ServerProvide
           <DialogTitle>Edit {serverProvider.name}</DialogTitle>
           <DialogDescription className="sr-only">Edit server provider</DialogDescription>
         </DialogHeader>
-        <Form id="edit-server-provider-form" className="p-4" onSubmit={submit}>
+        <Form id={`edit-server-provider-form-${serverProvider.id}`} className="p-4" onSubmit={submit}>
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
@@ -73,7 +73,7 @@ export default function Edit({ serverProvider }: { serverProvider: ServerProvide
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-server-provider-form" type="submit" disabled={form.processing}>
+          <Button form={`edit-server-provider-form-${serverProvider.id}`} type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

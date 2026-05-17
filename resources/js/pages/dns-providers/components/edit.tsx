@@ -48,7 +48,7 @@ export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
           <DialogTitle>Edit {dnsProvider.name}</DialogTitle>
           <DialogDescription className="sr-only">Edit DNS provider</DialogDescription>
         </DialogHeader>
-        <Form id="edit-dns-provider-form" className="p-4" onSubmit={submit}>
+        <Form id={`edit-dns-provider-form-${dnsProvider.id}`} className="p-4" onSubmit={submit}>
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
@@ -73,7 +73,7 @@ export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-dns-provider-form" type="submit" disabled={form.processing}>
+          <Button form={`edit-dns-provider-form-${dnsProvider.id}`} type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save

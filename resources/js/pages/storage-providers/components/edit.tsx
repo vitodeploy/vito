@@ -48,7 +48,7 @@ export default function Edit({ storageProvider }: { storageProvider: StorageProv
           <DialogTitle>Edit {storageProvider.name}</DialogTitle>
           <DialogDescription className="sr-only">Edit storage provider</DialogDescription>
         </DialogHeader>
-        <Form id="edit-storage-provider-form" className="p-4" onSubmit={submit}>
+        <Form id={`edit-storage-provider-form-${storageProvider.id}`} className="p-4" onSubmit={submit}>
           <FormFields>
             <FormField>
               <Label htmlFor="name">Name</Label>
@@ -73,7 +73,7 @@ export default function Edit({ storageProvider }: { storageProvider: StorageProv
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="edit-storage-provider-form" type="submit" disabled={form.processing}>
+          <Button form={`edit-storage-provider-form-${storageProvider.id}`} type="submit" disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
             Save
