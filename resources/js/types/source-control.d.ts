@@ -12,6 +12,7 @@ export interface SourceControl {
   provider: string;
   external_identifier?: string | null;
   github_app?: GithubAppDetails;
+  ssh_port?: number;
   created_at: string;
   updated_at: string;
 

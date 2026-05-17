@@ -68,6 +68,7 @@ export interface Configs {
         form?: DynamicFieldConfig[];
         connectable?: boolean;
         usable_for_sites?: boolean;
+        editable_fields?: string[];
       };
     };
   };

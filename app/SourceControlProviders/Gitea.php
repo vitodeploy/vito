@@ -38,7 +38,74 @@ class Gitea extends AbstractSourceControlProvider
                 'url:http,https',
                 'ends_with:/',
             ],
+            'ssh_port' => $this->sshPortRules(),
         ];
+    }
+
+    public function createData(array $input): array
+    {
+        return [
+            'token' => $input['token'] ?? '',
+            'ssh_port' => $this->normalizeSshPort($input['ssh_port'] ?? null),
+        ];
+    }
+
+    public function data(): array
+    {
+        $token = $this->sourceControl->access_token ?? '';
+
+        return [
+            'token' => $this->sourceControl->provider_data['token'] ?? $token,
+            'ssh_port' => (int) ($this->sourceControl->provider_data['ssh_port'] ?? 22),
+        ];
+    }
+
+    public function getSshPort(): int
+    {
+        return (int) ($this->data()['ssh_port'] ?? 22);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function editableFields(): array
+    {
+        return ['ssh_port'];
+    }
+
+    public function editRules(array $input): array
+    {
+        return [
+            'ssh_port' => $this->sshPortRules(),
+        ];
+    }
+
+    public function editData(array $input): array
+    {
+        $data = $this->sourceControl->provider_data ?? [];
+
+        if (array_key_exists('ssh_port', $input)) {
+            $data['ssh_port'] = $this->normalizeSshPort($input['ssh_port']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function sshPortRules(): array
+    {
+        return ['nullable', 'integer', 'min:1', 'max:65535'];
+    }
+
+    private function normalizeSshPort(mixed $value): int
+    {
+        if ($value === null || $value === '') {
+            return 22;
+        }
+
+        return (int) $value;
     }
 
     public function connect(): bool

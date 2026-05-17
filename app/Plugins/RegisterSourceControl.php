@@ -3,6 +3,7 @@
 namespace App\Plugins;
 
 use App\DTOs\DynamicForm;
+use App\SourceControlProviders\SourceControlProvider;
 
 class RegisterSourceControl
 {
@@ -66,12 +67,17 @@ class RegisterSourceControl
     {
         $providers = config('source-control.providers');
 
+        $editableFields = is_subclass_of($this->handler, SourceControlProvider::class)
+            ? $this->handler::editableFields()
+            : [];
+
         $providers[$this->name] = [
             'label' => $this->label,
             'handler' => $this->handler,
             'form' => $this->form ? $this->form->toArray() : [],
             'connectable' => $this->connectable,
             'usable_for_sites' => $this->usableForSites,
+            'editable_fields' => $editableFields,
         ];
 
         config(['source-control.providers' => $providers]);

@@ -61,6 +61,37 @@ abstract class AbstractSourceControlProvider implements SourceControlProvider
         return str($payload['ref'] ?? '')->after('refs/heads/')->toString();
     }
 
+    public function getSshPort(): int
+    {
+        return 22;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function editableFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<int, string>>
+     */
+    public function editRules(array $input): array
+    {
+        return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    public function editData(array $input): array
+    {
+        return $this->sourceControl->provider_data ?? [];
+    }
+
     public function getRepos(bool $useCache = true): array
     {
         return [];

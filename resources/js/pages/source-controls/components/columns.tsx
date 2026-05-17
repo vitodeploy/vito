@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { FormEvent, useState } from 'react';
@@ -23,14 +23,27 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { SharedData } from '@/types';
+import { DynamicFieldConfig } from '@/types/dynamic-field-config';
+import DynamicField from '@/components/ui/dynamic-field';
 
 function Edit({ sourceControl }: { sourceControl: SourceControl }) {
   const [open, setOpen] = useState(false);
   const isGithubApp = sourceControl.provider === 'github-app';
-  const form = useForm({
+  const page = usePage<SharedData>();
+  const providerConfig = page.props.configs.source_control.providers[sourceControl.provider];
+  const editableFields = providerConfig?.editable_fields ?? [];
+  const editableFormFields = (providerConfig?.form ?? []).filter((f: DynamicFieldConfig) => editableFields.includes(f.name));
+
+  const initialValues: Record<string, unknown> = {
     name: sourceControl.name,
     global: sourceControl.global,
-  });
+  };
+  for (const field of editableFormFields) {
+    initialValues[field.name] = sourceControl[field.name] ?? field.default ?? '';
+  }
+
+  const form = useForm<Record<string, unknown>>(initialValues);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -58,20 +71,34 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
                 type="text"
                 id="name"
                 name="name"
-                value={form.data.name}
+                value={form.data.name as string}
                 onChange={(e) => form.setData('name', e.target.value)}
                 disabled={isGithubApp}
                 readOnly={isGithubApp}
               />
               {isGithubApp && <p className="text-muted-foreground text-xs">The name is the GitHub organization and cannot be changed.</p>}
-              <InputError message={form.errors.name} />
+              <InputError message={form.errors.name as string | undefined} />
             </FormField>
+            {editableFormFields.map((field: DynamicFieldConfig) => (
+              <DynamicField
+                key={`field-${field.name}`}
+                value={form.data[field.name] as string | number | boolean | string[] | undefined}
+                onChange={(value) => form.setData(field.name, value)}
+                config={field}
+                error={form.errors[field.name] as string | undefined}
+              />
+            ))}
             <FormField>
               <div className="flex items-center space-x-3">
-                <Checkbox id="global" name="global" checked={form.data.global} onClick={() => form.setData('global', !form.data.global)} />
+                <Checkbox
+                  id="global"
+                  name="global"
+                  checked={form.data.global as boolean}
+                  onClick={() => form.setData('global', !form.data.global)}
+                />
                 <Label htmlFor="global">Is global (accessible in all projects)</Label>
               </div>
-              <InputError message={form.errors.global} />
+              <InputError message={form.errors.global as string | undefined} />
             </FormField>
           </FormFields>
         </Form>
