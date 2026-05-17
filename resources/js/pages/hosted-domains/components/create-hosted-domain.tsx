@@ -110,8 +110,8 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
                 </SelectContent>
               </Select>
               <p className="text-muted-foreground text-sm">
-                <strong>Alias</strong> serves the same site content under another domain.{' '}
-                <strong>Redirect</strong> sends visitors to the primary domain via an HTTP redirect.
+                <strong>Alias</strong> serves the same site content under another domain. <strong>Redirect</strong> sends visitors to the primary
+                domain via an HTTP redirect.
               </p>
               <InputError message={form.errors.type} />
             </FormField>
