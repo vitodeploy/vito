@@ -373,6 +373,31 @@ class SourceControlsTest extends TestCase
         $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
     }
 
+    public function test_edit_gitlab_cannot_clobber_token_via_extra_input(): void
+    {
+        Http::fake();
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Gitlab::id(),
+            'user_id' => $this->user->id,
+            'profile' => 'gitlab',
+            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+        ]);
+
+        $this->patch(route('source-controls.update', $sourceControl), [
+            'name' => 'gitlab',
+            'ssh_port' => 2222,
+            'token' => 'stolen-token',
+        ])->assertSessionDoesntHaveErrors();
+
+        $sourceControl->refresh();
+
+        $this->assertSame('original-token', $sourceControl->provider_data['token']);
+        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
+    }
+
     public function test_edit_gitea_rejects_out_of_range_ssh_port(): void
     {
         Http::fake();

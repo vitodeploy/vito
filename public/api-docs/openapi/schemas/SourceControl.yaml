@@ -44,6 +44,13 @@ properties:
         nullable: true
         format: uri
         example: 'https://github.com/organizations/acme-org/settings/installations/12345678'
+  ssh_port:
+    type: integer
+    nullable: true
+    minimum: 1
+    maximum: 65535
+    example: 22
+    description: 'SSH port used when cloning repositories. Only present for providers that support a custom port (Gitea, GitLab).'
   created_at:
     type: string
     format: date-time

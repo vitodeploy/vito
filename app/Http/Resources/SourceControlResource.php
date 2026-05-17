@@ -14,8 +14,10 @@ class SourceControlResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $provider = $this->provider();
-        $supportsSshPort = in_array('ssh_port', $provider::editableFields(), true);
+        $handler = config('source-control.providers.'.$this->provider.'.handler');
+        $supportsSshPort = is_string($handler)
+            && is_a($handler, \App\SourceControlProviders\SourceControlProvider::class, true)
+            && in_array('ssh_port', $handler::editableFields(), true);
 
         $data = [
             'id' => $this->id,
@@ -25,7 +27,7 @@ class SourceControlResource extends JsonResource
             'name' => $this->profile,
             'provider' => $this->provider,
             'external_identifier' => $this->external_identifier,
-            'ssh_port' => $this->when($supportsSshPort, fn () => $provider->getSshPort()),
+            'ssh_port' => $this->when($supportsSshPort, fn () => $this->provider()->getSshPort()),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

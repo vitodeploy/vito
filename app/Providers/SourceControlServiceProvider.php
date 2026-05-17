@@ -69,7 +69,8 @@ class SourceControlServiceProvider extends ServiceProvider
                         ->text()
                         ->label('SSH Port')
                         ->default(22)
-                        ->description('SSH port used when cloning repositories (default: 22).'),
+                        ->placeholder('22')
+                        ->description('Numeric SSH port used when cloning repositories (default: 22).'),
                 ])
             )
             ->register();
@@ -128,7 +129,8 @@ class SourceControlServiceProvider extends ServiceProvider
                         ->text()
                         ->label('SSH Port')
                         ->default(22)
-                        ->description('SSH port used when cloning repositories (default: 22).'),
+                        ->placeholder('22')
+                        ->description('Numeric SSH port used when cloning repositories (default: 22).'),
                 ])
             )
             ->register();

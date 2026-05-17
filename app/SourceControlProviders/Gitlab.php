@@ -62,7 +62,7 @@ class Gitlab extends AbstractSourceControlProvider
 
     public function getSshPort(): int
     {
-        return (int) ($this->data()['ssh_port'] ?? 22);
+        return $this->data()['ssh_port'];
     }
 
     /**
@@ -89,23 +89,6 @@ class Gitlab extends AbstractSourceControlProvider
         }
 
         return $data;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function sshPortRules(): array
-    {
-        return ['nullable', 'integer', 'min:1', 'max:65535'];
-    }
-
-    private function normalizeSshPort(mixed $value): int
-    {
-        if ($value === null || $value === '') {
-            return 22;
-        }
-
-        return (int) $value;
     }
 
     public function connect(): bool

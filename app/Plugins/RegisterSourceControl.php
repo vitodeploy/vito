@@ -67,9 +67,10 @@ class RegisterSourceControl
     {
         $providers = config('source-control.providers');
 
-        $editableFields = is_subclass_of($this->handler, SourceControlProvider::class)
-            ? $this->handler::editableFields()
-            : [];
+        $editableFields = class_exists($this->handler)
+            && is_a($this->handler, SourceControlProvider::class, true)
+                ? $this->handler::editableFields()
+                : [];
 
         $providers[$this->name] = [
             'label' => $this->label,

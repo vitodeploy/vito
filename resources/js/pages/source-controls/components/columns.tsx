@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useForm, usePage } from '@inertiajs/react';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
@@ -31,19 +31,33 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
   const [open, setOpen] = useState(false);
   const isGithubApp = sourceControl.provider === 'github-app';
   const page = usePage<SharedData>();
-  const providerConfig = page.props.configs.source_control.providers[sourceControl.provider];
-  const editableFields = providerConfig?.editable_fields ?? [];
-  const editableFormFields = (providerConfig?.form ?? []).filter((f: DynamicFieldConfig) => editableFields.includes(f.name));
+  const providerConfig = page.props.configs?.source_control?.providers?.[sourceControl.provider];
 
-  const initialValues: Record<string, unknown> = {
-    name: sourceControl.name,
-    global: sourceControl.global,
-  };
-  for (const field of editableFormFields) {
-    initialValues[field.name] = sourceControl[field.name] ?? field.default ?? '';
-  }
+  const editableFormFields = useMemo<DynamicFieldConfig[]>(() => {
+    const editableFields = providerConfig?.editable_fields ?? [];
+    return (providerConfig?.form ?? []).filter((f) => editableFields.includes(f.name));
+  }, [providerConfig]);
+
+  const initialValues = useMemo<Record<string, unknown>>(
+    () => ({
+      name: sourceControl.name,
+      global: sourceControl.global,
+      ...Object.fromEntries(editableFormFields.map((f) => [f.name, sourceControl[f.name] ?? f.default ?? null])),
+    }),
+    [sourceControl, editableFormFields],
+  );
 
   const form = useForm<Record<string, unknown>>(initialValues);
+
+  useEffect(() => {
+    if (!open) {
+      form.setDefaults(initialValues);
+      form.reset();
+      form.clearErrors();
+    }
+    // form is a stable Inertia helper; tracking initialValues + open is sufficient
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues, open]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -79,9 +93,9 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
               {isGithubApp && <p className="text-muted-foreground text-xs">The name is the GitHub organization and cannot be changed.</p>}
               <InputError message={form.errors.name as string | undefined} />
             </FormField>
-            {editableFormFields.map((field: DynamicFieldConfig) => (
+            {editableFormFields.map((field) => (
               <DynamicField
-                key={`field-${field.name}`}
+                key={field.name}
                 value={form.data[field.name] as string | number | boolean | string[] | undefined}
                 onChange={(value) => form.setData(field.name, value)}
                 config={field}
@@ -94,7 +108,7 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
                   id="global"
                   name="global"
                   checked={form.data.global as boolean}
-                  onClick={() => form.setData('global', !form.data.global)}
+                  onCheckedChange={(checked) => form.setData('global', checked === true)}
                 />
                 <Label htmlFor="global">Is global (accessible in all projects)</Label>
               </div>
