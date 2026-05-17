@@ -1,12 +1,13 @@
 import { registerTableHook, registerIcons } from 'inertia-table-react';
 import { SOCKET_EVENT } from '@/stores/socket-store';
 import type { SocketEventData } from '@/stores/socket-store';
-import { CrownIcon, CopyIcon, SignpostIcon } from 'lucide-react';
+import { CrownIcon, CopyIcon, SignpostIcon, DatabaseIcon } from 'lucide-react';
 
 registerIcons({
   crown: CrownIcon,
   copy: CopyIcon,
   signpost: SignpostIcon,
+  database: DatabaseIcon,
 });
 
 registerTableHook('realtime', ({ value, refresh }) => {

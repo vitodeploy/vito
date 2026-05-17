@@ -8,6 +8,7 @@ use App\Exceptions\SSHError;
 use App\Http\Resources\SshKeyResource;
 use App\Models\Server;
 use App\Models\SshKey;
+use App\Tables\Servers\ServerSshKeyTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -29,7 +30,7 @@ class ServerSshKeyController extends Controller
         $this->authorize('view', $server);
 
         return Inertia::render('server-ssh-keys/index', [
-            'sshKeys' => SshKeyResource::collection($server->sshKeys()->with('user')->simplePaginate(config('web.pagination_size'))),
+            'sshKeys' => ServerSshKeyTable::make($server->sshKeys())->simplePaginate(),
         ]);
     }
 

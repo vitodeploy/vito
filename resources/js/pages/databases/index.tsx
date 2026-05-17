@@ -7,15 +7,16 @@ import Heading from '@/components/heading';
 import CreateDatabase from '@/pages/databases/components/create-database';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/databases/components/columns';
-import { BookOpenIcon, PlusIcon } from 'lucide-react';
+import { VitoTable } from '@/components/vito-table';
+import Delete from '@/pages/databases/components/delete';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import SyncDatabases from '@/pages/databases/components/sync-databases';
-import { PaginatedData } from '@/types';
+import type { InertiaTableData, Row } from 'inertia-table-react';
 
 type Page = {
   server: Server;
-  databases: PaginatedData<Database>;
+  databases: InertiaTableData;
 };
 
 export default function Databases() {
@@ -49,7 +50,24 @@ export default function Databases() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.databases} />
+        <VitoTable
+          tableData={page.props.databases}
+          actions={(row: Row) => (
+            <div className="flex items-center justify-end">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreVerticalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <Delete database={row as unknown as Database} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        />
       </Container>
     </ServerLayout>
   );

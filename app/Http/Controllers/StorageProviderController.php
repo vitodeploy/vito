@@ -7,6 +7,7 @@ use App\Actions\StorageProvider\DeleteStorageProvider;
 use App\Actions\StorageProvider\EditStorageProvider;
 use App\Http\Resources\StorageProviderResource;
 use App\Models\StorageProvider;
+use App\Tables\StorageProviderTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -29,11 +30,11 @@ class StorageProviderController extends Controller
         $this->authorize('viewAny', StorageProvider::class);
 
         $user = user();
-        $storageProviders = StorageProvider::getByProjectId($user->current_project_id, $user)
-            ->simplePaginate(config('web.pagination_size'));
 
         return Inertia::render('storage-providers/index', [
-            'storageProviders' => StorageProviderResource::collection($storageProviders),
+            'storageProviders' => StorageProviderTable::make(
+                StorageProvider::getByProjectId($user->current_project_id, $user)
+            )->simplePaginate(),
         ]);
     }
 

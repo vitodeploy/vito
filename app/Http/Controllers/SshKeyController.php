@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\SshKey\CreateSshKey;
 use App\Http\Resources\SshKeyResource;
 use App\Models\SshKey;
+use App\Tables\SshKeyTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -26,7 +27,7 @@ class SshKeyController extends Controller
         $this->authorize('viewAny', SshKey::class);
 
         return Inertia::render('ssh-keys/index', [
-            'sshKeys' => SshKeyResource::collection(user()->sshKeys()->simplePaginate(config('web.pagination_size'))),
+            'sshKeys' => SshKeyTable::make(user()->sshKeys())->simplePaginate(),
         ]);
     }
 
