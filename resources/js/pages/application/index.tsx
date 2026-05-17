@@ -7,6 +7,7 @@ import ServerLayout from '@/layouts/server/layout';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
+import SiteBanners from '@/components/site-banners';
 import { DataTable } from '@/components/data-table';
 import { columns } from '../server-logs/components/columns';
 import { Server } from '@/types/server';
@@ -26,16 +27,30 @@ export default function Application() {
   siteHelper.storeSite(page.props.site);
 
   if (page.props.site.status !== 'ready') {
+    const failed = page.props.site.status === 'installation_failed';
+
     return (
       <ServerLayout>
         <Head title={`${page.props.site.domain} - ${page.props.server.name}`} />
 
-        <Container className="max-w-5xl">
+        <Container className="max-w-5xl gap-6 space-y-0 flex flex-col">
           <HeaderContainer>
-            <Heading title="Installing site" description="Your site is being installed. Here you can see the logs" />
+            <Heading
+              title={failed ? 'Site installation failed' : 'Installing site'}
+              description={
+                failed
+                  ? 'The installation did not complete. Retry from the banner below; completed steps will be skipped.'
+                  : 'Your site is being installed. Here you can see the logs'
+              }
+            />
           </HeaderContainer>
 
-          <DataTable columns={columns} paginatedData={logs} />
+          <SiteBanners site={page.props.site} />
+
+          <div className="flex flex-col gap-2">
+            <p className="text-muted-foreground text-sm font-medium">Installation logs</p>
+            <DataTable columns={columns} paginatedData={logs} />
+          </div>
         </Container>
       </ServerLayout>
     );

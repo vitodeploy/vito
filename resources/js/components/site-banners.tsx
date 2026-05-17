@@ -15,86 +15,86 @@ function InstallationFailedBanner({ site }: { site: Site }) {
   const step = humanizeStep(site.progress_step);
 
   return (
-    <div className="border-destructive/40 bg-destructive/5 rounded-lg border">
-      <div className="flex items-start gap-4 px-4 py-3">
-        <OctagonAlertIcon className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
-        <div className="flex min-w-0 flex-1 flex-col gap-2 text-sm">
-          <p className="font-medium">Site installation failed{step ? ` while ${step.toLowerCase()}` : ''}</p>
-          {site.last_error && (
-            <pre className="text-muted-foreground bg-muted/40 max-h-40 overflow-auto rounded p-2 font-mono text-xs whitespace-pre-wrap">
-              {site.last_error}
-            </pre>
-          )}
-          <p className="text-muted-foreground">
-            You can retry the installation; steps that have already completed will be skipped. Check the logs for full details.
+    <div className="border-destructive/40 bg-destructive/5 flex flex-col gap-4 rounded-lg border p-5">
+      <div className="flex items-start gap-3">
+        <div className="bg-destructive/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+          <OctagonAlertIcon className="text-destructive h-4 w-4" />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <p className="text-sm font-medium leading-tight">Site installation failed{step ? ` while ${step.toLowerCase()}` : ''}</p>
+          <p className="text-muted-foreground text-sm">
+            You can retry the installation; steps that have already completed will be skipped.
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <Dialog
-            open={open}
-            onOpenChange={(next) => {
-              setOpen(next);
-              if (!next) setSubmitError(null);
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                Retry installation
+      </div>
+
+      {site.last_error && (
+        <pre className="text-muted-foreground bg-muted/40 ml-11 max-h-40 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
+          {site.last_error}
+        </pre>
+      )}
+
+      <div className="ml-11">
+        <Dialog
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next);
+            if (!next) setSubmitError(null);
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button variant="destructive" size="sm">
+              Retry installation
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Retry site installation?</DialogTitle>
+              <DialogDescription>
+                This will re-run the installation for <strong>{site.domain}</strong>. Steps that already completed (isolated user, vhost, cloned
+                repository, deployed key) will be detected and skipped.
+              </DialogDescription>
+            </DialogHeader>
+            {submitError && <p className="text-destructive text-sm">{submitError}</p>}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
+                Cancel
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Retry site installation?</DialogTitle>
-                <DialogDescription>
-                  This will re-run the installation for <strong>{site.domain}</strong>. Steps that already completed (isolated user, vhost, cloned
-                  repository, deployed key) will be detected and skipped.
-                </DialogDescription>
-              </DialogHeader>
-              {submitError && <p className="text-destructive text-sm">{submitError}</p>}
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  disabled={submitting}
-                  onClick={() => {
-                    setSubmitting(true);
-                    setSubmitError(null);
-                    router.post(
-                      route('sites.retry', { server: site.server_id, site: site.id }),
-                      {},
-                      {
-                        preserveScroll: true,
-                        onSuccess: () => {
-                          setOpen(false);
-                        },
-                        onError: (errors) => {
-                          const first = errors && typeof errors === 'object' ? Object.values(errors)[0] : null;
-                          const message =
-                            typeof first === 'string'
-                              ? first
-                              : Array.isArray(first) && typeof first[0] === 'string'
-                                ? first[0]
-                                : 'Could not retry installation. Check the site logs.';
-                          setSubmitError(message);
-                        },
-                        onFinish: () => {
-                          setSubmitting(false);
-                        },
+              <Button
+                variant="destructive"
+                disabled={submitting}
+                onClick={() => {
+                  setSubmitting(true);
+                  setSubmitError(null);
+                  setOpen(false);
+                  router.post(
+                    route('sites.retry', { server: site.server_id, site: site.id }),
+                    {},
+                    {
+                      preserveScroll: true,
+                      onError: (errors) => {
+                        const first = errors && typeof errors === 'object' ? Object.values(errors)[0] : null;
+                        const message =
+                          typeof first === 'string'
+                            ? first
+                            : Array.isArray(first) && typeof first[0] === 'string'
+                              ? first[0]
+                              : 'Could not retry installation. Check the site logs.';
+                        setSubmitError(message);
+                        setOpen(true);
                       },
-                    );
-                  }}
-                >
-                  {submitting ? 'Retrying...' : 'Retry installation'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <Link href={route('sites.logs', { server: site.server_id, site: site.id })} className="text-muted-foreground text-xs underline">
-            View logs
-          </Link>
-        </div>
+                      onFinish: () => {
+                        setSubmitting(false);
+                      },
+                    },
+                  );
+                }}
+              >
+                {submitting ? 'Retrying...' : 'Retry installation'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
