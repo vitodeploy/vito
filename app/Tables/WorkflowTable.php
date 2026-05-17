@@ -28,7 +28,7 @@ class WorkflowTable extends Table
             DateTimeColumn::make('created_at', 'Created at')->sortable()->toLocal(),
             DateTimeColumn::make('updated_at', 'Updated at')->sortable()->toLocal(),
             Column::data('id'),
-            Column::data('run_inputs', fn (Workflow $w) => $w->getStartingNode()?->inputs ?? []),
+            Column::data('run_inputs', fn (Workflow $w) => $w->getStartingNode()->inputs ?? []),
             ActionsColumn::make(),
         ];
     }
