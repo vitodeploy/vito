@@ -11,7 +11,7 @@ class GetMatchingSslCertificates
     /**
      * Get all server-level SSL certificates that match any of the site's hosted domains.
      *
-     * @return Collection<int, array{id: int, label: string, domains: array<int, string>}>
+     * @return Collection<int, array{id: int, label: non-falsy-string, domains: array<int, string>}>
      */
     public function get(Site $site): Collection
     {
@@ -23,7 +23,7 @@ class GetMatchingSslCertificates
     /**
      * Get all server-level SSL certificates that match a specific domain.
      *
-     * @return Collection<int, array{id: int, label: string, domains: array<int, string>}>
+     * @return Collection<int, array{id: int, label: non-falsy-string, domains: array<int, string>}>
      */
     public function forDomain(Site $site, string $domain): Collection
     {
@@ -32,7 +32,7 @@ class GetMatchingSslCertificates
 
     /**
      * @param  array<int, string>  $domains
-     * @return Collection<int, array{id: int, label: string, domains: array<int, string>}>
+     * @return Collection<int, array{id: int, label: non-falsy-string, domains: array<int, string>}>
      */
     private function filterSsls(Site $site, array $domains): Collection
     {
