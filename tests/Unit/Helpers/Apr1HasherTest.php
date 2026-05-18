@@ -119,5 +119,4 @@ class Apr1HasherTest extends TestCase
         $this->assertSame(8, strlen($matches[1]));
         $this->assertSame('abcdefgh', $matches[1]);
     }
-
 }
