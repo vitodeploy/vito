@@ -6,7 +6,7 @@ if ! sudo ufw default allow outgoing; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! sudo ufw allow from 0.0.0.0/0 to any proto tcp port 22; then
+if ! sudo ufw allow from 0.0.0.0/0 to any proto tcp port {{ $sshPort }}; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
