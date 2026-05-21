@@ -16,10 +16,15 @@ class GetIsolatedUsers
             ->where('user', '!=', $server->getSshUser())
             ->get(['user'])
             ->groupBy('user')
-            ->map(fn ($group, $user) => [
-                'user' => (string) $user,
-                'sites_count' => $group->count(),
-            ])
+            ->map(function (Collection $group, string $user): array {
+                /** @var int $count */
+                $count = $group->count();
+
+                return [
+                    'user' => $user,
+                    'sites_count' => $count,
+                ];
+            })
             ->values();
     }
 }
