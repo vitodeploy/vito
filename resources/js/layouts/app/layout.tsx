@@ -45,11 +45,11 @@ export default function Layout({
   useSocketListener(
     useCallback(
       (event: SocketEventData) => {
-        if (event.type === 'bootstrap.invalidated' && typeof event.data?.version === 'string') {
-          syncBootstrap(event.data.version);
+        if (event.type === 'bootstrap.invalidated') {
+          fetchBootstrap();
         }
       },
-      [syncBootstrap],
+      [fetchBootstrap],
     ),
   );
 
