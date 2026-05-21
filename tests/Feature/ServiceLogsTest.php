@@ -170,6 +170,32 @@ class ServiceLogsTest extends TestCase
         try {
             $this->get(route('logs.services.download', ['server' => $this->server, 'key' => 'nginx:error']))
                 ->assertSuccessful();
+
+            SSH::assertExecutedContains("sudo cat '/var/log/nginx/error.log'");
+        } finally {
+            Storage::disk('local')->delete($tmpName);
+            Str::createRandomStringsNormally();
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_download_journal_source(): void
+    {
+        $this->actingAs($this->user);
+        Bus::fake();
+        Queue::fake();
+        Carbon::setTestNow(Carbon::create(2026, 1, 1, 12));
+        Str::createRandomStringsUsing(fn (int $n): string => str_repeat('a', $n));
+        SSH::fake();
+
+        $tmpName = $this->server->id.'-'.Carbon::now()->timestamp.'-aaaaaaaa-'.Str::slug('mysql:journal').'.log';
+        Storage::disk('local')->put($tmpName, 'pretend-downloaded-bytes');
+
+        try {
+            $this->get(route('logs.services.download', ['server' => $this->server, 'key' => 'mysql:journal']))
+                ->assertSuccessful();
+
+            SSH::assertExecutedContains("sudo journalctl -u 'mysql.service'");
         } finally {
             Storage::disk('local')->delete($tmpName);
             Str::createRandomStringsNormally();

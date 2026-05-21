@@ -1,1 +1,1 @@
-sudo grep -F -i -- {!! escapeshellarg($term) !!} {!! escapeshellarg($path) !!} 2>/dev/null | tail -n {{ (int) $lines }}
+sudo tail -n 100000 {!! escapeshellarg($path) !!} 2>/dev/null | grep -F -i -- {!! escapeshellarg($term) !!} | tail -n {{ (int) $lines }}

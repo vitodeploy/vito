@@ -36,22 +36,25 @@ class DownloadServiceLog
         $tmpName = $server->id.'-'.now()->timestamp.'-'.Str::random(8).'-'.Str::slug($log->key).'.log';
         $tmpPath = Storage::disk('local')->path($tmpName);
 
-        if ($log->source === ServiceLog::SOURCE_JOURNAL) {
-            $remoteTmp = '/tmp/vito-'.Str::random(12).'.log';
-            try {
+        $remoteTmp = '/tmp/vito-'.Str::random(12).'.log';
+        try {
+            if ($log->source === ServiceLog::SOURCE_JOURNAL) {
                 $server->ssh()->exec(view('ssh.os.journal-dump', [
                     'unit' => $log->target,
                     'path' => $remoteTmp,
                 ]));
-                $server->ssh()->download($tmpPath, $remoteTmp);
-            } finally {
-                try {
-                    $server->os()->deleteFile($remoteTmp);
-                } catch (Throwable) {
-                }
+            } else {
+                $server->ssh()->exec(view('ssh.os.copy-as-user', [
+                    'source' => $log->target,
+                    'dest' => $remoteTmp,
+                ]));
             }
-        } else {
-            $server->ssh()->download($tmpPath, $log->target);
+            $server->ssh()->download($tmpPath, $remoteTmp);
+        } finally {
+            try {
+                $server->os()->deleteFile($remoteTmp);
+            } catch (Throwable) {
+            }
         }
 
         dispatch(function () use ($tmpPath): void {

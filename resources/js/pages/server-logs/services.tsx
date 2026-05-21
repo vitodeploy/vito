@@ -54,6 +54,7 @@ export default function ServiceLogs() {
   const [content, setContent] = useState<string>('');
   const [displayTarget, setDisplayTarget] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -107,6 +108,38 @@ export default function ServiceLogs() {
     fetchLog();
     return () => abortRef.current?.abort();
   }, [fetchLog]);
+
+  const downloadLog = useCallback(async () => {
+    if (!selectedKey || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const response = await axios.get(route('logs.services.download', { server: server.id, key: selectedKey }), {
+        responseType: 'blob',
+      });
+
+      const disposition = response.headers['content-disposition'] as string | undefined;
+      const match = disposition?.match(/filename="?([^";]+)"?/);
+      const filename = match?.[1] ?? `${selectedKey}.log`;
+
+      const url = URL.createObjectURL(response.data as Blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const msg = err.response?.data?.message || err.message;
+        setError(msg || 'Download failed');
+      } else {
+        setError('Download failed');
+      }
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [selectedKey, isDownloading, server.id]);
 
   const comboItems = useMemo(
     () =>
@@ -182,17 +215,16 @@ export default function ServiceLogs() {
                 <Button variant="outline" size="icon" onClick={fetchLog} disabled={!selectedKey || isLoading} title="Refresh" aria-label="Refresh">
                   {isLoading ? <LoaderCircleIcon className="animate-spin" /> : <RefreshCwIcon />}
                 </Button>
-                {selectedKey ? (
-                  <a href={route('logs.services.download', { server: server.id, key: selectedKey })} download>
-                    <Button variant="outline" size="icon" title="Download" aria-label="Download log">
-                      <DownloadIcon />
-                    </Button>
-                  </a>
-                ) : (
-                  <Button variant="outline" size="icon" disabled title="Download" aria-label="Download log">
-                    <DownloadIcon />
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={downloadLog}
+                  disabled={!selectedKey || isDownloading}
+                  title="Download"
+                  aria-label="Download log"
+                >
+                  {isDownloading ? <LoaderCircleIcon className="animate-spin" /> : <DownloadIcon />}
+                </Button>
                 {selected && selected.source === 'file' ? (
                   <ClearButton key={selected.key} serverId={server.id} logKey={selected.key} target={selected.display_target} onCleared={fetchLog} />
                 ) : (
