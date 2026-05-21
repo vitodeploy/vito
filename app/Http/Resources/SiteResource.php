@@ -22,7 +22,14 @@ class SiteResource extends JsonResource
             'server' => new ServerResource($this->whenLoaded('server')),
             'source_control_id' => $this->source_control_id,
             'type' => $this->type,
-            'type_data' => $this->type_data,
+            'type_data' => $this->sanitisedTypeData(),
+            'basic_auth' => [
+                'enabled' => (bool) data_get($this->type_data, 'basic_auth.enabled', false),
+                'users' => array_map(
+                    fn (array $u) => ['username' => $u['username'] ?? ''],
+                    array_values(data_get($this->type_data, 'basic_auth.users', []))
+                ),
+            ],
             'domain' => $this->domain,
             'web_directory' => $this->web_directory,
             'webserver' => $this->webserver()->id(),
@@ -50,6 +57,25 @@ class SiteResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    /**
+     * Strip basic-auth password hashes from type_data before sending to the client.
+     *
+     * @return array<string, mixed>
+     */
+    private function sanitisedTypeData(): array
+    {
+        $typeData = $this->type_data ?? [];
+
+        if (isset($typeData['basic_auth']['users']) && is_array($typeData['basic_auth']['users'])) {
+            $typeData['basic_auth']['users'] = array_map(
+                fn (array $u) => ['username' => $u['username'] ?? ''],
+                $typeData['basic_auth']['users']
+            );
+        }
+
+        return $typeData;
     }
 
     /**

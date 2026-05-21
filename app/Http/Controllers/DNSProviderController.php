@@ -7,6 +7,7 @@ use App\Actions\DNSProvider\DeleteDNSProvider;
 use App\Actions\DNSProvider\EditDNSProvider;
 use App\Http\Resources\DNSProviderResource;
 use App\Models\DNSProvider;
+use App\Tables\DnsProviderTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -31,7 +32,7 @@ class DNSProviderController extends Controller
         $user = user();
 
         return Inertia::render('dns-providers/index', [
-            'dnsProviders' => DNSProviderResource::collection(DNSProvider::getByProjectId($user->current_project_id, $user)->simplePaginate(config('web.pagination_size'))),
+            'dnsProviders' => DnsProviderTable::make(DNSProvider::getByProjectId($user->current_project_id, $user))->simplePaginate(),
         ]);
     }
 

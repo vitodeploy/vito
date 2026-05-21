@@ -195,6 +195,9 @@ abstract class AbstractGenerateConfig
         $isOctane = (bool) data_get($site->type_data, 'octane', false);
         $isPhp = ($siteTypeData['is_php'] ?? false) && ! $isOctane;
 
+        $basicAuth = data_get($site->type_data, 'basic_auth', []);
+        $basicAuthEnabled = ! empty($basicAuth['enabled']) && ! empty($basicAuth['users']);
+
         return [
             ...$siteTypeData,
             ...$this->buildLoadBalancerData($site),
@@ -209,6 +212,10 @@ abstract class AbstractGenerateConfig
             'port' => $site->port,
             'redirects' => $this->buildRedirects($site),
             'type_data' => $site->type_data ?? [],
+            'basic_auth_enabled' => $basicAuthEnabled,
+            'basic_auth_realm' => $site->domain,
+            'basic_auth_file' => $site->htpasswdPath(),
+            'basic_auth_users' => $basicAuthEnabled ? array_values($basicAuth['users']) : [],
         ];
     }
 
@@ -232,6 +239,10 @@ abstract class AbstractGenerateConfig
             $block['php_socket'] = $data['php_socket'];
             $block['port'] = $data['port'];
             $block['redirects'] = $data['redirects'];
+            $block['basic_auth_enabled'] = $data['basic_auth_enabled'];
+            $block['basic_auth_realm'] = $data['basic_auth_realm'];
+            $block['basic_auth_file'] = $data['basic_auth_file'];
+            $block['basic_auth_users'] = $data['basic_auth_users'];
             $block = $this->enrichServerBlock($block, $data);
         }
 

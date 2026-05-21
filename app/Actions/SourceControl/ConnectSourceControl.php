@@ -54,13 +54,18 @@ class ConnectSourceControl
 
     private function validate(array $input): void
     {
+        $connectableProviders = collect(config('source-control.providers'))
+            ->filter(fn (array $config): bool => (bool) ($config['connectable'] ?? true))
+            ->keys()
+            ->all();
+
         $rules = [
             'name' => [
                 'required',
             ],
             'provider' => [
                 'required',
-                Rule::in(array_keys(config('source-control.providers'))),
+                Rule::in($connectableProviders),
             ],
         ];
 

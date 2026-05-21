@@ -7,6 +7,7 @@ use App\Actions\ServerProvider\DeleteServerProvider;
 use App\Actions\ServerProvider\EditServerProvider;
 use App\Http\Resources\ServerProviderResource;
 use App\Models\ServerProvider;
+use App\Tables\ServerProviderTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,9 @@ class ServerProviderController extends Controller
         $user = user();
 
         return Inertia::render('server-providers/index', [
-            'serverProviders' => ServerProviderResource::collection(ServerProvider::getByProjectId($user->current_project_id, $user)->simplePaginate(config('web.pagination_size'))),
+            'serverProviders' => ServerProviderTable::make(
+                ServerProvider::getByProjectId($user->current_project_id, $user)
+            )->simplePaginate(),
         ]);
     }
 

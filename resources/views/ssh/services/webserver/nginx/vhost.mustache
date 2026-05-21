@@ -57,6 +57,17 @@ server {
     access_log off;
     error_log  /var/log/nginx/{{primary_domain}}-error.log error;
 
+    {{#basic_auth_enabled}}
+    auth_basic "{{basic_auth_realm}}";
+    auth_basic_user_file {{basic_auth_file}};
+
+    location ^~ /.well-known/acme-challenge/ {
+        auth_basic off;
+        allow all;
+        try_files $uri =404;
+    }
+    {{/basic_auth_enabled}}
+
     location ~ /\.(?!well-known).* {
         deny all;
     }

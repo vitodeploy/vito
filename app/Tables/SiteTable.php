@@ -46,6 +46,7 @@ class SiteTable extends Table
             ...$columns,
             Column::make('id', 'ID')->sortable(),
             TextColumn::make('domain', 'Domain')->sortable(),
+            BadgeColumn::make('user', 'User')->variant('outline')->sortable(),
             BadgeColumn::make('type', 'Type')->variant('outline')->sortable(),
             DateTimeColumn::make('created_at', 'Created at')->sortable(),
             EnumColumn::make('status', 'Status')->sortable(),
@@ -57,7 +58,7 @@ class SiteTable extends Table
 
     protected function searchable(): array
     {
-        return ['domain'];
+        return ['domain', 'user'];
     }
 
     /**

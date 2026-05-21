@@ -8,6 +8,14 @@
     tls {{ssl_certificate_path}} {{ssl_certificate_key_path}}
     {{/has_tls}}
 
+    {{#basic_auth_enabled}}
+    basic_auth {
+        {{#basic_auth_users}}
+        {{username}} {{bcrypt}}
+        {{/basic_auth_users}}
+    }
+    {{/basic_auth_enabled}}
+
     {{#is_php}}
     root * {{root}}
     try_files {path} {path}/ /index.php?{query}

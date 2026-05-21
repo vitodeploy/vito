@@ -8,6 +8,7 @@ use App\Enums\NodePackageManager;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use App\Models\SourceControl;
 use App\Models\Worker;
 use App\SSH\OS\Git;
 use Illuminate\Validation\Rule;
@@ -57,10 +58,7 @@ class MiseNodeJS extends MiseSiteType
     public function createRules(array $input): array
     {
         return [
-            'source_control' => [
-                'required',
-                Rule::exists('source_controls', 'id'),
-            ],
+            'source_control' => SourceControl::siteValidationRules(),
             'repository' => [
                 'required',
             ],

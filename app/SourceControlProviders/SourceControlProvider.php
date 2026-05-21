@@ -33,6 +33,25 @@ interface SourceControlProvider
 
     public function fullRepoUrl(string $repo, string $key): string;
 
+    public function getSshPort(): int;
+
+    /**
+     * @return array<int, string>
+     */
+    public static function editableFields(): array;
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<int, string>>
+     */
+    public function editRules(array $input): array;
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    public function editData(array $input): array;
+
     /**
      * @param  array<int, mixed>  $events
      * @return array<string, mixed>

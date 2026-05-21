@@ -3,15 +3,17 @@ import { Head, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/data-table';
+import { VitoTable } from '@/components/vito-table';
 import { SshKey } from '@/types/ssh-key';
-import { columns } from '@/pages/ssh-keys/components/columns';
 import AddSshKey from '@/pages/ssh-keys/components/add-ssh-key';
-import { PaginatedData } from '@/types';
-import { BookOpenIcon, PlusIcon } from 'lucide-react';
+import Delete from '@/pages/ssh-keys/components/delete';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
+import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
-  sshKeys: PaginatedData<SshKey>;
+  sshKeys: InertiaTableData;
 };
 
 export default function SshKeys() {
@@ -39,7 +41,24 @@ export default function SshKeys() {
           </div>
         </div>
 
-        <DataTable columns={columns} paginatedData={page.props.sshKeys} />
+        <VitoTable
+          tableData={page.props.sshKeys}
+          actions={(row: Row) => (
+            <div className="flex items-center justify-end">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreVerticalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <Delete sshKey={asRow<SshKey>(row, ['id', 'name'])} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        />
       </Container>
     </SettingsLayout>
   );

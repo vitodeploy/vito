@@ -7,6 +7,7 @@ use App\Actions\Workflow\UpdateWorkflow;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\WorkflowResource;
 use App\Models\Workflow;
+use App\Tables\WorkflowTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -30,13 +31,8 @@ class WorkflowController extends Controller
 
         $this->authorize('viewAny', [Workflow::class, $user->currentProject]);
 
-        $workflows = $user->currentProject
-            ->workflows()
-            ->orderBy('created_at', 'desc')
-            ->paginate(config('web.pagination_size'));
-
         return Inertia::render('workflows/index', [
-            'workflows' => WorkflowResource::collection($workflows),
+            'workflows' => WorkflowTable::make($user->currentProject->workflows())->simplePaginate(),
         ]);
     }
 

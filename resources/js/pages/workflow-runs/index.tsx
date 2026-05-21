@@ -2,21 +2,18 @@ import { Head, router, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/workflow-runs/components/columns';
-import { BreadcrumbItem, PaginatedData } from '@/types';
+import { VitoTable } from '@/components/vito-table';
+import { BreadcrumbItem } from '@/types';
 import Layout from '@/layouts/app/layout';
-import { WorkflowRun } from '@/types/workflow-run';
 import { Workflow } from '@/types/workflow';
-import { useRealtime } from '@/hooks/use-socket-events';
+import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 export default function Workflows() {
   const page = usePage<{
     workflow: Workflow;
-    workflowRuns: PaginatedData<WorkflowRun>;
+    workflowRuns: InertiaTableData;
   }>();
-
-  const [workflowRuns] = useRealtime<WorkflowRun>(page.props.workflowRuns, 'workflow-run');
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,10 +36,12 @@ export default function Workflows() {
           <div className="flex items-center gap-2"></div>
         </HeaderContainer>
 
-        <DataTable
-          columns={columns}
-          paginatedData={workflowRuns}
-          onRowClick={(row: WorkflowRun) => router.visit(route('workflow-runs.show', { workflow: row.workflow_id, workflowRun: row.id }))}
+        <VitoTable
+          tableData={page.props.workflowRuns}
+          onRowClick={(row: Row) => {
+            const r = asRow<{ id: number; workflow_id: number }>(row, ['id', 'workflow_id']);
+            router.visit(route('workflow-runs.show', { workflow: r.workflow_id, workflowRun: r.id }));
+          }}
         />
       </Container>
     </Layout>

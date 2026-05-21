@@ -7,16 +7,16 @@ import ConnectSourceControl from '@/pages/source-controls/components/connect-sou
 import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/source-controls/components/columns';
 import { SourceControl } from '@/types/source-control';
-import { Configs, PaginatedData } from '@/types';
-import { BookOpenIcon } from 'lucide-react';
+import { PaginatedData, SharedData } from '@/types';
+import { BookOpenIcon, GithubIcon } from 'lucide-react';
 
-type Page = {
+type Page = SharedData & {
   sourceControls: PaginatedData<SourceControl>;
-  configs: Configs;
 };
 
 export default function SourceControls() {
   const page = usePage<Page>();
+  const githubAppInstalled = page.props.configs.github_app.installed;
 
   return (
     <SettingsLayout>
@@ -31,6 +31,14 @@ export default function SourceControls() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
+            {githubAppInstalled && (
+              <a href={route('github-app.install')} title="Install GitHub App on an organization">
+                <Button variant="outline" size="icon">
+                  <GithubIcon />
+                  <span className="sr-only">Install GitHub App on an organization</span>
+                </Button>
+              </a>
+            )}
             <ConnectSourceControl>
               <Button>Connect</Button>
             </ConnectSourceControl>

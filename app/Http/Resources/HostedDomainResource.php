@@ -23,7 +23,7 @@ class HostedDomainResource extends JsonResource
             'type_color' => $this->type->getColor(),
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),
-            'ssl_method' => $this->ssl_method->getText(),
+            'ssl_method' => $this->ssl_method->value,
             'ssl_id' => $this->ssl_id,
             'error' => $this->error,
             'ssl_type' => $this->ssl?->type,

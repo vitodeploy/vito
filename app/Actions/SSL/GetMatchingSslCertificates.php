@@ -54,11 +54,15 @@ class GetMatchingSslCertificates
 
                 return false;
             })
-            ->map(fn (Ssl $ssl) => [
-                'id' => $ssl->id,
-                'label' => $ssl->type.' #'.$ssl->id.' ('.implode(', ', (array) ($ssl->domains ?? [])).')',
-                'domains' => (array) ($ssl->domains ?? []),
-            ])
+            ->map(function (Ssl $ssl): array {
+                $domains = (array) ($ssl->domains ?? []);
+
+                return [
+                    'id' => $ssl->id,
+                    'label' => sprintf('%s #%d (%s)', $ssl->type, $ssl->id, implode(', ', $domains)),
+                    'domains' => $domains,
+                ];
+            })
             ->values();
     }
 }

@@ -1,0 +1,85 @@
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { useForm } from '@inertiajs/react';
+import { LoaderCircleIcon } from 'lucide-react';
+import FormSuccessful from '@/components/form-successful';
+import { FormEvent, useEffect, useState } from 'react';
+import InputError from '@/components/ui/input-error';
+import { Form, FormField, FormFields } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DNSProvider } from '@/types/dns-provider';
+
+export default function Edit({ dnsProvider }: { dnsProvider: DNSProvider }) {
+  const [open, setOpen] = useState(false);
+  const form = useForm({
+    name: dnsProvider.name,
+    global: dnsProvider.global,
+  });
+
+  useEffect(() => {
+    form.setData({ name: dnsProvider.name, global: dnsProvider.global });
+  }, [dnsProvider.id, dnsProvider.name, dnsProvider.global]);
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    form.patch(route('dns-providers.update', dnsProvider.id), {
+      onSuccess: () => setOpen(false),
+    });
+  };
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit {dnsProvider.name}</DialogTitle>
+          <DialogDescription className="sr-only">Edit DNS provider</DialogDescription>
+        </DialogHeader>
+        <Form id={`edit-dns-provider-form-${dnsProvider.id}`} className="p-4" onSubmit={submit}>
+          <FormFields>
+            <FormField>
+              <Label htmlFor="name">Name</Label>
+              <Input type="text" id="name" name="name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+              <InputError message={form.errors.name} />
+            </FormField>
+            <FormField>
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="global"
+                  name="global"
+                  checked={form.data.global}
+                  onCheckedChange={(checked) => form.setData('global', Boolean(checked))}
+                />
+                <Label htmlFor="global">Is global (accessible in all projects)</Label>
+              </div>
+              <InputError message={form.errors.global} />
+            </FormField>
+          </FormFields>
+        </Form>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button form={`edit-dns-provider-form-${dnsProvider.id}`} type="submit" disabled={form.processing}>
+            {form.processing && <LoaderCircleIcon className="animate-spin" />}
+            <FormSuccessful successful={form.recentlySuccessful} />
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -7,6 +7,7 @@ use App\Enums\SiteStatus;
 use App\Events\SocketEvent;
 use App\Facades\Notifier;
 use App\Http\Resources\SiteResource;
+use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Notifications\SiteInstallationFailed;
@@ -33,6 +34,10 @@ class CreateJob implements ShouldQueue
             ]);
             $this->broadcastSiteUpdate();
             Notifier::send($this->site, new SiteInstallationSucceed($this->site));
+
+            foreach ($this->site->hostedDomains as $hostedDomain) {
+                dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
+            }
         });
     }
 

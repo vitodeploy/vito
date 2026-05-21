@@ -54,14 +54,26 @@ For each changed PHP file, open the file with `Read`, focus on the changed regio
 - **Eloquent**: any `DB::` usage? Any N+1 risk (loops over relations without `with`)?
 - **Enums**: implements `VitoEnum`? API Resource calls `getText()`/`getColor()`?
 - **Actions**: validates input? Composes other actions instead of being monolithic? Wrapped in transaction if multi-step?
-- **Jobs**: `ShouldQueue`? `Queueable` + `UniqueQueue`? `failed()` implemented? Uses `$this->run($key, ...)`?
+- **Jobs**: `ShouldQueue`? `Queueable` + `UniqueQueue`? `failed()` implemented? Uses `$this->run($key, ...)`? Queue assignment in the constructor or at call sites — and consistent with sibling jobs in the same directory?
 - **Controllers**: route attributes named? `$this->authorize()` invoked? Returns `Inertia::render()` or a JsonResource?
 - **Providers/Services**: extends the correct abstract? `static id()` / `static type()` implemented?
 - **Migrations**: only schema/data — no jobs, no SSH, no HTTP, no broadcasting?
 - **PHPDoc**: `@throws` accurate? Return types match `@return`? No inline `//` comments in method bodies?
-- **Broadcasting**: uses `SocketEvent::dispatch()` with a `SocketEventDTO`?
+- **Broadcasting**: uses `SocketEvent::dispatch()` with a `SocketEventDTO`? **Critically: if the change transitions a model's `status` field (or any field the UI listens to), check whether sibling Actions/Jobs that perform the same kind of transition dispatch a `SocketEvent` — and flag the absence as inconsistency that will cause stale-UI bugs in other open tabs.**
+- **API design / signature fragility**: for new or changed function signatures, consider whether a future caller could misuse the API in a way that produces silent surprising behaviour. Specifically flag:
+  - Optional parameters whose default *mutates* state (e.g. `?string $step = null` that clears a column).
+  - Early `return` from a multi-step method when the early-return is gated on something unrelated to the rest of the work.
+  - Functions whose behaviour depends on the runtime *type* of a value that can plausibly arrive as multiple shapes (string vs array vs object).
+- **Cross-sibling consistency** (REQUIRED step — not optional): before reporting findings, **list 2–3 untouched siblings** of each modified class (other Actions in the same `app/Actions/<area>/`, other Jobs in the same `app/Jobs/<area>/`, other SiteTypes / Services / Resources of the same kind). Skim them for:
+  - Range of magic numbers (e.g. max progress percentages, retry counts, timeouts)
+  - Broadcasting / event dispatch placement
+  - Queue assignment patterns (constructor vs call site)
+  - Method shapes for the same conceptual operation (e.g. how `install()` is structured across SiteTypes)
+  - Field-list patterns (`$fillable` membership, Resource `toArray` keys)
 
-If you need extra context (e.g. how a similar Action is structured), `Grep` for siblings under `app/Actions/` and read one as reference. Use `mcp__laravel-boost__search-docs` only when an actual framework question comes up.
+  If the diff deviates from a pattern present in **all** of the siblings without obvious justification, raise it as a Medium **Cross-sibling consistency** finding citing the sibling files you compared against.
+
+If you need extra context, `Grep` for siblings and `Read` at least one fully before reporting. Use `mcp__laravel-boost__search-docs` only when an actual framework question comes up.
 
 ## What to report
 
@@ -98,8 +110,8 @@ No issues found.
 
 - **Critical** — bug, data loss, broken auth/authorization, broken migration, missing transaction around delete-then-recreate, breaking change to a public contract.
 - **High** — pattern violation that will cause future bugs (e.g. business logic in controller, missing `UniqueQueue`, raw enum in Resource, missing policy check).
-- **Medium** — code-quality issues that should be fixed before merge (missing eager-load, inline `//` comments, `env()` outside config, unnamed route, `DB::` instead of `Model::query()`).
-- **Low / Nit** — style, naming, PHPDoc cleanups, minor refactors.
+- **Medium** — code-quality issues that should be fixed before merge (missing eager-load, inline `//` comments, `env()` outside config, unnamed route, `DB::` instead of `Model::query()`, **cross-sibling consistency violations** — magic numbers/patterns that diverge from established conventions in sibling files of the same kind).
+- **Low / Nit** — style, naming, PHPDoc cleanups, minor refactors, **design fragility hardening** — default-arg footguns, fragile early-returns, narrow-guard refactors that improve future-caller safety without changing today's behaviour.
 
 ### Rules for findings
 

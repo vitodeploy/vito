@@ -96,11 +96,13 @@ export default function ConnectSourceControl({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(configs.source_control.providers).map(([key, provider]) => (
-                      <SelectItem key={key} value={key}>
-                        {provider.label}
-                      </SelectItem>
-                    ))}
+                    {Object.entries(configs.source_control.providers)
+                      .filter(([, provider]) => provider.connectable !== false)
+                      .map(([key, provider]) => (
+                        <SelectItem key={key} value={key}>
+                          {provider.label}
+                        </SelectItem>
+                      ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>

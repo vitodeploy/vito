@@ -36,7 +36,12 @@ class HostedDomainTable extends Table
                     HostedDomainType::ALIAS => 'copy',
                     HostedDomainType::REDIRECT => 'signpost',
                 }),
-            EnumColumn::make('ssl_method', 'SSL')->uppercase(),
+            Column::make('ssl_method', 'SSL')
+                ->value(fn (HostedDomain $hd) => $hd->ssl_method->value)
+                ->badge(
+                    value: fn (HostedDomain $hd) => strtoupper($hd->ssl_method->getText()),
+                    variant: 'outline',
+                ),
             Column::make('certificate', 'Certificate'),
             BadgeColumn::make('ssl.expires_at', 'Expires In')
                 ->variant('outline')

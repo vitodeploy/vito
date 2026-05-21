@@ -3,8 +3,9 @@
 namespace App\Enums;
 
 use App\Contracts\VitoEnum;
+use Forjed\InertiaTable\Contracts\HasTableDisplay;
 
-enum FirewallRuleStatus: string implements VitoEnum
+enum FirewallRuleStatus: string implements HasTableDisplay, VitoEnum
 {
     case CREATING = 'creating';
     case UPDATING = 'updating';

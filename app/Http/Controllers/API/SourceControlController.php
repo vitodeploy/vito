@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\GithubApp\EditGithubAppSourceControl;
 use App\Actions\SourceControl\ConnectSourceControl;
 use App\Actions\SourceControl\DeleteSourceControl;
 use App\Actions\SourceControl\EditSourceControl;
@@ -75,7 +76,9 @@ class SourceControlController extends Controller
 
         $this->validateRoute($project, $sourceControl);
 
-        $sourceControl = app(EditSourceControl::class)->edit($sourceControl, $request->all());
+        $sourceControl = $sourceControl->isGithubApp()
+            ? app(EditGithubAppSourceControl::class)->edit($sourceControl, $request->all())
+            : app(EditSourceControl::class)->edit($sourceControl, $request->all());
 
         return new SourceControlResource($sourceControl);
     }

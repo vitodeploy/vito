@@ -1,5 +1,5 @@
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { PlugIcon, UsersIcon } from 'lucide-react';
+import { GithubIcon, PlugIcon, UsersIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 import Layout from '@/layouts/app/layout';
 import VitoIcon from '@/icons/vito';
@@ -14,6 +14,11 @@ const sidebarNavItems: NavItem[] = [
     title: 'Plugins',
     href: route('plugins'),
     icon: PlugIcon,
+  },
+  {
+    title: 'GitHub App',
+    href: route('github-app'),
+    icon: GithubIcon,
   },
   {
     title: 'Vito Settings',

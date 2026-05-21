@@ -6,6 +6,7 @@ use App\Enums\FirewallRuleStatus;
 use App\Jobs\FirewallRule\ApplyRulesJob;
 use App\Models\FirewallRule;
 use App\Models\Server;
+use App\ValidationRules\PortOrPortRangeRule;
 use Illuminate\Support\Facades\Validator;
 
 class ManageRule
@@ -16,23 +17,14 @@ class ManageRule
      */
     public function create(Server $server, array $input): FirewallRule
     {
+        $input = $this->normalizePort($input);
         $this->validate($input);
 
-        $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
-        $rule = new FirewallRule([
-            'name' => $input['name'],
-            'server_id' => $server->id,
-            'type' => $input['type'],
-            'protocol' => $input['protocol'],
-            'port' => $input['port'],
-            'source' => $sourceAny ? null : $input['source'],
-            'mask' => $sourceAny ? null : ($input['mask'] ?? null),
-            'status' => FirewallRuleStatus::CREATING,
-        ]);
-
+        $rule = new FirewallRule($this->attributesFromInput($input, FirewallRuleStatus::CREATING));
+        $rule->server_id = $server->id;
         $rule->save();
 
-        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
+        $this->queueApply($rule);
 
         return $rule;
     }
@@ -43,20 +35,12 @@ class ManageRule
      */
     public function update(FirewallRule $rule, array $input): FirewallRule
     {
+        $input = $this->normalizePort($input);
         $this->validate($input);
 
-        $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
-        $rule->update([
-            'name' => $input['name'],
-            'type' => $input['type'],
-            'protocol' => $input['protocol'],
-            'port' => $input['port'],
-            'source' => $sourceAny ? null : $input['source'],
-            'mask' => $sourceAny ? null : ($input['mask'] ?? null),
-            'status' => FirewallRuleStatus::UPDATING,
-        ]);
+        $rule->update($this->attributesFromInput($input, FirewallRuleStatus::UPDATING));
 
-        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
+        $this->queueApply($rule);
 
         return $rule;
     }
@@ -66,7 +50,7 @@ class ManageRule
         $rule->status = FirewallRuleStatus::DELETING;
         $rule->save();
 
-        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
+        $this->queueApply($rule);
     }
 
     private function validate(array $input): void
@@ -87,9 +71,7 @@ class ManageRule
             ],
             'port' => [
                 'required',
-                'numeric',
-                'min:1',
-                'max:65535',
+                new PortOrPortRangeRule,
             ],
             'source' => [
                 'nullable',
@@ -109,5 +91,41 @@ class ManageRule
         }
 
         Validator::make($input, $rules)->validate();
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    private function normalizePort(array $input): array
+    {
+        $port = $input['port'] ?? null;
+        $input['port'] = is_string($port) || is_int($port) ? (string) $port : null;
+
+        return $input;
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    private function attributesFromInput(array $input, FirewallRuleStatus $status): array
+    {
+        $sourceAny = $input['source_any'] ?? empty($input['source'] ?? null);
+
+        return [
+            'name' => $input['name'],
+            'type' => $input['type'],
+            'protocol' => $input['protocol'],
+            'port' => $input['port'],
+            'source' => $sourceAny ? null : $input['source'],
+            'mask' => $sourceAny ? null : ($input['mask'] ?? null),
+            'status' => $status,
+        ];
+    }
+
+    private function queueApply(FirewallRule $rule): void
+    {
+        dispatch(new ApplyRulesJob($rule))->onQueue('ssh');
     }
 }

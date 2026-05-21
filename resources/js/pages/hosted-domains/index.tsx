@@ -249,12 +249,6 @@ export default function HostedDomains() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <CreateHostedDomain site={page.props.site}>
-              <Button>
-                <PlusIcon />
-                <span className="hidden lg:block">Add Domain</span>
-              </Button>
-            </CreateHostedDomain>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -315,6 +309,12 @@ export default function HostedDomains() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+            <CreateHostedDomain site={page.props.site}>
+              <Button>
+                <PlusIcon />
+                <span className="hidden lg:block">Add Domain</span>
+              </Button>
+            </CreateHostedDomain>
           </div>
         </HeaderContainer>
 

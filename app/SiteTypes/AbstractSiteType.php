@@ -10,6 +10,7 @@ use App\Http\Resources\SiteResource;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -102,24 +103,37 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        $this->site->server->os()->createIsolatedUser(
-            $this->site->user,
-            Str::random(15),
-            $this->site->id
-        );
+        $lock = $this->site->server->isolatedUserLock($this->site->user);
 
-        // Generate the FPM pool
-        if ($this->site->php_version) {
-            $service = $this->site->php();
-            if (! $service instanceof Service) {
-                throw new RuntimeException('PHP service not found');
+        try {
+            $lock->block(30);
+        } catch (LockTimeoutException) {
+            throw new RuntimeException("Could not acquire isolated-user lock for '{$this->site->user}' on server {$this->site->server_id} within 30s.");
+        }
+
+        try {
+            if (! $this->site->userSharedWithSiblings()) {
+                $this->site->server->os()->createIsolatedUser(
+                    $this->site->user,
+                    Str::random(15),
+                    $this->site->id
+                );
             }
-            /** @var PHP $php */
-            $php = $service->handler();
-            $php->createFpmPool(
-                $this->site->user,
-                $this->site->php_version
-            );
+
+            if ($this->site->php_version && ! $this->site->fpmPoolSharedWithSiblings()) {
+                $service = $this->site->php();
+                if (! $service instanceof Service) {
+                    throw new RuntimeException('PHP service not found');
+                }
+                /** @var PHP $php */
+                $php = $service->handler();
+                $php->createFpmPool(
+                    $this->site->user,
+                    $this->site->php_version
+                );
+            }
+        } finally {
+            $lock->release();
         }
     }
 }

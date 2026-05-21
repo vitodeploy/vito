@@ -8,6 +8,7 @@ use App\Actions\Database\SyncDatabases;
 use App\Http\Resources\DatabaseResource;
 use App\Models\Database;
 use App\Models\Server;
+use App\Tables\Servers\DatabaseTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class DatabaseController extends Controller
         $this->authorize('viewAny', [Database::class, $server]);
 
         return Inertia::render('databases/index', [
-            'databases' => DatabaseResource::collection($server->databases()->simplePaginate(config('web.pagination_size'))),
+            'databases' => DatabaseTable::make($server->databases())->simplePaginate(),
         ]);
     }
 

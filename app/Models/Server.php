@@ -15,12 +15,14 @@ use App\SSH\OS\Systemd;
 use App\Support\Testing\SSHFake;
 use Carbon\Carbon;
 use Database\Factories\ServerFactory;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -305,6 +307,11 @@ class Server extends AbstractModel
         }
 
         return config('core.ssh_user');
+    }
+
+    public function isolatedUserLock(string $user): Lock
+    {
+        return Cache::lock("isolate:{$this->id}:{$user}", 60);
     }
 
     /**
