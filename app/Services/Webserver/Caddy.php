@@ -8,9 +8,11 @@ use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Services\HasLogs;
+use App\Services\ServiceLog;
 use Throwable;
 
-class Caddy extends AbstractWebserver
+class Caddy extends AbstractWebserver implements HasLogs
 {
     public static function id(): string
     {
@@ -237,5 +239,18 @@ class Caddy extends AbstractWebserver
         );
 
         return trim($version);
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'caddy:error',
+                serviceLabel: 'Caddy',
+                label: 'Error log',
+                source: ServiceLog::SOURCE_FILE,
+                target: '/var/log/caddy/errors.log',
+            ),
+        ];
     }
 }

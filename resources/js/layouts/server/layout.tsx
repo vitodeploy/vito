@@ -215,7 +215,13 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
           icon: LogsIcon,
         },
         {
-          title: 'Remote logs',
+          title: 'Service logs',
+          href: route('logs.services', { server: page.props.server.id }),
+          onlyActivePath: route('logs.services', { server: page.props.server.id }),
+          icon: CogIcon,
+        },
+        {
+          title: 'Custom logs',
           href: route('logs.remote', { server: page.props.server.id }),
           onlyActivePath: route('logs.remote', { server: page.props.server.id }),
           icon: CloudIcon,

@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Actions\Server;
+
+use App\Models\Server;
+use App\Services\ServiceLog;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
+
+class DownloadServiceLog
+{
+    /**
+     * @param  array<string, mixed>  $input
+     *
+     * @throws Throwable
+     * @throws ValidationException
+     */
+    public function run(Server $server, array $input): StreamedResponse
+    {
+        $data = Validator::make($input, [
+            'key' => ['required', 'string', 'max:200'],
+        ])->validate();
+
+        $log = app(GetServiceLogs::class)->resolve($server, $data['key']);
+        abort_if($log === null, 404);
+
+        $downloadName = $log->source === ServiceLog::SOURCE_JOURNAL
+            ? Str::slug($log->key).'.log'
+            : str($log->target)->afterLast('/')->toString();
+
+        $tmpName = $server->id.'-'.now()->timestamp.'-'.Str::slug($log->key).'.log';
+        $tmpPath = Storage::disk('local')->path($tmpName);
+
+        if ($log->source === ServiceLog::SOURCE_JOURNAL) {
+            $remoteTmp = '/tmp/vito-'.Str::random(12).'.log';
+            try {
+                $server->ssh()->exec(view('ssh.os.journal-dump', [
+                    'unit' => $log->target,
+                    'path' => $remoteTmp,
+                ]));
+                $server->ssh()->download($tmpPath, $remoteTmp);
+            } finally {
+                $server->os()->deleteFile($remoteTmp);
+            }
+        } else {
+            $server->ssh()->download($tmpPath, $log->target);
+        }
+
+        dispatch(function () use ($tmpPath): void {
+            if (File::exists($tmpPath)) {
+                File::delete($tmpPath);
+            }
+        })
+            ->delay(now()->addMinutes(5))
+            ->onQueue('default');
+
+        return Storage::disk('local')->download($tmpName, $downloadName);
+    }
+}
