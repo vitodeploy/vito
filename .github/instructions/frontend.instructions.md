@@ -12,6 +12,13 @@ description: "React, Inertia, Tailwind v4, and TypeScript frontend standards"
 - Use the `useForm` helper for forms — follow existing patterns in the codebase.
 - Use `<Link>` or `router.visit()` for navigation — never raw `<a>` tags for internal routes.
 
+## Bootstrap Context (`useConfigs`)
+
+- Shared catalogue data (provider lists, site types, GitHub App install state, public key text) is **not** in `page.props` — it lives in the Zustand `useBootstrapStore`, exposed via `useConfigs()` and `usePublicKeyText()` from `@/stores/bootstrap-store`.
+- Read these with `const configs = useConfigs()!;` inside any component rendered under the app layout. The `!` is safe because the layout gates on `configs !== null`.
+- Never reach for `page.props.configs` / `page.props.public_key_text` — those keys do not exist. If you see them in old PRs or copy-pasted code, migrate to `useConfigs()`.
+- The `Configs` shape lives in `resources/js/types/index.d.ts`. Keep it in sync with the backend `GetBootstrap::configs()` return shape.
+
 ## Tailwind v4
 
 - Use `@import "tailwindcss"` and `@theme` for configuration.

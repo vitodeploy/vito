@@ -2,6 +2,7 @@
 
 namespace App\Actions\Bootstrap;
 
+use App\Models\GithubApp;
 use Illuminate\Support\Facades\Cache;
 
 final class GetBootstrap
@@ -69,6 +70,7 @@ final class GetBootstrap
             'metrics_periods' => config('core.metrics_periods'),
             'site' => [
                 'types' => config('site.types'),
+                'reserved_user_names' => config('core.reserved_user_names'),
             ],
             'source_control' => [
                 'providers' => config('source-control.providers'),
@@ -87,6 +89,9 @@ final class GetBootstrap
             ],
             'dns_provider' => [
                 'providers' => config('dns-provider.providers'),
+            ],
+            'github_app' => [
+                'installed' => GithubApp::query()->exists(),
             ],
         ];
     }

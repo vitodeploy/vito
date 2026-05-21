@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { FormEvent, useMemo, useState } from 'react';
@@ -23,14 +23,14 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { SharedData } from '@/types';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 function EditForm({ sourceControl, onSuccess }: { sourceControl: SourceControl; onSuccess: () => void }) {
   const isGithubApp = sourceControl.provider === 'github-app';
-  const page = usePage<SharedData>();
-  const providerConfig = page.props.configs?.source_control?.providers?.[sourceControl.provider];
+  const configs = useConfigs()!;
+  const providerConfig = configs.source_control?.providers?.[sourceControl.provider];
 
   const editableFormFields = useMemo<DynamicFieldConfig[]>(() => {
     const editableFields = providerConfig?.editable_fields ?? [];

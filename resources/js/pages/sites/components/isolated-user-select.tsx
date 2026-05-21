@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { Check, ChevronsUpDown, LoaderCircle, Plus, RefreshCw } from 'lucide-react';
 
@@ -9,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import type { SharedData } from '@/types';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 type IsolatedUserSelectProps = {
   serverId: number;
@@ -26,8 +25,8 @@ type IsolatedUserOption = {
 };
 
 export default function IsolatedUserSelect({ serverId, value, onValueChange, onSearchChange }: IsolatedUserSelectProps) {
-  const page = usePage<SharedData>();
-  const reservedNames = page.props.configs.site.reserved_user_names ?? [];
+  const configs = useConfigs()!;
+  const reservedNames = configs.site.reserved_user_names ?? [];
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 

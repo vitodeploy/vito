@@ -89,6 +89,17 @@ All business logic belongs in Action classes under `app/Actions/`.
 - Use `SocketEvent::dispatch()` with a `SocketEventDTO` for real-time updates.
 - DTO requires `projectId`, `type` (e.g., `'server.updated'`), and `data` (typically an API Resource).
 
+## Bootstrap Context (`GetBootstrap`)
+
+Static-ish data shared with the frontend (provider catalogues, site types, GitHub App install state, public SSH key text, etc.) is served from `App\Actions\Bootstrap\GetBootstrap` via the `/bootstrap` endpoint and cached client-side in the Zustand `useBootstrapStore` / `useConfigs()`. It is **not** re-sent on every Inertia request — the frontend only refetches when `bootstrap_version` (md5 of the payload) changes.
+
+Rules:
+
+- Add new shared catalogue data to `GetBootstrap::configs()`, not to `HandleInertiaRequests::share()`.
+- Only put values here if they are stable across most requests. Per-request, per-user, or rapidly-changing data belongs in Inertia props.
+- If a value in `configs()` depends on DB or runtime state (e.g. `GithubApp::query()->exists()`), **every Action that mutates that state must call `GetBootstrap::forgetVersion()` after the mutation** — otherwise the cached version key won't change in production and clients will keep stale data forever. See `App\Actions\GithubApp\CreateGithubAppFromManifest` / `RemoveGithubApp` and the Plugin lifecycle Actions (`InstallPlugin`, `EnablePlugin`, etc.) for the pattern.
+- Keep the matching TypeScript shape in `resources/js/types/index.d.ts` (`Configs` interface) in sync with what `configs()` returns.
+
 ## PHPDoc
 
 - Document `@throws` annotations accurately — list what the method can actually throw.

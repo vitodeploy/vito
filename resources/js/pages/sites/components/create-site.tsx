@@ -129,7 +129,7 @@ export default function CreateSite({
 
     const suggestion = suggestIsolatedUsername(form.data.domain, blocked);
     if (suggestion !== form.data.user) form.setData('user', suggestion);
-  }, [form.data.server, form.data.domain, userManuallyEdited, isolatedUsersQuery.data, isolatedUsersQuery.isLoading]);
+  }, [form.data.server, form.data.domain, userManuallyEdited, isolatedUsersQuery.data, isolatedUsersQuery.isLoading, configs]);
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();

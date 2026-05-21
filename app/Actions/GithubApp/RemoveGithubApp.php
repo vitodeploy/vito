@@ -2,6 +2,7 @@
 
 namespace App\Actions\GithubApp;
 
+use App\Actions\Bootstrap\GetBootstrap;
 use App\Models\GithubApp;
 use App\Models\SourceControl;
 use Illuminate\Support\Facades\DB;
@@ -32,5 +33,7 @@ class RemoveGithubApp
 
             GithubApp::query()->delete();
         });
+
+        GetBootstrap::forgetVersion();
     }
 }

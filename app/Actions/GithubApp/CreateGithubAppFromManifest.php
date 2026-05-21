@@ -2,6 +2,7 @@
 
 namespace App\Actions\GithubApp;
 
+use App\Actions\Bootstrap\GetBootstrap;
 use App\Models\GithubApp;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
@@ -43,6 +44,8 @@ class CreateGithubAppFromManifest
         ]);
 
         $app->save();
+
+        GetBootstrap::forgetVersion();
 
         return $app;
     }

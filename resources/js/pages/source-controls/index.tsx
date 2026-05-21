@@ -9,6 +9,7 @@ import { columns } from '@/pages/source-controls/components/columns';
 import { SourceControl } from '@/types/source-control';
 import { PaginatedData, SharedData } from '@/types';
 import { BookOpenIcon, GithubIcon } from 'lucide-react';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 type Page = SharedData & {
   sourceControls: PaginatedData<SourceControl>;
@@ -16,7 +17,8 @@ type Page = SharedData & {
 
 export default function SourceControls() {
   const page = usePage<Page>();
-  const githubAppInstalled = page.props.configs.github_app.installed;
+  const configs = useConfigs()!;
+  const githubAppInstalled = configs.github_app.installed;
 
   return (
     <SettingsLayout>
