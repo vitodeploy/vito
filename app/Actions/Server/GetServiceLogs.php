@@ -32,6 +32,7 @@ class GetServiceLogs
             ->get();
 
         foreach ($services as $service) {
+            $service->setRelation('server', $server);
             $handler = $service->handler();
             if (! $handler instanceof HasLogs) {
                 continue;

@@ -23,7 +23,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 import FormSuccessful from '@/components/form-successful';
 
 type CatalogueItem = {
@@ -183,16 +182,17 @@ export default function ServiceLogs() {
                 <Button variant="outline" size="icon" onClick={fetchLog} disabled={!selectedKey || isLoading} title="Refresh" aria-label="Refresh">
                   {isLoading ? <LoaderCircleIcon className="animate-spin" /> : <RefreshCwIcon />}
                 </Button>
-                <a
-                  href={selectedKey ? route('logs.services.download', { server: server.id, key: selectedKey }) : undefined}
-                  onClick={(e) => {
-                    if (!selectedKey) e.preventDefault();
-                  }}
-                >
-                  <Button variant="outline" size="icon" disabled={!selectedKey} title="Download" aria-label="Download log">
+                {selectedKey ? (
+                  <a href={route('logs.services.download', { server: server.id, key: selectedKey })} download>
+                    <Button variant="outline" size="icon" title="Download" aria-label="Download log">
+                      <DownloadIcon />
+                    </Button>
+                  </a>
+                ) : (
+                  <Button variant="outline" size="icon" disabled title="Download" aria-label="Download log">
                     <DownloadIcon />
                   </Button>
-                </a>
+                )}
                 {selected && selected.source === 'file' ? (
                   <ClearButton key={selected.key} serverId={server.id} logKey={selected.key} target={selected.display_target} onCleared={fetchLog} />
                 ) : (
@@ -250,7 +250,7 @@ function LogViewer({
   }
 
   return (
-    <ScrollArea className={cn('bg-accent/30 text-accent-foreground h-[60vh] min-h-[400px] w-full')}>
+    <ScrollArea className="bg-accent/30 text-accent-foreground h-[60vh] min-h-[400px] w-full">
       <div className="p-4 font-mono text-sm whitespace-pre-wrap">{content}</div>
       <ScrollBar orientation="vertical" />
       <ScrollBar orientation="horizontal" />

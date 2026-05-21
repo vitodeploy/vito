@@ -24,7 +24,10 @@ class ClearServiceLog
 
         $log = app(GetServiceLogs::class)->resolve($server, $data['key']);
         abort_if($log === null, 404);
-        abort_if($log->source !== ServiceLog::SOURCE_FILE, 422, 'Journal logs cannot be cleared.');
+
+        if ($log->source !== ServiceLog::SOURCE_FILE) {
+            throw ValidationException::withMessages(['key' => 'Journal logs cannot be cleared.']);
+        }
 
         $server->os()->clearFile($log->target);
     }

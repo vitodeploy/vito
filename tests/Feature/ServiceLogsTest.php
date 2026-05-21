@@ -150,7 +150,7 @@ class ServiceLogsTest extends TestCase
         $this->actingAs($this->user);
         SSH::fake();
 
-        $this->post(route('logs.services.clear', $this->server), [
+        $this->postJson(route('logs.services.clear', $this->server), [
             'key' => 'mysql:journal',
         ])->assertStatus(422);
     }
@@ -161,9 +161,10 @@ class ServiceLogsTest extends TestCase
         Bus::fake();
         Queue::fake();
         Carbon::setTestNow(Carbon::create(2026, 1, 1, 12));
+        Str::createRandomStringsUsing(fn (int $n): string => str_repeat('a', $n));
         SSH::fake();
 
-        $tmpName = $this->server->id.'-'.Carbon::now()->timestamp.'-'.Str::slug('nginx:error').'.log';
+        $tmpName = $this->server->id.'-'.Carbon::now()->timestamp.'-aaaaaaaa-'.Str::slug('nginx:error').'.log';
         Storage::disk('local')->put($tmpName, 'pretend-downloaded-bytes');
 
         try {
@@ -171,6 +172,7 @@ class ServiceLogsTest extends TestCase
                 ->assertSuccessful();
         } finally {
             Storage::disk('local')->delete($tmpName);
+            Str::createRandomStringsNormally();
             Carbon::setTestNow();
         }
     }
@@ -229,5 +231,28 @@ class ServiceLogsTest extends TestCase
         $this->post(route('logs.services.clear', $this->server), [
             'key' => 'nginx:error',
         ])->assertForbidden();
+    }
+
+    public function test_unauthorized_user_cannot_read(): void
+    {
+        /** @var User $other */
+        $other = User::factory()->create();
+        $this->actingAs($other);
+        SSH::fake();
+
+        $this->postJson(route('logs.services.read', $this->server), [
+            'key' => 'nginx:error',
+        ])->assertForbidden();
+    }
+
+    public function test_unauthorized_user_cannot_download(): void
+    {
+        /** @var User $other */
+        $other = User::factory()->create();
+        $this->actingAs($other);
+        SSH::fake();
+
+        $this->get(route('logs.services.download', ['server' => $this->server, 'key' => 'nginx:error']))
+            ->assertForbidden();
     }
 }

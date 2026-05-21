@@ -103,7 +103,7 @@ class ServerLogController extends Controller
         $this->authorize('viewServiceLogs', [ServerLog::class, $server]);
 
         return response()->json(
-            app(ReadServiceLog::class)->run($server, $request->input()),
+            app(ReadServiceLog::class)->run($server, $request->only('key', 'lines', 'search')),
         );
     }
 
@@ -120,7 +120,7 @@ class ServerLogController extends Controller
     {
         $this->authorize('manageServiceLogs', [ServerLog::class, $server]);
 
-        app(ClearServiceLog::class)->run($server, $request->input());
+        app(ClearServiceLog::class)->run($server, $request->only('key'));
 
         return back()->with('success', 'Log cleared successfully');
     }

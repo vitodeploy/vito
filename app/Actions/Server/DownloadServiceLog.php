@@ -33,7 +33,7 @@ class DownloadServiceLog
             ? Str::slug($log->key).'.log'
             : str($log->target)->afterLast('/')->toString();
 
-        $tmpName = $server->id.'-'.now()->timestamp.'-'.Str::slug($log->key).'.log';
+        $tmpName = $server->id.'-'.now()->timestamp.'-'.Str::random(8).'-'.Str::slug($log->key).'.log';
         $tmpPath = Storage::disk('local')->path($tmpName);
 
         if ($log->source === ServiceLog::SOURCE_JOURNAL) {
@@ -45,7 +45,10 @@ class DownloadServiceLog
                 ]));
                 $server->ssh()->download($tmpPath, $remoteTmp);
             } finally {
-                $server->os()->deleteFile($remoteTmp);
+                try {
+                    $server->os()->deleteFile($remoteTmp);
+                } catch (Throwable) {
+                }
             }
         } else {
             $server->ssh()->download($tmpPath, $log->target);
