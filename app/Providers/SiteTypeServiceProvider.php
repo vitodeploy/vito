@@ -71,12 +71,12 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
+                    ->options(PHPSite::nodeVersionsWithNone())
                     ->default('none'),
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(PHPSite::SUPPORTED_BUN_VERSIONS)
+                    ->options(PHPSite::bunVersionsWithNone())
                     ->default('none'),
             ]))
             ->register();
@@ -99,12 +99,12 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
+                    ->options(PHPSite::nodeVersionsWithNone())
                     ->default('none'),
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(PHPSite::SUPPORTED_BUN_VERSIONS)
+                    ->options(PHPSite::bunVersionsWithNone())
                     ->default('none'),
             ]))
             ->register();
@@ -143,12 +143,12 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
+                    ->options(PHPSite::nodeVersionsWithNone())
                     ->default('none'),
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(PHPSite::SUPPORTED_BUN_VERSIONS)
+                    ->options(PHPSite::bunVersionsWithNone())
                     ->default('none'),
             ]))
             ->register();
@@ -206,7 +206,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(MiseNodeJS::NODE_VERSIONS)
+                    ->options(MiseNodeJS::SUPPORTED_NODE_VERSIONS)
                     ->default('22'),
                 DynamicField::make('package_manager')
                     ->select()
@@ -252,7 +252,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(MiseBun::BUN_VERSIONS)
+                    ->options(MiseBun::SUPPORTED_BUN_VERSIONS)
                     ->default('1.2'),
                 DynamicField::make('source_control')
                     ->component()

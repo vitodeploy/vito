@@ -160,7 +160,7 @@ paths:
                   example: 1
                 node_version:
                   type: string
-                  enum: ['none', '16', '18', '20', '22']
+                  enum: ['none', '22', '23', '24']
                   description: 'Node.js runtime version to install via mise on the isolated user. `none` skips installation. Defaults to `none` for `php`, `php-blank`, and `laravel`. Locked to the existing version if any sibling site under the same isolated user already has Node configured.'
                   example: 'none'
                 bun_version:

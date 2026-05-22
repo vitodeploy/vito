@@ -14,13 +14,6 @@ use Illuminate\Validation\Rule;
 
 class MiseNodeJS extends MiseSiteType
 {
-    public const NODE_VERSIONS = [
-        '22',
-        '20',
-        '18',
-        '16',
-    ];
-
     public static function id(): string
     {
         return 'mise_nodejs';
@@ -71,7 +64,7 @@ class MiseNodeJS extends MiseSiteType
             ],
             'node_version' => [
                 'required',
-                Rule::in(self::NODE_VERSIONS),
+                Rule::in(self::SUPPORTED_NODE_VERSIONS),
             ],
             'package_manager' => [
                 'required',

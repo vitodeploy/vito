@@ -193,7 +193,7 @@ export default function CreateSite({
         previousLocksRef.current[refKey] = null;
       }
     });
-  }, [lockedNodeVersion, lockedBunVersion, form.data.node_version, form.data.bun_version, form.data.type, configs]);
+  }, [lockedNodeVersion, lockedBunVersion, form.data.node_version, form.data.bun_version, form.data.type, configs, form.setData]);
 
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {
@@ -271,21 +271,17 @@ export default function CreateSite({
       return (
         <FormField key={`field-${field.name}`}>
           {showLaravelNotice && (
-            <Alert className="mb-2">
-              <AlertDescription>
-                <p>Laravel sites typically need a JavaScript runtime to build front-end assets during deployment.</p>
-              </AlertDescription>
+            <Alert role="status">
+              <AlertDescription>Laravel sites typically need a JavaScript runtime to build front-end assets during deployment.</AlertDescription>
             </Alert>
           )}
           <Label htmlFor={field.name}>{field.label ?? `${runtimeLabel} Version`}</Label>
           {locked ? (
             <>
-              <Alert>
-                <AlertDescription>
-                  <p>
-                    Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
-                    <span className="font-medium">{labelFor(locked)}</span> installed; this can be modified via tooling against the site.
-                  </p>
+              <Alert role="status">
+                <AlertDescription className="block">
+                  Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
+                  <span className="font-medium">{labelFor(locked)}</span> installed; this can be modified via tooling against the site.
                 </AlertDescription>
               </Alert>
               <Select value={locked} disabled>

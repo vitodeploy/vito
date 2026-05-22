@@ -10,12 +10,28 @@ trait UsesMiseRuntime
     /**
      * @var array<int, string>
      */
-    public const SUPPORTED_NODE_VERSIONS = ['none', '16', '18', '20', '22'];
+    public const SUPPORTED_NODE_VERSIONS = ['22', '23', '24'];
 
     /**
      * @var array<int, string>
      */
-    public const SUPPORTED_BUN_VERSIONS = ['none', '1.0', '1.1', '1.2'];
+    public const SUPPORTED_BUN_VERSIONS = ['1.0', '1.1', '1.2'];
+
+    /**
+     * @return array<int, string>
+     */
+    public static function nodeVersionsWithNone(): array
+    {
+        return array_merge(['none'], self::SUPPORTED_NODE_VERSIONS);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function bunVersionsWithNone(): array
+    {
+        return array_merge(['none'], self::SUPPORTED_BUN_VERSIONS);
+    }
 
     /**
      * @throws SSHError
@@ -57,6 +73,8 @@ trait UsesMiseRuntime
     {
         $cdPath = $cdToSitePath && $this->site->path ? 'cd '.$this->site->path.' && ' : '';
 
-        return "bash -c \"export PATH={$this->shimPath()} && {$cdPath}{$command}\"";
+        $inner = 'export PATH='.$this->shimPath().' && '.$cdPath.$command;
+
+        return 'bash -c '.escapeshellarg($inner);
     }
 }

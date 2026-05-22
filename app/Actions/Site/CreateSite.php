@@ -13,6 +13,7 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\Webserver\Webserver;
+use App\SiteTypes\PHPSite;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,8 @@ use Throwable;
 
 class CreateSite
 {
+    private const ISOLATED_USER_PATTERN = '/^[a-z_][a-z0-9_-]*[a-z0-9]$/';
+
     /**
      * @param  array<string, mixed>  $input
      *
@@ -139,7 +142,7 @@ class CreateSite
             ],
             'user' => [
                 'required',
-                'regex:/^[a-z_][a-z0-9_-]*[a-z0-9]$/',
+                'regex:'.self::ISOLATED_USER_PATTERN,
                 'min:3',
                 'max:32',
                 Rule::notIn(array_unique(array_merge(
@@ -178,14 +181,19 @@ class CreateSite
     {
         $user = isset($input['user']) && is_string($input['user']) ? $input['user'] : '';
 
-        if ($user === '' || preg_match('/^[a-z_][a-z0-9_-]*[a-z0-9]$/', $user) !== 1) {
+        if ($user === '' || preg_match(self::ISOLATED_USER_PATTERN, $user) !== 1) {
             return $input;
         }
 
-        foreach (['node' => 'Node.js', 'bun' => 'Bun'] as $runtime => $label) {
+        $runtimes = [
+            'node' => ['label' => 'Node.js', 'allowed' => PHPSite::nodeVersionsWithNone()],
+            'bun' => ['label' => 'Bun', 'allowed' => PHPSite::bunVersionsWithNone()],
+        ];
+
+        foreach ($runtimes as $runtime => $meta) {
             $existing = Site::existingRuntimeVersionForUser($server, $user, $runtime);
 
-            if ($existing === null) {
+            if ($existing === null || ! in_array($existing, $meta['allowed'], true) || $existing === 'none') {
                 continue;
             }
 
@@ -194,7 +202,7 @@ class CreateSite
 
             if (is_string($submitted) && $submitted !== '' && $submitted !== $existing) {
                 throw ValidationException::withMessages([
-                    $field => "Isolated user '{$user}' already has {$label} {$existing} installed; this cannot be changed.",
+                    $field => "Isolated user '{$user}' already has {$meta['label']} {$existing} installed; this cannot be changed.",
                 ]);
             }
 

@@ -65,11 +65,11 @@ class PHPSite extends AbstractSiteType
             ],
             'node_version' => [
                 'nullable',
-                Rule::in(self::SUPPORTED_NODE_VERSIONS),
+                Rule::in(self::nodeVersionsWithNone()),
             ],
             'bun_version' => [
                 'nullable',
-                Rule::in(self::SUPPORTED_BUN_VERSIONS),
+                Rule::in(self::bunVersionsWithNone()),
             ],
         ];
     }

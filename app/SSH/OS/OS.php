@@ -255,8 +255,6 @@ class OS
             'script' => $script,
         ]);
 
-        info($command);
-
         $ssh->exec($command, 'run-script');
 
         /** @var ServerLog $log */

@@ -13,12 +13,6 @@ use Illuminate\Validation\Rule;
 
 class MiseBun extends MiseSiteType
 {
-    public const BUN_VERSIONS = [
-        '1.2',
-        '1.1',
-        '1.0',
-    ];
-
     public static function id(): string
     {
         return 'mise_bun';
@@ -69,7 +63,7 @@ class MiseBun extends MiseSiteType
             ],
             'bun_version' => [
                 'required',
-                Rule::in(self::BUN_VERSIONS),
+                Rule::in(self::SUPPORTED_BUN_VERSIONS),
             ],
             'build_command' => [
                 'nullable',

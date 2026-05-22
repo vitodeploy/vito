@@ -100,7 +100,7 @@ class CreateJob implements ShouldQueue
             return 'Source control provider rejected the deploy key request: '.$this->truncate($response, 500);
         }
 
-        return sprintf('Installation failed (%s). See the site logs for full details.', class_basename($e));
+        return 'Installation failed due to an unexpected error. See the site logs for full details.';
     }
 
     /**
@@ -111,9 +111,15 @@ class CreateJob implements ShouldQueue
      */
     private function redactPublicKeys(string $message): string
     {
-        $pattern = '/(ssh-(?:rsa|ed25519|dss)|ecdsa-sha2-\S+)\s+[A-Za-z0-9+\/=]+(?:\s+\S+)?/';
+        if ($message === '') {
+            return $message;
+        }
 
-        return (string) preg_replace($pattern, '[ssh public key redacted]', $message);
+        $clipped = mb_substr($message, 0, 8192);
+
+        $pattern = '/(ssh-(?:rsa|ed25519|dss)|ecdsa-sha2-[A-Za-z0-9-]+)\s+[A-Za-z0-9+\/=]+(?:\s+\S{1,128})?/';
+
+        return (string) preg_replace($pattern, '[ssh public key redacted]', $clipped);
     }
 
     private function truncate(string $value, int $max): string
