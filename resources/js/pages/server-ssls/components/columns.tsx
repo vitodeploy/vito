@@ -26,7 +26,7 @@ import ActivateServerSsl from '@/pages/server-ssls/components/activate-server-ss
 
 function Delete({ ssl }: { ssl: SSL }) {
   const [open, setOpen] = useState(false);
-  const form = useForm();
+  const form = useForm<{ ssl?: string }>({});
 
   const submit = () => {
     form.delete(route('server-ssls.destroy', { server: ssl.server_id, ssl: ssl.id }), {

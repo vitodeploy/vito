@@ -78,6 +78,7 @@
       "./vendor/bin/phpstan analyze",
       "npm run format",
       "npm run lint",
+      "npm run types",
       "touch storage/database-test.sqlite",
       "@php artisan test"
     ],

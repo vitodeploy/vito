@@ -44,7 +44,7 @@ export default function Delete({ database }: { database: Database }) {
           <p>
             Are you sure you want to delete database <strong>{database.name}</strong>? This action cannot be undone.
           </p>
-          <InputError message={Object.values(form.errors)[0]} />
+          <InputError message={Object.values(form.errors)[0] as string | undefined} />
         </div>
         <DialogFooter>
           <DialogClose asChild>

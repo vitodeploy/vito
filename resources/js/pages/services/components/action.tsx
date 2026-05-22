@@ -45,7 +45,7 @@ export function Action({ type, service }: { type: 'start' | 'stop' | 'restart' |
         <div className="space-y-2 p-4">
           <p>Are you sure you want to {type} the service?</p>
           {Object.entries(form.errors).map(([key, value]) => (
-            <InputError key={key} message={value} />
+            <InputError key={key} message={value as string | undefined} />
           ))}
         </div>
         <DialogFooter>

@@ -70,7 +70,7 @@ export function VitoTable({ tableData, children, modal, isFetching, ...props }: 
     tableData,
     modal,
     isFetching,
-    renderCell: vitoCellRenderer,
+    renderCell: vitoCellRenderer as InertiaTableProps['renderCell'],
     ...props,
   });
 

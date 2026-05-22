@@ -24,7 +24,7 @@ import RecordForm from './record-form';
 
 function Delete({ record }: { record: DNSRecord }) {
   const [open, setOpen] = useState(false);
-  const form = useForm();
+  const form = useForm<{ record?: string }>({});
 
   const submit = () => {
     form.delete(route('dns-records.destroy', [record.domain_id, record.id]), {

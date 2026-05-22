@@ -1,20 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AvailableSsl } from '@/types/hosted-domain';
+import type { SetDataAction } from '@inertiajs/react';
 import axios from 'axios';
 
-type SetData = (callback: (prev: Record<string, string>) => Record<string, string>) => void;
+type SslFormFields = { ssl_method: string; ssl_id: string };
 
-interface UseSslMatchingOptions {
+interface UseSslMatchingOptions<T extends SslFormFields> {
   serverId: number;
   siteId: number;
   domain: string;
   sslMethod: string;
-  setData: SetData;
+  setData: SetDataAction<T>;
   open: boolean;
   originalDomain?: string;
 }
 
-export function useSslMatching({ serverId, siteId, domain, sslMethod, setData, open, originalDomain }: UseSslMatchingOptions) {
+export function useSslMatching<T extends SslFormFields>({
+  serverId,
+  siteId,
+  domain,
+  sslMethod,
+  setData,
+  open,
+  originalDomain,
+}: UseSslMatchingOptions<T>) {
   const [matchingSsls, setMatchingSsls] = useState<AvailableSsl[]>([]);
   const [loadingSsls, setLoadingSsls] = useState(false);
   const lastFetchedDomain = useRef(originalDomain ?? '');

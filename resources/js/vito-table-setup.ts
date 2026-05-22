@@ -6,4 +6,4 @@ registerIcons({
   copy: CopyIcon,
   signpost: SignpostIcon,
   database: DatabaseIcon,
-});
+} as unknown as Parameters<typeof registerIcons>[0]);
