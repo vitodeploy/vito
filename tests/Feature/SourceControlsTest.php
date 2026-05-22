@@ -6,6 +6,7 @@ use App\Models\SourceControl;
 use App\Models\User;
 use App\SourceControlProviders\Bitbucket;
 use App\SourceControlProviders\BitbucketV2;
+use App\SourceControlProviders\Gitea;
 use App\SourceControlProviders\Github;
 use App\SourceControlProviders\Gitlab;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -278,6 +279,190 @@ class SourceControlsTest extends TestCase
         );
     }
 
+    public function test_connect_gitea_persists_ssh_port_in_provider_data(): void
+    {
+        Http::fake();
+        $this->actingAs($this->user);
+
+        $this->post(route('source-controls.store'), [
+            'name' => 'gitea-custom-port',
+            'provider' => Gitea::id(),
+            'token' => 'test-token',
+            'url' => 'https://gitea.example.com/',
+            'ssh_port' => 2222,
+        ])->assertSessionDoesntHaveErrors();
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::query()
+            ->where('provider', Gitea::id())
+            ->where('profile', 'gitea-custom-port')
+            ->firstOrFail();
+
+        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
+        $this->assertSame('test-token', $sourceControl->provider_data['token']);
+        $this->assertSame(2222, $sourceControl->provider()->getSshPort());
+    }
+
+    public function test_connect_gitea_without_ssh_port_defaults_to_22(): void
+    {
+        Http::fake();
+        $this->actingAs($this->user);
+
+        $this->post(route('source-controls.store'), [
+            'name' => 'gitea-default',
+            'provider' => Gitea::id(),
+            'token' => 'test-token',
+        ])->assertSessionDoesntHaveErrors();
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::query()
+            ->where('provider', Gitea::id())
+            ->where('profile', 'gitea-default')
+            ->firstOrFail();
+
+        $this->assertSame(22, $sourceControl->provider_data['ssh_port']);
+        $this->assertSame(22, $sourceControl->provider()->getSshPort());
+    }
+
+    public function test_edit_gitea_updates_ssh_port(): void
+    {
+        Http::fake();
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Gitea::id(),
+            'user_id' => $this->user->id,
+            'profile' => 'gitea',
+            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+        ]);
+
+        $this->patch(route('source-controls.update', $sourceControl), [
+            'name' => 'gitea',
+            'ssh_port' => 2222,
+        ])->assertSessionDoesntHaveErrors();
+
+        $sourceControl->refresh();
+
+        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
+        $this->assertSame('original-token', $sourceControl->provider_data['token']);
+    }
+
+    public function test_edit_cannot_clobber_token_via_extra_input(): void
+    {
+        Http::fake();
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Gitea::id(),
+            'user_id' => $this->user->id,
+            'profile' => 'gitea',
+            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+        ]);
+
+        $this->patch(route('source-controls.update', $sourceControl), [
+            'name' => 'gitea',
+            'ssh_port' => 2222,
+            'token' => 'stolen-token',
+        ])->assertSessionDoesntHaveErrors();
+
+        $sourceControl->refresh();
+
+        $this->assertSame('original-token', $sourceControl->provider_data['token']);
+        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
+    }
+
+    public function test_edit_gitlab_cannot_clobber_token_via_extra_input(): void
+    {
+        Http::fake();
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Gitlab::id(),
+            'user_id' => $this->user->id,
+            'profile' => 'gitlab',
+            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+        ]);
+
+        $this->patch(route('source-controls.update', $sourceControl), [
+            'name' => 'gitlab',
+            'ssh_port' => 2222,
+            'token' => 'stolen-token',
+        ])->assertSessionDoesntHaveErrors();
+
+        $sourceControl->refresh();
+
+        $this->assertSame('original-token', $sourceControl->provider_data['token']);
+        $this->assertSame(2222, $sourceControl->provider_data['ssh_port']);
+    }
+
+    public function test_edit_gitea_rejects_out_of_range_ssh_port(): void
+    {
+        Http::fake();
+        $this->actingAs($this->user);
+
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Gitea::id(),
+            'user_id' => $this->user->id,
+            'provider_data' => ['token' => 'original-token', 'ssh_port' => 22],
+        ]);
+
+        $this->patch(route('source-controls.update', $sourceControl), [
+            'name' => 'gitea',
+            'ssh_port' => 70000,
+        ])->assertSessionHasErrors(['ssh_port']);
+
+        $sourceControl->refresh();
+        $this->assertSame(22, $sourceControl->provider_data['ssh_port']);
+    }
+
+    public function test_legacy_row_without_ssh_port_falls_back_to_22(): void
+    {
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Gitea::id(),
+            'user_id' => $this->user->id,
+            'provider_data' => ['token' => 'legacy-token'],
+        ]);
+
+        $this->assertSame(22, $sourceControl->provider()->getSshPort());
+        $this->assertSame(22, $sourceControl->provider()->data()['ssh_port']);
+    }
+
+    public function test_clone_script_renders_custom_port(): void
+    {
+        $rendered = view('ssh.git.clone', [
+            'host' => 'gitea.example.com',
+            'repo' => 'git@gitea.example.com-site_1:owner/repo.git',
+            'path' => '/home/vito/test',
+            'branch' => 'main',
+            'key' => 'site_1',
+            'port' => 2222,
+        ])->render();
+
+        $this->assertStringContainsString('Port 2222', $rendered);
+        $this->assertStringContainsString('ssh-keyscan -T 5 -p 2222 -H gitea.example.com', $rendered);
+        $this->assertStringContainsString("alias_name='gitea.example.com-site_1'", $rendered);
+    }
+
+    public function test_clone_script_renders_default_port_22(): void
+    {
+        $rendered = view('ssh.git.clone', [
+            'host' => 'gitea.example.com',
+            'repo' => 'git@gitea.example.com-site_1:owner/repo.git',
+            'path' => '/home/vito/test',
+            'branch' => 'main',
+            'key' => 'site_1',
+            'port' => 22,
+        ])->render();
+
+        $this->assertStringContainsString('Port 22', $rendered);
+        $this->assertStringContainsString('ssh-keyscan -T 5 -p 22 -H gitea.example.com', $rendered);
+    }
+
     /**
      * @return array<int, mixed>
      */
@@ -288,6 +473,9 @@ class SourceControlsTest extends TestCase
             [Github::id(), null, ['token' => 'test', 'global' => true]],
             [Gitlab::id(), null, ['token' => 'test']],
             [Gitlab::id(), 'https://git.example.com/', ['token' => 'test']],
+            [Gitlab::id(), 'https://git.example.com/', ['token' => 'test', 'ssh_port' => 2222]],
+            [Gitea::id(), null, ['token' => 'test']],
+            [Gitea::id(), 'https://gitea.example.com/', ['token' => 'test', 'ssh_port' => 222]],
             [Bitbucket::id(), null, ['username' => 'test', 'password' => 'test']],
             [BitbucketV2::id(), null, ['key' => 'test', 'secret' => 'test']],
         ];

@@ -1,14 +1,14 @@
 import React, { FormEvent, ReactNode, useState } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { LoaderCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
-import { SharedData } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Backup } from '@/types/backup';
+import { useConfigs } from '@/stores/bootstrap-store';
 import {
   Dialog,
   DialogClose,
@@ -22,14 +22,14 @@ import {
 
 export default function EditBackup({ backup, children }: { backup: Backup; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
 
   const form = useForm<{
     interval: string;
     custom_interval: string;
     keep: string;
   }>({
-    interval: page.props.configs.cronjob_intervals[backup.interval] ? backup.interval : 'custom',
+    interval: configs.cronjob_intervals[backup.interval] ? backup.interval : 'custom',
     custom_interval: backup.interval,
     keep: backup.keep_backups.toString(),
   });
@@ -62,7 +62,7 @@ export default function EditBackup({ backup, children }: { backup: Backup; child
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(page.props.configs.cronjob_intervals).map(([key, value]) => (
+                    {Object.entries(configs.cronjob_intervals).map(([key, value]) => (
                       <SelectItem key={`interval-${key}`} value={key}>
                         {value}
                       </SelectItem>

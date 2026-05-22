@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\FirewallRule\ManageRule;
-use App\Http\Resources\FirewallRuleResource;
 use App\Models\FirewallRule;
 use App\Models\Server;
+use App\Tables\Servers\FirewallRuleTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,7 +27,7 @@ class FirewallController extends Controller
         $this->authorize('viewAny', [FirewallRule::class, $server]);
 
         return Inertia::render('firewall/index', [
-            'rules' => FirewallRuleResource::collection($server->firewallRules()->latest()->simplePaginate(config('web.pagination_size'))),
+            'rules' => FirewallRuleTable::make($server->firewallRules())->simplePaginate(),
         ]);
     }
 

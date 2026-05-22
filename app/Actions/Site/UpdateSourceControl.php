@@ -6,8 +6,8 @@ use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Models\Site;
+use App\Models\SourceControl;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class UpdateSourceControl
@@ -20,10 +20,7 @@ class UpdateSourceControl
     public function update(Site $site, array $input): void
     {
         Validator::make($input, [
-            'source_control' => [
-                'required',
-                Rule::exists('source_controls', 'id'),
-            ],
+            'source_control' => SourceControl::siteValidationRules(),
         ])->validate();
 
         $site->source_control_id = $input['source_control'];

@@ -58,28 +58,25 @@ export function InstantLogs({ server, children }: { server: Server; children: Re
         toast.error('Failed to fetch logs');
         throw new Error('Network response was not ok');
       }
-      const data = response.json();
-      const logs = (await data).data;
+      const data = (await response.json()) as PaginatedData<ServerLog>;
       if (page === 1) {
-        setLogs(logs);
+        setLogs(data.data);
       } else {
-        setLogs((prev) => [...new Set([...prev, ...logs])]);
+        setLogs((prev) => [...new Set([...prev, ...data.data])]);
       }
-      setPage((await data).meta.current_page);
+      setPage(data.meta.current_page);
       return data;
     },
     enabled: false,
   });
 
-  useEffect(() => {
-    if (open) {
-      query.refetch();
-    }
-  }, [open]);
+  const refetch = query.refetch;
 
   useEffect(() => {
-    query.refetch();
-  }, [page]);
+    if (open) {
+      refetch();
+    }
+  }, [open, page, refetch]);
 
   const toggleLog = (logId: number) => {
     setSelectedLogId((prev) => (prev === logId ? null : logId));

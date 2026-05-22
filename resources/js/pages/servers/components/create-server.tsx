@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import React, { FormEventHandler, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,8 +22,8 @@ import { ServerProvider } from '@/types/server-provider';
 import ConnectServerProvider from '@/pages/server-providers/components/connect-server-provider';
 import axios from 'axios';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import type { SharedData } from '@/types';
 import { DataTable } from '@/components/data-table';
+import { useConfigs, usePublicKeyText } from '@/stores/bootstrap-store';
 import { ColumnDef } from '@tanstack/react-table';
 import { EventBus } from '@/lib/event-bus';
 import {
@@ -42,6 +42,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type CreateServerForm = {
   provider: string;
@@ -57,7 +58,7 @@ type CreateServerForm = {
 
 function AddService() {
   const [open, setOpen] = useState(false);
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
   const form = useForm<Service>({
     type: '',
     name: '',
@@ -103,7 +104,7 @@ function AddService() {
                 value={form.data.name}
                 onValueChange={(value) => {
                   form.setData('name', value);
-                  form.setData('type', page.props.configs.service.services[value].type);
+                  form.setData('type', configs.service.services[value].type);
                   form.setData('version', '');
                 }}
               >
@@ -112,7 +113,7 @@ function AddService() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(page.props.configs.service.services).map(([key, service]) => (
+                    {Object.entries(configs.service.services).map(([key, service]) => (
                       <SelectItem key={`service-${key}`} value={key}>
                         {service.label}
                       </SelectItem>
@@ -133,7 +134,7 @@ function AddService() {
                 <SelectContent>
                   <SelectGroup>
                     {form.data.name &&
-                      page.props.configs.service.services[form.data.name].versions.map((version) => (
+                      configs.service.services[form.data.name].versions.map((version) => (
                         <SelectItem key={`version-${form.data.name}-${version}`} value={version}>
                           {version}
                         </SelectItem>
@@ -197,7 +198,8 @@ export default function CreateServer({
   onOpenChange?: (open: boolean) => void;
   children: React.ReactNode;
 }) {
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
+  const publicKeyText = usePublicKeyText();
 
   const [open, setOpen] = useState(defaultOpen || false);
   useEffect(() => {
@@ -286,12 +288,17 @@ export default function CreateServer({
 
   const [copySuccess, setCopySuccess] = useState(false);
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(page.props.public_key_text).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 2000);
-    });
+    navigator.clipboard.writeText(publicKeyText).then(
+      () => {
+        setCopySuccess(true);
+        setTimeout(() => {
+          setCopySuccess(false);
+        }, 2000);
+      },
+      () => {
+        toast.error('Failed to copy to clipboard');
+      },
+    );
   };
 
   const [serverProviders, setServerProviders] = useState<ServerProvider[]>([]);
@@ -364,7 +371,7 @@ export default function CreateServer({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(page.props.configs.server_provider.providers).map(([key, provider]) => (
+                    {Object.entries(configs.server_provider.providers).map(([key, provider]) => (
                       <SelectItem key={key} value={key}>
                         {provider.label}
                       </SelectItem>
@@ -510,7 +517,7 @@ export default function CreateServer({
                   <Textarea
                     onClick={copyToClipboard}
                     id="public_key"
-                    value={page.props.public_key_text}
+                    value={publicKeyText}
                     readOnly
                     className="justify-between overflow-auto font-normal"
                     spellCheck={false}
@@ -533,7 +540,7 @@ export default function CreateServer({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {page.props.configs.operating_systems.map((value) => (
+                      {configs.operating_systems.map((value) => (
                         <SelectItem key={`os-${value}`} value={value}>
                           {value}
                         </SelectItem>

@@ -6,6 +6,7 @@ use App\Actions\NotificationChannels\AddChannel;
 use App\Actions\NotificationChannels\EditChannel;
 use App\Http\Resources\NotificationChannelResource;
 use App\Models\NotificationChannel;
+use App\Tables\NotificationChannelTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -28,11 +29,11 @@ class NotificationChannelController extends Controller
         $this->authorize('viewAny', NotificationChannel::class);
 
         $user = user();
-        $notificationChannels = NotificationChannel::getByProjectId($user->current_project_id, $user)
-            ->simplePaginate(config('web.pagination_size'));
 
         return Inertia::render('notification-channels/index', [
-            'notificationChannels' => NotificationChannelResource::collection($notificationChannels),
+            'notificationChannels' => NotificationChannelTable::make(
+                NotificationChannel::getByProjectId($user->current_project_id, $user)
+            )->simplePaginate(),
         ]);
     }
 

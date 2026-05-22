@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Validation\Rule;
 
 /**
  * @property string $provider
@@ -18,11 +19,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $access_token
  * @property ?int $project_id
  * @property int $user_id
+ * @property ?string $external_identifier
  * @property ?Project $project
  * @property User $user
  */
 class SourceControl extends AbstractModel
 {
+    public const string PROVIDER_GITHUB_APP = 'github-app';
+
     /** @use HasFactory<SourceControlFactory> */
     use HasFactory;
 
@@ -36,6 +40,7 @@ class SourceControl extends AbstractModel
         'access_token',
         'project_id',
         'user_id',
+        'external_identifier',
     ];
 
     protected $casts = [
@@ -44,6 +49,33 @@ class SourceControl extends AbstractModel
         'project_id' => 'integer',
         'user_id' => 'integer',
     ];
+
+    public function isGithubApp(): bool
+    {
+        return $this->provider === self::PROVIDER_GITHUB_APP;
+    }
+
+    /**
+     * Validation rules for a `source_control` site input that must reference
+     * a source control whose provider is usable for sites.
+     *
+     * @return array<int, mixed>
+     */
+    public static function siteValidationRules(): array
+    {
+        /** @var array<string, array<string, mixed>> $providers */
+        $providers = config('source-control.providers', []);
+
+        $usableProviders = array_keys(array_filter(
+            $providers,
+            fn (array $config): bool => (bool) ($config['usable_for_sites'] ?? true),
+        ));
+
+        return [
+            'required',
+            Rule::exists('source_controls', 'id')->whereIn('provider', $usableProviders),
+        ];
+    }
 
     public function provider(): SourceControlProvider
     {

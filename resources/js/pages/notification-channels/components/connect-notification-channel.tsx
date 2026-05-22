@@ -10,17 +10,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { FormEventHandler, ReactNode, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { SharedData } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 type NotificationChannelForm = {
   provider: string;
@@ -39,7 +39,7 @@ export default function ConnectNotificationChannel({
 }) {
   const [open, setOpen] = useState(false);
 
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
 
   const form = useForm<Required<NotificationChannelForm>>({
     provider: defaultProvider || 'email',
@@ -83,7 +83,7 @@ export default function ConnectNotificationChannel({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(page.props.configs.notification_channel.providers).map(([key, provider]) => (
+                    {Object.entries(configs.notification_channel.providers).map(([key, provider]) => (
                       <SelectItem key={key} value={key}>
                         {provider.label}
                       </SelectItem>
@@ -105,7 +105,7 @@ export default function ConnectNotificationChannel({
               />
               <InputError message={form.errors.name} />
             </FormField>
-            {page.props.configs.notification_channel.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
+            {configs.notification_channel.providers[form.data.provider]?.form?.map((field: DynamicFieldConfig) => (
               <DynamicField
                 key={`field-${field.name}`}
                 /*@ts-expect-error dynamic types*/

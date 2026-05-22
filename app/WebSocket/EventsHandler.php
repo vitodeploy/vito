@@ -183,6 +183,21 @@ class EventsHandler implements WebSocketHandler
     }
 
     /**
+     * Broadcast an event to every connected client, regardless of project.
+     *
+     * @param  array<string, mixed>  $eventData
+     */
+    public function broadcastToAll(array $eventData): void
+    {
+        foreach ($this->connections as $entry) {
+            $entry['connection']->send([
+                'type' => 'event',
+                'data' => $eventData,
+            ]);
+        }
+    }
+
+    /**
      * Get all project IDs that have active subscriptions.
      *
      * @return array<int>

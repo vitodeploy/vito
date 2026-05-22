@@ -2,6 +2,9 @@
 
 namespace App\Actions\Plugins;
 
+use App\Actions\Bootstrap\GetBootstrap;
+use App\DTOs\SocketEventDTO;
+use App\Events\SocketEvent;
 use App\Models\Plugin;
 use App\Models\PluginError;
 use Exception;
@@ -51,6 +54,10 @@ final readonly class UninstallPlugin
         $plugin->delete();
 
         $this->cache->clear();
+
+        GetBootstrap::forgetVersion();
+        $newVersion = app(GetBootstrap::class)->computeVersion();
+        SocketEvent::dispatch(new SocketEventDTO(0, 'bootstrap.invalidated', ['version' => $newVersion]));
     }
 
     public function path_join(array $strings): string

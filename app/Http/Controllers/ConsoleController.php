@@ -47,7 +47,7 @@ class ConsoleController extends Controller
             'ssh_user' => $request->input('user'),
         ]);
 
-        $appUrl = parse_url(config('app.url'));
+        $appUrl = parse_url(config('app.ws_url') ?: config('app.url'));
         $isSecure = ($appUrl['scheme'] ?? 'http') === 'https';
         $wsProtocol = $isSecure ? 'wss' : 'ws';
         $host = $appUrl['host'] ?? 'localhost';

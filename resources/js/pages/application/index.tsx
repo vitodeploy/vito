@@ -8,21 +8,14 @@ import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import SiteBanners from '@/components/site-banners';
-import { DataTable } from '@/components/data-table';
-import { columns } from '../server-logs/components/columns';
+import Logs from '@/pages/server-logs/components/logs';
 import { Server } from '@/types/server';
-import { PaginatedData } from '@/types';
-import { ServerLog } from '@/types/server-log';
-import { useRealtime } from '@/hooks/use-socket-events';
 
 export default function Application() {
   const page = usePage<{
     server: Server;
     site: Site;
-    logs: PaginatedData<ServerLog>;
   }>();
-
-  const [logs] = useRealtime<ServerLog>(page.props.logs, 'server-log');
 
   siteHelper.storeSite(page.props.site);
 
@@ -49,7 +42,7 @@ export default function Application() {
 
           <div className="flex flex-col gap-2">
             <p className="text-muted-foreground text-sm font-medium">Installation logs</p>
-            <DataTable columns={columns} paginatedData={logs} />
+            <Logs server={page.props.server} site={page.props.site} />
           </div>
         </Container>
       </ServerLayout>

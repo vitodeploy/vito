@@ -7,8 +7,8 @@ use App\Actions\Worker\ManageWorker;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use App\Models\SourceControl;
 use App\Models\Worker;
-use Illuminate\Validation\Rule;
 
 class NodeJS extends AbstractSiteType
 {
@@ -39,10 +39,7 @@ class NodeJS extends AbstractSiteType
     public function createRules(array $input): array
     {
         return [
-            'source_control' => [
-                'required',
-                Rule::exists('source_controls', 'id'),
-            ],
+            'source_control' => SourceControl::siteValidationRules(),
             'repository' => [
                 'required',
             ],

@@ -4,14 +4,17 @@ import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ConnectStorageProvider from '@/pages/storage-providers/components/connect-storage-provider';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/storage-providers/components/columns';
+import { VitoTable } from '@/components/vito-table';
 import { StorageProvider } from '@/types/storage-provider';
-import { PaginatedData } from '@/types';
-import { BookOpenIcon } from 'lucide-react';
+import { BookOpenIcon, MoreVerticalIcon } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import Edit from '@/pages/storage-providers/components/edit';
+import Delete from '@/pages/storage-providers/components/delete';
+import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
-  storageProviders: PaginatedData<StorageProvider>;
+  storageProviders: InertiaTableData;
   configs: {
     storage_providers: string[];
   };
@@ -39,7 +42,29 @@ export default function StorageProviders() {
           </div>
         </div>
 
-        <DataTable columns={columns} paginatedData={page.props.storageProviders} />
+        <VitoTable
+          tableData={page.props.storageProviders}
+          actions={(row: Row) => {
+            const storageProvider = asRow<StorageProvider>(row, ['id', 'name', 'global']);
+            return (
+              <div className="flex items-center justify-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreVerticalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <Edit storageProvider={storageProvider} />
+                    <DropdownMenuSeparator />
+                    <Delete storageProvider={storageProvider} />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            );
+          }}
+        />
       </Container>
     </SettingsLayout>
   );

@@ -19,7 +19,7 @@ class FirewallRuleFactory extends Factory
             'name' => $this->faker->word,
             'type' => 'allow',
             'protocol' => 'tcp',
-            'port' => $this->faker->numberBetween(1, 65535),
+            'port' => (string) $this->faker->numberBetween(1, 65535),
             'source' => $this->faker->ipv4(),
             'mask' => 24,
             'note' => 'test',

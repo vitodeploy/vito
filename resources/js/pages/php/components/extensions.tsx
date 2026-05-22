@@ -1,6 +1,6 @@
 import { Service } from '@/types/service';
 import React, { FormEvent, useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import {
   Dialog,
   DialogClose,
@@ -17,11 +17,11 @@ import { Button } from '@/components/ui/button';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SharedData } from '@/types';
 import InputError from '@/components/ui/input-error';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function Extensions({ service }: { service: Service }) {
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
   const [open, setOpen] = useState(false);
   const form = useForm<{
     extension: string;
@@ -30,7 +30,7 @@ export default function Extensions({ service }: { service: Service }) {
     extension: '',
     version: service.version,
   });
-  const [, php] = Object.entries(page.props.configs.service.services).filter(([key]) => key === 'php')[0] || null;
+  const [, php] = Object.entries(configs.service.services).filter(([key]) => key === 'php')[0] || null;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();

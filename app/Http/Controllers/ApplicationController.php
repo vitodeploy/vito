@@ -15,7 +15,6 @@ use App\Helpers\EnvParser;
 use App\Http\Resources\DeploymentResource;
 use App\Http\Resources\DeploymentScriptResource;
 use App\Http\Resources\LoadBalancerServerResource;
-use App\Http\Resources\ServerLogResource;
 use App\Models\Deployment;
 use App\Models\DeploymentScript;
 use App\Models\Server;
@@ -48,7 +47,6 @@ class ApplicationController extends Controller
         $preFlightScript = $site->preFlightScript;
 
         return Inertia::render('application/index', [
-            'logs' => ServerLogResource::collection($site->logs()->latest()->simplePaginate(config('web.pagination_size'))),
             'deployments' => DeploymentResource::collection($site->deployments()->latest()->simplePaginate(config('web.pagination_size'))),
             'deploymentScript' => new DeploymentScriptResource($deploymentScript),
             'buildScript' => $buildScript ? new DeploymentScriptResource($buildScript) : null,

@@ -12,6 +12,7 @@ use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
 use App\SSH\OS\Git;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -65,10 +66,6 @@ abstract class AbstractSiteType implements SiteType
         return null;
     }
 
-    /**
-     * Update install progress. Always pass $step explicitly: a non-null value
-     * sets the current named phase; null clears it (e.g. on completion).
-     */
     protected function progress(int $percentage, ?string $step): void
     {
         $this->site->progress = $percentage;
@@ -115,27 +112,39 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        if (! $this->userExists($this->site->user)) {
-            $this->site->server->os()->createIsolatedUser(
-                $this->site->user,
-                Str::random(15),
-                $this->site->id
-            );
+        $lock = $this->site->server->isolatedUserLock($this->site->user);
+
+        try {
+            $lock->block(30);
+        } catch (LockTimeoutException) {
+            throw new RuntimeException("Could not acquire isolated-user lock for '{$this->site->user}' on server {$this->site->server_id} within 30s.");
         }
 
-        if ($this->site->php_version) {
-            $service = $this->site->php();
-            if (! $service instanceof Service) {
-                throw new RuntimeException('PHP service not found');
-            }
-            if (! $this->fpmPoolExists($this->site->user, $this->site->php_version)) {
-                /** @var PHP $php */
-                $php = $service->handler();
-                $php->createFpmPool(
+        try {
+            if (! $this->site->userSharedWithSiblings() && ! $this->userExists($this->site->user)) {
+                $this->site->server->os()->createIsolatedUser(
                     $this->site->user,
-                    $this->site->php_version
+                    Str::random(15),
+                    $this->site->id
                 );
             }
+
+            if ($this->site->php_version) {
+                $service = $this->site->php();
+                if (! $service instanceof Service) {
+                    throw new RuntimeException('PHP service not found');
+                }
+                if (! $this->site->fpmPoolSharedWithSiblings() && ! $this->fpmPoolExists($this->site->user, $this->site->php_version)) {
+                    /** @var PHP $php */
+                    $php = $service->handler();
+                    $php->createFpmPool(
+                        $this->site->user,
+                        $this->site->php_version
+                    );
+                }
+            }
+        } finally {
+            $lock->release();
         }
     }
 
@@ -151,8 +160,7 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * @throws SSHError when the connection itself fails — only an SSHCommandError
-     *                  (non-zero exit) is treated as "user does not exist".
+     * @throws SSHError
      */
     protected function userExists(string $user): bool
     {
@@ -168,7 +176,7 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * @throws SSHError when the connection itself fails.
+     * @throws SSHError
      */
     protected function repositoryAlreadyCloned(): bool
     {
@@ -184,7 +192,7 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * @throws SSHError when the connection itself fails.
+     * @throws SSHError
      */
     protected function fpmPoolExists(string $user, string $version): bool
     {

@@ -66,6 +66,9 @@ export interface Configs {
         label: string;
         handler: string;
         form?: DynamicFieldConfig[];
+        connectable?: boolean;
+        usable_for_sites?: boolean;
+        editable_fields?: string[];
       };
     };
   };
@@ -105,6 +108,10 @@ export interface Configs {
     types: {
       [type: string]: SiteType;
     };
+    reserved_user_names: string[];
+  };
+  github_app: {
+    installed: boolean;
   };
 
   [key: string]: unknown;
@@ -117,13 +124,11 @@ export interface SharedData {
   demo: boolean;
   quote: { message: string; author: string };
   auth: Auth;
-  ziggy: Config & { location: string };
-  configs: Configs;
-  server_sites?: Site[];
+  ziggy?: Config & { location: string };
   server?: Server;
   site?: Site;
-  public_key_text: string;
   csrf_token: string;
+  bootstrap_version: string;
   flash?: {
     status: string;
     success: string;

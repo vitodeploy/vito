@@ -1,25 +1,24 @@
 import { Head, usePage } from '@inertiajs/react';
 import { Server } from '@/types/server';
-import { PaginatedData } from '@/types';
 import { FirewallRule } from '@/types/firewall';
 import ServerLayout from '@/layouts/server/layout';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { BookOpenIcon, PlusIcon } from 'lucide-react';
+import { BookOpenIcon, MoreVerticalIcon, PlusIcon } from 'lucide-react';
 import Container from '@/components/container';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/firewall/components/columns';
+import { VitoTable } from '@/components/vito-table';
 import RuleForm from '@/pages/firewall/components/form';
-import { useRealtime } from '@/hooks/use-socket-events';
+import Delete from '@/pages/firewall/components/delete';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 export default function Firewall() {
   const page = usePage<{
     server: Server;
-    rules: PaginatedData<FirewallRule>;
+    rules: InertiaTableData;
   }>();
-
-  const [rules] = useRealtime<FirewallRule>(page.props.rules, 'firewall-rule');
 
   return (
     <ServerLayout>
@@ -44,7 +43,31 @@ export default function Firewall() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={rules} />
+        <VitoTable
+          tableData={page.props.rules}
+          actions={(row: Row) => {
+            const firewallRule = asRow<FirewallRule>(row, ['id', 'name', 'server_id']);
+            return (
+              <div className="flex items-center justify-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreVerticalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <RuleForm serverId={firewallRule.server_id} firewallRule={firewallRule}>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
+                    </RuleForm>
+                    <DropdownMenuSeparator />
+                    <Delete firewallRule={firewallRule} />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            );
+          }}
+        />
       </Container>
     </ServerLayout>
   );

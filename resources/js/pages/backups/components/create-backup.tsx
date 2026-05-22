@@ -2,20 +2,20 @@ import { Server } from '@/types/server';
 import { FormEvent, ReactNode, useState } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { LoaderCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
-import { SharedData } from '@/types';
 import { Input } from '@/components/ui/input';
+import { useConfigs } from '@/stores/bootstrap-store';
 import StorageProviderSelect from '@/pages/storage-providers/components/storage-provider-select';
 import DatabaseSelect from '@/pages/databases/components/database-select';
 
 export default function CreateBackup({ server, children }: { server: Server; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
 
   const form = useForm<{
     type: string;
@@ -64,7 +64,7 @@ export default function CreateBackup({ server, children }: { server: Server; chi
                 <SelectContent>
                   <SelectGroup>
                     <SelectItem value="file">File Backup</SelectItem>
-                    {page.props.server?.services?.database && <SelectItem value="database">Database Backup</SelectItem>}
+                    {server.services?.database && <SelectItem value="database">Database Backup</SelectItem>}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -123,7 +123,7 @@ export default function CreateBackup({ server, children }: { server: Server; chi
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {Object.entries(page.props.configs.cronjob_intervals).map(([key, value]) => (
+                    {Object.entries(configs.cronjob_intervals).map(([key, value]) => (
                       <SelectItem key={`interval-${key}`} value={key}>
                         {value}
                       </SelectItem>

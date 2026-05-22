@@ -4,7 +4,7 @@ export interface FirewallRule {
   server_id: number;
   type: string;
   protocol: string;
-  port: number;
+  port: string;
   source: string;
   mask: number;
   note: string;

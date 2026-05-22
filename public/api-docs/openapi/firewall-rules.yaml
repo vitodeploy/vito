@@ -94,8 +94,9 @@ paths:
                   example: 'SSH Access'
                 port:
                   type: string
-                  description: Port number or range
-                  example: '22'
+                  description: A single port (e.g. "22") or an inclusive port range (e.g. "3000:3010"). Each side must be between 1 and 65535, and the start must be lower than the end (the start-less-than-end constraint is enforced by the server and not expressible in this pattern).
+                  pattern: '^(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3})(:(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))?$'
+                  example: '3000:3010'
                 from:
                   type: string
                   description: Source IP or CIDR

@@ -2,17 +2,19 @@ import { Head, usePage } from '@inertiajs/react';
 import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/data-table';
+import { VitoTable } from '@/components/vito-table';
 import { SshKey } from '@/types/ssh-key';
-import { columns } from '@/pages/server-ssh-keys/components/columns';
-import { PaginatedData } from '@/types';
 import DeployKey from '@/pages/server-ssh-keys/components/deploy-key';
+import Delete from '@/pages/server-ssh-keys/components/delete';
 import ServerLayout from '@/layouts/server/layout';
 import HeaderContainer from '@/components/header-container';
-import { BookOpenIcon, RocketIcon } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { BookOpenIcon, MoreVerticalIcon, RocketIcon } from 'lucide-react';
+import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
-  sshKeys: PaginatedData<SshKey>;
+  sshKeys: InertiaTableData;
 };
 
 export default function SshKeys() {
@@ -40,7 +42,24 @@ export default function SshKeys() {
           </div>
         </HeaderContainer>
 
-        <DataTable columns={columns} paginatedData={page.props.sshKeys} />
+        <VitoTable
+          tableData={page.props.sshKeys}
+          actions={(row: Row) => (
+            <div className="flex items-center justify-end">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreVerticalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <Delete sshKey={asRow<SshKey>(row, ['id', 'name'])} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        />
       </Container>
     </ServerLayout>
   );

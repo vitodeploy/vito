@@ -4,14 +4,18 @@ import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ConnectDNSProvider from '@/pages/dns-providers/components/connect-dns-provider';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/dns-providers/components/columns';
+import { VitoTable } from '@/components/vito-table';
 import { DNSProvider } from '@/types/dns-provider';
-import { PaginatedData, SharedData } from '@/types';
-import { BookOpenIcon } from 'lucide-react';
+import { SharedData } from '@/types';
+import { BookOpenIcon, MoreVerticalIcon } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import Edit from '@/pages/dns-providers/components/edit';
+import Delete from '@/pages/dns-providers/components/delete';
+import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
-  dnsProviders: PaginatedData<DNSProvider>;
+  dnsProviders: InertiaTableData;
 };
 
 export default function DNSProviders() {
@@ -36,7 +40,29 @@ export default function DNSProviders() {
           </div>
         </div>
 
-        <DataTable columns={columns} paginatedData={page.props.dnsProviders} />
+        <VitoTable
+          tableData={page.props.dnsProviders}
+          actions={(row: Row) => {
+            const dnsProvider = asRow<DNSProvider>(row, ['id', 'name', 'global']);
+            return (
+              <div className="flex items-center justify-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreVerticalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <Edit dnsProvider={dnsProvider} />
+                    <DropdownMenuSeparator />
+                    <Delete dnsProvider={dnsProvider} />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            );
+          }}
+        />
       </Container>
     </SettingsLayout>
   );

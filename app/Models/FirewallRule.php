@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property string $type
  * @property string $protocol
- * @property int $port
+ * @property string $port
  * @property string $source
  * @property ?string $mask
  * @property string $note
@@ -38,7 +38,6 @@ class FirewallRule extends AbstractModel
 
     protected $casts = [
         'server_id' => 'integer',
-        'port' => 'integer',
         'status' => FirewallRuleStatus::class,
     ];
 

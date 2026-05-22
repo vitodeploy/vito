@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\LoadBalancerMethod;
+use App\Enums\ServiceStatus;
 use App\Enums\SiteStatus;
 use App\Facades\SSH;
 use App\Models\Database;
 use App\Models\DatabaseUser;
+use App\Models\Service;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SiteTypes\Laravel;
@@ -84,6 +86,220 @@ class SitesTest extends TestCase
 
         $this->post(route('sites.store', ['server' => $this->server]), $inputs)
             ->assertSessionHasErrors();
+    }
+
+    public function test_create_site_reusing_existing_isolated_user(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shared',
+            'domain' => 'first.example.com',
+            'path' => '/home/shared/first.example.com',
+            'php_version' => '8.2',
+        ]);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => PHPBlank::id(),
+            'domain' => 'second.example.com',
+            'aliases' => [],
+            'php_version' => '8.2',
+            'web_directory' => 'public',
+            'user' => 'shared',
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'first.example.com',
+            'user' => 'shared',
+        ]);
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'second.example.com',
+            'user' => 'shared',
+            'path' => '/home/shared/second.example.com',
+        ]);
+
+        SSH::assertNotExecutedContains('useradd');
+    }
+
+    public function test_isolated_users_endpoint_lists_users_with_counts(): void
+    {
+        $this->actingAs($this->user);
+
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shop',
+            'domain' => 'shop1.test',
+            'path' => '/home/shop/shop1.test',
+        ]);
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shop',
+            'domain' => 'shop2.test',
+            'path' => '/home/shop/shop2.test',
+        ]);
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'blog',
+            'domain' => 'blog.test',
+            'path' => '/home/blog/blog.test',
+        ]);
+
+        $response = $this->getJson(route('sites.isolated-users', ['server' => $this->server]));
+
+        $response->assertSuccessful();
+        $data = collect($response->json())->keyBy('user');
+
+        $this->assertSame(2, $data['shop']['sites_count']);
+        $this->assertSame(1, $data['blog']['sites_count']);
+        $this->assertArrayNotHasKey('vito', $data->all());
+    }
+
+    public function test_delete_site_keeps_isolated_user_when_others_share_it(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $siteA = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shared',
+            'domain' => 'a.test',
+            'path' => '/home/shared/a.test',
+            'php_version' => '8.2',
+        ]);
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shared',
+            'domain' => 'b.test',
+            'path' => '/home/shared/b.test',
+            'php_version' => '8.2',
+        ]);
+
+        $this->delete(route('site-settings.destroy', [
+            'server' => $this->server->id,
+            'site' => $siteA->id,
+        ]), [
+            'domain' => $siteA->domain,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('sites', ['id' => $siteA->id]);
+        $this->assertDatabaseHas('sites', ['domain' => 'b.test', 'user' => 'shared']);
+
+        SSH::assertNotExecutedContains('userdel');
+    }
+
+    public function test_delete_last_isolated_site_removes_user(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'lonely',
+            'domain' => 'lonely.test',
+            'path' => '/home/lonely/lonely.test',
+            'php_version' => '8.2',
+        ]);
+
+        $this->delete(route('site-settings.destroy', [
+            'server' => $this->server->id,
+            'site' => $site->id,
+        ]), [
+            'domain' => $site->domain,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('sites', ['id' => $site->id]);
+
+        SSH::assertExecutedContains('userdel');
+    }
+
+    public function test_php_version_switch_removes_old_pool_when_not_shared(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Service::query()->create([
+            'server_id' => $this->server->id,
+            'type' => 'php',
+            'name' => 'php',
+            'version' => '8.4',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shared',
+            'domain' => 'a.test',
+            'path' => '/home/shared/a.test',
+            'php_version' => '8.2',
+        ]);
+        $siteB = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shared',
+            'domain' => 'b.test',
+            'path' => '/home/shared/b.test',
+            'php_version' => '8.4',
+        ]);
+
+        $this->patch(route('site-settings.update-php-version', [
+            'server' => $this->server->id,
+            'site' => $siteB->id,
+        ]), [
+            'version' => '8.2',
+        ])->assertSessionDoesntHaveErrors();
+
+        $siteB->refresh();
+        $this->assertSame('8.2', $siteB->php_version);
+
+        SSH::assertExecutedContains('rm -f /etc/php/8.4/fpm/pool.d/shared.conf');
+    }
+
+    public function test_php_version_switch_preserves_shared_old_pool(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        Service::query()->create([
+            'server_id' => $this->server->id,
+            'type' => 'php',
+            'name' => 'php',
+            'version' => '8.4',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shared',
+            'domain' => 'a.test',
+            'path' => '/home/shared/a.test',
+            'php_version' => '8.2',
+        ]);
+        $siteB = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'shared',
+            'domain' => 'b.test',
+            'path' => '/home/shared/b.test',
+            'php_version' => '8.2',
+        ]);
+
+        $this->patch(route('site-settings.update-php-version', [
+            'server' => $this->server->id,
+            'site' => $siteB->id,
+        ]), [
+            'version' => '8.4',
+        ])->assertSessionDoesntHaveErrors();
+
+        $siteB->refresh();
+        $this->assertSame('8.4', $siteB->php_version);
+
+        SSH::assertNotExecutedContains('rm -f /etc/php/8.2/fpm/pool.d/shared.conf');
     }
 
     #[DataProvider('create_failure_data')]
@@ -566,6 +782,33 @@ class SitesTest extends TestCase
                     'php_version' => '8.2',
                     'web_directory' => 'public',
                     'user' => 'qwertyuiopasdfghjklzxcvbnmqwertyu',
+                ],
+            ],
+            [
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'www-data',
+                ],
+            ],
+            [
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'mysql',
+                ],
+            ],
+            [
+                [
+                    'type' => PHPBlank::id(),
+                    'domain' => 'example.com',
+                    'php_version' => '8.2',
+                    'web_directory' => 'public',
+                    'user' => 'ubuntu',
                 ],
             ],
         ];

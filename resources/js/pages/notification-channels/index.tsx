@@ -4,14 +4,18 @@ import Container from '@/components/container';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ConnectNotificationChannel from '@/pages/notification-channels/components/connect-notification-channel';
-import { DataTable } from '@/components/data-table';
-import { columns } from '@/pages/notification-channels/components/columns';
+import { VitoTable } from '@/components/vito-table';
 import { NotificationChannel } from '@/types/notification-channel';
-import { Configs, PaginatedData } from '@/types';
-import { BookOpenIcon } from 'lucide-react';
+import { Configs } from '@/types';
+import { BookOpenIcon, MoreVerticalIcon } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import Edit from '@/pages/notification-channels/components/edit';
+import Delete from '@/pages/notification-channels/components/delete';
+import type { InertiaTableData, Row } from 'inertia-table-react';
+import { asRow } from '@/lib/inertia-table';
 
 type Page = {
-  notificationChannels: PaginatedData<NotificationChannel>;
+  notificationChannels: InertiaTableData;
   configs: Configs;
 };
 
@@ -37,7 +41,29 @@ export default function NotificationChannels() {
           </div>
         </div>
 
-        <DataTable columns={columns} paginatedData={page.props.notificationChannels} />
+        <VitoTable
+          tableData={page.props.notificationChannels}
+          actions={(row: Row) => {
+            const notificationChannel = asRow<NotificationChannel>(row, ['id', 'name', 'global']);
+            return (
+              <div className="flex items-center justify-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreVerticalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <Edit notificationChannel={notificationChannel} />
+                    <DropdownMenuSeparator />
+                    <Delete notificationChannel={notificationChannel} />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            );
+          }}
+        />
       </Container>
     </SettingsLayout>
   );

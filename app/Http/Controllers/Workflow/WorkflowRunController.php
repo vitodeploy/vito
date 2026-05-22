@@ -8,6 +8,7 @@ use App\Http\Resources\WorkflowResource;
 use App\Http\Resources\WorkflowRunResource;
 use App\Models\Workflow;
 use App\Models\WorkflowRun;
+use App\Tables\WorkflowRunTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -27,12 +28,7 @@ class WorkflowRunController extends Controller
 
         return inertia('workflow-runs/index', [
             'workflow' => WorkflowResource::make($workflow),
-            'workflowRuns' => WorkflowRunResource::collection(
-                $workflow
-                    ->runs()
-                    ->orderByDesc('created_at')
-                    ->simplePaginate(config('web.pagination_size'))
-            ),
+            'workflowRuns' => WorkflowRunTable::make($workflow->runs())->simplePaginate(),
         ]);
     }
 

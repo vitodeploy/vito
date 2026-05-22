@@ -78,6 +78,14 @@ jobs:
       - name: Update config/app.php
         run: sed -i "s/'version' => '[^']*'/'version' => '${{ steps.version.outputs.version }}'/" config/app.php
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest --no-dev
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

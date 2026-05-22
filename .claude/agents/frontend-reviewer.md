@@ -54,10 +54,18 @@ For each changed file, `Read` the changed regions and check:
 - **Dynamic forms**: branches on `field.type`? Value type respected?
 - **A11y**: clickable non-buttons? Missing `aria-*` on icon-only buttons? Form inputs with associated labels?
 - **Types**: new API Resource fields reflected in `resources/js/types/`?
-- **Async**: `await` on promise-returning APIs that can reject? Error path visible to the user?
+- **Async response normalization**: in `onError`, `onSuccess`, `.then()`, `.catch()`, fetch handlers — **do not assume payload shape**. The same handler can receive a string, an array of strings, an object keyed by field, or `undefined`. Before rendering any value as text, normalize: check `typeof`, handle `Array.isArray`, fall back to a generic message. `String(unknown)` produces `"[object Object]"` or `"a,b"` for non-strings and will leak into the UI — flag any `String(...)` / `${...}` interpolation of an unconstrained value.
+- **Promise rejection paths**: `await` on promise-returning APIs that can reject? Error path visible to the user, not silently swallowed?
 - **Performance smells**: heavy work in render bodies, unmemoized list keys using `index`, derived state in `useState`?
+- **Cross-component consistency** (REQUIRED step — not optional): before reporting, `Grep` `resources/js/components/` and `resources/js/pages/` for the same conceptual UI element being modified (banner, badge, progress bar, status-aware tooltip, error toast). Compare:
+  - Vocabulary and casing of labels (e.g. `humanizeStep` vs `replace(/-/g, ' ')`)
+  - Scale of numeric values (percentage caps, retry counts)
+  - Placement of the same element across pages
+  - Helper functions duplicated inline that exist in `resources/js/lib/utils.ts`
 
-If you need context, `Grep` siblings in `resources/js/components/` for the established pattern.
+  If the diff introduces an inline copy of logic that already lives in `lib/utils.ts`, or diverges in casing/scale from sibling components handling the same concept, flag as Medium **Cross-component consistency**.
+
+If you need context, `Grep` siblings in `resources/js/components/` and `Read` at least one fully before reporting.
 
 ## What to report
 
@@ -92,8 +100,8 @@ No issues found.
 ### Severity rubric
 
 - **Critical** — broken feature, data loss, XSS via `dangerouslySetInnerHTML` on untrusted input, infinite re-render loop, unhandled rejection that crashes the page.
-- **High** — pattern violation that will cause bugs (missing hook deps, raw `<a>` for internal route, missing cleanup, ignored promise rejection, hardcoded provider field in dynamic form).
-- **Medium** — convention break (margins over `gap`, non-semantic Tailwind tokens, missing ARIA on icon button, out-of-sync TS types).
+- **High** — pattern violation that will cause bugs (missing hook deps, raw `<a>` for internal route, missing cleanup, ignored promise rejection, hardcoded provider field in dynamic form, **`String(unknown)` or `${unknown}` rendering of an un-normalized async payload value**).
+- **Medium** — convention break (margins over `gap`, non-semantic Tailwind tokens, missing ARIA on icon button, out-of-sync TS types, **cross-component consistency violation** — duplicated inline helper that lives in `lib/utils.ts`, divergent label casing / numeric scale from sibling components).
 - **Low / Nit** — naming, formatting, minor refactors.
 
 ### Rules for findings

@@ -11,15 +11,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { CheckIcon, FilterIcon } from 'lucide-react';
-import { useForm, usePage } from '@inertiajs/react';
-import { SharedData } from '@/types';
+import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { formatDateString } from '@/lib/utils';
+import { useConfigs } from '@/stores/bootstrap-store';
 
 export default function Filter({ value, onValueChange }: { value?: MetricsFilter; onValueChange?: (filter: MetricsFilter) => void }) {
-  const page = usePage<SharedData>();
+  const configs = useConfigs()!;
   const form = useForm<MetricsFilter>(
     value || {
       period: '',
@@ -70,7 +70,7 @@ export default function Filter({ value, onValueChange }: { value?: MetricsFilter
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {page.props.configs.metrics_periods.map((period) => {
+        {configs.metrics_periods.map((period) => {
           return period === 'custom' ? (
             <DropdownMenuSub key={period}>
               <DropdownMenuSubTrigger inset>
