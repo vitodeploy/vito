@@ -161,8 +161,13 @@ paths:
                 node_version:
                   type: string
                   enum: ['none', '16', '18', '20', '22']
-                  description: 'Node.js runtime version to install via mise. `none` skips installation. Required for the `laravel` site type (default `22`); optional and defaulting to `none` for `php` / `php-blank`.'
-                  example: '22'
+                  description: 'Node.js runtime version to install via mise on the isolated user. `none` skips installation. Defaults to `none` for `php`, `php-blank`, and `laravel`. Locked to the existing version if any sibling site under the same isolated user already has Node configured.'
+                  example: 'none'
+                bun_version:
+                  type: string
+                  enum: ['none', '1.0', '1.1', '1.2']
+                  description: 'Bun runtime version to install via mise on the isolated user. `none` skips installation. Defaults to `none` for `php`, `php-blank`, and `laravel`. Locked to the existing version if any sibling site under the same isolated user already has Bun configured.'
+                  example: 'none'
             example:
               type: 'laravel'
               domain: 'example.com'
@@ -171,6 +176,7 @@ paths:
               branch: 'main'
               source_control_id: 1
               node_version: '22'
+              bun_version: 'none'
       responses:
         '201':
           description: Site created successfully

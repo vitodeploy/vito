@@ -30,7 +30,7 @@ class CreateSite
      */
     public function create(Server $server, array $input): Site
     {
-        $input = $this->lockNodeVersionToExistingUser($server, $input);
+        $input = $this->lockRuntimeVersionsToExistingUser($server, $input);
 
         $this->validate($server, $input);
 
@@ -174,7 +174,7 @@ class CreateSite
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */
-    private function lockNodeVersionToExistingUser(Server $server, array $input): array
+    private function lockRuntimeVersionsToExistingUser(Server $server, array $input): array
     {
         $user = isset($input['user']) && is_string($input['user']) ? $input['user'] : '';
 
@@ -182,21 +182,24 @@ class CreateSite
             return $input;
         }
 
-        $existing = Site::existingNodeVersionForUser($server, $user);
+        foreach (['node' => 'Node.js', 'bun' => 'Bun'] as $runtime => $label) {
+            $existing = Site::existingRuntimeVersionForUser($server, $user, $runtime);
 
-        if ($existing === null) {
-            return $input;
+            if ($existing === null) {
+                continue;
+            }
+
+            $field = $runtime.'_version';
+            $submitted = $input[$field] ?? null;
+
+            if (is_string($submitted) && $submitted !== '' && $submitted !== $existing) {
+                throw ValidationException::withMessages([
+                    $field => "Isolated user '{$user}' already has {$label} {$existing} installed; this cannot be changed.",
+                ]);
+            }
+
+            $input[$field] = $existing;
         }
-
-        $submitted = $input['node_version'] ?? null;
-
-        if (is_string($submitted) && $submitted !== '' && $submitted !== $existing) {
-            throw ValidationException::withMessages([
-                'node_version' => "Isolated user '{$user}' already has Node.js {$existing} installed; this cannot be changed.",
-            ]);
-        }
-
-        $input['node_version'] = $existing;
 
         return $input;
     }

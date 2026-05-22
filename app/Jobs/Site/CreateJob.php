@@ -66,33 +66,20 @@ class CreateJob implements ShouldQueue
         Notifier::send($this->site, new SiteInstallationFailed($this->site));
     }
 
-    /**
-     * Build a log-safe error message. Provider exceptions like FailedToDeployGitKey
-     * can carry HTTP response bodies that echo back submitted public keys, so we
-     * strip them out before persisting to ServerLog (which is readable by any
-     * project member with log access).
-     */
     private function safeLogMessage(Exception $e): string
     {
         if ($e instanceof FailedToDeployGitKey) {
-            return 'Source control provider rejected the deploy key request. Provider response withheld from log to avoid leaking key material — check the provider audit log for details.';
+            return 'Source control provider rejected the deploy key request. Provider response: '.$this->redactPublicKeys($e->getMessage());
         }
 
         return $e->getMessage();
     }
 
-    /**
-     * Build a UI-safe error summary. Exception messages can contain provider
-     * payloads (e.g. FailedToDeployGitKey carries the raw HTTP response body
-     * which echoes back submitted public keys), so we never include $e->getMessage()
-     * verbatim — full details live in ServerLog.
-     */
     private function safeErrorSummary(Exception $e): string
     {
         $messages = [
             SSHCommandError::class => 'An SSH command failed during installation. Check the site logs for the failing command.',
             SSHConnectionError::class => 'Could not connect to the server over SSH. Verify the server is reachable and try again.',
-            FailedToDeployGitKey::class => 'Failed to deploy the SSH deploy key to the source control provider. The provider rejected the request — check that the repository is accessible and that the key is not already in use.',
             RepositoryNotFound::class => 'Repository not found on the source control provider.',
             RepositoryPermissionDenied::class => 'Permission denied accessing the repository on the source control provider.',
             SourceControlIsNotConnected::class => 'Source control provider is not connected.',
@@ -104,7 +91,38 @@ class CreateJob implements ShouldQueue
             }
         }
 
+        if ($e instanceof FailedToDeployGitKey) {
+            $response = trim($this->redactPublicKeys($e->getMessage()));
+            if ($response === '') {
+                return 'Source control provider rejected the deploy key request.';
+            }
+
+            return 'Source control provider rejected the deploy key request: '.$this->truncate($response, 500);
+        }
+
         return sprintf('Installation failed (%s). See the site logs for full details.', class_basename($e));
+    }
+
+    /**
+     * Strip SSH public-key material from a string so provider responses can be
+     * surfaced safely. Provider error bodies sometimes echo back the submitted
+     * key — redact `ssh-rsa AAAA…`, `ssh-ed25519 AAAA…`, `ecdsa-sha2-… AAAA…`
+     * and similar patterns.
+     */
+    private function redactPublicKeys(string $message): string
+    {
+        $pattern = '/(ssh-(?:rsa|ed25519|dss)|ecdsa-sha2-\S+)\s+[A-Za-z0-9+\/=]+(?:\s+\S+)?/';
+
+        return (string) preg_replace($pattern, '[ssh public key redacted]', $message);
+    }
+
+    private function truncate(string $value, int $max): string
+    {
+        if (mb_strlen($value) <= $max) {
+            return $value;
+        }
+
+        return mb_substr($value, 0, $max).'…';
     }
 
     private function broadcastSiteUpdate(): void

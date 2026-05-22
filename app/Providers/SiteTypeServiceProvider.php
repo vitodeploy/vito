@@ -73,6 +73,11 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->label('Node.js Version')
                     ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
                     ->default('none'),
+                DynamicField::make('bun_version')
+                    ->select()
+                    ->label('Bun Version')
+                    ->options(PHPSite::SUPPORTED_BUN_VERSIONS)
+                    ->default('none'),
             ]))
             ->register();
     }
@@ -95,6 +100,11 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->select()
                     ->label('Node.js Version')
                     ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
+                    ->default('none'),
+                DynamicField::make('bun_version')
+                    ->select()
+                    ->label('Bun Version')
+                    ->options(PHPSite::SUPPORTED_BUN_VERSIONS)
                     ->default('none'),
             ]))
             ->register();
@@ -134,7 +144,12 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->select()
                     ->label('Node.js Version')
                     ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
-                    ->default('22'),
+                    ->default('none'),
+                DynamicField::make('bun_version')
+                    ->select()
+                    ->label('Bun Version')
+                    ->options(PHPSite::SUPPORTED_BUN_VERSIONS)
+                    ->default('none'),
             ]))
             ->register();
         RegisterSiteFeature::make(Laravel::id(), 'modern-deployment')

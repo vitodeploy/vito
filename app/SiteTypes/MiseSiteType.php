@@ -18,7 +18,7 @@ abstract class MiseSiteType extends AbstractSiteType
      */
     protected function setupRuntime(): void
     {
-        $this->setupNodeRuntime($this->runtime(), $this->runtimeVersion());
+        $this->setupMiseRuntime($this->runtime(), $this->runtimeVersion());
     }
 
     protected function workerCommand(): string

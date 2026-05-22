@@ -7,7 +7,7 @@ use App\Models\Server;
 class GetIsolatedUsers
 {
     /**
-     * @return array<int, array{user: string, sites_count: int, node_version: string|null}>
+     * @return array<int, array{user: string, sites_count: int, node_version: string|null, bun_version: string|null}>
      */
     public function get(Server $server): array
     {
@@ -20,11 +20,24 @@ class GetIsolatedUsers
 
         foreach ($grouped as $user => $group) {
             $nodeVersion = null;
+            $bunVersion = null;
 
             foreach ($group as $site) {
-                $candidate = $site->type_data['node_version'] ?? null;
-                if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
-                    $nodeVersion = $candidate;
+                if ($nodeVersion === null) {
+                    $candidate = $site->type_data['node_version'] ?? null;
+                    if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
+                        $nodeVersion = $candidate;
+                    }
+                }
+
+                if ($bunVersion === null) {
+                    $candidate = $site->type_data['bun_version'] ?? null;
+                    if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
+                        $bunVersion = $candidate;
+                    }
+                }
+
+                if ($nodeVersion !== null && $bunVersion !== null) {
                     break;
                 }
             }
@@ -33,6 +46,7 @@ class GetIsolatedUsers
                 'user' => (string) $user,
                 'sites_count' => $group->count(),
                 'node_version' => $nodeVersion,
+                'bun_version' => $bunVersion,
             ];
         }
 

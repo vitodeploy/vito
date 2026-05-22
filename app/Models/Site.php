@@ -458,22 +458,23 @@ class Site extends AbstractModel
     }
 
     /**
-     * Returns the Node.js runtime version that mise has already installed for
-     * the given isolated user on the given server, by inspecting any sibling
-     * site's `type_data->node_version`. Returns `null` if no sibling site uses
-     * Node (i.e. mise/node is not installed for that user yet).
+     * Returns the version of a mise-managed runtime (e.g. `node`, `bun`) that
+     * is already installed for the given isolated user on the given server, or
+     * `null` if no sibling site has it configured.
      */
-    public static function existingNodeVersionForUser(Server $server, string $user, ?int $excludeSiteId = null): ?string
+    public static function existingRuntimeVersionForUser(Server $server, string $user, string $runtime, ?int $excludeSiteId = null): ?string
     {
-        if ($user === '') {
+        if ($user === '' || $runtime === '') {
             return null;
         }
 
+        $field = $runtime.'_version';
+
         $query = $server->sites()
             ->where('user', $user)
-            ->whereNotNull('type_data->node_version')
-            ->where('type_data->node_version', '!=', 'none')
-            ->where('type_data->node_version', '!=', '');
+            ->whereNotNull('type_data->'.$field)
+            ->where('type_data->'.$field, '!=', 'none')
+            ->where('type_data->'.$field, '!=', '');
 
         if ($excludeSiteId !== null) {
             $query->where('id', '!=', $excludeSiteId);
@@ -485,7 +486,7 @@ class Site extends AbstractModel
             return null;
         }
 
-        $version = $sibling->type_data['node_version'] ?? null;
+        $version = $sibling->type_data[$field] ?? null;
 
         return is_string($version) && $version !== '' ? $version : null;
     }

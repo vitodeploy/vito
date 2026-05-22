@@ -39,6 +39,10 @@ class PHPBlank extends PHPSite
                 'nullable',
                 Rule::in(self::SUPPORTED_NODE_VERSIONS),
             ],
+            'bun_version' => [
+                'nullable',
+                Rule::in(self::SUPPORTED_BUN_VERSIONS),
+            ],
         ];
     }
 
@@ -54,6 +58,7 @@ class PHPBlank extends PHPSite
     {
         return [
             'node_version' => $input['node_version'] ?? 'none',
+            'bun_version' => $input['bun_version'] ?? 'none',
         ];
     }
 
@@ -64,8 +69,10 @@ class PHPBlank extends PHPSite
     {
         $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(15, 'installing-node');
+        $this->progress(12, 'installing-node');
         $this->setupNodeIfRequested();
+        $this->progress(18, 'installing-bun');
+        $this->setupBunIfRequested();
         $this->progress(25, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
         $this->progress(55, 'restarting-php');

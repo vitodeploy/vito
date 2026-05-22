@@ -13,9 +13,14 @@ trait UsesMiseRuntime
     public const SUPPORTED_NODE_VERSIONS = ['none', '16', '18', '20', '22'];
 
     /**
+     * @var array<int, string>
+     */
+    public const SUPPORTED_BUN_VERSIONS = ['none', '1.0', '1.1', '1.2'];
+
+    /**
      * @throws SSHError
      */
-    protected function setupNodeRuntime(string $runtime, string $version): void
+    protected function setupMiseRuntime(string $runtime, string $version): void
     {
         $mise = new Mise($this->site->server);
 
