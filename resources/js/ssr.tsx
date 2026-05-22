@@ -9,9 +9,13 @@ createInertiaApp({
   setup: ({ App, props }) => {
     const ziggy = (
       props.initialPage.props as unknown as {
-        ziggy: { location: string } & Record<string, unknown>;
+        ziggy?: { location: string } & Record<string, unknown>;
       }
     ).ziggy;
+
+    if (!ziggy) {
+      return <App {...props} />;
+    }
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     (globalThis as any).route = (name?: unknown, params?: unknown, absolute?: boolean) =>

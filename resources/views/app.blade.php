@@ -40,7 +40,7 @@
 
         <script src="{{ app(\App\Actions\Ziggy\GetZiggyRoutes::class)->url() }}" defer></script>
         @viteReactRefresh
-        @vite(['resources/js/app.tsx'])
+        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @inertiaHead
     </head>
     <body class="selection:bg-brand font-sans antialiased selection:text-white">
