@@ -54,8 +54,7 @@ export default function DeleteServer({ server, children }: { server: Server; chi
     });
   };
 
-  const submitDisabled =
-    form.processing || form.data.name !== server.name || (!isCustom && form.data.delete_from_provider === '');
+  const submitDisabled = form.processing || form.data.name !== server.name || (!isCustom && form.data.delete_from_provider === '');
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -126,14 +125,14 @@ function RadioCard({ value, selected, title, description }: { value: string; sel
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:bg-accent',
+        'hover:bg-accent flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors',
         selected && 'border-primary bg-accent',
       )}
     >
       <RadioGroupItem value={value} className="mt-0.5" />
       <span className="flex flex-col gap-1">
         <span className="text-sm font-medium">{title}</span>
-        <span className="text-sm text-muted-foreground">{description}</span>
+        <span className="text-muted-foreground text-sm">{description}</span>
       </span>
     </label>
   );
