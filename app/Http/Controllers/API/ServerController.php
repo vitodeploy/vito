@@ -12,6 +12,7 @@ use App\Models\Server;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Validator;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -81,6 +82,10 @@ class ServerController extends Controller
         $this->authorize('delete', [$server, $project]);
 
         $this->validateRoute($project, $server);
+
+        Validator::make($request->all(), [
+            'delete_from_provider' => ['nullable', 'boolean'],
+        ])->validate();
 
         $server->deleteFromProvider = $request->boolean('delete_from_provider', true);
         $server->delete();

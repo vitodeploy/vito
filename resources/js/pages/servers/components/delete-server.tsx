@@ -43,8 +43,13 @@ export default function DeleteServer({ server, children }: { server: Server; chi
     }
   };
 
+  const choiceMissing = !isCustom && form.data.delete_from_provider === '';
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    if (choiceMissing) {
+      return;
+    }
     form.transform((data) => ({
       name: data.name,
       ...(isCustom ? {} : { delete_from_provider: data.delete_from_provider === 'yes' }),
@@ -54,7 +59,7 @@ export default function DeleteServer({ server, children }: { server: Server; chi
     });
   };
 
-  const submitDisabled = form.processing || form.data.name !== server.name || (!isCustom && form.data.delete_from_provider === '');
+  const submitDisabled = form.processing || form.data.name !== server.name || choiceMissing;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
