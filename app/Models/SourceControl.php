@@ -56,12 +56,9 @@ class SourceControl extends AbstractModel
     }
 
     /**
-     * Validation rules for a `source_control` site input that must reference
-     * a source control whose provider is usable for sites.
-     *
      * @return array<int, mixed>
      */
-    public static function siteValidationRules(): array
+    public static function siteValidationRules(Server $server): array
     {
         /** @var array<string, array<string, mixed>> $providers */
         $providers = config('source-control.providers', []);
@@ -73,7 +70,14 @@ class SourceControl extends AbstractModel
 
         return [
             'required',
-            Rule::exists('source_controls', 'id')->whereIn('provider', $usableProviders),
+            Rule::exists('source_controls', 'id')
+                ->whereIn('provider', $usableProviders)
+                ->where(function ($query) use ($server): void {
+                    $query->where('user_id', $server->user_id)
+                        ->where(function ($q) use ($server): void {
+                            $q->where('project_id', $server->project_id)->orWhereNull('project_id');
+                        });
+                }),
         ];
     }
 

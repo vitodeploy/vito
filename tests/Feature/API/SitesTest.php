@@ -61,6 +61,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $inputs['source_control'] = $sourceControl->id;

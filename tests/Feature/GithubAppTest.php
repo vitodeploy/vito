@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Facades\SSH;
+use App\Models\GitHook;
 use App\Models\GithubApp;
 use App\Models\SourceControl;
 use App\Models\User;
 use App\SiteTypes\Laravel;
 use App\SourceControlProviders\GithubApp as GithubAppProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -279,11 +282,18 @@ class GithubAppTest extends TestCase
         $this->assertNull($sc->project_id);
     }
 
-    public function test_cannot_create_site_with_github_app_source_control(): void
+    public function test_can_create_site_with_github_app_source_control(): void
     {
+        SSH::fake();
         GithubApp::factory()->create();
         $sc = SourceControl::factory()->githubApp()->create([
             'user_id' => $this->user->id,
+        ]);
+
+        Http::fake([
+            'api.github.com/repos/test/test' => Http::response(['full_name' => 'test/test'], 200),
+            'api.github.com/repos/test/test/commits/main' => Http::response([], 200),
+            'api.github.com/app/installations/*/access_tokens' => Http::response(['token' => 'ghs_TESTTOKEN'], 201),
         ]);
 
         $this->actingAs($this->user)
@@ -298,21 +308,39 @@ class GithubAppTest extends TestCase
                 'user' => 'example',
                 'source_control' => $sc->id,
             ])
-            ->assertSessionHasErrors('source_control');
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'example.com',
+            'source_control_id' => $sc->id,
+        ]);
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), '/keys'));
     }
 
-    public function test_cannot_update_site_to_use_github_app_source_control(): void
+    public function test_can_update_site_to_use_github_app_source_control(): void
     {
+        SSH::fake();
         GithubApp::factory()->create();
         $sc = SourceControl::factory()->githubApp()->create([
             'user_id' => $this->user->id,
+        ]);
+
+        Http::fake([
+            'api.github.com/repos/*' => Http::response(['full_name' => 'test/test'], 200),
+            'api.github.com/app/installations/*/access_tokens' => Http::response(['token' => 'ghs_TESTTOKEN'], 201),
         ]);
 
         $this->actingAs($this->user)
             ->patch(route('site-settings.update-source-control', ['server' => $this->server, 'site' => $this->site]), [
                 'source_control' => $sc->id,
             ])
-            ->assertSessionHasErrors('source_control');
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'id' => $this->site->id,
+            'source_control_id' => $sc->id,
+        ]);
     }
 
     public function test_cannot_remove_github_app_when_trashed_source_control_still_has_sites(): void
@@ -413,15 +441,139 @@ class GithubAppTest extends TestCase
         ]);
     }
 
-    public function test_provider_throws_for_unimplemented_methods(): void
+    public function test_provider_implements_deployment_surface(): void
     {
         $sc = SourceControl::factory()->githubApp()->create([
             'user_id' => $this->admin->id,
         ]);
         $provider = new GithubAppProvider($sc);
 
-        $this->expectException(\BadMethodCallException::class);
-        $provider->deployKey('t', 'r', 'k');
+        $this->assertSame(
+            'https://github.com/owner/repo.git',
+            $provider->fullRepoUrl('owner/repo', 'irrelevant-key')
+        );
+
+        $this->assertSame('', $provider->deployKey('t', 'owner/repo', 'public-key'));
+        $provider->deleteDeployKey('deploy-key-id', 'owner/repo');
+
+        $hookResult = $provider->deployHook('owner/repo', ['push'], 'secret');
+        $this->assertSame('app-installation', $hookResult['hook_id']);
+        $this->assertSame('github-app-installation', $hookResult['hook_response']['source']);
+
+        $provider->destroyHook('owner/repo', 'app-installation');
+    }
+
+    public function test_environment_variables_include_git_http_token_for_github_app_sites(): void
+    {
+        GithubApp::factory()->create();
+        $sc = SourceControl::factory()->githubApp()->create([
+            'user_id' => $this->user->id,
+            'external_identifier' => '12345',
+        ]);
+        $this->site->update(['source_control_id' => $sc->id]);
+        $this->site->refresh();
+
+        Cache::put('github_app_token_12345', 'ghs_CACHEDTOKEN', 60);
+
+        $vars = $this->site->environmentVariables();
+
+        $this->assertArrayHasKey('GIT_HTTP_TOKEN', $vars);
+        $this->assertSame('ghs_CACHEDTOKEN', $vars['GIT_HTTP_TOKEN']);
+    }
+
+    public function test_environment_variables_omit_git_http_token_for_non_github_app_sites(): void
+    {
+        $vars = $this->site->environmentVariables();
+
+        $this->assertArrayNotHasKey('GIT_HTTP_TOKEN', $vars);
+    }
+
+    public function test_webhook_handles_push_event_triggers_deploy(): void
+    {
+        SSH::fake();
+        $app = GithubApp::factory()->create();
+        $sc = SourceControl::factory()->githubApp()->create([
+            'user_id' => $this->user->id,
+            'external_identifier' => '555',
+        ]);
+        $this->site->update([
+            'source_control_id' => $sc->id,
+            'repository' => 'acme/widgets',
+            'branch' => 'main',
+        ]);
+        $this->site->deploymentScript->update(['content' => 'echo deploying']);
+        GitHook::factory()->create([
+            'site_id' => $this->site->id,
+            'source_control_id' => $sc->id,
+            'events' => ['push'],
+            'actions' => ['deploy'],
+            'hook_id' => 'app-installation',
+        ]);
+
+        Http::fake([
+            'api.github.com/repos/acme/widgets' => Http::response(['full_name' => 'acme/widgets'], 200),
+            'api.github.com/repos/acme/widgets/commits/main' => Http::response([
+                'sha' => 'abc123',
+                'commit' => ['committer' => ['name' => 'a', 'email' => 'a@b'], 'message' => 'm'],
+                'html_url' => 'https://github.com/x',
+            ], 200),
+            'api.github.com/app/installations/*/access_tokens' => Http::response(['token' => 'ghs_TESTTOKEN'], 201),
+        ]);
+
+        $payload = json_encode([
+            'ref' => 'refs/heads/main',
+            'installation' => ['id' => 555],
+            'repository' => ['full_name' => 'acme/widgets'],
+        ]);
+        $sig = 'sha256='.hash_hmac('sha256', $payload, $app->webhook_secret);
+
+        $this->call('POST', '/api/webhooks/github-app', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_HUB_SIGNATURE_256' => $sig,
+            'HTTP_X_GITHUB_EVENT' => 'push',
+        ], $payload)->assertOk();
+
+        $this->assertDatabaseHas('deployments', [
+            'site_id' => $this->site->id,
+            'commit_id' => 'abc123',
+        ]);
+    }
+
+    public function test_webhook_push_event_for_unmatched_branch_does_not_deploy(): void
+    {
+        $app = GithubApp::factory()->create();
+        $sc = SourceControl::factory()->githubApp()->create([
+            'user_id' => $this->user->id,
+            'external_identifier' => '666',
+        ]);
+        $this->site->update([
+            'source_control_id' => $sc->id,
+            'repository' => 'acme/widgets',
+            'branch' => 'main',
+        ]);
+        GitHook::factory()->create([
+            'site_id' => $this->site->id,
+            'source_control_id' => $sc->id,
+            'events' => ['push'],
+            'actions' => ['deploy'],
+        ]);
+
+        $payload = json_encode([
+            'ref' => 'refs/heads/develop',
+            'installation' => ['id' => 666],
+            'repository' => ['full_name' => 'acme/widgets'],
+        ]);
+        $sig = 'sha256='.hash_hmac('sha256', $payload, $app->webhook_secret);
+
+        $this->call('POST', '/api/webhooks/github-app', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_HUB_SIGNATURE_256' => $sig,
+            'HTTP_X_GITHUB_EVENT' => 'push',
+        ], $payload)->assertOk();
+
+        $this->assertDatabaseMissing('deployments', [
+            'site_id' => $this->site->id,
+        ]);
     }
 
     private function generatePrivateKey(): string

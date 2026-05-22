@@ -88,6 +88,7 @@ class OS
                 'user' => $user,
                 'serverUser' => $this->server->getSshUser(),
                 'password' => $password,
+                'key' => escapeshellarg(trim($this->server->sshKey()['public_key'])),
             ]),
             'create-isolated-user',
             $site_id
