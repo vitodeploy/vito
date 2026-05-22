@@ -247,11 +247,7 @@ export default function CreateSite({
 
     if (field.name === 'node_version') {
       const rawOptions = field.options;
-      const options = Array.isArray(rawOptions)
-        ? rawOptions
-        : rawOptions
-          ? Object.values(rawOptions)
-          : [];
+      const options = Array.isArray(rawOptions) ? rawOptions : rawOptions ? Object.values(rawOptions) : [];
       const labelFor = (v: string) => (v === 'none' ? 'None' : `Node.js ${v}`);
 
       return (
