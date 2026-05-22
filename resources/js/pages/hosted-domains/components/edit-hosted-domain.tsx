@@ -55,7 +55,11 @@ export default function EditHostedDomain({ hostedDomain, children }: { hostedDom
     siteId: hostedDomain.site_id,
     domain: form.data.domain,
     sslMethod: form.data.ssl_method,
-    setData: form.setData,
+    sslId: form.data.ssl_id,
+    applySslSettings: ({ ssl_method, ssl_id }) => {
+      form.setData('ssl_method', ssl_method);
+      form.setData('ssl_id', ssl_id);
+    },
     open,
     originalDomain: hostedDomain.domain,
   });
