@@ -11,42 +11,68 @@ class GetIsolatedUsers
      */
     public function get(Server $server): array
     {
-        $grouped = $server->sites()
+        $counts = $server->sites()
             ->where('user', '!=', $server->getSshUser())
-            ->get(['user', 'type_data'])
-            ->groupBy('user');
+            ->groupBy('user')
+            ->selectRaw('user, COUNT(*) as sites_count')
+            ->get()
+            ->map(fn ($row): array => [
+                'user' => (string) $row->getAttribute('user'),
+                'sites_count' => (int) $row->getAttribute('sites_count'),
+            ]);
 
-        $rows = [];
+        $runtimeSites = $server->sites()
+            ->where('user', '!=', $server->getSshUser())
+            ->where(function ($query): void {
+                $query
+                    ->where(function ($node): void {
+                        $node->whereNotNull('type_data->node_version')
+                            ->where('type_data->node_version', '!=', 'none')
+                            ->where('type_data->node_version', '!=', '');
+                    })
+                    ->orWhere(function ($bun): void {
+                        $bun->whereNotNull('type_data->bun_version')
+                            ->where('type_data->bun_version', '!=', 'none')
+                            ->where('type_data->bun_version', '!=', '');
+                    });
+            })
+            ->get(['user', 'type_data']);
 
-        foreach ($grouped as $user => $group) {
-            $nodeVersion = null;
-            $bunVersion = null;
+        /** @var array<string, array{node: string|null, bun: string|null}> $runtimeByUser */
+        $runtimeByUser = [];
 
-            foreach ($group as $site) {
-                if ($nodeVersion === null) {
-                    $candidate = $site->type_data['node_version'] ?? null;
-                    if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
-                        $nodeVersion = $candidate;
-                    }
-                }
+        foreach ($runtimeSites as $site) {
+            $user = (string) $site->user;
+            $entry = $runtimeByUser[$user] ?? ['node' => null, 'bun' => null];
 
-                if ($bunVersion === null) {
-                    $candidate = $site->type_data['bun_version'] ?? null;
-                    if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
-                        $bunVersion = $candidate;
-                    }
-                }
-
-                if ($nodeVersion !== null && $bunVersion !== null) {
-                    break;
+            if ($entry['node'] === null) {
+                $candidate = $site->type_data['node_version'] ?? null;
+                if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
+                    $entry['node'] = $candidate;
                 }
             }
 
+            if ($entry['bun'] === null) {
+                $candidate = $site->type_data['bun_version'] ?? null;
+                if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
+                    $entry['bun'] = $candidate;
+                }
+            }
+
+            $runtimeByUser[$user] = $entry;
+        }
+
+        $rows = [];
+
+        foreach ($counts as $row) {
+            $user = $row['user'];
+            $runtimes = $runtimeByUser[$user] ?? ['node' => null, 'bun' => null];
+
             $rows[] = [
-                'user' => (string) $user,
-                'sites_count' => $group->count(),
-                'node_version' => $nodeVersion,
-                'bun_version' => $bunVersion,
+                'user' => $user,
+                'sites_count' => $row['sites_count'],
+                'node_version' => $runtimes['node'],
+                'bun_version' => $runtimes['bun'],
             ];
         }
 

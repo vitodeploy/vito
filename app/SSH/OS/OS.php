@@ -6,10 +6,20 @@ use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Site;
+use RuntimeException;
 
 class OS
 {
+    private const SHELL_IDENTIFIER = '/^[A-Za-z_][A-Za-z0-9_]*$/';
+
     public function __construct(protected Server $server) {}
+
+    private function assertShellIdentifier(string $name): void
+    {
+        if (preg_match(self::SHELL_IDENTIFIER, $name) !== 1) {
+            throw new RuntimeException('Refusing to emit shell statement with unsafe identifier.');
+        }
+    }
 
     /**
      * @throws SSHError
@@ -242,11 +252,13 @@ class OS
         $command .= "shopt -s expand_aliases\n";
         if ($aliases !== null && $aliases !== []) {
             foreach ($aliases as $key => $alias) {
+                $this->assertShellIdentifier((string) $key);
                 $command .= sprintf("alias %s=%s\n", $key, escapeshellarg((string) $alias));
             }
         }
         if ($variables !== null && $variables !== []) {
             foreach ($variables as $key => $variable) {
+                $this->assertShellIdentifier((string) $key);
                 $command .= sprintf("export %s=%s\n", $key, escapeshellarg((string) $variable));
             }
         }

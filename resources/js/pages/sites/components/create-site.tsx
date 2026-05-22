@@ -189,7 +189,9 @@ export default function CreateSite({
       if (previousLocksRef.current[refKey] !== null) {
         const field = typeConfig?.form?.find((f: DynamicFieldConfig) => f.name === formKey);
         const defaultValue = typeof field?.default === 'string' ? field.default : '';
-        form.setData(formKey, defaultValue);
+        if (form.data[formKey] !== defaultValue) {
+          form.setData(formKey, defaultValue);
+        }
         previousLocksRef.current[refKey] = null;
       }
     });

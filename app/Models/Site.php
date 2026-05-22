@@ -480,7 +480,7 @@ class Site extends AbstractModel
             $query->where('id', '!=', $excludeSiteId);
         }
 
-        $sibling = $query->first();
+        $sibling = $query->orderBy('id')->first();
 
         if (! $sibling instanceof self) {
             return null;
