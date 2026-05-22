@@ -66,7 +66,7 @@ class UpdateSourceControl
             $site->source_control_id = $newSourceControl->id;
             $site->setRelation('sourceControl', $newSourceControl);
             if ($oldDeployKeyId) {
-                $site->jsonUpdate('type_data', 'deploy_key_id', null);
+                $site->jsonUpdate('type_data', 'deploy_key_id', null, save: false);
             }
             $site->save();
         });

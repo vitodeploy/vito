@@ -67,7 +67,11 @@ if ! find {!! $path !!} -type f -exec chmod 644 {} \;; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 
-if ! cd {!! $path !!} && git config core.fileMode false; then
+if ! cd {!! $path !!}; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
+
+if ! git config core.fileMode false; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
 @endif
