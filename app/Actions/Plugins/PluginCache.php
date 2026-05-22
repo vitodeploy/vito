@@ -20,15 +20,16 @@ final readonly class PluginCache
      */
     public function get(): Collection
     {
-        // We need the try/catch to ensure that no exceptions are
-        // raised before migrations have been run.
         try {
-            return Cache::rememberForever(self::CACHE_KEY, function () {
+            $ids = Cache::rememberForever(self::CACHE_KEY, function (): array {
                 return Plugin::query()
                     ->where('is_installed', true)
                     ->where('is_enabled', true)
-                    ->get();
+                    ->pluck('id')
+                    ->all();
             });
+
+            return Plugin::query()->whereIn('id', $ids)->get();
         } catch (Throwable) {
             return collect();
         }
@@ -39,11 +40,14 @@ final readonly class PluginCache
         Cache::forget(self::CACHE_KEY);
     }
 
+    /**
+     * @param  Collection<int, Plugin>  $plugins
+     */
     public function set(Collection $plugins): void
     {
         Cache::set(
             key: self::CACHE_KEY,
-            value: $plugins,
+            value: $plugins->pluck('id')->all(),
         );
     }
 }
