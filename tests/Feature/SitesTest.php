@@ -377,9 +377,9 @@ class SitesTest extends TestCase
         $examplePath = '/home/envtest/env-example.com/.env.example';
 
         SSH::assertExecutedContains("[ -f '{$envPath}' ]");
-        SSH::assertExecutedContains("cp '{$examplePath}' '{$envPath}'");
-        SSH::assertExecutedContains("touch '{$envPath}'");
-        SSH::assertExecutedContains("chmod 640 '{$envPath}'");
+        SSH::assertExecutedContains("cp -- '{$examplePath}' '{$envPath}'");
+        SSH::assertExecutedContains("touch -- '{$envPath}'");
+        SSH::assertExecutedContains("chmod 640 -- '{$envPath}'");
     }
 
     public function test_see_sites_list(): void
