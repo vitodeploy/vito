@@ -158,6 +158,11 @@ paths:
                   type: integer
                   description: Source control provider ID
                   example: 1
+                node_version:
+                  type: string
+                  enum: ['none', '16', '18', '20', '22']
+                  description: 'Node.js runtime version to install via mise. `none` skips installation. Required for the `laravel` site type (default `22`); optional and defaulting to `none` for `php` / `php-blank`.'
+                  example: '22'
             example:
               type: 'laravel'
               domain: 'example.com'
@@ -165,6 +170,7 @@ paths:
               repository: 'https://github.com/user/repo.git'
               branch: 'main'
               source_control_id: 1
+              node_version: '22'
       responses:
         '201':
           description: Site created successfully

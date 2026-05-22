@@ -50,4 +50,9 @@ interface SiteType
     public function supportedWebservers(): ?array;
 
     public function vhostTemplate(string $webserver): ?string;
+
+    /**
+     * @return array<string, string>
+     */
+    public function deploymentEnvironment(): array;
 }

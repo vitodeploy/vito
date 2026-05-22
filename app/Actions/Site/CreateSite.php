@@ -30,6 +30,8 @@ class CreateSite
      */
     public function create(Server $server, array $input): Site
     {
+        $input = $this->lockNodeVersionToExistingUser($server, $input);
+
         $this->validate($server, $input);
 
         DB::beginTransaction();
@@ -166,5 +168,27 @@ class CreateSite
         );
 
         return $site->type()->createRules($input);
+    }
+
+    /**
+     * Mise installs Node globally per-user. If the requested isolated user
+     * already owns a sibling site with Node configured, every new site under
+     * that user MUST use the same Node version — otherwise reinstalling would
+     * replace the existing siblings' runtime. Lock the input here.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    private function lockNodeVersionToExistingUser(Server $server, array $input): array
+    {
+        $user = isset($input['user']) && is_string($input['user']) ? $input['user'] : '';
+
+        $existing = Site::existingNodeVersionForUser($server, $user);
+
+        if ($existing !== null) {
+            $input['node_version'] = $existing;
+        }
+
+        return $input;
     }
 }

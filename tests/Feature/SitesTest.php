@@ -362,6 +362,7 @@ class SitesTest extends TestCase
             'repository' => 'test/test',
             'branch' => 'main',
             'composer' => false,
+            'node_version' => 'none',
             'user' => 'envtest',
             'source_control' => $sourceControl->id,
         ])->assertSessionDoesntHaveErrors();
@@ -870,6 +871,7 @@ class SitesTest extends TestCase
                     'repository' => 'test/test',
                     'branch' => 'main',
                     'composer' => true,
+                    'node_version' => 'none',
                     'user' => 'example',
                 ],
             ],

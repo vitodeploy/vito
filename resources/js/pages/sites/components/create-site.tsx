@@ -24,19 +24,21 @@ import DatabaseUserSelect from '@/pages/database-users/components/database-user-
 import IsolatedUserSelect from '@/pages/sites/components/isolated-user-select';
 import SelectRepo from '@/pages/source-controls/components/select-repo';
 import SelectBranch from '@/pages/source-controls/components/select-branch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type CreateSiteForm = {
   server: string;
   type: string;
   domain: string;
   php_version: string;
+  node_version: string;
   source_control: string;
   repository: string;
   branch: string;
   user: string;
 };
 
-type IsolatedUserOption = { user: string; sites_count: number };
+type IsolatedUserOption = { user: string; sites_count: number; node_version: string | null };
 
 function suggestIsolatedUsername(domain: string, blocked: ReadonlySet<string>): string {
   if (!domain) return '';
@@ -95,6 +97,7 @@ export default function CreateSite({
     type: 'laravel',
     domain: '',
     php_version: '',
+    node_version: '',
     source_control: '',
     repository: '',
     branch: '',
@@ -156,6 +159,15 @@ export default function CreateSite({
     }
   }, [form.data.type, configs]);
 
+  const lockedNodeVersion =
+    (isolatedUsersQuery.data ?? []).find((u) => u.user === form.data.user)?.node_version ?? null;
+
+  useEffect(() => {
+    if (lockedNodeVersion && form.data.node_version !== lockedNodeVersion) {
+      form.setData('node_version', lockedNodeVersion);
+    }
+  }, [lockedNodeVersion]);
+
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {
       return (
@@ -214,6 +226,58 @@ export default function CreateSite({
             onValueChange={(value) => form.setData('php_version', value)}
           />
           <InputError message={form.errors.php_version} />
+        </FormField>
+      );
+    }
+
+    if (field.name === 'node_version') {
+      const rawOptions = field.options;
+      const options = Array.isArray(rawOptions)
+        ? rawOptions
+        : rawOptions
+          ? Object.values(rawOptions)
+          : [];
+      const labelFor = (v: string) => (v === 'none' ? 'None' : `Node.js ${v}`);
+
+      return (
+        <FormField key={`field-${field.name}`}>
+          <Label htmlFor="node_version">{field.label ?? 'Node.js Version'}</Label>
+          {lockedNodeVersion ? (
+            <>
+              <Alert>
+                <AlertDescription>
+                  Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
+                  <span className="font-medium">{labelFor(lockedNodeVersion)}</span> installed; this cannot be changed.
+                </AlertDescription>
+              </Alert>
+              <Select value={lockedNodeVersion} disabled>
+                <SelectTrigger id="node_version">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value={lockedNodeVersion}>{labelFor(lockedNodeVersion)}</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </>
+          ) : (
+            <Select value={form.data.node_version} onValueChange={(value) => form.setData('node_version', value)}>
+              <SelectTrigger id="node_version">
+                <SelectValue placeholder="Select Node.js version" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {options.map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {labelFor(v)}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          )}
+          <InputError message={form.errors.node_version} />
         </FormField>
       );
     }

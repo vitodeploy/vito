@@ -35,6 +35,10 @@ class PHPBlank extends PHPSite
                 'required',
                 Rule::in($this->site->server->installedPHPVersions()),
             ],
+            'node_version' => [
+                'nullable',
+                Rule::in(self::SUPPORTED_NODE_VERSIONS),
+            ],
         ];
     }
 
@@ -48,7 +52,9 @@ class PHPBlank extends PHPSite
 
     public function data(array $input): array
     {
-        return [];
+        return [
+            'node_version' => $input['node_version'] ?? 'none',
+        ];
     }
 
     /**
@@ -58,7 +64,9 @@ class PHPBlank extends PHPSite
     {
         $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(20, 'creating-vhost');
+        $this->progress(15, 'installing-node');
+        $this->setupNodeIfRequested();
+        $this->progress(25, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
         $this->progress(55, 'restarting-php');
         $this->site->php()?->restart();

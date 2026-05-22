@@ -3,28 +3,30 @@
 namespace App\Actions\Site;
 
 use App\Models\Server;
-use Illuminate\Support\Collection;
+use App\Models\Site;
 
 class GetIsolatedUsers
 {
     /**
-     * @return Collection<int, array{user: string, sites_count: int}>
+     * @return array<int, array{user: string, sites_count: int, node_version: string|null}>
      */
-    public function get(Server $server): Collection
+    public function get(Server $server): array
     {
-        return $server->sites()
+        $rows = [];
+
+        $grouped = $server->sites()
             ->where('user', '!=', $server->getSshUser())
             ->get(['user'])
-            ->groupBy('user')
-            ->map(function (Collection $group, string $user): array {
-                /** @var int $count */
-                $count = $group->count();
+            ->groupBy('user');
 
-                return [
-                    'user' => $user,
-                    'sites_count' => $count,
-                ];
-            })
-            ->values();
+        foreach ($grouped as $user => $group) {
+            $rows[] = [
+                'user' => (string) $user,
+                'sites_count' => $group->count(),
+                'node_version' => Site::existingNodeVersionForUser($server, (string) $user),
+            ];
+        }
+
+        return $rows;
     }
 }

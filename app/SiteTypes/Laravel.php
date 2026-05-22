@@ -5,6 +5,7 @@ namespace App\SiteTypes;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use Illuminate\Validation\Rule;
 
 class Laravel extends PHPSite
 {
@@ -16,6 +17,23 @@ class Laravel extends PHPSite
     public static function make(): self
     {
         return new self(new Site(['type' => self::id()]));
+    }
+
+    public function createRules(array $input): array
+    {
+        return array_merge(parent::createRules($input), [
+            'node_version' => [
+                'required',
+                Rule::in(self::SUPPORTED_NODE_VERSIONS),
+            ],
+        ]);
+    }
+
+    public function data(array $input): array
+    {
+        return array_merge(parent::data($input), [
+            'node_version' => $input['node_version'] ?? '22',
+        ]);
     }
 
     /**
@@ -55,5 +73,21 @@ class Laravel extends PHPSite
                 'command' => 'php artisan up',
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function deploymentEnvironment(): array
+    {
+        $version = $this->site->type_data['node_version'] ?? 'none';
+
+        if ($version === 'none' || $version === '') {
+            return [];
+        }
+
+        return [
+            'PATH' => $this->shimPath().':$PATH',
+        ];
     }
 }

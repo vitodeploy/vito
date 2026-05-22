@@ -68,6 +68,11 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
+                DynamicField::make('node_version')
+                    ->select()
+                    ->label('Node.js Version')
+                    ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
+                    ->default('none'),
             ]))
             ->register();
     }
@@ -86,6 +91,11 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->label('Web Directory')
                     ->placeholder('e.g., public, www, dist (leave empty for root)')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
+                DynamicField::make('node_version')
+                    ->select()
+                    ->label('Node.js Version')
+                    ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
+                    ->default('none'),
             ]))
             ->register();
     }
@@ -120,6 +130,11 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
+                DynamicField::make('node_version')
+                    ->select()
+                    ->label('Node.js Version')
+                    ->options(PHPSite::SUPPORTED_NODE_VERSIONS)
+                    ->default('22'),
             ]))
             ->register();
         RegisterSiteFeature::make(Laravel::id(), 'modern-deployment')

@@ -92,7 +92,10 @@ class DeployJob implements ShouldQueue
             script: $site->deploymentScript->content,
             serverLog: $log,
             user: $site->user,
-            variables: $site->environmentVariables($this->deployment),
+            variables: array_merge(
+                $site->environmentVariables($this->deployment),
+                $site->type()->deploymentEnvironment(),
+            ),
             aliases: $site->environmentAliases(),
         );
 
@@ -114,7 +117,10 @@ class DeployJob implements ShouldQueue
             script: $site->buildScript->content ?? '',
             serverLog: $log,
             user: $site->user,
-            variables: $site->environmentVariables($this->deployment),
+            variables: array_merge(
+                $site->environmentVariables($this->deployment),
+                $site->type()->deploymentEnvironment(),
+            ),
             aliases: $site->environmentAliases(),
         );
 
@@ -134,7 +140,10 @@ class DeployJob implements ShouldQueue
             script: $site->preFlightScript->content ?? '',
             serverLog: $log,
             user: $site->user,
-            variables: $site->environmentVariables($this->deployment),
+            variables: array_merge(
+                $site->environmentVariables($this->deployment),
+                $site->type()->deploymentEnvironment(),
+            ),
             aliases: $site->environmentAliases(),
         );
 

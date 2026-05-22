@@ -6,6 +6,7 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\SiteTypes\Concerns\UsesMiseRuntime;
 use App\SSH\OS\Composer;
 use App\Traits\NormalizesWebDirectory;
 use Illuminate\Validation\Rule;
@@ -13,6 +14,7 @@ use Illuminate\Validation\Rule;
 class PHPSite extends AbstractSiteType
 {
     use NormalizesWebDirectory;
+    use UsesMiseRuntime;
 
     public static function id(): string
     {
@@ -61,6 +63,10 @@ class PHPSite extends AbstractSiteType
             'composer' => [
                 'nullable',
             ],
+            'node_version' => [
+                'nullable',
+                Rule::in(self::SUPPORTED_NODE_VERSIONS),
+            ],
         ];
     }
 
@@ -80,6 +86,7 @@ class PHPSite extends AbstractSiteType
     {
         return [
             'composer' => isset($input['composer']) && $input['composer'],
+            'node_version' => $input['node_version'] ?? 'none',
         ];
     }
 
@@ -91,7 +98,9 @@ class PHPSite extends AbstractSiteType
     {
         $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(10, 'creating-vhost');
+        $this->progress(15, 'installing-node');
+        $this->setupNodeIfRequested();
+        $this->progress(20, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
         $this->progress(25, 'deploying-ssh-key');
         $this->deployKey();
@@ -121,5 +130,29 @@ class PHPSite extends AbstractSiteType
         return [
             'is_php' => true,
         ];
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function setupNodeIfRequested(): void
+    {
+        $version = $this->site->type_data['node_version'] ?? 'none';
+
+        if ($version === 'none' || $version === '') {
+            return;
+        }
+
+        $existing = Site::existingNodeVersionForUser(
+            $this->site->server,
+            $this->site->user ?? '',
+            $this->site->id,
+        );
+
+        if ($existing === $version) {
+            return;
+        }
+
+        $this->setupNodeRuntime('node', $version);
     }
 }

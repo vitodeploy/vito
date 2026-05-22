@@ -457,6 +457,39 @@ class Site extends AbstractModel
             ->exists();
     }
 
+    /**
+     * Returns the Node.js runtime version that mise has already installed for
+     * the given isolated user on the given server, by inspecting any sibling
+     * site's `type_data->node_version`. Returns `null` if no sibling site uses
+     * Node (i.e. mise/node is not installed for that user yet).
+     */
+    public static function existingNodeVersionForUser(Server $server, string $user, ?int $excludeSiteId = null): ?string
+    {
+        if ($user === '') {
+            return null;
+        }
+
+        $query = $server->sites()
+            ->where('user', $user)
+            ->whereNotNull('type_data->node_version')
+            ->where('type_data->node_version', '!=', 'none')
+            ->where('type_data->node_version', '!=', '');
+
+        if ($excludeSiteId !== null) {
+            $query->where('id', '!=', $excludeSiteId);
+        }
+
+        $sibling = $query->first();
+
+        if (! $sibling instanceof self) {
+            return null;
+        }
+
+        $version = $sibling->type_data['node_version'] ?? null;
+
+        return is_string($version) && $version !== '' ? $version : null;
+    }
+
     public function webserver(): Webserver
     {
         /** @var Service $webserver */

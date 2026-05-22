@@ -48,6 +48,16 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
+     * Extra environment variables to inject into deployment scripts.
+     *
+     * @return array<string, string>
+     */
+    public function deploymentEnvironment(): array
+    {
+        return [];
+    }
+
+    /**
      * Return null to support all webservers.
      *
      * @return string[]|null
