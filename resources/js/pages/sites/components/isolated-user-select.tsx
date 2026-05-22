@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { useConfigs } from '@/stores/bootstrap-store';
+import { IsolatedUserOption } from '@/types/isolated-user';
 
 type IsolatedUserSelectProps = {
   serverId: number;
@@ -18,11 +19,6 @@ type IsolatedUserSelectProps = {
 };
 
 const USERNAME_REGEX = /^[a-z_][a-z0-9_-]*[a-z0-9]$/;
-
-type IsolatedUserOption = {
-  user: string;
-  sites_count: number;
-};
 
 export default function IsolatedUserSelect({ serverId, value, onValueChange, onSearchChange }: IsolatedUserSelectProps) {
   const configs = useConfigs()!;

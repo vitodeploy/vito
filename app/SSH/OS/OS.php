@@ -242,12 +242,12 @@ class OS
         $command .= "shopt -s expand_aliases\n";
         if ($aliases !== null && $aliases !== []) {
             foreach ($aliases as $key => $alias) {
-                $command .= "alias $key=$alias\n";
+                $command .= sprintf("alias %s=%s\n", $key, escapeshellarg((string) $alias));
             }
         }
         if ($variables !== null && $variables !== []) {
             foreach ($variables as $key => $variable) {
-                $command .= "export $key=$variable\n";
+                $command .= sprintf("export %s=%s\n", $key, escapeshellarg((string) $variable));
             }
         }
         $command .= view('ssh.os.run-script', [

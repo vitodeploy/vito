@@ -1,4 +1,4 @@
-import { ReactNode, useState, FormEventHandler, useEffect } from 'react';
+import { ReactNode, useState, FormEventHandler, useEffect, useMemo, useRef } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import IsolatedUserSelect from '@/pages/sites/components/isolated-user-select';
 import SelectRepo from '@/pages/source-controls/components/select-repo';
 import SelectBranch from '@/pages/source-controls/components/select-branch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { IsolatedUserOption } from '@/types/isolated-user';
 
 type CreateSiteForm = {
   server: string;
@@ -37,8 +38,6 @@ type CreateSiteForm = {
   branch: string;
   user: string;
 };
-
-type IsolatedUserOption = { user: string; sites_count: number; node_version: string | null };
 
 function suggestIsolatedUsername(domain: string, blocked: ReadonlySet<string>): string {
   if (!domain) return '';
@@ -159,14 +158,30 @@ export default function CreateSite({
     }
   }, [form.data.type, configs]);
 
-  const lockedNodeVersion =
-    (isolatedUsersQuery.data ?? []).find((u) => u.user === form.data.user)?.node_version ?? null;
+  const lockedNodeVersion = useMemo<string | null>(
+    () => (isolatedUsersQuery.data ?? []).find((u) => u.user === form.data.user)?.node_version ?? null,
+    [isolatedUsersQuery.data, form.data.user],
+  );
+
+  const previousLockRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (lockedNodeVersion && form.data.node_version !== lockedNodeVersion) {
-      form.setData('node_version', lockedNodeVersion);
+    if (lockedNodeVersion) {
+      if (form.data.node_version !== lockedNodeVersion) {
+        form.setData('node_version', lockedNodeVersion);
+      }
+      previousLockRef.current = lockedNodeVersion;
+      return;
     }
-  }, [lockedNodeVersion]);
+
+    if (previousLockRef.current !== null) {
+      const typeConfig = configs.site.types[form.data.type];
+      const field = typeConfig?.form?.find((f: DynamicFieldConfig) => f.name === 'node_version');
+      const defaultValue = typeof field?.default === 'string' ? field.default : '';
+      form.setData('node_version', defaultValue);
+      previousLockRef.current = null;
+    }
+  }, [lockedNodeVersion, form.data.node_version, form.data.type, configs]);
 
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {

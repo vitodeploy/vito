@@ -171,11 +171,6 @@ class CreateSite
     }
 
     /**
-     * Mise installs Node globally per-user. If the requested isolated user
-     * already owns a sibling site with Node configured, every new site under
-     * that user MUST use the same Node version — otherwise reinstalling would
-     * replace the existing siblings' runtime. Lock the input here.
-     *
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */
@@ -183,11 +178,25 @@ class CreateSite
     {
         $user = isset($input['user']) && is_string($input['user']) ? $input['user'] : '';
 
+        if ($user === '' || preg_match('/^[a-z_][a-z0-9_-]*[a-z0-9]$/', $user) !== 1) {
+            return $input;
+        }
+
         $existing = Site::existingNodeVersionForUser($server, $user);
 
-        if ($existing !== null) {
-            $input['node_version'] = $existing;
+        if ($existing === null) {
+            return $input;
         }
+
+        $submitted = $input['node_version'] ?? null;
+
+        if (is_string($submitted) && $submitted !== '' && $submitted !== $existing) {
+            throw ValidationException::withMessages([
+                'node_version' => "Isolated user '{$user}' already has Node.js {$existing} installed; this cannot be changed.",
+            ]);
+        }
+
+        $input['node_version'] = $existing;
 
         return $input;
     }

@@ -74,20 +74,4 @@ class Laravel extends PHPSite
             ],
         ]);
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function deploymentEnvironment(): array
-    {
-        $version = $this->site->type_data['node_version'] ?? 'none';
-
-        if ($version === 'none' || $version === '') {
-            return [];
-        }
-
-        return [
-            'PATH' => $this->shimPath().':$PATH',
-        ];
-    }
 }

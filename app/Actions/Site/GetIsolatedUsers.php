@@ -3,7 +3,6 @@
 namespace App\Actions\Site;
 
 use App\Models\Server;
-use App\Models\Site;
 
 class GetIsolatedUsers
 {
@@ -12,18 +11,28 @@ class GetIsolatedUsers
      */
     public function get(Server $server): array
     {
-        $rows = [];
-
         $grouped = $server->sites()
             ->where('user', '!=', $server->getSshUser())
-            ->get(['user'])
+            ->get(['user', 'type_data'])
             ->groupBy('user');
 
+        $rows = [];
+
         foreach ($grouped as $user => $group) {
+            $nodeVersion = null;
+
+            foreach ($group as $site) {
+                $candidate = $site->type_data['node_version'] ?? null;
+                if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
+                    $nodeVersion = $candidate;
+                    break;
+                }
+            }
+
             $rows[] = [
                 'user' => (string) $user,
                 'sites_count' => $group->count(),
-                'node_version' => Site::existingNodeVersionForUser($server, (string) $user),
+                'node_version' => $nodeVersion,
             ];
         }
 

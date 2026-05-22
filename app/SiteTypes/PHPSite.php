@@ -133,6 +133,22 @@ class PHPSite extends AbstractSiteType
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function deploymentEnvironment(): array
+    {
+        $version = $this->site->type_data['node_version'] ?? 'none';
+
+        if ($version === 'none' || $version === '') {
+            return [];
+        }
+
+        return [
+            'PATH' => $this->shimPath(),
+        ];
+    }
+
+    /**
      * @throws SSHError
      */
     protected function setupNodeIfRequested(): void
