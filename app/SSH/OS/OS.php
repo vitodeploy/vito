@@ -78,6 +78,7 @@ class OS
                 'user' => $user,
                 'serverUser' => $this->server->getSshUser(),
                 'password' => $password,
+                'key' => escapeshellarg(trim($this->server->sshKey()['public_key'])),
             ]),
             'create-isolated-user',
             $site_id
@@ -247,15 +248,13 @@ class OS
         }
         if ($variables !== null && $variables !== []) {
             foreach ($variables as $key => $variable) {
-                $command .= "export $key=$variable\n";
+                $command .= sprintf("export %s=%s\n", $key, escapeshellarg((string) $variable));
             }
         }
         $command .= view('ssh.os.run-script', [
             'path' => $path,
             'script' => $script,
         ]);
-
-        info($command);
 
         $ssh->exec($command, 'run-script');
 

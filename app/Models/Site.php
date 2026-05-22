@@ -414,7 +414,7 @@ class Site extends AbstractModel
      */
     public function environmentVariables(?Deployment $deployment = null): array
     {
-        return [
+        $variables = [
             'SITE_PATH' => $this->path,
             'DOMAIN' => $this->domain,
             'BRANCH' => $this->branch ?? '',
@@ -423,6 +423,14 @@ class Site extends AbstractModel
             'PHP_VERSION' => $this->php_version,
             'PHP_PATH' => '/usr/bin/php'.$this->php_version,
         ];
+
+        if ($this->sourceControl?->isGithubApp()) {
+            /** @var \App\SourceControlProviders\GithubApp $provider */
+            $provider = $this->sourceControl->provider();
+            $variables['GIT_HTTP_TOKEN'] = $provider->installationAccessToken();
+        }
+
+        return $variables;
     }
 
     /**

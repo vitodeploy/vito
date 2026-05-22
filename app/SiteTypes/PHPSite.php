@@ -44,7 +44,7 @@ class PHPSite extends AbstractSiteType
                 'required',
                 Rule::in($this->site->server->installedPHPVersions()),
             ],
-            'source_control' => SourceControl::siteValidationRules(),
+            'source_control' => SourceControl::siteValidationRules($this->site->server),
             'web_directory' => [
                 'nullable',
                 'string',

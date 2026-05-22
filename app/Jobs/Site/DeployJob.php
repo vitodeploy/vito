@@ -119,14 +119,16 @@ class DeployJob implements ShouldQueue
         );
 
         // link resources
-        $site->server->ssh($site->user)->exec(
-            view('ssh.modern-deployment.link-resources', [
-                'site' => $site,
-                'releasePath' => $this->deployment->path(),
-            ]),
-            'link-resources',
-            $site->id
-        );
+        $site->server->ssh($site->user)
+            ->variables($site->environmentVariables($this->deployment))
+            ->exec(
+                view('ssh.modern-deployment.link-resources', [
+                    'site' => $site,
+                    'releasePath' => $this->deployment->path(),
+                ]),
+                'link-resources',
+                $site->id
+            );
 
         // pre-flight
         $site->server->os()->runScript(

@@ -85,6 +85,10 @@ abstract class AbstractSiteType implements SiteType
      */
     protected function deployKey(): void
     {
+        if ($this->site->sourceControl?->isGithubApp()) {
+            return;
+        }
+
         $os = $this->site->server->os();
 
         if (! $this->site->ssh_key) {
@@ -121,13 +125,11 @@ abstract class AbstractSiteType implements SiteType
         }
 
         try {
-            if (! $this->site->userSharedWithSiblings() && ! $this->userExists($this->site->user)) {
-                $this->site->server->os()->createIsolatedUser(
-                    $this->site->user,
-                    Str::random(15),
-                    $this->site->id
-                );
-            }
+            $this->site->server->os()->createIsolatedUser(
+                $this->site->user,
+                Str::random(15),
+                $this->site->id
+            );
 
             if ($this->site->php_version) {
                 $service = $this->site->php();
@@ -157,22 +159,6 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
         app(Git::class)->clone($this->site);
-    }
-
-    /**
-     * @throws SSHError
-     */
-    protected function userExists(string $user): bool
-    {
-        try {
-            $this->site->server->ssh()->exec(view('ssh.site.check-user-exists', [
-                'user' => $user,
-            ]));
-
-            return true;
-        } catch (SSHCommandError) {
-            return false;
-        }
     }
 
     /**

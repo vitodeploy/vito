@@ -60,6 +60,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $inputs['source_control'] = $sourceControl->id;
@@ -122,7 +123,7 @@ class SitesTest extends TestCase
             'path' => '/home/shared/second.example.com',
         ]);
 
-        SSH::assertNotExecutedContains('useradd');
+        SSH::assertExecutedContains('User shared already exists');
     }
 
     public function test_isolated_users_endpoint_lists_users_with_counts(): void
@@ -328,6 +329,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $inputs['source_control'] = $sourceControl->id;
@@ -352,6 +354,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $this->post(route('sites.store', ['server' => $this->server]), [
@@ -457,6 +460,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $this->patch(route('site-settings.update-source-control', [
@@ -486,6 +490,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $this->patch(route('site-settings.update-source-control', [
@@ -545,7 +550,7 @@ class SitesTest extends TestCase
         $this->site->refresh();
         $this->assertEquals('master', $this->site->branch);
 
-        SSH::assertExecutedContains('git checkout -f master');
+        SSH::assertExecutedContains("git checkout -f 'master'");
     }
 
     public function test_update_web_directory(): void

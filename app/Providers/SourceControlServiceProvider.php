@@ -33,7 +33,6 @@ class SourceControlServiceProvider extends ServiceProvider
             ->label('GitHub App')
             ->handler(GithubApp::class)
             ->connectable(false)
-            ->usableForSites(false)
             ->register();
     }
 

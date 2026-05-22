@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\GithubApp\HandlePushWebhook;
 use App\Actions\GithubApp\ImportGithubAppInstallation;
 use App\Http\Controllers\Controller;
 use App\Models\GithubApp;
@@ -38,6 +39,7 @@ class GithubAppWebhookController extends Controller
             match ($event) {
                 'installation' => $this->handleInstallation($action, $payload),
                 'installation_repositories' => $this->bustRepoCache((int) ($payload['installation']['id'] ?? 0)),
+                'push' => app(HandlePushWebhook::class)->handle($payload),
                 default => null,
             };
         } catch (Throwable $e) {

@@ -57,7 +57,7 @@ class MiseNodeJS extends MiseSiteType
     public function createRules(array $input): array
     {
         return [
-            'source_control' => SourceControl::siteValidationRules(),
+            'source_control' => SourceControl::siteValidationRules($this->site->server),
             'repository' => [
                 'required',
             ],
