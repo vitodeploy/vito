@@ -11,6 +11,7 @@ use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\SiteType;
+use App\SourceControlProviders\GithubApp;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -425,7 +426,7 @@ class Site extends AbstractModel
         ];
 
         if ($this->sourceControl?->isGithubApp()) {
-            /** @var \App\SourceControlProviders\GithubApp $provider */
+            /** @var GithubApp $provider */
             $provider = $this->sourceControl->provider();
             $variables['GIT_HTTP_TOKEN'] = $provider->installationAccessToken();
         }
