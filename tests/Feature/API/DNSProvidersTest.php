@@ -105,8 +105,10 @@ class DNSProvidersTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_delete_dns_provider(string $provider): void
+    public function test_delete_dns_provider(string $provider, array $input): void
     {
+        unset($input);
+
         Sanctum::actingAs($this->user, ['read', 'write']);
 
         /** @var DNSProvider $dnsProvider */

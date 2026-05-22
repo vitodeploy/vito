@@ -74,8 +74,10 @@ class SourceControlsTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_delete_provider(string $provider): void
+    public function test_delete_provider(string $provider, ?string $url, array $input): void
     {
+        unset($url, $input);
+
         $this->actingAs($this->user);
 
         /** @var SourceControl $sourceControl */
@@ -95,8 +97,10 @@ class SourceControlsTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_cannot_delete_provider(string $provider): void
+    public function test_cannot_delete_provider(string $provider, ?string $url, array $input): void
     {
+        unset($url, $input);
+
         $this->actingAs($this->user);
 
         /** @var SourceControl $sourceControl */

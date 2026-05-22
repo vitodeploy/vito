@@ -87,8 +87,10 @@ class ServerProvidersTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_delete_provider(string $provider): void
+    public function test_delete_provider(string $provider, array $input): void
     {
+        unset($input);
+
         $this->actingAs($this->user);
 
         $provider = ServerProvider::factory()->create([
@@ -106,8 +108,10 @@ class ServerProvidersTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_cannot_delete_provider(string $provider): void
+    public function test_cannot_delete_provider(string $provider, array $input): void
     {
+        unset($input);
+
         $this->actingAs($this->user);
 
         $provider = ServerProvider::factory()->create([
