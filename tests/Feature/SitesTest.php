@@ -341,6 +341,47 @@ class SitesTest extends TestCase
         ]);
     }
 
+    public function test_create_laravel_site_dispatches_ensure_env_script(): void
+    {
+        SSH::fake();
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([], 201),
+        ]);
+
+        $this->actingAs($this->user);
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Github::id(),
+        ]);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => Laravel::id(),
+            'domain' => 'env-example.com',
+            'php_version' => '8.2',
+            'web_directory' => 'public',
+            'repository' => 'test/test',
+            'branch' => 'main',
+            'composer' => false,
+            'user' => 'envtest',
+            'source_control' => $sourceControl->id,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'env-example.com',
+            'status' => SiteStatus::READY->value,
+            'user' => 'envtest',
+            'path' => '/home/envtest/env-example.com',
+        ]);
+
+        $envPath = '/home/envtest/env-example.com/.env';
+        $examplePath = '/home/envtest/env-example.com/.env.example';
+
+        SSH::assertExecutedContains("[ -f '{$envPath}' ]");
+        SSH::assertExecutedContains("cp '{$examplePath}' '{$envPath}'");
+        SSH::assertExecutedContains("touch '{$envPath}'");
+        SSH::assertExecutedContains("chmod 640 '{$envPath}'");
+    }
+
     public function test_see_sites_list(): void
     {
         $this->actingAs($this->user);
