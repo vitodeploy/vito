@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ServerTest extends TestCase
@@ -109,6 +110,7 @@ class ServerTest extends TestCase
 
         $this->delete(route('servers.destroy', $this->server), [
             'name' => $this->server->name,
+            'delete_from_provider' => true,
         ])
             ->assertSessionDoesntHaveErrors();
 
@@ -117,6 +119,183 @@ class ServerTest extends TestCase
         ]);
 
         Mail::assertSent(NotificationMail::class);
+    }
+
+    public function test_delete_server_destroys_provider_vm_when_opted_in(): void
+    {
+        Http::fake();
+
+        $this->actingAs($this->user);
+
+        $provider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Hetzner::id(),
+            'credentials' => [
+                'token' => 'token',
+            ],
+        ]);
+
+        $this->server->update([
+            'provider' => Hetzner::id(),
+            'provider_id' => $provider->id,
+            'provider_data' => [
+                'hetzner_id' => 42,
+                'ssh_key_id' => 1,
+            ],
+        ]);
+
+        $this->delete(route('servers.destroy', $this->server), [
+            'name' => $this->server->name,
+            'delete_from_provider' => true,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('servers', [
+            'id' => $this->server->id,
+        ]);
+
+        Http::assertSent(fn ($request): bool => $request->method() === 'DELETE'
+            && str_contains($request->url(), '/servers/42'));
+    }
+
+    public function test_delete_server_keeps_provider_vm_when_opted_out(): void
+    {
+        Http::fake();
+
+        $this->actingAs($this->user);
+
+        $provider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Hetzner::id(),
+            'credentials' => [
+                'token' => 'token',
+            ],
+        ]);
+
+        $this->server->update([
+            'provider' => Hetzner::id(),
+            'provider_id' => $provider->id,
+            'provider_data' => [
+                'hetzner_id' => 42,
+                'ssh_key_id' => 1,
+            ],
+        ]);
+
+        $this->delete(route('servers.destroy', $this->server), [
+            'name' => $this->server->name,
+            'delete_from_provider' => false,
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('servers', [
+            'id' => $this->server->id,
+        ]);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_delete_server_requires_delete_from_provider_for_non_custom(): void
+    {
+        $this->actingAs($this->user);
+
+        $provider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Hetzner::id(),
+            'credentials' => [
+                'token' => 'token',
+            ],
+        ]);
+
+        $this->server->update([
+            'provider' => Hetzner::id(),
+            'provider_id' => $provider->id,
+            'provider_data' => [
+                'hetzner_id' => 42,
+                'ssh_key_id' => 1,
+            ],
+        ]);
+
+        $this->delete(route('servers.destroy', $this->server), [
+            'name' => $this->server->name,
+        ])
+            ->assertSessionHasErrors('delete_from_provider');
+
+        $this->assertDatabaseHas('servers', [
+            'id' => $this->server->id,
+        ]);
+    }
+
+    public function test_api_delete_server_defaults_to_destroying_provider_vm(): void
+    {
+        Http::fake();
+
+        $provider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Hetzner::id(),
+            'credentials' => [
+                'token' => 'token',
+            ],
+        ]);
+
+        $this->server->update([
+            'provider' => Hetzner::id(),
+            'provider_id' => $provider->id,
+            'provider_data' => [
+                'hetzner_id' => 99,
+                'ssh_key_id' => 1,
+            ],
+        ]);
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $this->deleteJson(route('api.projects.servers.delete', [
+            'project' => $this->server->project_id,
+            'server' => $this->server->id,
+        ]))
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('servers', [
+            'id' => $this->server->id,
+        ]);
+
+        Http::assertSent(fn ($request): bool => $request->method() === 'DELETE'
+            && str_contains($request->url(), '/servers/99'));
+    }
+
+    public function test_api_delete_server_can_opt_out_of_provider_destruction(): void
+    {
+        Http::fake();
+
+        $provider = ServerProvider::factory()->create([
+            'user_id' => $this->user->id,
+            'provider' => Hetzner::id(),
+            'credentials' => [
+                'token' => 'token',
+            ],
+        ]);
+
+        $this->server->update([
+            'provider' => Hetzner::id(),
+            'provider_id' => $provider->id,
+            'provider_data' => [
+                'hetzner_id' => 99,
+                'ssh_key_id' => 1,
+            ],
+        ]);
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        $this->deleteJson(route('api.projects.servers.delete', [
+            'project' => $this->server->project_id,
+            'server' => $this->server->id,
+        ]), ['delete_from_provider' => false])
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('servers', [
+            'id' => $this->server->id,
+        ]);
+
+        Http::assertNothingSent();
     }
 
     public function test_check_connection_is_ready(): void

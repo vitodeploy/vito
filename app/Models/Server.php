@@ -113,6 +113,8 @@ class Server extends AbstractModel
         'authentication',
     ];
 
+    public bool $deleteFromProvider = true;
+
     public static function boot(): void
     {
         parent::boot();
@@ -146,7 +148,9 @@ class Server extends AbstractModel
                 if (File::exists($server->sshKey()['private_key_path'])) {
                     File::delete($server->sshKey()['private_key_path']);
                 }
-                $server->provider()->delete();
+                if ($server->deleteFromProvider) {
+                    $server->provider()->delete();
+                }
                 DB::commit();
             } catch (Throwable $e) {
                 DB::rollBack();

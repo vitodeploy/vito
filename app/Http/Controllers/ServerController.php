@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Server\CreateServer;
+use App\Actions\Server\DeleteServer;
 use App\Actions\Server\GetServers;
 use App\Actions\Server\RebootServer;
 use App\Actions\Server\TransferServer;
@@ -17,7 +18,6 @@ use App\Tables\ServerTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Delete;
@@ -153,14 +153,7 @@ class ServerController extends Controller
     {
         $this->authorize('delete', $server);
 
-        $this->validate($request, [
-            'name' => [
-                'required',
-                Rule::in([$server->name]),
-            ],
-        ]);
-
-        $server->delete();
+        app(DeleteServer::class)->delete($server, $request->all());
 
         return redirect()->route('servers')
             ->with('success', __('Server deleted successfully.'));

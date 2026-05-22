@@ -76,12 +76,13 @@ class ServerController extends Controller
     }
 
     #[Delete('{server}', name: 'api.projects.servers.delete', middleware: 'ability:write')]
-    public function delete(Project $project, Server $server): Response
+    public function delete(Project $project, Server $server, Request $request): Response
     {
         $this->authorize('delete', [$server, $project]);
 
         $this->validateRoute($project, $server);
 
+        $server->deleteFromProvider = $request->boolean('delete_from_provider', true);
         $server->delete();
 
         return response()->noContent();
