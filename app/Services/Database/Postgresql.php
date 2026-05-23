@@ -2,8 +2,8 @@
 
 namespace App\Services\Database;
 
+use App\DTOs\ServiceLog;
 use App\Services\HasLogs;
-use App\Services\ServiceLog;
 
 class Postgresql extends AbstractDatabase implements HasLogs
 {

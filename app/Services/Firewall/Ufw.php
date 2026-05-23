@@ -2,10 +2,10 @@
 
 namespace App\Services\Firewall;
 
+use App\DTOs\ServiceLog;
 use App\Enums\FirewallRuleStatus;
 use App\Exceptions\SSHError;
 use App\Services\HasLogs;
-use App\Services\ServiceLog;
 
 class Ufw extends AbstractFirewall implements HasLogs
 {

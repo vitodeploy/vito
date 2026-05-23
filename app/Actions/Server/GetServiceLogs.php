@@ -2,10 +2,10 @@
 
 namespace App\Actions\Server;
 
+use App\DTOs\ServiceLog;
 use App\Enums\ServiceStatus;
 use App\Models\Server;
 use App\Services\HasLogs;
-use App\Services\ServiceLog;
 
 class GetServiceLogs
 {

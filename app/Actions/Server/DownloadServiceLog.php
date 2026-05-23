@@ -2,8 +2,8 @@
 
 namespace App\Actions\Server;
 
+use App\DTOs\ServiceLog;
 use App\Models\Server;
-use App\Services\ServiceLog;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;

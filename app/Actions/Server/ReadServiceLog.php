@@ -2,9 +2,9 @@
 
 namespace App\Actions\Server;
 
+use App\DTOs\ServiceLog;
 use App\Exceptions\SSHError;
 use App\Models\Server;
-use App\Services\ServiceLog;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 

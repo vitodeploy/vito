@@ -2,11 +2,11 @@
 
 namespace App\Services\PHP;
 
+use App\DTOs\ServiceLog;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
 use App\Services\AbstractService;
 use App\Services\HasLogs;
-use App\Services\ServiceLog;
 use Closure;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;

@@ -2,9 +2,9 @@
 
 namespace App\Services\ProcessManager;
 
+use App\DTOs\ServiceLog;
 use App\Exceptions\SSHError;
 use App\Services\HasLogs;
-use App\Services\ServiceLog;
 use Throwable;
 
 class Supervisor extends AbstractProcessManager implements HasLogs
