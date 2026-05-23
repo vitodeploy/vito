@@ -304,7 +304,7 @@ class OS
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, string|int|float|bool|null>
      *
      * @throws SSHError
      */
@@ -314,14 +314,38 @@ class OS
             view('ssh.os.resource-info'),
         );
 
+        $values = [];
+        foreach (preg_split('/\R/', $info) ?: [] as $line) {
+            if (preg_match('/^([a-z_]+):(.*)$/', trim($line), $matches) === 1) {
+                $values[$matches[1]] = trim($matches[2]);
+            }
+        }
+
+        $nullIfEmpty = fn (string $key): ?string => ($values[$key] ?? '') === '' ? null : $values[$key];
+
+        [$cpuUsage, $cpuSteal] = array_pad(explode('|', $values['cpu_usage_and_steal'] ?? ''), 2, '');
+
         return [
-            'load' => str($info)->after('load:')->before(PHP_EOL)->toString(),
-            'memory_total' => str($info)->after('memory_total:')->before(PHP_EOL)->toString(),
-            'memory_used' => str($info)->after('memory_used:')->before(PHP_EOL)->toString(),
-            'memory_free' => str($info)->after('memory_free:')->before(PHP_EOL)->toString(),
-            'disk_total' => str($info)->after('disk_total:')->before(PHP_EOL)->toString(),
-            'disk_used' => str($info)->after('disk_used:')->before(PHP_EOL)->toString(),
-            'disk_free' => str($info)->after('disk_free:')->before(PHP_EOL)->toString(),
+            'load' => $values['load'] ?? '',
+            'memory_total' => $values['memory_total'] ?? '',
+            'memory_used' => $values['memory_used'] ?? '',
+            'memory_free' => $values['memory_free'] ?? '',
+            'disk_total' => $values['disk_total'] ?? '',
+            'disk_used' => $values['disk_used'] ?? '',
+            'disk_free' => $values['disk_free'] ?? '',
+            'cpu_cores' => $nullIfEmpty('cpu_cores'),
+            'cpu_physical_cores' => $nullIfEmpty('cpu_physical_cores'),
+            'cpu_usage_percent' => $cpuUsage === '' ? null : $cpuUsage,
+            'cpu_per_core_usage_percent' => null,
+            'cpu_steal_percent' => $cpuSteal === '' ? null : $cpuSteal,
+            'memory_used_percent' => $nullIfEmpty('memory_used_percent'),
+            'swap_total' => $nullIfEmpty('swap_total'),
+            'swap_used' => $nullIfEmpty('swap_used'),
+            'swap_free' => $nullIfEmpty('swap_free'),
+            'swap_used_percent' => $nullIfEmpty('swap_used_percent'),
+            'oom_kill_count' => $nullIfEmpty('oom_kill_count'),
+            'uptime_seconds' => $nullIfEmpty('uptime_seconds'),
+            'reboot_required' => ($values['reboot_required'] ?? '0') === '1',
         ];
     }
 

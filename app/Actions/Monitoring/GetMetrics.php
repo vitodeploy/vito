@@ -2,6 +2,7 @@
 
 namespace App\Actions\Monitoring;
 
+use App\Models\Metric;
 use App\Models\Server;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -15,9 +16,9 @@ class GetMetrics
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return Collection<int, mixed>
+     * @return array{current: ?array<string, mixed>, history: Collection<int, mixed>}
      */
-    public function filter(Server $server, array $input): Collection
+    public function filter(Server $server, array $input): array
     {
         $this->validate($input);
 
@@ -35,12 +36,44 @@ class GetMetrics
 
         $input = array_merge($defaultInput, $input);
 
-        return $this->metrics(
-            server: $server,
-            fromDate: $this->getFromDate($input),
-            toDate: $this->getToDate($input),
-            interval: $this->getInterval($input)
-        );
+        return [
+            'current' => $this->current($server),
+            'history' => $this->metrics(
+                server: $server,
+                fromDate: $this->getFromDate($input),
+                toDate: $this->getToDate($input),
+                interval: $this->getInterval($input)
+            ),
+        ];
+    }
+
+    /**
+     * @return ?array<string, mixed>
+     */
+    private function current(Server $server): ?array
+    {
+        /** @var ?Metric $latest */
+        $latest = $server->metrics()->latest('id')->first();
+
+        if (! $latest) {
+            return null;
+        }
+
+        $diskUsedPercent = $latest->disk_total > 0
+            ? round(($latest->disk_used / $latest->disk_total) * 100, 2)
+            : null;
+
+        return [
+            'date' => $latest->created_at->format('Y-m-d H:i:s'),
+            'cpu_cores' => $latest->cpu_cores,
+            'cpu_physical_cores' => $latest->cpu_physical_cores,
+            'cpu_usage_percent' => $latest->cpu_usage_percent,
+            'memory_used_percent' => $latest->memory_used_percent,
+            'swap_used_percent' => $latest->swap_used_percent,
+            'disk_used_percent' => $diskUsedPercent,
+            'uptime_seconds' => $latest->uptime_seconds,
+            'reboot_required' => $latest->reboot_required,
+        ];
     }
 
     /**
@@ -65,6 +98,14 @@ class GetMetrics
                     DB::raw('ROUND(AVG(disk_total), 2) as disk_total'),
                     DB::raw('ROUND(AVG(disk_used), 2) as disk_used'),
                     DB::raw('ROUND(AVG(disk_free), 2) as disk_free'),
+                    DB::raw('ROUND(AVG(cpu_usage_percent), 2) as cpu_usage_percent'),
+                    DB::raw('ROUND(AVG(cpu_steal_percent), 2) as cpu_steal_percent'),
+                    DB::raw('ROUND(AVG(memory_used_percent), 2) as memory_used_percent'),
+                    DB::raw('ROUND(AVG(swap_total), 0) as swap_total'),
+                    DB::raw('ROUND(AVG(swap_used), 0) as swap_used'),
+                    DB::raw('ROUND(AVG(swap_free), 0) as swap_free'),
+                    DB::raw('ROUND(AVG(swap_used_percent), 2) as swap_used_percent'),
+                    DB::raw('MAX(oom_kill_count) as oom_kill_count'),
                     $interval,
                 ],
             )
@@ -73,6 +114,7 @@ class GetMetrics
             ->get()
             ->map(function ($item): stdClass {
                 $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
+                unset($item->date_interval);
 
                 return $item;
             });
