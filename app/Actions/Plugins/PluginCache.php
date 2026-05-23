@@ -21,13 +21,17 @@ final readonly class PluginCache
     public function get(): Collection
     {
         try {
-            $ids = Cache::rememberForever(self::CACHE_KEY, function (): array {
-                return Plugin::query()
+            $ids = Cache::get(self::CACHE_KEY);
+
+            if (! $this->isValidIdList($ids)) {
+                $ids = Plugin::query()
                     ->where('is_installed', true)
                     ->where('is_enabled', true)
                     ->pluck('id')
                     ->all();
-            });
+
+                Cache::forever(self::CACHE_KEY, $ids);
+            }
 
             return Plugin::query()->whereIn('id', $ids)->get();
         } catch (Throwable) {
@@ -45,9 +49,24 @@ final readonly class PluginCache
      */
     public function set(Collection $plugins): void
     {
-        Cache::set(
-            key: self::CACHE_KEY,
-            value: $plugins->pluck('id')->all(),
-        );
+        Cache::forever(self::CACHE_KEY, $plugins->pluck('id')->all());
+    }
+
+    /**
+     * @phpstan-assert-if-true array<int, int> $value
+     */
+    private function isValidIdList(mixed $value): bool
+    {
+        if (! is_array($value)) {
+            return false;
+        }
+
+        foreach ($value as $id) {
+            if (! is_int($id)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
