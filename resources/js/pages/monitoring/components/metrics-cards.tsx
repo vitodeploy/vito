@@ -1,30 +1,11 @@
 import { Server } from '@/types/server';
-import { useQuery } from '@tanstack/react-query';
-import { MetricsFilter, MetricsResponse } from '@/types/metric';
+import { MetricsFilter } from '@/types/metric';
 import { ResourceUsageChart } from '@/pages/monitoring/components/resource-usage-chart';
-import { kbToGb, mbToGb } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMetrics } from '@/pages/monitoring/components/use-metrics';
 
 export default function MetricsCards({ server, filter, metric }: { server: Server; filter?: MetricsFilter; metric?: string }) {
-  if (!filter) {
-    filter = {
-      period: '10m',
-    };
-  }
-
-  const query = useQuery<MetricsResponse>({
-    queryKey: ['metrics', server.id, filter.period, filter.from, filter.to],
-    queryFn: async () => {
-      const response = await fetch(route('monitoring.json', { server: server.id, ...filter }));
-      if (!response.ok) {
-        throw new Error('Failed to fetch metrics');
-      }
-      return response.json();
-    },
-    refetchInterval: 60000,
-    retry: false,
-  });
-
+  const query = useMetrics(server, filter);
   const history = query.data?.history ?? [];
 
   return (
@@ -59,13 +40,12 @@ export default function MetricsCards({ server, filter, metric }: { server: Serve
             <ResourceUsageChart
               title="Memory Usage"
               label="Memory usage"
-              dataKey="memory_used"
+              dataKey="memory_used_percent"
               color="var(--color-chart-2)"
               chartData={history}
               link={route('monitoring.show', { server: server.id, metric: 'memory' })}
-              formatter={(value) => {
-                return `${kbToGb(value as string)} GB`;
-              }}
+              formatter={(value) => `${Number(value).toFixed(2)}%`}
+              valueFormatter={(value) => `${Number(value).toFixed(2)}%`}
               single={metric !== undefined}
             />
           )}
@@ -73,13 +53,12 @@ export default function MetricsCards({ server, filter, metric }: { server: Serve
             <ResourceUsageChart
               title="Disk Usage"
               label="Disk usage"
-              dataKey="disk_used"
+              dataKey="disk_used_percent"
               color="var(--color-chart-3)"
               chartData={history}
               link={route('monitoring.show', { server: server.id, metric: 'disk' })}
-              formatter={(value) => {
-                return `${mbToGb(value as string)} GB`;
-              }}
+              formatter={(value) => `${Number(value).toFixed(2)}%`}
+              valueFormatter={(value) => `${Number(value).toFixed(2)}%`}
               single={metric !== undefined}
             />
           )}

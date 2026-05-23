@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { BookOpenIcon, TriangleAlertIcon } from 'lucide-react';
 import Container from '@/components/container';
 import MetricsCards from '@/pages/monitoring/components/metrics-cards';
+import SystemStatus from '@/pages/monitoring/components/system-status';
 import Filter from '@/pages/monitoring/components/filter';
 import { useState } from 'react';
 import { Metric, MetricsFilter } from '@/types/metric';
@@ -57,6 +58,8 @@ export default function Monitoring() {
             </AlertDescription>
           </Alert>
         )}
+
+        {page.props.hasMonitoringService && <SystemStatus server={page.props.server} filter={filter} />}
 
         <MetricsCards server={page.props.server} filter={filter} />
 

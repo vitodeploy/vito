@@ -102,6 +102,8 @@ class MetricsTest extends TestCase
         }
         $this->assertArrayHasKey('load', $history[0]);
         $this->assertArrayHasKey('cpu_usage_percent', $history[0]);
+        $this->assertArrayHasKey('disk_used_percent', $history[0]);
+        $this->assertEquals(25.0, $history[0]['disk_used_percent']);
     }
 
     public function test_monitoring_json_returns_null_current_when_no_metrics(): void

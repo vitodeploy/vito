@@ -32,6 +32,19 @@ export function formatDateString(dateString: string | Date): string {
   return year + '-' + month + '-' + day;
 }
 
+export function humanizeSeconds(seconds: number | null | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return 'N/A';
+  const total = Math.floor(seconds);
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const parts: string[] = [];
+  if (days) parts.push(`${days}d`);
+  if (hours || days) parts.push(`${hours}h`);
+  parts.push(`${minutes}m`);
+  return parts.join(' ');
+}
+
 export function humanizeStep(step: string | null | undefined): string {
   if (!step) return '';
   const spaced = step.replace(/[-_]+/g, ' ').trim();

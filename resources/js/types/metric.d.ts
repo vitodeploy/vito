@@ -15,6 +15,7 @@ export interface Metric {
   swap_free: number | null;
   swap_used_percent: number | null;
   oom_kill_count: number | null;
+  disk_used_percent: number | null;
 
   [key: string]: number | string | null;
 }

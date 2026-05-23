@@ -114,6 +114,9 @@ class GetMetrics
             ->get()
             ->map(function ($item): stdClass {
                 $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
+                $item->disk_used_percent = $item->disk_total > 0
+                    ? round(($item->disk_used / $item->disk_total) * 100, 2)
+                    : null;
                 unset($item->date_interval);
 
                 return $item;
