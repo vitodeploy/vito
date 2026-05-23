@@ -31,13 +31,20 @@ export default function UpdateServer({ server, children }: { server: Server; chi
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Update {server.name}</DialogTitle>
+          <DialogTitle>Update {server.name}?</DialogTitle>
           <DialogDescription className="sr-only">Update server</DialogDescription>
         </DialogHeader>
 
-        <p className="p-4">
-          Are you sure you want to update the server? There are <b>{server.updates}</b> available updates
-        </p>
+        <div className="flex flex-col gap-2 p-4 text-sm">
+          <p>
+            Apply <b>{server.updates}</b> pending OS package {server.updates === 1 ? 'update' : 'updates'} to this server?
+          </p>
+          <p className="text-muted-foreground">
+            The upgrade can take several minutes and may briefly restart affected services (web server, PHP-FPM, databases) as their packages are
+            replaced. In-flight connections to sites hosted here may be dropped. If the kernel or a core library is upgraded, a server restart may be
+            required afterwards.
+          </p>
+        </div>
 
         <DialogFooter className="gap-2">
           <DialogClose asChild>

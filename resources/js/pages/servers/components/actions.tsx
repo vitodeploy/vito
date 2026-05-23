@@ -60,7 +60,7 @@ export default function ServerActions({ server }: { server: Server }) {
       <DropdownMenuContent align="end">
         <CheckConnection server={server} />
         <RebootServer server={server}>
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Reboot</DropdownMenuItem>
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restart</DropdownMenuItem>
         </RebootServer>
         <CheckForUpdates server={server} />
         <UpdateServer server={server}>

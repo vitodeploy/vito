@@ -31,8 +31,13 @@ export interface Server {
   created_at: string;
   updated_at: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
+  warnings?: ServerWarning[];
   [key: string]: unknown;
 }
+
+export type ServerWarning =
+  | { key: 'updates_available'; count: number }
+  | { key: 'reboot_required' };
 
 export interface ServerFeature {
   label: string;

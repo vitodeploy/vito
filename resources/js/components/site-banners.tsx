@@ -1,11 +1,11 @@
 import { Link, router } from '@inertiajs/react';
-import { ChevronDownIcon, OctagonAlertIcon, TriangleAlertIcon } from 'lucide-react';
+import { OctagonAlertIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { humanizeStep } from '@/lib/utils';
 import { Site, SiteWarning } from '@/types/site';
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
+import { BannerItem, WarningsBlock } from '@/components/banners';
 
 function InstallationFailedBanner({ site }: { site: Site }) {
   const [open, setOpen] = useState(false);
@@ -98,29 +98,8 @@ function InstallationFailedBanner({ site }: { site: Site }) {
   );
 }
 
-interface BannerItem {
-  key: string;
-  title: string;
-  description: ReactNode;
-  action?: ReactNode;
-}
-
-function BannerRow({ item }: { item: BannerItem }) {
-  return (
-    <div className="flex items-center gap-4 px-4 py-3">
-      <TriangleAlertIcon className="text-warning h-4 w-4 shrink-0" />
-      <div className="min-w-0 flex-1 text-sm">
-        <p className="font-medium">{item.title}</p>
-        <p className="text-muted-foreground mt-0.5">{item.description}</p>
-      </div>
-      {item.action && <div className="shrink-0">{item.action}</div>}
-    </div>
-  );
-}
-
 export default function SiteBanners({ site }: { site: Site }) {
   const warnings: SiteWarning[] = site.warnings ?? [];
-  const [open, setOpen] = useState(false);
   const installationFailed = site.status === 'installation_failed';
 
   const pendingDomainsWarning = warnings.find((w) => w.key === 'pending_domains');
@@ -226,44 +205,10 @@ export default function SiteBanners({ site }: { site: Site }) {
     return null;
   }
 
-  const warningsBlock = (() => {
-    if (items.length === 0) {
-      return null;
-    }
-    if (items.length === 1) {
-      return (
-        <div className="border-warning/40 bg-warning/5 rounded-lg border">
-          <BannerRow item={items[0]} />
-        </div>
-      );
-    }
-    return (
-      <Collapsible open={open} onOpenChange={setOpen}>
-        <div className="border-warning/40 bg-warning/5 rounded-lg border">
-          <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left">
-            <TriangleAlertIcon className="text-warning h-4 w-4 shrink-0" />
-            <span className="flex-1 text-sm font-medium">{items.length} warnings require your attention</span>
-            <ChevronDownIcon className={`text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <div className="border-warning/25 space-y-0 border-t">
-              {items.map((item, i) => (
-                <div key={item.key} className={i > 0 ? 'border-warning/25 border-t' : ''}>
-                  <BannerRow item={item} />
-                </div>
-              ))}
-            </div>
-          </CollapsibleContent>
-        </div>
-      </Collapsible>
-    );
-  })();
-
   return (
     <div className="flex flex-col gap-3">
       {installationFailed && <InstallationFailedBanner site={site} />}
-      {warningsBlock}
+      <WarningsBlock items={items} />
     </div>
   );
 }

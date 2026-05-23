@@ -295,6 +295,14 @@ class Server extends AbstractModel
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<Metric, covariant $this>
+     */
+    public function latestMetric(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Metric::class)->latestOfMany();
+    }
+
+    /**
      * @return BelongsToMany<SshKey, covariant $this>
      */
     public function sshKeys(): BelongsToMany
