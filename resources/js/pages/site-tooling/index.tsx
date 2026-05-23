@@ -65,23 +65,25 @@ export default function SiteTooling() {
 
         <SiteBanners site={page.props.site} />
 
-        <Alert>
-          <TriangleAlertIcon className="text-warning!" />
-          <AlertDescription className="block">
-            <p>
-              Changing settings will affect all sites sharing the same isolated user (<strong>{isolated_user}</strong>). Changes could break other
-              sites.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Badge variant="success">{page.props.site.domain}</Badge>
-              {sibling_sites.map((sibling) => (
-                <Badge key={sibling.id} asChild variant="gray">
-                  <Link href={sibling.url}>{sibling.domain}</Link>
-                </Badge>
-              ))}
-            </div>
-          </AlertDescription>
-        </Alert>
+        {sibling_sites.length > 0 && (
+          <Alert>
+            <TriangleAlertIcon className="text-warning!" />
+            <AlertDescription className="block">
+              <p>
+                Changing settings will affect all sites sharing the same isolated user (<strong>{isolated_user}</strong>). Changes could break other
+                sites.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge variant="success">{page.props.site.domain}</Badge>
+                {sibling_sites.map((sibling) => (
+                  <Badge key={sibling.id} asChild variant="gray">
+                    <Link href={sibling.url}>{sibling.domain}</Link>
+                  </Badge>
+                ))}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <ToolingTable
           site={page.props.site}
