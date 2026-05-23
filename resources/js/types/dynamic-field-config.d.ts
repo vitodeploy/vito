@@ -13,6 +13,7 @@ export interface DynamicFieldConfig {
     | 'tooling-selector';
   name: string;
   options?: string[] | { [key: string]: string };
+  optionLabels?: { [key: string]: string };
   component?: string;
   placeholder?: string;
   description?: string;

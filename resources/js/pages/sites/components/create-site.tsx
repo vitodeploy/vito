@@ -418,7 +418,16 @@ export default function CreateSite({
       return (
         <FormField key={`field-${field.name}`}>
           {field.label && <Label htmlFor={field.name}>{field.label}</Label>}
-          <Select value={pickedToolId} onValueChange={(v) => form.setData(field.name, v)}>
+          <Select
+            value={pickedToolId}
+            onValueChange={(v) => {
+              form.setData(field.name, v);
+              if (pickerToolIds.has(v)) return;
+              const nextDescriptor = catalogue.find((t) => t.id === v);
+              const nextVersion = lockedVersions[v] ?? nextDescriptor?.supported_versions[0] ?? '';
+              if (nextVersion) form.setData(`${v}_version`, nextVersion);
+            }}
+          >
             <SelectTrigger id={field.name}>
               <SelectValue />
             </SelectTrigger>
@@ -428,7 +437,7 @@ export default function CreateSite({
                   const d = catalogue.find((t) => t.id === id);
                   return (
                     <SelectItem key={id} value={id}>
-                      {d?.label ?? id}
+                      {field.optionLabels?.[id] ?? d?.label ?? id}
                     </SelectItem>
                   );
                 })}
@@ -460,7 +469,7 @@ export default function CreateSite({
                   </Select>
                 </>
               ) : (
-                <Select value={versionValue} onValueChange={(v) => form.setData(versionKey, v)}>
+                <Select key={pickedToolId} value={versionValue} onValueChange={(v) => form.setData(versionKey, v)}>
                   <SelectTrigger id={`${pickedToolId}-selector-version`}>
                     <SelectValue placeholder={`Select ${pickedDescriptor.label} version`} />
                   </SelectTrigger>

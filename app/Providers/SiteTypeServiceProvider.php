@@ -191,7 +191,10 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->toolingPicker(NodeTooling::class),
                 DynamicField::make('package_manager')
-                    ->toolingSelector([NodeTooling::class, PnpmTooling::class, YarnTooling::class])
+                    ->toolingSelector(
+                        [NodeTooling::class, PnpmTooling::class, YarnTooling::class],
+                        [NodeTooling::class => 'npm'],
+                    )
                     ->label('Package Manager'),
                 DynamicField::make('source_control')
                     ->component()

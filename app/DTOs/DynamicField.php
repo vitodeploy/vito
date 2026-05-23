@@ -14,6 +14,7 @@ class DynamicField
         private ?string $placeholder = null,
         private ?string $description = null,
         private ?array $options = null,
+        private ?array $optionLabels = null,
         private ?array $link = null,
         private ?string $className = null,
         private ?array $componentProps = null,
@@ -128,11 +129,19 @@ class DynamicField
      * "Package Manager" where the user chooses among a few tooling classes.
      *
      * @param  array<int, class-string<ToolingInterface>>  $toolClasses
+     * @param  array<class-string<ToolingInterface>, string>  $labelOverrides  Map of tool class to a label used only in this selector's dropdown (e.g. `[NodeTooling::class => 'npm']`).
      */
-    public function toolingSelector(array $toolClasses): self
+    public function toolingSelector(array $toolClasses, array $labelOverrides = []): self
     {
         $this->type = 'tooling-selector';
         $this->options = array_map(fn (string $cls) => $cls::id(), $toolClasses);
+
+        if ($labelOverrides !== []) {
+            $this->optionLabels = [];
+            foreach ($labelOverrides as $cls => $label) {
+                $this->optionLabels[$cls::id()] = $label;
+            }
+        }
 
         if ($this->default === null && $this->options !== []) {
             $this->default = $this->options[0];
@@ -223,6 +232,7 @@ class DynamicField
             'placeholder' => $this->placeholder,
             'description' => $this->description,
             'options' => $this->options,
+            'optionLabels' => $this->optionLabels,
             'link' => $this->link,
             'className' => $this->className,
             'componentProps' => $this->componentProps,

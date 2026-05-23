@@ -99,7 +99,7 @@ final class GetBootstrap
     }
 
     /**
-     * @return array<int, array{id: string, label: string, description: string, supported_versions: array<int, string>}>
+     * @return array<int, array{id: string, label: string, description: string, supported_versions: array<int, string>, commands: array<int, string>}>
      */
     private function tooling(): array
     {
@@ -110,6 +110,7 @@ final class GetBootstrap
                 'label' => $tool::label(),
                 'description' => $tool::description(),
                 'supported_versions' => $tool::supportedVersions(),
+                'commands' => $tool::commands(),
             ];
         }
 

@@ -123,6 +123,7 @@ export interface ToolingDescriptor {
   label: string;
   description: string;
   supported_versions: string[];
+  commands: string[];
 }
 
 export interface SharedData {
