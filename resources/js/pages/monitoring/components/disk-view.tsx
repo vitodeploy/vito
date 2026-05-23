@@ -34,9 +34,7 @@ export default function DiskView({ server, filter }: { server: Server; filter?: 
           <CardContent className="flex flex-col gap-3 p-4">
             <div className="flex items-baseline justify-between">
               <span className="text-3xl font-semibold tabular-nums">{current.disk_used_percent.toFixed(2)}%</span>
-              <span className="text-muted-foreground text-sm">
-                {latest ? `${mbToGb(latest.disk_used)} / ${mbToGb(latest.disk_total)} GB` : ''}
-              </span>
+              <span className="text-muted-foreground text-sm">{latest ? `${mbToGb(latest.disk_used)} / ${mbToGb(latest.disk_total)} GB` : ''}</span>
             </div>
             <div className="bg-muted relative h-3 w-full overflow-hidden rounded-full">
               <div

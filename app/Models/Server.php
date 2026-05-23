@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -295,9 +296,9 @@ class Server extends AbstractModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne<Metric, covariant $this>
+     * @return HasOne<Metric, covariant $this>
      */
-    public function latestMetric(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function latestMetric(): HasOne
     {
         return $this->hasOne(Metric::class)->latestOfMany();
     }

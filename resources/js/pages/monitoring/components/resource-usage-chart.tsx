@@ -22,22 +22,10 @@ interface Props {
   valueFormatter?: (value: unknown) => string | number;
 }
 
-export function ResourceUsageChart({
-  title,
-  color,
-  dataKey,
-  label,
-  chartData,
-  link,
-  formatter,
-  single,
-  height,
-  showXAxis,
-  valueFormatter,
-}: Props) {
+export function ResourceUsageChart({ title, color, dataKey, label, chartData, link, formatter, single, height, showXAxis, valueFormatter }: Props) {
   const resolvedHeight = height ?? (single ? 'large' : 'small');
   const heightClass = resolvedHeight === 'large' ? 'h-[400px]' : resolvedHeight === 'medium' ? 'h-[200px]' : 'h-[100px]';
-  const xAxisVisible = showXAxis ?? (single ?? false);
+  const xAxisVisible = showXAxis ?? single ?? false;
   const chartConfig = {
     [dataKey]: {
       label: label,
@@ -71,12 +59,7 @@ export function ResourceUsageChart({
           )}
         </div>
         {validData.length === 0 ? (
-          <div
-            className={cn(
-              'text-muted-foreground flex aspect-auto w-full items-center justify-center rounded-b-xl border-t text-sm',
-              heightClass,
-            )}
-          >
+          <div className={cn('text-muted-foreground flex aspect-auto w-full items-center justify-center rounded-b-xl border-t text-sm', heightClass)}>
             No data in selected period
           </div>
         ) : (

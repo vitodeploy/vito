@@ -25,24 +25,13 @@ export default function CpuView({ server, filter }: { server: Server; filter?: M
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile
-          label="CPU Usage"
-          value={current?.cpu_usage_percent != null ? `${current.cpu_usage_percent.toFixed(2)}%` : 'N/A'}
-        />
+        <StatTile label="CPU Usage" value={current?.cpu_usage_percent != null ? `${current.cpu_usage_percent.toFixed(2)}%` : 'N/A'} />
         <StatTile
           label="Cores"
           value={current?.cpu_cores ?? 'N/A'}
-          subtitle={
-            current?.cpu_physical_cores != null
-              ? `${current.cpu_cores} logical / ${current.cpu_physical_cores} physical`
-              : undefined
-          }
+          subtitle={current?.cpu_physical_cores != null ? `${current.cpu_cores} logical / ${current.cpu_physical_cores} physical` : undefined}
         />
-        <StatTile
-          label="Current Load"
-          value={history.length > 0 ? history[history.length - 1].load.toFixed(2) : 'N/A'}
-          subtitle="1-min average"
-        />
+        <StatTile label="Current Load" value={history.length > 0 ? history[history.length - 1].load.toFixed(2) : 'N/A'} subtitle="1-min average" />
         <StatTile
           label="CPU Steal (peak)"
           value={`${stealPeak.toFixed(2)}%`}

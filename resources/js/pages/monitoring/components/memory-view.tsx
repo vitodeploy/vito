@@ -30,24 +30,15 @@ export default function MemoryView({ server, filter }: { server: Server; filter?
         <StatTile
           label="Memory Usage"
           value={current?.memory_used_percent != null ? `${current.memory_used_percent.toFixed(2)}%` : 'N/A'}
-          subtitle={
-            latest ? `${kbToGb(latest.memory_used)} / ${kbToGb(latest.memory_total)} GB` : undefined
-          }
+          subtitle={latest ? `${kbToGb(latest.memory_used)} / ${kbToGb(latest.memory_total)} GB` : undefined}
         />
-        <StatTile
-          label="Memory Free"
-          value={latest ? `${kbToGb(latest.memory_free)} GB` : 'N/A'}
-        />
+        <StatTile label="Memory Free" value={latest ? `${kbToGb(latest.memory_free)} GB` : 'N/A'} />
         <StatTile
           label="Swap Usage"
           value={current?.swap_used_percent != null ? `${current.swap_used_percent.toFixed(2)}%` : 'N/A'}
           subtitle={swapPresent ? undefined : 'No swap configured'}
         />
-        <StatTile
-          label="OOM Kills (last 24h)"
-          value={latestOom}
-          accent={latestOom > 0 ? 'destructive' : 'default'}
-        />
+        <StatTile label="OOM Kills (last 24h)" value={latestOom} accent={latestOom > 0 ? 'destructive' : 'default'} />
       </div>
 
       <ResourceUsageChart

@@ -22,7 +22,7 @@ export function StatTile({ label, value, subtitle, accent = 'default' }: Props) 
   return (
     <Card className={cn('overflow-hidden', accentClasses[accent])}>
       <CardContent className="flex flex-col gap-1 p-4">
-        <span className="text-muted-foreground text-xs uppercase tracking-wide">{label}</span>
+        <span className="text-muted-foreground text-xs tracking-wide uppercase">{label}</span>
         <span className="text-2xl font-semibold tabular-nums">{value}</span>
         {subtitle && <span className="text-muted-foreground text-xs">{subtitle}</span>}
       </CardContent>

@@ -35,9 +35,7 @@ export interface Server {
   [key: string]: unknown;
 }
 
-export type ServerWarning =
-  | { key: 'updates_available'; count: number }
-  | { key: 'reboot_required' };
+export type ServerWarning = { key: 'updates_available'; count: number } | { key: 'reboot_required' };
 
 export interface ServerFeature {
   label: string;
