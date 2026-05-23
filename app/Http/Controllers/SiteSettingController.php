@@ -7,11 +7,14 @@ use App\Actions\Site\PreviewVhost;
 use App\Actions\Site\UpdateBasicAuth;
 use App\Actions\Site\UpdateBranch;
 use App\Actions\Site\UpdatePHPVersion;
+use App\Actions\Site\UpdatePort;
 use App\Actions\Site\UpdateSourceControl;
+use App\Actions\Site\UpdateStartCommand;
 use App\Actions\Site\UpdateVhost;
 use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateVhostTemplate;
 use App\Actions\Site\UpdateWebDirectory;
+use App\Actions\Site\WorkerStartCommandUpdateResult;
 use App\Actions\Webserver\GenerateCaddyConfig;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
@@ -91,6 +94,41 @@ class SiteSettingController extends Controller
         app(UpdateWebDirectory::class)->update($site, $request->input());
 
         return back()->with('success', 'Web directory updated successfully.');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Patch('/port', name: 'site-settings.update-port')]
+    public function updatePort(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(UpdatePort::class)->update($site, $request->input());
+
+        return back()->with('success', 'Port updated and VHost regenerated.');
+    }
+
+    /**
+     * @throws SSHError
+     */
+    #[Patch('/start-command', name: 'site-settings.update-start-command')]
+    public function updateStartCommand(Request $request, Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        $result = app(UpdateStartCommand::class)->update($site, $request->input());
+
+        return match ($result) {
+            WorkerStartCommandUpdateResult::PreFirstDeploy => back()->with(
+                'info',
+                'Start command saved. It will be used when the site is first deployed.',
+            ),
+            WorkerStartCommandUpdateResult::PendingRestart => back()->with(
+                'warning',
+                'Start command updated. The worker is still running with the previous command — restart the worker or deploy to apply.',
+            ),
+        };
     }
 
     #[Get('/vhost', name: 'site-settings.vhost')]

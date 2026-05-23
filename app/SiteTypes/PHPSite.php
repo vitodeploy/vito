@@ -4,7 +4,6 @@ namespace App\SiteTypes;
 
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
-use App\Helpers\SiteShellEnvironment;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SSH\OS\Composer;
@@ -160,13 +159,4 @@ class PHPSite extends AbstractSiteType
             'is_php' => true,
         ];
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function deploymentEnvironment(): array
-    {
-        return SiteShellEnvironment::collect($this->site);
-    }
-
 }

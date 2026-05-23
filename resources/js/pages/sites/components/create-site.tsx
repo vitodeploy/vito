@@ -207,10 +207,7 @@ export default function CreateSite({
       }
 
       if (previousLocksRef.current[toolId]) {
-        const fallback =
-          kind === 'tooling'
-            ? 'none'
-            : (catalogue.find((t) => t.id === toolId)?.supported_versions[0] ?? '');
+        const fallback = kind === 'tooling' ? 'none' : (catalogue.find((t) => t.id === toolId)?.supported_versions[0] ?? '');
         if (current !== fallback) form.setData(formKey, fallback);
         previousLocksRef.current[toolId] = null;
       }
@@ -360,8 +357,7 @@ export default function CreateSite({
       const formKey = `${toolId}_version`;
       const locked = lockedVersions[toolId] ?? null;
       const labelFor = (v: string) => `${descriptor.label} ${v}`;
-      const value =
-        ((form.data as Record<string, unknown>)[formKey] as string | undefined) ?? descriptor.supported_versions[0] ?? '';
+      const value = ((form.data as Record<string, unknown>)[formKey] as string | undefined) ?? descriptor.supported_versions[0] ?? '';
 
       return (
         <FormField key={`field-${field.name}`}>
@@ -410,15 +406,13 @@ export default function CreateSite({
       const rawOptions = field.options;
       const toolIds = Array.isArray(rawOptions) ? rawOptions : rawOptions ? Object.values(rawOptions) : [];
       const catalogue = configs.tooling ?? [];
-      const pickedToolId =
-        ((form.data as Record<string, unknown>)[field.name] as string | undefined) ?? toolIds[0] ?? '';
+      const pickedToolId = ((form.data as Record<string, unknown>)[field.name] as string | undefined) ?? toolIds[0] ?? '';
       const pickedDescriptor = catalogue.find((t) => t.id === pickedToolId);
       const versionInherited = pickerToolIds.has(pickedToolId);
       const versionKey = `${pickedToolId}_version`;
       const lockedVersion = lockedVersions[pickedToolId] ?? null;
       const versionValue =
-        ((form.data as Record<string, unknown>)[versionKey] as string | undefined) ??
-        (pickedDescriptor?.supported_versions[0] ?? '');
+        ((form.data as Record<string, unknown>)[versionKey] as string | undefined) ?? pickedDescriptor?.supported_versions[0] ?? '';
       const labelFor = (v: string) => (pickedDescriptor ? `${pickedDescriptor.label} ${v}` : v);
 
       return (

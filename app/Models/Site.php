@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\DeploymentStatus;
+use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
+use App\Enums\SslStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Helpers\SiteShellEnvironment;
@@ -12,6 +15,7 @@ use App\Helpers\SSH;
 use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
+use App\SiteTypes\AbstractProxiedSiteType;
 use App\SiteTypes\SiteType;
 use App\SourceControlProviders\GithubApp;
 use App\Traits\HasProjectThroughServer;
@@ -21,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -163,6 +167,59 @@ class Site extends AbstractModel
     public function isInstallationFailed(): bool
     {
         return $this->status === SiteStatus::INSTALLATION_FAILED;
+    }
+
+    /**
+     * @return array<int, array{key: string, ...}>
+     */
+    public function getWarnings(): array
+    {
+        $warnings = [];
+
+        $hostedDomains = $this->relationLoaded('hostedDomains') ? $this->hostedDomains : collect();
+
+        $pendingDomains = $hostedDomains->where('status', HostedDomainStatus::PENDING);
+        if ($pendingDomains->isNotEmpty()) {
+            $warnings[] = [
+                'key' => 'pending_domains',
+                'count' => $pendingDomains->count(),
+                'domains' => $pendingDomains->pluck('domain')->all(),
+            ];
+        }
+
+        if (! $this->ssl_enabled) {
+            $warnings[] = ['key' => 'ssl_disabled'];
+        }
+
+        if (! $this->vhost_generation_enabled) {
+            $warnings[] = ['key' => 'vhost_generation_disabled'];
+        }
+
+        $expiring = $hostedDomains->filter(
+            fn ($hd) => $hd->ssl_id
+                && $hd->relationLoaded('ssl')
+                && $hd->ssl
+                && $hd->ssl->status === SslStatus::CREATED
+                && $hd->ssl->expires_at
+                && $hd->ssl->expires_at <= now()->addDays(14)
+        );
+
+        if ($expiring->isNotEmpty()) {
+            $earliestExpiry = $expiring->min(fn ($hd) => $hd->ssl->expires_at);
+            $warnings[] = [
+                'key' => 'ssl_expiring',
+                'count' => $expiring->count(),
+                'domains' => $expiring->pluck('domain')->all(),
+                'earliest_expiry' => $earliestExpiry?->toIso8601String(),
+            ];
+        }
+
+        if ($this->type() instanceof AbstractProxiedSiteType
+            && ! $this->deployments()->where('status', DeploymentStatus::FINISHED)->exists()) {
+            $warnings[] = ['key' => 'needs_first_deploy'];
+        }
+
+        return $warnings;
     }
 
     /**
@@ -615,11 +672,17 @@ class Site extends AbstractModel
         if ($this->deploymentScript) {
             return;
         }
-        $script = '';
-        $path = resource_path('deployment-scripts/'.$this->type.'.sh');
-        if (File::exists($path)) {
-            $script = File::get($path);
+
+        try {
+            $script = $this->type()->defaultDeploymentScript();
+        } catch (\Throwable $e) {
+            Log::error('Failed to render default deploy script for site '.$this->id, [
+                'type' => $this->type,
+                'error' => $e->getMessage(),
+            ]);
+            $script = '';
         }
+
         $deploymentScript = new DeploymentScript([
             'site_id' => $this->id,
             'name' => 'default',

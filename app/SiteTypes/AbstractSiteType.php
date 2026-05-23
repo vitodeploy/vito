@@ -7,13 +7,16 @@ use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
+use App\Helpers\SiteShellEnvironment;
 use App\Http\Resources\SiteResource;
+use App\Models\Deployment;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
 use App\SSH\OS\Git;
 use App\Tooling\ToolingRegistry;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -72,13 +75,39 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * Extra environment variables to inject into deployment scripts.
+     * Extra environment variables to inject into deployment scripts. Default
+     * returns the merged PATH contributions from every Tooling installed for
+     * the site's isolated user — `SiteShellEnvironment::collect()` is a
+     * no-op for sites without an isolated user, so this is safe for all
+     * site types. Override only if you need additional vars on top.
      *
      * @return array<string, string>
      */
     public function deploymentEnvironment(): array
     {
-        return [];
+        return SiteShellEnvironment::collect($this->site);
+    }
+
+    /**
+     * Default no-op. Site types override to hook into the post-deploy
+     * lifecycle (e.g. AbstractProxiedSiteType lazy-creates the supervisor
+     * worker on first successful deploy).
+     */
+    public function afterDeploy(Deployment $deployment): void
+    {
+        //
+    }
+
+    /**
+     * Default deploy-script content. Reads from `resources/deployment-scripts/{id}.sh`
+     * if present (preserving the legacy convention for PHPSite / Laravel / etc.);
+     * site types that compose their script programmatically override this.
+     */
+    public function defaultDeploymentScript(): string
+    {
+        $path = resource_path('deployment-scripts/'.static::id().'.sh');
+
+        return File::exists($path) ? File::get($path) : '';
     }
 
     /**

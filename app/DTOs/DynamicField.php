@@ -100,6 +100,7 @@ class DynamicField
      *    (matching the create-time lockstep invariant); and
      *  - defaults to the tool's latest supported version otherwise.
 
+     *
      * @param  class-string<ToolingInterface>  $toolClass
      */
     public function toolingPicker(string $toolClass): self

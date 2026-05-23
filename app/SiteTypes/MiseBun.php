@@ -48,10 +48,6 @@ class MiseBun extends AbstractProxiedSiteType
                 'required',
                 Rule::in(BunTooling::supportedVersions()),
             ],
-            'build_command' => [
-                'nullable',
-                'string',
-            ],
             'start_command' => [
                 'nullable',
                 'string',
@@ -73,7 +69,6 @@ class MiseBun extends AbstractProxiedSiteType
     {
         return [
             'bun_version' => $input['bun_version'] ?? '1.2',
-            'build_command' => ! empty($input['build_command']) ? $input['build_command'] : 'bun run build',
             'start_command' => ! empty($input['start_command']) ? $input['start_command'] : 'bun run start',
         ];
     }
@@ -85,7 +80,7 @@ class MiseBun extends AbstractProxiedSiteType
 
     protected function buildCommand(): string
     {
-        return $this->site->type_data['build_command'] ?? 'bun run build';
+        return 'bun run build';
     }
 
     protected function startCommand(): string

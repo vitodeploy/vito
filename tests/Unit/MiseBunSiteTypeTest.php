@@ -60,13 +60,11 @@ class MiseBunSiteTypeTest extends TestCase
         $this->assertEquals('bun install --frozen-lockfile', $reflection->invoke($this->siteType));
     }
 
-    public function test_worker_command_returns_start_command(): void
+    public function test_start_command_returns_default(): void
     {
-        $reflection = new \ReflectionMethod($this->siteType, 'workerCommand');
+        $reflection = new \ReflectionMethod($this->siteType, 'startCommand');
 
-        $command = $reflection->invoke($this->siteType);
-
-        $this->assertEquals('bun run start', $command);
+        $this->assertEquals('bun run start', $reflection->invoke($this->siteType));
     }
 
     public function test_build_command_from_type_data(): void
@@ -119,7 +117,6 @@ class MiseBunSiteTypeTest extends TestCase
 
         $this->assertEquals([
             'bun_version' => '1.2',
-            'build_command' => 'bun run build',
             'start_command' => 'bun run start',
         ], $data);
     }
@@ -128,13 +125,11 @@ class MiseBunSiteTypeTest extends TestCase
     {
         $data = $this->siteType->data([
             'bun_version' => '1.1',
-            'build_command' => 'bun run build:prod',
             'start_command' => 'bun run start:prod',
         ]);
 
         $this->assertEquals([
             'bun_version' => '1.1',
-            'build_command' => 'bun run build:prod',
             'start_command' => 'bun run start:prod',
         ], $data);
     }
@@ -165,7 +160,7 @@ class MiseBunSiteTypeTest extends TestCase
         $this->assertArrayHasKey('repository', $rules);
         $this->assertArrayHasKey('branch', $rules);
         $this->assertArrayHasKey('port', $rules);
-        $this->assertArrayHasKey('build_command', $rules);
+        $this->assertArrayNotHasKey('build_command', $rules);
         $this->assertArrayHasKey('start_command', $rules);
         $this->assertArrayNotHasKey('package_manager', $rules);
     }

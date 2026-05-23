@@ -34,13 +34,11 @@ class AbstractProxiedSiteTypeTest extends TestCase
         $this->siteType = new MiseNodeJS($this->proxiedSite);
     }
 
-    public function test_worker_command_returns_start_command(): void
+    public function test_start_command_returns_type_data_value(): void
     {
-        $reflection = new \ReflectionMethod($this->siteType, 'workerCommand');
+        $reflection = new \ReflectionMethod($this->siteType, 'startCommand');
 
-        $command = $reflection->invoke($this->siteType);
-
-        $this->assertEquals('npm run start', $command);
+        $this->assertEquals('npm run start', $reflection->invoke($this->siteType));
     }
 
     public function test_supervisor_worker_template_renders_environment(): void

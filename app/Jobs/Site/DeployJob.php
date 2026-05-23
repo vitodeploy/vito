@@ -41,6 +41,8 @@ class DeployJob implements ShouldQueue
                 $this->handleClassicDeployment($site, $log);
             }
 
+            $site->type()->afterDeploy($this->deployment);
+
             $this->deployment->status = DeploymentStatus::FINISHED;
             $this->deployment->save();
             $this->deployment->activate();

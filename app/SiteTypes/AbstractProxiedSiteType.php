@@ -3,9 +3,9 @@
 namespace App\SiteTypes;
 
 use App\Actions\Worker\CreateWorker;
-use App\Actions\Worker\ManageWorker;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
+use App\Models\Deployment;
 use App\Models\Worker;
 
 /**
@@ -14,12 +14,10 @@ use App\Models\Worker;
  * `MiseNodeJS`, `MiseBun`). The site is the proxy target; nginx routes
  * traffic to a port owned by the supervisor-managed worker.
  *
- * Concrete subclasses declare:
- *  - `createTimeTools()` — tools to install (Node, Bun, pnpm, yarn, …).
- *  - `installCommand()`  — shell command run after `git clone` to install
- *    application dependencies (e.g. `npm ci`, `bun install --frozen-lockfile`).
- *  - `buildCommand()`    — shell command run after install (e.g. `npm run build`).
- *  - `startCommand()`    — shell command the supervisor worker runs.
+ * Install does the infrastructure only (isolate, install tooling, vhost,
+ * deploy key, clone). Build + install of app deps + worker creation are
+ * deferred to the first successful deploy via `afterDeploy()` so the user
+ * gets a chance to review/customise the generated deploy script first.
  */
 abstract class AbstractProxiedSiteType extends AbstractSiteType
 {
@@ -57,63 +55,40 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
     {
         $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(15, 'installing-tooling');
+        $this->progress(20, 'installing-tooling');
         $this->setupRequestedTooling();
-        $this->progress(25, 'creating-vhost');
+        $this->progress(40, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(35, 'deploying-ssh-key');
+        $this->progress(55, 'deploying-ssh-key');
         $this->deployKey();
-        $this->progress(45, 'cloning-repository');
+        $this->progress(75, 'cloning-repository');
         $this->cloneRepository();
-        $this->progress(55, 'installing-dependencies');
-        $this->runInstallCommand();
-        $this->progress(70, 'building');
-        $this->runBuildCommand();
-        $this->progress(85, 'creating-worker');
-        $this->createWorker();
         $this->progress(90, 'finishing');
     }
 
-    /**
-     * @throws SSHError
-     */
-    protected function runInstallCommand(): void
+    public function defaultDeploymentScript(): string
     {
-        $this->site->ssh()->exec(
-            'cd '.escapeshellarg($this->site->path).' && '.$this->installCommand(),
-            'site-install-deps',
-            $this->site->id,
-        );
+        return view('deployment-scripts.proxied-site', [
+            'installCommand' => $this->installCommand(),
+            'buildCommand' => $this->buildCommand(),
+        ])->render();
     }
 
     /**
-     * @throws SSHError
+     * Lazy worker bootstrap. Idempotent: short-circuits when a bootstrap
+     * worker already exists for this site.
      */
-    protected function runBuildCommand(): void
+    public function afterDeploy(Deployment $deployment): void
     {
-        $this->site->ssh()->exec(
-            'cd '.escapeshellarg($this->site->path).' && '.$this->buildCommand(),
-            'site-build',
-            $this->site->id,
-        );
-    }
-
-    protected function createWorker(): void
-    {
-        /** @var ?Worker $worker */
-        $worker = $this->site->workers()->where('name', 'app')->first();
-
-        if ($worker) {
-            app(ManageWorker::class)->restart($worker);
-
+        if ($this->bootstrapWorker() !== null) {
             return;
         }
 
-        app(CreateWorker::class)->create(
+        $created = app(CreateWorker::class)->create(
             $this->site->server,
             [
                 'name' => 'app',
-                'command' => $this->workerCommand(),
+                'command' => $this->startCommand(),
                 'user' => $this->site->user ?? $this->site->server->getSshUser(),
                 'auto_start' => true,
                 'auto_restart' => true,
@@ -121,10 +96,54 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
             ],
             $this->site,
         );
+
+        $this->site->jsonUpdate('type_data', 'bootstrap_worker_id', $created->id);
     }
 
-    protected function workerCommand(): string
+    /**
+     * Resolves the worker that manages this site's app process, if any.
+     * Order: (1) type_data.bootstrap_worker_id, (2) backfill by name='app'
+     * scoped to workers whose command matches a known default — guards
+     * against silently adopting a user-created worker that happens to be
+     * called 'app'.
+     */
+    public function bootstrapWorker(): ?Worker
     {
-        return $this->startCommand();
+        $storedId = $this->site->type_data['bootstrap_worker_id'] ?? null;
+        if (is_int($storedId) || (is_string($storedId) && ctype_digit($storedId))) {
+            $worker = $this->site->workers()->find((int) $storedId);
+            if ($worker) {
+                return $worker;
+            }
+        }
+
+        $candidate = $this->site->workers()
+            ->where('name', 'app')
+            ->whereIn('command', $this->knownDefaultStartCommands())
+            ->first();
+
+        if ($candidate) {
+            $this->site->jsonUpdate('type_data', 'bootstrap_worker_id', $candidate->id);
+
+            return $candidate;
+        }
+
+        return null;
+    }
+
+    /**
+     * Default start commands the current AbstractProxiedSiteType subclasses
+     * could have written to a pre-refactor worker.
+     *
+     * @return array<int, string>
+     */
+    protected function knownDefaultStartCommands(): array
+    {
+        return [
+            'npm start',
+            'pnpm start',
+            'yarn start',
+            'bun run start',
+        ];
     }
 }

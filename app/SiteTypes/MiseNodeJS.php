@@ -57,10 +57,6 @@ class MiseNodeJS extends AbstractProxiedSiteType
                 'required',
                 Rule::in(NodePackageManager::toolIds()),
             ],
-            'build_command' => [
-                'nullable',
-                'string',
-            ],
             'start_command' => [
                 'nullable',
                 'string',
@@ -104,7 +100,6 @@ class MiseNodeJS extends AbstractProxiedSiteType
         $data = [
             'node_version' => $input['node_version'] ?? '22',
             'package_manager' => $packageManager->value,
-            'build_command' => ! empty($input['build_command']) ? $input['build_command'] : $packageManager->buildCommand(),
             'start_command' => ! empty($input['start_command']) ? $input['start_command'] : $packageManager->startCommand(),
         ];
 
@@ -131,7 +126,7 @@ class MiseNodeJS extends AbstractProxiedSiteType
 
     protected function buildCommand(): string
     {
-        return $this->site->type_data['build_command'] ?? $this->packageManager()->buildCommand();
+        return $this->packageManager()->buildCommand();
     }
 
     protected function startCommand(): string

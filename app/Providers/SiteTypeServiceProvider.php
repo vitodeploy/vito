@@ -209,11 +209,6 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->text()
                     ->label('Branch')
                     ->default('main'),
-                DynamicField::make('build_command')
-                    ->text()
-                    ->label('Build Command')
-                    ->placeholder('e.g., npm run build')
-                    ->description('Command to build your application. Leave empty to use the build script of package.json'),
                 DynamicField::make('start_command')
                     ->text()
                     ->label('Start Command')
@@ -247,11 +242,6 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->text()
                     ->label('Branch')
                     ->default('main'),
-                DynamicField::make('build_command')
-                    ->text()
-                    ->label('Build Command')
-                    ->placeholder('e.g., bun run build')
-                    ->description('Command to build your application. Leave empty to use the build script of package.json'),
                 DynamicField::make('start_command')
                     ->text()
                     ->label('Start Command')
