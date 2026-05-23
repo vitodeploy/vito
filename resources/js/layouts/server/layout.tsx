@@ -21,6 +21,7 @@ import {
   Settings2Icon,
   SignpostIcon,
   UsersIcon,
+  WrenchIcon,
 } from 'lucide-react';
 import { ReactNode, useEffect } from 'react';
 import { Server } from '@/types/server';
@@ -115,6 +116,12 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
                 title: 'Features',
                 href: route('site-features', { server: page.props.server.id, site: site.id }),
                 icon: BoxIcon,
+              },
+              {
+                title: 'Tooling',
+                href: route('site-tooling', { server: page.props.server.id, site: site.id }),
+                icon: WrenchIcon,
+                hidden: site.user === page.props.server.ssh_user || site.status !== 'ready',
               },
               {
                 title: 'Commands',

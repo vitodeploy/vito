@@ -8,6 +8,8 @@ use App\Models\Site;
 use App\Models\SourceControl;
 use App\SiteTypes\Concerns\UsesMiseRuntime;
 use App\SSH\OS\Composer;
+use App\Tooling\BunTooling;
+use App\Tooling\NodeTooling;
 use App\Traits\NormalizesWebDirectory;
 use Illuminate\Validation\Rule;
 
@@ -65,11 +67,11 @@ class PHPSite extends AbstractSiteType
             ],
             'node_version' => [
                 'nullable',
-                Rule::in(self::nodeVersionsWithNone()),
+                Rule::in(NodeTooling::supportedVersionsWithNone()),
             ],
             'bun_version' => [
                 'nullable',
-                Rule::in(self::bunVersionsWithNone()),
+                Rule::in(BunTooling::supportedVersionsWithNone()),
             ],
         ];
     }

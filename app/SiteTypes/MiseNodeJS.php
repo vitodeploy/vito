@@ -10,6 +10,7 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Worker;
+use App\Tooling\NodeTooling;
 use Illuminate\Validation\Rule;
 
 class MiseNodeJS extends MiseSiteType
@@ -64,7 +65,7 @@ class MiseNodeJS extends MiseSiteType
             ],
             'node_version' => [
                 'required',
-                Rule::in(self::SUPPORTED_NODE_VERSIONS),
+                Rule::in(NodeTooling::supportedVersions()),
             ],
             'package_manager' => [
                 'required',

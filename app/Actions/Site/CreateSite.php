@@ -13,7 +13,7 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\Webserver\Webserver;
-use App\SiteTypes\PHPSite;
+use App\Tooling\ToolingRegistry;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -185,24 +185,20 @@ class CreateSite
             return $input;
         }
 
-        $runtimes = [
-            'node' => ['label' => 'Node.js', 'allowed' => PHPSite::nodeVersionsWithNone()],
-            'bun' => ['label' => 'Bun', 'allowed' => PHPSite::bunVersionsWithNone()],
-        ];
+        foreach (ToolingRegistry::all() as $id => $tool) {
+            $allowed = $tool::supportedVersionsWithNone();
+            $existing = Site::existingRuntimeVersionForUser($server, $user, $id);
 
-        foreach ($runtimes as $runtime => $meta) {
-            $existing = Site::existingRuntimeVersionForUser($server, $user, $runtime);
-
-            if ($existing === null || ! in_array($existing, $meta['allowed'], true) || $existing === 'none') {
+            if ($existing === null || ! in_array($existing, $allowed, true) || $existing === 'none') {
                 continue;
             }
 
-            $field = $runtime.'_version';
+            $field = $tool::typeDataKey();
             $submitted = $input[$field] ?? null;
 
             if (is_string($submitted) && $submitted !== '' && $submitted !== $existing) {
                 throw ValidationException::withMessages([
-                    $field => "Isolated user '{$user}' already has {$meta['label']} {$existing} installed; this cannot be changed.",
+                    $field => "Isolated user '{$user}' already has {$tool::label()} {$existing} installed; this cannot be changed.",
                 ]);
             }
 

@@ -9,6 +9,7 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Worker;
+use App\Tooling\BunTooling;
 use Illuminate\Validation\Rule;
 
 class MiseBun extends MiseSiteType
@@ -63,7 +64,7 @@ class MiseBun extends MiseSiteType
             ],
             'bun_version' => [
                 'required',
-                Rule::in(self::SUPPORTED_BUN_VERSIONS),
+                Rule::in(BunTooling::supportedVersions()),
             ],
             'build_command' => [
                 'nullable',

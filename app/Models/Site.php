@@ -451,10 +451,23 @@ class Site extends AbstractModel
 
     public function userSharedWithSiblings(): bool
     {
-        return $this->server->sites()
-            ->where('user', $this->user)
-            ->where('id', '!=', $this->id)
-            ->exists();
+        return $this->siblingsSharingUser()->exists();
+    }
+
+    /**
+     * Sites on the same server that share this site's isolated OS user.
+     *
+     * @return HasMany<Site, covariant Server>
+     */
+    public function siblingsSharingUser(bool $includeSelf = false): HasMany
+    {
+        $query = $this->server->sites()->where('user', $this->user);
+
+        if (! $includeSelf) {
+            $query->where('id', '!=', $this->id);
+        }
+
+        return $query;
     }
 
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool

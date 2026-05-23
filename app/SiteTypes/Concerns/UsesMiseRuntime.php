@@ -8,32 +8,6 @@ use App\SSH\Mise\Mise;
 trait UsesMiseRuntime
 {
     /**
-     * @var array<int, string>
-     */
-    public const SUPPORTED_NODE_VERSIONS = ['22', '23', '24'];
-
-    /**
-     * @var array<int, string>
-     */
-    public const SUPPORTED_BUN_VERSIONS = ['1.0', '1.1', '1.2'];
-
-    /**
-     * @return array<int, string>
-     */
-    public static function nodeVersionsWithNone(): array
-    {
-        return array_merge(['none'], self::SUPPORTED_NODE_VERSIONS);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public static function bunVersionsWithNone(): array
-    {
-        return array_merge(['none'], self::SUPPORTED_BUN_VERSIONS);
-    }
-
-    /**
      * @throws SSHError
      */
     protected function setupMiseRuntime(string $runtime, string $version): void

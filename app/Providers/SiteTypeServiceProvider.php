@@ -21,6 +21,8 @@ use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
 use App\SiteTypes\Wordpress;
+use App\Tooling\BunTooling;
+use App\Tooling\NodeTooling;
 use Illuminate\Support\ServiceProvider;
 
 class SiteTypeServiceProvider extends ServiceProvider
@@ -71,12 +73,12 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(PHPSite::nodeVersionsWithNone())
+                    ->options(NodeTooling::supportedVersionsWithNone())
                     ->default('none'),
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(PHPSite::bunVersionsWithNone())
+                    ->options(BunTooling::supportedVersionsWithNone())
                     ->default('none'),
             ]))
             ->register();
@@ -99,12 +101,12 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(PHPSite::nodeVersionsWithNone())
+                    ->options(NodeTooling::supportedVersionsWithNone())
                     ->default('none'),
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(PHPSite::bunVersionsWithNone())
+                    ->options(BunTooling::supportedVersionsWithNone())
                     ->default('none'),
             ]))
             ->register();
@@ -143,12 +145,12 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(PHPSite::nodeVersionsWithNone())
+                    ->options(NodeTooling::supportedVersionsWithNone())
                     ->default('none'),
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(PHPSite::bunVersionsWithNone())
+                    ->options(BunTooling::supportedVersionsWithNone())
                     ->default('none'),
             ]))
             ->register();
@@ -206,7 +208,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(MiseNodeJS::SUPPORTED_NODE_VERSIONS)
+                    ->options(NodeTooling::supportedVersions())
                     ->default('22'),
                 DynamicField::make('package_manager')
                     ->select()
@@ -252,7 +254,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(MiseBun::SUPPORTED_BUN_VERSIONS)
+                    ->options(BunTooling::supportedVersions())
                     ->default('1.2'),
                 DynamicField::make('source_control')
                     ->component()

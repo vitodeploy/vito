@@ -45,4 +45,18 @@ class Mise
             $site->id
         );
     }
+
+    /**
+     * @throws SSHError
+     */
+    public function uninstallRuntime(Site $site, string $runtime): void
+    {
+        $this->server->ssh($site->user)->exec(
+            view('ssh.mise.uninstall-runtime', [
+                'runtime' => $runtime,
+            ]),
+            'mise-uninstall-'.$runtime,
+            $site->id
+        );
+    }
 }

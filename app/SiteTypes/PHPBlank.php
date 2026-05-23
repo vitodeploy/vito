@@ -4,6 +4,8 @@ namespace App\SiteTypes;
 
 use App\Exceptions\SSHError;
 use App\Models\Site;
+use App\Tooling\BunTooling;
+use App\Tooling\NodeTooling;
 use App\Traits\NormalizesWebDirectory;
 use Illuminate\Validation\Rule;
 
@@ -37,11 +39,11 @@ class PHPBlank extends PHPSite
             ],
             'node_version' => [
                 'nullable',
-                Rule::in(self::nodeVersionsWithNone()),
+                Rule::in(NodeTooling::supportedVersionsWithNone()),
             ],
             'bun_version' => [
                 'nullable',
-                Rule::in(self::bunVersionsWithNone()),
+                Rule::in(BunTooling::supportedVersionsWithNone()),
             ],
         ];
     }
