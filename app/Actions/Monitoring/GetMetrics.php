@@ -63,12 +63,16 @@ class GetMetrics
             ? round(($latest->disk_used / $latest->disk_total) * 100, 2)
             : null;
 
+        $memoryUsedPercent = $latest->memory_total > 0
+            ? round(($latest->memory_used / $latest->memory_total) * 100, 2)
+            : null;
+
         return [
             'date' => $latest->created_at->format('Y-m-d H:i:s'),
             'cpu_cores' => $latest->cpu_cores,
             'cpu_physical_cores' => $latest->cpu_physical_cores,
             'cpu_usage_percent' => $latest->cpu_usage_percent,
-            'memory_used_percent' => $latest->memory_used_percent,
+            'memory_used_percent' => $memoryUsedPercent,
             'swap_used_percent' => $latest->swap_used_percent,
             'disk_used_percent' => $diskUsedPercent,
             'uptime_seconds' => $latest->uptime_seconds,
@@ -100,7 +104,6 @@ class GetMetrics
                     DB::raw('ROUND(AVG(disk_free), 2) as disk_free'),
                     DB::raw('ROUND(AVG(cpu_usage_percent), 2) as cpu_usage_percent'),
                     DB::raw('ROUND(AVG(cpu_steal_percent), 2) as cpu_steal_percent'),
-                    DB::raw('ROUND(AVG(memory_used_percent), 2) as memory_used_percent'),
                     DB::raw('ROUND(AVG(swap_total), 0) as swap_total'),
                     DB::raw('ROUND(AVG(swap_used), 0) as swap_used'),
                     DB::raw('ROUND(AVG(swap_free), 0) as swap_free'),
@@ -116,6 +119,9 @@ class GetMetrics
                 $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
                 $item->disk_used_percent = $item->disk_total > 0
                     ? round(($item->disk_used / $item->disk_total) * 100, 2)
+                    : null;
+                $item->memory_used_percent = $item->memory_total > 0
+                    ? round(($item->memory_used / $item->memory_total) * 100, 2)
                     : null;
                 unset($item->date_interval);
 

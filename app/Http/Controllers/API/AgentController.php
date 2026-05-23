@@ -35,7 +35,6 @@ class AgentController extends Controller
             'cpu_per_core_usage_percent' => 'nullable|array',
             'cpu_per_core_usage_percent.*' => 'numeric',
             'cpu_steal_percent' => 'nullable|numeric',
-            'memory_used_percent' => 'nullable|numeric',
             'swap_total' => 'nullable|numeric',
             'swap_used' => 'nullable|numeric',
             'swap_free' => 'nullable|numeric',

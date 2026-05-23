@@ -63,7 +63,9 @@ class MetricsTest extends TestCase
             'cpu_cores' => 4,
             'cpu_physical_cores' => 2,
             'cpu_usage_percent' => 12.34,
-            'memory_used_percent' => 50.5,
+            'memory_total' => 2000,
+            'memory_used' => 1010,
+            'memory_free' => 990,
             'swap_used_percent' => 0,
             'disk_total' => 1000,
             'disk_used' => 250,
@@ -92,6 +94,7 @@ class MetricsTest extends TestCase
             ->assertJsonPath('current.cpu_cores', 4)
             ->assertJsonPath('current.cpu_usage_percent', 12.34)
             ->assertJsonPath('current.disk_used_percent', 25)
+            ->assertJsonPath('current.memory_used_percent', 50.5)
             ->assertJsonPath('current.uptime_seconds', 3600);
 
         $history = $response->json('history');
@@ -104,6 +107,8 @@ class MetricsTest extends TestCase
         $this->assertArrayHasKey('cpu_usage_percent', $history[0]);
         $this->assertArrayHasKey('disk_used_percent', $history[0]);
         $this->assertEquals(25.0, $history[0]['disk_used_percent']);
+        $this->assertArrayHasKey('memory_used_percent', $history[0]);
+        $this->assertEquals(50.5, $history[0]['memory_used_percent']);
     }
 
     public function test_monitoring_json_returns_null_current_when_no_metrics(): void

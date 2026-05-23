@@ -338,7 +338,6 @@ class OS
             'cpu_usage_percent' => $cpuUsage === '' ? null : $cpuUsage,
             'cpu_per_core_usage_percent' => null,
             'cpu_steal_percent' => $cpuSteal === '' ? null : $cpuSteal,
-            'memory_used_percent' => $nullIfEmpty('memory_used_percent'),
             'swap_total' => $nullIfEmpty('swap_total'),
             'swap_used' => $nullIfEmpty('swap_used'),
             'swap_free' => $nullIfEmpty('swap_free'),

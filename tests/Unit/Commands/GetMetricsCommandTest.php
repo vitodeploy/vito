@@ -24,7 +24,6 @@ class GetMetricsCommandTest extends TestCase
             disk_free:1
             cpu_cores:4
             cpu_physical_cores:2
-            memory_used_percent:11.70
             swap_total:1024
             swap_used:256
             swap_free:768
@@ -62,7 +61,6 @@ class GetMetricsCommandTest extends TestCase
             'cpu_physical_cores' => 2,
             'cpu_usage_percent' => 1.23,
             'cpu_steal_percent' => 0.45,
-            'memory_used_percent' => 11.70,
             'swap_total' => 1024,
             'swap_used' => 256,
             'swap_free' => 768,
@@ -106,7 +104,6 @@ class GetMetricsCommandTest extends TestCase
             'cpu_cores' => null,
             'cpu_usage_percent' => null,
             'cpu_steal_percent' => null,
-            'memory_used_percent' => null,
             'swap_total' => null,
             'uptime_seconds' => null,
             'oom_kill_count' => null,

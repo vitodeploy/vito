@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?float $cpu_usage_percent
  * @property ?array<int, float> $cpu_per_core_usage_percent
  * @property ?float $cpu_steal_percent
- * @property ?float $memory_used_percent
  * @property ?float $swap_total
  * @property ?float $swap_used
  * @property ?float $swap_free
@@ -64,7 +63,6 @@ class Metric extends Model
         'cpu_usage_percent',
         'cpu_per_core_usage_percent',
         'cpu_steal_percent',
-        'memory_used_percent',
         'swap_total',
         'swap_used',
         'swap_free',
@@ -87,7 +85,6 @@ class Metric extends Model
         'cpu_physical_cores' => 'integer',
         'cpu_usage_percent' => 'float',
         'cpu_steal_percent' => 'float',
-        'memory_used_percent' => 'float',
         'swap_total' => 'float',
         'swap_used' => 'float',
         'swap_free' => 'float',
@@ -111,11 +108,6 @@ class Metric extends Model
     }
 
     protected function cpuStealPercent(): Attribute
-    {
-        return Attribute::set(fn ($value) => $value === null ? null : round((float) $value, 2));
-    }
-
-    protected function memoryUsedPercent(): Attribute
     {
         return Attribute::set(fn ($value) => $value === null ? null : round((float) $value, 2));
     }
