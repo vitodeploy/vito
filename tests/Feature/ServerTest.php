@@ -417,7 +417,7 @@ class ServerTest extends TestCase
             ->assertSessionDoesntHaveErrors();
 
         $this->server->refresh();
-        $this->assertEquals(9, $this->server->updates);
+        $this->assertEquals(10, $this->server->updates);
     }
 
     public function test_update_server(): void

@@ -15,9 +15,7 @@ class CheckForUpdatesJob implements ShouldQueue
     use Queueable;
     use UniqueQueue;
 
-    public int $timeout = 30;
-
-    public $tries = 1;
+    public int $timeout = 90;
 
     public function __construct(protected Server $server) {}
 
