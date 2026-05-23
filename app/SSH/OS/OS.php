@@ -311,7 +311,8 @@ class OS
     public function resourceInfo(): array
     {
         $info = $this->server->ssh()->exec(
-            view('ssh.os.resource-info'),
+            command: view('ssh.os.resource-info'),
+            timeout: 5,
         );
 
         $values = [];

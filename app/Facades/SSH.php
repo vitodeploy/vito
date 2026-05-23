@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Facade as FacadeAlias;
  * @method static setLog(?ServerLog $log)
  * @method static \App\Helpers\SSH useLog(string $disk, string $path, ?\Closure $outputCallback = null)
  * @method static connect()
- * @method static string exec(string|View $command, string $log = '', int $siteId = null, ?bool $stream = false, callable $streamCallback = null)
+ * @method static string exec(string|View $command, string $log = '', int $siteId = null, ?bool $stream = false, callable $streamCallback = null, int $timeout = 0)
  * @method static string upload(string $local, string $remote, ?string $owner = null)
  * @method static string download(string $local, string $remote)
  * @method static string write(string $path, string $content, string $owner = null)
