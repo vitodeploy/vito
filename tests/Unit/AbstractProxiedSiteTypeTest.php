@@ -7,11 +7,11 @@ use App\SiteTypes\MiseNodeJS;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class MiseSiteTypeTest extends TestCase
+class AbstractProxiedSiteTypeTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected Site $miseSite;
+    protected Site $proxiedSite;
 
     protected MiseNodeJS $siteType;
 
@@ -19,7 +19,7 @@ class MiseSiteTypeTest extends TestCase
     {
         parent::setUp();
 
-        $this->miseSite = Site::factory()->create([
+        $this->proxiedSite = Site::factory()->create([
             'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
@@ -31,7 +31,7 @@ class MiseSiteTypeTest extends TestCase
                 'start_command' => 'npm run start',
             ],
         ]);
-        $this->siteType = new MiseNodeJS($this->miseSite);
+        $this->siteType = new MiseNodeJS($this->proxiedSite);
     }
 
     public function test_worker_command_returns_start_command(): void

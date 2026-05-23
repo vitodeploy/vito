@@ -48,33 +48,16 @@ class MiseBunSiteTypeTest extends TestCase
         $this->assertEquals(['webserver', 'process_manager'], $this->siteType->requiredServices());
     }
 
-    public function test_runtime_version_from_type_data(): void
+    public function test_create_time_tools_returns_bun(): void
     {
-        $reflection = new \ReflectionMethod($this->siteType, 'runtimeVersion');
-
-        $this->assertEquals('1.2', $reflection->invoke($this->siteType));
+        $this->assertSame(['bun'], MiseBun::createTimeTools());
     }
 
-    public function test_runtime_version_defaults_to_1_2(): void
+    public function test_install_command_returns_bun_install(): void
     {
-        $site = Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'testuser',
-            'path' => '/home/testuser/example.com',
-            'type' => MiseBun::id(),
-            'type_data' => [],
-        ]);
-        $siteType = new MiseBun($site);
-        $reflection = new \ReflectionMethod($siteType, 'runtimeVersion');
+        $reflection = new \ReflectionMethod($this->siteType, 'installCommand');
 
-        $this->assertEquals('1.2', $reflection->invoke($siteType));
-    }
-
-    public function test_runtime(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'runtime');
-
-        $this->assertEquals('bun', $reflection->invoke($this->siteType));
+        $this->assertEquals('bun install --frozen-lockfile', $reflection->invoke($this->siteType));
     }
 
     public function test_worker_command_returns_start_command(): void

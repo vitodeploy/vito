@@ -169,38 +169,4 @@ class PHPSite extends AbstractSiteType
         return SiteShellEnvironment::collect($this->site);
     }
 
-    /**
-     * Install every tool the site type offers at create time whose requested
-     * version is non-empty and isn't already installed for the isolated user.
-     *
-     * @throws SSHError
-     */
-    protected function setupRequestedTooling(): void
-    {
-        foreach (static::createTimeTools() as $toolId) {
-            $tool = ToolingRegistry::find($toolId);
-            if (! $tool) {
-                continue;
-            }
-
-            $key = $tool::typeDataKey();
-            $version = $this->site->type_data[$key] ?? 'none';
-            if ($version === 'none' || $version === '') {
-                continue;
-            }
-
-            $existing = Site::existingRuntimeVersionForUser(
-                $this->site->server,
-                $this->site->user,
-                $toolId,
-                $this->site->id,
-            );
-
-            if ($existing === $version) {
-                continue;
-            }
-
-            $tool->install($this->site, $version);
-        }
-    }
 }

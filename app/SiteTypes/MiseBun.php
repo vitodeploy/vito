@@ -2,29 +2,16 @@
 
 namespace App\SiteTypes;
 
-use App\Actions\Worker\CreateWorker;
-use App\Actions\Worker\ManageWorker;
-use App\Exceptions\FailedToDeployGitKey;
-use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
-use App\Models\Worker;
 use App\Tooling\BunTooling;
 use Illuminate\Validation\Rule;
 
-class MiseBun extends MiseSiteType
+class MiseBun extends AbstractProxiedSiteType
 {
     public static function id(): string
     {
         return 'mise_bun';
-    }
-
-    public function requiredServices(): array
-    {
-        return [
-            'webserver',
-            'process_manager',
-        ];
     }
 
     public function language(): string
@@ -32,19 +19,14 @@ class MiseBun extends MiseSiteType
         return 'bun';
     }
 
-    protected function runtime(): string
-    {
-        return 'bun';
-    }
-
-    protected function runtimeVersion(): string
-    {
-        return $this->site->type_data['bun_version'] ?? '1.2';
-    }
-
     public static function make(): self
     {
         return new self(new Site(['type' => self::id()]));
+    }
+
+    public static function createTimeTools(): array
+    {
+        return ['bun'];
     }
 
     public function createRules(array $input): array
@@ -96,6 +78,11 @@ class MiseBun extends MiseSiteType
         ];
     }
 
+    protected function installCommand(): string
+    {
+        return 'bun install --frozen-lockfile';
+    }
+
     protected function buildCommand(): string
     {
         return $this->site->type_data['build_command'] ?? 'bun run build';
@@ -104,95 +91,5 @@ class MiseBun extends MiseSiteType
     protected function startCommand(): string
     {
         return $this->site->type_data['start_command'] ?? 'bun run start';
-    }
-
-    /**
-     * @throws FailedToDeployGitKey
-     * @throws SSHError
-     */
-    public function install(): void
-    {
-        $this->progress(0, 'isolating-user');
-        $this->isolate();
-        $this->progress(10, 'setting-up-runtime');
-
-        $this->setupRuntime();
-        $this->progress(25, 'creating-vhost');
-
-        $this->site->webserver()->createVHost($this->site);
-        $this->progress(35, 'deploying-ssh-key');
-
-        $this->deployKey();
-        $this->progress(45, 'cloning-repository');
-
-        $this->cloneRepository();
-        $this->progress(55, 'installing-dependencies');
-
-        $this->runInstall();
-        $this->progress(70, 'building');
-
-        $this->runBuild();
-        $this->progress(85, 'creating-worker');
-
-        $this->createWorker();
-        $this->progress(90, 'finishing');
-    }
-
-    /**
-     * @throws SSHError
-     */
-    protected function runInstall(): void
-    {
-        $this->site->ssh()->exec(
-            'cd '.escapeshellarg($this->site->path).' && bun install --frozen-lockfile',
-            'bun-install',
-            $this->site->id
-        );
-    }
-
-    /**
-     * @throws SSHError
-     */
-    protected function runBuild(): void
-    {
-        $this->site->ssh()->exec(
-            'cd '.escapeshellarg($this->site->path).' && '.$this->buildCommand(),
-            'build',
-            $this->site->id
-        );
-    }
-
-    protected function createWorker(): void
-    {
-        /** @var ?Worker $worker */
-        $worker = $this->site->workers()->where('name', 'app')->first();
-        if ($worker) {
-            app(ManageWorker::class)->restart($worker);
-        } else {
-            app(CreateWorker::class)->create(
-                $this->site->server,
-                [
-                    'name' => 'app',
-                    'command' => $this->workerCommand(),
-                    'user' => $this->site->user ?? $this->site->server->getSshUser(),
-                    'auto_start' => true,
-                    'auto_restart' => true,
-                    'numprocs' => 1,
-                ],
-                $this->site,
-            );
-        }
-    }
-
-    public function baseCommands(): array
-    {
-        return [];
-    }
-
-    public function vhostData(): array
-    {
-        return [
-            'is_reverse_proxy' => true,
-        ];
     }
 }
