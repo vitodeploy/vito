@@ -54,7 +54,7 @@ class ServerTable extends Table
             ];
         }
 
-        if ($server->relationLoaded('latestMetric') && $server->latestMetric?->reboot_required) {
+        if ($server->latestMetric?->reboot_required) {
             $warnings[] = ['key' => 'reboot_required'];
         }
 

@@ -16,7 +16,7 @@ class GetMetrics
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return array{current: ?array<string, mixed>, history: Collection<int, mixed>}
+     * @return array{current: ?array<string, mixed>, history: Collection<int, stdClass>}
      */
     public function filter(Server $server, array $input): array
     {
@@ -81,7 +81,7 @@ class GetMetrics
     }
 
     /**
-     * @return Collection<int, mixed>
+     * @return Collection<int, stdClass>
      */
     private function metrics(
         Server $server,
@@ -183,6 +183,8 @@ class GetMetrics
 
     private function validate(array $input): void
     {
+        $isCustom = ($input['period'] ?? null) === 'custom';
+
         $rules = [
             'period' => [
                 'required',
@@ -196,12 +198,9 @@ class GetMetrics
                     'custom',
                 ]),
             ],
+            'from' => array_filter([$isCustom ? 'required' : 'nullable', 'date', $isCustom ? 'before_or_equal:to' : null]),
+            'to' => array_filter([$isCustom ? 'required' : 'nullable', 'date', $isCustom ? 'after_or_equal:from' : null]),
         ];
-
-        if (isset($input['period']) && $input['period'] === 'custom') {
-            $rules['from'] = ['required', 'date', 'before_or_equal:to'];
-            $rules['to'] = ['required', 'date', 'after_or_equal:from'];
-        }
 
         Validator::make($input, $rules)->validate();
     }

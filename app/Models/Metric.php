@@ -43,6 +43,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Server $server
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ *
+ * NOTE: Metric intentionally extends Eloquent\Model rather than App\Models\AbstractModel.
+ * This is a high-volume insert table (one row per server per minute) and the
+ * HasTimezoneTimestamps overhead is not needed here. Do not "fix" this without
+ * benchmarking insert throughput against the metrics:get loop.
  */
 class Metric extends Model
 {

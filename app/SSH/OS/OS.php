@@ -304,7 +304,7 @@ class OS
     }
 
     /**
-     * @return array<string, string|int|float|bool|null>
+     * @return array<string, string|bool|null>
      *
      * @throws SSHError
      */
