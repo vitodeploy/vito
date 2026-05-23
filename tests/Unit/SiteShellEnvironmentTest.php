@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
+use App\Helpers\SiteShellEnvironment;
 use App\Models\Site;
 use App\SiteTypes\Laravel;
-use App\Helpers\SiteShellEnvironment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

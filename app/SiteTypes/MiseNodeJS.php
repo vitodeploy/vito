@@ -11,7 +11,6 @@ use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Worker;
 use App\Tooling\NodeTooling;
-use App\Tooling\ToolingRegistry;
 use Illuminate\Validation\Rule;
 
 class MiseNodeJS extends MiseSiteType

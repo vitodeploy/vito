@@ -7,6 +7,8 @@ use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
+use App\Helpers\SiteShellEnvironment;
+use App\Helpers\SSH;
 use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
@@ -146,10 +148,10 @@ class Site extends AbstractModel
      * mise shims (node, bun, pnpm, yarn, …) and other tool binaries are on
      * PATH automatically.
      */
-    public function ssh(): \App\Helpers\SSH
+    public function ssh(): SSH
     {
         return $this->server->ssh($this->user)->variables(
-            \App\Helpers\SiteShellEnvironment::collect($this)
+            SiteShellEnvironment::collect($this)
         );
     }
 
