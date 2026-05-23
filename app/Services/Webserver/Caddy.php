@@ -76,6 +76,8 @@ class Caddy extends AbstractWebserver
 
         $this->service->server->ssh()->exec('sudo systemctl daemon-reload', 'reload-systemctl');
 
+        $this->deploySplash();
+
         $this->service->server->systemd()->restart('caddy');
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
@@ -228,6 +230,36 @@ class Caddy extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function deploySplash(): void
+    {
+        $ssh = $this->service->server->ssh();
+
+        $ssh->exec(
+            'sudo mkdir -p /var/www/vito-splash',
+            'create-vito-splash-dir'
+        );
+
+        $ssh->write(
+            '/var/www/vito-splash/index.html',
+            view('ssh.services.webserver.vito-splash'),
+            'root'
+        );
+
+        $ssh->write(
+            '/etc/caddy/sites-enabled/000-default.caddy',
+            view('ssh.services.webserver.caddy.default-vhost'),
+            'root'
+        );
+
+        $ssh->exec(
+            'sudo caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile',
+            'reload-caddy'
+        );
     }
 
     public function version(): string

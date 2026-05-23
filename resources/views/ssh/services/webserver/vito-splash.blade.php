@@ -7,8 +7,10 @@
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#312E81">
 
-    <title>VitoDeploy Managed Server</title>
+    <title>VitoDeploy | Vito Managed Server</title>
     <meta name="description" content="A free, self-hosted server management tool. Server management made simple.">
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjUxMiIgeTE9IjIyIiB4Mj0iNTEyIiB5Mj0iMTAwMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM2MzY2RjEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzOTNCOEIiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIyMiIgeT0iMjIiIHdpZHRoPSI5ODAiIGhlaWdodD0iOTgwIiByeD0iMjAwIiBmaWxsPSIjMzEyRTgxIi8+PHJlY3QgeD0iMjIiIHk9IjIyIiB3aWR0aD0iOTgwIiBoZWlnaHQ9Ijk4MCIgcng9IjIwMCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik01MTEuODc3IDgzMC45NUM0OTkuNDEgODMwLjk1IDQ4OC45MjcgODI4LjExNyA0ODAuNDI3IDgyMi40NUM0NzIuNDk0IDgxNi4yMTcgNDY1Ljk3NyA4MDcuMTUgNDYwLjg3NyA3OTUuMjVMMjMyLjIyNyAyNzcuNkMyMjcuNjk0IDI2NS43IDIyNi41NiAyNTUuNSAyMjguODI3IDI0N0MyMzEuMDk0IDIzOC41IDIzNS42MjcgMjMxLjk4MyAyNDIuNDI3IDIyNy40NUMyNDkuNzk0IDIyMi4zNSAyNTguNTc3IDIxOS44IDI2OC43NzcgMjE5LjhDMjgxLjgxIDIxOS44IDI5MS43MjcgMjIyLjYzMyAyOTguNTI3IDIyOC4zQzMwNS4zMjcgMjMzLjk2NyAzMTAuOTk0IDI0Mi40NjcgMzE1LjUyNyAyNTMuOEw1MjkuNzI3IDc1MC4ySDQ5OC4yNzdMNzEwLjc3NyAyNTIuOTVDNzE1Ljg3NyAyNDIuMTgzIDcyMS44MjcgMjMzLjk2NyA3MjguNjI3IDIyOC4zQzczNS45OTQgMjIyLjYzMyA3NDUuOTEgMjE5LjggNzU4LjM3NyAyMTkuOEM3NjguNTc3IDIxOS44IDc3Ni43OTQgMjIyLjM1IDc4My4wMjcgMjI3LjQ1Qzc4OS44MjcgMjMxLjk4MyA3OTQuMDc3IDIzOC41IDc5NS43NzcgMjQ3Qzc5Ny40NzcgMjU1LjUgNzk1Ljc3NyAyNjUuNyA3OTAuNjc3IDI3Ny42TDU2Mi44NzcgNzk1LjI1QzU1Ny43NzcgODA3LjE1IDU1MS4yNiA4MTYuMjE3IDU0My4zMjcgODIyLjQ1QzUzNS4zOTQgODI4LjExNyA1MjQuOTEgODMwLjk1IDUxMS44NzcgODMwLjk1WiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=">
 
     <meta name="robots" content="noindex,follow">
 
@@ -246,7 +248,7 @@
 
             <div class="divider"></div>
 
-            <p class="sub">If you're the owner of this server, this domain hasn't been configured yet. Setup a site or add this domain to an existing site to set it up.</p>
+            <p class="sub">If you're the owner of this server, this domain hasn't been configured yet. Create a new site for it, or add it to an existing one.</p>
 
             <div class="actions">
                 <a class="btn btn-primary" href="https://vitodeploy.com" rel="noopener" target="_blank">

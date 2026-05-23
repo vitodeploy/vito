@@ -2,7 +2,6 @@
 
 namespace App\Services\Webserver;
 
-use App\Actions\Webserver\DeployVitoSplash;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
@@ -52,7 +51,7 @@ class Nginx extends AbstractWebserver
             'create-default-ssl'
         );
 
-        app(DeployVitoSplash::class)->deploy($this->service->server);
+        $this->deploySplash();
 
         $this->service->server->systemd()->restart('nginx');
         event('service.installed', $this->service);
@@ -223,6 +222,43 @@ class Nginx extends AbstractWebserver
         }
 
         $this->updateVHost($ssl->site);
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function deploySplash(): void
+    {
+        $ssh = $this->service->server->ssh();
+
+        $ssh->exec(
+            'sudo rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default /etc/nginx/conf.d/default.conf',
+            'remove-os-default-site'
+        );
+
+        $ssh->exec(
+            'sudo mkdir -p /var/www/vito-splash',
+            'create-vito-splash-dir'
+        );
+
+        $ssh->write(
+            '/var/www/vito-splash/index.html',
+            view('ssh.services.webserver.vito-splash'),
+            'root'
+        );
+
+        $ssh->write(
+            '/etc/nginx/sites-available/000-default',
+            view('ssh.services.webserver.nginx.default-vhost'),
+            'root'
+        );
+
+        $ssh->exec(
+            'sudo ln -sf /etc/nginx/sites-available/000-default /etc/nginx/sites-enabled/000-default',
+            'enable-default-vhost'
+        );
+
+        $this->service->server->systemd()->reload('nginx');
     }
 
     public function version(): string
