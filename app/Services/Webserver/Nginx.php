@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Webserver\DeployVitoSplash;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
@@ -51,16 +52,7 @@ class Nginx extends AbstractWebserver
             'create-default-ssl'
         );
 
-        $this->service->server->ssh()->write(
-            '/etc/nginx/sites-available/000-default-ssl',
-            view('ssh.services.webserver.nginx.default-ssl-vhost'),
-            'root'
-        );
-
-        $this->service->server->ssh()->exec(
-            'sudo ln -sf /etc/nginx/sites-available/000-default-ssl /etc/nginx/sites-enabled/000-default-ssl',
-            'enable-default-ssl'
-        );
+        app(DeployVitoSplash::class)->deploy($this->service->server);
 
         $this->service->server->systemd()->restart('nginx');
         event('service.installed', $this->service);
