@@ -18,10 +18,10 @@ class AgentController extends Controller
         /** @var ?Service $service */
         $service = $server->services()->find($id);
 
-        $expected = $service?->handler()->data()['secret'] ?? '';
+        $expected = $service?->handler()->data()['secret'] ?? null;
         $provided = (string) $request->header('secret');
 
-        if ($service === null || ! hash_equals((string) $expected, $provided)) {
+        if (! $service || ! is_string($expected) || $expected === '' || ! hash_equals($expected, $provided)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 

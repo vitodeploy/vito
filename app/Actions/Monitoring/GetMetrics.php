@@ -20,6 +20,8 @@ class GetMetrics
      */
     public function filter(Server $server, array $input): array
     {
+        $input = array_merge(['period' => '10m'], $input);
+
         $this->validate($input);
 
         if (isset($input['from'])) {
@@ -29,12 +31,6 @@ class GetMetrics
         if (isset($input['to'])) {
             $input['to'] = Carbon::parse($input['to'])->format('Y-m-d').' 23:59:59';
         }
-
-        $defaultInput = [
-            'period' => '10m',
-        ];
-
-        $input = array_merge($defaultInput, $input);
 
         return [
             'current' => $this->current($server),
@@ -116,11 +112,21 @@ class GetMetrics
             ->orderBy('date_interval')
             ->get()
             ->map(function ($item): stdClass {
+                $floatFields = [
+                    'load', 'memory_total', 'memory_used', 'memory_free',
+                    'disk_total', 'disk_used', 'disk_free',
+                    'cpu_usage_percent', 'cpu_steal_percent',
+                    'swap_total', 'swap_used', 'swap_free', 'swap_used_percent',
+                ];
+                foreach ($floatFields as $key) {
+                    $item->{$key} = $item->{$key} !== null ? (float) $item->{$key} : null;
+                }
+                $item->oom_kill_count = $item->oom_kill_count !== null ? (int) $item->oom_kill_count : null;
                 $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
-                $item->disk_used_percent = $item->disk_total > 0
+                $item->disk_used_percent = ($item->disk_total ?? 0) > 0
                     ? round(($item->disk_used / $item->disk_total) * 100, 2)
                     : null;
-                $item->memory_used_percent = $item->memory_total > 0
+                $item->memory_used_percent = ($item->memory_total ?? 0) > 0
                     ? round(($item->memory_used / $item->memory_total) * 100, 2)
                     : null;
                 unset($item->date_interval);

@@ -109,6 +109,13 @@ class MetricsTest extends TestCase
         $this->assertEquals(25.0, $history[0]['disk_used_percent']);
         $this->assertArrayHasKey('memory_used_percent', $history[0]);
         $this->assertEquals(50.5, $history[0]['memory_used_percent']);
+
+        foreach (['load', 'memory_total', 'cpu_usage_percent', 'disk_used_percent'] as $key) {
+            if ($history[0][$key] !== null) {
+                $this->assertIsNumeric($history[0][$key], "history.0.{$key} should be numeric (not a string)");
+                $this->assertIsNotString($history[0][$key], "history.0.{$key} must not be serialised as a JSON string");
+            }
+        }
     }
 
     public function test_monitoring_json_returns_null_current_when_no_metrics(): void
@@ -116,6 +123,16 @@ class MetricsTest extends TestCase
         $this->actingAs($this->user);
 
         $this->getJson(route('monitoring.json', ['server' => $this->server, 'period' => '10m']))
+            ->assertSuccessful()
+            ->assertJsonPath('current', null)
+            ->assertJsonPath('history', []);
+    }
+
+    public function test_monitoring_json_defaults_period_when_missing(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->getJson(route('monitoring.json', ['server' => $this->server]))
             ->assertSuccessful()
             ->assertJsonPath('current', null)
             ->assertJsonPath('history', []);

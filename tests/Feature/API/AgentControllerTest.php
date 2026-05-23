@@ -126,6 +126,29 @@ class AgentControllerTest extends TestCase
         $this->assertDatabaseCount('metrics', 0);
     }
 
+    public function test_service_without_secret_cannot_be_used_as_agent_endpoint(): void
+    {
+        $service = Service::factory()->create([
+            'server_id' => $this->server->id,
+            'name' => 'remote-monitor',
+            'type' => 'monitoring',
+            'type_data' => [
+                'data_retention' => 7,
+            ],
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $this->json(
+            'POST',
+            route('api.servers.agent', ['server' => $this->server, 'id' => $service->id]),
+            ['load' => 0.5, 'memory_total' => 1, 'memory_used' => 1, 'memory_free' => 1, 'disk_total' => 1, 'disk_used' => 1, 'disk_free' => 1],
+            ['secret' => '']
+        )->assertStatus(401);
+
+        $this->assertDatabaseCount('metrics', 0);
+    }
+
     public function test_invalid_payload_returns_422(): void
     {
         $service = $this->agentService();

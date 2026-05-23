@@ -16,7 +16,7 @@ export default function SystemStatus({ server, filter }: { server: Server; filte
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <StatTile label="Uptime" value={humanizeSeconds(current.uptime_seconds)} />
       <StatTile label="Reboot Required" value={current.reboot_required ? 'Yes' : 'No'} accent={current.reboot_required ? 'destructive' : 'default'} />
-      <StatTile label="OOM Kills (last 24h)" value={latestOom ?? 0} accent={(latestOom ?? 0) > 0 ? 'warning' : 'default'} />
+      <StatTile label="OOM Kills" subtitle="Since last boot" value={latestOom ?? 0} accent={(latestOom ?? 0) > 0 ? 'warning' : 'default'} />
       <StatTile
         label="Cores"
         value={current.cpu_cores ?? 'N/A'}

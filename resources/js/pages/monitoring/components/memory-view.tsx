@@ -38,7 +38,7 @@ export default function MemoryView({ server, filter }: { server: Server; filter?
           value={current?.swap_used_percent != null ? `${current.swap_used_percent.toFixed(2)}%` : 'N/A'}
           subtitle={swapPresent ? undefined : 'No swap configured'}
         />
-        <StatTile label="OOM Kills (last 24h)" value={latestOom} accent={latestOom > 0 ? 'destructive' : 'default'} />
+        <StatTile label="OOM Kills" subtitle="Since last boot" value={latestOom} accent={latestOom > 0 ? 'destructive' : 'default'} />
       </div>
 
       <ResourceUsageChart
