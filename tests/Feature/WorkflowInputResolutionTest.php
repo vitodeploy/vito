@@ -14,10 +14,8 @@ class WorkflowInputResolutionTest extends TestCase
     {
         $runWorkflow = new RunWorkflow;
 
-        // Use reflection to access the private resolveInputs method
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'server_id' => 123,
@@ -50,7 +48,6 @@ class WorkflowInputResolutionTest extends TestCase
 
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'server_id' => 123,
@@ -77,7 +74,6 @@ class WorkflowInputResolutionTest extends TestCase
 
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'server_id' => 123,
@@ -106,7 +102,6 @@ class WorkflowInputResolutionTest extends TestCase
 
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'server_id' => 123,
@@ -134,7 +129,6 @@ class WorkflowInputResolutionTest extends TestCase
 
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'server_id' => 123,
@@ -166,7 +160,6 @@ class WorkflowInputResolutionTest extends TestCase
 
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'server_id' => 123,
@@ -195,7 +188,6 @@ class WorkflowInputResolutionTest extends TestCase
 
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'service_id' => 456,
@@ -223,7 +215,6 @@ class WorkflowInputResolutionTest extends TestCase
 
         $reflection = new \ReflectionClass($runWorkflow);
         $method = $reflection->getMethod('resolveInputs');
-        $method->setAccessible(true);
 
         $previousOutputs = [
             'server_id' => 123, // This should take priority

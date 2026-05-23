@@ -87,7 +87,6 @@ class ServerModelTest extends TestCase
         $connection->method('disconnect');
 
         $reflection = new ReflectionProperty(SSHHelper::class, 'connection');
-        $reflection->setAccessible(true);
         $reflection->setValue($ssh, $connection);
 
         $command = <<<'BASH'
