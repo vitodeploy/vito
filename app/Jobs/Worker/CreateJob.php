@@ -29,18 +29,7 @@ class CreateJob implements ShouldQueue
             $service = $this->worker->server->processManager();
             /** @var ProcessManager $processManager */
             $processManager = $service->handler();
-            $processManager->create(
-                $this->worker->id,
-                $this->worker->command,
-                $this->worker->user,
-                $this->worker->auto_start,
-                $this->worker->auto_restart,
-                $this->worker->numprocs,
-                $this->worker->getLogFile(),
-                $this->worker->site?->path,
-                $this->worker->site_id,
-                $this->worker->environment,
-            );
+            $processManager->create($this->worker);
             $this->worker->status = WorkerStatus::RUNNING;
             $this->worker->save();
             $this->broadcastWorkerUpdate();

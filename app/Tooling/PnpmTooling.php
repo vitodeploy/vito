@@ -23,4 +23,9 @@ class PnpmTooling extends MiseTooling
     {
         return ['10', '9', '8'];
     }
+
+    public static function commands(): array
+    {
+        return ['pnpm', 'pnpx'];
+    }
 }

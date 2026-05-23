@@ -214,7 +214,6 @@ class MiseNodeJS extends MiseSiteType
                     'auto_start' => true,
                     'auto_restart' => true,
                     'numprocs' => 1,
-                    'environment' => $this->workerEnvironment(),
                 ],
                 $this->site,
             );

@@ -31,17 +31,7 @@ class EditJob implements ShouldQueue
             $processManager = $service->handler();
             $processManager->delete($this->worker->id, $this->worker->site_id);
 
-            $processManager->create(
-                $this->worker->id,
-                $this->worker->command,
-                $this->worker->user,
-                $this->worker->auto_start,
-                $this->worker->auto_restart,
-                $this->worker->numprocs,
-                $this->worker->getLogFile(),
-                $this->worker->site?->path,
-                $this->worker->site_id,
-            );
+            $processManager->create($this->worker);
             $this->worker->status = WorkerStatus::RUNNING;
             $this->worker->save();
             $this->broadcastWorkerUpdate();

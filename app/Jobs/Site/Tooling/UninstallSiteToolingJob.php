@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Site\Tooling;
 
+use App\Jobs\Worker\RefreshSiteWorkerConfigsJob;
 use App\Models\ServerLog;
 use App\Models\Site;
 use App\Tooling\SiteToolingState;
@@ -31,7 +32,9 @@ class UninstallSiteToolingJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(): void
     {
-        $this->run("server-{$this->site->server_id}", function (): void {
+        $completed = false;
+
+        $this->run("server-{$this->site->server_id}", function () use (&$completed): void {
             $tool = ToolingRegistry::find($this->toolId);
 
             if (! $tool) {
@@ -41,7 +44,13 @@ class UninstallSiteToolingJob implements ShouldBeUnique, ShouldQueue
             $tool->uninstall($this->site);
 
             SiteToolingState::completeUninstall($this->site, $this->toolId);
+
+            $completed = true;
         });
+
+        if ($completed) {
+            dispatch(new RefreshSiteWorkerConfigsJob($this->site, $this->toolId));
+        }
     }
 
     public function failed(Throwable $e): void

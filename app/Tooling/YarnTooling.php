@@ -23,4 +23,9 @@ class YarnTooling extends MiseTooling
     {
         return ['4', '3', '1'];
     }
+
+    public static function commands(): array
+    {
+        return ['yarn'];
+    }
 }

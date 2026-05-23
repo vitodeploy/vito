@@ -45,4 +45,12 @@ interface ToolingInterface
      * @return array<int, string>
      */
     public function pathContributions(Site $site): array;
+
+    /**
+     * Shell command names that this tool installs (e.g. `['node','npm','npx']`).
+     * Used to decide whether a worker's `command` references this tool.
+     *
+     * @return array<int, string>
+     */
+    public static function commands(): array;
 }

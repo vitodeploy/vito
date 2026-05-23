@@ -187,17 +187,6 @@ class MiseBunSiteTypeTest extends TestCase
         $this->assertArrayNotHasKey('package_manager', $rules);
     }
 
-    public function test_worker_environment_contains_path(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'workerEnvironment');
-
-        $environment = $reflection->invoke($this->siteType);
-
-        $this->assertIsArray($environment);
-        $this->assertArrayHasKey('PATH', $environment);
-        $this->assertStringContainsString('/home/testuser/.local/share/mise/shims', $environment['PATH']);
-    }
-
     public function test_base_commands_returns_empty_array(): void
     {
         $this->assertEquals([], $this->siteType->baseCommands());

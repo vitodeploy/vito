@@ -3,6 +3,7 @@
 namespace App\Services\ProcessManager;
 
 use App\Exceptions\SSHError;
+use App\Models\Worker;
 use Throwable;
 
 class Supervisor extends AbstractProcessManager
@@ -51,46 +52,46 @@ class Supervisor extends AbstractProcessManager
     }
 
     /**
-     * @param  ?array<string, string>  $environment
+     * Write (or overwrite) the supervisor conf file for a worker. Does not
+     * reload supervisor — pair with `create-worker.blade.php` (which does
+     * `reread + update + start`) or call only when no reload is desired.
      *
      * @throws SSHError
      */
-    public function create(
-        int $id,
-        string $command,
-        string $user,
-        bool $autoStart,
-        bool $autoRestart,
-        int $numprocs,
-        string $logFile,
-        ?string $directory = null,
-        ?int $siteId = null,
-        ?array $environment = null,
-    ): void {
+    public function writeConfig(Worker $worker): void
+    {
         $this->service->server->ssh()->write(
-            "/etc/supervisor/conf.d/$id.conf",
+            "/etc/supervisor/conf.d/{$worker->id}.conf",
             view('ssh.services.process-manager.supervisor.worker', [
-                'name' => (string) $id,
-                'directory' => $directory,
-                'command' => $command,
-                'user' => $user,
-                'autoStart' => var_export($autoStart, true),
-                'autoRestart' => var_export($autoRestart, true),
-                'numprocs' => (string) $numprocs,
-                'logFile' => $logFile,
-                'environment' => $environment,
+                'name' => (string) $worker->id,
+                'directory' => $worker->site?->path,
+                'command' => $worker->command,
+                'user' => $worker->user,
+                'autoStart' => var_export($worker->auto_start, true),
+                'autoRestart' => var_export($worker->auto_restart, true),
+                'numprocs' => (string) $worker->numprocs,
+                'logFile' => $worker->getLogFile(),
+                'environment' => $worker->effectiveEnvironment(),
             ]),
             'root'
         );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function create(Worker $worker): void
+    {
+        $this->writeConfig($worker);
 
         $this->service->server->ssh()->exec(
             view('ssh.services.process-manager.supervisor.create-worker', [
-                'id' => $id,
-                'logFile' => $logFile,
-                'user' => $user,
+                'id' => $worker->id,
+                'logFile' => $worker->getLogFile(),
+                'user' => $worker->user,
             ]),
             'create-worker',
-            $siteId
+            $worker->site_id
         );
     }
 

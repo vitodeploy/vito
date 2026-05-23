@@ -39,4 +39,9 @@ abstract class AbstractTooling implements ToolingInterface
     {
         return [];
     }
+
+    public static function commands(): array
+    {
+        return [];
+    }
 }

@@ -23,4 +23,9 @@ class NodeTooling extends MiseTooling
     {
         return ['24', '23', '22'];
     }
+
+    public static function commands(): array
+    {
+        return ['node', 'npm', 'npx'];
+    }
 }
