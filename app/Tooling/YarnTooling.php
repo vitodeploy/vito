@@ -21,6 +21,6 @@ class YarnTooling extends MiseTooling
 
     public static function supportedVersions(): array
     {
-        return ['1', '3', '4'];
+        return ['4', '3', '1'];
     }
 }

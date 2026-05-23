@@ -21,6 +21,6 @@ class BunTooling extends MiseTooling
 
     public static function supportedVersions(): array
     {
-        return ['1.0', '1.1', '1.2'];
+        return ['1.2', '1.1', '1.0'];
     }
 }

@@ -21,6 +21,6 @@ class NodeTooling extends MiseTooling
 
     public static function supportedVersions(): array
     {
-        return ['22', '23', '24'];
+        return ['24', '23', '22'];
     }
 }

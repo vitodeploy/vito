@@ -21,6 +21,6 @@ class PnpmTooling extends MiseTooling
 
     public static function supportedVersions(): array
     {
-        return ['8', '9', '10'];
+        return ['10', '9', '8'];
     }
 }
