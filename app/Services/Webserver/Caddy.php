@@ -255,11 +255,6 @@ class Caddy extends AbstractWebserver
             view('ssh.services.webserver.caddy.default-vhost'),
             'root'
         );
-
-        $ssh->exec(
-            'sudo caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile',
-            'reload-caddy'
-        );
     }
 
     public function version(): string

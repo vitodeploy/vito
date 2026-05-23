@@ -257,8 +257,6 @@ class Nginx extends AbstractWebserver
             'sudo ln -sf /etc/nginx/sites-available/000-default /etc/nginx/sites-enabled/000-default',
             'enable-default-vhost'
         );
-
-        $this->service->server->systemd()->reload('nginx');
     }
 
     public function version(): string
