@@ -34,4 +34,9 @@ abstract class AbstractTooling implements ToolingInterface
 
         return Site::existingRuntimeVersionForUser($site->server, $site->user, static::id());
     }
+
+    public function pathContributions(Site $site): array
+    {
+        return [];
+    }
 }

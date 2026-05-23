@@ -70,16 +70,10 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
-                DynamicField::make('node_version')
-                    ->select()
-                    ->label('Node.js Version')
-                    ->options(NodeTooling::supportedVersionsWithNone())
-                    ->default('none'),
-                DynamicField::make('bun_version')
-                    ->select()
-                    ->label('Bun Version')
-                    ->options(BunTooling::supportedVersionsWithNone())
-                    ->default('none'),
+                DynamicField::make('tooling')
+                    ->tooling()
+                    ->label('Developer Tooling')
+                    ->options(PHPSite::createTimeTools()),
             ]))
             ->register();
     }
@@ -98,16 +92,10 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->label('Web Directory')
                     ->placeholder('e.g., public, www, dist (leave empty for root)')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
-                DynamicField::make('node_version')
-                    ->select()
-                    ->label('Node.js Version')
-                    ->options(NodeTooling::supportedVersionsWithNone())
-                    ->default('none'),
-                DynamicField::make('bun_version')
-                    ->select()
-                    ->label('Bun Version')
-                    ->options(BunTooling::supportedVersionsWithNone())
-                    ->default('none'),
+                DynamicField::make('tooling')
+                    ->tooling()
+                    ->label('Developer Tooling')
+                    ->options(PHPBlank::createTimeTools()),
             ]))
             ->register();
     }
@@ -142,16 +130,10 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
-                DynamicField::make('node_version')
-                    ->select()
-                    ->label('Node.js Version')
-                    ->options(NodeTooling::supportedVersionsWithNone())
-                    ->default('none'),
-                DynamicField::make('bun_version')
-                    ->select()
-                    ->label('Bun Version')
-                    ->options(BunTooling::supportedVersionsWithNone())
-                    ->default('none'),
+                DynamicField::make('tooling')
+                    ->tooling()
+                    ->label('Developer Tooling')
+                    ->options(Laravel::createTimeTools()),
             ]))
             ->register();
         RegisterSiteFeature::make(Laravel::id(), 'modern-deployment')

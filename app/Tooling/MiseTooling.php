@@ -31,4 +31,9 @@ abstract class MiseTooling extends AbstractTooling
     {
         (new Mise($site->server))->uninstallRuntime($site, static::id());
     }
+
+    public function pathContributions(Site $site): array
+    {
+        return ['/home/'.$site->user.'/.local/share/mise/shims'];
+    }
 }

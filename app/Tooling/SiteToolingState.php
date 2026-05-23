@@ -6,7 +6,7 @@ use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
 use App\Http\Resources\SiteResource;
 use App\Models\Site;
-use App\SiteTypes\Concerns\UsesMiseRuntime;
+use App\SiteTypes\AbstractSiteType;
 use Closure;
 use Illuminate\Support\Facades\DB;
 
@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\DB;
  *   - `{tool}_version`: '22', '1.2', ..., or 'none'
  *   - `{tool}_status` : 'installing' | 'uninstalling' | 'install_failed' | 'uninstall_failed' | null
  *
- * `apply()` mutates every sibling site sharing the same isolated user (and only
- * those that use the `UsesMiseRuntime` trait) inside a transaction, then
- * `broadcast()` emits a `site.updated` socket event for each so live clients
- * refresh.
+ * `apply()` mutates every sibling site sharing the same isolated user (only
+ * those whose site type returns `supportsTooling() === true`) inside a
+ * transaction, then `broadcast()` emits a `site.updated` socket event for
+ * each so live clients refresh.
  */
 final class SiteToolingState
 {
@@ -54,7 +54,8 @@ final class SiteToolingState
             $sites = $origin->siblingsSharingUser(includeSelf: true)->get();
 
             foreach ($sites as $site) {
-                if (! in_array(UsesMiseRuntime::class, class_uses_recursive($site->type()), true)) {
+                $type = $site->type();
+                if (! $type instanceof AbstractSiteType || ! $type::supportsTooling()) {
                     continue;
                 }
 

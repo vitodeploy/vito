@@ -36,4 +36,13 @@ interface ToolingInterface
     public function uninstall(Site $site): void;
 
     public function installedVersion(Site $site): ?string;
+
+    /**
+     * Directories to prepend to PATH for commands run as the site's isolated
+     * user. Only called when `installedVersion($site)` is non-null — the
+     * implementation may assume the tool is installed for the site.
+     *
+     * @return array<int, string>
+     */
+    public function pathContributions(Site $site): array;
 }

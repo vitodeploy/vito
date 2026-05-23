@@ -78,6 +78,18 @@ class DynamicField
         return $this;
     }
 
+    /**
+     * Render a row of version selects driven by `App\Tooling\ToolingRegistry`.
+     * Pass tool IDs (e.g. `['node', 'bun']`) via `->options(...)`. The frontend
+     * looks up labels and supported versions from `useConfigs().tooling`.
+     */
+    public function tooling(): self
+    {
+        $this->type = 'tooling';
+
+        return $this;
+    }
+
     public function name(string $name): self
     {
         $this->name = $name;

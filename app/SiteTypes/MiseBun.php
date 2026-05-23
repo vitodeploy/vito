@@ -10,6 +10,7 @@ use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Worker;
 use App\Tooling\BunTooling;
+use App\Tooling\ToolingRegistry;
 use Illuminate\Validation\Rule;
 
 class MiseBun extends MiseSiteType
@@ -143,8 +144,8 @@ class MiseBun extends MiseSiteType
      */
     protected function runInstall(): void
     {
-        $this->site->server->ssh($this->site->user)->exec(
-            $this->wrapCommand('bun install --frozen-lockfile', true),
+        $this->site->ssh()->exec(
+            'cd '.escapeshellarg($this->site->path).' && bun install --frozen-lockfile',
             'bun-install',
             $this->site->id
         );
@@ -155,8 +156,8 @@ class MiseBun extends MiseSiteType
      */
     protected function runBuild(): void
     {
-        $this->site->server->ssh($this->site->user)->exec(
-            $this->wrapCommand($this->buildCommand(), true),
+        $this->site->ssh()->exec(
+            'cd '.escapeshellarg($this->site->path).' && '.$this->buildCommand(),
             'build',
             $this->site->id
         );

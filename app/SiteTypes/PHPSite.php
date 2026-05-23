@@ -6,17 +6,15 @@ use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
-use App\SiteTypes\Concerns\UsesMiseRuntime;
 use App\SSH\OS\Composer;
-use App\Tooling\BunTooling;
-use App\Tooling\NodeTooling;
+use App\Helpers\SiteShellEnvironment;
+use App\Tooling\ToolingRegistry;
 use App\Traits\NormalizesWebDirectory;
 use Illuminate\Validation\Rule;
 
 class PHPSite extends AbstractSiteType
 {
     use NormalizesWebDirectory;
-    use UsesMiseRuntime;
 
     public static function id(): string
     {
@@ -41,9 +39,19 @@ class PHPSite extends AbstractSiteType
         return new self(new Site(['type' => self::id()]));
     }
 
+    public static function createTimeTools(): array
+    {
+        return ['node', 'bun'];
+    }
+
+    public static function supportsTooling(): bool
+    {
+        return true;
+    }
+
     public function createRules(array $input): array
     {
-        return [
+        $rules = [
             'php_version' => [
                 'required',
                 Rule::in($this->site->server->installedPHPVersions()),
@@ -65,15 +73,20 @@ class PHPSite extends AbstractSiteType
             'composer' => [
                 'nullable',
             ],
-            'node_version' => [
-                'nullable',
-                Rule::in(NodeTooling::supportedVersionsWithNone()),
-            ],
-            'bun_version' => [
-                'nullable',
-                Rule::in(BunTooling::supportedVersionsWithNone()),
-            ],
         ];
+
+        foreach (static::createTimeTools() as $toolId) {
+            $tool = ToolingRegistry::find($toolId);
+            if (! $tool) {
+                continue;
+            }
+            $rules[$tool::typeDataKey()] = [
+                'nullable',
+                Rule::in($tool::supportedVersionsWithNone()),
+            ];
+        }
+
+        return $rules;
     }
 
     public function createFields(array $input): array
@@ -90,11 +103,20 @@ class PHPSite extends AbstractSiteType
 
     public function data(array $input): array
     {
-        return [
+        $data = [
             'composer' => isset($input['composer']) && $input['composer'],
-            'node_version' => $input['node_version'] ?? 'none',
-            'bun_version' => $input['bun_version'] ?? 'none',
         ];
+
+        foreach (static::createTimeTools() as $toolId) {
+            $tool = ToolingRegistry::find($toolId);
+            if (! $tool) {
+                continue;
+            }
+            $key = $tool::typeDataKey();
+            $data[$key] = $input[$key] ?? 'none';
+        }
+
+        return $data;
     }
 
     /**
@@ -105,10 +127,8 @@ class PHPSite extends AbstractSiteType
     {
         $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(12, 'installing-node');
-        $this->setupNodeIfRequested();
-        $this->progress(18, 'installing-bun');
-        $this->setupBunIfRequested();
+        $this->progress(15, 'installing-tooling');
+        $this->setupRequestedTooling();
         $this->progress(20, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
         $this->progress(25, 'deploying-ssh-key');
@@ -146,65 +166,42 @@ class PHPSite extends AbstractSiteType
      */
     public function deploymentEnvironment(): array
     {
-        if (! $this->anyRuntimeConfigured()) {
-            return [];
-        }
-
-        return [
-            'PATH' => $this->shimPath(),
-        ];
+        return SiteShellEnvironment::collect($this->site);
     }
 
     /**
+     * Install every tool the site type offers at create time whose requested
+     * version is non-empty and isn't already installed for the isolated user.
+     *
      * @throws SSHError
      */
-    protected function setupNodeIfRequested(): void
+    protected function setupRequestedTooling(): void
     {
-        $this->setupRuntimeIfRequested('node');
-    }
-
-    /**
-     * @throws SSHError
-     */
-    protected function setupBunIfRequested(): void
-    {
-        $this->setupRuntimeIfRequested('bun');
-    }
-
-    /**
-     * @throws SSHError
-     */
-    private function setupRuntimeIfRequested(string $runtime): void
-    {
-        $version = $this->site->type_data[$runtime.'_version'] ?? 'none';
-
-        if ($version === 'none' || $version === '') {
-            return;
-        }
-
-        $existing = Site::existingRuntimeVersionForUser(
-            $this->site->server,
-            $this->site->user ?? '',
-            $runtime,
-            $this->site->id,
-        );
-
-        if ($existing === $version) {
-            return;
-        }
-
-        $this->setupMiseRuntime($runtime, $version);
-    }
-
-    private function anyRuntimeConfigured(): bool
-    {
-        foreach (['node_version', 'bun_version'] as $field) {
-            $version = $this->site->type_data[$field] ?? 'none';
-            if ($version !== 'none' && $version !== '') {
-                return true;
+        foreach (static::createTimeTools() as $toolId) {
+            $tool = ToolingRegistry::find($toolId);
+            if (! $tool) {
+                continue;
             }
-        }
 
-        return false;
+            $key = $tool::typeDataKey();
+            $version = $this->site->type_data[$key] ?? 'none';
+            if ($version === 'none' || $version === '') {
+                continue;
+            }
+
+            $existing = Site::existingRuntimeVersionForUser(
+                $this->site->server,
+                $this->site->user,
+                $toolId,
+                $this->site->id,
+            );
+
+            if ($existing === $version) {
+                continue;
+            }
+
+            $tool->install($this->site, $version);
+        }
     }
+
 }

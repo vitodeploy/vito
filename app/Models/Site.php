@@ -139,6 +139,20 @@ class Site extends AbstractModel
         return $this->status === SiteStatus::READY;
     }
 
+    /**
+     * SSH helper scoped to this site's isolated user, pre-populated with PATH
+     * (and any future env vars) contributed by every tool currently installed
+     * for the user. Use this for any command Vito runs against the site so
+     * mise shims (node, bun, pnpm, yarn, …) and other tool binaries are on
+     * PATH automatically.
+     */
+    public function ssh(): \App\Helpers\SSH
+    {
+        return $this->server->ssh($this->user)->variables(
+            \App\Helpers\SiteShellEnvironment::collect($this)
+        );
+    }
+
     public function isInstalling(): bool
     {
         return in_array($this->status, [SiteStatus::INSTALLING, SiteStatus::INSTALLATION_FAILED]);

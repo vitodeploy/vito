@@ -22,6 +22,29 @@ abstract class AbstractSiteType implements SiteType
 
     abstract public static function make(): self;
 
+    /**
+     * Tooling IDs (matching `App\Tooling\ToolingRegistry`) that this site type
+     * offers at create time. Drives the `tooling` DynamicField, validation
+     * rules, type_data extraction and the post-isolate install loop.
+     *
+     * @return array<int, string>
+     */
+    public static function createTimeTools(): array
+    {
+        return [];
+    }
+
+    /**
+     * Whether this site type stores Tooling state in `type_data` and accepts
+     * sibling-propagation writes from the Tooling system. PHP-family and
+     * Mise-family site types are tooling-aware; LoadBalancer / deprecated
+     * NodeJS / PHPMyAdmin / WordPress are not.
+     */
+    public static function supportsTooling(): bool
+    {
+        return false;
+    }
+
     public function createRules(array $input): array
     {
         return [];

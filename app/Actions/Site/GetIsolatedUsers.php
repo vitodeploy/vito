@@ -3,25 +3,34 @@
 namespace App\Actions\Site;
 
 use App\Models\Server;
+use App\Tooling\ToolingRegistry;
 use Illuminate\Support\Collection;
 
 class GetIsolatedUsers
 {
     /**
-     * @return array<int, array{user: string, sites_count: int, node_version: string|null, bun_version: string|null}>
+     * @return array<int, array{user: string, sites_count: int, runtime_versions: array<string, string|null>}>
      */
     public function get(Server $server): array
     {
+        $toolIds = ToolingRegistry::ids();
+
         return $server->sites()
             ->where('user', '!=', $server->getSshUser())
             ->get(['user', 'type_data'])
             ->groupBy('user')
-            ->map(fn (Collection $sites, string $user): array => [
-                'user' => $user,
-                'sites_count' => $sites->count(),
-                'node_version' => $this->firstVersion($sites, 'node_version'),
-                'bun_version' => $this->firstVersion($sites, 'bun_version'),
-            ])
+            ->map(function (Collection $sites, string $user) use ($toolIds): array {
+                $versions = [];
+                foreach ($toolIds as $toolId) {
+                    $versions[$toolId] = $this->firstVersion($sites, $toolId.'_version');
+                }
+
+                return [
+                    'user' => $user,
+                    'sites_count' => $sites->count(),
+                    'runtime_versions' => $versions,
+                ];
+            })
             ->values()
             ->all();
     }

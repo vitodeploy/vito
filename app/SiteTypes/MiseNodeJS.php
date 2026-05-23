@@ -11,6 +11,7 @@ use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Worker;
 use App\Tooling\NodeTooling;
+use App\Tooling\ToolingRegistry;
 use Illuminate\Validation\Rule;
 
 class MiseNodeJS extends MiseSiteType
@@ -165,8 +166,8 @@ class MiseNodeJS extends MiseSiteType
             return;
         }
 
-        $this->site->server->ssh($this->site->user)->exec(
-            $this->wrapCommand('npm install -g '.$packageManager->value),
+        $this->site->ssh()->exec(
+            'npm install -g '.$packageManager->value,
             'install-'.$packageManager->value,
             $this->site->id
         );
@@ -179,8 +180,8 @@ class MiseNodeJS extends MiseSiteType
     {
         $packageManager = $this->packageManager();
 
-        $this->site->server->ssh($this->site->user)->exec(
-            $this->wrapCommand($packageManager->installCommand(), true),
+        $this->site->ssh()->exec(
+            'cd '.escapeshellarg($this->site->path).' && '.$packageManager->installCommand(),
             $packageManager->value.'-install',
             $this->site->id
         );
@@ -191,8 +192,8 @@ class MiseNodeJS extends MiseSiteType
      */
     protected function runPackageManagerBuild(): void
     {
-        $this->site->server->ssh($this->site->user)->exec(
-            $this->wrapCommand($this->buildCommand(), true),
+        $this->site->ssh()->exec(
+            'cd '.escapeshellarg($this->site->path).' && '.$this->buildCommand(),
             'build',
             $this->site->id
         );

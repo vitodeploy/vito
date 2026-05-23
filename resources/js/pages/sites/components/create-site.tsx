@@ -32,12 +32,14 @@ type CreateSiteForm = {
   type: string;
   domain: string;
   php_version: string;
-  node_version: string;
-  bun_version: string;
   source_control: string;
   repository: string;
   branch: string;
   user: string;
+  // Tooling versions land here as `{tool_id}_version` (e.g. `node_version`,
+  // `bun_version`), driven by the site type's `createTimeTools()` and the
+  // `tooling` DynamicField.
+  [key: string]: string | number | boolean | string[] | undefined;
 };
 
 function suggestIsolatedUsername(domain: string, blocked: ReadonlySet<string>): string {
@@ -97,8 +99,6 @@ export default function CreateSite({
     type: 'laravel',
     domain: '',
     php_version: '',
-    node_version: '',
-    bun_version: '',
     source_control: '',
     repository: '',
     branch: '',
@@ -150,9 +150,7 @@ export default function CreateSite({
     if (typeConfig?.form) {
       typeConfig.form.forEach((field: DynamicFieldConfig) => {
         if (field.default !== undefined) {
-          /* @ts-expect-error dynamic types */
           if (form.data[field.name] === '' || form.data[field.name] === undefined) {
-            /* @ts-expect-error dynamic types */
             form.setData(field.name, field.default);
           }
         }
@@ -165,37 +163,37 @@ export default function CreateSite({
     [isolatedUsersQuery.data, form.data.user],
   );
 
-  const lockedNodeVersion = selectedIsolatedUser?.node_version ?? null;
-  const lockedBunVersion = selectedIsolatedUser?.bun_version ?? null;
+  const lockedVersions = selectedIsolatedUser?.runtime_versions ?? {};
 
-  const previousLocksRef = useRef<{ node: string | null; bun: string | null }>({ node: null, bun: null });
+  // Tool ids that any `tooling` field on the current site type lists.
+  const activeToolIds = useMemo<string[]>(() => {
+    const typeConfig = configs.site.types[form.data.type];
+    const toolingField = typeConfig?.form?.find((f: DynamicFieldConfig) => f.type === 'tooling');
+    if (!toolingField) return [];
+    const raw = toolingField.options;
+    return Array.isArray(raw) ? raw : raw ? Object.values(raw) : [];
+  }, [configs, form.data.type]);
+
+  const previousLocksRef = useRef<Record<string, string | null>>({});
 
   useEffect(() => {
-    const typeConfig = configs.site.types[form.data.type];
-    const runtimes: Array<{ formKey: 'node_version' | 'bun_version'; locked: string | null; refKey: 'node' | 'bun' }> = [
-      { formKey: 'node_version', locked: lockedNodeVersion, refKey: 'node' },
-      { formKey: 'bun_version', locked: lockedBunVersion, refKey: 'bun' },
-    ];
+    activeToolIds.forEach((toolId) => {
+      const formKey = `${toolId}_version`;
+      const locked = lockedVersions[toolId] ?? null;
+      const current = (form.data as Record<string, unknown>)[formKey];
 
-    runtimes.forEach(({ formKey, locked, refKey }) => {
       if (locked) {
-        if (form.data[formKey] !== locked) {
-          form.setData(formKey, locked);
-        }
-        previousLocksRef.current[refKey] = locked;
+        if (current !== locked) form.setData(formKey, locked);
+        previousLocksRef.current[toolId] = locked;
         return;
       }
 
-      if (previousLocksRef.current[refKey] !== null) {
-        const field = typeConfig?.form?.find((f: DynamicFieldConfig) => f.name === formKey);
-        const defaultValue = typeof field?.default === 'string' ? field.default : '';
-        if (form.data[formKey] !== defaultValue) {
-          form.setData(formKey, defaultValue);
-        }
-        previousLocksRef.current[refKey] = null;
+      if (previousLocksRef.current[toolId]) {
+        if (current !== 'none') form.setData(formKey, 'none');
+        previousLocksRef.current[toolId] = null;
       }
     });
-  }, [lockedNodeVersion, lockedBunVersion, form.data.node_version, form.data.bun_version, form.data.type, configs, form.setData]);
+  }, [activeToolIds, lockedVersions, form, form.setData]);
 
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {
@@ -259,16 +257,11 @@ export default function CreateSite({
       );
     }
 
-    if (field.name === 'node_version' || field.name === 'bun_version') {
-      const isNode = field.name === 'node_version';
-      const formKey: 'node_version' | 'bun_version' = isNode ? 'node_version' : 'bun_version';
-      const runtimeLabel = isNode ? 'Node.js' : 'Bun';
-      const locked = isNode ? lockedNodeVersion : lockedBunVersion;
+    if (field.type === 'tooling') {
       const rawOptions = field.options;
-      const options = Array.isArray(rawOptions) ? rawOptions : rawOptions ? Object.values(rawOptions) : [];
-      const labelFor = (v: string) => (v === 'none' ? 'None' : `${runtimeLabel} ${v}`);
-
-      const showLaravelNotice = isNode && form.data.type === 'laravel';
+      const toolIds = Array.isArray(rawOptions) ? rawOptions : rawOptions ? Object.values(rawOptions) : [];
+      const catalogue = configs.tooling ?? [];
+      const showLaravelNotice = form.data.type === 'laravel' && toolIds.includes('node');
 
       return (
         <FormField key={`field-${field.name}`}>
@@ -277,43 +270,60 @@ export default function CreateSite({
               <AlertDescription>Laravel sites typically need a JavaScript runtime to build front-end assets during deployment.</AlertDescription>
             </Alert>
           )}
-          <Label htmlFor={field.name}>{field.label ?? `${runtimeLabel} Version`}</Label>
-          {locked ? (
-            <>
-              <Alert role="status">
-                <AlertDescription className="block">
-                  Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
-                  <span className="font-medium">{labelFor(locked)}</span> installed; this can be modified via tooling against the site.
-                </AlertDescription>
-              </Alert>
-              <Select value={locked} disabled>
-                <SelectTrigger id={field.name}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value={locked}>{labelFor(locked)}</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </>
-          ) : (
-            <Select value={form.data[formKey]} onValueChange={(value) => form.setData(formKey, value)}>
-              <SelectTrigger id={field.name}>
-                <SelectValue placeholder={`Select ${runtimeLabel} version`} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {options.map((v) => (
-                    <SelectItem key={v} value={v}>
-                      {labelFor(v)}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          )}
-          <InputError message={form.errors[formKey]} />
+          {field.label && <Label>{field.label}</Label>}
+          <div className="flex flex-col gap-3">
+            {toolIds.map((toolId) => {
+              const descriptor = catalogue.find((t) => t.id === toolId);
+              if (!descriptor) return null;
+              const formKey = `${toolId}_version`;
+              const locked = lockedVersions[toolId] ?? null;
+              const options = ['none', ...descriptor.supported_versions];
+              const labelFor = (v: string) => (v === 'none' ? 'None' : `${descriptor.label} ${v}`);
+              const value = ((form.data as Record<string, unknown>)[formKey] as string | undefined) ?? 'none';
+
+              return (
+                <div key={toolId} className="space-y-2">
+                  <Label htmlFor={`${toolId}-version`}>{descriptor.label}</Label>
+                  {locked ? (
+                    <>
+                      <Alert role="status">
+                        <AlertDescription className="block">
+                          Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
+                          <span className="font-medium">{labelFor(locked)}</span> installed; this can be modified via tooling against the site.
+                        </AlertDescription>
+                      </Alert>
+                      <Select value={locked} disabled>
+                        <SelectTrigger id={`${toolId}-version`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value={locked}>{labelFor(locked)}</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </>
+                  ) : (
+                    <Select value={value} onValueChange={(v) => form.setData(formKey, v)}>
+                      <SelectTrigger id={`${toolId}-version`}>
+                        <SelectValue placeholder={`Select ${descriptor.label} version`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {options.map((v) => (
+                            <SelectItem key={v} value={v}>
+                              {labelFor(v)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <InputError message={(form.errors as Record<string, string | undefined>)[formKey]} />
+                </div>
+              );
+            })}
+          </div>
         </FormField>
       );
     }
@@ -327,16 +337,13 @@ export default function CreateSite({
             key={`field-${field.name}`}
             name="database"
             serverId={parseInt(form.data.server)}
-            /*@ts-expect-error dynamic types*/
-            value={form.data.database}
-            /*@ts-expect-error dynamic types*/
+            value={form.data.database as string}
             onValueChange={(value) => form.setData('database', value)}
             createWithUser={true}
             defaultCharset={field.componentProps?.defaultCharset as string | undefined}
             defaultCollation={field.componentProps?.defaultCollation as string | undefined}
           />
-          {/*@ts-expect-error dynamic types*/}
-          <InputError message={form.errors.database} />
+          <InputError message={form.errors.database as string | undefined} />
         </FormField>
       );
     }
@@ -350,14 +357,11 @@ export default function CreateSite({
             key={`field-${field.name}`}
             name="database_user"
             serverId={parseInt(form.data.server)}
-            /*@ts-expect-error dynamic types*/
-            value={form.data.database_user}
-            /*@ts-expect-error dynamic types*/
+            value={form.data.database_user as string}
             onValueChange={(value) => form.setData('database_user', value)}
             create={false}
           />
-          {/*@ts-expect-error dynamic types*/}
-          <InputError message={form.errors.database_user} />
+          <InputError message={form.errors.database_user as string | undefined} />
         </FormField>
       );
     }
@@ -365,13 +369,10 @@ export default function CreateSite({
     return (
       <DynamicField
         key={`field-${field.name}`}
-        /*@ts-expect-error dynamic types*/
-        value={form.data[field.name]}
-        /*@ts-expect-error dynamic types*/
+        value={form.data[field.name] as string | number | boolean | string[] | undefined}
         onChange={(value) => form.setData(field.name, value)}
         config={field}
-        /*@ts-expect-error dynamic types*/
-        error={form.errors[field.name]}
+        error={(form.errors as Record<string, string | undefined>)[field.name]}
       />
     );
   };

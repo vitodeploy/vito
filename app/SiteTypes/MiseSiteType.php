@@ -3,11 +3,15 @@
 namespace App\SiteTypes;
 
 use App\Exceptions\SSHError;
-use App\SiteTypes\Concerns\UsesMiseRuntime;
+use App\Helpers\SiteShellEnvironment;
+use App\Tooling\ToolingRegistry;
 
 abstract class MiseSiteType extends AbstractSiteType
 {
-    use UsesMiseRuntime;
+    public static function supportsTooling(): bool
+    {
+        return true;
+    }
 
     abstract protected function runtime(): string;
 
@@ -18,7 +22,17 @@ abstract class MiseSiteType extends AbstractSiteType
      */
     protected function setupRuntime(): void
     {
-        $this->setupMiseRuntime($this->runtime(), $this->runtimeVersion());
+        $tool = ToolingRegistry::find($this->runtime());
+
+        $tool?->install($this->site, $this->runtimeVersion());
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function workerEnvironment(): array
+    {
+        return SiteShellEnvironment::collect($this->site);
     }
 
     protected function workerCommand(): string

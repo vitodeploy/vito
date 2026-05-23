@@ -187,28 +187,6 @@ class MiseBunSiteTypeTest extends TestCase
         $this->assertArrayNotHasKey('package_manager', $rules);
     }
 
-    public function test_wrap_command_with_cd(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'wrapCommand');
-
-        $command = $reflection->invoke($this->siteType, 'bun install', true);
-
-        $this->assertStringStartsWith("bash -c 'export PATH=", $command);
-        $this->assertStringContainsString('cd /home/testuser/example.com &&', $command);
-        $this->assertStringContainsString('bun install', $command);
-    }
-
-    public function test_wrap_command_without_cd(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'wrapCommand');
-
-        $command = $reflection->invoke($this->siteType, 'bun install', false);
-
-        $this->assertStringStartsWith("bash -c 'export PATH=", $command);
-        $this->assertStringContainsString('bun install', $command);
-        $this->assertStringNotContainsString('cd /home/testuser/example.com', $command);
-    }
-
     public function test_worker_environment_contains_path(): void
     {
         $reflection = new \ReflectionMethod($this->siteType, 'workerEnvironment');
