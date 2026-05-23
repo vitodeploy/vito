@@ -10,7 +10,11 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Worker;
+use App\Tooling\BunTooling;
 use App\Tooling\NodeTooling;
+use App\Tooling\PnpmTooling;
+use App\Tooling\ToolingRegistry;
+use App\Tooling\YarnTooling;
 use Illuminate\Validation\Rule;
 
 class MiseNodeJS extends MiseSiteType
@@ -50,7 +54,7 @@ class MiseNodeJS extends MiseSiteType
 
     public function createRules(array $input): array
     {
-        return [
+        $rules = [
             'source_control' => SourceControl::siteValidationRules($this->site->server),
             'repository' => [
                 'required',
@@ -69,7 +73,7 @@ class MiseNodeJS extends MiseSiteType
             ],
             'package_manager' => [
                 'required',
-                Rule::in(array_column(NodePackageManager::cases(), 'value')),
+                Rule::in(NodePackageManager::toolIds()),
             ],
             'build_command' => [
                 'nullable',
@@ -80,6 +84,22 @@ class MiseNodeJS extends MiseSiteType
                 'string',
             ],
         ];
+
+        // When the chosen package manager is a tool other than Node (npm comes
+        // bundled with Node), its version is required and validated against
+        // the tool's supported versions.
+        $pmToolId = $input['package_manager'] ?? null;
+        if (is_string($pmToolId) && $pmToolId !== 'node') {
+            $tool = ToolingRegistry::find($pmToolId);
+            if ($tool !== null) {
+                $rules[$pmToolId.'_version'] = [
+                    'required',
+                    Rule::in($tool::supportedVersions()),
+                ];
+            }
+        }
+
+        return $rules;
     }
 
     public function createFields(array $input): array
@@ -94,14 +114,34 @@ class MiseNodeJS extends MiseSiteType
 
     public function data(array $input): array
     {
-        $packageManager = NodePackageManager::tryFrom($input['package_manager'] ?? '') ?? NodePackageManager::Npm;
+        // Form sends `package_manager` as a tool id ('node' / 'pnpm' / 'yarn');
+        // type_data persists the enum value ('npm' / 'pnpm' / 'yarn') for
+        // backwards compatibility with existing sites and the command helpers.
+        $pmToolId = $input['package_manager'] ?? 'node';
+        try {
+            $packageManager = NodePackageManager::fromToolId($pmToolId);
+        } catch (\InvalidArgumentException) {
+            $packageManager = NodePackageManager::Npm;
+            $pmToolId = 'node';
+        }
 
-        return [
+        $data = [
             'node_version' => $input['node_version'] ?? '22',
             'package_manager' => $packageManager->value,
             'build_command' => ! empty($input['build_command']) ? $input['build_command'] : $packageManager->buildCommand(),
             'start_command' => ! empty($input['start_command']) ? $input['start_command'] : $packageManager->startCommand(),
         ];
+
+        // Reflect Mise-managed package manager versions into type_data so the
+        // Tooling system can pick them up via `Site::existingRuntimeVersionForUser`.
+        // npm is bundled with Node — no separate version row.
+        foreach ([BunTooling::id(), PnpmTooling::id(), YarnTooling::id()] as $managedId) {
+            if ($pmToolId === $managedId) {
+                $data[$managedId.'_version'] = $input[$managedId.'_version'] ?? 'none';
+            }
+        }
+
+        return $data;
     }
 
     protected function packageManager(): NodePackageManager
@@ -157,19 +197,33 @@ class MiseNodeJS extends MiseSiteType
     /**
      * @throws SSHError
      */
+    /**
+     * Install the chosen package manager via the Tooling system (Mise) so it
+     * participates in the site's lockstep / sibling propagation. npm is
+     * bundled with Node, so when the package manager is npm we skip the
+     * extra install.
+     *
+     * @throws SSHError
+     */
     protected function setupPackageManager(): void
     {
-        $packageManager = $this->packageManager();
+        $pmToolId = $this->packageManager()->toolId();
 
-        if ($packageManager === NodePackageManager::Npm) {
+        if ($pmToolId === $this->runtime()) {
             return;
         }
 
-        $this->site->ssh()->exec(
-            'npm install -g '.$packageManager->value,
-            'install-'.$packageManager->value,
-            $this->site->id
-        );
+        $tool = ToolingRegistry::find($pmToolId);
+        if ($tool === null) {
+            return;
+        }
+
+        $version = $this->site->type_data[$pmToolId.'_version'] ?? 'none';
+        if (! is_string($version) || $version === '' || $version === 'none') {
+            return;
+        }
+
+        $tool->install($this->site, $version);
     }
 
     /**

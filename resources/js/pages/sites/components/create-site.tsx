@@ -165,19 +165,37 @@ export default function CreateSite({
 
   const lockedVersions = selectedIsolatedUser?.runtime_versions ?? {};
 
-  // Tool ids that any `tooling` field on the current site type lists.
-  const activeToolIds = useMemo<string[]>(() => {
+  // Tool ids participating in the current site type's form, with their kind:
+  //   - 'tooling'          → optional multi-tool field; unlock fallback = 'none'
+  //   - 'tooling-picker'   → single required tool; unlock fallback = latest version
+  //   - 'tooling-selector' → tool chosen from a list; treated like a picker for
+  //                          lock-sync purposes (version required when no overlap)
+  type ActiveTool = { toolId: string; kind: 'tooling' | 'tooling-picker' | 'tooling-selector' };
+  const activeTools = useMemo<ActiveTool[]>(() => {
     const typeConfig = configs.site.types[form.data.type];
-    const toolingField = typeConfig?.form?.find((f: DynamicFieldConfig) => f.type === 'tooling');
-    if (!toolingField) return [];
-    const raw = toolingField.options;
-    return Array.isArray(raw) ? raw : raw ? Object.values(raw) : [];
+    const result: ActiveTool[] = [];
+    for (const f of typeConfig?.form ?? []) {
+      if (f.type !== 'tooling' && f.type !== 'tooling-picker' && f.type !== 'tooling-selector') continue;
+      const raw = f.options;
+      const ids = Array.isArray(raw) ? raw : raw ? Object.values(raw) : [];
+      for (const id of ids) result.push({ toolId: id, kind: f.type });
+    }
+    return result;
   }, [configs, form.data.type]);
+
+  // Tool ids that have a dedicated `toolingPicker` field on this form. Used by
+  // the `toolingSelector` render to suppress the version companion when the
+  // picked tool's version is already controlled by another field.
+  const pickerToolIds = useMemo<Set<string>>(
+    () => new Set(activeTools.filter((t) => t.kind === 'tooling-picker').map((t) => t.toolId)),
+    [activeTools],
+  );
 
   const previousLocksRef = useRef<Record<string, string | null>>({});
 
   useEffect(() => {
-    activeToolIds.forEach((toolId) => {
+    const catalogue = configs.tooling ?? [];
+    activeTools.forEach(({ toolId, kind }) => {
       const formKey = `${toolId}_version`;
       const locked = lockedVersions[toolId] ?? null;
       const current = (form.data as Record<string, unknown>)[formKey];
@@ -189,11 +207,15 @@ export default function CreateSite({
       }
 
       if (previousLocksRef.current[toolId]) {
-        if (current !== 'none') form.setData(formKey, 'none');
+        const fallback =
+          kind === 'tooling'
+            ? 'none'
+            : (catalogue.find((t) => t.id === toolId)?.supported_versions[0] ?? '');
+        if (current !== fallback) form.setData(formKey, fallback);
         previousLocksRef.current[toolId] = null;
       }
     });
-  }, [activeToolIds, lockedVersions, form, form.setData]);
+  }, [activeTools, lockedVersions, form, form.setData, configs]);
 
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {
@@ -324,6 +346,144 @@ export default function CreateSite({
               );
             })}
           </div>
+        </FormField>
+      );
+    }
+
+    if (field.type === 'tooling-picker') {
+      const rawOptions = field.options;
+      const toolIds = Array.isArray(rawOptions) ? rawOptions : rawOptions ? Object.values(rawOptions) : [];
+      const toolId = toolIds[0];
+      const descriptor = (configs.tooling ?? []).find((t) => t.id === toolId);
+      if (!toolId || !descriptor) return null;
+
+      const formKey = `${toolId}_version`;
+      const locked = lockedVersions[toolId] ?? null;
+      const labelFor = (v: string) => `${descriptor.label} ${v}`;
+      const value =
+        ((form.data as Record<string, unknown>)[formKey] as string | undefined) ?? descriptor.supported_versions[0] ?? '';
+
+      return (
+        <FormField key={`field-${field.name}`}>
+          <Label htmlFor={`${toolId}-version`}>{field.label ?? `${descriptor.label} Version`}</Label>
+          {locked ? (
+            <>
+              <Alert role="status">
+                <AlertDescription className="block">
+                  Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
+                  <span className="font-medium">{labelFor(locked)}</span> installed; this can be modified via tooling against the site.
+                </AlertDescription>
+              </Alert>
+              <Select value={locked} disabled>
+                <SelectTrigger id={`${toolId}-version`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value={locked}>{labelFor(locked)}</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </>
+          ) : (
+            <Select value={value} onValueChange={(v) => form.setData(formKey, v)}>
+              <SelectTrigger id={`${toolId}-version`}>
+                <SelectValue placeholder={`Select ${descriptor.label} version`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {descriptor.supported_versions.map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {labelFor(v)}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          )}
+          <InputError message={(form.errors as Record<string, string | undefined>)[formKey]} />
+        </FormField>
+      );
+    }
+
+    if (field.type === 'tooling-selector') {
+      const rawOptions = field.options;
+      const toolIds = Array.isArray(rawOptions) ? rawOptions : rawOptions ? Object.values(rawOptions) : [];
+      const catalogue = configs.tooling ?? [];
+      const pickedToolId =
+        ((form.data as Record<string, unknown>)[field.name] as string | undefined) ?? toolIds[0] ?? '';
+      const pickedDescriptor = catalogue.find((t) => t.id === pickedToolId);
+      const versionInherited = pickerToolIds.has(pickedToolId);
+      const versionKey = `${pickedToolId}_version`;
+      const lockedVersion = lockedVersions[pickedToolId] ?? null;
+      const versionValue =
+        ((form.data as Record<string, unknown>)[versionKey] as string | undefined) ??
+        (pickedDescriptor?.supported_versions[0] ?? '');
+      const labelFor = (v: string) => (pickedDescriptor ? `${pickedDescriptor.label} ${v}` : v);
+
+      return (
+        <FormField key={`field-${field.name}`}>
+          {field.label && <Label htmlFor={field.name}>{field.label}</Label>}
+          <Select value={pickedToolId} onValueChange={(v) => form.setData(field.name, v)}>
+            <SelectTrigger id={field.name}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {toolIds.map((id) => {
+                  const d = catalogue.find((t) => t.id === id);
+                  return (
+                    <SelectItem key={id} value={id}>
+                      {d?.label ?? id}
+                    </SelectItem>
+                  );
+                })}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <InputError message={(form.errors as Record<string, string | undefined>)[field.name]} />
+
+          {!versionInherited && pickedDescriptor && (
+            <div className="mt-3 space-y-2">
+              <Label htmlFor={`${pickedToolId}-selector-version`}>{pickedDescriptor.label} Version</Label>
+              {lockedVersion ? (
+                <>
+                  <Alert role="status">
+                    <AlertDescription className="block">
+                      Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
+                      <span className="font-medium">{labelFor(lockedVersion)}</span> installed; this can be modified via tooling against the site.
+                    </AlertDescription>
+                  </Alert>
+                  <Select value={lockedVersion} disabled>
+                    <SelectTrigger id={`${pickedToolId}-selector-version`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value={lockedVersion}>{labelFor(lockedVersion)}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </>
+              ) : (
+                <Select value={versionValue} onValueChange={(v) => form.setData(versionKey, v)}>
+                  <SelectTrigger id={`${pickedToolId}-selector-version`}>
+                    <SelectValue placeholder={`Select ${pickedDescriptor.label} version`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {pickedDescriptor.supported_versions.map((v) => (
+                        <SelectItem key={v} value={v}>
+                          {labelFor(v)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+              <InputError message={(form.errors as Record<string, string | undefined>)[versionKey]} />
+            </div>
+          )}
         </FormField>
       );
     }

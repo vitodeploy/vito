@@ -2,6 +2,8 @@
 
 namespace App\DTOs;
 
+use App\Tooling\ToolingInterface;
+
 class DynamicField
 {
     public function __construct(
@@ -86,6 +88,54 @@ class DynamicField
     public function tooling(): self
     {
         $this->type = 'tooling';
+
+        return $this;
+    }
+
+    /**
+     * Render a single required version select for one specific tool. Used by
+     * site types where a tooling is the primary configuration (e.g.
+     * MiseNodeJS / MiseBun). The frontend automatically:
+     *  - locks the field to the version the isolated user already has, if any
+     *    (matching the create-time lockstep invariant); and
+     *  - defaults to the tool's latest supported version otherwise.
+
+     * @param  class-string<ToolingInterface>  $toolClass
+     */
+    public function toolingPicker(string $toolClass): self
+    {
+        $this->type = 'tooling-picker';
+        $this->options = [$toolClass::id()];
+
+        if ($this->label === '') {
+            $this->label = $toolClass::label().' Version';
+        }
+
+        $versions = $toolClass::supportedVersions();
+        if ($versions !== []) {
+            $this->default = $versions[0];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Render a tool chooser ("pick which tool") plus an inline version select
+     * for the picked tool. If the picked tool is already configured by another
+     * `toolingPicker` field on the same form, the version select is hidden
+     * (its version comes from the picker). Used for fields like
+     * "Package Manager" where the user chooses among a few tooling classes.
+     *
+     * @param  array<int, class-string<ToolingInterface>>  $toolClasses
+     */
+    public function toolingSelector(array $toolClasses): self
+    {
+        $this->type = 'tooling-selector';
+        $this->options = array_map(fn (string $cls) => $cls::id(), $toolClasses);
+
+        if ($this->default === null && $this->options !== []) {
+            $this->default = $this->options[0];
+        }
 
         return $this;
     }

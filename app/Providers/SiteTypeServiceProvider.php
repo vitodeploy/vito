@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\DTOs\DynamicField;
 use App\DTOs\DynamicForm;
 use App\Enums\LoadBalancerMethod;
-use App\Enums\NodePackageManager;
 use App\Plugins\RegisterSiteFeature;
 use App\Plugins\RegisterSiteFeatureAction;
 use App\Plugins\RegisterSiteType;
@@ -23,6 +22,8 @@ use App\SiteTypes\PHPSite;
 use App\SiteTypes\Wordpress;
 use App\Tooling\BunTooling;
 use App\Tooling\NodeTooling;
+use App\Tooling\PnpmTooling;
+use App\Tooling\YarnTooling;
 use Illuminate\Support\ServiceProvider;
 
 class SiteTypeServiceProvider extends ServiceProvider
@@ -188,15 +189,10 @@ class SiteTypeServiceProvider extends ServiceProvider
             ->handler(MiseNodeJS::class)
             ->form(DynamicForm::make([
                 DynamicField::make('node_version')
-                    ->select()
-                    ->label('Node.js Version')
-                    ->options(NodeTooling::supportedVersions())
-                    ->default('22'),
+                    ->toolingPicker(NodeTooling::class),
                 DynamicField::make('package_manager')
-                    ->select()
-                    ->label('Package Manager')
-                    ->options(array_column(NodePackageManager::cases(), 'value'))
-                    ->default(NodePackageManager::Npm->value),
+                    ->toolingSelector([NodeTooling::class, PnpmTooling::class, YarnTooling::class])
+                    ->label('Package Manager'),
                 DynamicField::make('source_control')
                     ->component()
                     ->label('Source Control'),
@@ -234,10 +230,7 @@ class SiteTypeServiceProvider extends ServiceProvider
             ->handler(MiseBun::class)
             ->form(DynamicForm::make([
                 DynamicField::make('bun_version')
-                    ->select()
-                    ->label('Bun Version')
-                    ->options(BunTooling::supportedVersions())
-                    ->default('1.2'),
+                    ->toolingPicker(BunTooling::class),
                 DynamicField::make('source_control')
                     ->component()
                     ->label('Source Control'),
