@@ -7,6 +7,7 @@ import ServerLayout from '@/layouts/server/layout';
 import Container from '@/components/container';
 import HeaderContainer from '@/components/header-container';
 import Heading from '@/components/heading';
+import HeadingSmall from '@/components/heading-small';
 import SiteBanners from '@/components/site-banners';
 import Logs from '@/pages/server-logs/components/logs';
 import { Server } from '@/types/server';
@@ -41,7 +42,7 @@ export default function Application() {
           <SiteBanners site={page.props.site} />
 
           <div className="flex flex-col gap-2">
-            <p className="text-muted-foreground text-sm font-medium">Installation logs</p>
+            <HeadingSmall title="Installation logs" />
             <Logs server={page.props.server} site={page.props.site} />
           </div>
         </Container>
