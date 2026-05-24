@@ -52,7 +52,6 @@ class VerifyHostedDomainTest extends TestCase
         $result = app(VerifyHostedDomain::class)->verify($domain);
 
         $this->assertTrue($result->verified);
-        $this->assertContains('203.0.113.10', $result->resolvedIps);
     }
 
     public function test_fails_when_response_body_does_not_match_hmac(): void
@@ -78,7 +77,6 @@ class VerifyHostedDomainTest extends TestCase
         $result = app(VerifyHostedDomain::class)->verify($domain);
 
         $this->assertFalse($result->verified);
-        $this->assertContains('198.51.100.1', $result->resolvedIps);
     }
 
     public function test_cross_install_secret_rejects_captured_response(): void

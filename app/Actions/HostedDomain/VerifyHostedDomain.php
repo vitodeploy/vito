@@ -85,11 +85,8 @@ class VerifyHostedDomain
             ]);
 
             return $matched
-                ? VerificationResult::success($ips)
-                : VerificationResult::failure(
-                    'Domain did not respond with the expected challenge from any resolved IP.',
-                    $ips,
-                );
+                ? VerificationResult::success()
+                : VerificationResult::failure('Domain did not respond with the expected challenge from any resolved IP.');
         } finally {
             $this->cleanupChallenge($site, $remoteFile);
         }

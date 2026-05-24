@@ -4,28 +4,18 @@ namespace App\DTOs;
 
 final readonly class VerificationResult
 {
-    /**
-     * @param  array<int, string>  $resolvedIps
-     */
     public function __construct(
         public bool $verified,
         public ?string $failureReason,
-        public array $resolvedIps,
     ) {}
 
-    /**
-     * @param  array<int, string>  $resolvedIps
-     */
-    public static function success(array $resolvedIps): self
+    public static function success(): self
     {
-        return new self(true, null, $resolvedIps);
+        return new self(true, null);
     }
 
-    /**
-     * @param  array<int, string>  $resolvedIps
-     */
-    public static function failure(string $reason, array $resolvedIps = []): self
+    public static function failure(string $reason): self
     {
-        return new self(false, $reason, $resolvedIps);
+        return new self(false, $reason);
     }
 }
