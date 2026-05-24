@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Actions\Webserver\GenerateCaddyConfig;
 use App\Enums\SslMethod;
 use App\Exceptions\SSHError;
@@ -130,6 +131,8 @@ class Caddy extends AbstractWebserver
 
     public function generateVhost(Site $site, ?string $template = null): string
     {
+        app(EnsureSiteVerificationKey::class)->ensure($site);
+
         return app(GenerateCaddyConfig::class)->generate($site, $template);
     }
 

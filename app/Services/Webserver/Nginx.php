@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
@@ -73,6 +74,8 @@ class Nginx extends AbstractWebserver
 
     public function generateVhost(Site $site, ?string $template = null): string
     {
+        app(EnsureSiteVerificationKey::class)->ensure($site);
+
         return app(GenerateNginxConfig::class)->generate($site, $template);
     }
 

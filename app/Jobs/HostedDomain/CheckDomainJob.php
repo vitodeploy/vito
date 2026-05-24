@@ -3,7 +3,7 @@
 namespace App\Jobs\HostedDomain;
 
 use App\Actions\HostedDomain\ActivateHostedDomain;
-use App\Actions\HostedDomain\CheckDomainResolution;
+use App\Actions\HostedDomain\VerifyHostedDomain;
 use App\DTOs\SocketEventDTO;
 use App\Enums\HostedDomainStatus;
 use App\Events\SocketEvent;
@@ -18,23 +18,17 @@ class CheckDomainJob implements ShouldQueue
 
     public function __construct(protected HostedDomain $hostedDomain) {}
 
-    public function handle(): void
+    public function handle(VerifyHostedDomain $verifier, ActivateHostedDomain $activator): void
     {
-        $site = $this->hostedDomain->site;
-        $server = $site->server;
+        $result = $verifier->verify($this->hostedDomain);
 
-        $result = app(CheckDomainResolution::class)->check($this->hostedDomain, $server);
-
-        if ($result['resolves']) {
+        if ($result->verified) {
             $this->hostedDomain->error = null;
             $this->hostedDomain->save();
-            app(ActivateHostedDomain::class)->activate($this->hostedDomain);
+            $activator->activate($this->hostedDomain);
         } else {
-            $resolvedIps = $result['resolved_ips'];
-            $this->hostedDomain->error = empty($resolvedIps)
-                ? 'Unable to resolve this domain to the server'
-                : 'Domain incorrectly resolves to '.implode(', ', $resolvedIps);
             $this->hostedDomain->status = HostedDomainStatus::PENDING;
+            $this->hostedDomain->error = $result->failureReason;
             $this->hostedDomain->save();
         }
 
