@@ -64,8 +64,6 @@ final class SiteToolingState
             return;
         }
 
-        // Drop the tool key entirely rather than marking `version: 'none'` —
-        // keeps `installed_tooling` lean as the registry grows.
         $iuser->clearTooling($toolId);
 
         self::broadcast($iuser);

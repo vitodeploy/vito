@@ -88,7 +88,6 @@ class EditWorker
             ],
         ];
 
-        // Add site_id validation if provided in input
         if (isset($input['site_id']) && ! empty($input['site_id'])) {
             $rules['site_id'] = [
                 'required',

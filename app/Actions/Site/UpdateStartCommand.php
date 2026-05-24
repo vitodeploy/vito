@@ -23,7 +23,7 @@ class UpdateStartCommand
     public function update(Site $site, array $input): WorkerStartCommandUpdateResult
     {
         $validated = Validator::make($input, [
-            'start_command' => ['required', 'string', 'max:255'],
+            'start_command' => ['required', 'string', 'max:255', 'not_regex:/[\r\n]/'],
         ])->validate();
 
         $site->jsonUpdate('type_data', 'start_command', $validated['start_command']);

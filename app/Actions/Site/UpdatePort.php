@@ -23,5 +23,7 @@ class UpdatePort
         $site->save();
 
         $site->webserver()->updateVHost($site);
+
+        app(BroadcastSiteUpdate::class)->broadcast($site);
     }
 }

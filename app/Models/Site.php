@@ -512,16 +512,10 @@ class Site extends AbstractModel
 
     public function getSshKeyName(): string
     {
-        // This site already has a legacy per-site key on disk — keep using it
-        // (its public key is bound to any registered Git provider deploy key).
         if ($this->getRawOriginal('ssh_key')) {
             return 'site_'.$this->id;
         }
 
-        // Any other isolated site — whether the iuser already has a key or is
-        // a freshly-backfilled legacy iuser — uses the iuser-level key. New
-        // joins to a legacy iuser lazily generate `~/.ssh/iuser_{id}`, leaving
-        // existing siblings' per-site key files alone.
         return $this->isolated_user_id
             ? 'iuser_'.$this->isolated_user_id
             : 'site_'.$this->id;

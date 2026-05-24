@@ -156,7 +156,7 @@ export default function CreateSite({
         }
       });
     }
-  }, [form.data.type, configs]);
+  }, [form.data.type, form.setData, configs]);
 
   const selectedIsolatedUser = useMemo<IsolatedUserOption | null>(
     () => (isolatedUsersQuery.data ?? []).find((u) => u.user === form.data.user) ?? null,
@@ -212,7 +212,7 @@ export default function CreateSite({
         previousLocksRef.current[toolId] = null;
       }
     });
-  }, [activeTools, lockedVersions, form, form.setData, configs]);
+  }, [activeTools, lockedVersions, form.data, form.setData, configs]);
 
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {
