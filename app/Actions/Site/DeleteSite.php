@@ -38,7 +38,8 @@ class DeleteSite
             return;
         }
 
-        $lock = $site->server->isolatedUserLock($site->user);
+        $iuser = $site->isolatedUser;
+        $lock = $iuser?->lock() ?? $site->server->isolatedUserLock($site->user);
 
         try {
             $lock->block(30);
@@ -59,11 +60,17 @@ class DeleteSite
                 $php->removeFpmPool($site->user, $site->php_version, $site->id);
             }
 
-            if (! $site->userSharedWithSiblings()) {
+            $isLastSibling = ! $site->userSharedWithSiblings();
+
+            if ($isLastSibling) {
                 $site->server->os()->deleteIsolatedUser($site->user);
             }
 
             $this->deleteRow($site);
+
+            if ($isLastSibling) {
+                $iuser?->delete();
+            }
         } finally {
             $lock->release();
         }

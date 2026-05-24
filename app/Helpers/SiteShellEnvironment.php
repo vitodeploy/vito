@@ -21,7 +21,7 @@ final class SiteShellEnvironment
      */
     public static function collect(Site $site): array
     {
-        if ($site->user === '') {
+        if (! $site->isolatedUser || $site->user === '' || $site->user === null) {
             return [];
         }
 

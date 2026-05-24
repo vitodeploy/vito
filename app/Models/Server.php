@@ -216,6 +216,14 @@ class Server extends AbstractModel
     }
 
     /**
+     * @return HasMany<IsolatedUser, covariant $this>
+     */
+    public function isolatedUsers(): HasMany
+    {
+        return $this->hasMany(IsolatedUser::class);
+    }
+
+    /**
      * @return HasMany<Service, covariant $this>
      */
     public function services(): HasMany
@@ -322,6 +330,13 @@ class Server extends AbstractModel
         return config('core.ssh_user');
     }
 
+    /**
+     * @deprecated Prefer `$site->isolatedUser->lock()`. Kept for one release to
+     *             serve callers that only know a username string and as the
+     *             fallback for non-isolated edge paths. Same key shape as
+     *             `IsolatedUser::lock()` — workers on either side of the
+     *             cutover acquire the same logical lock.
+     */
     public function isolatedUserLock(string $user): Lock
     {
         return Cache::lock("isolate:{$this->id}:{$user}", 60);
@@ -333,10 +348,14 @@ class Server extends AbstractModel
     public function getSshUsers(): array
     {
         $users = ['root', $this->getSshUser()];
-        $isolatedSites = $this->sites()->pluck('user')->toArray();
-        $users = array_merge($users, $isolatedSites);
+        $users = array_merge($users, $this->isolatedUsers()->pluck('username')->toArray());
 
-        return array_unique($users);
+        // Backcompat for one release: callers that wrote a custom `sites.user`
+        // without going through CreateSite (older tests, manual SQL, etc.)
+        // still expect the username to be recognised.
+        $users = array_merge($users, $this->sites()->whereNotNull('user')->pluck('user')->toArray());
+
+        return array_values(array_unique($users));
     }
 
     public function service(string $type, mixed $version = null): ?Service

@@ -20,6 +20,7 @@ use App\SiteTypes\SiteType;
 use App\SourceControlProviders\GithubApp;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -49,7 +50,9 @@ use RuntimeException;
  * @property int $progress
  * @property ?string $progress_step
  * @property ?string $last_error
- * @property string $user
+ * @property ?int $isolated_user_id
+ * @property ?IsolatedUser $isolatedUser
+ * @property ?string $user
  * @property bool $force_ssl
  * @property bool $ssl_enabled
  * @property ?string $vhost_template
@@ -81,6 +84,7 @@ class Site extends AbstractModel
 
     protected $fillable = [
         'server_id',
+        'isolated_user_id',
         'type',
         'type_data',
         'env_variables',
@@ -104,8 +108,17 @@ class Site extends AbstractModel
         'vhost_generation_enabled',
     ];
 
+    /**
+     * Always eager-load the isolated user — `Site::$user` / `Site::$ssh_key`
+     * accessors fall through to it, so unloaded access triggers an N+1 across
+     * tables / resources / Inertia payloads. The row is small (4 columns) and
+     * either present or absent in a single batched query.
+     */
+    protected $with = ['isolatedUser'];
+
     protected $casts = [
         'server_id' => 'integer',
+        'isolated_user_id' => 'integer',
         'type_data' => 'json',
         'env_variables' => 'encrypted:array',
         'port' => 'integer',
@@ -228,6 +241,28 @@ class Site extends AbstractModel
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<IsolatedUser, covariant $this>
+     */
+    public function isolatedUser(): BelongsTo
+    {
+        return $this->belongsTo(IsolatedUser::class);
+    }
+
+    /**
+     * Legacy column wins to protect per-site keypairs whose on-disk file is
+     * still `~/.ssh/site_{id}`; iuser is the fallback for new isolated users.
+     */
+    public function getUserAttribute(?string $value): ?string
+    {
+        return ($value !== null && $value !== '') ? $value : $this->isolatedUser?->username;
+    }
+
+    public function getSshKeyAttribute(?string $value): ?string
+    {
+        return ($value !== null && $value !== '') ? $value : $this->isolatedUser?->ssh_key;
     }
 
     /**
@@ -469,7 +504,19 @@ class Site extends AbstractModel
 
     public function getSshKeyName(): string
     {
-        return str('site_'.$this->id)->toString();
+        // This site already has a legacy per-site key on disk — keep using it
+        // (its public key is bound to any registered Git provider deploy key).
+        if ($this->getRawOriginal('ssh_key')) {
+            return 'site_'.$this->id;
+        }
+
+        // Any other isolated site — whether the iuser already has a key or is
+        // a freshly-backfilled legacy iuser — uses the iuser-level key. New
+        // joins to a legacy iuser lazily generate `~/.ssh/iuser_{id}`, leaving
+        // existing siblings' per-site key files alone.
+        return $this->isolated_user_id
+            ? 'iuser_'.$this->isolated_user_id
+            : 'site_'.$this->id;
     }
 
     public function getEnv(): string
@@ -519,7 +566,16 @@ class Site extends AbstractModel
 
     public function isIsolated(): bool
     {
-        return $this->user != $this->server->getSshUser();
+        if ($this->isolated_user_id !== null) {
+            return true;
+        }
+
+        // Backcompat for one release: legacy sites and direct column writes
+        // are still considered isolated when the recorded `user` differs from
+        // the server's SSH user, even without an iuser row.
+        $column = $this->getRawOriginal('user');
+
+        return is_string($column) && $column !== '' && $column !== $this->server->getSshUser();
     }
 
     public function userSharedWithSiblings(): bool
@@ -528,13 +584,19 @@ class Site extends AbstractModel
     }
 
     /**
-     * Sites on the same server that share this site's isolated OS user.
+     * Sites that share this site's isolated user. Returns an empty query for
+     * non-isolated sites — callers using `->exists()` / `->get()` get expected
+     * behaviour without null-checking.
      *
-     * @return HasMany<Site, covariant Server>
+     * @return Builder<Site>
      */
-    public function siblingsSharingUser(bool $includeSelf = false): HasMany
+    public function siblingsSharingUser(bool $includeSelf = false): Builder
     {
-        $query = $this->server->sites()->where('user', $this->user);
+        if (! $this->isolated_user_id) {
+            return Site::query()->whereRaw('1 = 0');
+        }
+
+        $query = Site::query()->where('isolated_user_id', $this->isolated_user_id);
 
         if (! $includeSelf) {
             $query->where('id', '!=', $this->id);
@@ -545,45 +607,15 @@ class Site extends AbstractModel
 
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool
     {
-        return $this->server->sites()
-            ->where('user', $this->user)
+        if (! $this->isolated_user_id) {
+            return false;
+        }
+
+        return Site::query()
+            ->where('isolated_user_id', $this->isolated_user_id)
             ->where('php_version', $phpVersion ?? $this->php_version)
             ->where('id', '!=', $this->id)
             ->exists();
-    }
-
-    /**
-     * Returns the version of a mise-managed runtime (e.g. `node`, `bun`) that
-     * is already installed for the given isolated user on the given server, or
-     * `null` if no sibling site has it configured.
-     */
-    public static function existingRuntimeVersionForUser(Server $server, string $user, string $runtime, ?int $excludeSiteId = null): ?string
-    {
-        if ($user === '' || $runtime === '') {
-            return null;
-        }
-
-        $field = $runtime.'_version';
-
-        $query = $server->sites()
-            ->where('user', $user)
-            ->whereNotNull('type_data->'.$field)
-            ->where('type_data->'.$field, '!=', 'none')
-            ->where('type_data->'.$field, '!=', '');
-
-        if ($excludeSiteId !== null) {
-            $query->where('id', '!=', $excludeSiteId);
-        }
-
-        $sibling = $query->orderBy('id')->first();
-
-        if (! $sibling instanceof self) {
-            return null;
-        }
-
-        $version = $sibling->type_data[$field] ?? null;
-
-        return is_string($version) && $version !== '' ? $version : null;
     }
 
     public function webserver(): Webserver

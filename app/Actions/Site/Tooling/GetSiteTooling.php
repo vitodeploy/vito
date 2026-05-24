@@ -20,6 +20,7 @@ class GetSiteTooling
     public function get(Site $site): array
     {
         $site->refresh();
+        $site->loadMissing('isolatedUser');
 
         $siblings = $site->siblingsSharingUser()
             ->get(['id', 'domain', 'server_id'])

@@ -42,6 +42,7 @@ class SiteResource extends JsonResource
             'auto_deploy' => $this->isAutoDeployment(),
             'port' => $this->port,
             'user' => $this->user,
+            'isolated_user_id' => $this->isolated_user_id,
             'url' => $this->getUrl(),
             'force_ssl' => $this->force_ssl,
             'ssl_enabled' => $this->ssl_enabled,

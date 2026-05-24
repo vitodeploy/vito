@@ -40,7 +40,7 @@ class WorkerToolingTest extends TestCase
             'source_control_id' => $sourceControl->id,
             'type' => Laravel::id(),
             'status' => SiteStatus::READY,
-            'type_data' => ['node_version' => 'none', 'bun_version' => 'none'],
+            'type_data' => [],
         ]);
     }
 
@@ -60,7 +60,7 @@ class WorkerToolingTest extends TestCase
 
     public function test_effective_environment_includes_tooling_when_installed(): void
     {
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
@@ -79,7 +79,7 @@ class WorkerToolingTest extends TestCase
 
     public function test_effective_environment_overlays_tooling_over_user_supplied(): void
     {
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         $worker = Worker::factory()->withEnvironment(['CUSTOM' => 'value', 'PATH' => '/user/path'])->create([
             'server_id' => $this->server->id,
@@ -98,7 +98,7 @@ class WorkerToolingTest extends TestCase
 
     public function test_server_bound_worker_skips_tooling(): void
     {
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         $worker = Worker::factory()->withEnvironment(['CUSTOM' => 'value'])->create([
             'server_id' => $this->server->id,
@@ -130,7 +130,7 @@ class WorkerToolingTest extends TestCase
     {
         $fake = SSH::fake();
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         $worker = Worker::factory()->create([
             'server_id' => $this->server->id,
@@ -173,10 +173,10 @@ class WorkerToolingTest extends TestCase
             'source_control_id' => $sourceControl->id,
             'type' => Laravel::id(),
             'status' => SiteStatus::READY,
-            'type_data' => ['node_version' => '22'],
+            'type_data' => [],
         ]);
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         $siblingWorker = Worker::factory()->create([
             'server_id' => $this->server->id,
@@ -196,7 +196,7 @@ class WorkerToolingTest extends TestCase
     {
         $fake = SSH::fake();
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         Worker::factory()->create([
             'server_id' => $this->server->id,
@@ -216,7 +216,7 @@ class WorkerToolingTest extends TestCase
     {
         $fake = SSH::fake();
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         Worker::factory()->create([
             'server_id' => $this->server->id,
@@ -246,7 +246,7 @@ class WorkerToolingTest extends TestCase
             'type_data' => [],
         ]);
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
+        $this->isolatedSite->isolatedUser->setToolingVersion('node', '22');
 
         $lbWorker = Worker::factory()->create([
             'server_id' => $this->server->id,

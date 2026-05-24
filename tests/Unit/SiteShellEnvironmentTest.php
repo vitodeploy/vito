@@ -19,7 +19,7 @@ class SiteShellEnvironmentTest extends TestCase
             'user' => 'isolated-empty',
             'path' => '/home/isolated-empty/site.test',
             'type' => Laravel::id(),
-            'type_data' => ['node_version' => 'none', 'bun_version' => 'none'],
+            'type_data' => [],
         ]);
 
         $this->assertSame([], SiteShellEnvironment::collect($site));
@@ -32,10 +32,11 @@ class SiteShellEnvironmentTest extends TestCase
             'user' => 'isolated-node',
             'path' => '/home/isolated-node/site.test',
             'type' => Laravel::id(),
-            'type_data' => ['node_version' => '22'],
+            'type_data' => [],
         ]);
+        $site->isolatedUser->setToolingVersion('node', '22');
 
-        $env = SiteShellEnvironment::collect($site);
+        $env = SiteShellEnvironment::collect($site->refresh());
 
         $this->assertArrayHasKey('PATH', $env);
         $this->assertStringStartsWith('/home/isolated-node/.local/share/mise/shims:', $env['PATH']);
@@ -50,14 +51,13 @@ class SiteShellEnvironmentTest extends TestCase
             'user' => 'isolated-multi',
             'path' => '/home/isolated-multi/site.test',
             'type' => Laravel::id(),
-            'type_data' => [
-                'node_version' => '22',
-                'bun_version' => '1.2',
-                'pnpm_version' => '9',
-            ],
+            'type_data' => [],
         ]);
+        $site->isolatedUser->setToolingVersion('node', '22');
+        $site->isolatedUser->setToolingVersion('bun', '1.2');
+        $site->isolatedUser->setToolingVersion('pnpm', '9');
 
-        $env = SiteShellEnvironment::collect($site);
+        $env = SiteShellEnvironment::collect($site->refresh());
 
         $this->assertArrayHasKey('PATH', $env);
         $occurrences = substr_count($env['PATH'], '/home/isolated-multi/.local/share/mise/shims');
@@ -78,8 +78,10 @@ class SiteShellEnvironmentTest extends TestCase
             'user' => 'isolated-wrap',
             'path' => '/home/isolated-wrap/site.test',
             'type' => Laravel::id(),
-            'type_data' => ['node_version' => '22'],
+            'type_data' => [],
         ]);
+        $site->isolatedUser->setToolingVersion('node', '22');
+        $site->refresh();
 
         $withoutCd = SiteShellEnvironment::wrap($site, 'node -v');
         $this->assertStringStartsWith("bash -c '", $withoutCd);

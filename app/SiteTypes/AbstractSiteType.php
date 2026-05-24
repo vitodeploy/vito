@@ -155,9 +155,18 @@ abstract class AbstractSiteType implements SiteType
         $os = $this->site->server->os();
 
         if (! $this->site->ssh_key) {
-            $os->generateSSHKey($this->site->getSshKeyName(), $this->site);
-            $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName(), $this->site);
-            $this->site->save();
+            $keyName = $this->site->getSshKeyName();
+            $os->generateSSHKey($keyName, $this->site);
+            $publicKey = $os->readSSHKey($keyName, $this->site);
+
+            if (str_starts_with($keyName, 'iuser_') && $this->site->isolatedUser) {
+                $this->site->isolatedUser->ssh_key = $publicKey;
+                $this->site->isolatedUser->save();
+                $this->site->setRelation('isolatedUser', $this->site->isolatedUser->fresh());
+            } else {
+                $this->site->ssh_key = $publicKey;
+                $this->site->save();
+            }
         }
 
         if (empty($this->site->type_data['deploy_key_id'])) {
@@ -179,7 +188,7 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        $lock = $this->site->server->isolatedUserLock($this->site->user);
+        $lock = $this->site->isolatedUser?->lock() ?? $this->site->server->isolatedUserLock($this->site->user);
 
         try {
             $lock->block(30);
@@ -259,13 +268,16 @@ abstract class AbstractSiteType implements SiteType
 
     /**
      * Install every tool the site type offers at create time whose requested
-     * version (read from type_data) is non-empty and isn't already installed
-     * for the isolated user.
+     * version (passed through `type_data` at site creation) is non-empty and
+     * isn't already installed for the isolated user. On success, the iuser's
+     * `installed_tooling` is updated so siblings inherit the version.
      *
      * @throws SSHError
      */
     protected function setupRequestedTooling(): void
     {
+        $iuser = $this->site->isolatedUser;
+
         foreach (static::createTimeTools() as $toolId) {
             $tool = ToolingRegistry::find($toolId);
             if (! $tool) {
@@ -278,18 +290,20 @@ abstract class AbstractSiteType implements SiteType
                 continue;
             }
 
-            $existing = Site::existingRuntimeVersionForUser(
-                $this->site->server,
-                $this->site->user,
-                $toolId,
-                $this->site->id,
-            );
+            $existing = $iuser?->toolingVersion($toolId);
 
             if ($existing === $version) {
                 continue;
             }
 
             $tool->install($this->site, $version);
+
+            $iuser?->setToolingVersion($toolId, $version);
+
+            $typeData = $this->site->type_data ?? [];
+            unset($typeData[$key]);
+            $this->site->type_data = $typeData;
+            $this->site->save();
         }
     }
 }

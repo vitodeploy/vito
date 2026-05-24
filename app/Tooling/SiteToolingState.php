@@ -5,20 +5,16 @@ namespace App\Tooling;
 use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
 use App\Http\Resources\SiteResource;
+use App\Models\IsolatedUser;
 use App\Models\Site;
-use App\SiteTypes\AbstractSiteType;
-use Closure;
-use Illuminate\Support\Facades\DB;
 
 /**
- * Per-tool runtime state lives in `sites.type_data`:
- *   - `{tool}_version`: '22', '1.2', ..., or 'none'
- *   - `{tool}_status` : 'installing' | 'uninstalling' | 'install_failed' | 'uninstall_failed' | null
+ * Tooling state lives on `isolated_users.installed_tooling` as
+ * `{ <tool_id>: { version: '22'|'none', status: 'installing'|... |null } }`.
  *
- * `apply()` mutates every sibling site sharing the same isolated user (only
- * those whose site type returns `supportsTooling() === true`) inside a
- * transaction, then `broadcast()` emits a `site.updated` socket event for
- * each so live clients refresh.
+ * The static API stays `Site`-keyed so controllers / jobs need minimal change.
+ * Each mutation broadcasts a `site.updated` event for every site belonging to
+ * the iuser — the payload shape (a `SiteResource`) is unchanged.
  */
 final class SiteToolingState
 {
@@ -30,94 +26,52 @@ final class SiteToolingState
 
     public const STATUS_UNINSTALL_FAILED = 'uninstall_failed';
 
-    public static function statusKey(string $toolId): string
-    {
-        return $toolId.'_status';
-    }
-
     public static function currentStatus(Site $site, string $toolId): ?string
     {
-        $status = $site->type_data[self::statusKey($toolId)] ?? null;
-
-        return is_string($status) && $status !== '' ? $status : null;
+        return $site->isolatedUser?->toolingStatus($toolId);
     }
 
-    /**
-     * @param  Closure(Site): void  $mutate
-     * @return array<int, Site>
-     */
-    public static function apply(Site $origin, Closure $mutate): array
+    public static function setStatus(Site $site, string $toolId, ?string $status): void
     {
-        $affected = [];
+        $iuser = $site->isolatedUser;
+        if (! $iuser instanceof IsolatedUser) {
+            return;
+        }
 
-        DB::transaction(function () use ($origin, $mutate, &$affected): void {
-            $sites = $origin->siblingsSharingUser(includeSelf: true)->get();
+        $iuser->setToolingStatus($toolId, $status);
 
-            foreach ($sites as $site) {
-                $type = $site->type();
-                if (! $type instanceof AbstractSiteType || ! $type::supportsTooling()) {
-                    continue;
-                }
-
-                $mutate($site);
-                $affected[] = $site;
-            }
-        });
-
-        return $affected;
+        self::broadcast($iuser);
     }
 
-    /**
-     * @param  array<int, Site>  $sites
-     */
-    public static function broadcast(array $sites): void
+    public static function completeInstall(Site $site, string $toolId, string $version): void
     {
-        foreach ($sites as $site) {
-            $site->refresh();
+        $iuser = $site->isolatedUser;
+        if (! $iuser instanceof IsolatedUser) {
+            return;
+        }
 
+        $iuser->setToolingVersion($toolId, $version);
+        $iuser->setToolingStatus($toolId, null);
+
+        self::broadcast($iuser);
+    }
+
+    public static function completeUninstall(Site $site, string $toolId): void
+    {
+        self::completeInstall($site, $toolId, 'none');
+    }
+
+    private static function broadcast(IsolatedUser $iuser): void
+    {
+        $iuser->loadMissing('server');
+
+        foreach ($iuser->sites()->get() as $site) {
+            /** @var Site $site */
             SocketEvent::dispatch(new SocketEventDTO(
-                projectId: $site->server->project_id,
+                projectId: $iuser->server->project_id,
                 type: 'site.updated',
                 data: new SiteResource($site),
             ));
         }
-    }
-
-    /**
-     * Convenience: set `{tool}_status` (or clear it with null) across all siblings
-     * and broadcast.
-     */
-    public static function setStatus(Site $origin, string $toolId, ?string $status): void
-    {
-        $key = self::statusKey($toolId);
-        $affected = self::apply($origin, function (Site $site) use ($key, $status): void {
-            $site->jsonUpdate('type_data', $key, $status);
-        });
-
-        self::broadcast($affected);
-    }
-
-    /**
-     * Convenience: set version + clear status atomically per site, then broadcast.
-     */
-    public static function completeInstall(Site $origin, string $toolId, string $version): void
-    {
-        $versionKey = $toolId.'_version';
-        $statusKey = self::statusKey($toolId);
-
-        $affected = self::apply($origin, function (Site $site) use ($versionKey, $statusKey, $version): void {
-            $data = $site->type_data ?? [];
-            $data[$versionKey] = $version;
-            $data[$statusKey] = null;
-            $site->type_data = $data;
-            $site->save();
-        });
-
-        self::broadcast($affected);
-    }
-
-    public static function completeUninstall(Site $origin, string $toolId): void
-    {
-        self::completeInstall($origin, $toolId, 'none');
     }
 }

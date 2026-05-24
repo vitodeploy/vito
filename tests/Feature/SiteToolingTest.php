@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use App\Enums\SiteStatus;
 use App\Facades\SSH;
 use App\Jobs\Site\Tooling\InstallSiteToolingJob;
+use App\Models\IsolatedUser;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\User;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
 use App\SourceControlProviders\Github;
+use App\Tooling\SiteToolingState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
@@ -41,10 +43,7 @@ class SiteToolingTest extends TestCase
             'source_control_id' => $sourceControl->id,
             'type' => Laravel::id(),
             'status' => SiteStatus::READY,
-            'type_data' => [
-                'node_version' => 'none',
-                'bun_version' => 'none',
-            ],
+            'type_data' => [],
         ]);
 
         $this->sibling = Site::factory()->create([
@@ -55,11 +54,13 @@ class SiteToolingTest extends TestCase
             'source_control_id' => $sourceControl->id,
             'type' => Laravel::id(),
             'status' => SiteStatus::READY,
-            'type_data' => [
-                'node_version' => 'none',
-                'bun_version' => 'none',
-            ],
+            'type_data' => [],
         ]);
+    }
+
+    private function iuser(): IsolatedUser
+    {
+        return $this->isolatedSite->isolatedUser()->firstOrFail();
     }
 
     public function test_failed_site_is_forbidden(): void
@@ -120,11 +121,9 @@ class SiteToolingTest extends TestCase
 
         SSH::assertExecutedContains('mise use -g node@24');
 
-        $this->isolatedSite->refresh();
-        $this->sibling->refresh();
-
-        $this->assertSame('24', $this->isolatedSite->type_data['node_version']);
-        $this->assertSame('24', $this->sibling->type_data['node_version']);
+        $iuser = $this->iuser();
+        $this->assertSame('24', $iuser->toolingVersion('node'));
+        $this->assertSame('24', $this->sibling->refresh()->isolatedUser?->toolingVersion('node'));
     }
 
     public function test_install_pnpm_works_for_new_tool(): void
@@ -138,19 +137,15 @@ class SiteToolingTest extends TestCase
 
         SSH::assertExecutedContains('mise use -g pnpm@9');
 
-        $this->isolatedSite->refresh();
-        $this->sibling->refresh();
-
-        $this->assertSame('9', $this->isolatedSite->type_data['pnpm_version']);
-        $this->assertSame('9', $this->sibling->type_data['pnpm_version']);
+        $iuser = $this->iuser();
+        $this->assertSame('9', $iuser->toolingVersion('pnpm'));
     }
 
     public function test_uninstall_sets_version_to_none_across_siblings(): void
     {
         SSH::fake();
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
-        $this->sibling->jsonUpdate('type_data', 'node_version', '22');
+        $this->iuser()->setToolingVersion('node', '22');
 
         $this->actingAs($this->user);
 
@@ -160,11 +155,8 @@ class SiteToolingTest extends TestCase
         SSH::assertExecutedContains('mise unuse -g node');
         SSH::assertExecutedContains('mise uninstall node --all');
 
-        $this->isolatedSite->refresh();
-        $this->sibling->refresh();
-
-        $this->assertSame('none', $this->isolatedSite->type_data['node_version']);
-        $this->assertSame('none', $this->sibling->type_data['node_version']);
+        $iuser = $this->iuser();
+        $this->assertSame('none', $iuser->toolingVersion('node'));
     }
 
     public function test_install_validation_rejects_unsupported_version(): void
@@ -176,8 +168,7 @@ class SiteToolingTest extends TestCase
             'version' => '99',
         ])->assertSessionHasErrors('version');
 
-        $this->isolatedSite->refresh();
-        $this->assertSame('none', $this->isolatedSite->type_data['node_version']);
+        $this->assertNull($this->iuser()->toolingVersion('node'));
     }
 
     public function test_unknown_tool_returns_404(): void
@@ -210,8 +201,7 @@ class SiteToolingTest extends TestCase
     {
         SSH::fake();
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_version', '22');
-        $this->sibling->jsonUpdate('type_data', 'node_version', '22');
+        $this->iuser()->setToolingVersion('node', '22');
 
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
@@ -242,7 +232,7 @@ class SiteToolingTest extends TestCase
     {
         SSH::fake();
 
-        $loadBalancerSite = Site::factory()->create([
+        Site::factory()->create([
             'server_id' => $this->server->id,
             'domain' => 'lb.test',
             'user' => 'isolated-foo',
@@ -257,17 +247,14 @@ class SiteToolingTest extends TestCase
             'version' => '22',
         ])->assertRedirect();
 
-        $loadBalancerSite->refresh();
-
-        $this->assertArrayNotHasKey('node_version', $loadBalancerSite->type_data);
+        $this->assertSame('22', $this->iuser()->toolingVersion('node'));
     }
 
     public function test_installing_status_blocks_concurrent_install(): void
     {
         SSH::fake();
 
-        $this->isolatedSite->jsonUpdate('type_data', 'node_status', 'installing');
-        $this->sibling->jsonUpdate('type_data', 'node_status', 'installing');
+        $this->iuser()->setToolingStatus('node', SiteToolingState::STATUS_INSTALLING);
 
         $this->actingAs($this->user);
 
@@ -282,12 +269,8 @@ class SiteToolingTest extends TestCase
 
         $job->failed(new \RuntimeException('boom'));
 
-        $this->isolatedSite->refresh();
-        $this->sibling->refresh();
-
-        $this->assertSame('install_failed', $this->isolatedSite->type_data['node_status']);
-        $this->assertSame('install_failed', $this->sibling->type_data['node_status']);
-        $this->assertSame('none', $this->isolatedSite->type_data['node_version']);
+        $iuser = $this->iuser();
+        $this->assertSame('install_failed', $iuser->toolingStatus('node'));
     }
 
     public function test_successful_install_clears_status(): void
@@ -299,12 +282,9 @@ class SiteToolingTest extends TestCase
             'version' => '22',
         ])->assertRedirect();
 
-        $this->isolatedSite->refresh();
-        $this->sibling->refresh();
-
-        $this->assertNull($this->isolatedSite->type_data['node_status']);
-        $this->assertNull($this->sibling->type_data['node_status']);
-        $this->assertSame('22', $this->isolatedSite->type_data['node_version']);
+        $iuser = $this->iuser();
+        $this->assertNull($iuser->toolingStatus('node'));
+        $this->assertSame('22', $iuser->toolingVersion('node'));
     }
 
     public function test_other_user_sites_are_not_touched(): void
@@ -317,7 +297,7 @@ class SiteToolingTest extends TestCase
             'user' => 'isolated-bar',
             'path' => '/home/isolated-bar/other-user.test',
             'type' => Laravel::id(),
-            'type_data' => ['node_version' => 'none', 'bun_version' => 'none'],
+            'type_data' => [],
         ]);
 
         $this->actingAs($this->user);
@@ -327,6 +307,6 @@ class SiteToolingTest extends TestCase
         ])->assertRedirect();
 
         $otherUserSite->refresh();
-        $this->assertSame('none', $otherUserSite->type_data['node_version']);
+        $this->assertNull($otherUserSite->isolatedUser?->toolingVersion('node'));
     }
 }

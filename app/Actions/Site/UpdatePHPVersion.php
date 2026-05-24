@@ -39,7 +39,7 @@ class UpdatePHPVersion
         }
 
         if ($site->isIsolated()) {
-            $lock = $site->server->isolatedUserLock($site->user);
+            $lock = $site->isolatedUser?->lock() ?? $site->server->isolatedUserLock($site->user);
 
             try {
                 $lock->block(30);

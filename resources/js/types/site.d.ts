@@ -28,6 +28,7 @@ export interface Site {
   auto_deploy: boolean;
   port: number;
   user: string;
+  isolated_user_id: number | null;
   url: string;
   force_ssl: boolean;
   ssl_enabled: boolean;

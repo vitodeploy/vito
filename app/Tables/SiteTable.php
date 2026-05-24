@@ -28,7 +28,7 @@ class SiteTable extends Table
     protected function query(): void
     {
         $this->perPage = config('web.pagination_size');
-        $this->query->with(['server', 'hostedDomains.ssl'])->latest();
+        $this->query->with(['server', 'isolatedUser', 'hostedDomains.ssl'])->latest();
     }
 
     protected function columns(): array

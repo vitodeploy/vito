@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\IsolatedUser;
 use App\Models\Site;
 use App\SiteTypes\Laravel;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,5 +28,31 @@ class SiteFactory extends Factory
             'branch' => 'main',
             'user' => 'vito',
         ];
+    }
+
+    /**
+     * Mirror the production CreateSite flow: any site whose `user` differs
+     * from its server's SSH user is wired up to an isolated user row so
+     * `Site::isIsolated()` and accessors behave the same in tests as in prod.
+     */
+    public function configure(): self
+    {
+        return $this->afterCreating(function (Site $site): void {
+            if ($site->isolated_user_id !== null) {
+                return;
+            }
+
+            $rawUser = $site->getRawOriginal('user');
+            if (! is_string($rawUser) || $rawUser === '' || $rawUser === $site->server->getSshUser()) {
+                return;
+            }
+
+            $iuser = IsolatedUser::query()->firstOrCreate(
+                ['server_id' => $site->server_id, 'username' => $rawUser],
+            );
+
+            $site->isolated_user_id = $iuser->id;
+            $site->saveQuietly();
+        });
     }
 }

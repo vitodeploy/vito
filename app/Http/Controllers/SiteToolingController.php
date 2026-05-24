@@ -62,7 +62,7 @@ class SiteToolingController extends Controller
      */
     private function ensureReadyAndIsolated(Server $server, Site $site): void
     {
-        if (! $site->isReady() || $site->user === $server->getSshUser()) {
+        if (! $site->isReady() || ! $site->isIsolated()) {
             throw new AuthorizationException;
         }
     }

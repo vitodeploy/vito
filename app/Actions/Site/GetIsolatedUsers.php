@@ -2,9 +2,9 @@
 
 namespace App\Actions\Site;
 
+use App\Models\IsolatedUser;
 use App\Models\Server;
 use App\Tooling\ToolingRegistry;
-use Illuminate\Support\Collection;
 
 class GetIsolatedUsers
 {
@@ -15,36 +15,24 @@ class GetIsolatedUsers
     {
         $toolIds = ToolingRegistry::ids();
 
-        return $server->sites()
-            ->where('user', '!=', $server->getSshUser())
-            ->get(['user', 'type_data'])
-            ->groupBy('user')
-            ->map(function (Collection $sites, string $user) use ($toolIds): array {
+        return $server->isolatedUsers()
+            ->withCount('sites')
+            ->orderBy('username')
+            ->get()
+            ->map(function (IsolatedUser $iuser) use ($toolIds): array {
                 $versions = [];
                 foreach ($toolIds as $toolId) {
-                    $versions[$toolId] = $this->firstVersion($sites, $toolId.'_version');
+                    $version = $iuser->toolingVersion($toolId);
+                    $versions[$toolId] = $version === 'none' ? null : $version;
                 }
 
                 return [
-                    'user' => $user,
-                    'sites_count' => $sites->count(),
+                    'user' => $iuser->username,
+                    'sites_count' => (int) $iuser->sites_count,
                     'runtime_versions' => $versions,
                 ];
             })
             ->values()
             ->all();
-    }
-
-    private function firstVersion(Collection $sites, string $key): ?string
-    {
-        foreach ($sites as $site) {
-            $candidate = $site->type_data[$key] ?? null;
-
-            if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
-                return $candidate;
-            }
-        }
-
-        return null;
     }
 }

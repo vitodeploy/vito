@@ -5,11 +5,10 @@ namespace App\Tooling;
 use App\Models\Site;
 
 /**
- * Base for all Tooling implementations. Provides defaults for
- * the type_data key + supported-versions helpers and reads installed
- * version straight out of `Site.type_data`. Install/uninstall are
- * left abstract because they're backend-specific (e.g. Mise vs
- * something else in the future).
+ * Base for all Tooling implementations. Provides defaults for the type_data
+ * key + supported-versions helpers and reads installed version straight off
+ * the site's isolated user. Install/uninstall are left abstract because
+ * they're backend-specific (e.g. Mise vs something else in the future).
  */
 abstract class AbstractTooling implements ToolingInterface
 {
@@ -28,11 +27,9 @@ abstract class AbstractTooling implements ToolingInterface
 
     public function installedVersion(Site $site): ?string
     {
-        if ($site->user === '') {
-            return null;
-        }
+        $version = $site->isolatedUser?->toolingVersion(static::id());
 
-        return Site::existingRuntimeVersionForUser($site->server, $site->user, static::id());
+        return $version === 'none' ? null : $version;
     }
 
     public function pathContributions(Site $site): array

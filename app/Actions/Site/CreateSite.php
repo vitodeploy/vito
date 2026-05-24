@@ -9,6 +9,7 @@ use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Jobs\Site\CreateJob;
+use App\Models\IsolatedUser;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
@@ -40,8 +41,16 @@ class CreateSite
         DB::beginTransaction();
         try {
             $user = $input['user'];
+
+            $isolatedUser = $user !== $server->getSshUser()
+                ? IsolatedUser::query()->firstOrCreate(
+                    ['server_id' => $server->id, 'username' => $user],
+                )
+                : null;
+
             $site = new Site([
                 'server_id' => $server->id,
+                'isolated_user_id' => $isolatedUser?->id,
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'user' => $user,
@@ -185,9 +194,18 @@ class CreateSite
             return $input;
         }
 
+        $iuser = IsolatedUser::query()
+            ->where('server_id', $server->id)
+            ->where('username', $user)
+            ->first();
+
+        if (! $iuser instanceof IsolatedUser) {
+            return $input;
+        }
+
         foreach (ToolingRegistry::all() as $id => $tool) {
             $allowed = $tool::supportedVersionsWithNone();
-            $existing = Site::existingRuntimeVersionForUser($server, $user, $id);
+            $existing = $iuser->toolingVersion($id);
 
             if ($existing === null || ! in_array($existing, $allowed, true) || $existing === 'none') {
                 continue;
