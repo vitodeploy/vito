@@ -10,19 +10,10 @@ use App\Services\HasLogs;
 class GetServiceLogs
 {
     /**
-     * @var array<int, array<int, ServiceLog>>
-     */
-    private array $cache = [];
-
-    /**
      * @return array<int, ServiceLog>
      */
     public function handle(Server $server): array
     {
-        if (isset($this->cache[$server->id])) {
-            return $this->cache[$server->id];
-        }
-
         $logs = [];
 
         $server->loadMissing('sites');
@@ -50,7 +41,7 @@ class GetServiceLogs
             target: 'ssh.service',
         );
 
-        return $this->cache[$server->id] = $logs;
+        return $logs;
     }
 
     public function resolve(Server $server, string $key): ?ServiceLog

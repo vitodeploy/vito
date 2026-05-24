@@ -5,6 +5,7 @@ namespace App\Models;
 use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
 use App\Http\Resources\ServerLogResource;
+use App\SSH\OS\OS;
 use Database\Factories\ServerLogFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -169,7 +170,9 @@ class ServerLog extends AbstractModel
     public function getContent(?int $lines = null): ?string
     {
         if ($this->is_remote) {
-            return $this->server->os()->tail($this->name, $lines ?? 150);
+            $content = $this->server->os()->tail($this->name, $lines ?? 150);
+
+            return trim($content) === OS::FILE_NOT_FOUND ? "Log file doesn't exist or is empty!" : $content;
         }
 
         if (Storage::disk($this->disk)->exists($this->name)) {

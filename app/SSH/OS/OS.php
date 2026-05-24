@@ -9,6 +9,8 @@ use App\Models\Site;
 
 class OS
 {
+    public const FILE_NOT_FOUND = 'VITO_NO_FILE';
+
     public function __construct(protected Server $server) {}
 
     /**

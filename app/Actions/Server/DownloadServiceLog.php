@@ -4,6 +4,7 @@ namespace App\Actions\Server;
 
 use App\DTOs\ServiceLog;
 use App\Models\Server;
+use App\SSH\OS\OS;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -44,10 +45,15 @@ class DownloadServiceLog
                     'path' => $remoteTmp,
                 ]));
             } else {
-                $server->ssh()->exec(view('ssh.os.copy-as-user', [
+                $output = $server->ssh()->exec(view('ssh.os.copy-as-user', [
                     'source' => $log->target,
                     'dest' => $remoteTmp,
                 ]));
+                abort_if(
+                    trim($output) === OS::FILE_NOT_FOUND,
+                    404,
+                    'The log file does not exist on the server.'
+                );
             }
             $server->ssh()->download($tmpPath, $remoteTmp);
         } finally {

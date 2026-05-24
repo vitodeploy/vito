@@ -131,7 +131,19 @@ export default function ServiceLogs() {
       URL.revokeObjectURL(url);
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        const msg = err.response?.data?.message || err.message;
+        let msg = err.message;
+        const data = err.response?.data;
+        if (data instanceof Blob) {
+          const text = await data.text();
+          try {
+            const parsed = JSON.parse(text);
+            msg = parsed.message || parsed.error || msg;
+          } catch {
+            msg = text || msg;
+          }
+        } else if (data?.message || data?.error) {
+          msg = data.message || data.error;
+        }
         setError(msg || 'Download failed');
       } else {
         setError('Download failed');

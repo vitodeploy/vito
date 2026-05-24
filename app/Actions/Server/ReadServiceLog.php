@@ -5,6 +5,7 @@ namespace App\Actions\Server;
 use App\DTOs\ServiceLog;
 use App\Exceptions\SSHError;
 use App\Models\Server;
+use App\SSH\OS\OS;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -47,6 +48,12 @@ class ReadServiceLog
         } else {
             $content = $server->os()->tail($log->target, $lines);
         }
+
+        abort_if(
+            $log->source === ServiceLog::SOURCE_FILE && trim($content) === OS::FILE_NOT_FOUND,
+            404,
+            'The log file does not exist on the server.'
+        );
 
         return [
             'content' => $content,

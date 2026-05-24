@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Actions\Server\GetServiceLogs;
 use App\Events\SocketEvent;
 use App\Helpers\FTP;
 use App\Helpers\Notifier;
@@ -21,10 +20,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-        $this->app->scoped(GetServiceLogs::class);
-    }
+    public function register(): void {}
 
     public function boot(): void
     {

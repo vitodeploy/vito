@@ -86,6 +86,18 @@ class ServiceLogsTest extends TestCase
         SSH::assertExecutedContains('/var/log/nginx/error.log');
     }
 
+    public function test_read_returns_404_when_file_missing(): void
+    {
+        $this->actingAs($this->user);
+        SSH::fake('VITO_NO_FILE');
+
+        $this->postJson(route('logs.services.read', $this->server), [
+            'key' => 'nginx:error',
+        ])
+            ->assertNotFound()
+            ->assertJson(['message' => 'The log file does not exist on the server.']);
+    }
+
     public function test_read_journal_source_uses_journalctl(): void
     {
         $this->actingAs($this->user);
@@ -201,6 +213,16 @@ class ServiceLogsTest extends TestCase
             Str::createRandomStringsNormally();
             Carbon::setTestNow();
         }
+    }
+
+    public function test_download_returns_404_when_file_missing(): void
+    {
+        $this->actingAs($this->user);
+        SSH::fake('VITO_NO_FILE');
+
+        $this->getJson(route('logs.services.download', ['server' => $this->server, 'key' => 'nginx:error']))
+            ->assertNotFound()
+            ->assertJson(['message' => 'The log file does not exist on the server.']);
     }
 
     public function test_unknown_key_on_download_returns_404(): void

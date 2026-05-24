@@ -78,7 +78,7 @@ class ServerLogController extends Controller
     #[Get('/services', name: 'logs.services')]
     public function services(Server $server): Response
     {
-        $this->authorize('viewServiceLogs', [ServerLog::class, $server]);
+        $this->authorize('viewAny', [ServerLog::class, $server]);
 
         $catalogue = array_map(
             fn (ServiceLog $log): array => [
@@ -100,7 +100,7 @@ class ServerLogController extends Controller
     #[Post('/services/read', name: 'logs.services.read')]
     public function readServiceLog(Request $request, Server $server): JsonResponse
     {
-        $this->authorize('viewServiceLogs', [ServerLog::class, $server]);
+        $this->authorize('viewAny', [ServerLog::class, $server]);
 
         return response()->json(
             app(ReadServiceLog::class)->run($server, $request->only('key', 'lines', 'search')),
@@ -110,7 +110,7 @@ class ServerLogController extends Controller
     #[Get('/services/download', name: 'logs.services.download')]
     public function downloadServiceLog(Request $request, Server $server): StreamedResponse
     {
-        $this->authorize('viewServiceLogs', [ServerLog::class, $server]);
+        $this->authorize('viewAny', [ServerLog::class, $server]);
 
         return app(DownloadServiceLog::class)->run($server, $request->only('key'));
     }
@@ -118,7 +118,7 @@ class ServerLogController extends Controller
     #[Post('/services/clear', name: 'logs.services.clear')]
     public function clearServiceLog(Request $request, Server $server): RedirectResponse
     {
-        $this->authorize('manageServiceLogs', [ServerLog::class, $server]);
+        $this->authorize('deleteMany', [ServerLog::class, $server]);
 
         app(ClearServiceLog::class)->run($server, $request->only('key'));
 

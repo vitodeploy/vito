@@ -48,14 +48,4 @@ class ServerLogPolicy
     {
         return $this->hasWriteAccess($user, $server->project);
     }
-
-    public function viewServiceLogs(User $user, Server $server): bool
-    {
-        return $this->hasReadAccess($user, $server->project);
-    }
-
-    public function manageServiceLogs(User $user, Server $server): bool
-    {
-        return $this->hasWriteAccess($user, $server->project);
-    }
 }
