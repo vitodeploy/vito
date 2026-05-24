@@ -142,7 +142,7 @@ class BunSiteTest extends TestCase
         $this->assertArrayHasKey('branch', $rules);
         $this->assertArrayHasKey('port', $rules);
         $this->assertArrayNotHasKey('build_command', $rules);
-        $this->assertArrayNotHasKey('start_command', $rules);
+        $this->assertArrayHasKey('start_command', $rules);
         $this->assertArrayNotHasKey('package_manager', $rules);
     }
 

@@ -62,8 +62,8 @@ return new class extends Migration
             ->groupBy(fn ($site): string => $site->server_id.':'.$site->user)
             ->each(function ($sites) use ($serverSshUsers, $defaultSshUser, $now): void {
                 $first = $sites->first();
-                $rawSshUser = $serverSshUsers[$first->server_id] ?? '';
-                $serverSshUser = $rawSshUser !== '' ? $rawSshUser : $defaultSshUser;
+                $rawSshUser = $serverSshUsers[$first->server_id] ?? null;
+                $serverSshUser = $rawSshUser ?: $defaultSshUser;
 
                 if ($first->user === $serverSshUser) {
                     return;

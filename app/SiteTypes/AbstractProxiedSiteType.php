@@ -39,6 +39,7 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
             'repository' => ['required'],
             'branch' => ['required'],
             'port' => ['required', 'integer', 'between:1024,65535'],
+            'start_command' => ['nullable', 'string', 'max:255', 'not_regex:/[\r\n]/'],
         ];
     }
 

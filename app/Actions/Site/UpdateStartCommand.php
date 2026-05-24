@@ -4,7 +4,7 @@ namespace App\Actions\Site;
 
 use App\Exceptions\SSHError;
 use App\Models\Site;
-use App\Services\ProcessManager\Supervisor;
+use App\Services\ProcessManager\ProcessManager;
 use App\SiteTypes\AbstractProxiedSiteType;
 use Illuminate\Support\Facades\Validator;
 
@@ -33,9 +33,9 @@ class UpdateStartCommand
         $worker->command = $validated['start_command'];
         $worker->save();
 
-        /** @var Supervisor $supervisor */
-        $supervisor = $site->server->processManager()->handler();
-        $supervisor->writeConfig($worker);
+        /** @var ProcessManager $processManager */
+        $processManager = $site->server->processManager()->handler();
+        $processManager->writeConfig($worker);
 
         return WorkerStartCommandUpdateResult::PendingRestart;
     }

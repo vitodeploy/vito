@@ -106,7 +106,7 @@ export default function AppWithDeployment() {
                   <DeploymentScript
                     site={site}
                     script={page.props.preFlightScript}
-                    description="This script will be executed before releaase like migrations and optimizations"
+                    description="This script will be executed before release like migrations and optimizations"
                   >
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Pre Flight Script</DropdownMenuItem>
                   </DeploymentScript>
