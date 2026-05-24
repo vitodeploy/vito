@@ -168,5 +168,4 @@ class VerifyHostedDomainTest extends TestCase
         $this->assertFalse($result->verified);
         $this->assertStringContainsString('HTTP', $result->failureReason);
     }
-
 }

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Webserver;
 
+use App\Actions\Webserver\GenerateNginxConfig;
+use App\Enums\ServiceStatus;
 use App\Models\HostedDomain;
 use App\Models\Service;
 use App\Services\Webserver\Caddy;
@@ -41,7 +43,7 @@ class VerificationBlockTest extends TestCase
         $this->site->vhost_generation_enabled = false;
         $this->site->save();
 
-        $vhost = app(\App\Actions\Webserver\GenerateNginxConfig::class)->generate($this->site);
+        $vhost = app(GenerateNginxConfig::class)->generate($this->site);
 
         $this->assertStringNotContainsString('/.well-known/vito/', $vhost);
     }
@@ -67,7 +69,7 @@ class VerificationBlockTest extends TestCase
             'version' => 'latest',
         ]);
         $this->server->services()->update([
-            'status' => \App\Enums\ServiceStatus::READY,
+            'status' => ServiceStatus::READY,
         ]);
         $this->server->refresh();
 
