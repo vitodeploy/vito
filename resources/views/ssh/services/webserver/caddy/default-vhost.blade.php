@@ -1,9 +1,7 @@
-:80, :443 {
+:80 {
     import access_log default
     import compression
     import security_headers
-
-    tls internal
 
     root * /var/www/vito-splash
     file_server
