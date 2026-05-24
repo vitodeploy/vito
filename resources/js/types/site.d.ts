@@ -35,6 +35,7 @@ export interface Site {
   progress_step: string | null;
   last_error: string | null;
   vhost_generation_enabled: boolean;
+  has_custom_vhost_template: boolean;
   features: SiteFeature[];
   modern_deployment: boolean;
   basic_auth: {

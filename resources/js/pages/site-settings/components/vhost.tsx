@@ -1,5 +1,5 @@
 import React, { FormEvent, ReactNode, useEffect, useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Editor, useMonaco } from '@monaco-editor/react';
@@ -47,15 +47,20 @@ export default function VHost({ site, children }: { site: Site; children: ReactN
 
   const resetTemplate = () => {
     setResetting(true);
-    axios
-      .post(route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id }))
-      .then(() => {
-        setShowResetDialog(false);
-        query.refetch();
-      })
-      .finally(() => {
-        setResetting(false);
-      });
+    router.post(
+      route('site-settings.reset-vhost-template', { server: site.server_id, site: site.id }),
+      {},
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          setShowResetDialog(false);
+          handleOpenChange(false);
+        },
+        onFinish: () => {
+          setResetting(false);
+        },
+      },
+    );
   };
 
   const previewTemplate = () => {

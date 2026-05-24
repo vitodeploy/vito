@@ -166,7 +166,7 @@ class VerifyHostedDomainTest extends TestCase
         $result = app(VerifyHostedDomain::class)->verify($domain);
 
         $this->assertFalse($result->verified);
-        $this->assertStringContainsString('DNS', $result->failureReason);
+        $this->assertStringContainsString('HTTP', $result->failureReason);
     }
 
 }

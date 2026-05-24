@@ -62,7 +62,7 @@ class VerifyHostedDomain
             $ips = $this->resolveIps($hostedDomain->domain);
 
             if ($ips === []) {
-                return VerificationResult::failure('Domain did not resolve via DNS-over-HTTPS.');
+                return VerificationResult::failure('Domain could not be reached via HTTP.');
             }
 
             $matched = false;

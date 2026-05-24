@@ -20,8 +20,6 @@ export function useSslMatching({ serverId, siteId, domain, sslId, applySslSettin
   const lastFetchedDomain = useRef(originalDomain ?? '');
   const applySslSettingsRef = useRef(applySslSettings);
   applySslSettingsRef.current = applySslSettings;
-  const domainRef = useRef(domain);
-  domainRef.current = domain;
 
   const sslStale = domain !== lastFetchedDomain.current;
 
@@ -30,44 +28,46 @@ export function useSslMatching({ serverId, siteId, domain, sslId, applySslSettin
       return;
     }
 
-    const domainToFetch = domainRef.current;
-    if (!domainToFetch) {
+    if (!domain) {
       setMatchingSsls([]);
-      lastFetchedDomain.current = domainToFetch;
+      lastFetchedDomain.current = domain;
       return;
     }
 
     const controller = new AbortController();
-    setLoadingSsls(true);
-    axios
-      .get(route('hosted-domains.matching-ssls', { server: serverId, site: siteId, domain: domainToFetch }), { signal: controller.signal })
-      .then((response) => {
-        const { certificates, best_match_id } = response.data;
-        setMatchingSsls(certificates);
-        lastFetchedDomain.current = domainToFetch;
-        if (originalDomain && domainToFetch === originalDomain) {
-          return;
-        }
-        if (best_match_id) {
-          applySslSettingsRef.current({ ssl_method: 'custom', ssl_id: String(best_match_id) });
-        } else {
-          applySslSettingsRef.current({ ssl_method: 'letsencrypt', ssl_id: '' });
-        }
-      })
-      .catch((error) => {
-        if (!axios.isCancel(error)) {
-          setMatchingSsls([]);
-          lastFetchedDomain.current = domainToFetch;
-        }
-      })
-      .finally(() => {
-        setLoadingSsls(false);
-      });
+    const timeoutId = setTimeout(() => {
+      setLoadingSsls(true);
+      axios
+        .get(route('hosted-domains.matching-ssls', { server: serverId, site: siteId, domain }), { signal: controller.signal })
+        .then((response) => {
+          const { certificates, best_match_id } = response.data;
+          setMatchingSsls(certificates);
+          lastFetchedDomain.current = domain;
+          if (originalDomain && domain === originalDomain) {
+            return;
+          }
+          if (best_match_id) {
+            applySslSettingsRef.current({ ssl_method: 'custom', ssl_id: String(best_match_id) });
+          } else {
+            applySslSettingsRef.current({ ssl_method: 'letsencrypt', ssl_id: '' });
+          }
+        })
+        .catch((error) => {
+          if (!axios.isCancel(error)) {
+            setMatchingSsls([]);
+            lastFetchedDomain.current = domain;
+          }
+        })
+        .finally(() => {
+          setLoadingSsls(false);
+        });
+    }, 500);
 
     return () => {
+      clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [open, serverId, siteId, originalDomain]);
+  }, [domain, open, serverId, siteId, originalDomain]);
 
   const handleSslMethodChange = (value: string) => {
     applySslSettings({ ssl_method: value, ssl_id: value !== 'custom' ? '' : sslId });

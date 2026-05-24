@@ -54,6 +54,7 @@ class SiteResource extends JsonResource
             'webserver_allowed_ssl_methods' => $this->webserver()->allowedSslMethods(),
             'webserver_default_ssl_method' => $this->webserver()->defaultSslMethod()->value,
             'vhost_generation_enabled' => $this->vhost_generation_enabled,
+            'has_custom_vhost_template' => $this->vhost_template !== null,
             'modern_deployment' => $this->modernDeploymentEnabled(),
             'warnings' => $this->getWarnings(),
             'created_at' => $this->created_at,

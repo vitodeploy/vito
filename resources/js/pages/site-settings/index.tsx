@@ -6,7 +6,8 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import ServerLayout from '@/layouts/server/layout';
 import SiteBanners from '@/components/site-banners';
-import { BookOpenIcon } from 'lucide-react';
+import { BookOpenIcon, TriangleAlertIcon } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import DateTime from '@/components/date-time';
@@ -116,7 +117,19 @@ export default function Databases() {
             </div>
             <Separator />
             <div className="flex items-center justify-between p-4">
-              <span>VHost Template</span>
+              <div className="flex items-center gap-2">
+                <span>VHost Template</span>
+                {page.props.site.has_custom_vhost_template && (
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TriangleAlertIcon className="text-destructive h-4 w-4" />
+                      </TooltipTrigger>
+                      <TooltipContent>You are using a custom vhost template</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
               <VHost site={page.props.site}>
                 <Button variant="outline" className="h-6">
                   Edit Template
