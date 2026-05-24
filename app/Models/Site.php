@@ -11,6 +11,7 @@ use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\SiteType;
+use App\SourceControlProviders\GithubApp;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,6 +41,8 @@ use RuntimeException;
  * @property SiteStatus $status
  * @property int $port
  * @property int $progress
+ * @property ?string $progress_step
+ * @property ?string $last_error
  * @property string $user
  * @property bool $force_ssl
  * @property bool $ssl_enabled
@@ -412,7 +415,7 @@ class Site extends AbstractModel
      */
     public function environmentVariables(?Deployment $deployment = null): array
     {
-        return [
+        $variables = [
             'SITE_PATH' => $this->path,
             'DOMAIN' => $this->domain,
             'BRANCH' => $this->branch ?? '',
@@ -421,6 +424,14 @@ class Site extends AbstractModel
             'PHP_VERSION' => $this->php_version,
             'PHP_PATH' => '/usr/bin/php'.$this->php_version,
         ];
+
+        if ($this->sourceControl?->isGithubApp()) {
+            /** @var GithubApp $provider */
+            $provider = $this->sourceControl->provider();
+            $variables['GIT_HTTP_TOKEN'] = $provider->installationAccessToken();
+        }
+
+        return $variables;
     }
 
     /**
@@ -453,6 +464,40 @@ class Site extends AbstractModel
             ->where('php_version', $phpVersion ?? $this->php_version)
             ->where('id', '!=', $this->id)
             ->exists();
+    }
+
+    /**
+     * Returns the version of a mise-managed runtime (e.g. `node`, `bun`) that
+     * is already installed for the given isolated user on the given server, or
+     * `null` if no sibling site has it configured.
+     */
+    public static function existingRuntimeVersionForUser(Server $server, string $user, string $runtime, ?int $excludeSiteId = null): ?string
+    {
+        if ($user === '' || $runtime === '') {
+            return null;
+        }
+
+        $field = $runtime.'_version';
+
+        $query = $server->sites()
+            ->where('user', $user)
+            ->whereNotNull('type_data->'.$field)
+            ->where('type_data->'.$field, '!=', 'none')
+            ->where('type_data->'.$field, '!=', '');
+
+        if ($excludeSiteId !== null) {
+            $query->where('id', '!=', $excludeSiteId);
+        }
+
+        $sibling = $query->orderBy('id')->first();
+
+        if (! $sibling instanceof self) {
+            return null;
+        }
+
+        $version = $sibling->type_data[$field] ?? null;
+
+        return is_string($version) && $version !== '' ? $version : null;
     }
 
     public function webserver(): Webserver

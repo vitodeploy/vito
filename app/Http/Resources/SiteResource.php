@@ -47,6 +47,8 @@ class SiteResource extends JsonResource
             'force_ssl' => $this->force_ssl,
             'ssl_enabled' => $this->ssl_enabled,
             'progress' => $this->progress,
+            'progress_step' => $this->progress_step,
+            'last_error' => $this->last_error,
             'features' => $this->features(),
             'can_configure_ssl' => $this->webserver()->canConfigureSSL(),
             'webserver_allowed_ssl_methods' => $this->webserver()->allowedSslMethods(),

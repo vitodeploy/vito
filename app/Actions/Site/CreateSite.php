@@ -13,6 +13,7 @@ use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\Webserver\Webserver;
+use App\SiteTypes\PHPSite;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,8 @@ use Throwable;
 
 class CreateSite
 {
+    private const ISOLATED_USER_PATTERN = '/^[a-z_][a-z0-9_-]*[a-z0-9]$/';
+
     /**
      * @param  array<string, mixed>  $input
      *
@@ -30,6 +33,8 @@ class CreateSite
      */
     public function create(Server $server, array $input): Site
     {
+        $input = $this->lockRuntimeVersionsToExistingUser($server, $input);
+
         $this->validate($server, $input);
 
         DB::beginTransaction();
@@ -109,8 +114,7 @@ class CreateSite
 
             DB::commit();
 
-            // install site; CheckDomainJob is dispatched from CreateJob after install succeeds
-            dispatch(new CreateJob($site))->onQueue('ssh');
+            dispatch(new CreateJob($site));
 
             return $site;
         } catch (Exception $e) {
@@ -138,7 +142,7 @@ class CreateSite
             ],
             'user' => [
                 'required',
-                'regex:/^[a-z_][a-z0-9_-]*[a-z0-9]$/',
+                'regex:'.self::ISOLATED_USER_PATTERN,
                 'min:3',
                 'max:32',
                 Rule::notIn(array_unique(array_merge(
@@ -167,5 +171,44 @@ class CreateSite
         );
 
         return $site->type()->createRules($input);
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    private function lockRuntimeVersionsToExistingUser(Server $server, array $input): array
+    {
+        $user = isset($input['user']) && is_string($input['user']) ? $input['user'] : '';
+
+        if ($user === '' || preg_match(self::ISOLATED_USER_PATTERN, $user) !== 1) {
+            return $input;
+        }
+
+        $runtimes = [
+            'node' => ['label' => 'Node.js', 'allowed' => PHPSite::nodeVersionsWithNone()],
+            'bun' => ['label' => 'Bun', 'allowed' => PHPSite::bunVersionsWithNone()],
+        ];
+
+        foreach ($runtimes as $runtime => $meta) {
+            $existing = Site::existingRuntimeVersionForUser($server, $user, $runtime);
+
+            if ($existing === null || ! in_array($existing, $meta['allowed'], true) || $existing === 'none') {
+                continue;
+            }
+
+            $field = $runtime.'_version';
+            $submitted = $input[$field] ?? null;
+
+            if (is_string($submitted) && $submitted !== '' && $submitted !== $existing) {
+                throw ValidationException::withMessages([
+                    $field => "Isolated user '{$user}' already has {$meta['label']} {$existing} installed; this cannot be changed.",
+                ]);
+            }
+
+            $input[$field] = $existing;
+        }
+
+        return $input;
     }
 }

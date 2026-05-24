@@ -15,6 +15,8 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
+
+type SourceControlFieldValue = string | number | boolean | string[] | null | undefined;
 import { LoaderCircleIcon, MoreVerticalIcon } from 'lucide-react';
 import FormSuccessful from '@/components/form-successful';
 import { FormEvent, useMemo, useState } from 'react';
@@ -37,10 +39,10 @@ function EditForm({ sourceControl, onSuccess }: { sourceControl: SourceControl; 
     return (providerConfig?.form ?? []).filter((f) => editableFields.includes(f.name));
   }, [providerConfig]);
 
-  const form = useForm<Record<string, unknown>>({
+  const form = useForm<Record<string, SourceControlFieldValue>>({
     name: sourceControl.name,
     global: sourceControl.global,
-    ...Object.fromEntries(editableFormFields.map((f) => [f.name, sourceControl[f.name] ?? f.default ?? null])),
+    ...Object.fromEntries(editableFormFields.map((f) => [f.name, (sourceControl[f.name] as SourceControlFieldValue) ?? f.default ?? null])),
   });
 
   const submit = (e: FormEvent) => {
@@ -125,7 +127,7 @@ function Edit({ sourceControl }: { sourceControl: SourceControl }) {
 
 function Delete({ sourceControl }: { sourceControl: SourceControl }) {
   const [open, setOpen] = useState(false);
-  const form = useForm();
+  const form = useForm<{ source_control?: string }>({});
 
   const submit = () => {
     form.delete(route('source-controls.destroy', sourceControl.id), {

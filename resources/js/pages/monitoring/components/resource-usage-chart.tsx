@@ -11,21 +11,30 @@ import { cn } from '@/lib/utils';
 interface Props {
   title: string;
   color: string;
-  dataKey: 'load' | 'memory_used' | 'disk_used';
+  dataKey: keyof Metric;
   label: string;
   chartData: Metric[];
-  link: string;
+  link?: string;
   formatter?: (value: unknown, name: unknown) => string | number;
   single?: boolean;
+  height?: 'small' | 'medium' | 'large';
+  showXAxis?: boolean;
+  valueFormatter?: (value: unknown) => string | number;
 }
 
-export function ResourceUsageChart({ title, color, dataKey, label, chartData, link, formatter, single }: Props) {
+export function ResourceUsageChart({ title, color, dataKey, label, chartData, link, formatter, single, height, showXAxis, valueFormatter }: Props) {
+  const resolvedHeight = height ?? (single ? 'large' : 'small');
+  const heightClass = resolvedHeight === 'large' ? 'h-[400px]' : resolvedHeight === 'medium' ? 'h-[200px]' : 'h-[100px]';
+  const xAxisVisible = showXAxis ?? single ?? false;
   const chartConfig = {
     [dataKey]: {
       label: label,
       color: color,
     },
   } satisfies ChartConfig;
+
+  const validData = chartData.filter((row) => row[dataKey] != null);
+  const latest = validData.length > 0 ? validData[validData.length - 1][dataKey] : null;
 
   return (
     <Card>
@@ -34,65 +43,73 @@ export function ResourceUsageChart({ title, color, dataKey, label, chartData, li
           <div className="space-y-2 py-[7px]">
             <h2 className="text-muted-foreground text-sm">{title}</h2>
             <span className="text-3xl font-bold">
-              {chartData.length > 0
-                ? formatter
-                  ? formatter(chartData[chartData.length - 1][dataKey], dataKey)
-                  : chartData[chartData.length - 1][dataKey].toLocaleString()
+              {latest != null
+                ? valueFormatter
+                  ? valueFormatter(latest)
+                  : formatter
+                    ? formatter(latest, dataKey)
+                    : (latest as number | string).toLocaleString()
                 : 'N/A'}
             </span>
           </div>
-          {!single && (
+          {!single && link && (
             <Button variant="ghost" onClick={() => router.visit(link)}>
               View
             </Button>
           )}
         </div>
-        <ChartContainer config={chartConfig} className={cn('aspect-auto w-full overflow-hidden rounded-b-xl', single ? 'h-[400px]' : 'h-[100px]')}>
-          <AreaChart accessibilityLayer data={chartData} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id={`fill-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-                <stop offset="95%" stopColor={color} stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            <YAxis dataKey={dataKey} hide />
-            <XAxis
-              hide={!single}
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  month: 'short',
-                  day: 'numeric',
-                });
-              }}
-            />
-            <ChartTooltip
-              cursor={true}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      month: 'short',
-                      day: 'numeric',
-                    });
-                  }}
-                  formatter={formatter}
-                  indicator="dot"
-                />
-              }
-            />
-            <Area dataKey={dataKey} type="monotone" fill={`url(#fill-${dataKey})`} stroke={color} />
-          </AreaChart>
-        </ChartContainer>
+        {validData.length === 0 ? (
+          <div className={cn('text-muted-foreground flex aspect-auto w-full items-center justify-center rounded-b-xl border-t text-sm', heightClass)}>
+            No data in selected period
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig} className={cn('aspect-auto w-full overflow-hidden rounded-b-xl', heightClass)}>
+            <AreaChart accessibilityLayer data={validData} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`fill-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <YAxis hide />
+              <XAxis
+                hide={!xAxisVisible}
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    month: 'short',
+                    day: 'numeric',
+                  });
+                }}
+              />
+              <ChartTooltip
+                cursor={true}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        month: 'short',
+                        day: 'numeric',
+                      });
+                    }}
+                    formatter={formatter}
+                    indicator="dot"
+                  />
+                }
+              />
+              <Area dataKey={dataKey} type="monotone" fill={`url(#fill-${dataKey})`} stroke={color} />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

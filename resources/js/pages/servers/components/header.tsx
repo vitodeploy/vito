@@ -2,7 +2,7 @@ import { Server } from '@/types/server';
 import { CheckIcon, CloudIcon, LoaderCircleIcon, LogsIcon, MousePointerClickIcon, SlashIcon, TerminalSquareIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import ServerActions from '@/pages/servers/components/actions';
-import { cn } from '@/lib/utils';
+import { cn, humanizeStep } from '@/lib/utils';
 import { Site } from '@/types/site';
 import { StatusRipple } from '@/components/status-ripple';
 import { Badge } from '@/components/ui/badge';
@@ -137,6 +137,9 @@ export default function ServerHeader({ server: initialServer, site: initialSite 
                   <div className="flex items-center space-x-1">
                     <LoaderCircleIcon className={cn('size-4', site.status === 'installing' ? 'text-brand animate-spin' : '')} />
                     <div>{parseInt((site.progress ?? 0).toString())}%</div>
+                    {site.status === 'installing' && site.progress_step && (
+                      <div className="text-muted-foreground hidden text-xs lg:block">{humanizeStep(site.progress_step)}</div>
+                    )}
                     {site.status === 'installation_failed' && (
                       <Badge className="ml-1" variant={site.status_color}>
                         {site.status}
@@ -144,7 +147,9 @@ export default function ServerHeader({ server: initialServer, site: initialSite 
                     )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Status</TooltipContent>
+                <TooltipContent side="bottom">
+                  {site.status === 'installing' && site.progress_step ? humanizeStep(site.progress_step) : 'Status'}
+                </TooltipContent>
               </Tooltip>
             </>
           )}

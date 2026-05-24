@@ -23,7 +23,9 @@ class RollbackJob implements ShouldQueue
 
     public function __construct(
         protected Deployment $deployment,
-    ) {}
+    ) {
+        $this->onQueue('ssh');
+    }
 
     public function handle(): void
     {

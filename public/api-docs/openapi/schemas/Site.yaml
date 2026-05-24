@@ -69,6 +69,16 @@ properties:
     minimum: 0
     maximum: 100
     example: 100
+  progress_step:
+    type: string
+    nullable: true
+    description: 'Current installation phase (e.g. cloning-repository). Null when installation is complete.'
+    example: 'cloning-repository'
+  last_error:
+    type: string
+    nullable: true
+    description: 'Safe summary of the last installation failure. Provider error bodies and SSH output are intentionally NOT included here; the full output is in the site logs.'
+    example: 'An SSH command failed during installation. Check the site logs for the failing command.'
   features:
     type: array
     items:

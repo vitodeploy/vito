@@ -9,17 +9,10 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\Worker;
-use App\SSH\OS\Git;
 use Illuminate\Validation\Rule;
 
 class MiseBun extends MiseSiteType
 {
-    public const BUN_VERSIONS = [
-        '1.2',
-        '1.1',
-        '1.0',
-    ];
-
     public static function id(): string
     {
         return 'mise_bun';
@@ -56,7 +49,7 @@ class MiseBun extends MiseSiteType
     public function createRules(array $input): array
     {
         return [
-            'source_control' => SourceControl::siteValidationRules(),
+            'source_control' => SourceControl::siteValidationRules($this->site->server),
             'repository' => [
                 'required',
             ],
@@ -70,7 +63,7 @@ class MiseBun extends MiseSiteType
             ],
             'bun_version' => [
                 'required',
-                Rule::in(self::BUN_VERSIONS),
+                Rule::in(self::SUPPORTED_BUN_VERSIONS),
             ],
             'build_command' => [
                 'nullable',
@@ -118,29 +111,30 @@ class MiseBun extends MiseSiteType
      */
     public function install(): void
     {
+        $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(10);
+        $this->progress(10, 'setting-up-runtime');
 
         $this->setupRuntime();
-        $this->progress(25);
+        $this->progress(25, 'creating-vhost');
 
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(35);
+        $this->progress(35, 'deploying-ssh-key');
 
         $this->deployKey();
-        $this->progress(45);
+        $this->progress(45, 'cloning-repository');
 
-        app(Git::class)->clone($this->site);
-        $this->progress(55);
+        $this->cloneRepository();
+        $this->progress(55, 'installing-dependencies');
 
         $this->runInstall();
-        $this->progress(70);
+        $this->progress(70, 'building');
 
         $this->runBuild();
-        $this->progress(85);
+        $this->progress(85, 'creating-worker');
 
         $this->createWorker();
-        $this->progress(100);
+        $this->progress(90, 'finishing');
     }
 
     /**

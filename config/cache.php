@@ -107,4 +107,18 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel'), '_').'_cache_'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Cache Classes
+    |--------------------------------------------------------------------------
+    |
+    | Laravel 13 hardens unserialization of cached values. By default no
+    | classes may be deserialized from the cache layer; only scalar values
+    | and arrays of scalars survive a round-trip. App-level caches store
+    | IDs / arrays rather than Eloquent models, so we keep this `false`.
+    |
+    */
+
+    'serializable_classes' => false,
+
 ];

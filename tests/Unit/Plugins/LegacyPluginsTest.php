@@ -344,7 +344,6 @@ class LegacyPluginsTest extends TestCase
 
         $reflection = new \ReflectionClass($this->plugins);
         $method = $reflection->getMethod('executeInstallPluginScripts');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->plugins, $composerJson);
 
@@ -366,7 +365,6 @@ class LegacyPluginsTest extends TestCase
 
         $reflection = new \ReflectionClass($this->plugins);
         $method = $reflection->getMethod('executeInstallPluginScripts');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->plugins, $composerJson);
 
@@ -389,7 +387,6 @@ class LegacyPluginsTest extends TestCase
 
         $reflection = new \ReflectionClass($this->plugins);
         $method = $reflection->getMethod('executeComposerScripts');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->plugins, $composerJson, 'post-package-install');
 

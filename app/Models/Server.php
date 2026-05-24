@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -113,6 +114,8 @@ class Server extends AbstractModel
         'authentication',
     ];
 
+    public bool $deleteFromProvider = true;
+
     public static function boot(): void
     {
         parent::boot();
@@ -146,7 +149,9 @@ class Server extends AbstractModel
                 if (File::exists($server->sshKey()['private_key_path'])) {
                     File::delete($server->sshKey()['private_key_path']);
                 }
-                $server->provider()->delete();
+                if ($server->deleteFromProvider) {
+                    $server->provider()->delete();
+                }
                 DB::commit();
             } catch (Throwable $e) {
                 DB::rollBack();
@@ -288,6 +293,14 @@ class Server extends AbstractModel
     public function metrics(): HasMany
     {
         return $this->hasMany(Metric::class);
+    }
+
+    /**
+     * @return HasOne<Metric, covariant $this>
+     */
+    public function latestMetric(): HasOne
+    {
+        return $this->hasOne(Metric::class)->latestOfMany();
     }
 
     /**

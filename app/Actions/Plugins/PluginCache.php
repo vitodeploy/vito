@@ -20,15 +20,20 @@ final readonly class PluginCache
      */
     public function get(): Collection
     {
-        // We need the try/catch to ensure that no exceptions are
-        // raised before migrations have been run.
         try {
-            return Cache::rememberForever(self::CACHE_KEY, function () {
-                return Plugin::query()
+            $ids = Cache::get(self::CACHE_KEY);
+
+            if (! $this->isValidIdList($ids)) {
+                $ids = Plugin::query()
                     ->where('is_installed', true)
                     ->where('is_enabled', true)
-                    ->get();
-            });
+                    ->pluck('id')
+                    ->all();
+
+                Cache::forever(self::CACHE_KEY, $ids);
+            }
+
+            return Plugin::query()->whereIn('id', $ids)->get();
         } catch (Throwable) {
             return collect();
         }
@@ -39,11 +44,29 @@ final readonly class PluginCache
         Cache::forget(self::CACHE_KEY);
     }
 
+    /**
+     * @param  Collection<int, Plugin>  $plugins
+     */
     public function set(Collection $plugins): void
     {
-        Cache::set(
-            key: self::CACHE_KEY,
-            value: $plugins,
-        );
+        Cache::forever(self::CACHE_KEY, $plugins->pluck('id')->all());
+    }
+
+    /**
+     * @phpstan-assert-if-true array<int, int> $value
+     */
+    private function isValidIdList(mixed $value): bool
+    {
+        if (! is_array($value)) {
+            return false;
+        }
+
+        foreach ($value as $id) {
+            if (! is_int($id)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

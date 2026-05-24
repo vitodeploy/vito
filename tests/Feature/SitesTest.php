@@ -60,6 +60,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $inputs['source_control'] = $sourceControl->id;
@@ -122,7 +123,7 @@ class SitesTest extends TestCase
             'path' => '/home/shared/second.example.com',
         ]);
 
-        SSH::assertNotExecutedContains('useradd');
+        SSH::assertExecutedContains('User shared already exists');
     }
 
     public function test_isolated_users_endpoint_lists_users_with_counts(): void
@@ -328,6 +329,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $inputs['source_control'] = $sourceControl->id;
@@ -339,6 +341,49 @@ class SitesTest extends TestCase
             'domain' => 'example.com',
             'status' => SiteStatus::READY,
         ]);
+    }
+
+    public function test_create_laravel_site_dispatches_ensure_env_script(): void
+    {
+        SSH::fake();
+        Http::fake([
+            'https://api.github.com/repos/*' => Http::response([], 201),
+        ]);
+
+        $this->actingAs($this->user);
+        /** @var SourceControl $sourceControl */
+        $sourceControl = SourceControl::factory()->create([
+            'provider' => Github::id(),
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->post(route('sites.store', ['server' => $this->server]), [
+            'type' => Laravel::id(),
+            'domain' => 'env-example.com',
+            'php_version' => '8.2',
+            'web_directory' => 'public',
+            'repository' => 'test/test',
+            'branch' => 'main',
+            'composer' => false,
+            'node_version' => 'none',
+            'user' => 'envtest',
+            'source_control' => $sourceControl->id,
+        ])->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('sites', [
+            'domain' => 'env-example.com',
+            'status' => SiteStatus::READY->value,
+            'user' => 'envtest',
+            'path' => '/home/envtest/env-example.com',
+        ]);
+
+        $envPath = '/home/envtest/env-example.com/.env';
+        $examplePath = '/home/envtest/env-example.com/.env.example';
+
+        SSH::assertExecutedContains("[ -f '{$envPath}' ]");
+        SSH::assertExecutedContains("cp -- '{$examplePath}' '{$envPath}'");
+        SSH::assertExecutedContains("touch -- '{$envPath}'");
+        SSH::assertExecutedContains("chmod 640 -- '{$envPath}'");
     }
 
     public function test_see_sites_list(): void
@@ -416,6 +461,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $this->patch(route('site-settings.update-source-control', [
@@ -445,6 +491,7 @@ class SitesTest extends TestCase
         /** @var SourceControl $sourceControl */
         $sourceControl = SourceControl::factory()->create([
             'provider' => Github::id(),
+            'user_id' => $this->user->id,
         ]);
 
         $this->patch(route('site-settings.update-source-control', [
@@ -504,7 +551,7 @@ class SitesTest extends TestCase
         $this->site->refresh();
         $this->assertEquals('master', $this->site->branch);
 
-        SSH::assertExecutedContains('git checkout -f master');
+        SSH::assertExecutedContains("git checkout -f 'master'");
     }
 
     public function test_update_web_directory(): void
@@ -829,6 +876,7 @@ class SitesTest extends TestCase
                     'repository' => 'test/test',
                     'branch' => 'main',
                     'composer' => true,
+                    'node_version' => 'none',
                     'user' => 'example',
                 ],
             ],
@@ -876,7 +924,7 @@ class SitesTest extends TestCase
                 [
                     'type' => MiseNodeJS::id(),
                     'domain' => 'example.com',
-                    'node_version' => '20',
+                    'node_version' => '23',
                     'package_manager' => 'npm',
                     'port' => '3000',
                     'repository' => 'test/test',

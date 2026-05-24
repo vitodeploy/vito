@@ -8,23 +8,34 @@ use Illuminate\Support\Collection;
 class GetIsolatedUsers
 {
     /**
-     * @return Collection<int, array{user: string, sites_count: int}>
+     * @return array<int, array{user: string, sites_count: int, node_version: string|null, bun_version: string|null}>
      */
-    public function get(Server $server): Collection
+    public function get(Server $server): array
     {
         return $server->sites()
             ->where('user', '!=', $server->getSshUser())
-            ->get(['user'])
+            ->get(['user', 'type_data'])
             ->groupBy('user')
-            ->map(function (Collection $group, string $user): array {
-                /** @var int $count */
-                $count = $group->count();
+            ->map(fn (Collection $sites, string $user): array => [
+                'user' => $user,
+                'sites_count' => $sites->count(),
+                'node_version' => $this->firstVersion($sites, 'node_version'),
+                'bun_version' => $this->firstVersion($sites, 'bun_version'),
+            ])
+            ->values()
+            ->all();
+    }
 
-                return [
-                    'user' => $user,
-                    'sites_count' => $count,
-                ];
-            })
-            ->values();
+    private function firstVersion(Collection $sites, string $key): ?string
+    {
+        foreach ($sites as $site) {
+            $candidate = $site->type_data[$key] ?? null;
+
+            if (is_string($candidate) && $candidate !== '' && $candidate !== 'none') {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }

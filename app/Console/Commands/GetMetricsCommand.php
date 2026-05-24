@@ -6,6 +6,8 @@ use App\Enums\ServerStatus;
 use App\Models\Server;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class GetMetricsCommand extends Command
 {
@@ -24,9 +26,16 @@ class GetMetricsCommand extends Command
             })->chunk(10, function ($servers) use (&$checkedMetrics): void {
                 /** @var Server $server */
                 foreach ($servers as $server) {
-                    $info = $server->os()->resourceInfo();
-                    $server->metrics()->create(array_merge($info, ['server_id' => $server->id]));
-                    $checkedMetrics++;
+                    try {
+                        $info = $server->os()->resourceInfo();
+                        $server->metrics()->create(array_merge($info, ['server_id' => $server->id]));
+                        $checkedMetrics++;
+                    } catch (Throwable $e) {
+                        Log::warning('Failed to collect metrics for server', [
+                            'server_id' => $server->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
             });
         $this->info("Checked $checkedMetrics metrics");

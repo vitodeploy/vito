@@ -3,10 +3,12 @@
 namespace App\SiteTypes;
 
 use App\Exceptions\SSHError;
-use App\SSH\Mise\Mise;
+use App\SiteTypes\Concerns\UsesMiseRuntime;
 
 abstract class MiseSiteType extends AbstractSiteType
 {
+    use UsesMiseRuntime;
+
     abstract protected function runtime(): string;
 
     abstract protected function runtimeVersion(): string;
@@ -16,39 +18,7 @@ abstract class MiseSiteType extends AbstractSiteType
      */
     protected function setupRuntime(): void
     {
-        $mise = new Mise($this->site->server);
-
-        $mise->ensureInstalled();
-
-        $mise->installRuntime(
-            $this->site,
-            $this->runtime(),
-            $this->runtimeVersion()
-        );
-    }
-
-    protected function miseShimsPath(): string
-    {
-        $user = $this->site->user ?? $this->site->server->getSshUser();
-
-        return '/home/'.$user.'/.local/share/mise/shims';
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function workerEnvironment(): array
-    {
-        return [
-            'PATH' => $this->shimPath(),
-        ];
-    }
-
-    protected function shimPath(): string
-    {
-        $user = $this->site->user ?? $this->site->server->getSshUser();
-
-        return $this->miseShimsPath().':/usr/local/bin:/usr/bin:/bin:/home/'.$user.'/.local/bin';
+        $this->setupMiseRuntime($this->runtime(), $this->runtimeVersion());
     }
 
     protected function workerCommand(): string
@@ -57,11 +27,4 @@ abstract class MiseSiteType extends AbstractSiteType
     }
 
     abstract protected function startCommand(): string;
-
-    protected function wrapCommand(string $command, bool $cdToSitePath = false): string
-    {
-        $cdPath = $cdToSitePath && $this->site->path ? 'cd '.$this->site->path.' && ' : '';
-
-        return "bash -c \"export PATH={$this->shimPath()} && {$cdPath}{$command}\"";
-    }
 }

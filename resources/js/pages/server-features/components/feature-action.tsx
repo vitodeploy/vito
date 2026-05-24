@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
 import { DynamicFieldConfig } from '@/types/dynamic-field-config';
 import DynamicField from '@/components/ui/dynamic-field';
+
+type FieldValue = string | number | boolean | string[] | null | undefined;
 import { LoaderCircleIcon } from 'lucide-react';
 
 export default function FeatureAction({
@@ -31,7 +33,7 @@ export default function FeatureAction({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const form = useForm();
+  const form = useForm<Record<string, FieldValue>>({});
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -63,11 +65,10 @@ export default function FeatureAction({
             {action.form?.map((field: DynamicFieldConfig) => (
               <DynamicField
                 key={`field-${field.name}`}
-                /*@ts-expect-error dynamic types*/
-                value={form.data[field.name]}
-                onChange={(value) => form.setData(field.name, value)}
+                value={form.data[field.name] as string | number | boolean | string[] | undefined}
+                onChange={(value) => form.setData(field.name, value as FieldValue)}
                 config={field}
-                error={form.errors[field.name]}
+                error={form.errors[field.name] as string | undefined}
               />
             ))}
           </FormFields>

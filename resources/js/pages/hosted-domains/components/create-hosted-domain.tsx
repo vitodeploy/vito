@@ -52,7 +52,11 @@ export default function CreateHostedDomain({ site, children }: { site: Site; chi
     siteId: site.id,
     domain: form.data.domain,
     sslMethod: form.data.ssl_method,
-    setData: form.setData,
+    sslId: form.data.ssl_id,
+    applySslSettings: ({ ssl_method, ssl_id }) => {
+      form.setData('ssl_method', ssl_method);
+      form.setData('ssl_id', ssl_id);
+    },
     open,
   });
 

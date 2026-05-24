@@ -182,7 +182,7 @@ class SSH
     /**
      * @throws SSHError
      */
-    public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
+    public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null, int $timeout = 0): string
     {
         $this->ensureLog($log, $siteId);
 
@@ -209,7 +209,7 @@ class SSH
                 BASH;
             }
 
-            $this->connection->setTimeout(0);
+            $this->connection->setTimeout($timeout);
             if ($stream === true) {
                 /** @var callable $streamCallback */
                 $this->connection->exec($command, function ($output) use ($streamCallback) {

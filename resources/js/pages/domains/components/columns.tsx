@@ -22,7 +22,7 @@ import InputError from '@/components/ui/input-error';
 
 function Remove({ domain }: { domain: Domain }) {
   const [open, setOpen] = useState(false);
-  const form = useForm();
+  const form = useForm<{ domain?: string }>({});
 
   const submit = () => {
     form.delete(route('domains.destroy', domain.id), {

@@ -2,6 +2,7 @@
 
 namespace App\Tables;
 
+use App\Models\Server;
 use Forjed\InertiaTable\Column;
 use Forjed\InertiaTable\Columns\ActionsColumn;
 use Forjed\InertiaTable\Columns\DateTimeColumn;
@@ -17,6 +18,7 @@ class ServerTable extends Table
     protected function query(): void
     {
         $this->perPage = config('web.pagination_size');
+        $this->query->with('latestMetric');
     }
 
     protected function columns(): array
@@ -27,6 +29,8 @@ class ServerTable extends Table
             TextColumn::make('ip', 'IP')->sortable(),
             DateTimeColumn::make('created_at', 'Created at')->sortable(),
             EnumColumn::make('status', 'Status')->sortable(),
+            Column::data('updates'),
+            Column::data('warnings', fn (Server $server) => $this->getWarnings($server)),
             ActionsColumn::make(),
         ];
     }
@@ -34,5 +38,26 @@ class ServerTable extends Table
     protected function searchable(): array
     {
         return ['name', 'ip'];
+    }
+
+    /**
+     * @return array<int, array{key: string, ...}>
+     */
+    private function getWarnings(Server $server): array
+    {
+        $warnings = [];
+
+        if ($server->updates > 0) {
+            $warnings[] = [
+                'key' => 'updates_available',
+                'count' => $server->updates,
+            ];
+        }
+
+        if ($server->latestMetric?->reboot_required) {
+            $warnings[] = ['key' => 'reboot_required'];
+        }
+
+        return $warnings;
     }
 }

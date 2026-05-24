@@ -32,6 +32,8 @@ export interface Site {
   force_ssl: boolean;
   ssl_enabled: boolean;
   progress: number;
+  progress_step: string | null;
+  last_error: string | null;
   vhost_generation_enabled: boolean;
   features: SiteFeature[];
   modern_deployment: boolean;
@@ -65,8 +67,7 @@ export type SiteWarning =
   | { key: 'pending_domains'; count: number; domains: string[] }
   | { key: 'ssl_disabled' }
   | { key: 'vhost_generation_disabled' }
-  | { key: 'ssl_expiring'; count: number; domains: string[]; earliest_expiry: string }
-  | { key: string; [k: string]: unknown };
+  | { key: 'ssl_expiring'; count: number; domains: string[]; earliest_expiry: string };
 
 export interface SiteFeatureAction {
   label: string;

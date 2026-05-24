@@ -29,7 +29,6 @@ class MonitoringController extends Controller
         $this->authorize('viewAny', [Metric::class, $server]);
 
         return Inertia::render('monitoring/index', [
-            'lastMetric' => $server->metrics()->latest()->first(),
             'dataRetention' => $server->monitoring()?->type_data['data_retention'] ?? 30,
             'hasMonitoringService' => $server->monitoring()?->status === ServiceStatus::READY,
         ]);

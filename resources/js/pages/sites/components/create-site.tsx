@@ -1,4 +1,4 @@
-import { ReactNode, useState, FormEventHandler, useEffect } from 'react';
+import { ReactNode, useState, FormEventHandler, useEffect, useMemo, useRef } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -24,19 +24,21 @@ import DatabaseUserSelect from '@/pages/database-users/components/database-user-
 import IsolatedUserSelect from '@/pages/sites/components/isolated-user-select';
 import SelectRepo from '@/pages/source-controls/components/select-repo';
 import SelectBranch from '@/pages/source-controls/components/select-branch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { IsolatedUserOption } from '@/types/isolated-user';
 
 type CreateSiteForm = {
   server: string;
   type: string;
   domain: string;
   php_version: string;
+  node_version: string;
+  bun_version: string;
   source_control: string;
   repository: string;
   branch: string;
   user: string;
 };
-
-type IsolatedUserOption = { user: string; sites_count: number };
 
 function suggestIsolatedUsername(domain: string, blocked: ReadonlySet<string>): string {
   if (!domain) return '';
@@ -95,6 +97,8 @@ export default function CreateSite({
     type: 'laravel',
     domain: '',
     php_version: '',
+    node_version: '',
+    bun_version: '',
     source_control: '',
     repository: '',
     branch: '',
@@ -156,6 +160,43 @@ export default function CreateSite({
     }
   }, [form.data.type, configs]);
 
+  const selectedIsolatedUser = useMemo<IsolatedUserOption | null>(
+    () => (isolatedUsersQuery.data ?? []).find((u) => u.user === form.data.user) ?? null,
+    [isolatedUsersQuery.data, form.data.user],
+  );
+
+  const lockedNodeVersion = selectedIsolatedUser?.node_version ?? null;
+  const lockedBunVersion = selectedIsolatedUser?.bun_version ?? null;
+
+  const previousLocksRef = useRef<{ node: string | null; bun: string | null }>({ node: null, bun: null });
+
+  useEffect(() => {
+    const typeConfig = configs.site.types[form.data.type];
+    const runtimes: Array<{ formKey: 'node_version' | 'bun_version'; locked: string | null; refKey: 'node' | 'bun' }> = [
+      { formKey: 'node_version', locked: lockedNodeVersion, refKey: 'node' },
+      { formKey: 'bun_version', locked: lockedBunVersion, refKey: 'bun' },
+    ];
+
+    runtimes.forEach(({ formKey, locked, refKey }) => {
+      if (locked) {
+        if (form.data[formKey] !== locked) {
+          form.setData(formKey, locked);
+        }
+        previousLocksRef.current[refKey] = locked;
+        return;
+      }
+
+      if (previousLocksRef.current[refKey] !== null) {
+        const field = typeConfig?.form?.find((f: DynamicFieldConfig) => f.name === formKey);
+        const defaultValue = typeof field?.default === 'string' ? field.default : '';
+        if (form.data[formKey] !== defaultValue) {
+          form.setData(formKey, defaultValue);
+        }
+        previousLocksRef.current[refKey] = null;
+      }
+    });
+  }, [lockedNodeVersion, lockedBunVersion, form.data.node_version, form.data.bun_version, form.data.type, configs, form.setData]);
+
   const getFormField = (field: DynamicFieldConfig) => {
     if (field.name === 'source_control') {
       return (
@@ -214,6 +255,65 @@ export default function CreateSite({
             onValueChange={(value) => form.setData('php_version', value)}
           />
           <InputError message={form.errors.php_version} />
+        </FormField>
+      );
+    }
+
+    if (field.name === 'node_version' || field.name === 'bun_version') {
+      const isNode = field.name === 'node_version';
+      const formKey: 'node_version' | 'bun_version' = isNode ? 'node_version' : 'bun_version';
+      const runtimeLabel = isNode ? 'Node.js' : 'Bun';
+      const locked = isNode ? lockedNodeVersion : lockedBunVersion;
+      const rawOptions = field.options;
+      const options = Array.isArray(rawOptions) ? rawOptions : rawOptions ? Object.values(rawOptions) : [];
+      const labelFor = (v: string) => (v === 'none' ? 'None' : `${runtimeLabel} ${v}`);
+
+      const showLaravelNotice = isNode && form.data.type === 'laravel';
+
+      return (
+        <FormField key={`field-${field.name}`}>
+          {showLaravelNotice && (
+            <Alert role="status">
+              <AlertDescription>Laravel sites typically need a JavaScript runtime to build front-end assets during deployment.</AlertDescription>
+            </Alert>
+          )}
+          <Label htmlFor={field.name}>{field.label ?? `${runtimeLabel} Version`}</Label>
+          {locked ? (
+            <>
+              <Alert role="status">
+                <AlertDescription className="block">
+                  Isolated user <span className="font-medium">{form.data.user}</span> already has{' '}
+                  <span className="font-medium">{labelFor(locked)}</span> installed; this can be modified via tooling against the site.
+                </AlertDescription>
+              </Alert>
+              <Select value={locked} disabled>
+                <SelectTrigger id={field.name}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value={locked}>{labelFor(locked)}</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </>
+          ) : (
+            <Select value={form.data[formKey]} onValueChange={(value) => form.setData(formKey, value)}>
+              <SelectTrigger id={field.name}>
+                <SelectValue placeholder={`Select ${runtimeLabel} version`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {options.map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {labelFor(v)}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          )}
+          <InputError message={form.errors[formKey]} />
         </FormField>
       );
     }

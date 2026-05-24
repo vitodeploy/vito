@@ -7,6 +7,7 @@ use App\Actions\Site\DisableSsl;
 use App\Actions\Site\EnableSsl;
 use App\Actions\Site\GetIsolatedUsers;
 use App\Actions\Site\GetSites;
+use App\Actions\Site\RetrySite;
 use App\Helpers\QueryBuilder;
 use App\Http\Resources\ServerLogResource;
 use App\Http\Resources\SiteResource;
@@ -98,6 +99,17 @@ class SiteController extends Controller
         }
 
         return redirect()->route('application', ['server' => $server->id, 'site' => $site->id]);
+    }
+
+    #[Post('/servers/{server}/sites/{site}/retry', name: 'sites.retry')]
+    public function retry(Server $server, Site $site): RedirectResponse
+    {
+        $this->authorize('update', [$site, $server]);
+
+        app(RetrySite::class)->retry($site);
+
+        return back()
+            ->with('info', 'Retrying site installation...');
     }
 
     #[Post('/servers/{server}/sites/{site}/enable-ssl', name: 'sites.enable-ssl')]

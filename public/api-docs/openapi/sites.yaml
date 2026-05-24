@@ -158,6 +158,16 @@ paths:
                   type: integer
                   description: Source control provider ID
                   example: 1
+                node_version:
+                  type: string
+                  enum: ['none', '22', '23', '24']
+                  description: 'Node.js runtime version to install via mise on the isolated user. `none` skips installation. Defaults to `none` for `php`, `php-blank`, and `laravel`. Locked to the existing version if any sibling site under the same isolated user already has Node configured.'
+                  example: 'none'
+                bun_version:
+                  type: string
+                  enum: ['none', '1.0', '1.1', '1.2']
+                  description: 'Bun runtime version to install via mise on the isolated user. `none` skips installation. Defaults to `none` for `php`, `php-blank`, and `laravel`. Locked to the existing version if any sibling site under the same isolated user already has Bun configured.'
+                  example: 'none'
             example:
               type: 'laravel'
               domain: 'example.com'
@@ -165,6 +175,8 @@ paths:
               repository: 'https://github.com/user/repo.git'
               branch: 'main'
               source_control_id: 1
+              node_version: '22'
+              bun_version: 'none'
       responses:
         '201':
           description: Site created successfully
@@ -813,6 +825,68 @@ paths:
                 $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
         '422':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ValidationError.yaml'
+
+  /api/projects/{project}/servers/{server}/sites/{site}/retry:
+    post:
+      summary: Retry site installation
+      description: Retry installation for a site whose status is `installation_failed`. The job re-runs the install steps; phases that already completed (isolated user, vhost, deploy key, repository clone) are detected on the server and skipped.
+      tags:
+        - Sites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: project
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: integer
+            example: 1
+        - name: server
+          in: path
+          required: true
+          description: Server ID
+          schema:
+            type: integer
+            example: 1
+        - name: site
+          in: path
+          required: true
+          description: Site ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Retry started successfully. Site status returns to `installing`.
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/Site.yaml'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '404':
+          description: Site not found
+          content:
+            application/json:
+              schema:
+                $ref: '/api-docs/openapi/schemas/ErrorResponse.yaml'
+        '422':
+          description: Site is not in the `installation_failed` state and cannot be retried.
           content:
             application/json:
               schema:

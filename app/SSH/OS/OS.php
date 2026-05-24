@@ -6,12 +6,22 @@ use App\Exceptions\SSHError;
 use App\Models\Server;
 use App\Models\ServerLog;
 use App\Models\Site;
+use RuntimeException;
 
 class OS
 {
     public const FILE_NOT_FOUND = 'VITO_NO_FILE';
+  
+    private const SHELL_IDENTIFIER = '/^[A-Za-z_][A-Za-z0-9_]*$/';
 
     public function __construct(protected Server $server) {}
+
+    private function assertShellIdentifier(string $name): void
+    {
+        if (preg_match(self::SHELL_IDENTIFIER, $name) !== 1) {
+            throw new RuntimeException('Refusing to emit shell statement with unsafe identifier.');
+        }
+    }
 
     /**
      * @throws SSHError
@@ -48,10 +58,7 @@ class OS
             'check-available-updates'
         );
 
-        // -1 because the first line is not a package
-        $availableUpdates = str($result)->after('Available updates:')->trim()->toInteger() - 1;
-
-        return max($availableUpdates, 0);
+        return max(str($result)->after('Available updates:')->trim()->toInteger(), 0);
     }
 
     /**
@@ -80,6 +87,7 @@ class OS
                 'user' => $user,
                 'serverUser' => $this->server->getSshUser(),
                 'password' => $password,
+                'key' => escapeshellarg(trim($this->server->sshKey()['public_key'])),
             ]),
             'create-isolated-user',
             $site_id
@@ -244,20 +252,20 @@ class OS
         $command .= "shopt -s expand_aliases\n";
         if ($aliases !== null && $aliases !== []) {
             foreach ($aliases as $key => $alias) {
-                $command .= "alias $key=$alias\n";
+                $this->assertShellIdentifier((string) $key);
+                $command .= sprintf("alias %s=%s\n", $key, escapeshellarg((string) $alias));
             }
         }
         if ($variables !== null && $variables !== []) {
             foreach ($variables as $key => $variable) {
-                $command .= "export $key=$variable\n";
+                $this->assertShellIdentifier((string) $key);
+                $command .= sprintf("export %s=%s\n", $key, escapeshellarg((string) $variable));
             }
         }
         $command .= view('ssh.os.run-script', [
             'path' => $path,
             'script' => $script,
         ]);
-
-        info($command);
 
         $ssh->exec($command, 'run-script');
 
@@ -307,24 +315,48 @@ class OS
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, string|bool|null>
      *
      * @throws SSHError
      */
     public function resourceInfo(): array
     {
         $info = $this->server->ssh()->exec(
-            view('ssh.os.resource-info'),
+            command: view('ssh.os.resource-info'),
+            timeout: 5,
         );
 
+        $values = [];
+        foreach (preg_split('/\R/', $info) ?: [] as $line) {
+            if (preg_match('/^([a-z_]+):(.*)$/', trim($line), $matches) === 1) {
+                $values[$matches[1]] = trim($matches[2]);
+            }
+        }
+
+        $nullIfEmpty = fn (string $key): ?string => ($values[$key] ?? '') === '' ? null : $values[$key];
+
+        [$cpuUsage, $cpuSteal] = array_pad(explode('|', $values['cpu_usage_and_steal'] ?? ''), 2, '');
+
         return [
-            'load' => str($info)->after('load:')->before(PHP_EOL)->toString(),
-            'memory_total' => str($info)->after('memory_total:')->before(PHP_EOL)->toString(),
-            'memory_used' => str($info)->after('memory_used:')->before(PHP_EOL)->toString(),
-            'memory_free' => str($info)->after('memory_free:')->before(PHP_EOL)->toString(),
-            'disk_total' => str($info)->after('disk_total:')->before(PHP_EOL)->toString(),
-            'disk_used' => str($info)->after('disk_used:')->before(PHP_EOL)->toString(),
-            'disk_free' => str($info)->after('disk_free:')->before(PHP_EOL)->toString(),
+            'load' => $values['load'] ?? '',
+            'memory_total' => $values['memory_total'] ?? '',
+            'memory_used' => $values['memory_used'] ?? '',
+            'memory_free' => $values['memory_free'] ?? '',
+            'disk_total' => $values['disk_total'] ?? '',
+            'disk_used' => $values['disk_used'] ?? '',
+            'disk_free' => $values['disk_free'] ?? '',
+            'cpu_cores' => $nullIfEmpty('cpu_cores'),
+            'cpu_physical_cores' => $nullIfEmpty('cpu_physical_cores'),
+            'cpu_usage_percent' => $cpuUsage === '' ? null : $cpuUsage,
+            'cpu_per_core_usage_percent' => null,
+            'cpu_steal_percent' => $cpuSteal === '' ? null : $cpuSteal,
+            'swap_total' => $nullIfEmpty('swap_total'),
+            'swap_used' => $nullIfEmpty('swap_used'),
+            'swap_free' => $nullIfEmpty('swap_free'),
+            'swap_used_percent' => $nullIfEmpty('swap_used_percent'),
+            'oom_kill_count' => $nullIfEmpty('oom_kill_count'),
+            'uptime_seconds' => $nullIfEmpty('uptime_seconds'),
+            'reboot_required' => ($values['reboot_required'] ?? '0') === '1',
         ];
     }
 

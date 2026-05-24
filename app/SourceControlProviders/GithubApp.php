@@ -2,10 +2,7 @@
 
 namespace App\SourceControlProviders;
 
-use App\Exceptions\FailedToDeployGitHook;
-use App\Exceptions\FailedToDestroyGitHook;
 use App\Models\GithubApp as GithubAppModel;
-use BadMethodCallException;
 use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
@@ -85,24 +82,24 @@ class GithubApp extends AbstractSourceControlProvider
 
     public function fullRepoUrl(string $repo, string $key): string
     {
-        throw new BadMethodCallException('fullRepoUrl is not yet implemented for the GitHub App provider.');
+        return sprintf('https://github.com/%s.git', $repo);
     }
 
     /**
-     * @throws FailedToDeployGitHook
+     * @param  array<int, string>  $events
+     * @return array{hook_id: string, hook_response: array<string, string>}
      */
     public function deployHook(string $repo, array $events, string $secret): array
     {
-        throw new BadMethodCallException('deployHook is not yet implemented for the GitHub App provider.');
+        return [
+            'hook_id' => 'app-installation',
+            'hook_response' => [
+                'source' => 'github-app-installation',
+            ],
+        ];
     }
 
-    /**
-     * @throws FailedToDestroyGitHook
-     */
-    public function destroyHook(string $repo, string $hookId): void
-    {
-        throw new BadMethodCallException('destroyHook is not yet implemented for the GitHub App provider.');
-    }
+    public function destroyHook(string $repo, string $hookId): void {}
 
     /**
      * @throws Exception
@@ -132,13 +129,10 @@ class GithubApp extends AbstractSourceControlProvider
 
     public function deployKey(string $title, string $repo, string $key): string
     {
-        throw new BadMethodCallException('deployKey is not yet implemented for the GitHub App provider.');
+        return '';
     }
 
-    public function deleteDeployKey(string $keyId, string $repo): void
-    {
-        throw new BadMethodCallException('deleteDeployKey is not yet implemented for the GitHub App provider.');
-    }
+    public function deleteDeployKey(string $keyId, string $repo): void {}
 
     public function getRepos(bool $useCache = true): array
     {

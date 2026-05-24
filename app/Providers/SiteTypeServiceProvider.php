@@ -68,6 +68,16 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
+                DynamicField::make('node_version')
+                    ->select()
+                    ->label('Node.js Version')
+                    ->options(PHPSite::nodeVersionsWithNone())
+                    ->default('none'),
+                DynamicField::make('bun_version')
+                    ->select()
+                    ->label('Bun Version')
+                    ->options(PHPSite::bunVersionsWithNone())
+                    ->default('none'),
             ]))
             ->register();
     }
@@ -86,6 +96,16 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->label('Web Directory')
                     ->placeholder('e.g., public, www, dist (leave empty for root)')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
+                DynamicField::make('node_version')
+                    ->select()
+                    ->label('Node.js Version')
+                    ->options(PHPSite::nodeVersionsWithNone())
+                    ->default('none'),
+                DynamicField::make('bun_version')
+                    ->select()
+                    ->label('Bun Version')
+                    ->options(PHPSite::bunVersionsWithNone())
+                    ->default('none'),
             ]))
             ->register();
     }
@@ -120,6 +140,16 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
+                DynamicField::make('node_version')
+                    ->select()
+                    ->label('Node.js Version')
+                    ->options(PHPSite::nodeVersionsWithNone())
+                    ->default('none'),
+                DynamicField::make('bun_version')
+                    ->select()
+                    ->label('Bun Version')
+                    ->options(PHPSite::bunVersionsWithNone())
+                    ->default('none'),
             ]))
             ->register();
         RegisterSiteFeature::make(Laravel::id(), 'modern-deployment')
@@ -176,7 +206,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('node_version')
                     ->select()
                     ->label('Node.js Version')
-                    ->options(MiseNodeJS::NODE_VERSIONS)
+                    ->options(MiseNodeJS::SUPPORTED_NODE_VERSIONS)
                     ->default('22'),
                 DynamicField::make('package_manager')
                     ->select()
@@ -222,7 +252,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('bun_version')
                     ->select()
                     ->label('Bun Version')
-                    ->options(MiseBun::BUN_VERSIONS)
+                    ->options(MiseBun::SUPPORTED_BUN_VERSIONS)
                     ->default('1.2'),
                 DynamicField::make('source_control')
                     ->component()

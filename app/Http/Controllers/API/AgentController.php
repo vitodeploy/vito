@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Monitoring\StoreAgentMetric;
 use App\Http\Controllers\Controller;
 use App\Models\Server;
 use App\Models\Service;
@@ -14,24 +15,17 @@ class AgentController extends Controller
     #[Post('api/servers/{server}/agent/{id}', name: 'api.servers.agent')]
     public function __invoke(Request $request, Server $server, int $id): JsonResponse
     {
-        $validated = $this->validate($request, [
-            'load' => 'required|numeric',
-            'memory_total' => 'required|numeric',
-            'memory_used' => 'required|numeric',
-            'memory_free' => 'required|numeric',
-            'disk_total' => 'required|numeric',
-            'disk_used' => 'required|numeric',
-            'disk_free' => 'required|numeric',
-        ]);
+        /** @var ?Service $service */
+        $service = $server->services()->find($id);
 
-        /** @var Service $service */
-        $service = $server->services()->findOrFail($id);
+        $expected = $service?->handler()->data()['secret'] ?? null;
+        $provided = (string) $request->header('secret');
 
-        if ($request->header('secret') !== $service->handler()->data()['secret']) {
+        if (! $service || ! is_string($expected) || $expected === '' || ! hash_equals($expected, $provided)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $server->metrics()->create(array_merge($validated, ['server_id' => $server->id]));
+        app(StoreAgentMetric::class)->store($server, (array) $request->input());
 
         return response()->json();
     }

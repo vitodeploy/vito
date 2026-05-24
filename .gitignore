@@ -35,3 +35,4 @@ opencode.json
 .claude/*
 !.claude/agents/
 !.claude/commands/
+.opencode

@@ -91,8 +91,10 @@ class ServerProvidersTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_delete_provider(string $provider): void
+    public function test_delete_provider(string $provider, array $input): void
     {
+        unset($input);
+
         Sanctum::actingAs($this->user, ['read', 'write']);
 
         /** @var ServerProvider $provider */
@@ -109,8 +111,10 @@ class ServerProvidersTest extends TestCase
     }
 
     #[DataProvider('data')]
-    public function test_cannot_delete_provider(string $provider): void
+    public function test_cannot_delete_provider(string $provider, array $input): void
     {
+        unset($input);
+
         Sanctum::actingAs($this->user, ['read', 'write']);
 
         /** @var ServerProvider $provider */

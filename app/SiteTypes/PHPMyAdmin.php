@@ -48,10 +48,11 @@ class PHPMyAdmin extends PHPSite
      */
     public function install(): void
     {
+        $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(10);
+        $this->progress(10, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
-        $this->progress(25);
+        $this->progress(25, 'installing-phpmyadmin');
         $this->site->server->ssh($this->site->user)->exec(
             view('ssh.phpmyadmin.install', [
                 'version' => $this->site->type_data['version'],
@@ -60,8 +61,8 @@ class PHPMyAdmin extends PHPSite
             'install-phpmyadmin',
             $this->site->id
         );
-        $this->progress(70);
+        $this->progress(70, 'restarting-php');
         $this->site->php()?->restart();
-        $this->progress(90);
+        $this->progress(90, 'finishing');
     }
 }

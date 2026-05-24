@@ -193,7 +193,7 @@ class MiseBunSiteTypeTest extends TestCase
 
         $command = $reflection->invoke($this->siteType, 'bun install', true);
 
-        $this->assertStringStartsWith('bash -c "export PATH=', $command);
+        $this->assertStringStartsWith("bash -c 'export PATH=", $command);
         $this->assertStringContainsString('cd /home/testuser/example.com &&', $command);
         $this->assertStringContainsString('bun install', $command);
     }
@@ -204,7 +204,7 @@ class MiseBunSiteTypeTest extends TestCase
 
         $command = $reflection->invoke($this->siteType, 'bun install', false);
 
-        $this->assertStringStartsWith('bash -c "export PATH=', $command);
+        $this->assertStringStartsWith("bash -c 'export PATH=", $command);
         $this->assertStringContainsString('bun install', $command);
         $this->assertStringNotContainsString('cd /home/testuser/example.com', $command);
     }

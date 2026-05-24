@@ -73,7 +73,7 @@ class MiseSiteTypeTest extends TestCase
 
         $command = $reflection->invoke($this->siteType, 'npm install', false);
 
-        $this->assertStringStartsWith('bash -c "export PATH=', $command);
+        $this->assertStringStartsWith("bash -c 'export PATH=", $command);
         $this->assertStringContainsString('npm install', $command);
         $this->assertStringNotContainsString('cd /home/testuser/example.com', $command);
     }
@@ -84,7 +84,7 @@ class MiseSiteTypeTest extends TestCase
 
         $command = $reflection->invoke($this->siteType, 'npm install', true);
 
-        $this->assertStringStartsWith('bash -c "export PATH=', $command);
+        $this->assertStringStartsWith("bash -c 'export PATH=", $command);
         $this->assertStringContainsString('cd /home/testuser/example.com &&', $command);
         $this->assertStringContainsString('npm install', $command);
     }

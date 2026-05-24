@@ -2,6 +2,7 @@
 
 namespace App\Actions\Monitoring;
 
+use App\Models\Metric;
 use App\Models\Server;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -15,10 +16,12 @@ class GetMetrics
 {
     /**
      * @param  array<string, mixed>  $input
-     * @return Collection<int, mixed>
+     * @return array{current: ?array<string, mixed>, history: Collection<int, stdClass>}
      */
-    public function filter(Server $server, array $input): Collection
+    public function filter(Server $server, array $input): array
     {
+        $input = array_merge(['period' => '10m'], $input);
+
         $this->validate($input);
 
         if (isset($input['from'])) {
@@ -29,22 +32,52 @@ class GetMetrics
             $input['to'] = Carbon::parse($input['to'])->format('Y-m-d').' 23:59:59';
         }
 
-        $defaultInput = [
-            'period' => '10m',
+        return [
+            'current' => $this->current($server),
+            'history' => $this->metrics(
+                server: $server,
+                fromDate: $this->getFromDate($input),
+                toDate: $this->getToDate($input),
+                interval: $this->getInterval($input)
+            ),
         ];
-
-        $input = array_merge($defaultInput, $input);
-
-        return $this->metrics(
-            server: $server,
-            fromDate: $this->getFromDate($input),
-            toDate: $this->getToDate($input),
-            interval: $this->getInterval($input)
-        );
     }
 
     /**
-     * @return Collection<int, mixed>
+     * @return ?array<string, mixed>
+     */
+    private function current(Server $server): ?array
+    {
+        /** @var ?Metric $latest */
+        $latest = $server->metrics()->latest('id')->first();
+
+        if (! $latest) {
+            return null;
+        }
+
+        $diskUsedPercent = $latest->disk_total > 0
+            ? round(($latest->disk_used / $latest->disk_total) * 100, 2)
+            : null;
+
+        $memoryUsedPercent = $latest->memory_total > 0
+            ? round(($latest->memory_used / $latest->memory_total) * 100, 2)
+            : null;
+
+        return [
+            'date' => $latest->created_at->format('Y-m-d H:i:s'),
+            'cpu_cores' => $latest->cpu_cores,
+            'cpu_physical_cores' => $latest->cpu_physical_cores,
+            'cpu_usage_percent' => $latest->cpu_usage_percent,
+            'memory_used_percent' => $memoryUsedPercent,
+            'swap_used_percent' => $latest->swap_used_percent,
+            'disk_used_percent' => $diskUsedPercent,
+            'uptime_seconds' => $latest->uptime_seconds,
+            'reboot_required' => $latest->reboot_required,
+        ];
+    }
+
+    /**
+     * @return Collection<int, stdClass>
      */
     private function metrics(
         Server $server,
@@ -65,6 +98,13 @@ class GetMetrics
                     DB::raw('ROUND(AVG(disk_total), 2) as disk_total'),
                     DB::raw('ROUND(AVG(disk_used), 2) as disk_used'),
                     DB::raw('ROUND(AVG(disk_free), 2) as disk_free'),
+                    DB::raw('ROUND(AVG(cpu_usage_percent), 2) as cpu_usage_percent'),
+                    DB::raw('ROUND(AVG(cpu_steal_percent), 2) as cpu_steal_percent'),
+                    DB::raw('ROUND(AVG(swap_total), 0) as swap_total'),
+                    DB::raw('ROUND(AVG(swap_used), 0) as swap_used'),
+                    DB::raw('ROUND(AVG(swap_free), 0) as swap_free'),
+                    DB::raw('ROUND(AVG(swap_used_percent), 2) as swap_used_percent'),
+                    DB::raw('MAX(oom_kill_count) as oom_kill_count'),
                     $interval,
                 ],
             )
@@ -72,7 +112,24 @@ class GetMetrics
             ->orderBy('date_interval')
             ->get()
             ->map(function ($item): stdClass {
+                $floatFields = [
+                    'load', 'memory_total', 'memory_used', 'memory_free',
+                    'disk_total', 'disk_used', 'disk_free',
+                    'cpu_usage_percent', 'cpu_steal_percent',
+                    'swap_total', 'swap_used', 'swap_free', 'swap_used_percent',
+                ];
+                foreach ($floatFields as $key) {
+                    $item->{$key} = $item->{$key} !== null ? (float) $item->{$key} : null;
+                }
+                $item->oom_kill_count = $item->oom_kill_count !== null ? (int) $item->oom_kill_count : null;
                 $item->date = Carbon::parse($item->date)->format('Y-m-d H:i');
+                $item->disk_used_percent = ($item->disk_total ?? 0) > 0
+                    ? round(($item->disk_used / $item->disk_total) * 100, 2)
+                    : null;
+                $item->memory_used_percent = ($item->memory_total ?? 0) > 0
+                    ? round(($item->memory_used / $item->memory_total) * 100, 2)
+                    : null;
+                unset($item->date_interval);
 
                 return $item;
             });
@@ -132,6 +189,8 @@ class GetMetrics
 
     private function validate(array $input): void
     {
+        $isCustom = ($input['period'] ?? null) === 'custom';
+
         $rules = [
             'period' => [
                 'required',
@@ -145,12 +204,9 @@ class GetMetrics
                     'custom',
                 ]),
             ],
+            'from' => array_filter([$isCustom ? 'required' : 'nullable', 'date', $isCustom ? 'before_or_equal:to' : null]),
+            'to' => array_filter([$isCustom ? 'required' : 'nullable', 'date', $isCustom ? 'after_or_equal:from' : null]),
         ];
-
-        if (isset($input['period']) && $input['period'] === 'custom') {
-            $rules['from'] = ['required', 'date', 'before_or_equal:to'];
-            $rules['to'] = ['required', 'date', 'after_or_equal:from'];
-        }
 
         Validator::make($input, $rules)->validate();
     }

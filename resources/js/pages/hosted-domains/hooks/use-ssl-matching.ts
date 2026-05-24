@@ -2,19 +2,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AvailableSsl } from '@/types/hosted-domain';
 import axios from 'axios';
 
-type SetData = (callback: (prev: Record<string, string>) => Record<string, string>) => void;
+type SslFormFields = { ssl_method: string; ssl_id: string };
 
 interface UseSslMatchingOptions {
   serverId: number;
   siteId: number;
   domain: string;
   sslMethod: string;
-  setData: SetData;
+  sslId: string;
+  applySslSettings: (settings: SslFormFields) => void;
   open: boolean;
   originalDomain?: string;
 }
 
-export function useSslMatching({ serverId, siteId, domain, sslMethod, setData, open, originalDomain }: UseSslMatchingOptions) {
+export function useSslMatching({ serverId, siteId, domain, sslMethod, sslId, applySslSettings, open, originalDomain }: UseSslMatchingOptions) {
   const [matchingSsls, setMatchingSsls] = useState<AvailableSsl[]>([]);
   const [loadingSsls, setLoadingSsls] = useState(false);
   const lastFetchedDomain = useRef(originalDomain ?? '');
@@ -40,9 +41,9 @@ export function useSslMatching({ serverId, siteId, domain, sslMethod, setData, o
             return;
           }
           if (best_match_id) {
-            setData((prev) => ({ ...prev, ssl_method: 'custom', ssl_id: String(best_match_id) }));
+            applySslSettings({ ssl_method: 'custom', ssl_id: String(best_match_id) });
           } else {
-            setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
+            applySslSettings({ ssl_method: 'letsencrypt', ssl_id: '' });
           }
         })
         .catch((error) => {
@@ -55,7 +56,7 @@ export function useSslMatching({ serverId, siteId, domain, sslMethod, setData, o
           setLoadingSsls(false);
         });
     },
-    [serverId, siteId, originalDomain, setData],
+    [serverId, siteId, originalDomain, applySslSettings],
   );
 
   useEffect(() => {
@@ -64,7 +65,7 @@ export function useSslMatching({ serverId, siteId, domain, sslMethod, setData, o
     }
 
     if (sslStale && sslMethod === 'custom') {
-      setData((prev) => ({ ...prev, ssl_method: 'letsencrypt', ssl_id: '' }));
+      applySslSettings({ ssl_method: 'letsencrypt', ssl_id: '' });
     }
 
     const controller = new AbortController();
@@ -79,7 +80,7 @@ export function useSslMatching({ serverId, siteId, domain, sslMethod, setData, o
   }, [domain, open, fetchMatchingSsls]);
 
   const handleSslMethodChange = (value: string) => {
-    setData((prev) => ({ ...prev, ssl_method: value, ssl_id: value !== 'custom' ? '' : prev.ssl_id }));
+    applySslSettings({ ssl_method: value, ssl_id: value !== 'custom' ? '' : sslId });
   };
 
   const reset = (resetDomain?: string) => {

@@ -25,7 +25,9 @@ class DeployJob implements ShouldQueue
     public function __construct(
         protected Deployment $deployment,
         protected bool $isModern = true
-    ) {}
+    ) {
+        $this->onQueue('ssh');
+    }
 
     public function handle(): void
     {
@@ -90,7 +92,10 @@ class DeployJob implements ShouldQueue
             script: $site->deploymentScript->content,
             serverLog: $log,
             user: $site->user,
-            variables: $site->environmentVariables($this->deployment),
+            variables: array_merge(
+                $site->environmentVariables($this->deployment),
+                $site->type()->deploymentEnvironment(),
+            ),
             aliases: $site->environmentAliases(),
         );
 
@@ -112,19 +117,24 @@ class DeployJob implements ShouldQueue
             script: $site->buildScript->content ?? '',
             serverLog: $log,
             user: $site->user,
-            variables: $site->environmentVariables($this->deployment),
+            variables: array_merge(
+                $site->environmentVariables($this->deployment),
+                $site->type()->deploymentEnvironment(),
+            ),
             aliases: $site->environmentAliases(),
         );
 
         // link resources
-        $site->server->ssh($site->user)->exec(
-            view('ssh.modern-deployment.link-resources', [
-                'site' => $site,
-                'releasePath' => $this->deployment->path(),
-            ]),
-            'link-resources',
-            $site->id
-        );
+        $site->server->ssh($site->user)
+            ->variables($site->environmentVariables($this->deployment))
+            ->exec(
+                view('ssh.modern-deployment.link-resources', [
+                    'site' => $site,
+                    'releasePath' => $this->deployment->path(),
+                ]),
+                'link-resources',
+                $site->id
+            );
 
         // pre-flight
         $site->server->os()->runScript(
@@ -132,7 +142,10 @@ class DeployJob implements ShouldQueue
             script: $site->preFlightScript->content ?? '',
             serverLog: $log,
             user: $site->user,
-            variables: $site->environmentVariables($this->deployment),
+            variables: array_merge(
+                $site->environmentVariables($this->deployment),
+                $site->type()->deploymentEnvironment(),
+            ),
             aliases: $site->environmentAliases(),
         );
 

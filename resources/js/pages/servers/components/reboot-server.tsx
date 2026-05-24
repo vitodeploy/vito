@@ -31,11 +31,16 @@ export default function RebootServer({ server, children }: { server: Server; chi
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Reboot {server.name}</DialogTitle>
-          <DialogDescription className="sr-only">Reboot server</DialogDescription>
+          <DialogTitle>Restart {server.name}?</DialogTitle>
+          <DialogDescription className="sr-only">Restart server</DialogDescription>
         </DialogHeader>
 
-        <p className="p-4">Are you sure you want to reboot the server?</p>
+        <div className="flex flex-col gap-2 p-4 text-sm">
+          <p>Are you sure you want to restart this server?</p>
+          <p className="text-muted-foreground">
+            Sites and services hosted on this server will be unavailable while it restarts. Connections in flight will be dropped.
+          </p>
+        </div>
 
         <DialogFooter className="gap-2">
           <DialogClose asChild>
@@ -44,7 +49,7 @@ export default function RebootServer({ server, children }: { server: Server; chi
 
           <Button onClick={submit} disabled={form.processing}>
             {form.processing && <LoaderCircleIcon className="size-4 animate-spin" />}
-            Reboot
+            Restart
           </Button>
         </DialogFooter>
       </DialogContent>

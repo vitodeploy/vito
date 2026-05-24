@@ -19,7 +19,7 @@ import InputError from '@/components/ui/input-error';
 
 export default function Uninstall({ service }: { service: Service }) {
   const [open, setOpen] = useState(false);
-  const form = useForm();
+  const form = useForm<{ service?: string }>({});
 
   const submit = () => {
     form.delete(route('services.destroy', { server: service.server_id, service: service }), {

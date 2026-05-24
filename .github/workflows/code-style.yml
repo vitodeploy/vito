@@ -53,3 +53,6 @@ jobs:
 
       - name: Run lint
         run: npm run lint
+
+      - name: Run TypeScript check
+        run: npm run types
