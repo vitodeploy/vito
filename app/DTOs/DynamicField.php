@@ -96,7 +96,7 @@ class DynamicField
     /**
      * Render a single required version select for one specific tool. Used by
      * site types where a tooling is the primary configuration (e.g.
-     * MiseNodeJS / MiseBun). The frontend automatically:
+     * NodeSite / BunSite). The frontend automatically:
      *  - locks the field to the version the isolated user already has, if any
      *    (matching the create-time lockstep invariant); and
      *  - defaults to the tool's latest supported version otherwise.

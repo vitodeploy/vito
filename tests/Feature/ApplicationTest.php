@@ -10,7 +10,7 @@ use App\Models\GitHook;
 use App\Models\Site;
 use App\Models\Worker;
 use App\Notifications\DeploymentCompleted;
-use App\SiteTypes\MiseNodeJS;
+use App\SiteTypes\NodeSite;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -58,7 +58,7 @@ class ApplicationTest extends TestCase
         /** @var Site $proxied */
         $proxied = Site::factory()->create([
             'server_id' => $this->server->id,
-            'type' => MiseNodeJS::id(),
+            'type' => NodeSite::id(),
         ]);
 
         /** @var Worker $worker */

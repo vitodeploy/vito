@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Site;
-use App\SiteTypes\MiseNodeJS;
+use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,7 +13,7 @@ class AbstractProxiedSiteTypeTest extends TestCase
 
     protected Site $proxiedSite;
 
-    protected MiseNodeJS $siteType;
+    protected NodeSite $siteType;
 
     protected function setUp(): void
     {
@@ -23,7 +23,7 @@ class AbstractProxiedSiteTypeTest extends TestCase
             'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
-            'type' => MiseNodeJS::id(),
+            'type' => NodeSite::id(),
             'type_data' => [
                 'node_version' => '22',
                 'package_manager' => 'npm',
@@ -31,7 +31,7 @@ class AbstractProxiedSiteTypeTest extends TestCase
                 'start_command' => 'npm run start',
             ],
         ]);
-        $this->siteType = new MiseNodeJS($this->proxiedSite);
+        $this->siteType = new NodeSite($this->proxiedSite);
     }
 
     public function test_start_command_returns_type_data_value(): void

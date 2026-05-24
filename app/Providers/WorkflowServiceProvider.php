@@ -91,11 +91,6 @@ class WorkflowServiceProvider extends ServiceProvider
             ->category('site')
             ->handler(CreateLoadBalancerSite::class)
             ->register();
-        RegisterWorkflowAction::make('create-nodejs-site')
-            ->label('Create NodeJS Site')
-            ->category('site')
-            ->handler(CreateNodeJsSite::class)
-            ->register();
         RegisterWorkflowAction::make('deploy-site')
             ->label('Deploy Site')
             ->category('site')

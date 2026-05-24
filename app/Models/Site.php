@@ -16,6 +16,8 @@ use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\AbstractProxiedSiteType;
+use App\SiteTypes\BunSite;
+use App\SiteTypes\NodeSite;
 use App\SiteTypes\SiteType;
 use App\SourceControlProviders\GithubApp;
 use App\Traits\HasProjectThroughServer;
@@ -423,7 +425,13 @@ class Site extends AbstractModel
 
     public function type(): SiteType
     {
-        $handlerClass = config('site.types.'.$this->type.'.handler');
+        $type = match ($this->type) {
+            'mise_bun' => BunSite::id(),
+            'mise_nodejs' => NodeSite::id(),
+            default => $this->type,
+        };
+
+        $handlerClass = config('site.types.'.$type.'.handler');
         if (! class_exists($handlerClass)) {
             throw new RuntimeException("Site type handler class {$handlerClass} does not exist.");
         }

@@ -11,19 +11,15 @@ use App\Plugins\RegisterSiteType;
 use App\SiteFeatures\ModernDeployment\Configuration;
 use App\SiteFeatures\ModernDeployment\Disable;
 use App\SiteFeatures\ModernDeployment\Enable;
+use App\SiteTypes\BunSite;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
-use App\SiteTypes\MiseBun;
-use App\SiteTypes\MiseNodeJS;
 use App\SiteTypes\NodeJS;
+use App\SiteTypes\NodeSite;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
 use App\SiteTypes\Wordpress;
-use App\Tooling\BunTooling;
-use App\Tooling\NodeTooling;
-use App\Tooling\PnpmTooling;
-use App\Tooling\YarnTooling;
 use Illuminate\Support\ServiceProvider;
 
 class SiteTypeServiceProvider extends ServiceProvider
@@ -36,8 +32,8 @@ class SiteTypeServiceProvider extends ServiceProvider
         $this->phpBlank();
         $this->laravel();
         $this->nodeJS();
-        $this->miseNodeJS();
-        $this->miseBun();
+        $this->nodeSite();
+        $this->bunSite();
         $this->loadBalancer();
         $this->phpMyAdmin();
         $this->wordpress();
@@ -158,99 +154,27 @@ class SiteTypeServiceProvider extends ServiceProvider
     private function nodeJS(): void
     {
         RegisterSiteType::make(NodeJS::id())
-            ->label('NodeJS with NPM (Deprecated)')
+            ->label('NodeJS (Deprecated - Do Not Use)')
             ->handler(NodeJS::class)
-            ->form(DynamicForm::make([
-                DynamicField::make('source_control')
-                    ->component()
-                    ->label('Source Control'),
-                DynamicField::make('port')
-                    ->text()
-                    ->label('Port')
-                    ->placeholder('3000')
-                    ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
-                DynamicField::make('repository')
-                    ->text()
-                    ->label('Repository')
-                    ->placeholder('organization/repository')
-                    ->description('Your package.json must have start and build scripts'),
-                DynamicField::make('branch')
-                    ->text()
-                    ->label('Branch')
-                    ->default('main'),
-            ]))
+            ->form(DynamicForm::make([]))
             ->register();
     }
 
-    private function miseNodeJS(): void
+    private function nodeSite(): void
     {
-        RegisterSiteType::make(MiseNodeJS::id())
+        RegisterSiteType::make(NodeSite::id())
             ->label('Node.js')
-            ->handler(MiseNodeJS::class)
-            ->form(DynamicForm::make([
-                DynamicField::make('node_version')
-                    ->toolingPicker(NodeTooling::class),
-                DynamicField::make('package_manager')
-                    ->toolingSelector(
-                        [NodeTooling::class, PnpmTooling::class, YarnTooling::class],
-                        [NodeTooling::class => 'npm'],
-                    )
-                    ->label('Package Manager'),
-                DynamicField::make('source_control')
-                    ->component()
-                    ->label('Source Control'),
-                DynamicField::make('port')
-                    ->text()
-                    ->label('Port')
-                    ->placeholder('3000')
-                    ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
-                DynamicField::make('repository')
-                    ->text()
-                    ->label('Repository')
-                    ->placeholder('organization/repository'),
-                DynamicField::make('branch')
-                    ->text()
-                    ->label('Branch')
-                    ->default('main'),
-                DynamicField::make('start_command')
-                    ->text()
-                    ->label('Start Command')
-                    ->placeholder('e.g., npm start')
-                    ->description('Command to start your application. Leave empty to use the start script of package.json'),
-            ]))
+            ->handler(NodeSite::class)
+            ->form(DynamicForm::make(NodeSite::formFields()))
             ->register();
     }
 
-    private function miseBun(): void
+    private function bunSite(): void
     {
-        RegisterSiteType::make(MiseBun::id())
+        RegisterSiteType::make(BunSite::id())
             ->label('Bun')
-            ->handler(MiseBun::class)
-            ->form(DynamicForm::make([
-                DynamicField::make('bun_version')
-                    ->toolingPicker(BunTooling::class),
-                DynamicField::make('source_control')
-                    ->component()
-                    ->label('Source Control'),
-                DynamicField::make('port')
-                    ->text()
-                    ->label('Port')
-                    ->placeholder('3000')
-                    ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
-                DynamicField::make('repository')
-                    ->text()
-                    ->label('Repository')
-                    ->placeholder('organization/repository'),
-                DynamicField::make('branch')
-                    ->text()
-                    ->label('Branch')
-                    ->default('main'),
-                DynamicField::make('start_command')
-                    ->text()
-                    ->label('Start Command')
-                    ->placeholder('e.g., bun run start')
-                    ->description('Command to start your application. Leave empty to use the start script of package.json'),
-            ]))
+            ->handler(BunSite::class)
+            ->form(DynamicForm::make(BunSite::formFields()))
             ->register();
     }
 

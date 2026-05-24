@@ -2,9 +2,9 @@
 
 namespace App\SiteTypes;
 
+use App\DTOs\DynamicField;
 use App\Enums\NodePackageManager;
 use App\Models\Site;
-use App\Models\SourceControl;
 use App\Tooling\BunTooling;
 use App\Tooling\NodeTooling;
 use App\Tooling\PnpmTooling;
@@ -12,11 +12,11 @@ use App\Tooling\ToolingRegistry;
 use App\Tooling\YarnTooling;
 use Illuminate\Validation\Rule;
 
-class MiseNodeJS extends AbstractProxiedSiteType
+class NodeSite extends AbstractProxiedSiteType
 {
     public static function id(): string
     {
-        return 'mise_nodejs';
+        return 'node';
     }
 
     public function language(): string
@@ -34,21 +34,29 @@ class MiseNodeJS extends AbstractProxiedSiteType
         return ['node', 'pnpm', 'yarn'];
     }
 
+    /**
+     * @return array<int, DynamicField>
+     */
+    public static function formFields(): array
+    {
+        return array_merge(
+            [
+                DynamicField::make('node_version')
+                    ->toolingPicker(NodeTooling::class),
+                DynamicField::make('package_manager')
+                    ->toolingSelector(
+                        [NodeTooling::class, PnpmTooling::class, YarnTooling::class],
+                        [NodeTooling::class => 'npm'],
+                    )
+                    ->label('Package Manager'),
+            ],
+            parent::sharedFormFields(),
+        );
+    }
+
     public function createRules(array $input): array
     {
-        $rules = [
-            'source_control' => SourceControl::siteValidationRules($this->site->server),
-            'repository' => [
-                'required',
-            ],
-            'branch' => [
-                'required',
-            ],
-            'port' => [
-                'required',
-                'integer',
-                'between:1024,65535',
-            ],
+        $rules = array_merge(parent::createRules($input), [
             'node_version' => [
                 'required',
                 Rule::in(NodeTooling::supportedVersions()),
@@ -57,11 +65,7 @@ class MiseNodeJS extends AbstractProxiedSiteType
                 'required',
                 Rule::in(NodePackageManager::toolIds()),
             ],
-            'start_command' => [
-                'nullable',
-                'string',
-            ],
-        ];
+        ]);
 
         $pmToolId = $input['package_manager'] ?? null;
         if (is_string($pmToolId) && $pmToolId !== 'node') {
@@ -77,16 +81,6 @@ class MiseNodeJS extends AbstractProxiedSiteType
         return $rules;
     }
 
-    public function createFields(array $input): array
-    {
-        return [
-            'source_control_id' => $input['source_control'] ?? '',
-            'repository' => $input['repository'] ?? '',
-            'branch' => $input['branch'] ?? '',
-            'port' => $input['port'] ?? '',
-        ];
-    }
-
     public function data(array $input): array
     {
         $pmToolId = $input['package_manager'] ?? 'node';
@@ -100,7 +94,7 @@ class MiseNodeJS extends AbstractProxiedSiteType
         $data = [
             'node_version' => $input['node_version'] ?? '22',
             'package_manager' => $packageManager->value,
-            'start_command' => ! empty($input['start_command']) ? $input['start_command'] : $packageManager->startCommand(),
+            'start_command' => ! empty($input['start_command']) ? $input['start_command'] : $this->defaultStartCommand($packageManager),
         ];
 
         foreach ([BunTooling::id(), PnpmTooling::id(), YarnTooling::id()] as $managedId) {
@@ -129,8 +123,8 @@ class MiseNodeJS extends AbstractProxiedSiteType
         return $this->packageManager()->buildCommand();
     }
 
-    protected function startCommand(): string
+    protected function defaultStartCommand(?NodePackageManager $packageManager = null): string
     {
-        return $this->site->type_data['start_command'] ?? $this->packageManager()->startCommand();
+        return ($packageManager ?? $this->packageManager())->startCommand();
     }
 }

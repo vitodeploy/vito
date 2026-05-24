@@ -3,39 +3,39 @@
 namespace Tests\Unit;
 
 use App\Models\Site;
-use App\SiteTypes\MiseBun;
+use App\SiteTypes\BunSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class MiseBunSiteTypeTest extends TestCase
+class BunSiteTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected Site $miseSite;
+    protected Site $bunSite;
 
-    protected MiseBun $siteType;
+    protected BunSite $siteType;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->miseSite = Site::factory()->create([
+        $this->bunSite = Site::factory()->create([
             'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
-            'type' => MiseBun::id(),
+            'type' => BunSite::id(),
             'type_data' => [
                 'bun_version' => '1.2',
                 'build_command' => 'bun run build',
                 'start_command' => 'bun run start',
             ],
         ]);
-        $this->siteType = new MiseBun($this->miseSite);
+        $this->siteType = new BunSite($this->bunSite);
     }
 
     public function test_id(): void
     {
-        $this->assertEquals('mise_bun', MiseBun::id());
+        $this->assertEquals('bun', BunSite::id());
     }
 
     public function test_language(): void
@@ -50,7 +50,7 @@ class MiseBunSiteTypeTest extends TestCase
 
     public function test_create_time_tools_returns_bun(): void
     {
-        $this->assertSame(['bun'], MiseBun::createTimeTools());
+        $this->assertSame(['bun'], BunSite::createTimeTools());
     }
 
     public function test_install_command_returns_bun_install(): void
@@ -80,10 +80,10 @@ class MiseBunSiteTypeTest extends TestCase
             'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
-            'type' => MiseBun::id(),
+            'type' => BunSite::id(),
             'type_data' => [],
         ]);
-        $siteType = new MiseBun($site);
+        $siteType = new BunSite($site);
         $reflection = new \ReflectionMethod($siteType, 'buildCommand');
 
         $this->assertEquals('bun run build', $reflection->invoke($siteType));
@@ -102,10 +102,10 @@ class MiseBunSiteTypeTest extends TestCase
             'server_id' => $this->server->id,
             'user' => 'testuser',
             'path' => '/home/testuser/example.com',
-            'type' => MiseBun::id(),
+            'type' => BunSite::id(),
             'type_data' => [],
         ]);
-        $siteType = new MiseBun($site);
+        $siteType = new BunSite($site);
         $reflection = new \ReflectionMethod($siteType, 'startCommand');
 
         $this->assertEquals('bun run start', $reflection->invoke($siteType));
@@ -161,7 +161,7 @@ class MiseBunSiteTypeTest extends TestCase
         $this->assertArrayHasKey('branch', $rules);
         $this->assertArrayHasKey('port', $rules);
         $this->assertArrayNotHasKey('build_command', $rules);
-        $this->assertArrayHasKey('start_command', $rules);
+        $this->assertArrayNotHasKey('start_command', $rules);
         $this->assertArrayNotHasKey('package_manager', $rules);
     }
 

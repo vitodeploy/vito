@@ -3,15 +3,17 @@
 namespace App\SiteTypes;
 
 use App\Actions\Worker\CreateWorker;
+use App\DTOs\DynamicField;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHError;
 use App\Models\Deployment;
+use App\Models\SourceControl;
 use App\Models\Worker;
 
 /**
  * Base for site types that are proxied by the webserver to a local
  * long-running application process running under supervisor (e.g.
- * `MiseNodeJS`, `MiseBun`). The site is the proxy target; nginx routes
+ * `NodeSite`, `BunSite`). The site is the proxy target; nginx routes
  * traffic to a port owned by the supervisor-managed worker.
  *
  * Install does the infrastructure only (isolate, install tooling, vhost,
@@ -41,11 +43,68 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
         return ['is_reverse_proxy' => true];
     }
 
+    public function createRules(array $input): array
+    {
+        return [
+            'source_control' => SourceControl::siteValidationRules($this->site->server),
+            'repository' => ['required'],
+            'branch' => ['required'],
+            'port' => ['required', 'integer', 'between:1024,65535'],
+        ];
+    }
+
+    public function createFields(array $input): array
+    {
+        return [
+            'source_control_id' => $input['source_control'] ?? '',
+            'repository' => $input['repository'] ?? '',
+            'branch' => $input['branch'] ?? '',
+            'port' => $input['port'] ?? '',
+        ];
+    }
+
+    /**
+     * Shared `DynamicField`s for the create form: source control, port,
+     * repository, branch. Site type registrations in `SiteTypeServiceProvider`
+     * merge these onto their tool-specific picker(s) so every proxied site
+     * type asks for the same four fields in the same order.
+     *
+     * @return array<int, DynamicField>
+     */
+    public static function sharedFormFields(): array
+    {
+        return [
+            DynamicField::make('source_control')
+                ->component()
+                ->label('Source Control'),
+            DynamicField::make('port')
+                ->text()
+                ->label('Port')
+                ->placeholder('3000')
+                ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
+            DynamicField::make('repository')
+                ->text()
+                ->label('Repository')
+                ->placeholder('organization/repository'),
+            DynamicField::make('branch')
+                ->text()
+                ->label('Branch')
+                ->default('main'),
+        ];
+    }
+
     abstract protected function installCommand(): string;
 
     abstract protected function buildCommand(): string;
 
-    abstract protected function startCommand(): string;
+    abstract protected function defaultStartCommand(): string;
+
+    protected function startCommand(): string
+    {
+        $command = $this->site->type_data['start_command'] ?? null;
+
+        return is_string($command) && $command !== '' ? $command : $this->defaultStartCommand();
+    }
 
     /**
      * @throws FailedToDeployGitKey

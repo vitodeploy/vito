@@ -8,7 +8,7 @@ use App\Facades\SSH;
 use App\Models\Deployment;
 use App\Models\Site;
 use App\Models\Worker;
-use App\SiteTypes\MiseNodeJS;
+use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -27,7 +27,7 @@ class AfterDeployHookTest extends TestCase
             'server_id' => $this->server->id,
             'user' => 'isolated-foo',
             'path' => '/home/isolated-foo/app.test',
-            'type' => MiseNodeJS::id(),
+            'type' => NodeSite::id(),
             'port' => 3000,
             'type_data' => [
                 'node_version' => '22',
