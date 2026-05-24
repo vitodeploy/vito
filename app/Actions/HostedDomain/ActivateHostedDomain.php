@@ -2,6 +2,7 @@
 
 namespace App\Actions\HostedDomain;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Enums\HostedDomainStatus;
 use App\Enums\SslMethod;
 use App\Enums\SslStatus;
@@ -21,6 +22,8 @@ class ActivateHostedDomain
             SslMethod::CUSTOM => $this->activateWithCustomSsl($hostedDomain, $site),
             SslMethod::LETSENCRYPT => $this->activateWithLetsEncrypt($hostedDomain, $site),
         };
+
+        app(BroadcastSiteUpdate::class)->broadcast($site);
     }
 
     private function activateWithoutSsl(HostedDomain $hostedDomain, Site $site): void

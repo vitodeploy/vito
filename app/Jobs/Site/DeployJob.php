@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Site;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\DeploymentStatus;
 use App\Events\SocketEvent;
@@ -47,6 +48,7 @@ class DeployJob implements ShouldQueue
             $this->deployment->save();
             $this->deployment->activate();
             $this->broadcastDeploymentUpdate();
+            app(BroadcastSiteUpdate::class)->broadcast($site);
             Notifier::send($site, new DeploymentCompleted($this->deployment, $site));
         });
     }

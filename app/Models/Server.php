@@ -603,4 +603,29 @@ class Server extends AbstractModel
     {
         return in_array($feature, config('server.features', []));
     }
+
+    /**
+     * @return array<int, array{key: string, ...}>
+     */
+    public function getWarnings(): array
+    {
+        $warnings = [];
+
+        if ($this->updates > 0) {
+            $warnings[] = [
+                'key' => 'updates_available',
+                'count' => $this->updates,
+            ];
+        }
+
+        $latestMetric = $this->relationLoaded('latestMetric')
+            ? $this->latestMetric
+            : $this->latestMetric()->first();
+
+        if ($latestMetric?->reboot_required) {
+            $warnings[] = ['key' => 'reboot_required'];
+        }
+
+        return $warnings;
+    }
 }

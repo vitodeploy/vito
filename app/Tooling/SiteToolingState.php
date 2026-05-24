@@ -4,7 +4,6 @@ namespace App\Tooling;
 
 use App\DTOs\SocketEventDTO;
 use App\Events\SocketEvent;
-use App\Http\Resources\SiteResource;
 use App\Models\IsolatedUser;
 use App\Models\Site;
 
@@ -13,8 +12,10 @@ use App\Models\Site;
  * `{ <tool_id>: { version: '22'|'none', status: 'installing'|... |null } }`.
  *
  * The static API stays `Site`-keyed so controllers / jobs need minimal change.
- * Each mutation broadcasts a `site.updated` event for every site belonging to
- * the iuser — the payload shape (a `SiteResource`) is unchanged.
+ * Each mutation emits **one** `isolated-user.tooling-updated` event carrying
+ * the iuser id + its current tooling state — frontend pages filter by
+ * matching their site's `isolated_user_id`. Avoids the previous per-site
+ * fan-out (and the SiteResource serialization required for it).
  */
 final class SiteToolingState
 {
@@ -58,20 +59,30 @@ final class SiteToolingState
 
     public static function completeUninstall(Site $site, string $toolId): void
     {
-        self::completeInstall($site, $toolId, 'none');
+        $iuser = $site->isolatedUser;
+        if (! $iuser instanceof IsolatedUser) {
+            return;
+        }
+
+        // Drop the tool key entirely rather than marking `version: 'none'` —
+        // keeps `installed_tooling` lean as the registry grows.
+        $iuser->clearTooling($toolId);
+
+        self::broadcast($iuser);
     }
 
     private static function broadcast(IsolatedUser $iuser): void
     {
         $iuser->loadMissing('server');
+        $iuser->refresh();
 
-        foreach ($iuser->sites()->get() as $site) {
-            /** @var Site $site */
-            SocketEvent::dispatch(new SocketEventDTO(
-                projectId: $iuser->server->project_id,
-                type: 'site.updated',
-                data: new SiteResource($site),
-            ));
-        }
+        SocketEvent::dispatch(new SocketEventDTO(
+            projectId: $iuser->server->project_id,
+            type: 'isolated-user.tooling-updated',
+            data: [
+                'id' => $iuser->id,
+                'installed_tooling' => $iuser->installed_tooling ?? new \stdClass,
+            ],
+        ));
     }
 }

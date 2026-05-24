@@ -99,6 +99,30 @@ class Metric extends Model
         'reboot_required' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (Metric $metric): void {
+            if ($metric->reboot_required === null) {
+                return;
+            }
+
+            $previous = static::query()
+                ->where('server_id', $metric->server_id)
+                ->where('id', '<', $metric->id)
+                ->latest('id')
+                ->value('reboot_required');
+
+            if ((bool) $previous === (bool) $metric->reboot_required) {
+                return;
+            }
+
+            $server = $metric->server;
+            if ($server) {
+                app(\App\Actions\Server\BroadcastServerUpdate::class)->broadcast($server);
+            }
+        });
+    }
+
     /**
      * @return BelongsTo<Server, covariant $this>
      */

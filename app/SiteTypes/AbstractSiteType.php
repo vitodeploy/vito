@@ -14,6 +14,7 @@ use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
 use App\SSH\OS\Git;
+use App\Tooling\SiteToolingState;
 use App\Tooling\ToolingRegistry;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\File;
@@ -270,7 +271,10 @@ abstract class AbstractSiteType implements SiteType
      * Install every tool the site type offers at create time whose requested
      * version (passed through `type_data` at site creation) is non-empty and
      * isn't already installed for the isolated user. On success, the iuser's
-     * `installed_tooling` is updated so siblings inherit the version.
+     * `installed_tooling` is updated via `SiteToolingState::completeInstall`
+     * so siblings inherit the version AND any tooling pages open elsewhere
+     * (e.g. a sibling site's tooling page in another tab) receive the live
+     * `isolated-user.tooling-updated` broadcast.
      *
      * @throws SSHError
      */
@@ -298,7 +302,7 @@ abstract class AbstractSiteType implements SiteType
 
             $tool->install($this->site, $version);
 
-            $iuser?->setToolingVersion($toolId, $version);
+            SiteToolingState::completeInstall($this->site, $toolId, $version);
 
             $typeData = $this->site->type_data ?? [];
             unset($typeData[$key]);

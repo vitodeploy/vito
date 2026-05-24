@@ -141,7 +141,7 @@ class SiteToolingTest extends TestCase
         $this->assertSame('9', $iuser->toolingVersion('pnpm'));
     }
 
-    public function test_uninstall_sets_version_to_none_across_siblings(): void
+    public function test_uninstall_removes_tool_entry_from_iuser(): void
     {
         SSH::fake();
 
@@ -156,7 +156,9 @@ class SiteToolingTest extends TestCase
         SSH::assertExecutedContains('mise uninstall node --all');
 
         $iuser = $this->iuser();
-        $this->assertSame('none', $iuser->toolingVersion('node'));
+        $this->assertNull($iuser->toolingVersion('node'));
+        $this->assertNull($iuser->toolingStatus('node'));
+        $this->assertArrayNotHasKey('node', $iuser->installed_tooling ?? []);
     }
 
     public function test_install_validation_rejects_unsupported_version(): void

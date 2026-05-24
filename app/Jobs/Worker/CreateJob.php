@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Worker;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\DTOs\SocketEventDTO;
 use App\Enums\WorkerStatus;
 use App\Events\SocketEvent;
@@ -33,6 +34,10 @@ class CreateJob implements ShouldQueue
             $this->worker->status = WorkerStatus::RUNNING;
             $this->worker->save();
             $this->broadcastWorkerUpdate();
+
+            if ($this->worker->site) {
+                app(BroadcastSiteUpdate::class)->broadcast($this->worker->site);
+            }
         });
     }
 

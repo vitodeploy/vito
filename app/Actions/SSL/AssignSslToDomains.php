@@ -2,6 +2,7 @@
 
 namespace App\Actions\SSL;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Models\HostedDomain;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -32,6 +33,10 @@ class AssignSslToDomains
                 $hostedDomain->save();
                 $changed->push($hostedDomain);
             }
+        }
+
+        if ($changed->isNotEmpty()) {
+            app(BroadcastSiteUpdate::class)->broadcast($site);
         }
 
         return $changed;
