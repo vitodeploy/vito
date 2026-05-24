@@ -5,13 +5,18 @@ namespace Tests\Feature;
 use App\Actions\HostedDomain\ActivateHostedDomain;
 use App\Actions\Site\DisableSsl;
 use App\Actions\Site\EnableSsl;
+use App\Actions\Site\UpdatePort;
+use App\Enums\DeploymentStatus;
 use App\Enums\HostedDomainStatus;
 use App\Enums\SslMethod;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Http\Resources\ServerResource;
+use App\Models\Deployment;
 use App\Models\HostedDomain;
 use App\Models\Metric;
+use App\Models\Site;
+use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -82,6 +87,61 @@ class WarningsBroadcastTest extends TestCase
             SocketEvent::class,
             fn (SocketEvent $event) => $event->data->type === 'site.updated'
                 && ($event->data->data['id'] ?? null) === $this->site->id
+        );
+    }
+
+    public function test_proxied_site_broadcast_carries_needs_first_deploy_warning(): void
+    {
+        SSH::fake();
+
+        /** @var Site $proxiedSite */
+        $proxiedSite = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'isolated-foo',
+            'type' => NodeSite::id(),
+            'port' => 3000,
+            'type_data' => ['node_version' => '22', 'package_manager' => 'npm'],
+        ]);
+
+        Event::fake([SocketEvent::class]);
+
+        app(UpdatePort::class)->update($proxiedSite, ['port' => 4000]);
+
+        Event::assertDispatched(
+            SocketEvent::class,
+            fn (SocketEvent $event) => $event->data->type === 'site.updated'
+                && ($event->data->data['id'] ?? null) === $proxiedSite->id
+                && collect($event->data->data['warnings'] ?? [])->contains(fn ($w) => $w['key'] === 'needs_first_deploy'),
+        );
+    }
+
+    public function test_proxied_site_broadcast_omits_warning_after_finished_deployment(): void
+    {
+        SSH::fake();
+
+        /** @var Site $proxiedSite */
+        $proxiedSite = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'isolated-foo',
+            'type' => NodeSite::id(),
+            'port' => 3000,
+            'type_data' => ['node_version' => '22', 'package_manager' => 'npm'],
+        ]);
+
+        Deployment::factory()->create([
+            'site_id' => $proxiedSite->id,
+            'status' => DeploymentStatus::FINISHED,
+        ]);
+
+        Event::fake([SocketEvent::class]);
+
+        app(UpdatePort::class)->update($proxiedSite, ['port' => 4000]);
+
+        Event::assertDispatched(
+            SocketEvent::class,
+            fn (SocketEvent $event) => $event->data->type === 'site.updated'
+                && ($event->data->data['id'] ?? null) === $proxiedSite->id
+                && ! collect($event->data->data['warnings'] ?? [])->contains(fn ($w) => $w['key'] === 'needs_first_deploy'),
         );
     }
 

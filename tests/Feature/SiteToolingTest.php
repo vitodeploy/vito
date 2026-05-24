@@ -3,17 +3,21 @@
 namespace Tests\Feature;
 
 use App\Enums\SiteStatus;
+use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Jobs\Site\Tooling\InstallSiteToolingJob;
+use App\Jobs\Site\Tooling\UninstallSiteToolingJob;
 use App\Models\IsolatedUser;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\Models\User;
+use App\SiteTypes\AbstractSiteType;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
 use App\SourceControlProviders\Github;
 use App\Tooling\SiteToolingState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -275,6 +279,46 @@ class SiteToolingTest extends TestCase
         $this->assertSame('install_failed', $iuser->toolingStatus('node'));
     }
 
+    public function test_failed_uninstall_records_failed_status(): void
+    {
+        $this->iuser()->setToolingVersion('node', '22');
+
+        $job = new UninstallSiteToolingJob($this->isolatedSite, 'node');
+
+        $job->failed(new \RuntimeException('boom'));
+
+        $iuser = $this->iuser();
+        $this->assertSame('uninstall_failed', $iuser->toolingStatus('node'));
+    }
+
+    public function test_complete_install_broadcasts_tooling_updated(): void
+    {
+        Event::fake([SocketEvent::class]);
+
+        SiteToolingState::completeInstall($this->isolatedSite, 'node', '22');
+
+        Event::assertDispatched(
+            SocketEvent::class,
+            fn (SocketEvent $event) => $event->data->type === 'isolated-user.tooling-updated'
+                && $event->data->data['id'] === $this->iuser()->id,
+        );
+    }
+
+    public function test_complete_uninstall_broadcasts_tooling_updated(): void
+    {
+        $this->iuser()->setToolingVersion('node', '22');
+
+        Event::fake([SocketEvent::class]);
+
+        SiteToolingState::completeUninstall($this->isolatedSite, 'node');
+
+        Event::assertDispatched(
+            SocketEvent::class,
+            fn (SocketEvent $event) => $event->data->type === 'isolated-user.tooling-updated'
+                && $event->data->data['id'] === $this->iuser()->id,
+        );
+    }
+
     public function test_successful_install_clears_status(): void
     {
         SSH::fake();
@@ -287,6 +331,73 @@ class SiteToolingTest extends TestCase
         $iuser = $this->iuser();
         $this->assertNull($iuser->toolingStatus('node'));
         $this->assertSame('22', $iuser->toolingVersion('node'));
+    }
+
+    public function test_setup_requested_tooling_installs_each_requested_tool_and_strips_type_data(): void
+    {
+        SSH::fake();
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'domain' => 'iso-three.test',
+            'user' => 'isolated-foo',
+            'path' => '/home/isolated-foo/iso-three.test',
+            'type' => Laravel::id(),
+            'status' => SiteStatus::READY,
+            'type_data' => [
+                'node_version' => '22',
+                'pnpm_version' => '9',
+                'yarn_version' => 'none',
+            ],
+        ]);
+
+        $siteType = new class($site) extends AbstractSiteType
+        {
+            public static function id(): string
+            {
+                return 'test-setup-requested-tooling';
+            }
+
+            public function language(): string
+            {
+                return 'php';
+            }
+
+            public function requiredServices(): array
+            {
+                return [];
+            }
+
+            public function install(): void {}
+
+            public static function make(): self
+            {
+                return new self(new Site);
+            }
+
+            public static function createTimeTools(): array
+            {
+                return ['node', 'pnpm', 'yarn'];
+            }
+
+            public function runSetup(): void
+            {
+                $this->setupRequestedTooling();
+            }
+        };
+
+        $siteType->runSetup();
+
+        $iuser = $site->isolatedUser()->firstOrFail();
+
+        $this->assertSame('22', $iuser->toolingVersion('node'));
+        $this->assertSame('9', $iuser->toolingVersion('pnpm'));
+        $this->assertNull($iuser->toolingVersion('yarn'));
+
+        $site->refresh();
+        $this->assertArrayNotHasKey('node_version', $site->type_data);
+        $this->assertArrayNotHasKey('pnpm_version', $site->type_data);
     }
 
     public function test_other_user_sites_are_not_touched(): void

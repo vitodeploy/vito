@@ -150,4 +150,14 @@ class BunSiteTest extends TestCase
     {
         $this->assertEquals([], $this->siteType->baseCommands());
     }
+
+    public function test_default_deployment_script_contains_git_pull_then_deploy_commands(): void
+    {
+        $script = $this->siteType->defaultDeploymentScript();
+
+        $this->assertSame(
+            "git pull origin \$BRANCH\n\nbun install --frozen-lockfile\n\nbun run build\n",
+            $script,
+        );
+    }
 }

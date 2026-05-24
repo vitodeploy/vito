@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\DeploymentStatus;
 use App\Enums\WorkerStatus;
+use App\Events\SocketEvent;
 use App\Facades\SSH;
 use App\Models\Deployment;
 use App\Models\Site;
 use App\Models\Worker;
 use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -54,6 +56,7 @@ class SiteSettingsProxiedSiteTest extends TestCase
     public function test_update_port_updates_site_and_regenerates_vhost(): void
     {
         SSH::fake();
+        Event::fake([SocketEvent::class]);
 
         $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
             'port' => 4000,
@@ -61,6 +64,8 @@ class SiteSettingsProxiedSiteTest extends TestCase
 
         $this->proxiedSite->refresh();
         $this->assertSame(4000, $this->proxiedSite->port);
+
+        Event::assertDispatched(SocketEvent::class, fn (SocketEvent $event) => $event->data->type === 'site.updated');
     }
 
     public function test_update_port_validates(): void
@@ -70,6 +75,22 @@ class SiteSettingsProxiedSiteTest extends TestCase
         $this->patch(route('site-settings.update-port', ['server' => $this->server, 'site' => $this->proxiedSite]), [
             'port' => 99999,
         ])->assertSessionHasErrors('port');
+    }
+
+    public function test_update_start_command_rejects_newline_injection(): void
+    {
+        SSH::fake();
+
+        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+            'start_command' => "npm start\nuser=root",
+        ])->assertSessionHasErrors('start_command');
+
+        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+            'start_command' => "npm start\rcommand=/bin/sh",
+        ])->assertSessionHasErrors('start_command');
+
+        $this->proxiedSite->refresh();
+        $this->assertSame('npm start', $this->proxiedSite->type_data['start_command']);
     }
 
     public function test_update_start_command_pre_first_deploy_stores_only(): void
