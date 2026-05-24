@@ -11,13 +11,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Throwable;
 
-/**
- * Background job that rewrites supervisor configs for workers on the site's
- * sibling-set after a Tooling install/uninstall, and selectively restarts
- * workers whose `command` references the changed tool. Decoupled from
- * `InstallSiteToolingJob` / `UninstallSiteToolingJob` so the user's install
- * UI doesn't block on supervisor graceful-shutdown windows.
- */
 class RefreshSiteWorkerConfigsJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;

@@ -61,14 +61,12 @@ class BunSite extends AbstractProxiedSiteType
         ];
     }
 
-    protected function installCommand(): string
+    protected function deployCommands(): array
     {
-        return 'bun install --frozen-lockfile';
-    }
-
-    protected function buildCommand(): string
-    {
-        return 'bun run build';
+        return [
+            'bun install --frozen-lockfile',
+            'bun run build',
+        ];
     }
 
     protected function defaultStartCommand(): string

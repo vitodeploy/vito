@@ -110,12 +110,6 @@ class Site extends AbstractModel
         'vhost_generation_enabled',
     ];
 
-    /**
-     * Always eager-load the isolated user — `Site::$user` / `Site::$ssh_key`
-     * accessors fall through to it, so unloaded access triggers an N+1 across
-     * tables / resources / Inertia payloads. The row is small (4 columns) and
-     * either present or absent in a single batched query.
-     */
     protected $with = ['isolatedUser'];
 
     protected $casts = [
@@ -160,13 +154,6 @@ class Site extends AbstractModel
         return $this->status === SiteStatus::READY;
     }
 
-    /**
-     * SSH helper scoped to this site's isolated user, pre-populated with PATH
-     * (and any future env vars) contributed by every tool currently installed
-     * for the user. Use this for any command Vito runs against the site so
-     * mise shims (node, bun, pnpm, yarn, …) and other tool binaries are on
-     * PATH automatically.
-     */
     public function ssh(): SSH
     {
         return $this->server->ssh($this->user)->variables(
@@ -253,10 +240,6 @@ class Site extends AbstractModel
         return $this->belongsTo(IsolatedUser::class);
     }
 
-    /**
-     * Legacy column wins to protect per-site keypairs whose on-disk file is
-     * still `~/.ssh/site_{id}`; iuser is the fallback for new isolated users.
-     */
     public function getUserAttribute(?string $value): ?string
     {
         return ($value !== null && $value !== '') ? $value : $this->isolatedUser?->username;
@@ -572,9 +555,6 @@ class Site extends AbstractModel
             return true;
         }
 
-        // Backcompat for one release: legacy sites and direct column writes
-        // are still considered isolated when the recorded `user` differs from
-        // the server's SSH user, even without an iuser row.
         $column = $this->getRawOriginal('user');
 
         return is_string($column) && $column !== '' && $column !== $this->server->getSshUser();
@@ -586,10 +566,6 @@ class Site extends AbstractModel
     }
 
     /**
-     * Sites that share this site's isolated user. Returns an empty query for
-     * non-isolated sites — callers using `->exists()` / `->get()` get expected
-     * behaviour without null-checking.
-     *
      * @return Builder<Site>
      */
     public function siblingsSharingUser(bool $includeSelf = false): Builder

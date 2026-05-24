@@ -118,8 +118,6 @@ class Worker extends AbstractModel
     }
 
     /**
-     * Supervisor env for this worker.
-     *
      * @return array<string, string>
      */
     public function effectiveEnvironment(): array

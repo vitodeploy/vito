@@ -28,10 +28,6 @@ abstract class AbstractSiteType implements SiteType
     abstract public static function make(): self;
 
     /**
-     * Tooling IDs (matching `App\Tooling\ToolingRegistry`) that this site type
-     * offers at create time. Drives the `tooling` DynamicField, validation
-     * rules, type_data extraction and the post-isolate install loop.
-     *
      * @return array<int, string>
      */
     public static function createTimeTools(): array
@@ -39,12 +35,6 @@ abstract class AbstractSiteType implements SiteType
         return [];
     }
 
-    /**
-     * Whether this site type stores Tooling state in `type_data` and accepts
-     * sibling-propagation writes from the Tooling system. PHP-family and
-     * Mise-family site types are tooling-aware; LoadBalancer / deprecated
-     * NodeJS / PHPMyAdmin / WordPress are not.
-     */
     public static function supportsTooling(): bool
     {
         return false;
@@ -76,12 +66,6 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * Extra environment variables to inject into deployment scripts. Default
-     * returns the merged PATH contributions from every Tooling installed for
-     * the site's isolated user — `SiteShellEnvironment::collect()` is a
-     * no-op for sites without an isolated user, so this is safe for all
-     * site types. Override only if you need additional vars on top.
-     *
      * @return array<string, string>
      */
     public function deploymentEnvironment(): array
@@ -89,21 +73,11 @@ abstract class AbstractSiteType implements SiteType
         return SiteShellEnvironment::collect($this->site);
     }
 
-    /**
-     * Default no-op. Site types override to hook into the post-deploy
-     * lifecycle (e.g. AbstractProxiedSiteType lazy-creates the supervisor
-     * worker on first successful deploy).
-     */
     public function afterDeploy(Deployment $deployment): void
     {
         //
     }
 
-    /**
-     * Default deploy-script content. Reads from `resources/deployment-scripts/{id}.sh`
-     * if present (preserving the legacy convention for PHPSite / Laravel / etc.);
-     * site types that compose their script programmatically override this.
-     */
     public function defaultDeploymentScript(): string
     {
         $path = resource_path('deployment-scripts/'.static::id().'.sh');
@@ -112,8 +86,6 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * Return null to support all webservers.
-     *
      * @return string[]|null
      */
     public function supportedWebservers(): ?array
@@ -121,10 +93,6 @@ abstract class AbstractSiteType implements SiteType
         return null;
     }
 
-    /**
-     * Return a Mustache template string to completely replace the default webserver vhost template.
-     * Return null to use the built-in template.
-     */
     public function vhostTemplate(string $webserver): ?string
     {
         return null;
@@ -268,14 +236,6 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * Install every tool the site type offers at create time whose requested
-     * version (passed through `type_data` at site creation) is non-empty and
-     * isn't already installed for the isolated user. On success, the iuser's
-     * `installed_tooling` is updated via `SiteToolingState::completeInstall`
-     * so siblings inherit the version AND any tooling pages open elsewhere
-     * (e.g. a sibling site's tooling page in another tab) receive the live
-     * `isolated-user.tooling-updated` broadcast.
-     *
      * @throws SSHError
      */
     protected function setupRequestedTooling(): void

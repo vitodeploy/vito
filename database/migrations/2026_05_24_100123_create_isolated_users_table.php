@@ -6,14 +6,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Introduces the `isolated_users` table and links existing isolated sites to
- * a row in it. The Tooling system (`{tool}_version`/`{tool}_status` keys in
- * `sites.type_data`) is new in this release, so there's nothing in legacy data
- * to migrate into `installed_tooling`; new iuser rows are created with
- * `installed_tooling = NULL` and `ssh_key = NULL` (legacy per-site keypairs
- * stay on disk as `~/.ssh/site_{id}`; Site model accessors fall back to them).
- */
 return new class extends Migration
 {
     public function up(): void
@@ -36,10 +28,6 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->index('isolated_user_id');
 
-            // Drop the legacy default and allow NULL so sites that aren't
-            // isolated (or whose iuser-row is the source of truth) don't
-            // carry a redundant column value. Kept for one release as
-            // backcompat for code paths still reading `sites.user`.
             $table->string('user')->nullable()->default(null)->change();
         });
 

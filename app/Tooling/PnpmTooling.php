@@ -2,7 +2,7 @@
 
 namespace App\Tooling;
 
-class PnpmTooling extends MiseTooling
+class PnpmTooling extends AbstractMiseTooling
 {
     public static function id(): string
     {

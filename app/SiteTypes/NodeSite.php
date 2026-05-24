@@ -113,14 +113,14 @@ class NodeSite extends AbstractProxiedSiteType
         return NodePackageManager::from($value);
     }
 
-    protected function installCommand(): string
+    protected function deployCommands(): array
     {
-        return $this->packageManager()->installCommand();
-    }
+        $packageManager = $this->packageManager();
 
-    protected function buildCommand(): string
-    {
-        return $this->packageManager()->buildCommand();
+        return [
+            $packageManager->installCommand(),
+            $packageManager->buildCommand(),
+        ];
     }
 
     protected function defaultStartCommand(?NodePackageManager $packageManager = null): string

@@ -331,11 +331,7 @@ class Server extends AbstractModel
     }
 
     /**
-     * @deprecated Prefer `$site->isolatedUser->lock()`. Kept for one release to
-     *             serve callers that only know a username string and as the
-     *             fallback for non-isolated edge paths. Same key shape as
-     *             `IsolatedUser::lock()` — workers on either side of the
-     *             cutover acquire the same logical lock.
+     * @deprecated Prefer `$site->isolatedUser->lock()`
      */
     public function isolatedUserLock(string $user): Lock
     {
@@ -349,10 +345,6 @@ class Server extends AbstractModel
     {
         $users = ['root', $this->getSshUser()];
         $users = array_merge($users, $this->isolatedUsers()->pluck('username')->toArray());
-
-        // Backcompat for one release: callers that wrote a custom `sites.user`
-        // without going through CreateSite (older tests, manual SQL, etc.)
-        // still expect the username to be recognised.
         $users = array_merge($users, $this->sites()->whereNotNull('user')->pluck('user')->toArray());
 
         return array_values(array_unique($users));

@@ -54,10 +54,6 @@ enum NodePackageManager: string implements VitoEnum
         };
     }
 
-    /**
-     * Tooling class id that supplies this package manager. npm is bundled
-     * with Node, so npm maps to `node`.
-     */
     public function toolId(): string
     {
         return match ($this) {
@@ -67,9 +63,6 @@ enum NodePackageManager: string implements VitoEnum
         };
     }
 
-    /**
-     * Inverse of `toolId()`. Throws on unknown ids.
-     */
     public static function fromToolId(string $toolId): self
     {
         return match ($toolId) {

@@ -53,11 +53,14 @@ class BunSiteTest extends TestCase
         $this->assertSame(['bun'], BunSite::createTimeTools());
     }
 
-    public function test_install_command_returns_bun_install(): void
+    public function test_deploy_commands(): void
     {
-        $reflection = new \ReflectionMethod($this->siteType, 'installCommand');
+        $reflection = new \ReflectionMethod($this->siteType, 'deployCommands');
 
-        $this->assertEquals('bun install --frozen-lockfile', $reflection->invoke($this->siteType));
+        $this->assertSame(
+            ['bun install --frozen-lockfile', 'bun run build'],
+            $reflection->invoke($this->siteType),
+        );
     }
 
     public function test_start_command_returns_default(): void
@@ -65,28 +68,6 @@ class BunSiteTest extends TestCase
         $reflection = new \ReflectionMethod($this->siteType, 'startCommand');
 
         $this->assertEquals('bun run start', $reflection->invoke($this->siteType));
-    }
-
-    public function test_build_command_from_type_data(): void
-    {
-        $reflection = new \ReflectionMethod($this->siteType, 'buildCommand');
-
-        $this->assertEquals('bun run build', $reflection->invoke($this->siteType));
-    }
-
-    public function test_build_command_defaults(): void
-    {
-        $site = Site::factory()->create([
-            'server_id' => $this->server->id,
-            'user' => 'testuser',
-            'path' => '/home/testuser/example.com',
-            'type' => BunSite::id(),
-            'type_data' => [],
-        ]);
-        $siteType = new BunSite($site);
-        $reflection = new \ReflectionMethod($siteType, 'buildCommand');
-
-        $this->assertEquals('bun run build', $reflection->invoke($siteType));
     }
 
     public function test_start_command_from_type_data(): void

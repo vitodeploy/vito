@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Validator;
 class UpdateStartCommand
 {
     /**
-     * Updates `type_data.start_command` and, when a bootstrap worker exists,
-     * its `command` column + the supervisor conf on disk. Does NOT restart
-     * the worker — the new command applies on the next user-initiated
-     * restart or deploy.
-     *
      * @param  array<string, mixed>  $input
      *
      * @throws SSHError

@@ -38,18 +38,11 @@ interface ToolingInterface
     public function installedVersion(Site $site): ?string;
 
     /**
-     * Directories to prepend to PATH for commands run as the site's isolated
-     * user. Only called when `installedVersion($site)` is non-null — the
-     * implementation may assume the tool is installed for the site.
-     *
      * @return array<int, string>
      */
     public function pathContributions(Site $site): array;
 
     /**
-     * Shell command names that this tool installs (e.g. `['node','npm','npx']`).
-     * Used to decide whether a worker's `command` references this tool.
-     *
      * @return array<int, string>
      */
     public static function commands(): array;

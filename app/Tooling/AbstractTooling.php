@@ -4,12 +4,6 @@ namespace App\Tooling;
 
 use App\Models\Site;
 
-/**
- * Base for all Tooling implementations. Provides defaults for the type_data
- * key + supported-versions helpers and reads installed version straight off
- * the site's isolated user. Install/uninstall are left abstract because
- * they're backend-specific (e.g. Mise vs something else in the future).
- */
 abstract class AbstractTooling implements ToolingInterface
 {
     public static function typeDataKey(): string

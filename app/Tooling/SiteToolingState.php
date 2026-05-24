@@ -7,25 +7,15 @@ use App\Events\SocketEvent;
 use App\Models\IsolatedUser;
 use App\Models\Site;
 
-/**
- * Tooling state lives on `isolated_users.installed_tooling` as
- * `{ <tool_id>: { version: '22'|'none', status: 'installing'|... |null } }`.
- *
- * The static API stays `Site`-keyed so controllers / jobs need minimal change.
- * Each mutation emits **one** `isolated-user.tooling-updated` event carrying
- * the iuser id + its current tooling state — frontend pages filter by
- * matching their site's `isolated_user_id`. Avoids the previous per-site
- * fan-out (and the SiteResource serialization required for it).
- */
 final class SiteToolingState
 {
-    public const STATUS_INSTALLING = 'installing';
+    public const string STATUS_INSTALLING = 'installing';
 
-    public const STATUS_UNINSTALLING = 'uninstalling';
+    public const string STATUS_UNINSTALLING = 'uninstalling';
 
-    public const STATUS_INSTALL_FAILED = 'install_failed';
+    public const string STATUS_INSTALL_FAILED = 'install_failed';
 
-    public const STATUS_UNINSTALL_FAILED = 'uninstall_failed';
+    public const string STATUS_UNINSTALL_FAILED = 'uninstall_failed';
 
     public static function currentStatus(Site $site, string $toolId): ?string
     {

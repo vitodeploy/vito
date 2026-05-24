@@ -30,11 +30,6 @@ class SiteFactory extends Factory
         ];
     }
 
-    /**
-     * Mirror the production CreateSite flow: any site whose `user` differs
-     * from its server's SSH user is wired up to an isolated user row so
-     * `Site::isIsolated()` and accessors behave the same in tests as in prod.
-     */
     public function configure(): self
     {
         return $this->afterCreating(function (Site $site): void {

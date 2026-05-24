@@ -52,10 +52,6 @@ class Supervisor extends AbstractProcessManager
     }
 
     /**
-     * Write (or overwrite) the supervisor conf file for a worker. Does not
-     * reload supervisor — pair with `create-worker.blade.php` (which does
-     * `reread + update + start`) or call only when no reload is desired.
-     *
      * @throws SSHError
      */
     public function writeConfig(Worker $worker): void

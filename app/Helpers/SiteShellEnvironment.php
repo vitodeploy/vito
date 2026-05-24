@@ -5,15 +5,6 @@ namespace App\Helpers;
 use App\Models\Site;
 use App\Tooling\ToolingRegistry;
 
-/**
- * Builds the shell environment for commands Vito runs against a site's
- * isolated user, by collecting PATH contributions from every registered
- * tool that's currently installed.
- *
- * Use `collect()` to obtain the env vars (suitable for `$ssh->setVariables(...)`
- * or supervisor's `environment=` line), or `wrap()` to produce a single
- * `bash -c '…'` string with the env exports + optional `cd`.
- */
 final class SiteShellEnvironment
 {
     /**

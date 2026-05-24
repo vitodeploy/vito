@@ -11,13 +11,6 @@ use App\SiteTypes\AbstractSiteType;
 use App\Tooling\ToolingRegistry;
 use Throwable;
 
-/**
- * Rewrite supervisor conf files for every worker on the origin's sibling-set
- * whose site supports tooling. Workers whose `command` references the
- * just-changed tool's `commands()` are additionally restarted (scoped) so the
- * new env applies immediately; others wait for the next manual restart, which
- * picks up the on-disk change via the updated restart template.
- */
 final class RefreshSiteWorkerConfigs
 {
     public function refresh(Site $origin, string $changedToolId): void

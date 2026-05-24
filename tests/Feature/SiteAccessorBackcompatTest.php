@@ -8,11 +8,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * `Site::user` and `Site::ssh_key` accessors honor a legacy-column-first
- * precedence so per-site keypairs whose on-disk file is still
- * `~/.ssh/site_{id}` aren't shadowed by an iuser-stored key.
- */
 class SiteAccessorBackcompatTest extends TestCase
 {
     use RefreshDatabase;

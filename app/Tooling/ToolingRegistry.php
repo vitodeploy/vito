@@ -14,7 +14,6 @@ final class ToolingRegistry
 
         $out = [];
         foreach ($providers as $class) {
-            /** @var ToolingInterface $instance */
             $instance = new $class;
             $out[$class::id()] = $instance;
         }
@@ -35,12 +34,6 @@ final class ToolingRegistry
         return array_keys(self::all());
     }
 
-    /**
-     * Does the given shell `$command` reference any of the named tool's
-     * commands? Token-based heuristic with symmetric shell-separator
-     * boundaries — `cd x && node app.js` matches `node`, but `php run-node.sh`
-     * and `nodejs app.js` do not.
-     */
     public static function commandReferences(string $command, string $toolId): bool
     {
         $tool = self::find($toolId);

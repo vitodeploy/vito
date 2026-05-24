@@ -2,7 +2,7 @@
 
 namespace App\Tooling;
 
-class YarnTooling extends MiseTooling
+class YarnTooling extends AbstractMiseTooling
 {
     public static function id(): string
     {

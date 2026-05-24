@@ -58,17 +58,7 @@ interface SiteType
      */
     public function deploymentEnvironment(): array;
 
-    /**
-     * Hook invoked after a successful deployment, before status/activation
-     * is finalised. Default implementation is a no-op; site types use it to
-     * lazily create or reconcile resources that depend on a built app
-     * (e.g. supervisor workers).
-     */
     public function afterDeploy(Deployment $deployment): void;
 
-    /**
-     * Default content for the site's `default` DeploymentScript, populated
-     * by `Site::createDefaultDeploymentScript()` at site-creation time.
-     */
     public function defaultDeploymentScript(): string;
 }

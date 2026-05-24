@@ -81,11 +81,6 @@ class DynamicField
         return $this;
     }
 
-    /**
-     * Render a row of version selects driven by `App\Tooling\ToolingRegistry`.
-     * Pass tool IDs (e.g. `['node', 'bun']`) via `->options(...)`. The frontend
-     * looks up labels and supported versions from `useConfigs().tooling`.
-     */
     public function tooling(): self
     {
         $this->type = 'tooling';
@@ -94,14 +89,6 @@ class DynamicField
     }
 
     /**
-     * Render a single required version select for one specific tool. Used by
-     * site types where a tooling is the primary configuration (e.g.
-     * NodeSite / BunSite). The frontend automatically:
-     *  - locks the field to the version the isolated user already has, if any
-     *    (matching the create-time lockstep invariant); and
-     *  - defaults to the tool's latest supported version otherwise.
-
-     *
      * @param  class-string<ToolingInterface>  $toolClass
      */
     public function toolingPicker(string $toolClass): self
@@ -122,14 +109,8 @@ class DynamicField
     }
 
     /**
-     * Render a tool chooser ("pick which tool") plus an inline version select
-     * for the picked tool. If the picked tool is already configured by another
-     * `toolingPicker` field on the same form, the version select is hidden
-     * (its version comes from the picker). Used for fields like
-     * "Package Manager" where the user chooses among a few tooling classes.
-     *
      * @param  array<int, class-string<ToolingInterface>>  $toolClasses
-     * @param  array<class-string<ToolingInterface>, string>  $labelOverrides  Map of tool class to a label used only in this selector's dropdown (e.g. `[NodeTooling::class => 'npm']`).
+     * @param  array<class-string<ToolingInterface>, string>  $labelOverrides
      */
     public function toolingSelector(array $toolClasses, array $labelOverrides = []): self
     {

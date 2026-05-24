@@ -2,7 +2,7 @@
 
 namespace App\Tooling;
 
-class NodeTooling extends MiseTooling
+class NodeTooling extends AbstractMiseTooling
 {
     public static function id(): string
     {

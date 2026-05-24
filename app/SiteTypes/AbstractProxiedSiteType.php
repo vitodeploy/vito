@@ -10,17 +10,6 @@ use App\Models\Deployment;
 use App\Models\SourceControl;
 use App\Models\Worker;
 
-/**
- * Base for site types that are proxied by the webserver to a local
- * long-running application process running under supervisor (e.g.
- * `NodeSite`, `BunSite`). The site is the proxy target; nginx routes
- * traffic to a port owned by the supervisor-managed worker.
- *
- * Install does the infrastructure only (isolate, install tooling, vhost,
- * deploy key, clone). Build + install of app deps + worker creation are
- * deferred to the first successful deploy via `afterDeploy()` so the user
- * gets a chance to review/customise the generated deploy script first.
- */
 abstract class AbstractProxiedSiteType extends AbstractSiteType
 {
     public static function supportsTooling(): bool
@@ -64,11 +53,6 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
     }
 
     /**
-     * Shared `DynamicField`s for the create form: source control, port,
-     * repository, branch. Site type registrations in `SiteTypeServiceProvider`
-     * merge these onto their tool-specific picker(s) so every proxied site
-     * type asks for the same four fields in the same order.
-     *
      * @return array<int, DynamicField>
      */
     public static function sharedFormFields(): array
@@ -93,9 +77,13 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
         ];
     }
 
-    abstract protected function installCommand(): string;
-
-    abstract protected function buildCommand(): string;
+    /**
+     * @return array<int, string>
+     */
+    protected function deployCommands(): array
+    {
+        return [];
+    }
 
     abstract protected function defaultStartCommand(): string;
 
@@ -127,16 +115,12 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
 
     public function defaultDeploymentScript(): string
     {
-        return view('deployment-scripts.proxied-site', [
-            'installCommand' => $this->installCommand(),
-            'buildCommand' => $this->buildCommand(),
-        ])->render();
+        return implode("\n\n", array_merge(
+            ['git pull origin $BRANCH'],
+            $this->deployCommands(),
+        ))."\n";
     }
 
-    /**
-     * Lazy worker bootstrap. Idempotent: short-circuits when a bootstrap
-     * worker already exists for this site.
-     */
     public function afterDeploy(Deployment $deployment): void
     {
         if ($this->bootstrapWorker() !== null) {
@@ -159,13 +143,6 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
         $this->site->jsonUpdate('type_data', 'bootstrap_worker_id', $created->id);
     }
 
-    /**
-     * Resolves the worker that manages this site's app process, if any.
-     * Order: (1) type_data.bootstrap_worker_id, (2) backfill by name='app'
-     * scoped to workers whose command matches a known default — guards
-     * against silently adopting a user-created worker that happens to be
-     * called 'app'.
-     */
     public function bootstrapWorker(): ?Worker
     {
         $storedId = $this->site->type_data['bootstrap_worker_id'] ?? null;
@@ -191,9 +168,6 @@ abstract class AbstractProxiedSiteType extends AbstractSiteType
     }
 
     /**
-     * Default start commands the current AbstractProxiedSiteType subclasses
-     * could have written to a pre-refactor worker.
-     *
      * @return array<int, string>
      */
     protected function knownDefaultStartCommands(): array

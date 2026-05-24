@@ -2,7 +2,7 @@
 
 namespace App\Tooling;
 
-class BunTooling extends MiseTooling
+class BunTooling extends AbstractMiseTooling
 {
     public static function id(): string
     {

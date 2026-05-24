@@ -7,18 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * Exercises the `create_isolated_users_table` migration end-to-end by:
- *   1. Tearing the migrated schema back down to the pre-migration shape.
- *   2. Seeding raw `sites` rows that mirror legacy data anomalies
- *      (NULL user, ssh_user fallback, isolated siblings).
- *   3. Re-running just this migration.
- *   4. Asserting the backfill produced the right (server_id, username) rows
- *      and `sites.isolated_user_id` FKs.
- *
- * Tooling state is brand new in this release — nothing in 3.x type_data needs
- * extracting/stripping, so the migration just handles iuser rows + FK.
- */
 class IsolatedUserMigrationTest extends TestCase
 {
     use RefreshDatabase;

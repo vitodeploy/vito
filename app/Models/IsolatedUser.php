@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * @property int $server_id
@@ -53,13 +54,6 @@ class IsolatedUser extends AbstractModel
         return $this->hasMany(Site::class);
     }
 
-    /**
-     * Serializes iuser lifecycle ops (`isolate`, `DeleteSite`, `UpdatePHPVersion`)
-     * against each other. Tooling install/uninstall does NOT acquire this — it
-     * relies on a status-flag check + the single-threaded `ssh` queue, which is
-     * sufficient because Mise tool installs are independent writes under the
-     * user's home dir.
-     */
     public function lock(): Lock
     {
         return Cache::lock("isolate:{$this->server_id}:{$this->username}", 60);
@@ -103,10 +97,9 @@ class IsolatedUser extends AbstractModel
     }
 
     /**
-     * Row-locked read-modify-save so concurrent writes for different tools on
-     * the same iuser can't lose each other.
-     *
      * @param  array<string, mixed>  $patch
+     *
+     * @throws Throwable
      */
     private function mutateTooling(string $toolId, array $patch): void
     {
