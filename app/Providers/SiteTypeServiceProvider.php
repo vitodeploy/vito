@@ -168,7 +168,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->text()
                     ->label('Port')
                     ->placeholder('3000')
-                    ->description('On which port your app will be running'),
+                    ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
                 DynamicField::make('repository')
                     ->text()
                     ->label('Repository')
@@ -203,7 +203,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->text()
                     ->label('Port')
                     ->placeholder('3000')
-                    ->description('On which port your app will be running'),
+                    ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
                 DynamicField::make('repository')
                     ->text()
                     ->label('Repository')
@@ -236,7 +236,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->text()
                     ->label('Port')
                     ->placeholder('3000')
-                    ->description('On which port your app will be running'),
+                    ->description('On which port your app will be running. Must be a non-privileged port (1024-65535).'),
                 DynamicField::make('repository')
                     ->text()
                     ->label('Repository')

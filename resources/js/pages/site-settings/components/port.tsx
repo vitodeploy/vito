@@ -47,14 +47,15 @@ export default function Port({ site, children }: { site: Site; children: ReactNo
               <Input
                 id="port"
                 type="number"
-                min={1}
+                min={1024}
                 max={65535}
                 value={form.data.port}
                 placeholder="3000"
                 onChange={(e) => form.setData('port', e.target.value)}
               />
               <p className="text-muted-foreground text-xs">
-                Make sure your application is configured to listen on this port (e.g., via the <code>PORT</code> environment variable).
+                Make sure your application is configured to listen on this port (e.g., via the <code>PORT</code> environment variable). Use a
+                non-privileged port (1024–65535).
               </p>
               <InputError message={form.errors.port} />
             </FormField>

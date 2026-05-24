@@ -512,4 +512,102 @@ class WorkersTest extends TestCase
         $this->assertEquals('/custom/path', $worker->environment['PATH']);
         $this->assertEquals('production', $worker->environment['NODE_ENV']);
     }
+
+    public function test_cannot_edit_site_bootstrap_worker(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+        ]);
+
+        $this->site->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->put(route('workers.update', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]), [
+            'name' => 'renamed',
+            'command' => 'renamed command',
+            'user' => 'vito',
+            'auto_start' => 1,
+            'auto_restart' => 1,
+            'numprocs' => 1,
+        ])
+            ->assertSessionHasErrors(['name']);
+
+        $this->assertDatabaseMissing('workers', [
+            'id' => $worker->id,
+            'command' => 'renamed command',
+        ]);
+    }
+
+    public function test_cannot_delete_site_bootstrap_worker(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+        ]);
+
+        $this->site->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->delete(route('workers.destroy', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('workers', ['id' => $worker->id]);
+    }
+
+    public function test_can_still_start_stop_restart_bootstrap_worker(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::STOPPED,
+        ]);
+
+        $this->site->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->post(route('workers.start', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]))->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('workers', [
+            'id' => $worker->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+    }
+
+    public function test_worker_resource_marks_site_bootstrap(): void
+    {
+        $bootstrap = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+        ]);
+        $other = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+        ]);
+
+        $this->site->jsonUpdate('type_data', 'bootstrap_worker_id', $bootstrap->id);
+        $bootstrap->refresh();
+        $other->refresh();
+
+        $this->assertTrue($bootstrap->isSiteBootstrap());
+        $this->assertFalse($other->isSiteBootstrap());
+    }
 }

@@ -40,6 +40,7 @@ export interface Site {
   modern_deployment: boolean;
   is_proxied_site_type: boolean;
   start_command: string | null;
+  bootstrap_worker_id: number | null;
   basic_auth: {
     enabled: boolean;
     users: { username: string }[];

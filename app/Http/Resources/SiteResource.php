@@ -57,6 +57,9 @@ class SiteResource extends JsonResource
             'modern_deployment' => $this->modernDeploymentEnabled(),
             'is_proxied_site_type' => $this->type() instanceof AbstractProxiedSiteType,
             'start_command' => $this->type_data['start_command'] ?? null,
+            'bootstrap_worker_id' => isset($this->type_data['bootstrap_worker_id'])
+                ? (int) $this->type_data['bootstrap_worker_id']
+                : null,
             'warnings' => $this->getWarnings(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

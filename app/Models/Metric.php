@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\Server\BroadcastServerUpdate;
 use Carbon\Carbon;
 use Database\Factories\MetricFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -116,10 +117,7 @@ class Metric extends Model
                 return;
             }
 
-            $server = $metric->server;
-            if ($server) {
-                app(\App\Actions\Server\BroadcastServerUpdate::class)->broadcast($server);
-            }
+            app(BroadcastServerUpdate::class)->broadcast($metric->server);
         });
     }
 

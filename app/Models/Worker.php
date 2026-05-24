@@ -132,4 +132,15 @@ class Worker extends AbstractModel
 
         return $base;
     }
+
+    public function isSiteBootstrap(): bool
+    {
+        if (! $this->site_id || ! $this->site) {
+            return false;
+        }
+
+        $bootstrapId = $this->site->type_data['bootstrap_worker_id'] ?? null;
+
+        return $bootstrapId !== null && (int) $bootstrapId === $this->id;
+    }
 }

@@ -10,6 +10,7 @@ export interface Worker {
   numprocs: number;
   status: string;
   status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
+  is_site_bootstrap: boolean;
   created_at: string;
   updated_at: string;
 }

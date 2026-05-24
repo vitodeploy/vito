@@ -20,9 +20,8 @@ import { Badge } from '@/components/ui/badge';
 import DateTime from '@/components/date-time';
 import WorkerForm from '@/pages/workers/components/form';
 import CopyableBadge from '@/components/copyable-badge';
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import LogOutput from '@/components/log-output';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { WorkerAction, WorkerLogs } from '@/pages/workers/components/worker-row-actions';
 
 function Delete({ worker }: { worker: Worker }) {
   const [open, setOpen] = useState(false);
@@ -63,78 +62,18 @@ function Delete({ worker }: { worker: Worker }) {
   );
 }
 
-function Action({ type, worker }: { type: 'start' | 'stop' | 'restart'; worker: Worker }) {
-  const [open, setOpen] = useState(false);
-  const form = useForm();
-
-  const submit = () => {
-    form.post(route(`workers.${type}`, { server: worker.server_id, worker: worker }), {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
-  };
+function BootstrapLockedItem({ label, destructive }: { label: string; destructive?: boolean }) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="capitalize">
-          {type}
-        </DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            <span className="capitalize">{type}</span> worker
-          </DialogTitle>
-          <DialogDescription className="sr-only">{type} worker</DialogDescription>
-        </DialogHeader>
-        <p className="p-4">Are you sure you want to {type} the worker?</p>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button variant={['stop'].includes(type) ? 'destructive' : 'default'} disabled={form.processing} onClick={submit} className="capitalize">
-            {form.processing && <LoaderCircleIcon className="animate-spin" />}
-            <FormSuccessful successful={form.recentlySuccessful} />
-            {type}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function Logs({ worker }: { worker: Worker }) {
-  const [open, setOpen] = useState(false);
-
-  const query = useQuery({
-    queryKey: ['workerLog', worker.id],
-    queryFn: async () => {
-      const response = await axios.get(route('workers.logs', { server: worker.server_id, worker: worker.id }));
-      return response.data.logs;
-    },
-    refetchInterval: 2500,
-    enabled: open,
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Logs</DropdownMenuItem>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-5xl">
-        <DialogHeader>
-          <DialogTitle>Worker logs</DialogTitle>
-          <DialogDescription className="sr-only">View worker logs</DialogDescription>
-        </DialogHeader>
-        <LogOutput>{query.isLoading ? 'Loading...' : query.data}</LogOutput>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Close</Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div>
+          <DropdownMenuItem disabled variant={destructive ? 'destructive' : undefined} onSelect={(e) => e.preventDefault()}>
+            {label}
+          </DropdownMenuItem>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="left">Site managed application worker</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -204,6 +143,8 @@ function getColumns(sites?: Array<{ id: number; domain: string }>): ColumnDef<Wo
       enableColumnFilter: false,
       enableSorting: false,
       cell: ({ row }) => {
+        const worker = row.original;
+        const locked = worker.is_site_bootstrap;
         return (
           <div className="flex items-center justify-end">
             <DropdownMenu modal={false}>
@@ -214,15 +155,19 @@ function getColumns(sites?: Array<{ id: number; domain: string }>): ColumnDef<Wo
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <WorkerForm serverId={row.original.server_id} worker={row.original}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
-                </WorkerForm>
-                <Action type="start" worker={row.original} />
-                <Action type="stop" worker={row.original} />
-                <Action type="restart" worker={row.original} />
-                <Logs worker={row.original} />
+                {locked ? (
+                  <BootstrapLockedItem label="Edit" />
+                ) : (
+                  <WorkerForm serverId={worker.server_id} worker={worker}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
+                  </WorkerForm>
+                )}
+                <WorkerAction type="start" worker={worker} />
+                <WorkerAction type="stop" worker={worker} />
+                <WorkerAction type="restart" worker={worker} />
+                <WorkerLogs worker={worker} />
                 <DropdownMenuSeparator />
-                <Delete worker={row.original} />
+                {locked ? <BootstrapLockedItem label="Delete" destructive /> : <Delete worker={worker} />}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

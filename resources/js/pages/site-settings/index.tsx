@@ -23,8 +23,6 @@ import VHostPreview from '@/pages/site-settings/components/vhost-preview';
 import ChangeSourceControl from '@/pages/site-settings/components/source-control';
 import BasicAuth from '@/pages/site-settings/components/basic-auth';
 import WebDirectory from './components/web-directory';
-import Port from './components/port';
-import StartCommand from './components/start-command';
 
 export default function Databases() {
   const page = usePage<{
@@ -152,28 +150,6 @@ export default function Databases() {
               <span>Path</span>
               <CopyableBadge text={page.props.site.path} />
             </div>
-            {page.props.site.is_proxied_site_type && (
-              <>
-                <Separator />
-                <div className="flex items-center justify-between p-4">
-                  <span>Port</span>
-                  <Port site={page.props.site}>
-                    <Button variant="outline" className="h-6">
-                      {page.props.site.port}
-                    </Button>
-                  </Port>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between p-4">
-                  <span>Start command</span>
-                  <StartCommand site={page.props.site}>
-                    <Button variant="outline" className="h-6">
-                      {page.props.site.start_command ?? 'Not set'}
-                    </Button>
-                  </StartCommand>
-                </div>
-              </>
-            )}
             <Separator />
             <div className="flex items-center justify-between p-4">
               <span>PHP version</span>

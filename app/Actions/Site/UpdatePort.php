@@ -16,7 +16,7 @@ class UpdatePort
     public function update(Site $site, array $input): void
     {
         $validated = Validator::make($input, [
-            'port' => ['required', 'numeric', 'between:1,65535'],
+            'port' => ['required', 'integer', 'between:1024,65535'],
         ])->validate();
 
         $site->port = (int) $validated['port'];

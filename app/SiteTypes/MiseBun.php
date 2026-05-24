@@ -41,8 +41,8 @@ class MiseBun extends AbstractProxiedSiteType
             ],
             'port' => [
                 'required',
-                'numeric',
-                'between:1,65535',
+                'integer',
+                'between:1024,65535',
             ],
             'bun_version' => [
                 'required',
