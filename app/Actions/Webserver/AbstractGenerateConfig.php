@@ -225,7 +225,7 @@ abstract class AbstractGenerateConfig
             'type_data' => $site->type_data ?? [],
             'basic_auth_enabled' => $basicAuthEnabled,
             'basic_auth_realm' => $site->domain,
-            'basic_auth_file' => $site->htpasswdPath(),
+            'basic_auth_file' => $site->htpasswdPath() ?? '',
             'basic_auth_users' => $basicAuthEnabled ? array_values($basicAuth['users']) : [],
             'verification_key' => $site->verification_key,
         ];

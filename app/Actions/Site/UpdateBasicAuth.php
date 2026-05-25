@@ -4,8 +4,6 @@ namespace App\Actions\Site;
 
 use App\Helpers\Apr1Hasher;
 use App\Models\Site;
-use App\Services\Webserver\Apache;
-use App\Services\Webserver\Nginx;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -110,15 +108,15 @@ class UpdateBasicAuth
      */
     private function writeAuthFile(Site $site, array $users): void
     {
-        if (! in_array($site->webserver()::id(), [Nginx::id(), Apache::id()], true)) {
+        $path = $site->htpasswdPath();
+
+        if ($path === null) {
             return;
         }
 
-        $path = $site->htpasswdPath();
-
         if (empty($users)) {
             $site->server->ssh()->exec(
-                view('ssh.services.webserver.nginx.remove-basic-auth-file', ['path' => $path]),
+                view('ssh.services.webserver.shared.remove-basic-auth-file', ['path' => $path]),
                 'remove-basic-auth-file',
                 $site->id,
             );
@@ -130,13 +128,13 @@ class UpdateBasicAuth
         $usernames = implode(', ', array_map(fn (array $u) => $u['username'], $users));
 
         $site->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.write-basic-auth-file', [
+            view('ssh.services.webserver.shared.write-basic-auth-file', [
                 'dir' => dirname($path),
                 'path' => $path,
                 'lines' => $lines,
                 'userCount' => count($users),
                 'usernames' => $usernames,
-                'nginxUser' => $site->server->getSshUser(),
+                'webserverUser' => $site->server->getSshUser(),
             ]),
             'write-basic-auth-file',
             $site->id,

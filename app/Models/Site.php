@@ -13,7 +13,6 @@ use App\Exceptions\SSHError;
 use App\Helpers\SiteShellEnvironment;
 use App\Helpers\SSH;
 use App\Jobs\SSL\DeleteSiteSslJob;
-use App\Services\Webserver\Apache;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\AbstractProxiedSiteType;
@@ -713,13 +712,15 @@ class Site extends AbstractModel
         return preg_replace('#/current$#', '', $this->path);
     }
 
-    public function htpasswdPath(): string
+    public function htpasswdPath(): ?string
     {
-        $dir = $this->server->webserver()?->name === Apache::id()
-            ? '/etc/apache2/auth'
-            : '/etc/nginx/auth';
+        if (! $this->server->webserver()) {
+            return null;
+        }
 
-        return $dir.'/site-'.$this->id.'.htpasswd';
+        $dir = $this->webserver()->basicAuthDir();
+
+        return $dir ? $dir.'/site-'.$this->id.'.htpasswd' : null;
     }
 
     public function getDeployKeyName(): string

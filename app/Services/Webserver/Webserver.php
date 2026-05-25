@@ -11,6 +11,8 @@ use App\Services\ServiceInterface;
 interface Webserver extends ServiceInterface
 {
     public function configGenerator(): AbstractGenerateConfig;
+    
+    public function basicAuthDir(): ?string;
 
     public function generateVhost(Site $site, ?string $template = null): string;
 

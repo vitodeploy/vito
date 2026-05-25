@@ -44,14 +44,14 @@ class Caddy extends AbstractWebserver implements HasLogs
         return SslMethod::LETSENCRYPT;
     }
 
-    public static function type(): string
-    {
-        return 'webserver';
-    }
-
     public function unit(): string
     {
         return 'caddy';
+    }
+
+    public function basicAuthDir(): ?string
+    {
+        return null;
     }
 
     /**

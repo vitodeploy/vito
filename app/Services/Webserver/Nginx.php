@@ -20,14 +20,14 @@ class Nginx extends AbstractWebserver implements HasLogs
         return 'nginx';
     }
 
-    public static function type(): string
-    {
-        return 'webserver';
-    }
-
     public function unit(): string
     {
         return 'nginx';
+    }
+
+    public function basicAuthDir(): ?string
+    {
+        return '/etc/nginx/auth';
     }
 
     /**
@@ -165,13 +165,15 @@ class Nginx extends AbstractWebserver implements HasLogs
      */
     public function deleteSite(Site $site): void
     {
-        $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.remove-basic-auth-file', [
-                'path' => $site->htpasswdPath(),
-            ]),
-            'remove-basic-auth-file',
-            $site->id
-        );
+        if (($htpasswdPath = $site->htpasswdPath()) !== null) {
+            $this->service->server->ssh()->exec(
+                view('ssh.services.webserver.shared.remove-basic-auth-file', [
+                    'path' => $htpasswdPath,
+                ]),
+                'remove-basic-auth-file',
+                $site->id
+            );
+        }
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.nginx.delete-site', [
                 'domain' => $site->domain,

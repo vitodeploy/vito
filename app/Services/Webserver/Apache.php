@@ -4,27 +4,29 @@ namespace App\Services\Webserver;
 
 use App\Actions\Webserver\AbstractGenerateConfig;
 use App\Actions\Webserver\GenerateApacheConfig;
+use App\DTOs\ServiceLog;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Services\HasLogs;
 use Throwable;
 
-class Apache extends AbstractWebserver
+class Apache extends AbstractWebserver implements HasLogs
 {
     public static function id(): string
     {
         return 'apache';
     }
 
-    public static function type(): string
-    {
-        return 'webserver';
-    }
-
     public function unit(): string
     {
         return 'apache2';
+    }
+
+    public function basicAuthDir(): ?string
+    {
+        return '/etc/apache2/auth';
     }
 
     /**
@@ -43,7 +45,7 @@ class Apache extends AbstractWebserver
 
         $this->deploySplash();
 
-        $this->service->server->systemd()->restart('apache2');
+        $this->service->server->systemd()->restart($this->unit());
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
@@ -121,12 +123,12 @@ class Apache extends AbstractWebserver
         );
 
         if ($restart) {
-            $this->service->server->systemd()->restart('apache2');
+            $this->service->server->systemd()->restart($this->unit());
 
             return;
         }
 
-        $this->service->server->systemd()->reload('apache2');
+        $this->service->server->systemd()->reload($this->unit());
     }
 
     /**
@@ -146,13 +148,15 @@ class Apache extends AbstractWebserver
      */
     public function deleteSite(Site $site): void
     {
-        $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.nginx.remove-basic-auth-file', [
-                'path' => $site->htpasswdPath(),
-            ]),
-            'remove-basic-auth-file',
-            $site->id
-        );
+        if (($htpasswdPath = $site->htpasswdPath()) !== null) {
+            $this->service->server->ssh()->exec(
+                view('ssh.services.webserver.shared.remove-basic-auth-file', [
+                    'path' => $htpasswdPath,
+                ]),
+                'remove-basic-auth-file',
+                $site->id
+            );
+        }
         $this->service->server->ssh()->exec(
             view('ssh.services.webserver.apache.delete-site', [
                 'domain' => $site->domain,
@@ -259,5 +263,18 @@ class Apache extends AbstractWebserver
         );
 
         return trim($version);
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'apache:error',
+                serviceLabel: 'Apache',
+                label: 'Error log',
+                source: ServiceLog::SOURCE_FILE,
+                target: '/var/log/apache2/error.log',
+            ),
+        ];
     }
 }

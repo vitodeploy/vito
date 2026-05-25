@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ServiceStatus;
 use App\Facades\SSH;
 use App\Models\Site;
+use App\Services\Webserver\Apache;
 use App\Models\SourceControl;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,6 +46,29 @@ class ServiceLogsTest extends TestCase
         $this->assertContains('redis:journal', $keys);
         $this->assertContains('system:sshd', $keys);
         $this->assertContains('php:8.2:user:vito', $keys);
+    }
+
+    public function test_apache_exposes_error_log_only(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->server->webserver()->delete();
+        $this->server->services()->create([
+            'type' => Apache::type(),
+            'name' => Apache::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $response = $this->get(route('logs.services', $this->server->refresh()));
+
+        $catalogue = $response->viewData('page')['props']['catalogue'];
+        $entries = collect($catalogue)->keyBy('key');
+
+        $this->assertTrue($entries->has('apache:error'));
+        $this->assertSame('/var/log/apache2/error.log', $entries['apache:error']['display_target']);
+        $this->assertFalse($entries->has('apache:access'));
+        $this->assertFalse($entries->has('nginx:error'));
     }
 
     public function test_services_without_has_logs_are_skipped(): void
