@@ -82,7 +82,7 @@ class SiteCronjobTest extends TestCase
             'status' => CronjobStatus::READY,
         ]);
 
-        SSH::assertExecutedContains("echo '* * * * * ls -la' | sudo -u vito crontab -");
+        SSH::assertExecutedContains("echo '* * * * * bash -lc '\\''ls -la'\\''' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
 
@@ -110,7 +110,7 @@ class SiteCronjobTest extends TestCase
             'user' => 'example',
         ]);
 
-        SSH::assertExecutedContains("echo '* * * * * ls -la' | sudo -u example crontab -");
+        SSH::assertExecutedContains("echo '* * * * * bash -lc '\\''ls -la'\\''' | sudo -u example crontab -");
         SSH::assertExecutedContains('sudo -u example crontab -l');
     }
 
@@ -162,7 +162,7 @@ class SiteCronjobTest extends TestCase
             'status' => CronjobStatus::READY,
         ]);
 
-        SSH::assertExecutedContains("echo '* * * 1 1 ls -la' | sudo -u vito crontab -");
+        SSH::assertExecutedContains("echo '* * * 1 1 bash -lc '\\''ls -la'\\''' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
 
@@ -193,7 +193,7 @@ class SiteCronjobTest extends TestCase
 
         $this->assertEquals(CronjobStatus::READY, $cronjob->status);
 
-        SSH::assertExecutedContains("echo '* * * 1 1 ls -la' | sudo -u vito crontab -");
+        SSH::assertExecutedContains("echo '* * * 1 1 bash -lc '\\''ls -la'\\''' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
 
@@ -260,7 +260,7 @@ class SiteCronjobTest extends TestCase
         $this->assertEquals('php artisan schedule:run', $cronjob->command);
         $this->assertEquals('0 * * * *', $cronjob->frequency);
 
-        SSH::assertExecutedContains("echo '0 * * * * php artisan schedule:run' | sudo -u vito crontab -");
+        SSH::assertExecutedContains("echo '0 * * * * bash -lc '\\''php artisan schedule:run'\\''' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
 }
