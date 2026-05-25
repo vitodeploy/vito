@@ -2,8 +2,8 @@
 
 namespace App\Services\Webserver;
 
-use App\Actions\Webserver\AbstractGenerateConfig;
 use App\Actions\Site\EnsureSiteVerificationKey;
+use App\Actions\Webserver\AbstractGenerateConfig;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\DTOs\ServiceLog;
 use App\Exceptions\SSHError;

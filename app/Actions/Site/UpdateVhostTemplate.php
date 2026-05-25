@@ -2,8 +2,6 @@
 
 namespace App\Actions\Site;
 
-use App\Actions\Webserver\GenerateCaddyConfig;
-use App\Actions\Webserver\GenerateNginxConfig;
 use App\Models\Site;
 
 class UpdateVhostTemplate
@@ -27,10 +25,6 @@ class UpdateVhostTemplate
 
     private function matchesDefault(Site $site, string $template): bool
     {
-        $generator = $site->webserver()::id() === 'caddy'
-            ? app(GenerateCaddyConfig::class)
-            : app(GenerateNginxConfig::class);
-
-        return rtrim($template) === rtrim($generator->defaultTemplate());
+        return rtrim($template) === rtrim($site->webserver()->configGenerator()->defaultTemplate());
     }
 }

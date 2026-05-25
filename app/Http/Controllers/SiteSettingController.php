@@ -15,8 +15,6 @@ use App\Actions\Site\UpdateVhostGeneration;
 use App\Actions\Site\UpdateVhostTemplate;
 use App\Actions\Site\UpdateWebDirectory;
 use App\Actions\Site\WorkerStartCommandUpdateResult;
-use App\Actions\Webserver\GenerateCaddyConfig;
-use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Http\Resources\SourceControlResource;
 use App\Models\Server;
