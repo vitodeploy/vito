@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Worker\ManageWorker;
 use App\Enums\WorkerStatus;
 use App\Facades\SSH;
+use App\Jobs\Worker\ManageJob;
 use App\Models\Server;
 use App\Models\Site;
 use App\Models\Worker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -197,6 +200,82 @@ class WorkersTest extends TestCase
             'id' => $worker->id,
             'status' => WorkerStatus::RUNNING,
         ]);
+    }
+
+    public function test_start_worker_reloads_config_before_starting(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::STOPPED,
+        ]);
+
+        $this->post(route('workers.start', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        SSH::assertExecutedContains('supervisorctl reread');
+        SSH::assertExecutedContains("supervisorctl update {$worker->id}");
+        SSH::assertExecutedContains("supervisorctl start {$worker->id}:*");
+    }
+
+    public function test_start_and_restart_clear_error_optimistically(): void
+    {
+        Queue::fake();
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::FAILED,
+            'error' => '10:10_00: ERROR (no such file)',
+        ]);
+
+        app(ManageWorker::class)->restart($worker);
+
+        $worker->refresh();
+        $this->assertSame(WorkerStatus::RESTARTING, $worker->status);
+        $this->assertNull($worker->error);
+
+        $worker->update(['status' => WorkerStatus::FAILED, 'error' => 'boom']);
+
+        app(ManageWorker::class)->start($worker);
+
+        $worker->refresh();
+        $this->assertSame(WorkerStatus::STARTING, $worker->status);
+        $this->assertNull($worker->error);
+
+        Queue::assertPushed(ManageJob::class, 2);
+    }
+
+    public function test_start_worker_clears_previous_error(): void
+    {
+        SSH::fake();
+
+        $this->actingAs($this->user);
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::FAILED,
+            'error' => '10:10_00: ERROR (no such file)',
+        ]);
+
+        $this->post(route('workers.start', [
+            'server' => $this->server,
+            'worker' => $worker,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        $worker->refresh();
+
+        $this->assertSame(WorkerStatus::RUNNING, $worker->status);
+        $this->assertNull($worker->error);
     }
 
     public function test_stop_worker(): void

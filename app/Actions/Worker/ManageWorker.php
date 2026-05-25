@@ -11,6 +11,7 @@ class ManageWorker
     public function start(Worker $worker): void
     {
         $worker->status = WorkerStatus::STARTING;
+        $worker->error = null;
         $worker->save();
         dispatch(new ManageJob($worker, 'start', WorkerStatus::RUNNING))->onQueue('ssh');
     }
@@ -18,6 +19,7 @@ class ManageWorker
     public function stop(Worker $worker): void
     {
         $worker->status = WorkerStatus::STOPPING;
+        $worker->error = null;
         $worker->save();
         dispatch(new ManageJob($worker, 'stop', WorkerStatus::STOPPED))->onQueue('ssh');
     }
@@ -25,6 +27,7 @@ class ManageWorker
     public function restart(Worker $worker): void
     {
         $worker->status = WorkerStatus::RESTARTING;
+        $worker->error = null;
         $worker->save();
         dispatch(new ManageJob($worker, 'restart', WorkerStatus::RUNNING))->onQueue('ssh');
     }

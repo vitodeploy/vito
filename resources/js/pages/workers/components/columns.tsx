@@ -22,6 +22,7 @@ import WorkerForm from '@/pages/workers/components/form';
 import CopyableBadge from '@/components/copyable-badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { WorkerAction, WorkerLogs } from '@/pages/workers/components/worker-row-actions';
+import ErrorIndicator from '@/components/error-indicator';
 
 function Delete({ worker }: { worker: Worker }) {
   const [open, setOpen] = useState(false);
@@ -135,7 +136,12 @@ function getColumns(sites?: Array<{ id: number; domain: string }>): ColumnDef<Wo
       enableColumnFilter: true,
       enableSorting: true,
       cell: ({ row }) => {
-        return <Badge variant={row.original.status_color}>{row.original.status}</Badge>;
+        return (
+          <div className="flex items-center gap-1.5">
+            <Badge variant={row.original.status_color}>{row.original.status}</Badge>
+            <ErrorIndicator error={row.original.error} />
+          </div>
+        );
       },
     },
     {

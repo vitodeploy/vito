@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useId, useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -17,22 +17,47 @@ import InputError from '@/components/ui/input-error';
 import { LoaderCircleIcon } from 'lucide-react';
 import { Site } from '@/types/site';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
+
+type ApplyChoice = '' | 'config' | 'restart';
 
 export default function StartCommand({ site, children }: { site: Site; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const form = useForm<{ start_command: string }>({
+  const groupLabelId = useId();
+  const hasWorker = site.bootstrap_worker_id != null;
+
+  const form = useForm<{ start_command: string; apply: ApplyChoice }>({
     start_command: site.start_command ?? '',
+    apply: '',
   });
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) {
+      form.reset();
+      form.clearErrors();
+    }
+  };
+
+  const choiceMissing = hasWorker && form.data.apply === '';
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    if (choiceMissing) {
+      return;
+    }
+    form.transform((data) => ({
+      start_command: data.start_command,
+      ...(hasWorker ? { restart: data.apply === 'restart' } : {}),
+    }));
     form.patch(route('site-settings.update-start-command', { server: site.server_id, site: site.id }), {
       onSuccess: () => setOpen(false),
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -51,11 +76,36 @@ export default function StartCommand({ site, children }: { site: Site; children:
                 placeholder="e.g., npm start"
                 onChange={(e) => form.setData('start_command', e.target.value)}
               />
-              <p className="text-muted-foreground text-xs">
-                The change applies on the next worker restart or deploy — the worker won't restart automatically when you save.
-              </p>
+              {!hasWorker && (
+                <p className="text-muted-foreground text-xs">The application worker will be created with this command on the next deploy.</p>
+              )}
               <InputError message={form.errors.start_command} />
             </FormField>
+
+            {hasWorker && (
+              <FormField>
+                <Label id={groupLabelId}>How should we apply this change?</Label>
+                <RadioGroup
+                  value={form.data.apply}
+                  onValueChange={(value) => form.setData('apply', value as ApplyChoice)}
+                  aria-labelledby={groupLabelId}
+                  className="gap-2"
+                >
+                  <RadioCard
+                    value="config"
+                    selected={form.data.apply === 'config'}
+                    title="Update config only"
+                    description="The worker keeps running its current command. The change takes effect on the next restart or deploy."
+                  />
+                  <RadioCard
+                    value="restart"
+                    selected={form.data.apply === 'restart'}
+                    title="Update and restart now"
+                    description="Rewrites the config and restarts the worker immediately so the new command takes effect right away."
+                  />
+                </RadioGroup>
+              </FormField>
+            )}
           </FormFields>
         </Form>
 
@@ -63,12 +113,29 @@ export default function StartCommand({ site, children }: { site: Site; children:
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button form="start-command-form" disabled={form.processing}>
+          <Button form="start-command-form" disabled={form.processing || choiceMissing}>
             {form.processing && <LoaderCircleIcon className="size-4 animate-spin" />}
             Save
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function RadioCard({ value, selected, title, description }: { value: string; selected: boolean; title: string; description: string }) {
+  return (
+    <label
+      className={cn(
+        'hover:bg-accent flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors',
+        selected && 'border-primary bg-accent',
+      )}
+    >
+      <RadioGroupItem value={value} className="mt-0.5" />
+      <span className="flex flex-col gap-1">
+        <span className="text-sm font-medium">{title}</span>
+        <span className="text-muted-foreground text-sm">{description}</span>
+      </span>
+    </label>
   );
 }

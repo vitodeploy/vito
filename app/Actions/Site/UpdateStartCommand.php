@@ -2,6 +2,7 @@
 
 namespace App\Actions\Site;
 
+use App\Actions\Worker\ManageWorker;
 use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Services\ProcessManager\ProcessManager;
@@ -19,6 +20,7 @@ class UpdateStartCommand
     {
         $validated = Validator::make($input, [
             'start_command' => ['required', 'string', 'max:255', 'not_regex:/[\r\n]/'],
+            'restart' => ['sometimes', 'boolean'],
         ])->validate();
 
         $site->jsonUpdate('type_data', 'start_command', $validated['start_command']);
@@ -37,6 +39,12 @@ class UpdateStartCommand
         $processManager = $site->server->processManager()->handler();
         $processManager->writeConfig($worker);
 
+        if (($validated['restart'] ?? false) === true) {
+            app(ManageWorker::class)->restart($worker);
+
+            return WorkerStartCommandUpdateResult::Restarting;
+        }
+
         return WorkerStartCommandUpdateResult::PendingRestart;
     }
 }
@@ -45,4 +53,5 @@ enum WorkerStartCommandUpdateResult
 {
     case PreFirstDeploy;
     case PendingRestart;
+    case Restarting;
 }

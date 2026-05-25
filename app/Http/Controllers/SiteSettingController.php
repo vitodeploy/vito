@@ -128,6 +128,10 @@ class SiteSettingController extends Controller
                 'warning',
                 'Start command updated. The worker is still running with the previous command — restart the worker or deploy to apply.',
             ),
+            WorkerStartCommandUpdateResult::Restarting => back()->with(
+                'info',
+                'Start command updated. The worker is restarting to apply the change.',
+            ),
         };
     }
 

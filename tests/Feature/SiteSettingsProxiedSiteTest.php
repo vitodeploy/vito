@@ -132,6 +132,33 @@ class SiteSettingsProxiedSiteTest extends TestCase
         $fake->assertNotExecutedContains('supervisorctl restart');
     }
 
+    public function test_update_start_command_with_restart_rewrites_config_and_restarts(): void
+    {
+        $fake = SSH::fake();
+
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->proxiedSite->id,
+            'user' => 'isolated-foo',
+            'name' => 'app',
+            'command' => 'npm start',
+            'status' => WorkerStatus::RUNNING,
+        ]);
+        $this->proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->patch(route('site-settings.update-start-command', ['server' => $this->server, 'site' => $this->proxiedSite]), [
+            'start_command' => 'pnpm start',
+            'restart' => true,
+        ])->assertRedirect()
+            ->assertSessionHas('info');
+
+        $worker->refresh();
+        $this->assertSame('pnpm start', $worker->command);
+
+        $fake->assertExecutedContains("/etc/supervisor/conf.d/{$worker->id}.conf");
+        $fake->assertExecutedContains("supervisorctl restart {$worker->id}:*");
+    }
+
     public function test_needs_first_deploy_warning_present_until_finished_deployment(): void
     {
         $beforeDeploy = $this->get(route('site-settings', ['server' => $this->server, 'site' => $this->proxiedSite]));

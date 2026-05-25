@@ -8,6 +8,7 @@ use App\Enums\HostedDomainType;
 use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
 use App\Enums\SslStatus;
+use App\Enums\WorkerStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Helpers\SiteShellEnvironment;
@@ -223,7 +224,41 @@ class Site extends AbstractModel
             $warnings[] = ['key' => 'needs_first_deploy'];
         }
 
+        if ($this->relationLoaded('workers')) {
+            $bootstrapId = $this->bootstrapWorkerId();
+
+            foreach ($this->workers as $worker) {
+                $isBootstrap = $bootstrapId !== null && $worker->id === $bootstrapId;
+
+                $inError = $worker->status === WorkerStatus::FAILED
+                    || ($isBootstrap && $worker->status === WorkerStatus::STOPPED);
+
+                if (! $inError) {
+                    continue;
+                }
+
+                $warnings[] = [
+                    'key' => 'worker_not_running',
+                    'worker_id' => $worker->id,
+                    'name' => $worker->name,
+                    'status' => $worker->status->getText(),
+                    'status_color' => $worker->status->getColor(),
+                    'error' => $worker->error,
+                ];
+            }
+        }
+
         return $warnings;
+    }
+
+    private function bootstrapWorkerId(): ?int
+    {
+        $storedId = $this->type_data['bootstrap_worker_id'] ?? null;
+        if (is_int($storedId)) {
+            return $storedId;
+        }
+
+        return (is_string($storedId) && ctype_digit($storedId)) ? (int) $storedId : null;
     }
 
     /**

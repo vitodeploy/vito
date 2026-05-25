@@ -31,10 +31,10 @@ import {
   RefreshCwIcon,
   ShieldCheckIcon,
   ShieldOffIcon,
-  TriangleAlertIcon,
 } from 'lucide-react';
 import { router, useForm } from '@inertiajs/react';
 import { VitoTable } from '@/components/vito-table';
+import ErrorIndicator from '@/components/error-indicator';
 import { Site } from '@/types/site';
 import { HostedDomain } from '@/types/hosted-domain';
 import CreateHostedDomain from '@/pages/hosted-domains/components/create-hosted-domain';
@@ -145,23 +145,6 @@ function ForceActivateHostedDomain({ hostedDomain }: { hostedDomain: HostedDomai
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function ErrorIndicator({ error }: { error: string | null }) {
-  if (!error) return null;
-
-  return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="bg-destructive/15 text-destructive border-destructive/40 flex cursor-default items-center rounded-md border px-1.5 py-1">
-            <TriangleAlertIcon className="h-4 w-4" />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>{error}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   );
 }
 

@@ -8,6 +8,7 @@ import { MoreVerticalIcon } from 'lucide-react';
 import Port from '@/pages/site-settings/components/port';
 import StartCommand from '@/pages/site-settings/components/start-command';
 import { WorkerAction, WorkerLogs } from '@/pages/workers/components/worker-row-actions';
+import ErrorIndicator from '@/components/error-indicator';
 import { useRealtimeRecord, useSocketListener, type SocketEventData } from '@/hooks/use-socket-events';
 import { Site } from '@/types/site';
 import { Worker } from '@/types/worker';
@@ -58,6 +59,7 @@ export default function ProxiedAppCard({ site, initialWorker }: { site: Site; in
         <div className="col-start-2 row-start-1 flex min-w-0 items-center justify-between gap-4 border-b p-4 xl:col-start-3 xl:border-b-0">
           <span className="shrink-0 text-sm font-medium">Worker</span>
           <div className="flex items-center gap-1">
+            <ErrorIndicator error={worker?.error ?? null} />
             <Badge variant={worker?.status_color ?? 'gray'} className="text-xs">
               {worker?.status ?? 'pending_deploy'}
             </Badge>

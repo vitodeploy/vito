@@ -16,6 +16,8 @@ use App\Models\Deployment;
 use App\Models\HostedDomain;
 use App\Models\Metric;
 use App\Models\Site;
+use App\Models\Worker;
+use App\Enums\WorkerStatus;
 use App\SiteTypes\NodeSite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -143,6 +145,120 @@ class WarningsBroadcastTest extends TestCase
                 && ($event->data->data['id'] ?? null) === $proxiedSite->id
                 && ! collect($event->data->data['warnings'] ?? [])->contains(fn ($w) => $w['key'] === 'needs_first_deploy'),
         );
+    }
+
+    public function test_proxied_site_warns_when_worker_failed_with_error(): void
+    {
+        /** @var Site $proxiedSite */
+        $proxiedSite = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'isolated-foo',
+            'type' => NodeSite::id(),
+            'port' => 3000,
+            'type_data' => ['node_version' => '22', 'package_manager' => 'npm'],
+        ]);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $proxiedSite->id,
+            'name' => 'app',
+            'status' => WorkerStatus::FAILED,
+            'error' => '10:10_00: ERROR (no such file)',
+        ]);
+
+        $proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+        $proxiedSite->load('workers');
+
+        $warning = collect($proxiedSite->getWarnings())->firstWhere('key', 'worker_not_running');
+
+        $this->assertNotNull($warning);
+        $this->assertSame('10:10_00: ERROR (no such file)', $warning['error']);
+    }
+
+    public function test_proxied_site_does_not_warn_for_running_worker(): void
+    {
+        /** @var Site $proxiedSite */
+        $proxiedSite = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'isolated-foo',
+            'type' => NodeSite::id(),
+            'port' => 3000,
+            'type_data' => ['node_version' => '22', 'package_manager' => 'npm'],
+        ]);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $proxiedSite->id,
+            'name' => 'app',
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        $proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+        $proxiedSite->load('workers');
+
+        $this->assertNull(collect($proxiedSite->getWarnings())->firstWhere('key', 'worker_not_running'));
+    }
+
+    public function test_proxied_site_does_not_warn_for_transient_worker_status(): void
+    {
+        /** @var Site $proxiedSite */
+        $proxiedSite = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'isolated-foo',
+            'type' => NodeSite::id(),
+            'port' => 3000,
+            'type_data' => ['node_version' => '22', 'package_manager' => 'npm'],
+        ]);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $proxiedSite->id,
+            'name' => 'app',
+            'status' => WorkerStatus::RESTARTING,
+        ]);
+
+        $proxiedSite->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+        $proxiedSite->load('workers');
+
+        $this->assertNull(collect($proxiedSite->getWarnings())->firstWhere('key', 'worker_not_running'));
+    }
+
+    public function test_non_proxied_site_warns_when_any_worker_failed(): void
+    {
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'name' => 'queue',
+            'status' => WorkerStatus::FAILED,
+            'error' => 'queue: ERROR (spawn error)',
+        ]);
+
+        $this->site->load('workers');
+
+        $warning = collect($this->site->getWarnings())->firstWhere('key', 'worker_not_running');
+
+        $this->assertNotNull($warning);
+        $this->assertSame($worker->id, $warning['worker_id']);
+        $this->assertSame('queue', $warning['name']);
+        $this->assertSame('queue: ERROR (spawn error)', $warning['error']);
+    }
+
+    public function test_non_proxied_site_does_not_warn_for_intentionally_stopped_worker(): void
+    {
+        Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'name' => 'queue',
+            'status' => WorkerStatus::STOPPED,
+        ]);
+
+        $this->site->load('workers');
+
+        $this->assertNull(collect($this->site->getWarnings())->firstWhere('key', 'worker_not_running'));
     }
 
     public function test_metric_observer_broadcasts_on_reboot_required_transition(): void

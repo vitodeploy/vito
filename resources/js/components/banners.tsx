@@ -15,7 +15,7 @@ export function BannerRow({ item }: { item: BannerItem }) {
       <TriangleAlertIcon className="text-warning h-4 w-4 shrink-0" />
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-medium">{item.title}</p>
-        <p className="text-muted-foreground mt-0.5">{item.description}</p>
+        <div className="text-muted-foreground mt-0.5">{item.description}</div>
       </div>
       {item.action && <div className="shrink-0">{item.action}</div>}
     </div>

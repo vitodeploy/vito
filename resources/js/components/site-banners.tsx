@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { OctagonAlertIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { humanizeStep } from '@/lib/utils';
@@ -108,6 +109,7 @@ export default function SiteBanners({ site }: { site: Site }) {
   const vhostWarning = warnings.find((w) => w.key === 'vhost_generation_disabled');
   const sslExpiringWarning = warnings.find((w) => w.key === 'ssl_expiring');
   const needsFirstDeployWarning = warnings.find((w) => w.key === 'needs_first_deploy');
+  const workerWarnings = warnings.filter((w): w is Extract<SiteWarning, { key: 'worker_not_running' }> => w.key === 'worker_not_running');
 
   const items: BannerItem[] = [];
 
@@ -217,6 +219,36 @@ export default function SiteBanners({ site }: { site: Site }) {
         <Link href={route('application', { server: site.server_id, site: site.id })}>
           <Button variant="outline" size="sm">
             Go to Application
+          </Button>
+        </Link>
+      ),
+    });
+  }
+
+  for (const workerWarning of workerWarnings) {
+    const workerLabel = workerWarning.name ?? `#${workerWarning.worker_id}`;
+    items.push({
+      key: `worker-not-running-${workerWarning.worker_id}`,
+      title: `Worker "${workerLabel}" needs attention`,
+      description: (
+        <>
+          <span className="inline-flex flex-wrap items-center gap-1.5">
+            <Badge variant={workerWarning.status_color} className="text-xs">
+              {workerWarning.status}
+            </Badge>
+            Restart the worker to bring it back online.
+          </span>
+          {workerWarning.error && (
+            <pre className="text-muted-foreground bg-muted/40 mt-2 max-h-40 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
+              {workerWarning.error}
+            </pre>
+          )}
+        </>
+      ),
+      action: (
+        <Link href={route('workers.site', { server: site.server_id, site: site.id })}>
+          <Button variant="outline" size="sm">
+            Manage Workers
           </Button>
         </Link>
       ),

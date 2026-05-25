@@ -11,7 +11,7 @@ class BroadcastSiteUpdate
 {
     public function broadcast(Site $site): void
     {
-        $site->refresh()->load('hostedDomains.ssl');
+        $site->refresh()->load('hostedDomains.ssl', 'workers');
 
         SocketEvent::dispatch(new SocketEventDTO(
             projectId: $site->server->project_id,

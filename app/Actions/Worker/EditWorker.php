@@ -41,6 +41,7 @@ class EditWorker
             'auto_restart' => $input['auto_restart'] ? 1 : 0,
             'numprocs' => $input['numprocs'],
             'status' => WorkerStatus::RESTARTING,
+            'error' => null,
         ]);
         $worker->save();
 

@@ -26,6 +26,7 @@ class WorkerResource extends JsonResource
             'numprocs' => $this->numprocs,
             'status' => $this->status->getText(),
             'status_color' => $this->status->getColor(),
+            'error' => $this->error,
             'is_site_bootstrap' => $this->isSiteBootstrap(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

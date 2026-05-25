@@ -30,12 +30,17 @@ properties:
     example: 1
   status:
     type: string
-    enum: ['ready', 'installing', 'installation_failed', 'deleting']
-    example: 'ready'
+    enum: ['running', 'creating', 'deleting', 'failed', 'starting', 'stopping', 'restarting', 'stopped']
+    example: 'running'
   status_color:
     type: string
     enum: ['success', 'warning', 'danger', 'gray']
     example: 'success'
+  error:
+    type: string
+    nullable: true
+    description: 'The last error reported by the process manager, if the worker failed.'
+    example: '10:10_00: ERROR (no such file)'
   created_at:
     type: string
     format: date-time

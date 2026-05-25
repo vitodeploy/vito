@@ -3,6 +3,7 @@
 namespace App\Jobs\Site;
 
 use App\Actions\Site\BroadcastSiteUpdate;
+use App\Actions\Worker\RestartSiteWorkers;
 use App\DTOs\SocketEventDTO;
 use App\Enums\DeploymentStatus;
 use App\Events\SocketEvent;
@@ -11,7 +12,6 @@ use App\Http\Resources\DeploymentResource;
 use App\Models\Deployment;
 use App\Models\ServerLog;
 use App\Notifications\DeploymentCompleted;
-use App\Services\ProcessManager\ProcessManager;
 use App\SSH\OS\Git;
 use App\Traits\UniqueQueue;
 use Exception;
@@ -104,10 +104,7 @@ class DeployJob implements ShouldQueue
         );
 
         if ($site->deploymentScript->shouldRestartWorkers()) {
-            /** @var ProcessManager $processManager */
-            $processManager = $site->server->processManager()->handler();
-            $workerIds = $site->workers()->pluck('id')->toArray();
-            $processManager->restartByIds($workerIds, $site->id);
+            app(RestartSiteWorkers::class)->restart($site);
         }
     }
 
@@ -164,10 +161,7 @@ class DeployJob implements ShouldQueue
         );
 
         if ($site->preFlightScript?->shouldRestartWorkers()) {
-            /** @var ProcessManager $processManager */
-            $processManager = $site->server->processManager()->handler();
-            $workerIds = $site->workers()->pluck('id')->toArray();
-            $processManager->restartByIds($workerIds, $site->id);
+            app(RestartSiteWorkers::class)->restart($site);
         }
     }
 }

@@ -73,7 +73,15 @@ export type SiteWarning =
   | { key: 'ssl_disabled' }
   | { key: 'vhost_generation_disabled' }
   | { key: 'ssl_expiring'; count: number; domains: string[]; earliest_expiry: string }
-  | { key: 'needs_first_deploy' };
+  | { key: 'needs_first_deploy' }
+  | {
+      key: 'worker_not_running';
+      worker_id: number;
+      name: string | null;
+      status: string;
+      status_color: 'gray' | 'success' | 'info' | 'warning' | 'danger';
+      error: string | null;
+    };
 
 export interface SiteFeatureAction {
   label: string;

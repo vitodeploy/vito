@@ -3,11 +3,8 @@
 namespace App\Jobs\Worker;
 
 use App\Actions\Site\BroadcastSiteUpdate;
-use App\DTOs\SocketEventDTO;
 use App\Enums\WorkerStatus;
-use App\Events\SocketEvent;
-use App\Http\Resources\WorkerResource;
-use App\Models\ServerLog;
+use App\Traits\HandlesWorkerFailure;
 use App\Models\Service;
 use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
@@ -18,6 +15,7 @@ use Illuminate\Foundation\Queue\Queueable;
 
 class CreateJob implements ShouldQueue
 {
+    use HandlesWorkerFailure;
     use Queueable;
     use UniqueQueue;
 
@@ -32,8 +30,9 @@ class CreateJob implements ShouldQueue
             $processManager = $service->handler();
             $processManager->create($this->worker);
             $this->worker->status = WorkerStatus::RUNNING;
+            $this->worker->error = null;
             $this->worker->save();
-            $this->broadcastWorkerUpdate();
+            $this->broadcastWorkerUpdate($this->worker);
 
             if ($this->worker->site) {
                 app(BroadcastSiteUpdate::class)->broadcast($this->worker->site);
@@ -43,26 +42,6 @@ class CreateJob implements ShouldQueue
 
     public function failed(Exception $e): void
     {
-        $projectId = $this->worker->server->project_id;
-        $workerId = $this->worker->id;
-        $this->worker->delete();
-        ServerLog::log($this->worker->server, 'create-worker-failed', $e->getMessage());
-
-        SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $projectId,
-            type: 'worker.deleted',
-            data: ['id' => $workerId],
-        ));
-    }
-
-    private function broadcastWorkerUpdate(): void
-    {
-        $this->worker->refresh();
-
-        SocketEvent::dispatch(new SocketEventDTO(
-            projectId: $this->worker->server->project_id,
-            type: 'worker.updated',
-            data: new WorkerResource($this->worker),
-        ));
+        $this->markWorkerFailed($this->worker, $e, 'create-worker-failed');
     }
 }
