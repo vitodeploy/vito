@@ -10,10 +10,13 @@ export default function ErrorIndicator({ error }: { error: string | null }) {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="bg-destructive/15 text-destructive border-destructive/40 flex cursor-default items-center rounded-md border px-1.5 py-1">
+          <button
+            type="button"
+            aria-label="Error"
+            className="bg-destructive/15 text-destructive border-destructive/40 flex cursor-help items-center rounded-md border px-1.5 py-1"
+          >
             <TriangleAlertIcon className="h-4 w-4" />
-            <span className="sr-only">Error</span>
-          </div>
+          </button>
         </TooltipTrigger>
         <TooltipContent className="max-w-sm">
           <pre className="font-mono text-xs whitespace-pre-wrap">{error}</pre>
