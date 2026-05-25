@@ -878,7 +878,7 @@ class ServerTest extends TestCase
         $this->actingAs($this->user);
 
         Storage::fake();
-        SSH::fake('1000'); // Simulates vito user exists (returns user ID)
+        SSH::fake('vito_managed_host');
 
         $this->post(route('servers.store'), [
             'provider' => Custom::id(),
@@ -892,6 +892,29 @@ class ServerTest extends TestCase
 
         $this->assertDatabaseMissing('servers', [
             'name' => 'test-vito-server',
+        ]);
+    }
+
+    public function test_can_create_server_when_host_has_unrelated_vito_user(): void
+    {
+        $this->actingAs($this->user);
+
+        Storage::fake();
+        SSH::fake('ok');
+
+        $this->post(route('servers.store'), [
+            'provider' => Custom::id(),
+            'name' => 'unrelated-vito-user',
+            'ip' => '7.7.7.7',
+            'port' => '22',
+            'os' => OperatingSystem::UBUNTU22->value,
+            'services' => [],
+        ])
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('servers', [
+            'name' => 'unrelated-vito-user',
+            'ip' => '7.7.7.7',
         ]);
     }
 }

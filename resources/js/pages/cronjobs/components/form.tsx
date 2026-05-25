@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import React, { FormEvent, ReactNode, useState } from 'react';
+import React, { FormEvent, ReactNode, useMemo, useState } from 'react';
 import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useForm, usePage } from '@inertiajs/react';
@@ -34,9 +34,17 @@ export default function CronJobForm({
   cronJob?: CronJob;
   children: ReactNode;
 }) {
-  const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }> }>();
+  const page = usePage<SharedData & { server: Server; sites?: Array<{ id: number; domain: string }>; ssh_users?: string[] }>();
   const configs = useConfigs()!;
   const [open, setOpen] = useState(false);
+
+  const sshUsers = useMemo(() => {
+    const base = site ? (page.props.ssh_users ?? []) : page.props.server.ssh_users;
+    if (cronJob?.user && !base.includes(cronJob.user)) {
+      return [...base, cronJob.user];
+    }
+    return base;
+  }, [site, page.props.ssh_users, page.props.server.ssh_users, cronJob?.user]);
   const form = useForm<{
     name: string;
     command: string;
@@ -47,7 +55,7 @@ export default function CronJobForm({
   }>({
     name: cronJob?.name || '',
     command: cronJob?.command || '',
-    user: cronJob?.user || '',
+    user: cronJob?.user || (site?.isolated_user_id ? site.user : ''),
     frequency: cronJob ? (configs.cronjob_intervals[cronJob.frequency] ? cronJob.frequency : 'custom') : '',
     custom: cronJob?.frequency || '',
     site_id: cronJob?.site_id?.toString() || '0',
@@ -175,7 +183,7 @@ export default function CronJobForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {page.props.server.ssh_users.map((user) => (
+                    {sshUsers.map((user) => (
                       <SelectItem key={`user-${user}`} value={user}>
                         {user}
                       </SelectItem>

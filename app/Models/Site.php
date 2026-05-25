@@ -16,6 +16,7 @@ use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\AbstractProxiedSiteType;
+use App\SiteTypes\AbstractSiteType;
 use App\SiteTypes\BunSite;
 use App\SiteTypes\NodeSite;
 use App\SiteTypes\SiteType;
@@ -604,6 +605,30 @@ class Site extends AbstractModel
         }
 
         return array_values(array_unique($commands));
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function requiredToolingMap(): array
+    {
+        $required = [];
+
+        foreach ($this->siblingsSharingUser(includeSelf: true)->get() as $site) {
+            $type = $site->type();
+            if (! $type instanceof AbstractSiteType) {
+                continue;
+            }
+
+            $typeId = $type::id();
+            $label = config('site.types.'.$typeId.'.label') ?? $typeId;
+
+            foreach ($type::requiredTooling() as $toolId) {
+                $required[$toolId] = $label;
+            }
+        }
+
+        return $required;
     }
 
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool

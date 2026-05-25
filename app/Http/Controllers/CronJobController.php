@@ -120,6 +120,7 @@ class CronJobController extends Controller
             ),
             'site' => $site,
             'sites' => $server->sites()->select('id', 'domain')->get(),
+            'ssh_users' => $site->getSshUsers(),
         ]);
     }
 

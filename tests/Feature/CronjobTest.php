@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\CronJob\SyncCronJobs;
 use App\Enums\CronjobStatus;
 use App\Facades\SSH;
 use App\Models\CronJob;
@@ -76,7 +77,7 @@ class CronjobTest extends TestCase
             'name' => 'My Cronjob',
         ]);
 
-        SSH::assertExecutedContains("echo '* * * * * ls -la' | sudo -u vito crontab -");
+        SSH::assertExecutedContains("echo '* * * * * bash -lc '\\''ls -la'\\''' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
 
@@ -100,7 +101,7 @@ class CronjobTest extends TestCase
             'user' => 'example',
         ]);
 
-        SSH::assertExecutedContains("echo '* * * * * ls -la' | sudo -u example crontab -");
+        SSH::assertExecutedContains("echo '* * * * * bash -lc '\\''ls -la'\\''' | sudo -u example crontab -");
         SSH::assertExecutedContains('sudo -u example crontab -l');
     }
 
@@ -166,8 +167,51 @@ class CronjobTest extends TestCase
             'status' => CronjobStatus::READY,
         ]);
 
-        SSH::assertExecutedContains("echo '* * * 1 1 ls -la' | sudo -u vito crontab -");
+        SSH::assertExecutedContains("echo '* * * 1 1 bash -lc '\\''ls -la'\\''' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
+    }
+
+    public function test_cronjob_is_wrapped_in_login_shell_and_survives_sync(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var CronJob $cronjob */
+        $cronjob = CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'vito',
+            'command' => "echo 'hi'",
+            'frequency' => '* * * * *',
+            'status' => CronjobStatus::READY,
+            'site_id' => null,
+        ]);
+
+        $crontab = CronJob::crontab($this->server, 'vito');
+        $this->assertSame("* * * * * bash -lc 'echo '\\''hi'\\'''", $crontab);
+        $this->assertSame("echo 'hi'", CronJob::unwrapCommand("bash -lc 'echo '\\''hi'\\'''"));
+
+        SSH::fake($crontab);
+        app(SyncCronJobs::class)->sync($this->server);
+
+        $cronjob->refresh();
+        $this->assertSame(CronjobStatus::READY, $cronjob->status);
+        $this->assertSame(1, CronJob::query()->where('user', 'vito')->where('command', "echo 'hi'")->count());
+    }
+
+    public function test_root_cronjob_is_not_wrapped(): void
+    {
+        $this->actingAs($this->user);
+
+        CronJob::factory()->create([
+            'server_id' => $this->server->id,
+            'user' => 'root',
+            'command' => '/usr/bin/backup.sh',
+            'frequency' => '0 2 * * *',
+            'status' => CronjobStatus::READY,
+            'site_id' => null,
+        ]);
+
+        $this->assertSame('0 2 * * * /usr/bin/backup.sh', CronJob::crontab($this->server, 'root'));
     }
 
     public function test_enable_cronjob(): void
@@ -195,7 +239,7 @@ class CronjobTest extends TestCase
 
         $this->assertEquals(CronjobStatus::READY, $cronjob->status);
 
-        SSH::assertExecutedContains("echo '* * * 1 1 ls -la' | sudo -u vito crontab -");
+        SSH::assertExecutedContains("echo '* * * 1 1 bash -lc '\\''ls -la'\\''' | sudo -u vito crontab -");
         SSH::assertExecutedContains('sudo -u vito crontab -l');
     }
 

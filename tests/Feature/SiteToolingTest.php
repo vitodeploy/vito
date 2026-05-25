@@ -14,6 +14,7 @@ use App\Models\User;
 use App\SiteTypes\AbstractSiteType;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
+use App\SiteTypes\NodeSite;
 use App\SourceControlProviders\Github;
 use App\Tooling\SiteToolingState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -398,6 +399,53 @@ class SiteToolingTest extends TestCase
         $site->refresh();
         $this->assertArrayNotHasKey('node_version', $site->type_data);
         $this->assertArrayNotHasKey('pnpm_version', $site->type_data);
+    }
+
+    public function test_index_exposes_required_tooling_from_sibling_site_types(): void
+    {
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'domain' => 'iso-node.test',
+            'user' => 'isolated-foo',
+            'path' => '/home/isolated-foo/iso-node.test',
+            'type' => NodeSite::id(),
+            'status' => SiteStatus::READY,
+            'type_data' => [],
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->get(route('site-tooling', ['server' => $this->server, 'site' => $this->isolatedSite]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $assert) => $assert
+                ->where('required_tooling.node', 'Node.js')
+                ->missing('required_tooling.bun')
+            );
+    }
+
+    public function test_uninstall_rejected_for_required_tooling(): void
+    {
+        SSH::fake();
+
+        Site::factory()->create([
+            'server_id' => $this->server->id,
+            'domain' => 'iso-node.test',
+            'user' => 'isolated-foo',
+            'path' => '/home/isolated-foo/iso-node.test',
+            'type' => NodeSite::id(),
+            'status' => SiteStatus::READY,
+            'type_data' => [],
+        ]);
+
+        $this->iuser()->setToolingVersion('node', '22');
+
+        $this->actingAs($this->user);
+
+        $this->delete(route('site-tooling.uninstall', ['server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'node']))
+            ->assertSessionHasErrors('tool');
+
+        SSH::assertNotExecutedContains('mise unuse -g node');
+        $this->assertSame('22', $this->iuser()->toolingVersion('node'));
     }
 
     public function test_other_user_sites_are_not_touched(): void

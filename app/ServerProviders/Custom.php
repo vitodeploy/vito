@@ -83,8 +83,8 @@ class Custom extends AbstractProvider
             throw new ServerProviderError('Cannot connect to server, make sure you have copied the public key.');
         }
 
-        $output = $this->server->ssh('root')->exec('id -u vito 2>/dev/null || echo "user_not_found"');
-        if (! str_contains($output, 'user_not_found')) {
+        $output = $this->server->ssh('root')->exec('id -u vito >/dev/null 2>&1 && test -f /home/vito/vito/artisan && echo "vito_managed_host" || echo "ok"');
+        if (str_contains($output, 'vito_managed_host')) {
             throw new ServerProviderError('You cannot perform this action on Vito\'s server itself.');
         }
     }
