@@ -84,6 +84,39 @@ class GenerateCaddyConfig extends AbstractGenerateConfig
         return $block;
     }
 
+    protected function finalizeData(array $data, Site $site): array
+    {
+        $domains = $this->httpVerificationDomains($data['server_blocks'], $site);
+
+        $data['has_http_verification'] = $domains !== [];
+        $data['http_verification_domains'] = $domains;
+
+        return $data;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $serverBlocks
+     * @return array<int, array{address: string}>
+     */
+    private function httpVerificationDomains(array $serverBlocks, Site $site): array
+    {
+        if (! $site->verification_key) {
+            return [];
+        }
+
+        $domains = [];
+        foreach ($serverBlocks as $block) {
+            if ($block['http_only'] ?? false) {
+                continue;
+            }
+            foreach ($block['domains'] as $domain) {
+                $domains[$domain['name']] = ['address' => 'http://'.$domain['name']];
+            }
+        }
+
+        return array_values($domains);
+    }
+
     protected function buildRedirectBlock(HostedDomain $hd, string $primaryDomain, Site $site): array
     {
         $hasSsl = $hd->ssl_id && $hd->ssl;

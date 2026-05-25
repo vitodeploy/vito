@@ -88,4 +88,59 @@ class VerificationBlockTest extends TestCase
         $this->assertStringContainsString('handle_path /.well-known/vito/caddyKey99/*', $vhost);
         $this->assertStringContainsString('root * /var/lib/vito/verify/caddyKey99', $vhost);
     }
+
+    public function test_caddy_serves_verification_over_http_when_using_auto_https(): void
+    {
+        $this->switchToCaddy();
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+        ]);
+
+        $this->site->update([
+            'ssl_enabled' => true,
+            'verification_key' => 'caddyForce42',
+        ]);
+        $this->site->refresh();
+
+        $vhost = $this->server->webserver()->handler()->generateVhost($this->site);
+
+        $this->assertStringContainsString('http://'.$this->site->domain.' {', $vhost);
+        $this->assertStringContainsString('handle_path /.well-known/vito/caddyForce42/*', $vhost);
+        $this->assertStringContainsString('redir https://{host}{uri} permanent', $vhost);
+    }
+
+    public function test_caddy_omits_http_verification_block_for_http_only_site(): void
+    {
+        $this->switchToCaddy();
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+        ]);
+
+        $this->site->update([
+            'ssl_enabled' => false,
+            'verification_key' => 'caddyPlain1',
+        ]);
+        $this->site->refresh();
+
+        $vhost = $this->server->webserver()->handler()->generateVhost($this->site);
+
+        $this->assertStringContainsString('handle_path /.well-known/vito/caddyPlain1/*', $vhost);
+        $this->assertStringNotContainsString('redir https://{host}{uri} permanent', $vhost);
+    }
+
+    private function switchToCaddy(): void
+    {
+        $this->server->services()->where('type', 'webserver')->delete();
+        $this->server->services()->create([
+            'type' => Caddy::type(),
+            'name' => Caddy::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+        $this->server->refresh();
+    }
 }
