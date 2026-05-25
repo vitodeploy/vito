@@ -191,7 +191,7 @@ class Caddy extends AbstractWebserver implements HasLogs
             'delete-vhost',
             $site->id
         );
-        $this->service->restart();
+        $this->service->reload();
     }
 
     /**
