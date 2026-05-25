@@ -66,7 +66,7 @@ class SitesTest extends TestCase
             'aliases' => $this->castAsJson($inputs['aliases'] ?? []),
             'status' => SiteStatus::READY->value,
             'user' => $inputs['user'],
-            'path' => '/home/' . $inputs['user'] . '/' . $inputs['domain'],
+            'path' => '/home/'.$inputs['user'].'/'.$inputs['domain'],
         ]);
     }
 
@@ -134,7 +134,7 @@ class SitesTest extends TestCase
             'server' => $this->server,
         ]))
             ->assertSuccessful()
-            ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/index'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/index'));
     }
 
     public function test_delete_site(): void
@@ -366,7 +366,7 @@ class SitesTest extends TestCase
             'site' => $this->site,
         ]))
             ->assertSuccessful()
-            ->assertInertia(fn(AssertableInertia $page) => $page->component('sites/logs'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('sites/logs'));
     }
 
     public function test_change_branch(): void
