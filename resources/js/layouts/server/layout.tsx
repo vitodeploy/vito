@@ -21,6 +21,7 @@ import {
   Settings2Icon,
   SignpostIcon,
   UsersIcon,
+  WrenchIcon,
 } from 'lucide-react';
 import { ReactNode, useEffect } from 'react';
 import { Server } from '@/types/server';
@@ -115,6 +116,12 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
                 title: 'Features',
                 href: route('site-features', { server: page.props.server.id, site: site.id }),
                 icon: BoxIcon,
+              },
+              {
+                title: 'Tooling',
+                href: route('site-tooling', { server: page.props.server.id, site: site.id }),
+                icon: WrenchIcon,
+                hidden: site.user === page.props.server.ssh_user || site.status !== 'ready',
               },
               {
                 title: 'Commands',
@@ -215,7 +222,13 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
           icon: LogsIcon,
         },
         {
-          title: 'Remote logs',
+          title: 'Service logs',
+          href: route('logs.services', { server: page.props.server.id }),
+          onlyActivePath: route('logs.services', { server: page.props.server.id }),
+          icon: CogIcon,
+        },
+        {
+          title: 'Custom logs',
           href: route('logs.remote', { server: page.props.server.id }),
           onlyActivePath: route('logs.remote', { server: page.props.server.id }),
           icon: CloudIcon,

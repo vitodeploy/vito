@@ -19,9 +19,14 @@ class EditWorker
      */
     public function edit(Worker $worker, array $input): Worker
     {
+        if ($worker->isSiteBootstrap()) {
+            throw ValidationException::withMessages([
+                'name' => "This worker is managed by its site. Edit the Start command on the site's Application page instead.",
+            ]);
+        }
+
         $this->validate($worker, $input, $worker->site);
 
-        // Determine site_id: use from input if provided
         $siteId = $worker->site_id;
         if (isset($input['site_id'])) {
             $siteId = ! empty($input['site_id']) ? (int) $input['site_id'] : null;
@@ -83,7 +88,6 @@ class EditWorker
             ],
         ];
 
-        // Add site_id validation if provided in input
         if (isset($input['site_id']) && ! empty($input['site_id'])) {
             $rules['site_id'] = [
                 'required',

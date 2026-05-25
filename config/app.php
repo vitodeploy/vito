@@ -12,6 +12,7 @@ use App\Providers\ServiceTypeServiceProvider;
 use App\Providers\SiteTypeServiceProvider;
 use App\Providers\SourceControlServiceProvider;
 use App\Providers\StorageProviderServiceProvider;
+use App\Providers\ToolingServiceProvider;
 use App\Providers\WorkflowServiceProvider;
 use Illuminate\Auth\AuthServiceProvider;
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider;
@@ -231,6 +232,7 @@ return [
         DemoServiceProvider::class,
         PluginsServiceProvider::class,
         SiteTypeServiceProvider::class,
+        ToolingServiceProvider::class,
         ServerProviderServiceProvider::class,
         StorageProviderServiceProvider::class,
         SourceControlServiceProvider::class,

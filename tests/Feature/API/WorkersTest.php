@@ -326,4 +326,77 @@ class WorkersTest extends TestCase
             ->assertSuccessful()
             ->assertNoContent();
     }
+
+    public function test_cannot_update_site_bootstrap_worker(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server,
+            'site_id' => $site->id,
+            'numprocs' => 1,
+        ]);
+
+        $site->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->json('PUT', route('api.projects.servers.workers.update', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+            'worker' => $worker,
+        ]), [
+            'name' => 'renamed',
+            'command' => 'renamed command',
+            'user' => $worker->user,
+            'auto_start' => $worker->auto_start,
+            'auto_restart' => $worker->auto_restart,
+            'numprocs' => 2,
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+
+        $this->assertDatabaseMissing('workers', [
+            'id' => $worker->id,
+            'command' => 'renamed command',
+        ]);
+    }
+
+    public function test_cannot_delete_site_bootstrap_worker(): void
+    {
+        SSH::fake();
+
+        Sanctum::actingAs($this->user, ['read', 'write']);
+
+        /** @var Site $site */
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server,
+            'site_id' => $site->id,
+        ]);
+
+        $site->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->json('DELETE', route('api.projects.servers.workers.delete', [
+            'project' => $this->server->project,
+            'server' => $this->server,
+            'site' => $site,
+            'worker' => $worker,
+        ]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+
+        $this->assertDatabaseHas('workers', ['id' => $worker->id]);
+    }
 }

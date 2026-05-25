@@ -3,6 +3,7 @@
 namespace App\Actions\Bootstrap;
 
 use App\Models\GithubApp;
+use App\Tooling\ToolingRegistry;
 use Illuminate\Support\Facades\Cache;
 
 final class GetBootstrap
@@ -93,7 +94,27 @@ final class GetBootstrap
             'github_app' => [
                 'installed' => GithubApp::query()->exists(),
             ],
+            'tooling' => $this->tooling(),
         ];
+    }
+
+    /**
+     * @return array<int, array{id: string, label: string, description: string, supported_versions: array<int, string>, commands: array<int, string>}>
+     */
+    private function tooling(): array
+    {
+        $out = [];
+        foreach (ToolingRegistry::all() as $tool) {
+            $out[] = [
+                'id' => $tool::id(),
+                'label' => $tool::label(),
+                'description' => $tool::description(),
+                'supported_versions' => $tool::supportedVersions(),
+                'commands' => $tool::commands(),
+            ];
+        }
+
+        return $out;
     }
 
     private function publicKeyText(): string

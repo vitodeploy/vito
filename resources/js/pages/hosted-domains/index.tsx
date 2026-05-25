@@ -115,12 +115,12 @@ function ForceActivateHostedDomain({ hostedDomain }: { hostedDomain: HostedDomai
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Force Activate</DropdownMenuItem>
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Force Validate</DropdownMenuItem>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Force Activate Domain</DialogTitle>
-          <DialogDescription className="sr-only">Force activate domain</DialogDescription>
+          <DialogTitle>Force Validate Domain</DialogTitle>
+          <DialogDescription className="sr-only">Force validate domain</DialogDescription>
         </DialogHeader>
         <div className="space-y-2 p-4">
           <p>
@@ -128,7 +128,7 @@ function ForceActivateHostedDomain({ hostedDomain }: { hostedDomain: HostedDomai
             configuration changes have been made yet.
           </p>
           <p>
-            If you force activate this domain, the server configuration will be updated regardless. However, this may impact your ability to generate
+            If you force validate this domain, the server configuration will be updated regardless. However, this may impact your ability to generate
             an SSL certificate if the domain does not actually point to this server.
           </p>
           <p>Are you sure you want to continue?</p>
@@ -140,7 +140,7 @@ function ForceActivateHostedDomain({ hostedDomain }: { hostedDomain: HostedDomai
           <Button variant="destructive" disabled={form.processing} onClick={submit}>
             {form.processing && <LoaderCircleIcon className="animate-spin" />}
             <FormSuccessful successful={form.recentlySuccessful} />
-            Force Activate
+            Force Validate
           </Button>
         </DialogFooter>
       </DialogContent>

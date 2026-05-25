@@ -2,6 +2,7 @@
 
 namespace App\Actions\HostedDomain;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Enums\HostedDomainStatus;
 use App\Jobs\HostedDomain\CheckDomainJob;
 use App\Models\HostedDomain;
@@ -21,5 +22,7 @@ class ReactivateHostedDomain
         $hostedDomain->save();
 
         dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
+
+        app(BroadcastSiteUpdate::class)->broadcast($hostedDomain->site);
     }
 }

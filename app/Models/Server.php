@@ -216,6 +216,14 @@ class Server extends AbstractModel
     }
 
     /**
+     * @return HasMany<IsolatedUser, covariant $this>
+     */
+    public function isolatedUsers(): HasMany
+    {
+        return $this->hasMany(IsolatedUser::class);
+    }
+
+    /**
      * @return HasMany<Service, covariant $this>
      */
     public function services(): HasMany
@@ -322,6 +330,9 @@ class Server extends AbstractModel
         return config('core.ssh_user');
     }
 
+    /**
+     * @deprecated Prefer `$site->isolatedUser->lock()`
+     */
     public function isolatedUserLock(string $user): Lock
     {
         return Cache::lock("isolate:{$this->id}:{$user}", 60);
@@ -333,10 +344,10 @@ class Server extends AbstractModel
     public function getSshUsers(): array
     {
         $users = ['root', $this->getSshUser()];
-        $isolatedSites = $this->sites()->pluck('user')->toArray();
-        $users = array_merge($users, $isolatedSites);
+        $users = array_merge($users, $this->isolatedUsers()->pluck('username')->toArray());
+        $users = array_merge($users, $this->sites()->whereNotNull('user')->pluck('user')->toArray());
 
-        return array_unique($users);
+        return array_values(array_unique($users));
     }
 
     public function service(string $type, mixed $version = null): ?Service
@@ -583,5 +594,30 @@ class Server extends AbstractModel
     public function hasFeature(string $feature): bool
     {
         return in_array($feature, config('server.features', []));
+    }
+
+    /**
+     * @return array<int, array{key: string, ...}>
+     */
+    public function getWarnings(): array
+    {
+        $warnings = [];
+
+        if ($this->updates > 0) {
+            $warnings[] = [
+                'key' => 'updates_available',
+                'count' => $this->updates,
+            ];
+        }
+
+        $latestMetric = $this->relationLoaded('latestMetric')
+            ? $this->latestMetric
+            : $this->latestMetric()->first();
+
+        if ($latestMetric?->reboot_required) {
+            $warnings[] = ['key' => 'reboot_required'];
+        }
+
+        return $warnings;
     }
 }

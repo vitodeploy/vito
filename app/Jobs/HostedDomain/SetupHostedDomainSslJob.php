@@ -3,6 +3,7 @@
 namespace App\Jobs\HostedDomain;
 
 use App\Actions\HostedDomain\ActivateHostedDomain;
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Actions\SSL\CertificateParser;
 use App\DTOs\SocketEventDTO;
 use App\Enums\HostedDomainStatus;
@@ -87,6 +88,8 @@ class SetupHostedDomainSslJob implements ShouldQueue
             $webserver->setupSSL($ssl);
 
             $this->readAndVerifyCertificate($site, $ssl, $leDomains);
+
+            app(BroadcastSiteUpdate::class)->broadcast($site);
         });
     }
 
@@ -136,6 +139,8 @@ class SetupHostedDomainSslJob implements ShouldQueue
             $e->getMessage(),
             $site
         );
+
+        app(BroadcastSiteUpdate::class)->broadcast($site);
     }
 
     private function readAndVerifyCertificate(Site $site, Ssl $ssl, array $leDomains): void

@@ -99,13 +99,15 @@ function InstallationFailedBanner({ site }: { site: Site }) {
 }
 
 export default function SiteBanners({ site }: { site: Site }) {
-  const warnings: SiteWarning[] = site.warnings ?? [];
+  const installing = site.status === 'installing';
   const installationFailed = site.status === 'installation_failed';
+  const warnings: SiteWarning[] = installing ? [] : (site.warnings ?? []);
 
   const pendingDomainsWarning = warnings.find((w) => w.key === 'pending_domains');
   const sslDisabledWarning = warnings.find((w) => w.key === 'ssl_disabled');
   const vhostWarning = warnings.find((w) => w.key === 'vhost_generation_disabled');
   const sslExpiringWarning = warnings.find((w) => w.key === 'ssl_expiring');
+  const needsFirstDeployWarning = warnings.find((w) => w.key === 'needs_first_deploy');
 
   const items: BannerItem[] = [];
 
@@ -197,6 +199,26 @@ export default function SiteBanners({ site }: { site: Site }) {
         >
           Re-enable
         </Button>
+      ),
+    });
+  }
+
+  if (needsFirstDeployWarning) {
+    items.push({
+      key: 'needs-first-deploy',
+      title: 'Site needs first deploy',
+      description: (
+        <>
+          Customise your deploy script if needed, then deploy this site to bring it online. The application worker is created on the first successful
+          deploy.
+        </>
+      ),
+      action: (
+        <Link href={route('application', { server: site.server_id, site: site.id })}>
+          <Button variant="outline" size="sm">
+            Go to Application
+          </Button>
+        </Link>
       ),
     });
   }

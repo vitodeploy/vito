@@ -18,5 +18,7 @@ class DisableSsl
         $site->ssl_enabled = false;
         $site->save();
         $site->webserver()->updateVHost($site);
+
+        app(BroadcastSiteUpdate::class)->broadcast($site);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\SiteTypes;
 
+use App\Models\Deployment;
+
 interface SiteType
 {
     public static function id(): string;
@@ -55,4 +57,8 @@ interface SiteType
      * @return array<string, string>
      */
     public function deploymentEnvironment(): array;
+
+    public function afterDeploy(Deployment $deployment): void;
+
+    public function defaultDeploymentScript(): string;
 }

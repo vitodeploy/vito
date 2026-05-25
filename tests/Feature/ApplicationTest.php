@@ -10,6 +10,7 @@ use App\Models\GitHook;
 use App\Models\Site;
 use App\Models\Worker;
 use App\Notifications\DeploymentCompleted;
+use App\SiteTypes\NodeSite;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -32,6 +33,53 @@ class ApplicationTest extends TestCase
         ]))
             ->assertSuccessful()
             ->assertInertia(fn (AssertableInertia $page) => $page->component('application/index'));
+    }
+
+    public function test_application_page_passes_null_worker_for_non_proxied_site(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->get(route('application', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('application/index')
+                ->where('worker', null)
+            );
+    }
+
+    public function test_application_page_passes_bootstrap_worker_for_proxied_site(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        /** @var Site $proxied */
+        $proxied = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'type' => NodeSite::id(),
+        ]);
+
+        /** @var Worker $worker */
+        $worker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $proxied->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        $proxied->jsonUpdate('type_data', 'bootstrap_worker_id', $worker->id);
+
+        $this->get(route('application', [
+            'server' => $this->server,
+            'site' => $proxied,
+        ]))
+            ->assertSuccessful()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('application/index')
+                ->where('worker.id', $worker->id)
+                ->where('worker.is_site_bootstrap', true)
+            );
     }
 
     public function test_update_deployment_script(): void

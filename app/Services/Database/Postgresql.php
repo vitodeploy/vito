@@ -2,7 +2,10 @@
 
 namespace App\Services\Database;
 
-class Postgresql extends AbstractDatabase
+use App\DTOs\ServiceLog;
+use App\Services\HasLogs;
+
+class Postgresql extends AbstractDatabase implements HasLogs
 {
     protected array $systemDbs = ['template0', 'template1', 'postgres'];
 
@@ -41,5 +44,18 @@ class Postgresql extends AbstractDatabase
         );
 
         return trim($version);
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'postgresql:journal',
+                serviceLabel: 'PostgreSQL',
+                label: 'Service journal',
+                source: ServiceLog::SOURCE_JOURNAL,
+                target: 'postgresql.service',
+            ),
+        ];
     }
 }

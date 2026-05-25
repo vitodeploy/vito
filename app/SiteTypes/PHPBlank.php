@@ -23,27 +23,16 @@ class PHPBlank extends PHPSite
 
     public function createRules(array $input): array
     {
-        return [
-            'web_directory' => [
-                'nullable',
-                'string',
-                'max:255',
-                'regex:/^[a-zA-Z0-9._\-\/]+$/',
-                'not_regex:/\.\./',
-            ],
-            'php_version' => [
-                'required',
-                Rule::in($this->site->server->installedPHPVersions()),
-            ],
-            'node_version' => [
-                'nullable',
-                Rule::in(self::nodeVersionsWithNone()),
-            ],
-            'bun_version' => [
-                'nullable',
-                Rule::in(self::bunVersionsWithNone()),
-            ],
+        $rules = parent::createRules($input);
+
+        unset($rules['source_control'], $rules['repository'], $rules['branch'], $rules['composer']);
+
+        $rules['php_version'] = [
+            'required',
+            Rule::in($this->site->server->installedPHPVersions()),
         ];
+
+        return $rules;
     }
 
     public function createFields(array $input): array
@@ -56,10 +45,10 @@ class PHPBlank extends PHPSite
 
     public function data(array $input): array
     {
-        return [
-            'node_version' => $input['node_version'] ?? 'none',
-            'bun_version' => $input['bun_version'] ?? 'none',
-        ];
+        $data = parent::data($input);
+        unset($data['composer']);
+
+        return $data;
     }
 
     /**
@@ -69,10 +58,8 @@ class PHPBlank extends PHPSite
     {
         $this->progress(0, 'isolating-user');
         $this->isolate();
-        $this->progress(12, 'installing-node');
-        $this->setupNodeIfRequested();
-        $this->progress(18, 'installing-bun');
-        $this->setupBunIfRequested();
+        $this->progress(15, 'installing-tooling');
+        $this->setupRequestedTooling();
         $this->progress(25, 'creating-vhost');
         $this->site->webserver()->createVHost($this->site);
         $this->progress(55, 'restarting-php');

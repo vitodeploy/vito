@@ -28,6 +28,7 @@ export interface Site {
   auto_deploy: boolean;
   port: number;
   user: string;
+  isolated_user_id: number | null;
   url: string;
   force_ssl: boolean;
   ssl_enabled: boolean;
@@ -35,8 +36,12 @@ export interface Site {
   progress_step: string | null;
   last_error: string | null;
   vhost_generation_enabled: boolean;
+  has_custom_vhost_template: boolean;
   features: SiteFeature[];
   modern_deployment: boolean;
+  is_proxied_site_type: boolean;
+  start_command: string | null;
+  bootstrap_worker_id: number | null;
   basic_auth: {
     enabled: boolean;
     users: { username: string }[];
@@ -67,7 +72,8 @@ export type SiteWarning =
   | { key: 'pending_domains'; count: number; domains: string[] }
   | { key: 'ssl_disabled' }
   | { key: 'vhost_generation_disabled' }
-  | { key: 'ssl_expiring'; count: number; domains: string[]; earliest_expiry: string };
+  | { key: 'ssl_expiring'; count: number; domains: string[]; earliest_expiry: string }
+  | { key: 'needs_first_deploy' };
 
 export interface SiteFeatureAction {
   label: string;

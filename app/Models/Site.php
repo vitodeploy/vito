@@ -2,25 +2,34 @@
 
 namespace App\Models;
 
+use App\Enums\DeploymentStatus;
+use App\Enums\HostedDomainStatus;
 use App\Enums\HostedDomainType;
 use App\Enums\RedirectStatus;
 use App\Enums\SiteStatus;
+use App\Enums\SslStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
+use App\Helpers\SiteShellEnvironment;
+use App\Helpers\SSH;
 use App\Jobs\SSL\DeleteSiteSslJob;
 use App\Services\Webserver\Apache;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
+use App\SiteTypes\AbstractProxiedSiteType;
+use App\SiteTypes\BunSite;
+use App\SiteTypes\NodeSite;
 use App\SiteTypes\SiteType;
 use App\SourceControlProviders\GithubApp;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -44,11 +53,14 @@ use RuntimeException;
  * @property int $progress
  * @property ?string $progress_step
  * @property ?string $last_error
- * @property string $user
+ * @property ?int $isolated_user_id
+ * @property ?IsolatedUser $isolatedUser
+ * @property ?string $user
  * @property bool $force_ssl
  * @property bool $ssl_enabled
  * @property ?string $vhost_template
  * @property bool $vhost_generation_enabled
+ * @property ?string $verification_key
  * @property Server $server
  * @property Collection<int, ServerLog> $logs
  * @property Collection<int, Deployment> $deployments
@@ -76,6 +88,7 @@ class Site extends AbstractModel
 
     protected $fillable = [
         'server_id',
+        'isolated_user_id',
         'type',
         'type_data',
         'env_variables',
@@ -97,10 +110,14 @@ class Site extends AbstractModel
         'ssl_enabled',
         'vhost_template',
         'vhost_generation_enabled',
+        'verification_key',
     ];
+
+    protected $with = ['isolatedUser'];
 
     protected $casts = [
         'server_id' => 'integer',
+        'isolated_user_id' => 'integer',
         'type_data' => 'json',
         'env_variables' => 'encrypted:array',
         'port' => 'integer',
@@ -140,6 +157,13 @@ class Site extends AbstractModel
         return $this->status === SiteStatus::READY;
     }
 
+    public function ssh(): SSH
+    {
+        return $this->server->ssh($this->user)->variables(
+            SiteShellEnvironment::collect($this)
+        );
+    }
+
     public function isInstalling(): bool
     {
         return in_array($this->status, [SiteStatus::INSTALLING, SiteStatus::INSTALLATION_FAILED]);
@@ -151,11 +175,82 @@ class Site extends AbstractModel
     }
 
     /**
+     * @return array<int, array{key: string, ...}>
+     */
+    public function getWarnings(): array
+    {
+        $warnings = [];
+
+        $hostedDomains = $this->relationLoaded('hostedDomains') ? $this->hostedDomains : collect();
+
+        $pendingDomains = $hostedDomains->where('status', HostedDomainStatus::PENDING);
+        if ($pendingDomains->isNotEmpty()) {
+            $warnings[] = [
+                'key' => 'pending_domains',
+                'count' => $pendingDomains->count(),
+                'domains' => $pendingDomains->pluck('domain')->all(),
+            ];
+        }
+
+        if (! $this->ssl_enabled) {
+            $warnings[] = ['key' => 'ssl_disabled'];
+        }
+
+        if (! $this->vhost_generation_enabled) {
+            $warnings[] = ['key' => 'vhost_generation_disabled'];
+        }
+
+        $expiring = $hostedDomains->filter(
+            fn ($hd) => $hd->ssl_id
+                && $hd->relationLoaded('ssl')
+                && $hd->ssl
+                && $hd->ssl->status === SslStatus::CREATED
+                && $hd->ssl->expires_at
+                && $hd->ssl->expires_at <= now()->addDays(14)
+        );
+
+        if ($expiring->isNotEmpty()) {
+            $earliestExpiry = $expiring->min(fn ($hd) => $hd->ssl->expires_at);
+            $warnings[] = [
+                'key' => 'ssl_expiring',
+                'count' => $expiring->count(),
+                'domains' => $expiring->pluck('domain')->all(),
+                'earliest_expiry' => $earliestExpiry?->toIso8601String(),
+            ];
+        }
+
+        if ($this->type() instanceof AbstractProxiedSiteType
+            && ! $this->deployments()->where('status', DeploymentStatus::FINISHED)->exists()) {
+            $warnings[] = ['key' => 'needs_first_deploy'];
+        }
+
+        return $warnings;
+    }
+
+    /**
      * @return BelongsTo<Server, covariant $this>
      */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * @return BelongsTo<IsolatedUser, covariant $this>
+     */
+    public function isolatedUser(): BelongsTo
+    {
+        return $this->belongsTo(IsolatedUser::class);
+    }
+
+    public function getUserAttribute(?string $value): ?string
+    {
+        return ($value !== null && $value !== '') ? $value : $this->isolatedUser?->username;
+    }
+
+    public function getSshKeyAttribute(?string $value): ?string
+    {
+        return ($value !== null && $value !== '') ? $value : $this->isolatedUser?->ssh_key;
     }
 
     /**
@@ -316,7 +411,13 @@ class Site extends AbstractModel
 
     public function type(): SiteType
     {
-        $handlerClass = config('site.types.'.$this->type.'.handler');
+        $type = match ($this->type) {
+            'mise_bun' => BunSite::id(),
+            'mise_nodejs' => NodeSite::id(),
+            default => $this->type,
+        };
+
+        $handlerClass = config('site.types.'.$type.'.handler');
         if (! class_exists($handlerClass)) {
             throw new RuntimeException("Site type handler class {$handlerClass} does not exist.");
         }
@@ -397,7 +498,13 @@ class Site extends AbstractModel
 
     public function getSshKeyName(): string
     {
-        return str('site_'.$this->id)->toString();
+        if ($this->getRawOriginal('ssh_key')) {
+            return 'site_'.$this->id;
+        }
+
+        return $this->isolated_user_id
+            ? 'iuser_'.$this->isolated_user_id
+            : 'site_'.$this->id;
     }
 
     public function getEnv(): string
@@ -447,58 +554,49 @@ class Site extends AbstractModel
 
     public function isIsolated(): bool
     {
-        return $this->user != $this->server->getSshUser();
+        if ($this->isolated_user_id !== null) {
+            return true;
+        }
+
+        $column = $this->getRawOriginal('user');
+
+        return is_string($column) && $column !== '' && $column !== $this->server->getSshUser();
     }
 
     public function userSharedWithSiblings(): bool
     {
-        return $this->server->sites()
-            ->where('user', $this->user)
-            ->where('id', '!=', $this->id)
-            ->exists();
+        return $this->siblingsSharingUser()->exists();
+    }
+
+    /**
+     * @return Builder<Site>
+     */
+    public function siblingsSharingUser(bool $includeSelf = false): Builder
+    {
+        if (! $this->isolated_user_id) {
+            return Site::query()->whereRaw('1 = 0');
+        }
+
+        $query = Site::query()->where('isolated_user_id', $this->isolated_user_id);
+
+        if (! $includeSelf) {
+            $query->where('id', '!=', $this->id);
+        }
+
+        return $query;
     }
 
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool
     {
-        return $this->server->sites()
-            ->where('user', $this->user)
+        if (! $this->isolated_user_id) {
+            return false;
+        }
+
+        return Site::query()
+            ->where('isolated_user_id', $this->isolated_user_id)
             ->where('php_version', $phpVersion ?? $this->php_version)
             ->where('id', '!=', $this->id)
             ->exists();
-    }
-
-    /**
-     * Returns the version of a mise-managed runtime (e.g. `node`, `bun`) that
-     * is already installed for the given isolated user on the given server, or
-     * `null` if no sibling site has it configured.
-     */
-    public static function existingRuntimeVersionForUser(Server $server, string $user, string $runtime, ?int $excludeSiteId = null): ?string
-    {
-        if ($user === '' || $runtime === '') {
-            return null;
-        }
-
-        $field = $runtime.'_version';
-
-        $query = $server->sites()
-            ->where('user', $user)
-            ->whereNotNull('type_data->'.$field)
-            ->where('type_data->'.$field, '!=', 'none')
-            ->where('type_data->'.$field, '!=', '');
-
-        if ($excludeSiteId !== null) {
-            $query->where('id', '!=', $excludeSiteId);
-        }
-
-        $sibling = $query->orderBy('id')->first();
-
-        if (! $sibling instanceof self) {
-            return null;
-        }
-
-        $version = $sibling->type_data[$field] ?? null;
-
-        return is_string($version) && $version !== '' ? $version : null;
     }
 
     public function webserver(): Webserver
@@ -587,11 +685,17 @@ class Site extends AbstractModel
         if ($this->deploymentScript) {
             return;
         }
-        $script = '';
-        $path = resource_path('deployment-scripts/'.$this->type.'.sh');
-        if (File::exists($path)) {
-            $script = File::get($path);
+
+        try {
+            $script = $this->type()->defaultDeploymentScript();
+        } catch (\Throwable $e) {
+            Log::error('Failed to render default deploy script for site '.$this->id, [
+                'type' => $this->type,
+                'error' => $e->getMessage(),
+            ]);
+            $script = '';
         }
+
         $deploymentScript = new DeploymentScript([
             'site_id' => $this->id,
             'name' => 'default',

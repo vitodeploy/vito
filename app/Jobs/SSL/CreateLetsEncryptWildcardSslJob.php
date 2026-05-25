@@ -4,6 +4,7 @@ namespace App\Jobs\SSL;
 
 use App\Actions\Domain\CreateDNSRecord;
 use App\Actions\Domain\DeleteDNSRecord;
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Actions\SSL\CertificateParser;
 use App\DTOs\SocketEventDTO;
 use App\Enums\SslStatus;
@@ -14,6 +15,7 @@ use App\Models\DNSRecord;
 use App\Models\Domain;
 use App\Models\Server;
 use App\Models\ServerLog;
+use App\Models\Site;
 use App\Models\Ssl;
 use App\Traits\UniqueQueue;
 use Exception;
@@ -58,6 +60,7 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
 
             Log::info('[Wildcard SSL] Job completed successfully', ['ssl_id' => $this->ssl->id]);
             $this->broadcastSslUpdate();
+            $this->broadcastAffectedSites();
         });
     }
 
@@ -286,6 +289,17 @@ class CreateLetsEncryptWildcardSslJob implements ShouldQueue
             type: 'ssl.updated',
             data: new SslResource($this->ssl),
         ));
+    }
+
+    private function broadcastAffectedSites(): void
+    {
+        $sites = Site::query()
+            ->whereHas('hostedDomains', fn ($q) => $q->where('ssl_id', $this->ssl->id))
+            ->get();
+
+        foreach ($sites as $site) {
+            app(BroadcastSiteUpdate::class)->broadcast($site);
+        }
     }
 
     private function waitForDnsPropagation(string $domain, string $validation): void

@@ -49,6 +49,7 @@ class WorkerPolicy
         return $this->hasWriteAccess($user, $server->project) &&
             $server->isReady() &&
             $worker->server_id === $server->id &&
-            $server->processManager();
+            $server->processManager() &&
+            ! $worker->isSiteBootstrap();
     }
 }

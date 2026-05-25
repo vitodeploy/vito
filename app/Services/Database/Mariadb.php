@@ -2,7 +2,10 @@
 
 namespace App\Services\Database;
 
-class Mariadb extends AbstractDatabase
+use App\DTOs\ServiceLog;
+use App\Services\HasLogs;
+
+class Mariadb extends AbstractDatabase implements HasLogs
 {
     protected array $systemDbs = ['information_schema', 'performance_schema', 'mysql', 'sys'];
 
@@ -36,5 +39,18 @@ class Mariadb extends AbstractDatabase
         );
 
         return trim($version);
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'mariadb:journal',
+                serviceLabel: 'MariaDB',
+                label: 'Service journal',
+                source: ServiceLog::SOURCE_JOURNAL,
+                target: 'mariadb.service',
+            ),
+        ];
     }
 }

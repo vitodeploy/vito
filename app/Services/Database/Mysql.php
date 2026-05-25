@@ -2,7 +2,10 @@
 
 namespace App\Services\Database;
 
-class Mysql extends AbstractDatabase
+use App\DTOs\ServiceLog;
+use App\Services\HasLogs;
+
+class Mysql extends AbstractDatabase implements HasLogs
 {
     protected array $systemDbs = ['information_schema', 'performance_schema', 'mysql', 'sys'];
 
@@ -37,5 +40,18 @@ class Mysql extends AbstractDatabase
         );
 
         return trim($version);
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'mysql:journal',
+                serviceLabel: 'MySQL',
+                label: 'Service journal',
+                source: ServiceLog::SOURCE_JOURNAL,
+                target: 'mysql.service',
+            ),
+        ];
     }
 }

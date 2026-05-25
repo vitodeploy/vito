@@ -53,4 +53,31 @@ enum NodePackageManager: string implements VitoEnum
             self::Yarn => 'yarn start',
         };
     }
+
+    public function toolId(): string
+    {
+        return match ($this) {
+            self::Npm => 'node',
+            self::Pnpm => 'pnpm',
+            self::Yarn => 'yarn',
+        };
+    }
+
+    public static function fromToolId(string $toolId): self
+    {
+        return match ($toolId) {
+            'node' => self::Npm,
+            'pnpm' => self::Pnpm,
+            'yarn' => self::Yarn,
+            default => throw new \InvalidArgumentException("No NodePackageManager for tool id: {$toolId}"),
+        };
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function toolIds(): array
+    {
+        return array_map(fn (self $case) => $case->toolId(), self::cases());
+    }
 }

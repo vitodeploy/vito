@@ -2,25 +2,14 @@
 
 namespace App\Services\ProcessManager;
 
+use App\Models\Worker;
 use App\Services\ServiceInterface;
 
 interface ProcessManager extends ServiceInterface
 {
-    /**
-     * @param  ?array<string, string>  $environment
-     */
-    public function create(
-        int $id,
-        string $command,
-        string $user,
-        bool $autoStart,
-        bool $autoRestart,
-        int $numprocs,
-        string $logFile,
-        ?string $directory = null,
-        ?int $siteId = null,
-        ?array $environment = null,
-    ): void;
+    public function create(Worker $worker): void;
+
+    public function writeConfig(Worker $worker): void;
 
     public function delete(int $id, ?int $siteId = null): void;
 

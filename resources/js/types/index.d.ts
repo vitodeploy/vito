@@ -113,8 +113,17 @@ export interface Configs {
   github_app: {
     installed: boolean;
   };
+  tooling: ToolingDescriptor[];
 
   [key: string]: unknown;
+}
+
+export interface ToolingDescriptor {
+  id: string;
+  label: string;
+  description: string;
+  supported_versions: string[];
+  commands: string[];
 }
 
 export interface SharedData {

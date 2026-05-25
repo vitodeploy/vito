@@ -9,11 +9,12 @@ use App\Exceptions\RepositoryNotFound;
 use App\Exceptions\RepositoryPermissionDenied;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Jobs\Site\CreateJob;
+use App\Models\IsolatedUser;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\Webserver\Webserver;
-use App\SiteTypes\PHPSite;
+use App\Tooling\ToolingRegistry;
 use App\ValidationRules\DomainRule;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -40,8 +41,16 @@ class CreateSite
         DB::beginTransaction();
         try {
             $user = $input['user'];
+
+            $isolatedUser = $user !== $server->getSshUser()
+                ? IsolatedUser::query()->firstOrCreate(
+                    ['server_id' => $server->id, 'username' => $user],
+                )
+                : null;
+
             $site = new Site([
                 'server_id' => $server->id,
+                'isolated_user_id' => $isolatedUser?->id,
                 'type' => $input['type'],
                 'domain' => $input['domain'],
                 'user' => $user,
@@ -185,24 +194,29 @@ class CreateSite
             return $input;
         }
 
-        $runtimes = [
-            'node' => ['label' => 'Node.js', 'allowed' => PHPSite::nodeVersionsWithNone()],
-            'bun' => ['label' => 'Bun', 'allowed' => PHPSite::bunVersionsWithNone()],
-        ];
+        $iuser = IsolatedUser::query()
+            ->where('server_id', $server->id)
+            ->where('username', $user)
+            ->first();
 
-        foreach ($runtimes as $runtime => $meta) {
-            $existing = Site::existingRuntimeVersionForUser($server, $user, $runtime);
+        if (! $iuser instanceof IsolatedUser) {
+            return $input;
+        }
 
-            if ($existing === null || ! in_array($existing, $meta['allowed'], true) || $existing === 'none') {
+        foreach (ToolingRegistry::all() as $id => $tool) {
+            $allowed = $tool::supportedVersionsWithNone();
+            $existing = $iuser->toolingVersion($id);
+
+            if ($existing === null || ! in_array($existing, $allowed, true) || $existing === 'none') {
                 continue;
             }
 
-            $field = $runtime.'_version';
+            $field = $tool::typeDataKey();
             $submitted = $input[$field] ?? null;
 
             if (is_string($submitted) && $submitted !== '' && $submitted !== $existing) {
                 throw ValidationException::withMessages([
-                    $field => "Isolated user '{$user}' already has {$meta['label']} {$existing} installed; this cannot be changed.",
+                    $field => "Isolated user '{$user}' already has {$tool::label()} {$existing} installed; this cannot be changed.",
                 ]);
             }
 

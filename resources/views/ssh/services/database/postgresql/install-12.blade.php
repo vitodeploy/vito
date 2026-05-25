@@ -18,7 +18,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y wget lsb-release gnupg
 
 # Import PostgreSQL GPG key to modern keyring location
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
 
 # Add PostgreSQL repository with signed-by directive
 CODENAME=$(lsb_release -cs)

@@ -2,6 +2,7 @@
 
 namespace App\Actions\HostedDomain;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Models\HostedDomain;
 
 class DeleteHostedDomain
@@ -15,5 +16,7 @@ class DeleteHostedDomain
         $hostedDomain->delete();
 
         $site->webserver()->updateVHost($site);
+
+        app(BroadcastSiteUpdate::class)->broadcast($site);
     }
 }

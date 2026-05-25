@@ -2,12 +2,14 @@
 
 namespace App\Services\Redis;
 
+use App\DTOs\ServiceLog;
 use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Services\AbstractService;
+use App\Services\HasLogs;
 use Closure;
 
-class Redis extends AbstractService
+class Redis extends AbstractService implements HasLogs
 {
     public static function id(): string
     {
@@ -73,5 +75,18 @@ class Redis extends AbstractService
     public function version(): string
     {
         return $this->service->server->ssh()->exec('redis-server --version | awk \'{print $3}\' | cut -d= -f2', 'get-redis-version');
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'redis:journal',
+                serviceLabel: 'Redis',
+                label: 'Service journal',
+                source: ServiceLog::SOURCE_JOURNAL,
+                target: 'redis-server.service',
+            ),
+        ];
     }
 }

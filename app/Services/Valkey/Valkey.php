@@ -2,12 +2,14 @@
 
 namespace App\Services\Valkey;
 
+use App\DTOs\ServiceLog;
 use App\Exceptions\ServiceInstallationFailed;
 use App\Exceptions\SSHError;
 use App\Services\AbstractService;
+use App\Services\HasLogs;
 use Closure;
 
-class Valkey extends AbstractService
+class Valkey extends AbstractService implements HasLogs
 {
     public static function id(): string
     {
@@ -73,5 +75,18 @@ class Valkey extends AbstractService
     public function version(): string
     {
         return $this->service->server->ssh()->exec("valkey-server --version | grep -oP 'v=\\K[0-9.]+'", 'get-valkey-version');
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'valkey:journal',
+                serviceLabel: 'Valkey',
+                label: 'Service journal',
+                source: ServiceLog::SOURCE_JOURNAL,
+                target: 'valkey-server.service',
+            ),
+        ];
     }
 }

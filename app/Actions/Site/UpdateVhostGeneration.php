@@ -21,5 +21,7 @@ class UpdateVhostGeneration
         if ($site->vhost_generation_enabled) {
             $site->webserver()->updateVHost($site);
         }
+
+        app(BroadcastSiteUpdate::class)->broadcast($site);
     }
 }

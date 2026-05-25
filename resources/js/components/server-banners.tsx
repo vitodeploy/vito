@@ -1,13 +1,17 @@
 import { Button } from '@/components/ui/button';
-import { Server } from '@/types/server';
+import { Server, ServerWarning } from '@/types/server';
 import { BannerItem, WarningsBlock } from '@/components/banners';
 import UpdateServer from '@/pages/servers/components/update-server';
 import RebootServer from '@/pages/servers/components/reboot-server';
 
-export default function ServerBanners({ server, rebootRequired }: { server: Server; rebootRequired?: boolean }) {
+export default function ServerBanners({ server }: { server: Server }) {
+  const warnings: ServerWarning[] = server.warnings ?? [];
   const items: BannerItem[] = [];
 
-  if (rebootRequired) {
+  const rebootRequiredWarning = warnings.find((w) => w.key === 'reboot_required');
+  const updatesWarning = warnings.find((w) => w.key === 'updates_available');
+
+  if (rebootRequiredWarning) {
     items.push({
       key: 'reboot-required',
       title: 'Restart required',
@@ -22,8 +26,8 @@ export default function ServerBanners({ server, rebootRequired }: { server: Serv
     });
   }
 
-  const updatesCount = server.updates ?? 0;
-  if (updatesCount > 0) {
+  if (updatesWarning) {
+    const updatesCount = updatesWarning.count;
     items.push({
       key: 'package-updates',
       title: `${updatesCount} package ${updatesCount === 1 ? 'update' : 'updates'} available`,

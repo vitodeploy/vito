@@ -16,6 +16,14 @@
     }
     {{/basic_auth_enabled}}
 
+    {{#verification_key}}
+    handle_path /.well-known/vito/{{verification_key}}/* {
+        root * /var/lib/vito/verify/{{verification_key}}
+        header Cache-Control "no-store"
+        file_server
+    }
+    {{/verification_key}}
+
     {{#is_php}}
     root * {{root}}
     try_files {path} {path}/ /index.php?{query}
@@ -78,7 +86,17 @@
     tls {{ssl_certificate_path}} {{ssl_certificate_key_path}}
     {{/has_tls}}
 
-    redir {{redirect_scheme}}://{{redirect_target}}{uri} permanent
+    {{#verification_key}}
+    handle_path /.well-known/vito/{{verification_key}}/* {
+        root * /var/lib/vito/verify/{{verification_key}}
+        header Cache-Control "no-store"
+        file_server
+    }
+    {{/verification_key}}
+
+    handle {
+        redir {{redirect_scheme}}://{{redirect_target}}{uri} permanent
+    }
 }
 
 {{/redirect_blocks}}

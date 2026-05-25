@@ -1,5 +1,6 @@
-import React, { FormEvent, ReactNode, useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import React, { FormEvent, Fragment, ReactNode, useMemo, useState } from 'react';
+import { Link, useForm } from '@inertiajs/react';
+import { useConfigs } from '@/stores/bootstrap-store';
 import { Editor, useMonaco } from '@monaco-editor/react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Form, FormField, FormFields } from '@/components/ui/form';
@@ -29,6 +30,19 @@ export default function DeploymentScript({
 }) {
   const { getActualAppearance } = useAppearance();
   const setFocused = useInputFocus((state) => state.setFocused);
+  const configs = useConfigs();
+
+  const availableCommands = useMemo<string[]>(() => {
+    const commands: string[] = [];
+    if (site.type === 'php') commands.push('php');
+    for (const tool of configs?.tooling ?? []) {
+      const version = site.type_data?.[`${tool.id}_version`];
+      if (typeof version === 'string' && version !== '' && version !== 'none') {
+        commands.push(...tool.commands);
+      }
+    }
+    return Array.from(new Set(commands));
+  }, [configs, site.type, site.type_data]);
 
   const [open, setOpen] = useState(false);
   const form = useForm<{
@@ -75,14 +89,29 @@ export default function DeploymentScript({
                 fontSize: 15,
               }}
             />
-            <div className="absolute! right-0 bottom-4 left-0 z-10 mx-auto max-w-5xl px-4">
-              <Alert>
-                <AlertDescription className="flex items-center gap-2">
-                  <StatusRipple variant="default" />
-                  <p>Using `php` command in your script will use the PHP version of the site.</p>
-                </AlertDescription>
-              </Alert>
-            </div>
+            {availableCommands.length > 0 && (
+              <div className="absolute! right-0 bottom-4 left-0 z-10 mx-auto max-w-5xl px-4">
+                <Alert>
+                  <AlertDescription className="flex items-center gap-2">
+                    <StatusRipple variant="default" />
+                    <p>
+                      Using{' '}
+                      {availableCommands.map((cmd, i) => (
+                        <Fragment key={cmd}>
+                          {i > 0 && ', '}
+                          <code>`{cmd}`</code>
+                        </Fragment>
+                      ))}{' '}
+                      command(s) in your script will use the version installed for this site. Install or change tooling via the{' '}
+                      <Link href={route('site-tooling', { server: site.server_id, site: site.id })} className="underline">
+                        Tooling area
+                      </Link>
+                      .
+                    </p>
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
           </div>
           {['default', 'pre-flight'].includes(script.name) && (
             <FormFields className="p-4">

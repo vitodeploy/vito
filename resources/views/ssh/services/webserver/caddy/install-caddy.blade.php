@@ -1,5 +1,5 @@
 # Add Caddy's GPG key and repository
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | \
 

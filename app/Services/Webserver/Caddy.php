@@ -3,15 +3,18 @@
 namespace App\Services\Webserver;
 
 use App\Actions\Webserver\AbstractGenerateConfig;
+use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Actions\Webserver\GenerateCaddyConfig;
+use App\DTOs\ServiceLog;
 use App\Enums\SslMethod;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
+use App\Services\HasLogs;
 use Throwable;
 
-class Caddy extends AbstractWebserver
+class Caddy extends AbstractWebserver implements HasLogs
 {
     public static function id(): string
     {
@@ -136,6 +139,8 @@ class Caddy extends AbstractWebserver
 
     public function generateVhost(Site $site, ?string $template = null): string
     {
+        app(EnsureSiteVerificationKey::class)->ensure($site);
+
         return $this->configGenerator()->generate($site, $template);
     }
 
@@ -270,5 +275,18 @@ class Caddy extends AbstractWebserver
         );
 
         return trim($version);
+    }
+
+    public function logs(): array
+    {
+        return [
+            new ServiceLog(
+                key: 'caddy:error',
+                serviceLabel: 'Caddy',
+                label: 'Error log',
+                source: ServiceLog::SOURCE_FILE,
+                target: '/var/log/caddy/errors.log',
+            ),
+        ];
     }
 }

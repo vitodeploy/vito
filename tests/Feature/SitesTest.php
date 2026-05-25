@@ -11,11 +11,10 @@ use App\Models\DatabaseUser;
 use App\Models\Service;
 use App\Models\Site;
 use App\Models\SourceControl;
+use App\SiteTypes\BunSite;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
-use App\SiteTypes\MiseBun;
-use App\SiteTypes\MiseNodeJS;
-use App\SiteTypes\NodeJS;
+use App\SiteTypes\NodeSite;
 use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\Wordpress;
@@ -922,10 +921,10 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => MiseNodeJS::id(),
+                    'type' => NodeSite::id(),
                     'domain' => 'example.com',
                     'node_version' => '23',
-                    'package_manager' => 'npm',
+                    'package_manager' => 'node',
                     'port' => '3000',
                     'repository' => 'test/test',
                     'branch' => 'main',
@@ -934,10 +933,11 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => MiseNodeJS::id(),
+                    'type' => NodeSite::id(),
                     'domain' => 'example.com',
                     'node_version' => '22',
                     'package_manager' => 'yarn',
+                    'yarn_version' => '4',
                     'port' => '3000',
                     'repository' => 'test/test',
                     'branch' => 'main',
@@ -946,22 +946,11 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => MiseNodeJS::id(),
+                    'type' => NodeSite::id(),
                     'domain' => 'example.com',
                     'node_version' => '22',
                     'package_manager' => 'pnpm',
-                    'port' => '3000',
-                    'repository' => 'test/test',
-                    'branch' => 'main',
-                    'build_command' => 'pnpm run build:prod',
-                    'start_command' => 'pnpm run start:prod',
-                    'user' => 'example',
-                ],
-            ],
-            [
-                [
-                    'type' => NodeJS::id(),
-                    'domain' => 'example.com',
+                    'pnpm_version' => '9',
                     'port' => '3000',
                     'repository' => 'test/test',
                     'branch' => 'main',
@@ -970,7 +959,7 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => MiseBun::id(),
+                    'type' => BunSite::id(),
                     'domain' => 'example.com',
                     'bun_version' => '1.2',
                     'port' => '3000',
@@ -981,14 +970,12 @@ class SitesTest extends TestCase
             ],
             [
                 [
-                    'type' => MiseBun::id(),
+                    'type' => BunSite::id(),
                     'domain' => 'example.com',
                     'bun_version' => '1.1',
                     'port' => '3000',
                     'repository' => 'test/test',
                     'branch' => 'main',
-                    'build_command' => 'bun run build:prod',
-                    'start_command' => 'bun run start:prod',
                     'user' => 'example',
                 ],
             ],

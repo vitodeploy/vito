@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\WorkerStatus;
+use App\Helpers\SiteShellEnvironment;
 use App\Services\ProcessManager\ProcessManager;
 use Database\Factories\WorkerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -114,5 +115,30 @@ class Worker extends AbstractModel
     public function getLogFile(): string
     {
         return $this->getLogDirectory().'/'.$this->id.'.log';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function effectiveEnvironment(): array
+    {
+        $base = $this->environment ?? [];
+
+        if ($this->site_id && $this->site) {
+            return array_merge($base, SiteShellEnvironment::collect($this->site));
+        }
+
+        return $base;
+    }
+
+    public function isSiteBootstrap(): bool
+    {
+        if (! $this->site_id || ! $this->site) {
+            return false;
+        }
+
+        $bootstrapId = $this->site->type_data['bootstrap_worker_id'] ?? null;
+
+        return $bootstrapId !== null && (int) $bootstrapId === $this->id;
     }
 }

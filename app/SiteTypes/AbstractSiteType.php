@@ -7,12 +7,17 @@ use App\Events\SocketEvent;
 use App\Exceptions\FailedToDeployGitKey;
 use App\Exceptions\SSHCommandError;
 use App\Exceptions\SSHError;
+use App\Helpers\SiteShellEnvironment;
 use App\Http\Resources\SiteResource;
+use App\Models\Deployment;
 use App\Models\Service;
 use App\Models\Site;
 use App\Services\PHP\PHP;
 use App\SSH\OS\Git;
+use App\Tooling\SiteToolingState;
+use App\Tooling\ToolingRegistry;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -21,6 +26,19 @@ abstract class AbstractSiteType implements SiteType
     public function __construct(protected Site $site) {}
 
     abstract public static function make(): self;
+
+    /**
+     * @return array<int, string>
+     */
+    public static function createTimeTools(): array
+    {
+        return [];
+    }
+
+    public static function supportsTooling(): bool
+    {
+        return false;
+    }
 
     public function createRules(array $input): array
     {
@@ -48,18 +66,26 @@ abstract class AbstractSiteType implements SiteType
     }
 
     /**
-     * Extra environment variables to inject into deployment scripts.
-     *
      * @return array<string, string>
      */
     public function deploymentEnvironment(): array
     {
-        return [];
+        return SiteShellEnvironment::collect($this->site);
+    }
+
+    public function afterDeploy(Deployment $deployment): void
+    {
+        //
+    }
+
+    public function defaultDeploymentScript(): string
+    {
+        $path = resource_path('deployment-scripts/'.static::id().'.sh');
+
+        return File::exists($path) ? File::get($path) : '';
     }
 
     /**
-     * Return null to support all webservers.
-     *
      * @return string[]|null
      */
     public function supportedWebservers(): ?array
@@ -67,10 +93,6 @@ abstract class AbstractSiteType implements SiteType
         return null;
     }
 
-    /**
-     * Return a Mustache template string to completely replace the default webserver vhost template.
-     * Return null to use the built-in template.
-     */
     public function vhostTemplate(string $webserver): ?string
     {
         return null;
@@ -102,9 +124,18 @@ abstract class AbstractSiteType implements SiteType
         $os = $this->site->server->os();
 
         if (! $this->site->ssh_key) {
-            $os->generateSSHKey($this->site->getSshKeyName(), $this->site);
-            $this->site->ssh_key = $os->readSSHKey($this->site->getSshKeyName(), $this->site);
-            $this->site->save();
+            $keyName = $this->site->getSshKeyName();
+            $os->generateSSHKey($keyName, $this->site);
+            $publicKey = $os->readSSHKey($keyName, $this->site);
+
+            if (str_starts_with($keyName, 'iuser_') && $this->site->isolatedUser) {
+                $this->site->isolatedUser->ssh_key = $publicKey;
+                $this->site->isolatedUser->save();
+                $this->site->setRelation('isolatedUser', $this->site->isolatedUser->fresh());
+            } else {
+                $this->site->ssh_key = $publicKey;
+                $this->site->save();
+            }
         }
 
         if (empty($this->site->type_data['deploy_key_id'])) {
@@ -126,7 +157,7 @@ abstract class AbstractSiteType implements SiteType
             return;
         }
 
-        $lock = $this->site->server->isolatedUserLock($this->site->user);
+        $lock = $this->site->isolatedUser?->lock() ?? $this->site->server->isolatedUserLock($this->site->user);
 
         try {
             $lock->block(30);
@@ -201,6 +232,42 @@ abstract class AbstractSiteType implements SiteType
             return true;
         } catch (SSHCommandError) {
             return false;
+        }
+    }
+
+    /**
+     * @throws SSHError
+     */
+    protected function setupRequestedTooling(): void
+    {
+        $iuser = $this->site->isolatedUser;
+
+        foreach (static::createTimeTools() as $toolId) {
+            $tool = ToolingRegistry::find($toolId);
+            if (! $tool) {
+                continue;
+            }
+
+            $key = $tool::typeDataKey();
+            $version = $this->site->type_data[$key] ?? 'none';
+            if ($version === 'none' || $version === '') {
+                continue;
+            }
+
+            $existing = $iuser?->toolingVersion($toolId);
+
+            if ($existing === $version) {
+                continue;
+            }
+
+            $tool->install($this->site, $version);
+
+            SiteToolingState::completeInstall($this->site, $toolId, $version);
+
+            $typeData = $this->site->type_data ?? [];
+            unset($typeData[$key]);
+            $this->site->type_data = $typeData;
+            $this->site->save();
         }
     }
 }

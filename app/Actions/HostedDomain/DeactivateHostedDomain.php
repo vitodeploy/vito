@@ -2,6 +2,7 @@
 
 namespace App\Actions\HostedDomain;
 
+use App\Actions\Site\BroadcastSiteUpdate;
 use App\Enums\HostedDomainStatus;
 use App\Models\HostedDomain;
 
@@ -16,5 +17,7 @@ class DeactivateHostedDomain
         $hostedDomain->save();
 
         $hostedDomain->site->webserver()->updateVHost($hostedDomain->site);
+
+        app(BroadcastSiteUpdate::class)->broadcast($hostedDomain->site);
     }
 }

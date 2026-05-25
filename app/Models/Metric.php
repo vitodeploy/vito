@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\Server\BroadcastServerUpdate;
 use Carbon\Carbon;
 use Database\Factories\MetricFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -98,6 +99,27 @@ class Metric extends Model
         'uptime_seconds' => 'float',
         'reboot_required' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::created(function (Metric $metric): void {
+            if ($metric->reboot_required === null) {
+                return;
+            }
+
+            $previous = static::query()
+                ->where('server_id', $metric->server_id)
+                ->where('id', '<', $metric->id)
+                ->latest('id')
+                ->value('reboot_required');
+
+            if ((bool) $previous === (bool) $metric->reboot_required) {
+                return;
+            }
+
+            app(BroadcastServerUpdate::class)->broadcast($metric->server);
+        });
+    }
 
     /**
      * @return BelongsTo<Server, covariant $this>

@@ -17,10 +17,12 @@ import { DataTable } from '@/components/data-table';
 import { columns } from '@/pages/application/components/deployment-columns';
 import AutoDeployment from '@/pages/application/components/auto-deployment';
 import { DeploymentScript as DeploymentScriptType } from '@/types/deployment-script';
-import { useRealtime, useSocketListener } from '@/hooks/use-socket-events';
+import { useRealtime, useRealtimeRecord, useSocketListener } from '@/hooks/use-socket-events';
 import { useCallback } from 'react';
 
 import SiteBanners from '@/components/site-banners';
+import ProxiedAppCard from '@/pages/application/components/proxied-app-card';
+import { Worker } from '@/types/worker';
 
 export default function AppWithDeployment() {
   const page = usePage<{
@@ -30,8 +32,10 @@ export default function AppWithDeployment() {
     deploymentScript: DeploymentScriptType;
     buildScript?: DeploymentScriptType;
     preFlightScript?: DeploymentScriptType;
+    worker: Worker | null;
   }>();
 
+  const site = useRealtimeRecord<Site>(page.props.site, 'site')!;
   const [deployments, setDeployments] = useRealtime<Deployment>(page.props.deployments, 'deployment');
 
   // When a deployment becomes active, deactivate all others
@@ -53,7 +57,7 @@ export default function AppWithDeployment() {
 
   return (
     <ServerLayout>
-      <Head title={`${page.props.site.domain} - ${page.props.server.name}`} />
+      <Head title={`${site.domain} - ${page.props.server.name}`} />
 
       <Container className="max-w-5xl">
         <HeaderContainer>
@@ -65,7 +69,7 @@ export default function AppWithDeployment() {
                 <span className="hidden lg:block">Docs</span>
               </Button>
             </a>
-            <Deploy site={page.props.site}>
+            <Deploy site={site}>
               <Button>
                 <RocketIcon />
                 <span className="hidden lg:block">Deploy</span>
@@ -79,39 +83,35 @@ export default function AppWithDeployment() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <AutoDeployment site={page.props.site}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} disabled={!page.props.site.source_control_id}>
-                    {page.props.site.auto_deploy ? 'Disable' : 'Enable'} auto deploy
+                <AutoDeployment site={site}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} disabled={!site.source_control_id}>
+                    {site.auto_deploy ? 'Disable' : 'Enable'} auto deploy
                   </DropdownMenuItem>
                 </AutoDeployment>
-                {!page.props.site.modern_deployment && (
-                  <DeploymentScript
-                    site={page.props.site}
-                    script={page.props.deploymentScript}
-                    description="This script will be executed on every deployment."
-                  >
+                {!site.modern_deployment && (
+                  <DeploymentScript site={site} script={page.props.deploymentScript} description="This script will be executed on every deployment.">
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Deployment Script</DropdownMenuItem>
                   </DeploymentScript>
                 )}
-                {page.props.buildScript && page.props.site.modern_deployment && (
+                {page.props.buildScript && site.modern_deployment && (
                   <DeploymentScript
-                    site={page.props.site}
+                    site={site}
                     script={page.props.buildScript}
                     description="This script will build resources like composer and npm before release"
                   >
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Build Script</DropdownMenuItem>
                   </DeploymentScript>
                 )}
-                {page.props.preFlightScript && page.props.site.modern_deployment && (
+                {page.props.preFlightScript && site.modern_deployment && (
                   <DeploymentScript
-                    site={page.props.site}
+                    site={site}
                     script={page.props.preFlightScript}
-                    description="This script will be executed before releaase like migrations and optimizations"
+                    description="This script will be executed before release like migrations and optimizations"
                   >
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Pre Flight Script</DropdownMenuItem>
                   </DeploymentScript>
                 )}
-                <Env site={page.props.site}>
+                <Env site={site}>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Update .env</DropdownMenuItem>
                 </Env>
               </DropdownMenuContent>
@@ -119,7 +119,14 @@ export default function AppWithDeployment() {
           </div>
         </HeaderContainer>
 
-        <SiteBanners site={page.props.site} />
+        <SiteBanners site={site} />
+
+        {site.is_proxied_site_type && (
+          <>
+            <ProxiedAppCard site={site} initialWorker={page.props.worker} />
+            <Heading title="Deployments" description="History of past deployments. The active release is what's currently serving traffic." />
+          </>
+        )}
 
         <DataTable columns={columns} paginatedData={deployments} />
       </Container>
