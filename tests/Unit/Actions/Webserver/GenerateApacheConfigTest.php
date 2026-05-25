@@ -2,7 +2,9 @@
 
 namespace Tests\Unit\Actions\Webserver;
 
+use App\Enums\SslStatus;
 use App\Models\HostedDomain;
+use App\Models\Ssl;
 use App\Services\Webserver\Apache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -107,5 +109,37 @@ class GenerateApacheConfigTest extends TestCase
 
         $this->assertStringContainsString('ProxyPass / http://localhost:3000/', $vhost);
         $this->assertStringContainsString('ProxyPassReverse / http://localhost:3000/', $vhost);
+    }
+
+    public function test_force_ssl_redirect_serves_and_exempts_verification_challenge(): void
+    {
+        $ssl = Ssl::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => SslStatus::CREATED,
+            'type' => 'letsencrypt',
+            'domains' => [$this->site->domain],
+        ]);
+
+        $this->site->hostedDomains()->update(['ssl_id' => $ssl->id]);
+
+        $this->site->update([
+            'ssl_enabled' => true,
+            'force_ssl' => true,
+            'verification_key' => 'forcedKey55',
+        ]);
+        $this->site->refresh();
+
+        $vhost = $this->site->webserver()->generateVhost($this->site);
+
+        $this->assertStringContainsString(
+            "RewriteCond %{REQUEST_URI} !^/\\.well-known/vito/\n    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]",
+            $vhost,
+            'The force-SSL redirect must exempt the verification path so port-80 verification is not 301-redirected.'
+        );
+        $this->assertStringContainsString(
+            'Alias "/.well-known/vito/forcedKey55" "/var/lib/vito/verify/forcedKey55"',
+            $vhost
+        );
     }
 }

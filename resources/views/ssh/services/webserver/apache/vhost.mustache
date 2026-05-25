@@ -6,8 +6,19 @@
 {{/force_ssl_aliases}}
     DocumentRoot {{force_ssl_root}}
 
+{{#verification_key}}
+    Alias "/.well-known/vito/{{verification_key}}" "/var/lib/vito/verify/{{verification_key}}"
+    <Directory "/var/lib/vito/verify/{{verification_key}}">
+        Options -Indexes
+        Require all granted
+        ForceType text/plain
+        Header always set Cache-Control "no-store"
+    </Directory>
+
+{{/verification_key}}
     RewriteEngine On
     RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{REQUEST_URI} !^/\.well-known/vito/
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </VirtualHost>
 {{/has_force_ssl_redirect}}
@@ -51,6 +62,19 @@
         Require all granted
     </Location>
 
+{{#verification_key}}
+    Alias "/.well-known/vito/{{verification_key}}" "/var/lib/vito/verify/{{verification_key}}"
+    <Directory "/var/lib/vito/verify/{{verification_key}}">
+        Options -Indexes
+        Require all granted
+    </Directory>
+    <Location "/.well-known/vito/{{verification_key}}/">
+        Require all granted
+        ForceType text/plain
+        Header always set Cache-Control "no-store"
+    </Location>
+
+{{/verification_key}}
 {{#is_php}}
     DirectoryIndex index.php index.html
 
@@ -60,6 +84,7 @@
 
     RewriteEngine On
     RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{REQUEST_URI} !^/\.well-known/vito/
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L]
@@ -67,6 +92,9 @@
 {{#is_reverse_proxy}}
     ProxyPreserveHost On
     ProxyPass /.well-known/acme-challenge/ !
+{{#verification_key}}
+    ProxyPass /.well-known/vito/{{verification_key}}/ !
+{{/verification_key}}
     ProxyPass / http://localhost:{{port}}/
     ProxyPassReverse / http://localhost:{{port}}/
 
@@ -84,6 +112,9 @@
 
     ProxyPreserveHost On
     ProxyPass /.well-known/acme-challenge/ !
+{{#verification_key}}
+    ProxyPass /.well-known/vito/{{verification_key}}/ !
+{{/verification_key}}
     ProxyPass / "balancer://{{balancer_name}}/"
     ProxyPassReverse / "balancer://{{balancer_name}}/"
 {{/is_load_balancer}}
@@ -94,6 +125,7 @@
     RewriteCond %{HTTP:Upgrade} =websocket [NC]
     RewriteRule ^/?(.*) ws://127.0.0.1:{{octane_port}}/$1 [P,L]
     RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{REQUEST_URI} !^/\.well-known/vito/
     RewriteCond %{HTTP:Upgrade} !=websocket [NC]
     RewriteRule ^/?(.*) http://127.0.0.1:{{octane_port}}/$1 [P,L]
 
@@ -119,7 +151,24 @@
     SSLCertificateFile {{ssl_certificate_path}}
     SSLCertificateKeyFile {{ssl_certificate_key_path}}
 {{/has_ssl}}
-    Redirect permanent / {{redirect_scheme}}://{{redirect_target}}/
+    <Location "/.well-known/acme-challenge/">
+        Require all granted
+    </Location>
+
+{{#verification_key}}
+    Alias "/.well-known/vito/{{verification_key}}" "/var/lib/vito/verify/{{verification_key}}"
+    <Directory "/var/lib/vito/verify/{{verification_key}}">
+        Options -Indexes
+        Require all granted
+        ForceType text/plain
+        Header always set Cache-Control "no-store"
+    </Directory>
+
+{{/verification_key}}
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{REQUEST_URI} !^/\.well-known/vito/
+    RewriteRule ^ {{redirect_scheme}}://{{redirect_target}}%{REQUEST_URI} [L,R=301]
 </VirtualHost>
 
 {{/redirect_vhosts}}

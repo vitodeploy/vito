@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Site\EnsureSiteVerificationKey;
 use App\Actions\Webserver\AbstractGenerateConfig;
 use App\Actions\Webserver\GenerateApacheConfig;
 use App\DTOs\ServiceLog;
@@ -70,6 +71,8 @@ class Apache extends AbstractWebserver implements HasLogs
 
     public function generateVhost(Site $site, ?string $template = null): string
     {
+        app(EnsureSiteVerificationKey::class)->ensure($site);
+
         return $this->configGenerator()->generate($site, $template);
     }
 
@@ -267,7 +270,7 @@ class Apache extends AbstractWebserver implements HasLogs
 
     public function logs(): array
     {
-        return [
+        $logs = [
             new ServiceLog(
                 key: 'apache:error',
                 serviceLabel: 'Apache',
@@ -276,5 +279,21 @@ class Apache extends AbstractWebserver implements HasLogs
                 target: '/var/log/apache2/error.log',
             ),
         ];
+
+        $sites = $this->service->server->relationLoaded('sites')
+            ? $this->service->server->sites->sortBy('id')
+            : $this->service->server->sites()->orderBy('id')->get(['id', 'domain']);
+
+        foreach ($sites as $site) {
+            $logs[] = new ServiceLog(
+                key: 'apache:site:'.$site->id.':error',
+                serviceLabel: 'Apache',
+                label: $site->domain.' error log',
+                source: ServiceLog::SOURCE_FILE,
+                target: '/var/log/apache2/'.$site->domain.'-error.log',
+            );
+        }
+
+        return $logs;
     }
 }

@@ -71,6 +71,40 @@ class ServiceLogsTest extends TestCase
         $this->assertFalse($entries->has('nginx:error'));
     }
 
+    public function test_apache_exposes_per_site_error_log(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->server->webserver()->delete();
+        $this->server->services()->create([
+            'type' => Apache::type(),
+            'name' => Apache::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $response = $this->get(route('logs.services', $this->server->refresh()));
+
+        $catalogue = $response->viewData('page')['props']['catalogue'];
+        $entries = collect($catalogue)->keyBy('key');
+
+        $key = 'apache:site:'.$this->site->id.':error';
+        $this->assertTrue($entries->has($key));
+        $this->assertSame('/var/log/apache2/'.$this->site->domain.'-error.log', $entries[$key]['display_target']);
+    }
+
+    public function test_nginx_does_not_expose_per_site_logs(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->get(route('logs.services', $this->server));
+
+        $catalogue = $response->viewData('page')['props']['catalogue'];
+        $keys = array_column($catalogue, 'key');
+
+        $this->assertNotContains('nginx:site:'.$this->site->id.':error', $keys);
+    }
+
     public function test_services_without_has_logs_are_skipped(): void
     {
         $this->actingAs($this->user);
