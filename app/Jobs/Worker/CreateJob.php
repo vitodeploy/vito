@@ -4,10 +4,10 @@ namespace App\Jobs\Worker;
 
 use App\Actions\Site\BroadcastSiteUpdate;
 use App\Enums\WorkerStatus;
-use App\Traits\HandlesWorkerFailure;
 use App\Models\Service;
 use App\Models\Worker;
 use App\Services\ProcessManager\ProcessManager;
+use App\Traits\HandlesWorkerFailure;
 use App\Traits\UniqueQueue;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;

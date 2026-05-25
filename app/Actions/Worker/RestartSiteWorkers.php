@@ -3,9 +3,9 @@
 namespace App\Actions\Worker;
 
 use App\Enums\WorkerStatus;
-use App\Traits\HandlesWorkerFailure;
 use App\Models\Site;
 use App\Services\ProcessManager\ProcessManager;
+use App\Traits\HandlesWorkerFailure;
 use Throwable;
 
 class RestartSiteWorkers
