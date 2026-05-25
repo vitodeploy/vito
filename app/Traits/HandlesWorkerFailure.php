@@ -16,8 +16,13 @@ trait HandlesWorkerFailure
 {
     protected function markWorkerFailed(Worker $worker, Throwable $e, string $logType): void
     {
-        $worker->error = $this->extractError($e);
-        $worker->status = WorkerStatus::FAILED;
+        $this->failWorker($worker, $this->extractError($e), $logType, $e->getMessage());
+    }
+
+    protected function failWorker(Worker $worker, ?string $error, string $logType, string $logMessage, WorkerStatus $status = WorkerStatus::FAILED): void
+    {
+        $worker->error = $error;
+        $worker->status = $status;
         $worker->save();
 
         $this->broadcastWorkerUpdate($worker);
@@ -26,7 +31,7 @@ trait HandlesWorkerFailure
             app(BroadcastSiteUpdate::class)->broadcast($worker->site);
         }
 
-        ServerLog::log($worker->server, $logType, $e->getMessage());
+        ServerLog::log($worker->server, $logType, $logMessage);
     }
 
     private function extractError(Throwable $e): ?string
