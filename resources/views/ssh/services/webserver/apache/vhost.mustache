@@ -1,0 +1,125 @@
+{{#has_force_ssl_redirect}}
+<VirtualHost *:80>
+    ServerName {{force_ssl_server_name}}
+{{#force_ssl_aliases}}
+    ServerAlias {{name}}
+{{/force_ssl_aliases}}
+    DocumentRoot {{force_ssl_root}}
+
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</VirtualHost>
+{{/has_force_ssl_redirect}}
+
+{{#vhosts}}
+<VirtualHost *:{{listen_port}}>
+    ServerName {{server_name}}
+{{#server_aliases}}
+    ServerAlias {{name}}
+{{/server_aliases}}
+    DocumentRoot {{root}}
+
+{{#has_ssl}}
+    SSLEngine on
+    SSLCertificateFile {{ssl_certificate_path}}
+    SSLCertificateKeyFile {{ssl_certificate_key_path}}
+
+{{/has_ssl}}
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+
+    ErrorLog ${APACHE_LOG_DIR}/{{primary_domain}}-error.log
+    CustomLog ${APACHE_LOG_DIR}/{{primary_domain}}-access.log combined
+
+    <Directory {{root}}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+{{#basic_auth_enabled}}
+    <Location />
+        AuthType Basic
+        AuthName "{{basic_auth_realm}}"
+        AuthUserFile {{basic_auth_file}}
+        Require valid-user
+    </Location>
+
+{{/basic_auth_enabled}}
+    <Location "/.well-known/acme-challenge/">
+        Require all granted
+    </Location>
+
+{{#is_php}}
+    DirectoryIndex index.php index.html
+
+    <FilesMatch \.php$>
+        SetHandler "proxy:{{php_socket}}"
+    </FilesMatch>
+
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+{{/is_php}}
+{{#is_reverse_proxy}}
+    ProxyPreserveHost On
+    ProxyPass /.well-known/acme-challenge/ !
+    ProxyPass / http://localhost:{{port}}/
+    ProxyPassReverse / http://localhost:{{port}}/
+
+    RewriteEngine On
+    RewriteCond %{HTTP:Upgrade} =websocket [NC]
+    RewriteRule ^/?(.*) ws://localhost:{{port}}/$1 [P,L]
+{{/is_reverse_proxy}}
+{{#is_load_balancer}}
+    <Proxy "balancer://{{balancer_name}}">
+{{#lb_servers}}
+        BalancerMember "http://{{address}}"
+{{/lb_servers}}
+        ProxySet lbmethod={{lb_method}}
+    </Proxy>
+
+    ProxyPreserveHost On
+    ProxyPass /.well-known/acme-challenge/ !
+    ProxyPass / "balancer://{{balancer_name}}/"
+    ProxyPassReverse / "balancer://{{balancer_name}}/"
+{{/is_load_balancer}}
+{{#is_octane}}
+    ProxyPreserveHost On
+
+    RewriteEngine On
+    RewriteCond %{HTTP:Upgrade} =websocket [NC]
+    RewriteRule ^/?(.*) ws://127.0.0.1:{{octane_port}}/$1 [P,L]
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteCond %{HTTP:Upgrade} !=websocket [NC]
+    RewriteRule ^/?(.*) http://127.0.0.1:{{octane_port}}/$1 [P,L]
+
+    ProxyPassReverse / http://127.0.0.1:{{octane_port}}/
+{{/is_octane}}
+{{#redirects}}
+{{#is_proxy}}
+    ProxyPass "{{from}}" "{{to}}"
+    ProxyPassReverse "{{from}}" "{{to}}"
+{{/is_proxy}}
+{{^is_proxy}}
+    Redirect {{mode}} {{from}} {{to}}
+{{/is_proxy}}
+{{/redirects}}
+</VirtualHost>
+
+{{/vhosts}}
+{{#redirect_vhosts}}
+<VirtualHost *:{{listen_port}}>
+    ServerName {{server_name}}
+{{#has_ssl}}
+    SSLEngine on
+    SSLCertificateFile {{ssl_certificate_path}}
+    SSLCertificateKeyFile {{ssl_certificate_key_path}}
+{{/has_ssl}}
+    Redirect permanent / {{redirect_scheme}}://{{redirect_target}}/
+</VirtualHost>
+
+{{/redirect_vhosts}}

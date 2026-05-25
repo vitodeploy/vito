@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Webserver\AbstractGenerateConfig;
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
@@ -71,9 +72,14 @@ class Nginx extends AbstractWebserver
         $this->service->server->os()->cleanup();
     }
 
+    public function configGenerator(): AbstractGenerateConfig
+    {
+        return app(GenerateNginxConfig::class);
+    }
+
     public function generateVhost(Site $site, ?string $template = null): string
     {
-        return app(GenerateNginxConfig::class)->generate($site, $template);
+        return $this->configGenerator()->generate($site, $template);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Services\Webserver;
 
+use App\Actions\Webserver\AbstractGenerateConfig;
 use App\Enums\SslMethod;
 use App\Models\Site;
 use App\Models\Ssl;
@@ -9,6 +10,8 @@ use App\Services\ServiceInterface;
 
 interface Webserver extends ServiceInterface
 {
+    public function configGenerator(): AbstractGenerateConfig;
+
     public function generateVhost(Site $site, ?string $template = null): string;
 
     public function createVHost(Site $site): void;

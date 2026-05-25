@@ -4,6 +4,7 @@ namespace Tests\Unit\SSH\Services\Webserver;
 
 use App\Enums\ServiceStatus;
 use App\Facades\SSH;
+use App\Services\Webserver\Apache;
 use App\Services\Webserver\Caddy;
 use App\Services\Webserver\Nginx;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,6 +32,37 @@ class DeploySplashTest extends TestCase
         SSH::assertNotExecutedContains(
             'systemctl reload nginx',
             'deploySplash() must not reload nginx — install() restarts it and the reload can fail on fresh installs.'
+        );
+
+        $this->addToAssertionCount(6);
+    }
+
+    public function test_apache_deploy_splash_runs_expected_commands_and_writes_default_vhost(): void
+    {
+        $this->server->webserver()->delete();
+        $this->server->services()->create([
+            'type' => Apache::type(),
+            'name' => Apache::id(),
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        SSH::fake();
+
+        /** @var Apache $apache */
+        $apache = $this->server->refresh()->webserver()->handler();
+
+        $apache->deploySplash();
+
+        SSH::assertExecutedContains('sudo a2dissite 000-default default-ssl');
+        SSH::assertExecutedContains('sudo mkdir -p /var/www/vito-splash');
+        SSH::assertExecutedContains('> /var/www/vito-splash/index.html');
+        SSH::assertExecutedContains('> /etc/apache2/sites-available/000-vito-default.conf');
+        SSH::assertExecutedContains('sudo a2ensite 000-vito-default.conf');
+
+        SSH::assertNotExecutedContains(
+            'service apache2 reload',
+            'deploySplash() must not reload apache — install() restarts it and the reload can fail on fresh installs.'
         );
 
         $this->addToAssertionCount(6);

@@ -99,6 +99,30 @@ class InstallTest extends TestCase
         ]);
     }
 
+    public function test_install_apache(): void
+    {
+        $this->server->webserver()->delete();
+
+        SSH::fake('Active: active');
+
+        app(Install::class)->install($this->server, [
+            'type' => 'webserver',
+            'name' => 'apache',
+            'version' => 'latest',
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'server_id' => $this->server->id,
+            'name' => 'apache',
+            'type' => 'webserver',
+            'version' => 'latest',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        SSH::assertExecutedContains('/etc/systemd/system/apache2.service.d/vito-override.conf');
+        SSH::assertExecutedContains('PrivateTmp=false');
+    }
+
     public function test_install_mysql(): void
     {
         $this->server->database()->delete();

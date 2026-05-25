@@ -8,6 +8,7 @@ use App\Enums\SiteStatus;
 use App\Exceptions\SourceControlIsNotConnected;
 use App\Exceptions\SSHError;
 use App\Jobs\SSL\DeleteSiteSslJob;
+use App\Services\Webserver\Apache;
 use App\Services\Webserver\Webserver;
 use App\SiteFeatures\ActionInterface;
 use App\SiteTypes\SiteType;
@@ -610,7 +611,11 @@ class Site extends AbstractModel
 
     public function htpasswdPath(): string
     {
-        return '/etc/nginx/auth/site-'.$this->id.'.htpasswd';
+        $dir = $this->server->webserver()?->name === Apache::id()
+            ? '/etc/apache2/auth'
+            : '/etc/nginx/auth';
+
+        return $dir.'/site-'.$this->id.'.htpasswd';
     }
 
     public function getDeployKeyName(): string

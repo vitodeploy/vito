@@ -26,7 +26,16 @@ abstract class AbstractGenerateConfig
             'escape' => fn ($value) => $value,
         ]);
 
-        return format_webserver_config($engine->render($template, $data));
+        return $this->formatConfig($engine->render($template, $data));
+    }
+
+    /**
+     * Format the rendered config. Brace-indented webservers use the default;
+     * tag-based webservers (e.g. Apache) override this.
+     */
+    protected function formatConfig(string $config): string
+    {
+        return format_webserver_config($config);
     }
 
     /**

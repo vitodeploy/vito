@@ -4,6 +4,7 @@ namespace App\Actions\Site;
 
 use App\Helpers\Apr1Hasher;
 use App\Models\Site;
+use App\Services\Webserver\Apache;
 use App\Services\Webserver\Nginx;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -11,8 +12,6 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateBasicAuth
 {
-    private const NGINX_AUTH_DIR = '/etc/nginx/auth';
-
     /**
      * @param  array<string, mixed>  $input
      */
@@ -111,7 +110,7 @@ class UpdateBasicAuth
      */
     private function writeAuthFile(Site $site, array $users): void
     {
-        if ($site->webserver()::id() !== Nginx::id()) {
+        if (! in_array($site->webserver()::id(), [Nginx::id(), Apache::id()], true)) {
             return;
         }
 
@@ -132,7 +131,7 @@ class UpdateBasicAuth
 
         $site->server->ssh()->exec(
             view('ssh.services.webserver.nginx.write-basic-auth-file', [
-                'dir' => self::NGINX_AUTH_DIR,
+                'dir' => dirname($path),
                 'path' => $path,
                 'lines' => $lines,
                 'userCount' => count($users),

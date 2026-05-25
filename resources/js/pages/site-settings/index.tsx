@@ -123,7 +123,7 @@ export default function Databases() {
                 </Button>
               </VHost>
             </div>
-            {(page.props.site.webserver === 'nginx' || page.props.site.webserver === 'caddy') && (
+            {(page.props.site.webserver === 'nginx' || page.props.site.webserver === 'caddy' || page.props.site.webserver === 'apache') && (
               <>
                 <Separator />
                 <div className="flex items-center justify-between p-4">

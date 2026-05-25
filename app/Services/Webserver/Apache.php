@@ -3,42 +3,18 @@
 namespace App\Services\Webserver;
 
 use App\Actions\Webserver\AbstractGenerateConfig;
-use App\Actions\Webserver\GenerateCaddyConfig;
-use App\Enums\SslMethod;
+use App\Actions\Webserver\GenerateApacheConfig;
 use App\Exceptions\SSHError;
 use App\Exceptions\SSLCreationException;
 use App\Models\Site;
 use App\Models\Ssl;
 use Throwable;
 
-class Caddy extends AbstractWebserver
+class Apache extends AbstractWebserver
 {
     public static function id(): string
     {
-        return 'caddy';
-    }
-
-    public function siteDefaults(): array
-    {
-        return [
-            'ssl_enabled' => true,
-            'force_ssl' => true,
-        ];
-    }
-
-    public function canConfigureSSL(): bool
-    {
-        return false;
-    }
-
-    public function allowedSslMethods(): ?array
-    {
-        return [SslMethod::LETSENCRYPT->value, SslMethod::CUSTOM->value];
-    }
-
-    public function defaultSslMethod(): SslMethod
-    {
-        return SslMethod::LETSENCRYPT;
+        return 'apache';
     }
 
     public static function type(): string
@@ -48,7 +24,7 @@ class Caddy extends AbstractWebserver
 
     public function unit(): string
     {
-        return 'caddy';
+        return 'apache2';
     }
 
     /**
@@ -59,27 +35,15 @@ class Caddy extends AbstractWebserver
         $this->service->server->ssh()
             ->setLog($this->service->log)
             ->exec(
-                view('ssh.services.webserver.caddy.install-caddy'),
-                'install-caddy'
+                view('ssh.services.webserver.apache.install-apache', [
+                    'user' => $this->service->server->getSshUser(),
+                ]),
+                'install-apache'
             );
-
-        $this->service->server->ssh()->write(
-            '/etc/caddy/Caddyfile',
-            view('ssh.services.webserver.caddy.caddy'),
-            'root'
-        );
-
-        $this->service->server->ssh()->write(
-            '/etc/systemd/system/caddy.service',
-            view('ssh.services.webserver.caddy.caddy-systemd'),
-            'root'
-        );
-
-        $this->service->server->ssh()->exec('sudo systemctl daemon-reload', 'reload-systemctl');
 
         $this->deploySplash();
 
-        $this->service->server->systemd()->restart('caddy');
+        $this->service->server->systemd()->restart('apache2');
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
@@ -90,11 +54,21 @@ class Caddy extends AbstractWebserver
     public function uninstall(): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.caddy.uninstall-caddy'),
-            'uninstall-caddy'
+            view('ssh.services.webserver.apache.uninstall-apache'),
+            'uninstall-apache'
         );
         event('service.uninstalled', $this->service);
         $this->service->server->os()->cleanup();
+    }
+
+    public function configGenerator(): AbstractGenerateConfig
+    {
+        return app(GenerateApacheConfig::class);
+    }
+
+    public function generateVhost(Site $site, ?string $template = null): string
+    {
+        return $this->configGenerator()->generate($site, $template);
     }
 
     /**
@@ -102,12 +76,10 @@ class Caddy extends AbstractWebserver
      */
     public function createVHost(Site $site): void
     {
-        // We need to get the isolated user first, if the site is isolated
-        // otherwise, use the default ssh user
         $ssh = $this->service->server->ssh($site->user);
 
         $ssh->exec(
-            view('ssh.services.webserver.caddy.create-path', [
+            view('ssh.services.webserver.apache.create-path', [
                 'path' => $site->path,
             ]),
             'create-path',
@@ -115,28 +87,18 @@ class Caddy extends AbstractWebserver
         );
 
         $this->service->server->ssh()->write(
-            '/etc/caddy/sites-available/'.$site->domain,
+            '/etc/apache2/sites-available/'.$site->domain.'.conf',
             $this->generateVhost($site),
             'root'
         );
 
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.caddy.create-vhost', [
+            view('ssh.services.webserver.apache.create-vhost', [
                 'domain' => $site->domain,
             ]),
             'create-vhost',
             $site->id
         );
-    }
-
-    public function configGenerator(): AbstractGenerateConfig
-    {
-        return app(GenerateCaddyConfig::class);
-    }
-
-    public function generateVhost(Site $site, ?string $template = null): string
-    {
-        return $this->configGenerator()->generate($site, $template);
     }
 
     /**
@@ -153,18 +115,18 @@ class Caddy extends AbstractWebserver
         }
 
         $this->service->server->ssh()->write(
-            '/etc/caddy/sites-available/'.$site->domain,
+            '/etc/apache2/sites-available/'.$site->domain.'.conf',
             $vhost,
             'root'
         );
 
         if ($restart) {
-            $this->service->server->systemd()->restart('caddy');
+            $this->service->server->systemd()->restart('apache2');
 
             return;
         }
 
-        $this->service->server->systemd()->reload('caddy');
+        $this->service->server->systemd()->reload('apache2');
     }
 
     /**
@@ -173,7 +135,7 @@ class Caddy extends AbstractWebserver
     public function getVHost(Site $site): string
     {
         return $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.caddy.get-vhost', [
+            view('ssh.services.webserver.apache.get-vhost', [
                 'domain' => $site->domain,
             ]),
         );
@@ -185,7 +147,14 @@ class Caddy extends AbstractWebserver
     public function deleteSite(Site $site): void
     {
         $this->service->server->ssh()->exec(
-            view('ssh.services.webserver.caddy.delete-site', [
+            view('ssh.services.webserver.nginx.remove-basic-auth-file', [
+                'path' => $site->htpasswdPath(),
+            ]),
+            'remove-basic-auth-file',
+            $site->id
+        );
+        $this->service->server->ssh()->exec(
+            view('ssh.services.webserver.apache.delete-site', [
                 'domain' => $site->domain,
                 'path' => $site->basePath(),
             ]),
@@ -200,25 +169,35 @@ class Caddy extends AbstractWebserver
      */
     public function setupSSL(Ssl $ssl): void
     {
+        $domains = '';
+        foreach ($ssl->getDomains() as $domain) {
+            $domains .= ' -d '.$domain;
+        }
+        $command = view('ssh.services.webserver.apache.create-letsencrypt-ssl', [
+            'email' => $ssl->email,
+            'name' => $ssl->id,
+            'domains' => $domains,
+            'webroot' => $ssl->site->getWebDirectoryPath(),
+        ]);
         if ($ssl->type == 'custom') {
             $ssl->certificate_path = '/etc/ssl/'.$ssl->id.'/cert.pem';
             $ssl->pk_path = '/etc/ssl/'.$ssl->id.'/privkey.pem';
             $ssl->save();
-            $command = view('ssh.services.webserver.caddy.create-custom-ssl', [
+            $command = view('ssh.services.webserver.apache.create-custom-ssl', [
                 'path' => dirname($ssl->certificate_path),
                 'certificate' => $ssl->certificate,
                 'pk' => $ssl->pk,
                 'certificatePath' => $ssl->certificate_path,
                 'pkPath' => $ssl->pk_path,
             ]);
-            $result = $this->service->server->ssh()->setLog($ssl->log)->exec(
-                $command,
-                'create-ssl',
-                $ssl->site_id
-            );
-            if (! $ssl->validateSetup($result)) {
-                throw new SSLCreationException;
-            }
+        }
+        $result = $this->service->server->ssh()->setLog($ssl->log)->exec(
+            $command,
+            'create-ssl',
+            $ssl->site_id
+        );
+        if (! $ssl->validateSetup($result)) {
+            throw new SSLCreationException;
         }
     }
 
@@ -246,6 +225,11 @@ class Caddy extends AbstractWebserver
         $ssh = $this->service->server->ssh();
 
         $ssh->exec(
+            'sudo a2dissite 000-default default-ssl 2>/dev/null || true',
+            'disable-os-default-site'
+        );
+
+        $ssh->exec(
             'sudo mkdir -p /var/www/vito-splash',
             'create-vito-splash-dir'
         );
@@ -257,16 +241,21 @@ class Caddy extends AbstractWebserver
         );
 
         $ssh->write(
-            '/etc/caddy/sites-enabled/000-default.caddy',
-            view('ssh.services.webserver.caddy.default-vhost'),
+            '/etc/apache2/sites-available/000-vito-default.conf',
+            view('ssh.services.webserver.apache.default-vhost'),
             'root'
+        );
+
+        $ssh->exec(
+            'sudo a2ensite 000-vito-default.conf',
+            'enable-default-vhost'
         );
     }
 
     public function version(): string
     {
         $version = $this->service->server->ssh()->exec(
-            'caddy version | grep -oE \'[0-9]+\.[0-9]+\.[0-9]+\''
+            'apachectl -v 2>&1 | grep -oE \'Apache/[0-9]+\.[0-9]+\.[0-9]+\' | cut -d/ -f2'
         );
 
         return trim($version);
