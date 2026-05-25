@@ -587,10 +587,6 @@ class Site extends AbstractModel
     }
 
     /**
-     * Shell commands available to this site's deployment scripts: the PHP binary
-     * when a PHP version is set, plus every command exposed by tooling installed
-     * for the isolated user.
-     *
      * @return array<int, string>
      */
     public function availableToolingCommands(): array
