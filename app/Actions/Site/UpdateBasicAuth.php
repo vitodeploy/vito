@@ -62,8 +62,15 @@ class UpdateBasicAuth
             $site->update(['type_data' => $typeData]);
         });
 
-        $this->writeAuthFile($site, $enabled ? $users : []);
+        if ($enabled) {
+            $this->writeAuthFile($site, $users);
+            $site->webserver()->updateVHost($site);
+
+            return;
+        }
+
         $site->webserver()->updateVHost($site);
+        $this->writeAuthFile($site, []);
     }
 
     /**
