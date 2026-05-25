@@ -33,6 +33,13 @@ class UninstallSiteTooling
             ]);
         }
 
+        $required = $site->requiredToolingMap();
+        if (isset($required[$toolId])) {
+            throw ValidationException::withMessages([
+                'tool' => "{$tool::label()} is required by the {$required[$toolId]} site type and cannot be uninstalled.",
+            ]);
+        }
+
         $current = $iuser->toolingStatus($toolId);
         if ($current === SiteToolingState::STATUS_INSTALLING || $current === SiteToolingState::STATUS_UNINSTALLING) {
             throw ValidationException::withMessages([

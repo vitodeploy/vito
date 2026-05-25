@@ -14,6 +14,7 @@ class GetSiteTooling
      *     sibling_sites: array<int, array{id: int, domain: string, url: string}>,
      *     installed_versions: array<string, string|null>,
      *     tool_statuses: array<string, string|null>,
+     *     required_tooling: array<string, string>,
      *     watch_site_ids: array<int, int>,
      * }
      */
@@ -43,6 +44,7 @@ class GetSiteTooling
             'sibling_sites' => $siblings,
             'installed_versions' => $installed,
             'tool_statuses' => $statuses,
+            'required_tooling' => $site->requiredToolingMap(),
             'watch_site_ids' => array_merge([$site->id], array_column($siblings, 'id')),
         ];
     }

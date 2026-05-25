@@ -34,6 +34,11 @@ class NodeSite extends AbstractProxiedSiteType
         return ['node', 'pnpm', 'yarn'];
     }
 
+    public static function requiredTooling(): array
+    {
+        return ['node'];
+    }
+
     /**
      * @return array<int, DynamicField>
      */

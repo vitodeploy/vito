@@ -585,6 +585,25 @@ class Site extends AbstractModel
         return $query;
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function requiredToolingMap(): array
+    {
+        $required = [];
+
+        foreach ($this->siblingsSharingUser(includeSelf: true)->get() as $site) {
+            $typeId = $site->type()::id();
+            $label = config('site.types.'.$typeId.'.label') ?? $typeId;
+
+            foreach ($site->type()::requiredTooling() as $toolId) {
+                $required[$toolId] = $label;
+            }
+        }
+
+        return $required;
+    }
+
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool
     {
         if (! $this->isolated_user_id) {
