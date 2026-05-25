@@ -57,6 +57,7 @@ class SiteResource extends JsonResource
             'has_custom_vhost_template' => $this->vhost_template !== null,
             'modern_deployment' => $this->modernDeploymentEnabled(),
             'is_proxied_site_type' => $this->type() instanceof AbstractProxiedSiteType,
+            'available_tooling_commands' => $this->availableToolingCommands(),
             'start_command' => $this->type_data['start_command'] ?? null,
             'bootstrap_worker_id' => isset($this->type_data['bootstrap_worker_id'])
                 ? (int) $this->type_data['bootstrap_worker_id']

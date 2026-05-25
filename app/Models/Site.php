@@ -20,6 +20,7 @@ use App\SiteTypes\BunSite;
 use App\SiteTypes\NodeSite;
 use App\SiteTypes\SiteType;
 use App\SourceControlProviders\GithubApp;
+use App\Tooling\ToolingRegistry;
 use App\Traits\HasProjectThroughServer;
 use Database\Factories\SiteFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -583,6 +584,30 @@ class Site extends AbstractModel
         }
 
         return $query;
+    }
+
+    /**
+     * Shell commands available to this site's deployment scripts: the PHP binary
+     * when a PHP version is set, plus every command exposed by tooling installed
+     * for the isolated user.
+     *
+     * @return array<int, string>
+     */
+    public function availableToolingCommands(): array
+    {
+        $commands = [];
+
+        if ($this->php_version) {
+            $commands[] = 'php';
+        }
+
+        foreach (ToolingRegistry::all() as $id => $tool) {
+            if ($this->isolatedUser?->toolingVersion($id) !== null) {
+                $commands = array_merge($commands, $tool::commands());
+            }
+        }
+
+        return array_values(array_unique($commands));
     }
 
     public function fpmPoolSharedWithSiblings(?string $phpVersion = null): bool
