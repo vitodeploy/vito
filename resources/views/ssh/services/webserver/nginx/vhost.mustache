@@ -60,13 +60,24 @@ server {
     {{#basic_auth_enabled}}
     auth_basic "{{basic_auth_realm}}";
     auth_basic_user_file {{basic_auth_file}};
+    {{/basic_auth_enabled}}
 
     location ^~ /.well-known/acme-challenge/ {
-        auth_basic off;
+        {{#basic_auth_enabled}}auth_basic off;{{/basic_auth_enabled}}
         allow all;
         try_files $uri =404;
     }
-    {{/basic_auth_enabled}}
+
+    {{#verification_key}}
+    location ^~ /.well-known/vito/{{verification_key}}/ {
+        {{#basic_auth_enabled}}auth_basic off;{{/basic_auth_enabled}}
+        allow all;
+        default_type text/plain;
+        add_header Cache-Control "no-store" always;
+        alias /var/lib/vito/verify/{{verification_key}}/;
+        try_files $uri =404;
+    }
+    {{/verification_key}}
 
     location ~ /\.(?!well-known).* {
         deny all;
@@ -187,7 +198,25 @@ server {
     {{/listen_443}}
 
     server_name{{#domains}} {{name}}{{/domains}};
-    return 301 {{redirect_scheme}}://{{redirect_target}}$request_uri;
+
+    location ^~ /.well-known/acme-challenge/ {
+        allow all;
+        try_files $uri =404;
+    }
+
+    {{#verification_key}}
+    location ^~ /.well-known/vito/{{verification_key}}/ {
+        allow all;
+        default_type text/plain;
+        add_header Cache-Control "no-store" always;
+        alias /var/lib/vito/verify/{{verification_key}}/;
+        try_files $uri =404;
+    }
+    {{/verification_key}}
+
+    location / {
+        return 301 {{redirect_scheme}}://{{redirect_target}}$request_uri;
+    }
 }
 
 {{/redirect_blocks}}

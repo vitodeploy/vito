@@ -92,7 +92,7 @@ class HostedDomainController extends Controller
         app(ActivateHostedDomain::class)->activate($hostedDomain);
 
         return back()
-            ->with('success', 'Domain has been force activated.');
+            ->with('success', 'Domain has been force validated.');
     }
 
     #[Post('/{hostedDomain}/deactivate', name: 'hosted-domains.deactivate')]
@@ -128,7 +128,7 @@ class HostedDomainController extends Controller
         dispatch(new CheckDomainJob($hostedDomain))->onQueue('ssh');
 
         return back()
-            ->with('info', 'Validating domain DNS resolution.');
+            ->with('info', 'Validating domain.');
     }
 
     #[Post('/renew-ssl', name: 'hosted-domains.renew-ssl')]

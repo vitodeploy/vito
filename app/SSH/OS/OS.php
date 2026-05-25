@@ -10,6 +10,8 @@ use RuntimeException;
 
 class OS
 {
+    public const FILE_NOT_FOUND = 'VITO_NO_FILE';
+
     private const SHELL_IDENTIFIER = '/^[A-Za-z_][A-Za-z0-9_]*$/';
 
     public function __construct(protected Server $server) {}

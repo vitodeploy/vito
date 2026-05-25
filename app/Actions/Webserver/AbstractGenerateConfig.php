@@ -180,7 +180,9 @@ abstract class AbstractGenerateConfig
 
         $data['redirect_blocks'] = [];
         foreach ($redirectDomains as $hd) {
-            $data['redirect_blocks'][] = $this->buildRedirectBlock($hd, $primaryDomain, $site);
+            $block = $this->buildRedirectBlock($hd, $primaryDomain, $site);
+            $block['verification_key'] = $data['verification_key'];
+            $data['redirect_blocks'][] = $block;
         }
 
         return $this->finalizeData($data, $site);
@@ -216,6 +218,7 @@ abstract class AbstractGenerateConfig
             'basic_auth_realm' => $site->domain,
             'basic_auth_file' => $site->htpasswdPath(),
             'basic_auth_users' => $basicAuthEnabled ? array_values($basicAuth['users']) : [],
+            'verification_key' => $site->verification_key,
         ];
     }
 
@@ -243,6 +246,7 @@ abstract class AbstractGenerateConfig
             $block['basic_auth_realm'] = $data['basic_auth_realm'];
             $block['basic_auth_file'] = $data['basic_auth_file'];
             $block['basic_auth_users'] = $data['basic_auth_users'];
+            $block['verification_key'] = $data['verification_key'];
             $block = $this->enrichServerBlock($block, $data);
         }
 

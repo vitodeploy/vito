@@ -69,4 +69,6 @@ abstract class AbstractWebserver extends AbstractService implements Webserver
     }
 
     abstract public function generateVhost(Site $site, ?string $template = null): string;
+
+    abstract public function deploySplash(): void;
 }

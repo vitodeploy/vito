@@ -11,21 +11,24 @@ export function Combobox({
   value,
   searchText = 'Search items...',
   noneFoundText = 'No items found.',
+  placeholder = '',
   onValueChange,
 }: {
   items: { value: string; label: string }[];
   value: string;
   searchText?: string;
   noneFoundText?: string;
+  placeholder?: string;
   onValueChange: (value: string) => void;
 }) {
   const [open, setOpen] = React.useState(false);
+  const selectedLabel = value ? items.find((item) => item.value === value)?.label : '';
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox" aria-expanded={open} className="flex-1 justify-between">
-          <span>{value ? items.find((item) => item.value === value)?.label : ''}</span>
+          <span className={selectedLabel ? '' : 'text-muted-foreground'}>{selectedLabel || placeholder}</span>
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>

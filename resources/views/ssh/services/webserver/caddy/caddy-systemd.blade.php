@@ -11,7 +11,7 @@ ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile --adapter caddyfi
 TimeoutStopSec=5s
 LimitNOFILE=1048576
 LimitNPROC=512
-PrivateTmp=true
+PrivateTmp=false
 ProtectSystem=full
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 

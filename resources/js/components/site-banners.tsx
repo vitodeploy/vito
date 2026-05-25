@@ -99,8 +99,9 @@ function InstallationFailedBanner({ site }: { site: Site }) {
 }
 
 export default function SiteBanners({ site }: { site: Site }) {
-  const warnings: SiteWarning[] = site.warnings ?? [];
+  const installing = site.status === 'installing';
   const installationFailed = site.status === 'installation_failed';
+  const warnings: SiteWarning[] = installing ? [] : (site.warnings ?? []);
 
   const pendingDomainsWarning = warnings.find((w) => w.key === 'pending_domains');
   const sslDisabledWarning = warnings.find((w) => w.key === 'ssl_disabled');

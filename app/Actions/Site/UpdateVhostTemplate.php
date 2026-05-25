@@ -2,6 +2,8 @@
 
 namespace App\Actions\Site;
 
+use App\Actions\Webserver\GenerateCaddyConfig;
+use App\Actions\Webserver\GenerateNginxConfig;
 use App\Models\Site;
 
 class UpdateVhostTemplate
@@ -15,9 +17,20 @@ class UpdateVhostTemplate
             'template' => ['required', 'string', 'max:65535'],
         ])->validate();
 
-        $site->vhost_template = $validated['template'];
+        $site->vhost_template = $this->matchesDefault($site, $validated['template'])
+            ? null
+            : $validated['template'];
         $site->save();
 
         $site->webserver()->updateVHost($site);
+    }
+
+    private function matchesDefault(Site $site, string $template): bool
+    {
+        $generator = $site->webserver()::id() === 'caddy'
+            ? app(GenerateCaddyConfig::class)
+            : app(GenerateNginxConfig::class);
+
+        return rtrim($template) === rtrim($generator->defaultTemplate());
     }
 }

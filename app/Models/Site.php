@@ -59,6 +59,7 @@ use RuntimeException;
  * @property bool $ssl_enabled
  * @property ?string $vhost_template
  * @property bool $vhost_generation_enabled
+ * @property ?string $verification_key
  * @property Server $server
  * @property Collection<int, ServerLog> $logs
  * @property Collection<int, Deployment> $deployments
@@ -108,6 +109,7 @@ class Site extends AbstractModel
         'ssl_enabled',
         'vhost_template',
         'vhost_generation_enabled',
+        'verification_key',
     ];
 
     protected $with = ['isolatedUser'];
