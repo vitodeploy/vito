@@ -4,8 +4,10 @@ namespace Tests\Feature\Webserver;
 
 use App\Actions\Webserver\GenerateNginxConfig;
 use App\Enums\ServiceStatus;
+use App\Enums\SslStatus;
 use App\Models\HostedDomain;
 use App\Models\Service;
+use App\Models\Ssl;
 use App\Services\Webserver\Caddy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -87,5 +89,39 @@ class VerificationBlockTest extends TestCase
 
         $this->assertStringContainsString('handle_path /.well-known/vito/caddyKey99/*', $vhost);
         $this->assertStringContainsString('root * /var/lib/vito/verify/caddyKey99', $vhost);
+    }
+
+    public function test_nginx_force_ssl_redirect_serves_and_exempts_verification_challenge(): void
+    {
+        $ssl = Ssl::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => SslStatus::CREATED,
+            'type' => 'letsencrypt',
+            'domains' => [$this->site->domain],
+        ]);
+
+        HostedDomain::factory()->primary()->create([
+            'site_id' => $this->site->id,
+            'domain' => $this->site->domain,
+            'ssl_id' => $ssl->id,
+        ]);
+
+        $this->site->update([
+            'ssl_enabled' => true,
+            'force_ssl' => true,
+            'verification_key' => 'forcedKey55',
+        ]);
+        $this->site->refresh();
+
+        $vhost = $this->site->webserver()->generateVhost($this->site);
+
+        $this->assertStringContainsString('location ^~ /.well-known/vito/forcedKey55/', $vhost);
+        $this->assertStringContainsString('alias /var/lib/vito/verify/forcedKey55/', $vhost);
+        $this->assertStringContainsString(
+            "location / {\n        return 301 https://\$host\$request_uri;\n    }",
+            $vhost,
+            'The force-SSL port-80 redirect must be scoped to location / so the verification path is served instead of 301-redirected.'
+        );
     }
 }

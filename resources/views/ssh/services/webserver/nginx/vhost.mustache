@@ -28,7 +28,20 @@ server {
     listen [::]:80;
 
     server_name{{#force_ssl_domains}} {{name}}{{/force_ssl_domains}};
-    return 301 https://$host$request_uri;
+
+    {{#verification_key}}
+    location ^~ /.well-known/vito/{{verification_key}}/ {
+        allow all;
+        default_type text/plain;
+        add_header Cache-Control "no-store" always;
+        alias /var/lib/vito/verify/{{verification_key}}/;
+        try_files $uri =404;
+    }
+    {{/verification_key}}
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
 }
 {{/has_force_ssl_redirect}}
 

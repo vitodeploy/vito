@@ -46,6 +46,20 @@ class ServiceLogsTest extends TestCase
         $this->assertContains('php:8.2:user:vito', $keys);
     }
 
+    public function test_nginx_exposes_per_site_error_log(): void
+    {
+        $this->actingAs($this->user);
+
+        $response = $this->get(route('logs.services', $this->server));
+
+        $catalogue = $response->viewData('page')['props']['catalogue'];
+        $entries = collect($catalogue)->keyBy('key');
+
+        $key = 'nginx:site:'.$this->site->id.':error';
+        $this->assertTrue($entries->has($key));
+        $this->assertSame('/var/log/nginx/'.$this->site->domain.'-error.log', $entries[$key]['display_target']);
+    }
+
     public function test_services_without_has_logs_are_skipped(): void
     {
         $this->actingAs($this->user);
