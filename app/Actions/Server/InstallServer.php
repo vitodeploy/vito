@@ -13,7 +13,6 @@ use App\Http\Resources\ServerResource;
 use App\Models\Server;
 use App\Notifications\ServerInstallationSucceed;
 use App\ServerProviders\Custom;
-use App\Services\PHP\PHP;
 use Illuminate\Support\Sleep;
 
 class InstallServer
@@ -69,12 +68,6 @@ class InstallServer
 
             $service->handler()->install();
             $service->update(['status' => ServiceStatus::READY]);
-            if ($service->type == 'php') {
-                $this->progress($currentProgress, 'installing-composer');
-                /** @var PHP $handler */
-                $handler = $service->handler();
-                $handler->installComposer();
-            }
         }
         $this->progress(100, 'finishing');
     }

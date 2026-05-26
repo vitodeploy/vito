@@ -72,7 +72,6 @@ class PHP extends AbstractService implements HasLogs
                 ]),
                 'install-php-'.$this->service->version
             );
-        $this->installComposer();
         event('service.installed', $this->service);
         $this->service->server->os()->cleanup();
     }
@@ -125,17 +124,6 @@ class PHP extends AbstractService implements HasLogs
         if (! Str::contains($result, $name)) {
             throw new SSHCommandError('Failed to install extension');
         }
-    }
-
-    /**
-     * @throws SSHError
-     */
-    public function installComposer(): void
-    {
-        $this->service->server->ssh('root')->exec(
-            view('ssh.services.php.install-composer'),
-            'install-composer'
-        );
     }
 
     /**

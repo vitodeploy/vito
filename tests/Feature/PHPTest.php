@@ -15,6 +15,28 @@ class PHPTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_install_does_not_install_global_composer(): void
+    {
+        SSH::fake();
+        Event::fake();
+
+        $php = Service::factory()->create([
+            'server_id' => $this->server->id,
+            'type' => 'php',
+            'type_data' => [
+                'extensions' => [],
+            ],
+            'name' => 'php',
+            'version' => '8.3',
+            'status' => ServiceStatus::READY,
+        ]);
+
+        $php->handler()->install();
+
+        Event::assertDispatched('service.installed');
+        SSH::assertNotExecutedContains('getcomposer.org');
+    }
+
     public function test_change_default_php_cli(): void
     {
         SSH::fake();

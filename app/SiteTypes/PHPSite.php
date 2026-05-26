@@ -7,7 +7,10 @@ use App\Exceptions\SSHError;
 use App\Models\Site;
 use App\Models\SourceControl;
 use App\SSH\OS\Composer;
+use App\Tooling\NodeTooling;
+use App\Tooling\PnpmTooling;
 use App\Tooling\ToolingRegistry;
+use App\Tooling\YarnTooling;
 use App\Traits\NormalizesWebDirectory;
 use Illuminate\Validation\Rule;
 
@@ -40,7 +43,12 @@ class PHPSite extends AbstractSiteType
 
     public static function createTimeTools(): array
     {
-        return ['node', 'bun'];
+        return ['node', 'pnpm', 'yarn', 'composer'];
+    }
+
+    public static function requiredTooling(): array
+    {
+        return ['composer'];
     }
 
     public static function supportsTooling(): bool
@@ -85,6 +93,11 @@ class PHPSite extends AbstractSiteType
             ];
         }
 
+        $rules['package_manager'] = [
+            'nullable',
+            Rule::in(['none', NodeTooling::id(), PnpmTooling::id(), YarnTooling::id()]),
+        ];
+
         return $rules;
     }
 
@@ -106,13 +119,22 @@ class PHPSite extends AbstractSiteType
             'composer' => isset($input['composer']) && $input['composer'],
         ];
 
+        $packageManager = $input['package_manager'] ?? 'none';
+
         foreach (static::createTimeTools() as $toolId) {
             $tool = ToolingRegistry::find($toolId);
             if (! $tool) {
                 continue;
             }
             $key = $tool::typeDataKey();
-            $data[$key] = $input[$key] ?? 'none';
+
+            if (in_array($toolId, static::requiredTooling(), true)) {
+                $data[$key] = $tool::supportedVersions()[0] ?? 'none';
+            } elseif ($toolId === $packageManager) {
+                $data[$key] = $input[$key] ?? $tool::supportedVersions()[0];
+            } else {
+                $data[$key] = 'none';
+            }
         }
 
         return $data;

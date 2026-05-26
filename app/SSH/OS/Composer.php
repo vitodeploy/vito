@@ -3,6 +3,7 @@
 namespace App\SSH\OS;
 
 use App\Exceptions\SSHError;
+use App\Helpers\SiteShellEnvironment;
 use App\Models\Site;
 
 class Composer
@@ -12,13 +13,14 @@ class Composer
      */
     public function installDependencies(Site $site): void
     {
-        $site->server->ssh($site->user)->exec(
-            view('ssh.composer.composer-install', [
-                'path' => $site->path,
-                'phpVersion' => $site->php_version,
-            ]),
-            'composer-install',
-            $site->id
-        );
+        $site->server->ssh($site->user)
+            ->variables(SiteShellEnvironment::collect($site))
+            ->exec(
+                view('ssh.composer.composer-install', [
+                    'path' => $site->path,
+                ]),
+                'composer-install',
+                $site->id
+            );
     }
 }

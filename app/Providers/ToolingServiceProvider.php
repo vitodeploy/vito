@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Tooling\BunTooling;
+use App\Tooling\ComposerTooling;
 use App\Tooling\NodeTooling;
 use App\Tooling\PnpmTooling;
 use App\Tooling\YarnTooling;
@@ -18,6 +19,7 @@ class ToolingServiceProvider extends ServiceProvider
                 BunTooling::class,
                 PnpmTooling::class,
                 YarnTooling::class,
+                ComposerTooling::class,
             ],
         ]);
     }

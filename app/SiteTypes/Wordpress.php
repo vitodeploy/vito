@@ -21,6 +21,16 @@ class Wordpress extends PHPSite
         return new self(new Site(['type' => self::id()]));
     }
 
+    public static function createTimeTools(): array
+    {
+        return [];
+    }
+
+    public static function requiredTooling(): array
+    {
+        return [];
+    }
+
     public function language(): string
     {
         return 'php';

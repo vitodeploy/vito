@@ -20,6 +20,9 @@ use App\SiteTypes\PHPBlank;
 use App\SiteTypes\PHPMyAdmin;
 use App\SiteTypes\PHPSite;
 use App\SiteTypes\Wordpress;
+use App\Tooling\NodeTooling;
+use App\Tooling\PnpmTooling;
+use App\Tooling\YarnTooling;
 use Illuminate\Support\ServiceProvider;
 
 class SiteTypeServiceProvider extends ServiceProvider
@@ -67,10 +70,15 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
-                DynamicField::make('tooling')
-                    ->tooling()
-                    ->label('Developer Tooling')
-                    ->options(PHPSite::createTimeTools()),
+                DynamicField::make('package_manager')
+                    ->toolingSelector(
+                        [NodeTooling::class, PnpmTooling::class, YarnTooling::class],
+                        [NodeTooling::class => 'npm'],
+                        null,
+                        true,
+                    )
+                    ->label('Package Manager')
+                    ->description('JavaScript package manager used to build front-end assets during deployment.'),
             ]))
             ->register();
     }
@@ -89,10 +97,15 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->label('Web Directory')
                     ->placeholder('e.g., public, www, dist (leave empty for root)')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
-                DynamicField::make('tooling')
-                    ->tooling()
-                    ->label('Developer Tooling')
-                    ->options(PHPBlank::createTimeTools()),
+                DynamicField::make('package_manager')
+                    ->toolingSelector(
+                        [NodeTooling::class, PnpmTooling::class, YarnTooling::class],
+                        [NodeTooling::class => 'npm'],
+                        null,
+                        true,
+                    )
+                    ->label('Package Manager')
+                    ->description('JavaScript package manager used to build front-end assets during deployment.'),
             ]))
             ->register();
     }
@@ -127,10 +140,14 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->checkbox()
                     ->label('Run `composer install --no-dev`')
                     ->default(false),
-                DynamicField::make('tooling')
-                    ->tooling()
-                    ->label('Developer Tooling')
-                    ->options(Laravel::createTimeTools()),
+                DynamicField::make('package_manager')
+                    ->toolingSelector(
+                        [NodeTooling::class, PnpmTooling::class, YarnTooling::class],
+                        [NodeTooling::class => 'npm'],
+                        NodeTooling::class,
+                    )
+                    ->label('Package Manager')
+                    ->description('JavaScript package manager used to build front-end assets during deployment.'),
             ]))
             ->register();
         RegisterSiteFeature::make(Laravel::id(), 'modern-deployment')

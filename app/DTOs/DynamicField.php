@@ -111,20 +111,30 @@ class DynamicField
     /**
      * @param  array<int, class-string<ToolingInterface>>  $toolClasses
      * @param  array<class-string<ToolingInterface>, string>  $labelOverrides
+     * @param  class-string<ToolingInterface>|null  $default
      */
-    public function toolingSelector(array $toolClasses, array $labelOverrides = []): self
+    public function toolingSelector(array $toolClasses, array $labelOverrides = [], ?string $default = null, bool $allowNone = false): self
     {
         $this->type = 'tooling-selector';
         $this->options = array_map(fn (string $cls) => $cls::id(), $toolClasses);
 
-        if ($labelOverrides !== []) {
-            $this->optionLabels = [];
-            foreach ($labelOverrides as $cls => $label) {
-                $this->optionLabels[$cls::id()] = $label;
-            }
+        $labels = [];
+        foreach ($labelOverrides as $cls => $label) {
+            $labels[$cls::id()] = $label;
         }
 
-        if ($this->default === null && $this->options !== []) {
+        if ($allowNone) {
+            array_unshift($this->options, 'none');
+            $labels['none'] = 'None';
+        }
+
+        $this->optionLabels = $labels === [] ? null : $labels;
+
+        if ($default !== null) {
+            $this->default = $default::id();
+        } elseif ($allowNone) {
+            $this->default = 'none';
+        } elseif ($this->default === null && $this->options !== []) {
             $this->default = $this->options[0];
         }
 

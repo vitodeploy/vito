@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\DTOs\DynamicField;
 use App\Enums\SiteStatus;
 use App\Events\SocketEvent;
 use App\Facades\SSH;
@@ -15,8 +16,16 @@ use App\SiteTypes\AbstractSiteType;
 use App\SiteTypes\Laravel;
 use App\SiteTypes\LoadBalancer;
 use App\SiteTypes\NodeSite;
+use App\SiteTypes\PHPBlank;
+use App\SiteTypes\PHPMyAdmin;
+use App\SiteTypes\PHPSite;
+use App\SiteTypes\Wordpress;
 use App\SourceControlProviders\Github;
+use App\Tooling\NodeTooling;
+use App\Tooling\PnpmTooling;
 use App\Tooling\SiteToolingState;
+use App\Tooling\ToolingRegistry;
+use App\Tooling\YarnTooling;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -446,6 +455,169 @@ class SiteToolingTest extends TestCase
 
         SSH::assertNotExecutedContains('mise unuse -g node');
         $this->assertSame('22', $this->iuser()->toolingVersion('node'));
+    }
+
+    public function test_composer_tool_is_registered(): void
+    {
+        $composer = ToolingRegistry::find('composer');
+
+        $this->assertNotNull($composer);
+        $this->assertSame(['composer'], $composer::commands());
+        $this->assertSame(['2'], $composer::supportedVersions());
+    }
+
+    public function test_bootstrap_exposes_composer_descriptor(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->getJson(route('bootstrap.show'))
+            ->assertOk()
+            ->assertJsonPath('configs.tooling', fn (array $tooling): bool => in_array('composer', array_column($tooling, 'id'), true));
+    }
+
+    public function test_composer_required_for_php_types_but_not_wordpress_or_phpmyadmin(): void
+    {
+        foreach ([PHPSite::class, Laravel::class, PHPBlank::class] as $type) {
+            $this->assertContains('composer', $type::createTimeTools(), "{$type} createTimeTools");
+            $this->assertContains('composer', $type::requiredTooling(), "{$type} requiredTooling");
+        }
+
+        foreach ([Wordpress::class, PHPMyAdmin::class] as $type) {
+            $this->assertSame([], $type::createTimeTools(), "{$type} createTimeTools");
+            $this->assertSame([], $type::requiredTooling(), "{$type} requiredTooling");
+        }
+    }
+
+    public function test_composer_installs_at_latest_without_a_create_form_picker(): void
+    {
+        $data = (new Laravel(new Site(['type' => Laravel::id()])))->data([]);
+        $this->assertSame('2', $data['composer_version']);
+
+        $selector = collect(config('site.types.php.form'))->firstWhere('name', 'package_manager');
+        $this->assertNotContains('composer', $selector['options']);
+    }
+
+    public function test_php_and_php_blank_package_manager_defaults_to_none(): void
+    {
+        foreach (['php', 'php-blank'] as $typeId) {
+            $selector = collect(config('site.types.'.$typeId.'.form'))->firstWhere('name', 'package_manager');
+            $this->assertSame('none', $selector['default'], $typeId);
+            $this->assertContains('none', $selector['options'], $typeId);
+        }
+
+        $laravel = collect(config('site.types.laravel.form'))->firstWhere('name', 'package_manager');
+        $this->assertSame('node', $laravel['default']);
+        $this->assertNotContains('none', $laravel['options']);
+    }
+
+    public function test_php_with_no_package_manager_installs_only_composer(): void
+    {
+        $data = (new PHPSite(new Site(['type' => 'php'])))->data([]);
+
+        $this->assertSame('none', $data['node_version']);
+        $this->assertSame('none', $data['pnpm_version']);
+        $this->assertSame('none', $data['yarn_version']);
+        $this->assertSame('2', $data['composer_version']);
+    }
+
+    public function test_tooling_selector_supports_explicit_default(): void
+    {
+        $explicit = DynamicField::make('package_manager')->toolingSelector(
+            [NodeTooling::class, PnpmTooling::class, YarnTooling::class],
+            [NodeTooling::class => 'npm'],
+            PnpmTooling::class,
+        )->toArray();
+
+        $this->assertSame('tooling-selector', $explicit['type']);
+        $this->assertSame('pnpm', $explicit['default']);
+        $this->assertSame('npm', $explicit['optionLabels']['node']);
+
+        $implicit = DynamicField::make('package_manager')->toolingSelector(
+            [YarnTooling::class, PnpmTooling::class],
+        )->toArray();
+
+        $this->assertSame('yarn', $implicit['default']);
+    }
+
+    public function test_laravel_package_manager_drives_tooling_versions(): void
+    {
+        $type = new Laravel(new Site(['type' => Laravel::id()]));
+
+        $npm = $type->data(['package_manager' => 'node', 'node_version' => '22']);
+        $this->assertSame('22', $npm['node_version']);
+        $this->assertSame('none', $npm['pnpm_version']);
+        $this->assertSame('none', $npm['yarn_version']);
+        $this->assertSame('2', $npm['composer_version']);
+
+        $pnpm = $type->data(['package_manager' => 'pnpm', 'pnpm_version' => '9']);
+        $this->assertSame('9', $pnpm['pnpm_version']);
+        $this->assertSame('none', $pnpm['yarn_version']);
+        $this->assertSame('none', $pnpm['node_version']);
+
+        $none = $type->data(['package_manager' => 'none']);
+        $this->assertSame('none', $none['node_version']);
+        $this->assertSame('none', $none['pnpm_version']);
+        $this->assertSame('none', $none['yarn_version']);
+
+        $this->assertSame(['node', 'pnpm', 'yarn', 'composer'], Laravel::createTimeTools());
+    }
+
+    public function test_install_composer_installs_locally(): void
+    {
+        SSH::fake();
+        $this->actingAs($this->user);
+
+        $this->post(route('site-tooling.install', ['server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'composer']), [
+            'version' => '2',
+        ])->assertRedirect();
+
+        SSH::assertExecutedContains('composer-setup.php');
+        SSH::assertExecutedContains('.local/vito/bin');
+        SSH::assertExecutedContains('$HOME/.bashrc');
+
+        $this->assertSame('2', $this->iuser()->toolingVersion('composer'));
+    }
+
+    public function test_uninstall_composer_removes_binary_and_path_activation(): void
+    {
+        SSH::fake();
+
+        $site = Site::factory()->create([
+            'server_id' => $this->server->id,
+            'domain' => 'node-only.test',
+            'user' => 'isolated-node',
+            'path' => '/home/isolated-node/node-only.test',
+            'type' => NodeSite::id(),
+            'status' => SiteStatus::READY,
+            'type_data' => [],
+        ]);
+
+        $site->isolatedUser()->firstOrFail()->setToolingVersion('composer', '2');
+
+        $this->actingAs($this->user);
+
+        $this->delete(route('site-tooling.uninstall', ['server' => $this->server, 'site' => $site, 'tool' => 'composer']))
+            ->assertRedirect();
+
+        SSH::assertExecutedContains('rm -f "$HOME/.local/vito/bin/composer"');
+        SSH::assertExecutedContains('.bashrc');
+
+        $this->assertNull($site->isolatedUser()->firstOrFail()->toolingVersion('composer'));
+    }
+
+    public function test_uninstall_composer_rejected_on_laravel_site(): void
+    {
+        SSH::fake();
+
+        $this->iuser()->setToolingVersion('composer', '2');
+
+        $this->actingAs($this->user);
+
+        $this->delete(route('site-tooling.uninstall', ['server' => $this->server, 'site' => $this->isolatedSite, 'tool' => 'composer']))
+            ->assertSessionHasErrors('tool');
+
+        SSH::assertNotExecutedContains('.local/vito/bin/composer');
+        $this->assertSame('2', $this->iuser()->toolingVersion('composer'));
     }
 
     public function test_other_user_sites_are_not_touched(): void
